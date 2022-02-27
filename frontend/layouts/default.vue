@@ -2,15 +2,10 @@
   <div class="font-AnekBangla">
     <template v-if="loader">
       <NuxtLoadingIndicator class="!opacity-[1]" />
-      <section
-        class="h-screen w-screen flex items-center justify-center"
-        v-if="!user"
-      >
-        <!-- <UIcon
-          name="svg-spinners:bars-scale-middle"
-          dynamic
-          class="text-xl w-12 h-12 text-primary"
-        /> -->
+      <section class="h-screen w-screen flex items-center justify-center" v-if="!user">
+        <div class="opacity-0 absolute -z-50">
+          <slot />
+        </div>
         <CommonPreloader />
       </section>
     </template>
@@ -38,7 +33,6 @@ onMounted(() => {
   }, 1000);
 });
 useHead({
-  title:
-    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+  title: "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
 });
 </script>

@@ -10,7 +10,7 @@
         <h2 class="text-2xl md:text-4xl max-sm:text-center mb-6 md:mb-8">
           {{ $t("classified_service") }}
         </h2>
-        <form @submit.prevent="handleSearch">
+        <form @submit.prevent="handleSearch" class="max-w-sm mx-auto">
           <UButtonGroup
             label="Search Category"
             class="my-5 md:my-8 justify-center flex !shadow-none"
@@ -23,6 +23,7 @@
               color="white"
               placeholder="Search Category"
               v-model="title"
+              class="w-full"
             />
             <UButton
               color="primary"
