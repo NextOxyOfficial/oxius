@@ -324,7 +324,7 @@ const services = ref([]);
 const microGigs = ref([{}, {}]);
 
 async function getClassifiedCategories() {
-  const res = await get("/classified-services/");
+  const res = await get("/classified-categories/");
   services.value = res.data;
   console.log(res);
 }
