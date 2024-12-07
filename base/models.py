@@ -13,14 +13,12 @@ class User(AbstractUser):
   is_vendor = models.BooleanField(default=False)
   is_active = models.BooleanField(default=True) 
   phone = models.CharField(max_length=100, default='', null=True)
-  email = models.EmailField(unique=True)
+#   email = models.EmailField(unique=True,default='', null=True)
   nid = models.ImageField(upload_to='images/', blank=True, null=True)
   USER_TYPES = [
       ('admin', 'Admin'),
       ('user', 'User'),
       ('vendor', 'Vendor'),
-      ('customer_service', 'CS'),
-      ('production_manager', 'PM')
   ]
   user_type = models.CharField(
       max_length=20, choices=USER_TYPES, default='user')

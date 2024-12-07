@@ -1,5 +1,5 @@
 <template>
-	<footer class="py-10 bg-slate-50">
+	<footer class="py-10 bg-slate-100">
 		<UContainer>
 			<div class="mb-8">
 				<UHorizontalNavigation
@@ -97,7 +97,7 @@ watch(toggleStatus, () => {
 const privacy = [
 	{
 		label: "Terms & Conditions",
-		to: "/terms",
+		to: "/",
 	},
 	{
 		label: "Privacy Policy",
@@ -121,16 +121,16 @@ const links = [
 				to: "/",
 			},
 			{
+				label: "Careers",
+				to: "/",
+			},
+			{
 				label: "Affiliates",
 				to: "/",
 			},
 			{
 				label: "Promotion",
 				to: "/",
-			},
-			{
-				label: "About Us",
-				to: "/about",
 			},
 			{
 				label: "Contact Us",
@@ -152,7 +152,7 @@ const links = [
 			},
 			{
 				label: "Terms & Conditions",
-				to: "/terms",
+				to: "/",
 			},
 		],
 	},
