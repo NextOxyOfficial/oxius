@@ -97,11 +97,11 @@ watch(toggleStatus, () => {
 const privacy = [
 	{
 		label: "Terms & Conditions",
-		to: "/",
+		to: "/terms",
 	},
 	{
 		label: "Privacy Policy",
-		to: "/",
+		to: "/privacy",
 	},
 ];
 
@@ -121,16 +121,16 @@ const links = [
 				to: "/",
 			},
 			{
-				label: "Careers",
-				to: "/",
-			},
-			{
 				label: "Affiliates",
 				to: "/",
 			},
 			{
 				label: "Promotion",
 				to: "/",
+			},
+			{
+				label: "About",
+				to: "/about",
 			},
 			{
 				label: "Contact Us",
@@ -143,7 +143,7 @@ const links = [
 		items: [
 			{
 				label: "About Us",
-				to: "/",
+				to: "/about",
 			},
 
 			{
@@ -152,7 +152,7 @@ const links = [
 			},
 			{
 				label: "Terms & Conditions",
-				to: "/",
+				to: "/terms",
 			},
 		],
 	},
