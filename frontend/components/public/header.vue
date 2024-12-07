@@ -14,7 +14,7 @@
           }"
         />
         <div>
-          <UButton label="Login/Register" color="gray">
+          <UButton to="/auth/login/" label="Login/Register" color="gray">
             <template #trailing>
               <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
             </template>
@@ -28,27 +28,27 @@
 <script setup>
 const links = [
   {
-    label: 'Home',
+    label: "Home",
     avatar: {
-      src: 'https://avatars.githubusercontent.com/u/739984?v=4',
+      src: "https://avatars.githubusercontent.com/u/739984?v=4",
     },
     badge: 100,
-    to: '/',
+    to: "/",
   },
   {
-    label: 'Classified Services',
-    icon: 'i-heroicons-home',
-    to: '/getting-started/installation',
+    label: "Classified Services",
+    icon: "i-heroicons-home",
+    to: "/getting-started/installation",
   },
   {
-    label: 'Earn Money',
-    icon: 'i-heroicons-chart-bar',
-    to: '/components/horizontal-navigation',
+    label: "Earn Money",
+    icon: "i-heroicons-chart-bar",
+    to: "/components/horizontal-navigation",
   },
   {
-    label: 'FAQ',
-    icon: 'i-heroicons-command-line',
-    to: '/components/command-palette',
+    label: "FAQ",
+    icon: "i-heroicons-command-line",
+    to: "/components/command-palette",
   },
 ];
 </script>
