@@ -1,5 +1,5 @@
 <template>
-  <footer class="py-10 bg-slate-50">
+  <footer class="py-10 bg-slate-100">
     <UContainer>
       <div class="mb-8">
         <UHorizontalNavigation
@@ -79,11 +79,11 @@
 </template>
 
 <script setup>
-const toggleStatus = ref("");
+const toggleStatus = ref('');
 
 function toggleLink(title) {
   if (toggleStatus.value === title) {
-    toggleStatus.value = "";
+    toggleStatus.value = '';
   } else {
     toggleStatus.value = title;
   }
@@ -91,89 +91,89 @@ function toggleLink(title) {
 }
 
 watch(toggleStatus, () => {
-  console.log("State Changed");
+  console.log('State Changed');
 });
 
 const privacy = [
   {
-    label: "Terms & Conditions",
-    to: "/",
+    label: 'Terms & Conditions',
+    to: '/',
   },
   {
-    label: "Privacy Policy",
-    to: "/",
+    label: 'Privacy Policy',
+    to: '/',
   },
 ];
 
 const links = [
   {
-    title: "Contact Us",
+    title: 'Contact Us',
   },
   {
-    title: "Services",
+    title: 'Services',
     items: [
       {
-        label: "Classified Services",
-        to: "/",
+        label: 'Classified Services',
+        to: '/',
       },
       {
-        label: "Earn Money",
-        to: "/",
+        label: 'Earn Money',
+        to: '/',
       },
       {
-        label: "Careers",
-        to: "/",
+        label: 'Careers',
+        to: '/',
       },
       {
-        label: "Affiliates",
-        to: "/",
+        label: 'Affiliates',
+        to: '/',
       },
       {
-        label: "Promotion",
-        to: "/",
+        label: 'Promotion',
+        to: '/',
       },
       {
-        label: "Contact Us",
-        to: "/",
+        label: 'Contact Us',
+        to: '/',
       },
     ],
   },
   {
-    title: "Information",
+    title: 'Information',
     items: [
       {
-        label: "About Us",
-        to: "/",
+        label: 'About Us',
+        to: '/',
       },
 
       {
-        label: "Privacy Policy",
-        to: "/",
+        label: 'Privacy Policy',
+        to: '/',
       },
       {
-        label: "Terms & Conditions",
-        to: "/",
+        label: 'Terms & Conditions',
+        to: '/',
       },
     ],
   },
   {
-    title: "My Account",
+    title: 'My Account',
     items: [
       {
-        label: "Cart",
-        to: "/",
+        label: 'Cart',
+        to: '/',
       },
       {
-        label: "Wishlist",
-        to: "/",
+        label: 'Wishlist',
+        to: '/',
       },
       {
-        label: "Categories",
-        to: "/",
+        label: 'Categories',
+        to: '/',
       },
       {
-        label: "All Products",
-        to: "/",
+        label: 'All Products',
+        to: '/',
       },
     ],
   },
@@ -181,25 +181,25 @@ const links = [
 
 const items = [
   {
-    label: "Contact Us",
-    "open-icon": "i-heroicons-plus",
-    "close-icon": "i-heroicons-minus",
-    slot: "contact",
+    label: 'Contact Us',
+    'open-icon': 'i-heroicons-plus',
+    'close-icon': 'i-heroicons-minus',
+    slot: 'contact',
   },
   {
-    label: "Services",
+    label: 'Services',
 
-    slot: "services",
+    slot: 'services',
   },
   {
-    label: "Information",
+    label: 'Information',
 
-    slot: "information",
+    slot: 'information',
   },
   {
-    label: "My Account",
+    label: 'My Account',
 
-    slot: "my-account",
+    slot: 'my-account',
   },
 ];
 </script>
