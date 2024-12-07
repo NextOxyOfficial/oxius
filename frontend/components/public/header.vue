@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="my-3">
     <UContainer>
       <div class="flex items-center justify-between gap-6">
         <a href="/">
@@ -7,13 +7,18 @@
         </a>
         <UHorizontalNavigation
           :links="links"
-          class="border-b border-gray-200 dark:border-gray-800"
+          class="border-b border-gray-200 dark:border-gray-800 text-lg"
           :ui="{
             wrapper: 'w-auto',
+            label: 'text-base',
           }"
         />
         <div>
-          <p class="font-bold">Balance: 500 BDT</p>
+          <UButton label="Login/Register" color="gray">
+            <template #trailing>
+              <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
+            </template>
+          </UButton>
         </div>
       </div>
     </UContainer>
@@ -23,26 +28,27 @@
 <script setup>
 const links = [
   {
-    label: "Profile",
+    label: 'Home',
     avatar: {
-      src: "https://avatars.githubusercontent.com/u/739984?v=4",
+      src: 'https://avatars.githubusercontent.com/u/739984?v=4',
     },
     badge: 100,
+    to: '/',
   },
   {
-    label: "Installation",
-    icon: "i-heroicons-home",
-    to: "/getting-started/installation",
+    label: 'Classified Services',
+    icon: 'i-heroicons-home',
+    to: '/getting-started/installation',
   },
   {
-    label: "Horizontal Navigation",
-    icon: "i-heroicons-chart-bar",
-    to: "/components/horizontal-navigation",
+    label: 'Earn Money',
+    icon: 'i-heroicons-chart-bar',
+    to: '/components/horizontal-navigation',
   },
   {
-    label: "Command Palette",
-    icon: "i-heroicons-command-line",
-    to: "/components/command-palette",
+    label: 'FAQ',
+    icon: 'i-heroicons-command-line',
+    to: '/components/command-palette',
   },
 ];
 </script>
