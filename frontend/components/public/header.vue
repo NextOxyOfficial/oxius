@@ -1,5 +1,5 @@
 <template>
-  <div class="my-3">
+  <div class="my-3 sticky z-50 top-0 bg-white">
     <UContainer>
       <div class="flex items-center justify-between gap-6">
         <NuxtLink to="/">

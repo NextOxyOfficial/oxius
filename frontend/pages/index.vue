@@ -51,7 +51,9 @@
                     class="mt-1"
                   />
                   Balance :
-                  <UIcon name="i-mdi:currency-bdt" class="text-2xl" />500</span
+                  <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
+                    userBalance[0]?.amount
+                  }}</span
                 >
               </h3>
             </div>
@@ -117,7 +119,7 @@
                   <p class="px-2 font-semibold pb-2">All Categories</p>
                   <UDivider label="" class="mb-2 px-4" />
                 </li>
-                <li>
+                <li v-for="microGig in microGigs" :key="microGig.id">
                   <UButton
                     :ui="{
                       rounded: '',
@@ -126,19 +128,7 @@
                     variant="ghost"
                     color="white"
                     class="w-full text-base px-4 py-0 font-normal"
-                    >Facebook (15)</UButton
-                  >
-                </li>
-                <li>
-                  <UButton
-                    :ui="{
-                      rounded: '',
-                    }"
-                    size="md"
-                    variant="ghost"
-                    color="white"
-                    class="w-full text-base px-4 py-0 font-normal"
-                    >Youtube (15)</UButton
+                    >{{ microGig.category_details.title }} (15)</UButton
                   >
                 </li>
               </ul>
@@ -164,32 +154,20 @@
                 <div class="flex justify-between">
                   <div class="flex gap-4">
                     <div>
-                      <NuxtImg
-                        src="https://placehold.co/400"
-                        class="size-14 rounded-full"
-                      />
+                      <NuxtImg :src="gig.image" class="size-14 rounded-full" />
                     </div>
                     <div>
                       <h3 class="text-base font-semibold mb-1.5">
-                        Lorem ipsum dolor sit amet.
+                        {{ gig.title }}
                       </h3>
                       <div class="flex gap-4">
                         <div class="flex gap-1 items-center">
-                          <UIcon name="i-heroicons-user-solid" />
-                          <p class="text-sm">User</p>
-                        </div>
-                        <div class="flex gap-1 items-center">
-                          <UIcon
-                            name="i-tabler:coin-taka-filled"
-                            class="text-lg"
-                          />
-                          <p class="text-sm">500</p>
-                        </div>
-                        <div class="flex gap-1 items-center">
                           <UIcon name="i-heroicons-bell-solid" />
                           <p class="text-sm">
-                            <span class="">5</span> /
-                            <span class="text-green-600">10</span>
+                            <span class="">{{ gig.filled_quantity }}</span> /
+                            <span class="text-green-600">{{
+                              gig.required_quantity
+                            }}</span>
                           </p>
                         </div>
                       </div>
@@ -199,7 +177,9 @@
                     <p
                       class="font-bold text-base text-green-900 inline-flex items-center"
                     >
-                      <UIcon name="i-mdi:currency-bdt" class="text-base" />500
+                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                        gig.price
+                      }}
                     </p>
                     <UButton
                       size="sm"
@@ -323,12 +303,16 @@ const isOpen = ref(false);
 const { get } = useApi();
 const { user } = useAuth();
 const services = ref([]);
-const microGigs = ref([{}, {}]);
+const microGigs = ref([]);
+const userBalance = ref([]);
 
 async function getClassifiedCategories() {
   const res = await get("/classified-categories/");
   services.value = res.data;
-  console.log(res);
+  const res2 = await get("/micro-gigs/");
+  microGigs.value = res2.data;
+  const res3 = await get(`/user-balance/${user.value.user.email}/`);
+  userBalance.value = res3.data;
 }
 
 setTimeout(() => {

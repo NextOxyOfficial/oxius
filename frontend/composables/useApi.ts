@@ -57,6 +57,21 @@ export function useApi() {
     };
   };
 
+  const patch = async (endpoint: string, postData: object) => {
+    const { data, pending, error, refresh } = await useFetch<any>(
+      baseURL + endpoint,
+      {
+        headers: head.value,
+        method: "patch",
+        body: JSON.stringify(postData),
+      }
+    );
+    return {
+      data: data.value,
+      error: error.value,
+    };
+  };
+
   const del = async (endpoint: string) => {
     const { data, pending, error, refresh } = await useFetch<any>(
       baseURL + endpoint,
@@ -78,6 +93,7 @@ export function useApi() {
     post: post,
     put: put,
     del: del,
+    patch: patch,
   };
 
   return Api;

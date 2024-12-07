@@ -1,20 +1,40 @@
 from rest_framework import serializers
-from .models import ClassifiedCategory,User
+from .models import ClassifiedCategory,User,MicroGigPost,MicroGigCategory,Balance
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Exclude the password field for security
+        exclude = ('groups', 'user_permissions','id','password', 'nid',)
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClassifiedCategory
         fields = '__all__'
 
-class UserSerializer(serializers.ModelSerializer):
+class MicroGigCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = get_user_model()
-        # Exclude the password field for security
-        exclude = ('password', 'nid',)
+        model = MicroGigCategory
+        fields = '__all__'
+
+
+class MicroGigPostSerializer(serializers.ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(queryset=MicroGigCategory.objects.all())
+    category_details = MicroGigCategorySerializer(source='category', read_only=True)
+    class Meta:
+        model = MicroGigPost
+        fields = '__all__'
+
+class BalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Balance
+        fields = '__all__'
 
 # class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 #     @classmethod
