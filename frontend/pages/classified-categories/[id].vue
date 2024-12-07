@@ -40,7 +40,7 @@
         </UButtonGroup>
       </div>
       <div class="services mt-4">
-        <NuxtLink>
+        <NuxtLink to="/classified-categories/details">
           <UCard
             :ui="{
               background: '',

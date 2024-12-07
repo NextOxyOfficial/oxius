@@ -14,5 +14,8 @@
     "@nuxt/ui": "^2.18.4",
     "nuxt": "^3.13.0",
     "vue": "latest"
+  },
+  "devDependencies": {
+    "@iconify-json/logos": "^1.2.3"
   }
 }
