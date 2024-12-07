@@ -31,7 +31,7 @@ const login = ref(true);
 const { user, isAuthenticated } = useAuth();
 
 onMounted(() => {
-  if (user) {
+  if (user?.user) {
     console.log(user);
     navigateTo("/");
   }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- <template v-if="!user">
+    <template v-if="loader">
       <NuxtLoadingIndicator class="!opacity-[1]" />
       <section
         class="h-screen w-screen flex items-center justify-center"
@@ -12,8 +12,8 @@
           class="text-xl w-12 h-12 text-primary"
         />
       </section>
-    </template> -->
-    <template>
+    </template>
+    <template v-else>
       <PublicHeader />
 
       <slot />
@@ -24,15 +24,18 @@
 
 <script setup>
 const { jwtLogin, user } = useAuth();
+const loader = ref(true);
 
-// onMounted(() => {
-//   setTimeout(() => {
-//     if (!useCookie("jwt").value) {
-//       navigateTo("/auth/login/");
-//     } else {
-//       jwtLogin();
-//       navigateTo("/");
-//     }
-//   }, 1000);
-// });
+onMounted(() => {
+  setTimeout(() => {
+    if (!useCookie("jwt").value) {
+      navigateTo("/auth/login/");
+      loader.value = false;
+    } else {
+      jwtLogin();
+      navigateTo("/");
+      loader.value = false;
+    }
+  }, 1000);
+});
 </script>
