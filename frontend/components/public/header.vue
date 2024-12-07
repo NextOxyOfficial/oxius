@@ -11,6 +11,7 @@
           :ui="{
             wrapper: 'w-auto',
             label: 'text-base',
+            active: 'after:hidden',
           }"
         />
 
@@ -21,22 +22,28 @@
             </template>
           </UButton>
         </div>
-        <div v-else class="flex gap-1">
+        <div v-else class="flex gap-1 relative">
           <UButton
-            to="/my-account/"
             size="md"
             color="primary"
             variant="outline"
-            label="My Account"
-          />
-          <UButton
-            icon="i-heroicons-bell-solid"
-            size="md"
-            color="primary"
-            variant="solid"
-            label="Logout"
-            @click="logout"
-          />
+            @click="openMenu = !openMenu"
+          >
+            My Account
+            <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
+            <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
+          </UButton>
+          <div
+            class="absolute bg-slate-50 rounded-md py-3 px-2 top-10"
+            :class="openMenu ? '' : 'hidden'"
+          >
+            <UVerticalNavigation
+              :links="accountLinks"
+              :ui="{
+                label: 'text-base',
+              }"
+            />
+          </div>
         </div>
       </div>
     </UContainer>
@@ -45,6 +52,7 @@
 
 <script setup>
 const { user, logout } = useAuth();
+const openMenu = ref(false);
 
 const open = ref(true);
 
@@ -54,26 +62,54 @@ defineShortcuts({
 const links = [
   {
     label: "Home",
-    avatar: {
-      src: "https://avatars.githubusercontent.com/u/739984?v=4",
-    },
-    badge: 100,
+
     to: "/",
   },
   {
     label: "Classified Services",
-    icon: "i-heroicons-home",
-    to: "/getting-started/installation",
+    to: "#classified-services",
   },
   {
     label: "Earn Money",
-    icon: "i-heroicons-chart-bar",
-    to: "/components/horizontal-navigation",
+    to: "#micro-gigs",
   },
   {
     label: "FAQ",
-    icon: "i-heroicons-command-line",
-    to: "/components/command-palette",
+    to: "/faq",
   },
+];
+
+const accountLinks = [
+  [
+    {
+      label: "Profile",
+      icon: "i-heroicons-user",
+    },
+    {
+      label: "Payments",
+      icon: "i-heroicons-wallet",
+      to: "/getting-started/installation",
+    },
+    {
+      label: "Upload Center",
+      icon: "material-symbols:drive-folder-upload-outline-sharp",
+      to: "/components/vertical-navigation",
+    },
+    {
+      label: "Settings",
+      icon: "material-symbols:settings-outline",
+    },
+    {
+      label: "Support",
+      icon: "i-heroicons-question-mark-circle",
+    },
+    {
+      label: "Logout",
+      icon: "bitcoin-icons:exit-filled",
+      click: () => {
+        logout();
+      },
+    },
+  ],
 ];
 </script>

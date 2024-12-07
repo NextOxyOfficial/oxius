@@ -1,6 +1,6 @@
 <template>
   <div class="py-10">
-    <PublicSection>
+    <PublicSection id="classified-services">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-12">Classified Services</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -30,12 +30,13 @@
         </div>
       </UContainer>
     </PublicSection>
-    <PublicSection>
+    <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-12 text-center">
           Micro Gigs (Quick Earn)
         </h2>
         <UCard
+          v-if="user?.user"
           class="w-[700px] mx-auto mb-8 bg-primary/10"
           :ui="{
             rounded: 'rounded-2xl',
@@ -320,6 +321,7 @@
 <script setup>
 const isOpen = ref(false);
 const { get } = useApi();
+const { user } = useAuth();
 const services = ref([]);
 const microGigs = ref([{}, {}]);
 
@@ -329,9 +331,7 @@ async function getClassifiedCategories() {
   console.log(res);
 }
 
-onMounted(() => {
-  setTimeout(() => {
-    getClassifiedCategories();
-  }, 100);
+setTimeout(() => {
+  getClassifiedCategories();
 });
 </script>
