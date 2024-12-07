@@ -15,7 +15,6 @@
     </template>
     <template v-else>
       <PublicHeader />
-
       <slot />
       <PublicFooter />
     </template>
@@ -33,7 +32,6 @@ onMounted(() => {
       loader.value = false;
     } else {
       jwtLogin();
-      navigateTo("/");
       loader.value = false;
     }
   }, 1000);

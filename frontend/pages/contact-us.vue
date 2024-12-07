@@ -1,6 +1,7 @@
 <template>
   <UContainer class="mt-10 mb-16">
-    <h2 class="font-bold text-3xl mt-20 mb-12 text-center">Customer Support</h2>
+    <h1 class="text-center text-4xl my-8">Customer Support</h1>
+    <UDivider label="" class="mb-8" />
     <p class="text-center text-xl">
       Lorem, ipsum dolor sit amet consectetur adipisicing elit.
     </p>

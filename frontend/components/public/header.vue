@@ -53,12 +53,24 @@
 <script setup>
 const { user, logout } = useAuth();
 const openMenu = ref(false);
-
+const router = useRouter();
 const open = ref(true);
 
 defineShortcuts({
   o: () => (open.value = !open.value),
 });
+
+// if sidebar clicked and route changes, close sidebar if opened
+watch(router.currentRoute, () => {
+  if (openMenu.value) {
+    openMenu.value = false;
+  }
+});
+// useSeoMeta({
+// 	ogImage: "/static/favicon.ico",
+// 	favicon: "/static/favicon.ico",
+// 	title: "Easy Business Manager",
+// });
 const links = [
   {
     label: "Home",
@@ -84,24 +96,22 @@ const accountLinks = [
     {
       label: "Profile",
       icon: "i-heroicons-user",
-    },
-    {
-      label: "Payments",
-      icon: "i-heroicons-wallet",
-      to: "/getting-started/installation",
+      to: "/my-account/",
     },
     {
       label: "Upload Center",
       icon: "material-symbols:drive-folder-upload-outline-sharp",
-      to: "/components/vertical-navigation",
+      to: "/upload-center/",
     },
     {
       label: "Settings",
       icon: "material-symbols:settings-outline",
+      to: "/settings/",
     },
     {
       label: "Support",
       icon: "i-heroicons-question-mark-circle",
+      to: "/contact-us/",
     },
     {
       label: "Logout",
