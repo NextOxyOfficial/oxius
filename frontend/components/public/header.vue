@@ -2,9 +2,9 @@
   <div class="my-3">
     <UContainer>
       <div class="flex items-center justify-between gap-6">
-        <a href="/">
+        <NuxtLink to="/">
           <NuxtImg src="/images/logo.jpg" alt="Logo" />
-        </a>
+        </NuxtLink>
         <UHorizontalNavigation
           :links="links"
           class="border-b border-gray-200 dark:border-gray-800 text-lg"
@@ -13,12 +13,30 @@
             label: 'text-base',
           }"
         />
-        <div>
+
+        <div v-if="!user">
           <UButton to="/auth/login/" label="Login/Register" color="gray">
             <template #trailing>
               <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
             </template>
           </UButton>
+        </div>
+        <div v-else class="flex gap-1">
+          <UButton
+            to="/my-account/"
+            size="md"
+            color="primary"
+            variant="outline"
+            label="My Account"
+          />
+          <UButton
+            icon="i-heroicons-bell-solid"
+            size="md"
+            color="primary"
+            variant="solid"
+            label="Logout"
+            @click="logout"
+          />
         </div>
       </div>
     </UContainer>
@@ -26,6 +44,13 @@
 </template>
 
 <script setup>
+const { user, logout } = useAuth();
+
+const open = ref(true);
+
+defineShortcuts({
+  o: () => (open.value = !open.value),
+});
 const links = [
   {
     label: "Home",

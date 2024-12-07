@@ -9,7 +9,7 @@ export function useAuth() {
 
   const jwtLogin = async () => {
     const { data, pending, error, refresh } = await useFetch<any>(
-      baseURL + "/api/auth/validate-token/",
+      baseURL + "/auth/validate-token/",
       {
         headers: {
           Authorization: `Bearer ${jwt.value}`,
@@ -25,6 +25,7 @@ export function useAuth() {
       const jwt = useCookie("jwt");
       jwt.value = data.value.access;
       const username = useCookie("username");
+
       if (data.value.face) {
         username.value = data.value.user.username;
       }
@@ -33,7 +34,7 @@ export function useAuth() {
   const login = async (email: string, password: string) => {
     try {
       const { data, pending, error } = await useFetch<any>(
-        baseURL + "/api/auth/login/",
+        baseURL + "/auth/login/",
         {
           method: "POST",
           body: JSON.stringify({ email, password }),

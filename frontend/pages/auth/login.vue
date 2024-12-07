@@ -28,14 +28,14 @@
 
 <script setup>
 const login = ref(true);
-// const { user, isAuthenticated } = useAuth();
+const { user, isAuthenticated } = useAuth();
 
-// onMounted(() => {
-//   if (user) {
-//     console.log(user);
-//     navigateTo("/");
-//   }
-// });
+onMounted(() => {
+  if (user) {
+    console.log(user);
+    navigateTo("/");
+  }
+});
 </script>
 
 <style></style>

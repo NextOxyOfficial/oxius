@@ -7,14 +7,14 @@
     >
       <div class="mb-6">
         <label class="block text-gray-700 text-md font-medium mb-2" for="email">
-          EMAIL
+          Email
         </label>
         <input
           class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
           id="email"
           type="text"
-          placeholder="email"
-          v-model="email"
+          placeholder="abc@example.com"
+          v-model="username"
         />
       </div>
 
@@ -23,7 +23,7 @@
           class="block text-gray-700 text-md font-medium mb-2"
           for="password"
         >
-          PASSWORD
+          Password
         </label>
         <input
           class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
@@ -54,31 +54,35 @@
 <script setup>
 const { login } = useAuth();
 const toast = useToast();
-const email = ref("");
+const username = ref("");
 const password = ref("");
 const btnDisabled = ref(false);
 
 async function handleLogin() {
   btnDisabled.value = true;
-  const res = await login(email.value, password.value);
+  const res = await login(username.value, password.value);
   console.log(res);
-
   if (res.loggedIn) {
-    if (res.user_type == "user") {
-      if (res.is_superuser) {
-        navigateTo("/dashboard/admin");
-      } else {
-        navigateTo("/dashboard/user");
-      }
-    } else if (res.user_type == "admin") {
-      navigateTo("/dashboard/admin");
-    } else if (res.user_type == "vendor") {
-      navigateTo("/dashboard/vendor");
-    }
+    navigateTo("/");
     toast.add({ title: "Login successful!" });
-  } else {
-    toast.add({ title: "Invalid credentials", status: "error" });
   }
+
+  // if (res.loggedIn) {
+  //   if (res.user_type == "user") {
+  //     if (res.is_superuser) {
+  //       navigateTo("/dashboard/admin");
+  //     } else {
+  //       navigateTo("/dashboard/user");
+  //     }
+  //   } else if (res.user_type == "admin") {
+  //     navigateTo("/dashboard/admin");
+  //   } else if (res.user_type == "vendor") {
+  //     navigateTo("/dashboard/vendor");
+  //   }
+  //   toast.add({ title: "Login successful!" });
+  // } else {
+  //   toast.add({ title: "Invalid credentials", status: "error" });
+  // }
   btnDisabled.value = false;
 }
 </script>
