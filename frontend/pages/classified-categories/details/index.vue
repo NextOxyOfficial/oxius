@@ -68,7 +68,9 @@
             </p>
 
             <div class="flex items-center gap-3 my-3">
-              <span> <UIcon name="logos:facebook" class="w-5 h-5" /> </span>
+              <span>
+                <UIcon name="logos:facebook" class="w-5 h-5" />
+              </span>
               <span>
                 <UIcon name="skill-icons:instagram" class="w-5 h-5" />
               </span>
