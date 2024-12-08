@@ -91,7 +91,7 @@
                 style="max-width: 200px; margin: 5px"
               />
               <div
-                class="absolute top-2 right-2 rounded-sm bg-white"
+                class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
                 @click="deleteUpload(i)"
               >
                 <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
@@ -118,60 +118,65 @@
             class="max-w-72"
           />
         </UFormGroup> -->
-        <UFormGroup label="Target Country">
-          <USelectMenu
-            color="white"
-            size="md"
-            multiple
-            placeholder="Target Country"
-            :options="['Bangladesh']"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-          />
-        </UFormGroup>
-        <UFormGroup label="Target Device">
-          <USelectMenu
-            color="white"
-            size="md"
-            placeholder="Target Country"
-            multiple
-            :options="['All', 'iPhone', 'Android', 'Windows', 'Linux']"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-          />
-        </UFormGroup>
-        <UFormGroup label="Target Network">
-          <USelectMenu
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-            :options="['WiFi', 'Cellular']"
-            multiple
-            placeholder="Select people"
-          />
-        </UFormGroup>
-        <UFormGroup label="Category">
-          <USelectMenu
-            color="white"
-            size="md"
-            :options="['Youtube', 'Facebook']"
-            placeholder="Target Country"
-            multiple
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-          />
-        </UFormGroup>
+        <div class="grid md:grid-cols-2 gap-4">
+          <UFormGroup label="Target Country">
+            <USelectMenu
+              color="white"
+              size="md"
+              multiple
+              placeholder="Target Country"
+              :options="['Bangladesh']"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+            />
+          </UFormGroup>
+          <UFormGroup label="Target Device">
+            <USelectMenu
+              color="white"
+              size="md"
+              placeholder="Target Device"
+              multiple
+              :options="['All', 'iPhone', 'Android', 'Windows', 'Linux']"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+            />
+          </UFormGroup>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <UFormGroup label="Target Network">
+            <USelectMenu
+              size="md"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+              :options="['WiFi', 'Cellular']"
+              multiple
+              placeholder="Target Network"
+            />
+          </UFormGroup>
+          <UFormGroup label="Category">
+            <USelectMenu
+              color="white"
+              size="md"
+              :options="['Youtube', 'Facebook']"
+              placeholder="Target Country"
+              multiple
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+            />
+          </UFormGroup>
+        </div>
 
         <div class="text-center">
           <UButton
