@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import ClassifiedCategory,User,MicroGigPost,Balance
-from .serializers import ClassifiedServicesSerializer,CustomTokenObtainPairSerializer,UserSerializer,MicroGigPostSerializer,BalanceSerializer
+from .serializers import ClassifiedServicesSerializer,CustomTokenObtainPairSerializer,UserSerializer,MicroGigPostSerializer,MicroGigPostDetailsSerializer,BalanceSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -111,8 +111,12 @@ class GetMicroGigs(generics.ListCreateAPIView):
         #     "data": serializer.data,
         # }
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
 
+@api_view(('GET',))
+def gigDetails(request, gid):
+    serializer = MicroGigPostDetailsSerializer(MicroGigPost.objects.get(id=gid))
+    return Response(serializer.data, status=status.HTTP_200_OK)
+  
 class UserBalance(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BalanceSerializer
