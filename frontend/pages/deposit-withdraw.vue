@@ -35,6 +35,9 @@
             }"
           />
         </div>
+        <div class="mt-3">
+          <UCheckbox name="notifications" label="I accept terms & policy." />
+        </div>
         <div class="my-2 space-x-3">
           <UButton size="sm">Deposit</UButton>
           <UButton color="gray" variant="solid">Withdraw</UButton>
@@ -59,50 +62,61 @@
           </td>
         </tr>
       </template> -->
+      <template #status-data="{ row }">
+        <p
+          :class="
+            row.status.toLowerCase() === 'pending'
+              ? 'text-yellow-500'
+              : 'text-green-500'
+          "
+        >
+          {{ row.status }}
+        </p>
+      </template>
     </UTable>
   </UContainer>
 </template>
 
 <script setup>
-const methods = ['bkash', 'nagad', 'rocket', 'upay'];
+const methods = ["bkash", "nagad", "rocket", "upay"];
 const columns = [
   {
-    key: 'id',
-    label: '#ID',
+    key: "id",
+    label: "#ID",
   },
   {
-    key: 'time',
-    label: 'Time',
+    key: "time",
+    label: "Time",
   },
   {
-    key: 'deposit_withdraw',
-    label: 'Deposit/Withdraw',
+    key: "deposit_withdraw",
+    label: "Deposit/Withdraw",
   },
   {
-    key: 'amount',
-    label: 'Amount',
+    key: "amount",
+    label: "Amount",
   },
   {
-    key: 'status',
-    label: 'Status',
+    key: "status",
+    label: "Status",
   },
 ];
 
 const statements = [
   {
     id: 1,
-    time: '2:35',
-    deposit_withdraw: 'Deposit',
-    amount: '300',
-    status: 'Pending',
-    class: 'text-yellow-400',
+    time: "2:35",
+    deposit_withdraw: "Deposit",
+    amount: "300",
+    status: "Pending",
+    class: "text-yellow-400",
   },
   {
     id: 2,
-    time: '2:35',
-    deposit_withdraw: 'Withdraw',
-    amount: '300',
-    status: 'Completed',
+    time: "2:35",
+    deposit_withdraw: "Withdraw",
+    amount: "300",
+    status: "Completed",
   },
 
   // function getStatusClass(status) {
