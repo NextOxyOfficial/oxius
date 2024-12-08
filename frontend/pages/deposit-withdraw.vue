@@ -39,8 +39,10 @@
           <UCheckbox name="notifications" label="I accept terms & policy." />
         </div>
         <div class="my-2 space-x-3">
-          <UButton size="sm">Deposit</UButton>
-          <UButton color="gray" variant="solid">Withdraw</UButton>
+          <UButton size="sm" @click="deposit">Deposit</UButton>
+          <UButton color="gray" @click="withdraw" variant="solid"
+            >Withdraw</UButton
+          >
         </div>
       </div>
     </div>
@@ -128,4 +130,14 @@ const statements = [
   //   return ''; // Default class
   // },
 ];
+
+const deposit = () => {
+  // Add deposit logic here
+  console.log("Deposit clicked");
+};
+
+const withdraw = () => {
+  // Add withdraw logic here
+  console.log("Withdraw clicked");
+};
 </script>

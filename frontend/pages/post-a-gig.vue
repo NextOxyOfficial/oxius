@@ -121,9 +121,9 @@
         <div class="grid md:grid-cols-2 gap-4">
           <UFormGroup label="Target Country">
             <USelectMenu
+              v-model="form.target_country"
               color="white"
               size="md"
-              multiple
               placeholder="Target Country"
               :options="['Bangladesh']"
               :ui="{
@@ -135,6 +135,7 @@
           </UFormGroup>
           <UFormGroup label="Target Device">
             <USelectMenu
+              v-model="form.target_device"
               color="white"
               size="md"
               placeholder="Target Device"
@@ -151,6 +152,7 @@
         <div class="grid md:grid-cols-2 gap-4">
           <UFormGroup label="Target Network">
             <USelectMenu
+              v-model="form.target_network"
               size="md"
               :ui="{
                 size: {
@@ -164,11 +166,11 @@
           </UFormGroup>
           <UFormGroup label="Category">
             <USelectMenu
+              v-model="form.category"
               color="white"
               size="md"
               :options="['Youtube', 'Facebook']"
               placeholder="Target Country"
-              multiple
               :ui="{
                 size: {
                   md: 'text-base',
@@ -198,6 +200,10 @@ const form = ref({
   price: 0,
   required_quantity: 0,
   uploads: [],
+  target_country: "",
+  target_device: "",
+  target_network: "",
+  category: "",
 });
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
