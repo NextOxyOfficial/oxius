@@ -129,7 +129,7 @@ const links = [
 				to: "/",
 			},
 			{
-				label: "About",
+				label: "About Us",
 				to: "/about",
 			},
 			{
