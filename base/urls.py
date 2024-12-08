@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GetClassifiedCategories,CustomTokenObtainPairView,TokenValidationView,register,PersonRetrieveUpdateDestroyView,update_user,GetMicroGigs,UserBalance
+from .views import GetClassifiedCategories,CustomTokenObtainPairView,TokenValidationView,register,PersonRetrieveUpdateDestroyView,update_user,GetMicroGigs,UserBalance, gigDetails
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -12,6 +12,7 @@ urlpatterns = [
   path('persons/update/<str:email>/', update_user,name='update_user'),
   path('classified-categories/',GetClassifiedCategories.as_view()),
   path('micro-gigs/',GetMicroGigs.as_view()),
+  path('micro-gigs/<str:gid>/',gigDetails),
   path('user-balance/<str:email>/',UserBalance.as_view()),
   path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
