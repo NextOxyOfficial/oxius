@@ -97,6 +97,7 @@ const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const passwordMismatch = ref(false);
+const phone = ref("");
 
 const toast = useToast();
 
@@ -120,29 +121,31 @@ async function handleSubmit() {
     email: email.value,
     password: password.value,
     username: email.value,
+    phone: phone.value,
   };
 
   try {
-    const res = await Api.post("/api/auth/register/", formData);
+    const res = await Api.post("/auth/register/", formData);
     console.log(res);
     if (res.data.message) {
       const res2 = await login(email.value, password.value);
       if (res2) {
-        toast.add({ title: res.data.message });
-        if (res2.loggedIn) {
-          if (res2.user_type == "user") {
-            if (res2.is_superuser) {
-              navigateTo("/dashboard/admin");
-            } else {
-              navigateTo("/dashboard/user");
-            }
-          } else if (res2.user_type == "admin") {
-            navigateTo("/dashboard/admin");
-          } else if (res2.user_type == "vendor") {
-            navigateTo("/dashboard/vendor");
-          }
-          toast.add({ title: "Login successful!" });
-        }
+        toast.add({ title: "Login successful!" });
+        navigateTo("/");
+        // if (res2.loggedIn) {
+        //   if (res2.user_type == "user") {
+        //     if (res2.is_superuser) {
+
+        //     } else {
+        //       navigateTo("/dashboard/user");
+        //     }
+        //   } else if (res2.user_type == "admin") {
+        //     navigateTo("/dashboard/admin");
+        //   } else if (res2.user_type == "vendor") {
+        //     navigateTo("/dashboard/vendor");
+        //   }
+        //   toast.add({ title: "Login successful!" });
+        // }
       }
     }
   } catch (error) {

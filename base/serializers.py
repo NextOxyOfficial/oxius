@@ -4,6 +4,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
 
 
 
@@ -11,7 +13,28 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # Exclude the password field for security
-        exclude = ('groups', 'user_permissions','id','password', 'nid',)
+        exclude = ('groups', 'user_permissions','id', 'nid',)
+        extra_kwargs = {
+            'password': {'write_only': True},
+            # 'username': {'read_only': True},
+        }
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise ValidationError(
+                {"error": "This email is already registered."})
+        return value
+
+    def create(self, validated_data):
+        # Hash the password
+        validated_data['password'] = make_password(validated_data['password'])
+        return User.objects.create(**validated_data)
+    def to_representation(self, instance):
+        """Customize the serialized output."""
+        representation = super().to_representation(instance)
+        # Remove the password field from the output
+        representation.pop('password', None)
+        return representation
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
     class Meta:

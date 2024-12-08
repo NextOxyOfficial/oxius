@@ -102,7 +102,7 @@
               color="black"
               variant="solid"
               label="Post A Gig"
-              @click="isOpen = true"
+              to="/post-a-gig"
             />
           </div>
         </UCard>
