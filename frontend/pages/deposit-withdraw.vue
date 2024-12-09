@@ -53,7 +53,7 @@
       </div>
     </div>
 
-    <UTable :rows="statements" :columns="columns" class="my-8" :ui="{}">
+    <UTable :rows="statements" :columns="columns" class="my-8">
       <template #caption>
         <caption class="text-center text-3xl font-semibold mb-4">
           Deposit/Withdraw Statements
@@ -86,45 +86,46 @@
 </template>
 
 <script setup>
-const methods = ['bkash', 'nagad', 'rocket', 'upay'];
+const toast = useToast();
+const methods = ["bkash", "nagad", "rocket", "upay"];
 const columns = [
   {
-    key: 'id',
-    label: '#ID',
+    key: "id",
+    label: "#ID",
   },
   {
-    key: 'time',
-    label: 'Time',
+    key: "time",
+    label: "Time",
   },
   {
-    key: 'deposit_withdraw',
-    label: 'Deposit/Withdraw',
+    key: "deposit_withdraw",
+    label: "Deposit/Withdraw",
   },
   {
-    key: 'amount',
-    label: 'Amount',
+    key: "amount",
+    label: "Amount",
   },
   {
-    key: 'status',
-    label: 'Status',
+    key: "status",
+    label: "Status",
   },
 ];
 
 const statements = [
   {
     id: 1,
-    time: '2:35',
-    deposit_withdraw: 'Deposit',
-    amount: '300',
-    status: 'Pending',
-    class: 'text-yellow-400',
+    time: "2:35",
+    deposit_withdraw: "Deposit",
+    amount: "300",
+    status: "Pending",
+    class: "text-yellow-400",
   },
   {
     id: 2,
-    time: '2:35',
-    deposit_withdraw: 'Withdraw',
-    amount: '300',
-    status: 'Completed',
+    time: "2:35",
+    deposit_withdraw: "Withdraw",
+    amount: "300",
+    status: "Completed",
   },
 
   // function getStatusClass(status) {
@@ -139,11 +140,11 @@ const statements = [
 
 const deposit = () => {
   // Add deposit logic here
-  console.log("Deposit clicked");
+  toast.add({ title: "Deposit clicked" });
 };
 
 const withdraw = () => {
   // Add withdraw logic here
-  console.log("Withdraw clicked");
+  toast.add({ title: "Withdraw clicked" });
 };
 </script>

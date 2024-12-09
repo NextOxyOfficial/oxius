@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ClassifiedCategory,User,MicroGigCategory,MicroGigPostMedia,MicroGigPost,MicroGigPostTask, Balance,PendingTask,TargetCountry,TargetDevice,TargetNetwork
+from .models import *
 
 
 admin.site.register(User)
@@ -14,3 +14,4 @@ admin.site.register(PendingTask)
 admin.site.register(TargetCountry)
 admin.site.register(TargetDevice)
 admin.site.register(TargetNetwork)
+admin.site.register(ClassifiedCategoryPost)

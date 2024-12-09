@@ -18,6 +18,7 @@
       <slot />
       <PublicFooter />
     </template>
+    <UNotifications />
   </div>
 </template>
 

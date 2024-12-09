@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h1 class="text-center text-4xl my-8">Post A Gig</h1>
+      <h1 class="text-center text-4xl my-8">Add A Classified Post</h1>
       <UDivider label="" class="mb-8" />
       <form
         action="#"
@@ -9,7 +9,7 @@
         @submit.prevent="handlePostGig"
       >
         <UFormGroup label="Title">
-          <UInput
+          <UTextarea
             type="text"
             size="md"
             color="white"
@@ -24,47 +24,9 @@
             }"
           >
             <span class="absolute left-2 top-2">I Need</span>
-          </UInput>
+          </UTextarea>
         </UFormGroup>
-        <div class="flex gap-4 items-center">
-          <UFormGroup label="Budget Per Action">
-            <UInput
-              icon="i-mdi:currency-bdt"
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              placeholder="2.0"
-              class="max-w-40"
-              v-model="form.price"
-            />
-          </UFormGroup>
-          <UFormGroup label="Required Quantity">
-            <UInput
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              placeholder="10"
-              class="max-w-40"
-              v-model="form.required_quantity"
-            />
-          </UFormGroup>
-          <UFormGroup label="*">
-            <p>=</p>
-          </UFormGroup>
-          <UFormGroup label="Total Cost">
-            <p>{{ form.price * form.required_quantity }}</p>
-          </UFormGroup>
-        </div>
+        <div class="flex gap-4 items-center"></div>
         <UFormGroup label="Instruction">
           <UTextarea
             color="white"
@@ -80,6 +42,40 @@
             v-model="form.instruction"
           />
         </UFormGroup>
+        <div class="grid md:grid-cols-2 gap-4">
+          <UFormGroup label="Category">
+            <USelectMenu
+              v-model="form.category"
+              color="white"
+              size="md"
+              :options="categories"
+              placeholder="Target Category"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+              option-attribute="title"
+              value-attribute="id"
+            />
+          </UFormGroup>
+          <UFormGroup label="Price">
+            <UInput
+              icon="i-mdi:currency-bdt"
+              type="text"
+              size="md"
+              color="white"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+              placeholder="2.0"
+              class="max-w-40"
+              v-model="form.price"
+            />
+          </UFormGroup>
+        </div>
         <UFormGroup label="Upload Photo/Video">
           <input
             type="file"
@@ -124,73 +120,15 @@
             class="max-w-72"
           />
         </UFormGroup> -->
-        <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Target Country">
-            <USelectMenu
-              v-model="form.target_country"
+        <div>
+          <UFormGroup label="Location">
+            <UTextarea
+              v-model="form.location"
               color="white"
-              size="md"
-              placeholder="Target Country"
-              :options="country"
-              multiple
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="title"
-              value-attribute="id"
-            />
-          </UFormGroup>
-          <UFormGroup label="Target Device">
-            <USelectMenu
-              v-model="form.target_device"
-              color="white"
-              size="md"
-              placeholder="Target Device"
-              multiple
-              :options="device"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="title"
-              value-attribute="id"
-            />
-          </UFormGroup>
-        </div>
-        <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Target Network">
-            <USelectMenu
-              v-model="form.target_network"
-              size="md"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              :options="network"
-              multiple
-              placeholder="Target Network"
-              option-attribute="title"
-              value-attribute="id"
-            />
-          </UFormGroup>
-          <UFormGroup label="Category">
-            <USelectMenu
-              v-model="form.category"
-              color="white"
-              size="md"
-              :options="categories"
-              placeholder="Target Category"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="title"
-              value-attribute="id"
+              variant="outline"
+              class="w-full"
+              resize
+              placeholder="Chewriya, Kushtia"
             />
           </UFormGroup>
         </div>
@@ -214,22 +152,17 @@
 const { get, post } = useApi();
 const toast = useToast();
 const categories = ref([]);
-const network = ref([]);
-const device = ref([]);
-const country = ref([]);
+
 const mediaPreview = ref([]);
 
 const form = ref({
   price: 0,
-  required_quantity: 0,
   instruction: "",
-  // title: "",
+  title: "",
   image: null, // This will be the file object when uploaded, not the preview URL yet.
   medias: [],
-  target_country: "",
-  target_device: "",
-  target_network: "",
   category: "",
+  location: "",
 });
 
 function handleFileUpload(event, field) {
@@ -258,17 +191,14 @@ async function handlePostGig() {
   const formData = new FormData();
   formData.append("title", form.value.title);
   formData.append("price", form.value.price);
-  formData.append("required_quantity", form.value.required_quantity);
   formData.append("instructions", form.value.instruction);
   formData.append("image", form.value.image);
-  formData.append("target_country", form.value.target_country);
-  formData.append("target_device", form.value.target_device);
-  formData.append("target_network", form.value.target_network);
   formData.append("category", form.value.category);
   formData.append("medias", form.value.medias); // Not needed as we are sending the image separately
-  console.log(form.value);
+  formData.append("location", form.value.location); // Not needed as we are sending the image separately
+  console.log(formData);
 
-  const res = await post("/post-micro-gigs/", formData);
+  const res = await post("/classified-categories-post/", formData);
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "MicroGig Added" });
@@ -277,22 +207,11 @@ async function handlePostGig() {
 
 async function getMicroGigsCategory() {
   try {
-    const [
-      categoriesResponse,
-      devicesResponse,
-      networksResponse,
-      countriesResponse,
-    ] = await Promise.all([
-      get("/micro-gigs-categories/"),
-      get("/target-device/"),
-      get("/target-network/"),
-      get("/target-country/"),
+    const [categoriesResponse] = await Promise.all([
+      get("/classified-categories/"),
     ]);
 
     categories.value = categoriesResponse.data;
-    device.value = devicesResponse.data;
-    network.value = networksResponse.data;
-    country.value = countriesResponse.data;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }

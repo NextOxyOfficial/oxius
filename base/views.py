@@ -119,7 +119,7 @@ def post_micro_gigs(request):
     print(data)
 
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(user=request.user)
         
         return Response(
             {'message': 'Person Updated successfully', 'data': serializer.data},
@@ -132,7 +132,40 @@ def post_micro_gigs(request):
     )
 
 
-@api_view(('GET',))
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def post_classified_service(request):
+    print(request.user)
+    data = request.data.copy()  # Make a mutable copy of the data
+    data['user'] = request.user.id  # Associate the authenticated user
+    serializer = ClassifiedPostSerializer(data=data)
+    print(data)
+
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        
+        return Response(
+            {'message': 'Person Updated successfully', 'data': serializer.data},
+            status=status.HTTP_201_CREATED
+        )
+    print(serializer.errors)    
+    return Response(
+        {'message': 'Validation failed', 'errors': serializer.errors},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+@api_view(['GET'])
+def classifiedCategoryPosts(request, cid):
+    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.filter(category=cid),many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def classifiedCategoryPost(request, pid):
+    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.get(id=pid))
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
 def gigDetails(request, gid):
     serializer = MicroGigPostDetailsSerializer(MicroGigPost.objects.get(id=gid))
     return Response(serializer.data, status=status.HTTP_200_OK)

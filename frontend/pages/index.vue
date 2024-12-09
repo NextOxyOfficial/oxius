@@ -52,7 +52,7 @@
                   />
                   Balance :
                   <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
-                    microGigs[0].user.balance
+                    microGigs[0]?.user.balance
                   }}</span
                 >
               </h3>
@@ -61,7 +61,7 @@
               <h3 class="text-xl font-bold inline-flex items-center">
                 Pending Task:
                 <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
-                  microGigs[0].user.pending_balance
+                  microGigs[0]?.user.pending_balance
                 }}
               </h3>
               <UButton
@@ -80,7 +80,7 @@
               color="primary"
               variant="solid"
               label="Deposit / Withdraw"
-              @click="isOpen = true"
+              to="/deposit-withdraw/"
             />
             <UButton
               icon="i-material-symbols:mark-email-unread-outline"
@@ -88,7 +88,7 @@
               color="primary"
               variant="solid"
               label="Inbox"
-              @click="isOpen = true"
+              to="/inbox/"
             />
             <UButton
               icon="i-material-symbols:list-rounded"
@@ -118,13 +118,16 @@
             <div class="w-60 bg-slate-50/70">
               <ul class="py-2">
                 <li>
-                  <p class="px-2 font-semibold pb-2">All Categories</p>
+                  <p
+                    class="px-2 font-semibold pb-2"
+                    @click.prevent="selectedCategory = null"
+                  >
+                    All Categories
+                  </p>
                   <UDivider label="" class="mb-2 px-4" />
                 </li>
-                {{
-                  categoryArray
-                }}
-                <li v-for="microGig in microGigs" :key="microGig.id">
+
+                <li v-for="category in categoryArray" :key="category.id">
                   <UButton
                     :ui="{
                       rounded: '',
@@ -133,14 +136,15 @@
                     variant="ghost"
                     color="white"
                     class="w-full text-base px-4 py-0 font-normal"
-                    >{{ microGig.category_details.title }} (15)</UButton
-                  >
+                    @click.prevent="selectCategory(category.category)"
+                    >{{ category.category }} ({{ category.count }})
+                  </UButton>
                 </li>
               </ul>
             </div>
             <div class="space-y-[0.5px] flex-1">
               <UCard
-                v-for="(gig, i) in microGigs"
+                v-for="(gig, i) in filteredMicroGigs"
                 :key="i"
                 :ui="{
                   rounded: '',
@@ -201,7 +205,6 @@
           </div>
         </UCard>
       </UContainer>
-      {{ categoryCounts }}
     </PublicSection>
     <UModal
       v-model="isOpen"
@@ -221,7 +224,8 @@ const { get } = useApi();
 const { user } = useAuth();
 const services = ref([]);
 const microGigs = ref([]);
-
+const categoryArray = ref([]);
+const selectedCategory = ref(null);
 const categoryCounts = microGigs.value.reduce((acc, gig) => {
   const category = gig.category;
   if (!acc[category]) {
@@ -231,29 +235,47 @@ const categoryCounts = microGigs.value.reduce((acc, gig) => {
   }
   return acc;
 }, {});
-
 // Convert the result into an array of objects
-const categoryArray = Object.entries(categoryCounts).map(
-  ([category, count]) => ({
-    category,
-    count,
-  })
+categoryArray.value = Object.entries(categoryCounts).map(
+  ([category, count]) => ({ category, count })
 );
-
 async function getClassifiedCategories() {
-  const res = await get("/classified-categories/");
-  services.value = res.data;
-  const res2 = await get("/micro-gigs/");
-  microGigs.value = res2.data;
-  console.log(res2);
+  const [serviceResponse, gigResponse] = await Promise.all([
+    get("/classified-categories/"),
+    get("/micro-gigs/"),
+  ]);
+  services.value = serviceResponse.data;
+  microGigs.value = gigResponse.data;
+  const categoryCounts = microGigs.value.reduce((acc, gig) => {
+    const category = gig.category_details.title;
+    if (!acc[category]) {
+      acc[category] = 1;
+    } else {
+      acc[category]++;
+    }
+    return acc;
+  }, {});
+  categoryArray.value = Object.entries(categoryCounts).map(
+    ([category, count]) => ({ category, count })
+  );
 }
 const previewGid = ref();
 function showGig(gid) {
   previewGid.value = gid;
   isOpen.value = true;
 }
-
 setTimeout(() => {
   getClassifiedCategories();
-});
+}, 20); // Filtered microGigs based on selected category
+const filteredMicroGigs = computed(() => {
+  if (!selectedCategory.value) {
+    return microGigs.value; // Show all products if no category is selected
+  }
+  return microGigs.value.filter(
+    (gig) => gig.category_details?.title === selectedCategory.value
+  );
+}); // Method to select a category
+const selectCategory = (category) => {
+  selectedCategory.value = category || null;
+};
 </script>
