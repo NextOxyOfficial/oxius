@@ -6,13 +6,19 @@
       <p
         class="text-lg bg-green-100 border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
       >
-        Available Balance: 600taka
+        <span class="inline-flex items-center"
+          >Available Balance:&nbsp;
+          <UIcon name="i-mdi:currency-bdt" class="" />500</span
+        >
       </p>
       <div class="text-lg">
         <p
           class="text-lg bg-green-100 border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
         >
-          Total Earnings: 500taka
+          <span class="inline-flex items-center"
+            >Total Earnings:&nbsp;
+            <UIcon name="i-mdi:currency-bdt" class="" />500</span
+          >
         </p>
       </div>
     </div>
@@ -80,45 +86,45 @@
 </template>
 
 <script setup>
-const methods = ["bkash", "nagad", "rocket", "upay"];
+const methods = ['bkash', 'nagad', 'rocket', 'upay'];
 const columns = [
   {
-    key: "id",
-    label: "#ID",
+    key: 'id',
+    label: '#ID',
   },
   {
-    key: "time",
-    label: "Time",
+    key: 'time',
+    label: 'Time',
   },
   {
-    key: "deposit_withdraw",
-    label: "Deposit/Withdraw",
+    key: 'deposit_withdraw',
+    label: 'Deposit/Withdraw',
   },
   {
-    key: "amount",
-    label: "Amount",
+    key: 'amount',
+    label: 'Amount',
   },
   {
-    key: "status",
-    label: "Status",
+    key: 'status',
+    label: 'Status',
   },
 ];
 
 const statements = [
   {
     id: 1,
-    time: "2:35",
-    deposit_withdraw: "Deposit",
-    amount: "300",
-    status: "Pending",
-    class: "text-yellow-400",
+    time: '2:35',
+    deposit_withdraw: 'Deposit',
+    amount: '300',
+    status: 'Pending',
+    class: 'text-yellow-400',
   },
   {
     id: 2,
-    time: "2:35",
-    deposit_withdraw: "Withdraw",
-    amount: "300",
-    status: "Completed",
+    time: '2:35',
+    deposit_withdraw: 'Withdraw',
+    amount: '300',
+    status: 'Completed',
   },
 
   // function getStatusClass(status) {
