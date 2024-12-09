@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ClassifiedCategory,User,MicroGigPostMedia, MicroGigPost,MicroGigCategory,Balance
+from .models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
@@ -45,6 +45,18 @@ class MicroGigCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigCategory
         fields = '__all__'
+class TargetNetworkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TargetNetwork
+        fields = '__all__'
+class TargetDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TargetDevice
+        fields = '__all__'
+class TargetCountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TargetCountry
+        fields = '__all__'
 
 
 class MicroGigPostSerializer(serializers.ModelSerializer):
@@ -53,6 +65,8 @@ class MicroGigPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigPost
         fields = '__all__'
+        depth = 1
+        
 class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigPost

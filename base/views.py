@@ -2,15 +2,15 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import ClassifiedCategory,User,MicroGigPost,Balance
-from .serializers import ClassifiedServicesSerializer,CustomTokenObtainPairSerializer,UserSerializer,MicroGigPostSerializer,MicroGigPostDetailsSerializer,BalanceSerializer
+from .models import *
+from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes, api_view
 from rest_framework.exceptions import NotFound
 
 # Create your views here.
@@ -35,8 +35,8 @@ def register(request):
         status=status.HTTP_400_BAD_REQUEST
     )
 
-permission_classes = [IsAuthenticated]
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def update_user(request,email):
     print(request.data)
     data = request.data
@@ -106,11 +106,31 @@ class GetMicroGigs(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        # data = {
-        #     "message": "Product details fetched successfully",
-        #     "data": serializer.data,
-        # }
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def post_micro_gigs(request):
+    print(request.user)
+    data = request.data.copy()  # Make a mutable copy of the data
+    data['user'] = request.user.id  # Associate the authenticated user
+    serializer = MicroGigPostSerializer(data=data)
+    print(data)
+
+    if serializer.is_valid():
+        serializer.save()
+        
+        return Response(
+            {'message': 'Person Updated successfully', 'data': serializer.data},
+            status=status.HTTP_201_CREATED
+        )
+    print(serializer.errors)    
+    return Response(
+        {'message': 'Validation failed', 'errors': serializer.errors},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
 
 @api_view(('GET',))
 def gigDetails(request, gid):
@@ -122,6 +142,26 @@ class UserBalance(generics.ListCreateAPIView):
     serializer_class = BalanceSerializer
     queryset = Balance.objects.all()
     lookup_field = 'email'
+
+class GetMicroGigCategory(generics.ListAPIView):
+    queryset = MicroGigCategory.objects.all()
+    serializer_class = MicroGigCategorySerializer
+    permission_classes = [AllowAny]
+
+class GetTargetNetwork(generics.ListAPIView):
+    queryset = TargetNetwork.objects.all()
+    serializer_class = TargetNetworkSerializer
+    permission_classes = [AllowAny]
+
+class GetTargetDevice(generics.ListAPIView):
+    queryset = TargetDevice.objects.all()
+    serializer_class = TargetDeviceSerializer
+    permission_classes = [AllowAny]
+
+class GetTargetCountry(generics.ListAPIView):
+    queryset = TargetCountry.objects.all()
+    serializer_class = TargetCountrySerializer
+    permission_classes = [AllowAny]
     
     
 class CustomTokenObtainPairView(TokenObtainPairView):

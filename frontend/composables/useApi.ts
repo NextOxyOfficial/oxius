@@ -32,7 +32,7 @@ export function useApi() {
   };
   const post = async (endpoint: string, postData: object | FormData) => {
     const { data, error } = await useFetch(baseURL + endpoint, {
-      headers: postData instanceof FormData ? {} : head.value, // Skip headers for FormData
+      headers: head.value, // Skip headers for FormData
       method: "post",
       body: postData,
     });

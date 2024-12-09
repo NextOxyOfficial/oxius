@@ -54,6 +54,30 @@ class MicroGigCategory(models.Model):
     def __str__(self):
         return self.title
 
+class TargetCountry(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
+    
+class TargetDevice(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
+
+class TargetNetwork(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
+
 class MicroGigPostMedia(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     video = models.FileField(upload_to='videos/', blank=True, null=True)
@@ -72,23 +96,9 @@ class MicroGigPost(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
     instructions = models.TextField(blank=True, null=True,default="")
-    NETWORK_CHOICES = [
-        ('wifi', 'WiFi'),
-        ('cellular', 'Cellular'),
-    ]
-    quality = models.CharField(max_length=10, choices=NETWORK_CHOICES)
-    TARGET_COUNTRY = [
-        ('bangladesh', 'Bangladesh'),
-    ]
-    target_country = models.CharField(max_length=10, choices=TARGET_COUNTRY,default='bangladesh')
-    TARGET_DEVICE = [
-        ('all', 'All'),
-        ('iphone', 'iPhone'),
-        ('android', 'Android'),
-        ('windows', 'Windows'),
-        ('linux', 'Linux'),
-    ]
-    target_device = models.CharField(max_length=10, choices=TARGET_DEVICE,default='all')
+    target_network = models.ManyToManyField(TargetNetwork,blank=True, null=True)
+    target_country = models.ManyToManyField(TargetCountry,blank=True, null=True)
+    target_device = models.ManyToManyField(TargetDevice,blank=True, null=True)
     total_cost = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     accepted_terms = models.BooleanField(default=True)
     accepted_privacy = models.BooleanField(default=True)
