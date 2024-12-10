@@ -31,6 +31,19 @@ class User(AbstractUser):
 
   def __str__(self):
       return self.email
+  
+class Logo(models.Model):
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    def __str__(self):
+        return f"Site Logo"
+    
+class AdminNotice(models.Model):
+    title = models.CharField(max_length=256)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.title
 
 
 class ClassifiedCategory(models.Model):
@@ -51,21 +64,15 @@ class ClassifiedCategoryPostMedia(models.Model):
       return str(self.id)
 
 class ClassifiedCategoryPost(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='classified_categories_posts')
-    category = models.ForeignKey(ClassifiedCategory,on_delete=models.CASCADE,related_name='classified_categories_posts')
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='classified_categories_post')
+    category = models.ForeignKey(ClassifiedCategory,on_delete=models.CASCADE,related_name='classified_categories_post')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
     location = models.TextField(max_length=512)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-    # required_quantity= models.IntegerField()
-    # filled_quantity = models.IntegerField(default=0)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     medias = models.ManyToManyField(ClassifiedCategoryPostMedia, null=True, blank=True)
     instructions = models.TextField(blank=True, null=True,default="")
-    # target_network = models.ManyToManyField(TargetNetwork,blank=True, null=True)
-    # target_country = models.ManyToManyField(TargetCountry,blank=True, null=True)
-    # target_device = models.ManyToManyField(TargetDevice,blank=True, null=True)
-    # total_cost = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     accepted_terms = models.BooleanField(default=True)
     accepted_privacy = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

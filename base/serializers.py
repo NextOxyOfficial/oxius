@@ -79,10 +79,34 @@ class BalanceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ClassifiedPostSerializer(serializers.ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(queryset=ClassifiedCategory.objects.all())
+    category_details = ClassifiedServicesSerializer(source='category', read_only=True)
+
     class Meta:
         model = ClassifiedCategoryPost
         fields = '__all__'
         depth = 1
+
+class logoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Logo
+        fields = '__all__'
+        
+class AdminNoticeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminNotice
+        fields = '__all__'
+
+    # def validate_category(self, value):
+    #     try:
+    #         category = ClassifiedCategory.objects.get(id=value)
+    #     except ClassifiedCategory.DoesNotExist:
+    #         raise serializers.ValidationError("Invalid category ID")
+    #     return category
+
+    # def create(self, validated_data):
+    #     validated_data['category'] = validated_data.pop('category')
+    #     return super().create(validated_data)
 
 
 

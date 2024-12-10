@@ -1,7 +1,9 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h2 class="text-center text-4xl my-6">Category Name</h2>
+      <h2 class="text-center text-4xl my-6">
+        {{ services[0]?.category_details.title }}
+      </h2>
       <div class="flex justify-between items-end">
         <div>
           <p class="mb-3">
@@ -11,7 +13,7 @@
               inactive-class="text-gray-500 dark:text-gray-400"
               >Home</ULink
             >
-            > Category Name
+            > {{ services[0]?.category_details.title }}
           </p>
           <USelect
             icon="i-heroicons-bell-solid"
@@ -49,7 +51,7 @@
           to="/classified-categories/new/"
         />
       </div>
-      <div class="services mt-4">
+      <div class="services mt-4" v-if="services.length">
         <UCard
           :ui="{
             background: '',
@@ -84,24 +86,24 @@
                   </div>
                   <div>
                     <h3 class="text-base font-bold mb-1.5">
-                      {{ service.title }}
+                      {{ service?.title }}
                     </h3>
 
                     <div class="flex gap-4">
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm">{{ service.location }}</span>
+                        <span class="text-sm">{{ service?.location }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
                         <span class="text-sm">{{
-                          service.category.title
+                          service?.category.title
                         }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
                         <span class="text-sm"
-                          >Posted: {{ service.created_at }}</span
+                          >Posted: {{ service?.created_at }}</span
                         >
                       </p>
                     </div>

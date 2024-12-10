@@ -237,7 +237,7 @@ function handleFileUpload(event, field) {
   files.forEach((file) => {
     const preview = URL.createObjectURL(file);
     mediaPreview.value.push({ preview });
-    form.value.medias.push(file);
+    form.value.medias.push({ file });
     form.value.image = file;
   });
 }
@@ -270,7 +270,7 @@ async function handlePostGig() {
 
   const res = await post("/post-micro-gigs/", formData);
   if (res.data) {
-    navigateTo("/");
+    // navigateTo("/");
     toast.add({ title: "MicroGig Added" });
   }
 }

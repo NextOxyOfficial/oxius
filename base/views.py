@@ -16,6 +16,16 @@ from rest_framework.exceptions import NotFound
 # Create your views here.
 
 
+@api_view(["GET"])
+def getLogo(request):
+    serializer = logoSerializer(Logo.objects.get())
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def getAdminNotice(request):
+    serializer = AdminNoticeSerializer(AdminNotice.objects.all(),many=True)
+    return Response(serializer.data)
+
 @api_view(['POST'])
 def register(request):
     """
@@ -138,6 +148,9 @@ def post_classified_service(request):
     print(request.user)
     data = request.data.copy()  # Make a mutable copy of the data
     data['user'] = request.user.id  # Associate the authenticated user
+    category_id = data.get('category')
+    if not ClassifiedCategory.objects.filter(id=category_id).exists():
+        raise ValidationError({'category': 'The specified category does not exist.'})
     serializer = ClassifiedPostSerializer(data=data)
     print(data)
 
@@ -160,8 +173,8 @@ def classifiedCategoryPosts(request, cid):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def classifiedCategoryPost(request, pid):
-    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.get(id=pid))
+def classifiedCategoryPost(request, pk):
+    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.get(id=pk))
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 

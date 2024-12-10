@@ -15,3 +15,6 @@ admin.site.register(TargetCountry)
 admin.site.register(TargetDevice)
 admin.site.register(TargetNetwork)
 admin.site.register(ClassifiedCategoryPost)
+admin.site.register(Logo)
+admin.site.register(AdminNotice)
+

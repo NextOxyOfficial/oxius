@@ -1,6 +1,6 @@
 <template>
   <UContainer class="mb-16">
-    <div class="mx-auto">
+    <div class="mx-auto" v-if="service">
       <div class="flex items-center justify-between">
         <p class="mb-3 mt-16">
           <ULink
@@ -11,15 +11,20 @@
           >
           >
           <ULink
-            to="/classified-categories"
+            :to="`/classified-categories/${service.category_details?.id}`"
             active-class="text-primary"
             inactive-class="text-gray-500 dark:text-gray-400"
-            >Category Name</ULink
+            >{{ service.category_details?.title }}</ULink
           >
-          > Details
+          > {{ service.title }}
         </p>
 
-        <UButton label="Go Back" color="gray" class="self-end">
+        <UButton
+          :to="`/classified-categories/${service.category_details?.id}`"
+          label="Go Back"
+          color="gray"
+          class="self-end"
+        >
           <template #trailing>
             <UIcon name="i-heroicons-arrow-left-20-solid" class="w-5 h-5" />
           </template>
@@ -43,8 +48,8 @@
           <div class="flex-1 max-w-md w-full">
             <div class="flex flex-col gap-1 w-full my-3">
               <div class="flex items-center">
-                <h3 class="text-2xl" v-if="service.user.first_name">
-                  {{ service.user.first_name }} {{ service.user.last_name }}
+                <h3 class="text-2xl" v-if="service.user?.first_name">
+                  {{ service.user?.first_name }} {{ service.user?.last_name }}
                 </h3>
                 <h3 class="text-2xl" v-else>No Name Provided</h3>
                 <UIcon
@@ -94,8 +99,6 @@
 const { get } = useApi();
 const service = ref({});
 const router = useRoute();
-
-console.log(router.params.id);
 
 async function fetchServices() {
   const response = await get(
