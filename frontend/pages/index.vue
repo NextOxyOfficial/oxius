@@ -96,7 +96,7 @@
               color="primary"
               variant="solid"
               label="My Gigs"
-              @click="isOpen = true"
+              to="/my-gigs/"
             />
             <UButton
               icon="i-heroicons-plus-circle"
@@ -241,8 +241,8 @@ categoryArray.value = Object.entries(categoryCounts).map(
 );
 async function getClassifiedCategories() {
   const [serviceResponse, gigResponse] = await Promise.all([
-    get("/classified-categories/"),
-    get("/micro-gigs/"),
+    get('/classified-categories/'),
+    get('/micro-gigs/'),
   ]);
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;
