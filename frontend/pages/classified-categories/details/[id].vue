@@ -27,17 +27,14 @@
       </div>
 
       <div class="w-full flex flex-col justify-center">
-        <h2 class="text-3xl font-bold">Service Title</h2>
+        <h2 class="text-3xl font-bold">{{ service.title }}</h2>
         <NuxtImg
-          src="/placeholder.jpg"
+          :src="'http://127.0.0.1:8000' + service.image"
           class="max-w-[60%] w-full rounded-md self-center my-10"
         />
 
         <p class="">
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Molestias
-          excepturi tempora harum tenetur! Placeat reprehenderit doloribus
-          provident ut tenetur quaerat deserunt, adipisci, aspernatur culpa fuga
-          excepturi, nostrum nemo consectetur dignissimos.
+          {{ service.instructions }}
         </p>
         <div class="my-3 flex items-center gap-4 mt-8">
           <div>
@@ -46,40 +43,45 @@
           <div class="flex-1 max-w-md w-full">
             <div class="flex flex-col gap-1 w-full my-3">
               <div class="flex items-center">
-                <h3 class="text-2xl">Author Name</h3>
+                <h3 class="text-2xl" v-if="service.user.first_name">
+                  {{ service.user.first_name }} {{ service.user.last_name }}
+                </h3>
+                <h3 class="text-2xl" v-else>No Name Provided</h3>
                 <UIcon
                   name="mdi:check-decagram"
                   class="w-5 h-5 text-blue-600 mt-1"
                 />
               </div>
-              <div class="flex items-center gap-1">
+              <!-- <div class="flex items-center gap-1">
                 <UBadge class="" color="gray" variant="solid"
                   >Badge hfghfhgfh</UBadge
                 >
                 <UBadge class="" color="gray" variant="solid"
                   >Badge hfghfhgfh</UBadge
                 >
-              </div>
+              </div> -->
             </div>
             <p class="w-full">
-              Hello! My name is Adriana Martins working from Chile. I create
-              some Ghost and Wordpress themes for differents markets, also, i
-              offer live support via our ticket system.
+              {{ service.user?.description }}
             </p>
 
-            <div class="flex items-center gap-3 my-3">
-              <span>
+            <div class="flex flex-col gap-3 my-3">
+              <div class="flex gap-2 items-center">
                 <UIcon name="logos:facebook" class="w-5 h-5" />
-              </span>
-              <span>
+                <a href="https:facebook.com/">https:facebook.com/</a>
+              </div>
+              <div class="flex gap-2 items-center">
                 <UIcon name="skill-icons:instagram" class="w-5 h-5" />
-              </span>
-              <span>
+                <a href="https:instagram.com/">https:instagram.com/</a>
+              </div>
+              <div class="flex gap-2 items-center">
                 <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
-              </span>
-              <span>
+                <a href="https:facebook.com/">https:facebook.com/</a>
+              </div>
+              <div class="flex gap-2 items-center">
                 <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
-              </span>
+                <a href="https:facebook.com/">https:facebook.com/</a>
+              </div>
             </div>
           </div>
         </div>
@@ -87,3 +89,21 @@
     </div>
   </UContainer>
 </template>
+
+<script setup>
+const { get } = useApi();
+const service = ref({});
+const router = useRoute();
+
+console.log(router.params.id);
+
+async function fetchServices() {
+  const response = await get(
+    `/classified-categories/post/${router.params.id}/`
+  );
+  console.log(response);
+
+  service.value = response.data;
+}
+fetchServices();
+</script>

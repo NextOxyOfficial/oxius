@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # Exclude the password field for security
-        exclude = ('groups', 'user_permissions','id', 'nid',)
+        exclude = ('groups', 'user_permissions','id', 'nid')
         extra_kwargs = {
             'password': {'write_only': True},
             # 'username': {'read_only': True},
@@ -77,6 +77,14 @@ class BalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Balance
         fields = '__all__'
+
+class ClassifiedPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassifiedCategoryPost
+        fields = '__all__'
+        depth = 1
+
+
 
 # class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 #     @classmethod
