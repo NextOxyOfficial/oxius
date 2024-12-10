@@ -76,7 +76,7 @@
             <div
               class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
-              <div class="flex justify-between">
+              <div class="flex items-center justify-between w-full">
                 <div class="flex gap-4">
                   <div>
                     <NuxtImg
@@ -109,6 +109,10 @@
                     </div>
                   </div>
                 </div>
+                <p class="inline-flex items-center">
+                  Price: <UIcon name="i-mdi:currency-bdt" />
+                  {{ service.price }}
+                </p>
               </div>
             </div>
           </NuxtLink>
