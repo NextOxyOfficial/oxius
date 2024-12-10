@@ -17,7 +17,13 @@ urlpatterns = [
   path('target-device/',GetTargetDevice.as_view()),
   path('target-country/',GetTargetCountry.as_view()),
   path('micro-gigs/',GetMicroGigs.as_view()),
-  path('post-micro-gigs/',post_micro_gigs, name='post_micro_gigs'),
+  # User Micro Gigs Start
+  path('user-micro-gigs/<str:pk>/',getUserMicroGigs,name='user-micro-gigs'),
+  path('delete-user-micro-gig/<str:pk>/',delete_micro_gig_post,name='user-micro-gig'),
+  path('update-user-micro-gig/<str:pk>/',update_micro_gig_post,name='user-micro-gig'),
+  path('post-micro-gigs/',post_micro_gigs, name='post_micro_gig-tasks'),
+  # User micro-gigs Ends
+  path('user-micro-gig-tasks/<str:email>/',getMicroGigPostTasks, name='user_micro-gigs'),
   path('micro-gigs/<str:gid>/',gigDetails),
   path('user-balance/<str:email>/',UserBalance.as_view()),
   path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

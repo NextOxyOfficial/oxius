@@ -35,7 +35,7 @@
         <h2 class="text-2xl md:text-4xl mb-12 text-center">
           Micro Gigs (Quick Earn)
         </h2>
-        <AccountBalance v-if="user" :user="user" :isUser="false" />
+        <AccountBalance v-if="user" :user="user" :isUser="true" />
         <UCard
           :ui="{
             body: 'p-0',
@@ -169,8 +169,8 @@ categoryArray.value = Object.entries(categoryCounts).map(
 );
 async function getClassifiedCategories() {
   const [serviceResponse, gigResponse] = await Promise.all([
-    get('/classified-categories/'),
-    get('/micro-gigs/'),
+    get("/classified-categories/"),
+    get("/micro-gigs/"),
   ]);
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;

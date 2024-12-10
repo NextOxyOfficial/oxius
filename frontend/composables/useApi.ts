@@ -1,6 +1,7 @@
 export function useApi() {
   // const baseURL = "";
   const baseURL = "http://localhost:8000/api";
+  const staticURL = "http://localhost:8000/";
 
   const jwt = useCookie("jwt");
   const head = computed(() => {
@@ -94,6 +95,7 @@ export function useApi() {
     put: put,
     del: del,
     patch: patch,
+    staticURL: staticURL,
   };
 
   return Api;

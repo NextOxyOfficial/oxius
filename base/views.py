@@ -15,6 +15,7 @@ from rest_framework.exceptions import NotFound
 import base64
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -208,11 +209,57 @@ def gigDetails(request, gid):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# Micro Gig Post
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserMicroGigs(request,pk):
+    serializer = MicroGigPostSerializer(MicroGigPost.objects.filter(user=pk), many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Micro Gig Post Update
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_micro_gig_post(request, pk):
+    try:
+        micro_gig_post = get_object_or_404(MicroGigPost, id=pk)
+        
+        # Check if the user is the owner or a superuser
+        if request.user == micro_gig_post.user or request.user.is_superuser:
+            serializer = MicroGigPostSerializer(micro_gig_post, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
+    
+    except MicroGigPost.DoesNotExist:
+        return Response({"error": "MicroGigPost not found."}, status=status.HTTP_404_NOT_FOUND)
+
+# Micro Gig Post Delete
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_micro_gig_post(request, pk):
+    try:
+        micro_gig_post = get_object_or_404(MicroGigPost, id=pk)
+        
+        # Check if the user is the owner or a superuser
+        if request.user == micro_gig_post.user or request.user.is_superuser:
+            micro_gig_post.delete()
+            return Response({"message": "MicroGigPost deleted successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
+    
+    except MicroGigPost.DoesNotExist:
+        return Response({"error": "MicroGigPost not found."}, status=status.HTTP_404_NOT_FOUND)
+
 # Micro Gig Post Task
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def microGigPosts(request):
-    serializer = MicroGigPostTaskSerializer(MicroGigPostTask.objects.all(), many=True)
+def getMicroGigPostTasks(request,email):
+    serializer = MicroGigPostTaskSerializer(MicroGigPostTask.objects.filter(user=email), many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
   
 class UserBalance(generics.ListCreateAPIView):

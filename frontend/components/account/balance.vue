@@ -36,7 +36,7 @@
           variant="solid"
           label="View"
           class="ml-2"
-          :to="`/pending-tasks/${user?.user.email}`"
+          :to="`/pending-tasks/${user?.user.id}`"
         />
       </div>
     </div>
@@ -63,7 +63,7 @@
         color="primary"
         variant="solid"
         label="My Gigs"
-        :to="isUser ? '/my-gigs/' + user?.user.email : '/my-gigs/'"
+        :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
       />
       <UButton
         icon="i-heroicons-plus-circle"

@@ -137,6 +137,7 @@ class MicroGigPost(models.Model):
     total_cost = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     accepted_terms = models.BooleanField(default=True)
     accepted_privacy = models.BooleanField(default=True)
+    active_gig = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
