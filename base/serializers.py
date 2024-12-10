@@ -35,6 +35,14 @@ class UserSerializer(serializers.ModelSerializer):
         # Remove the password field from the output
         representation.pop('password', None)
         return representation
+    
+
+class MicroGigPostTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MicroGigPostTask
+        fields = '__all__'
+        depth = 1
+
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,8 +78,8 @@ class MicroGigPostSerializer(serializers.ModelSerializer):
 class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigPost
-        fields = '__all__'
         depth = 1
+        exclude = ['user']
 
 class BalanceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -91,7 +99,7 @@ class logoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Logo
         fields = '__all__'
-        
+
 class AdminNoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminNotice

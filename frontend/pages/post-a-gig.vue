@@ -80,29 +80,34 @@
             v-model="form.instruction"
           />
         </UFormGroup>
-        <UFormGroup label="Upload Photo/Video">
-          <input
-            type="file"
-            name=""
-            id=""
-            @change="handleFileUpload($event, 'image')"
-          />
-        </UFormGroup>
-        <div v-if="mediaPreview.length">
-          <div v-for="(img, i) in mediaPreview" :key="i" class="flex gap-5">
-            <div class="relative">
-              <img
-                :src="img.preview"
-                :alt="`Uploaded file ${img.preview + 1}`"
-                style="max-width: 200px; margin: 5px"
-              />
-              <div
-                class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-                @click="deleteUpload(i)"
-              >
-                <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
-              </div>
+
+        <!-- medias  -->
+
+        <div class="flex flex-wrap gap-5">
+          <div
+            class="relative max-w-[200px] max-h-[200px]"
+            v-for="(img, i) in form.medias"
+            :key="i"
+          >
+            <img :src="img" :alt="`Uploaded file ${i}`" />
+            <div
+              class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+              @click="deleteUpload(i)"
+            >
+              <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
             </div>
+          </div>
+          <div
+            class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+          >
+            <input
+              type="file"
+              name=""
+              id=""
+              class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+              @change="handleFileUpload($event, 'image')"
+            />
+            <UIcon name="i-heroicons-plus-solid" size="66" />
           </div>
         </div>
         <!-- <UFormGroup label="Upload Photo/Video">
@@ -234,41 +239,29 @@ const form = ref({
 
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
-  files.forEach((file) => {
-    const preview = URL.createObjectURL(file);
-    mediaPreview.value.push({ preview });
-    form.value.medias.push({ file });
-    form.value.image = file;
-  });
+  const reader = new FileReader();
+
+  // Event listener for successful read
+  reader.onload = () => {
+    form.value.medias.push(reader.result);
+  };
+
+  // Event listener for errors
+  reader.onerror = (error) => reject(error);
+
+  // Read the file as a data URL (Base64 string)
+  reader.readAsDataURL(files[0]);
 }
 
-function deleteUpload(index) {
-  // Revoke object URL to free memory
-  URL.revokeObjectURL(mediaPreview.value[index].preview);
-
-  // Remove the preview URL from the array
-  mediaPreview.value.splice(index, 1);
-
-  // Remove the file from the array
-  form.value.medias.splice(index, 1);
+function deleteUpload(ind) {
+  if (ind >= 0 && ind < form.value.medias.length) {
+    form.value.medias.splice(ind, 1);
+  }
 }
 
 async function handlePostGig() {
   console.log(form.value);
-  const formData = new FormData();
-  formData.append("title", form.value.title);
-  formData.append("price", form.value.price);
-  formData.append("required_quantity", form.value.required_quantity);
-  formData.append("instructions", form.value.instruction);
-  formData.append("image", form.value.image);
-  formData.append("target_country", form.value.target_country);
-  formData.append("target_device", form.value.target_device);
-  formData.append("target_network", form.value.target_network);
-  formData.append("category", form.value.category);
-  formData.append("medias", form.value.medias); // Not needed as we are sending the image separately
-  console.log(form.value);
-
-  const res = await post("/post-micro-gigs/", formData);
+  const res = await post("/post-micro-gigs/", form.value);
   if (res.data) {
     // navigateTo("/");
     toast.add({ title: "MicroGig Added" });

@@ -151,7 +151,7 @@ class MicroGigPostTask(models.Model):
     approved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)
     medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
-
+    reason = models.CharField(max_length=200, blank=True, null=True)
     def __str__(self):
         return str(self.created_at)
 
