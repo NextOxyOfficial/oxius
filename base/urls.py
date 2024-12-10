@@ -3,12 +3,14 @@ from .views import *
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,TokenVerifyView)
 
 urlpatterns = [
+  path('logo/',getLogo,name='logo'),
+  path('admin-notice/',getAdminNotice,name='admin_notice'),
   path('auth/register/', register, name='register_person'),
   path('persons/<str:email>/', PersonRetrieveUpdateDestroyView.as_view(),name='person_detail'),
   path('persons/update/<str:email>/', update_user,name='update_user'),
   path('classified-categories/',GetClassifiedCategories.as_view()),
   path('classified-categories/<str:cid>/',classifiedCategoryPosts),
-  path('classified-categories/post/<str:pid>/',classifiedCategoryPost),
+  path('classified-categories/post/<str:pk>/',classifiedCategoryPost),
   path('classified-categories-post/',post_classified_service),
   path('micro-gigs-categories/',GetMicroGigCategory.as_view()),
   path('target-network/',GetTargetNetwork.as_view()),

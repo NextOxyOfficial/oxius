@@ -9,7 +9,7 @@
         @submit.prevent="handlePostGig"
       >
         <UFormGroup label="Title">
-          <UTextarea
+          <UInput
             type="text"
             size="md"
             color="white"
@@ -20,11 +20,9 @@
               size: {
                 md: 'text-base',
               },
-              padding: { md: 'pl-[60px]' },
             }"
           >
-            <span class="absolute left-2 top-2">I Need</span>
-          </UTextarea>
+          </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center"></div>
         <UFormGroup label="Instruction">
@@ -39,7 +37,7 @@
             class="w-full"
             resize
             placeholder="Instruction"
-            v-model="form.instruction"
+            v-model="form.instructions"
           />
         </UFormGroup>
         <div class="grid md:grid-cols-2 gap-4">
@@ -132,7 +130,16 @@
             />
           </UFormGroup>
         </div>
-
+        <UCheckbox
+          name="notifications"
+          label="Accept Terms"
+          v-model="form.accepted_terms"
+        />
+        <UCheckbox
+          name="notifications"
+          label="Accept Privacy"
+          v-model="form.accepted_privacy"
+        />
         <div class="text-center">
           <UButton
             class="px-8"
@@ -157,12 +164,14 @@ const mediaPreview = ref([]);
 
 const form = ref({
   price: 0,
-  instruction: "",
+  instructions: "",
   title: "",
   image: null, // This will be the file object when uploaded, not the preview URL yet.
   medias: [],
   category: "",
   location: "",
+  accepted_terms: false,
+  accepted_privacy: false,
 });
 
 function handleFileUpload(event, field) {
@@ -194,14 +203,15 @@ async function handlePostGig() {
   formData.append("instructions", form.value.instruction);
   formData.append("image", form.value.image);
   formData.append("category", form.value.category);
+  formData.append("accepted_terms", form.value.accepted_terms);
+  formData.append("accepted_privacy", form.value.accepted_privacy);
   formData.append("medias", form.value.medias); // Not needed as we are sending the image separately
   formData.append("location", form.value.location); // Not needed as we are sending the image separately
-  console.log(formData);
 
   const res = await post("/classified-categories-post/", formData);
   if (res.data) {
     navigateTo("/");
-    toast.add({ title: "MicroGig Added" });
+    toast.add({ title: "Classified Service Added" });
   }
 }
 

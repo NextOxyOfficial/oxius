@@ -3,7 +3,13 @@
     <UContainer>
       <div class="flex items-center justify-between gap-6">
         <NuxtLink to="/">
-          <NuxtImg src="/images/logo.jpg" alt="Logo" />
+          <NuxtImg
+            v-if="logo?.image"
+            :src="'http://127.0.0.1:8000/' + logo?.image"
+            alt="Logo"
+            class="h-12"
+          />
+          <NuxtImg v-else src="/images/logo.jpg" alt="Logo" />
         </NuxtLink>
         <UHorizontalNavigation
           :links="links"
@@ -22,14 +28,14 @@
             </template>
           </UButton>
         </div>
-        <div v-else class="flex gap-1 relative">
+        <div v-else class="flex relative">
           <UButton
             size="md"
             color="primary"
             variant="outline"
             @click="openMenu = !openMenu"
           >
-            My Account
+            <UIcon name="i-heroicons-user-circle" class="text-xl" /> My Account
             <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
             <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
           </UButton>
@@ -52,9 +58,20 @@
 
 <script setup>
 const { user, logout } = useAuth();
+const { get } = useApi();
 const openMenu = ref(false);
 const router = useRouter();
 const open = ref(true);
+const logo = ref({});
+
+async function getLogo() {
+  const res = await get("/logo/");
+  console.log(res);
+
+  logo.value = res.data;
+}
+
+getLogo();
 
 defineShortcuts({
   o: () => (open.value = !open.value),
@@ -74,20 +91,23 @@ watch(router.currentRoute, () => {
 const links = [
   {
     label: "Home",
-
     to: "/",
+    icon: "i-heroicons:home",
   },
   {
     label: "Classified Services",
     to: "#classified-services",
+    icon: "i-heroicons:clipboard-document-list",
   },
   {
     label: "Earn Money",
     to: "#micro-gigs",
+    icon: "i-healthicons:money-bag-outline",
   },
   {
     label: "FAQ",
     to: "/faq",
+    icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
   },
 ];
 
