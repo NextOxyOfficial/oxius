@@ -12,6 +12,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.exceptions import NotFound
+import base64
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 # Create your views here.
 
@@ -117,25 +120,46 @@ class GetMicroGigs(generics.ListCreateAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# move this function to util later
+def base64ToFile(base64_data):
+    # Remove the prefix if it exists (e.g., "data:image/png;base64,")
+    if base64_data.startswith('data:image'):
+        base64_data = base64_data.split('base64,')[1]
     
+    # Decode the Base64 string into bytes
+    file_data = base64.b64decode(base64_data)
+    
+    # Create a Django ContentFile object from the bytes
+    file = ContentFile(file_data)
+    
+    # You can create a filename, e.g., using the current timestamp or other logic
+    filename = "uploaded_image.png"  # Customize as needed
+    
+    # Save the file to the appropriate storage (e.g., media directory)
+    file.name = filename
+    return file
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def post_micro_gigs(request):
-    print(request.user)
-    data = request.data.copy()  # Make a mutable copy of the data
+    data = request.data # Make a mutable copy of the data
     data['user'] = request.user.id  # Associate the authenticated user
     serializer = MicroGigPostSerializer(data=data)
-    print(data)
-
     if serializer.is_valid():
-        serializer.save(user=request.user)
-        
+        new_micro_gig_post = serializer.save(user=request.user)
+
+        for file in data['medias']:
+            nm = MicroGigPostMedia.objects.create(
+                image = base64ToFile(file)
+            )
+            new_micro_gig_post.medias.add(nm)
         return Response(
             {'message': 'Person Updated successfully', 'data': serializer.data},
             status=status.HTTP_201_CREATED
         )
-    print(serializer.errors)    
+    if serializer.errors:
+        print(serializer.errors)    
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
@@ -181,6 +205,14 @@ def classifiedCategoryPost(request, pk):
 @api_view(['GET'])
 def gigDetails(request, gid):
     serializer = MicroGigPostDetailsSerializer(MicroGigPost.objects.get(id=gid))
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Micro Gig Post Task
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def microGigPosts(request):
+    serializer = MicroGigPostTaskSerializer(MicroGigPostTask.objects.all(), many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
   
 class UserBalance(generics.ListCreateAPIView):
