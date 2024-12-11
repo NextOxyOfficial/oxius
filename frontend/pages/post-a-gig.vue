@@ -65,7 +65,7 @@
             <p>{{ form.price * form.required_quantity }}</p>
           </UFormGroup>
         </div>
-        <UFormGroup label="Instruction">
+        <UFormGroup label="Instructions">
           <UTextarea
             color="white"
             variant="outline"
@@ -76,8 +76,8 @@
             }"
             class="w-full"
             resize
-            placeholder="Instruction"
-            v-model="form.instruction"
+            placeholder="Instructions"
+            v-model="form.instructions"
           />
         </UFormGroup>
 
@@ -227,7 +227,7 @@ const mediaPreview = ref([]);
 const form = ref({
   price: 0,
   required_quantity: 0,
-  instruction: "",
+  instructions: "",
   // title: "",
   image: null, // This will be the file object when uploaded, not the preview URL yet.
   medias: [],

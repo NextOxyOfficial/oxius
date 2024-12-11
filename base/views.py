@@ -16,6 +16,7 @@ import base64
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
+import uuid
 
 # Create your views here.
 
@@ -170,7 +171,6 @@ def post_micro_gigs(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def post_classified_service(request):
-    print(request.user)
     data = request.data.copy()  # Make a mutable copy of the data
     data['user'] = request.user.id  # Associate the authenticated user
     category_id = data.get('category')
@@ -209,11 +209,17 @@ def gigDetails(request, gid):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# Micro Gig Post
+# All Micro Gig Post
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getUserMicroGigs(request,pk):
     serializer = MicroGigPostSerializer(MicroGigPost.objects.filter(user=pk), many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+# Micro Gig Post
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_micro_gig_post(request,pk):
+    serializer = MicroGigPostSerializer(MicroGigPost.objects.get(id=pk))
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -261,6 +267,33 @@ def delete_micro_gig_post(request, pk):
 def getMicroGigPostTasks(request,email):
     serializer = MicroGigPostTaskSerializer(MicroGigPostTask.objects.filter(user=email), many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def postMicroGigPostTask(request):
+     # Add the user ID (pk) to the incoming data
+    data = request.data.copy()
+    data['user'] = request.user.id
+    gig_id = data.get('gig')
+    print('Validated Data:', gig_id)
+    if not MicroGigPost.objects.filter(id=gig_id).exists():
+        raise ValidationError({'category': 'The specified category does not exist.'})                                                                                                             
+    
+    # Serialize and validate the data
+    serializer = MicroGigPostTaskSerializer(data=data)
+    
+    if serializer.is_valid():
+        new_micro_gig_post_task=serializer.save(user=request.user)  # Save the new MicroGigPostTask instance
+        for file in data['medias']:
+            nm = MicroGigPostMedia.objects.create(
+                image = base64ToFile(file)
+            )
+            new_micro_gig_post_task.medias.add(nm)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    print(serializer.errors)
+    # Return errors if validation fails
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
   
 class UserBalance(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

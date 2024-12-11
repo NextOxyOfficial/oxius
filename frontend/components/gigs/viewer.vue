@@ -58,35 +58,66 @@
             class=""
             v-if="m.image"
             target="_blank"
-            :href="'/media-viewer?url=' + baseURL + m.image + '&type=image'"
+            :href="'/media-viewer?url=' + staticURL + m.image + '&type=image'"
           >
             <NuxtImg
               class="h-48 w-64 object-cover shadow"
-              :src="baseURL + m.image"
+              :src="staticURL + m.image"
             />
           </a>
           <a
             class=""
             target="_blank"
-            :href="'/media-viewer?url=' + baseURL + m.video + '&type=video'"
+            :href="'/media-viewer?url=' + staticURL + m.video + '&type=video'"
             v-if="m.video"
           >
             <video
               class="h-48 w-64 object-cover shadow"
-              :src="baseURL + m.video"
+              :src="staticURL + m.video"
             ></video>
           </a>
         </div>
       </div>
-      <UCheckbox name="notifications" label="I accept Terms & Conditions" />
       <UCheckbox
         name="notifications"
+        v-model="accepted_terms"
+        label="I accept Terms & Conditions"
+      />
+      <UCheckbox
+        name="notifications"
+        v-model="accepted_condition"
         label="I am aware that fake and fraud submission may lead to account ban!"
       />
       <UDivider label="" class="pt-4" />
       <div>
         <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
-        <UInput type="file" size="sm" icon="i-heroicons-folder" />
+        <div class="flex flex-wrap gap-5">
+          <div
+            class="relative max-w-[200px] max-h-[200px]"
+            v-for="(img, i) in medias"
+            :key="i"
+          >
+            <img :src="img" :alt="`Uploaded file ${i}`" />
+            <div
+              class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+              @click="deleteUpload(i)"
+            >
+              <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+            </div>
+          </div>
+          <div
+            class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+          >
+            <input
+              type="file"
+              name=""
+              id=""
+              class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+              @change="handleFileUpload($event, 'image')"
+            />
+            <UIcon name="i-heroicons-plus-solid" size="66" />
+          </div>
+        </div>
       </div>
       <div class="text-center">
         <UButton
@@ -96,6 +127,7 @@
           color="primary"
           variant="solid"
           label="I Completed!"
+          @click="submitGig"
         />
       </div>
       {{ gid }}
@@ -107,8 +139,12 @@
 <script setup>
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
-const { get } = useApi();
-const baseURL = "http://127.0.0.1:8000";
+const { get, staticURL, post } = useApi();
+const medias = ref([]);
+const accepted_terms = ref(false);
+
+const accepted_condition = ref(false);
+
 onMounted(() => {
   getGigData();
 });
@@ -116,6 +152,35 @@ const gig = ref();
 async function getGigData() {
   const res = await get(`/micro-gigs/${props.gid}`);
   gig.value = res.data;
+}
+
+async function submitGig() {
+  const res = await post(`/user-micro-gig-task-post/`, {
+    gig: props.gid,
+  });
+  console.log(res);
+}
+
+function handleFileUpload(event, field) {
+  const files = Array.from(event.target.files);
+  const reader = new FileReader();
+
+  // Event listener for successful read
+  reader.onload = () => {
+    medias.value.push(reader.result);
+  };
+
+  // Event listener for errors
+  reader.onerror = (error) => reject(error);
+
+  // Read the file as a data URL (Base64 string)
+  reader.readAsDataURL(files[0]);
+}
+
+function deleteUpload(ind) {
+  if (ind >= 0 && ind < medias.value.length) {
+    medias.value.splice(ind, 1);
+  }
 }
 </script>
 

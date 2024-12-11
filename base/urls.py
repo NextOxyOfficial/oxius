@@ -19,11 +19,13 @@ urlpatterns = [
   path('micro-gigs/',GetMicroGigs.as_view()),
   # User Micro Gigs Start
   path('user-micro-gigs/<str:pk>/',getUserMicroGigs,name='user-micro-gigs'),
+  path('get-user-micro-gig/<str:pk>/',get_micro_gig_post,name='user-micro-gig'),
   path('delete-user-micro-gig/<str:pk>/',delete_micro_gig_post,name='user-micro-gig'),
   path('update-user-micro-gig/<str:pk>/',update_micro_gig_post,name='user-micro-gig'),
   path('post-micro-gigs/',post_micro_gigs, name='post_micro_gig-tasks'),
   # User micro-gigs Ends
   path('user-micro-gig-tasks/<str:email>/',getMicroGigPostTasks, name='user_micro-gigs'),
+  path('user-micro-gig-task-post/',postMicroGigPostTask, name='user_micro-gig-task-post'),
   path('micro-gigs/<str:gid>/',gigDetails),
   path('user-balance/<str:email>/',UserBalance.as_view()),
   path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

@@ -200,7 +200,7 @@ async function handlePostGig() {
   const formData = new FormData();
   formData.append("title", form.value.title);
   formData.append("price", form.value.price);
-  formData.append("instructions", form.value.instruction);
+  formData.append("instructions", form.value.instructions);
   formData.append("image", form.value.image);
   formData.append("category", form.value.category);
   formData.append("accepted_terms", form.value.accepted_terms);
