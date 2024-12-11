@@ -82,6 +82,13 @@
               label="Delete"
               @click="handleAction(gig.id, 'delete')"
             />
+            <UButton
+              size="md"
+              color="primary"
+              variant="solid"
+              label="Details"
+              :to="`/my-gigs/details/${gig.id}/`"
+            />
           </div>
         </div>
       </UCard>

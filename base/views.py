@@ -147,6 +147,7 @@ def base64ToFile(base64_data):
 @permission_classes([IsAuthenticated])
 def post_micro_gigs(request):
     data = request.data # Make a mutable copy of the data
+    print(data)
     data['user'] = request.user.id  # Associate the authenticated user
     serializer = MicroGigPostSerializer(data=data)
     if serializer.is_valid():
@@ -269,7 +270,6 @@ def getMicroGigPostTasks(request,email):
     serializer = MicroGigPostTaskSerializer(MicroGigPostTask.objects.filter(user=email), many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-from uuid import UUID
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -297,6 +297,40 @@ def postMicroGigPostTask(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPendingTasks(request):
+    serializer = GetMicroGigPostTaskSerializer(MicroGigPostTask.objects.filter(user=request.user).order_by('-created_at'), many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_microgigpost_tasks(request, gig_id):
+    """
+    Retrieve all tasks associated with a specific MicroGigPost.
+    """
+    try:
+        # Retrieve the MicroGigPost instance
+        micro_gig_post = MicroGigPost.objects.get(id=gig_id)
+    except MicroGigPost.DoesNotExist:
+        return Response(
+            {"error": "MicroGigPost not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Get all tasks associated with this MicroGigPost
+    tasks = micro_gig_post.microgigposttask_set.all()
+
+    # Serialize the tasks
+    serializer = MicroGigPostTaskSerializer(tasks, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
 class UserBalance(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BalanceSerializer

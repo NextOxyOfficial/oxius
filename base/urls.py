@@ -25,8 +25,10 @@ urlpatterns = [
   path('post-micro-gigs/',post_micro_gigs, name='post_micro_gig-tasks'),
   # User micro-gigs Ends
   path('user-micro-gig-tasks/<str:email>/',getMicroGigPostTasks, name='user_micro-gigs'),
-  path('user-micro-gig-task-post/',postMicroGigPostTask, name='user_micro-gig-task-post'),
   path('micro-gigs/<str:gid>/',gigDetails),
+  path('user-pending-tasks/',getPendingTasks, name='user_pending-tasks'),
+  path('user-micro-gig-task-post/',postMicroGigPostTask, name='user_micro-gig-task-post'),
+  path('task-by-micro-gig-post/<uuid:gig_id>/tasks/', get_microgigpost_tasks, name='microgigpost-tasks'),
   path('user-balance/<str:email>/',UserBalance.as_view()),
   path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

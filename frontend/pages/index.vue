@@ -91,7 +91,10 @@
                 <div class="flex justify-between">
                   <div class="flex gap-4">
                     <div>
-                      <NuxtImg :src="gig.image" class="size-14 rounded-full" />
+                      <NuxtImg
+                        :src="gig.medias[0].image"
+                        class="size-14 rounded-full"
+                      />
                     </div>
                     <div>
                       <h3 class="text-base font-semibold mb-1.5">
@@ -118,11 +121,13 @@
                         gig.price
                       }}
                     </p>
+
                     <UButton
+                      :disabled="user?.user?.id === gig.user"
                       size="sm"
                       color="primary"
                       variant="outline"
-                      @click="showGig(gig.id)"
+                      :to="`/order/${gig.id}/`"
                     >
                       Earn
                     </UButton>
@@ -148,7 +153,7 @@
 
 <script setup>
 const isOpen = ref(false);
-const { get } = useApi();
+const { get, staticURL } = useApi();
 const { user } = useAuth();
 const services = ref([]);
 const microGigs = ref([]);

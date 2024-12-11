@@ -39,11 +39,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 class MicroGigPostTaskSerializer(serializers.ModelSerializer):
     gig = serializers.PrimaryKeyRelatedField(queryset=MicroGigPost.objects.all())
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'
         depth = 1
 
+class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    class Meta:
+        model = MicroGigPostTask
+        fields = '__all__'
+        depth = 1
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
     class Meta:

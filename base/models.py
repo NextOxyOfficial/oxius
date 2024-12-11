@@ -146,93 +146,93 @@ class MicroGigPost(models.Model):
     def __str__(self):
         return self.title
 
-# class MicroGigPostTask(models.Model):
-#     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gig_worker')
-#     gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     completed = models.BooleanField(default=False)
-#     approved = models.BooleanField(default=False)
-#     rejected = models.BooleanField(default=False)
-#     medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
-#     reason = models.CharField(max_length=200, blank=True, null=True)
-#     accepted_terms = models.BooleanField(default=True)
-#     accepted_condition = models.BooleanField(default=True)
-#     def __str__(self):
-#         return str(self.created_at)
-
-#     def save(self, *args, **kwargs):
-#         # Check if task is neither completed, approved, nor rejected
-#         if not self.completed and not self.approved and not self.rejected:
-#             self.gig.filled_quantity += 1
-#             self.gig.save()
-#             self.user.pending_balance += self.gig.price
-#             self.user.save()
-
-#         # Mark as completed if approved
-#         if self.approved and self.completed:
-#             self.completed = True
-#             self.user.balance += self.gig.price
-#             self.user.pending_balance -= self.gig.price
-#             self.user.save()
-#             # add balance
-
-#         # Reduce filled quantity and mark as completed if rejected
-#         if self.rejected and not self.completed:
-#             self.gig.filled_quantity -= 1
-#             self.gig.save()
-#             self.completed = True
-#             self.user.pending_balance -= self.gig.price
-#             self.user.save()
-
-#         # Call the original save method
-#         super(MicroGigPostTask, self).save(*args, **kwargs)
-
-
-class TaskStatus(models.TextChoices):
-    PENDING = 'PENDING', _('Pending')
-    APPROVED = 'APPROVED', _('Approved')
-    REJECTED = 'REJECTED', _('Rejected')
-    COMPLETED = 'COMPLETED', _('Completed')
-
 class MicroGigPostTask(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='micro_gig_worker')
-    gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gig_worker')
+    gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=10,
-        choices=TaskStatus.choices,
-        default=TaskStatus.PENDING
-    )
-    medias = models.ManyToManyField(MicroGigPostMedia, blank=True)
+    completed = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
+    medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
     reason = models.CharField(max_length=200, blank=True, null=True)
     accepted_terms = models.BooleanField(default=True)
     accepted_condition = models.BooleanField(default=True)
-
     def __str__(self):
-        return f"Task created at {self.created_at} by {self.user}"
+        return str(self.created_at)
 
-# Signals for handling related updates
-@receiver(pre_save, sender=MicroGigPostTask)
-def handle_task_status_update(sender, instance, **kwargs):
-    if instance.pk:  # Only for updates
-        previous = MicroGigPostTask.objects.get(pk=instance.pk)
-        if previous.status != instance.status:
-            if instance.status == TaskStatus.APPROVED:
-                instance.user.balance += instance.gig.price
-                instance.user.pending_balance -= instance.gig.price
-                instance.user.save()
-            elif instance.status == TaskStatus.REJECTED:
-                instance.gig.filled_quantity -= 1
-                instance.gig.save()
-                instance.user.pending_balance -= instance.gig.price
-                instance.user.save()
-            elif instance.status == TaskStatus.PENDING:
-                instance.gig.filled_quantity += 1
-                instance.gig.save()
-                instance.user.pending_balance += instance.gig.price
-                instance.user.save()
+    def save(self, *args, **kwargs):
+        # Check if task is neither completed, approved, nor rejected
+        if not self.completed and not self.approved and not self.rejected:
+            self.gig.filled_quantity += 1
+            self.gig.save()
+            self.user.pending_balance += self.gig.price
+            self.user.save()
+
+        # Mark as completed if approved
+        if self.approved and self.completed:
+            self.completed = True
+            self.user.balance += self.gig.price
+            self.user.pending_balance -= self.gig.price
+            self.user.save()
+            # add balance
+
+        # Reduce filled quantity and mark as completed if rejected
+        if self.rejected and not self.completed:
+            self.gig.filled_quantity -= 1
+            self.gig.save()
+            self.completed = True
+            self.user.pending_balance -= self.gig.price
+            self.user.save()
+
+        # Call the original save method
+        super(MicroGigPostTask, self).save(*args, **kwargs)
+
+
+# class TaskStatus(models.TextChoices):
+#     PENDING = 'PENDING', _('Pending')
+#     APPROVED = 'APPROVED', _('Approved')
+#     REJECTED = 'REJECTED', _('Rejected')
+#     COMPLETED = 'COMPLETED', _('Completed')
+
+# class MicroGigPostTask(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='micro_gig_worker')
+#     gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE, null=False)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     status = models.CharField(
+#         max_length=10,
+#         choices=TaskStatus.choices,
+#         default=TaskStatus.PENDING
+#     )
+#     medias = models.ManyToManyField(MicroGigPostMedia, blank=True)
+#     reason = models.CharField(max_length=200, blank=True, null=True)
+#     accepted_terms = models.BooleanField(default=True)
+#     accepted_condition = models.BooleanField(default=True)
+
+#     def __str__(self):
+#         return f"Task created at {self.created_at} by {self.user}"
+
+# # Signals for handling related updates
+# @receiver(pre_save, sender=MicroGigPostTask)
+# def handle_task_status_update(sender, instance, **kwargs):
+#     if instance.pk:  # Only for updates
+#         previous = MicroGigPostTask.objects.get(pk=instance.pk)
+#         if previous.status != instance.status:
+#             if instance.status == TaskStatus.APPROVED:
+#                 instance.user.balance += instance.gig.price
+#                 instance.user.pending_balance -= instance.gig.price
+#                 instance.user.save()
+#             elif instance.status == TaskStatus.REJECTED:
+#                 instance.gig.filled_quantity -= 1
+#                 instance.gig.save()
+#                 instance.user.pending_balance -= instance.gig.price
+#                 instance.user.save()
+#             elif instance.status == TaskStatus.PENDING:
+#                 instance.gig.filled_quantity += 1
+#                 instance.gig.save()
+#                 instance.user.pending_balance += instance.gig.price
+#                 instance.user.save()
 
 
 class Balance(models.Model):
