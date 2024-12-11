@@ -67,22 +67,4 @@ const columns = [
     label: "Status",
   },
 ];
-
-const statements = [
-  {
-    id: 1,
-    time: "2:35",
-    deposit_withdraw: "Deposit",
-    amount: "300",
-    status: "Pending",
-    class: "text-yellow-400",
-  },
-  {
-    id: 2,
-    time: "2:35",
-    deposit_withdraw: "Withdraw",
-    amount: "300",
-    status: "Completed",
-  },
-];
 </script>

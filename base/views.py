@@ -322,12 +322,71 @@ def get_microgigpost_tasks(request, gig_id):
         )
 
     # Get all tasks associated with this MicroGigPost
-    tasks = micro_gig_post.microgigposttask_set.all()
+    tasks = micro_gig_post.microgigposttask_set.all().order_by('-created_at')
 
     # Serialize the tasks
-    serializer = MicroGigPostTaskSerializer(tasks, many=True)
+    serializer = GetMicroGigPostTaskSerializer(tasks, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_microgigpost_tasks(request, gig_id):
+    """
+    Update tasks associated with a specific MicroGigPost.
+    """
+    try:
+        # Retrieve the MicroGigPost instance
+        micro_gig_post = MicroGigPost.objects.get(id=gig_id)
+    except MicroGigPost.DoesNotExist:
+        return Response(
+            {"error": "MicroGigPost not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Retrieve the tasks related to this MicroGigPost
+    tasks = micro_gig_post.microgigposttask_set.all()
+
+    # Validate and update each task
+    data = request.data.get('tasks', [])
+    if not isinstance(data, list):
+        return Response(
+            {"error": "Expected a list of tasks in 'tasks' field."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Create a list to track updated tasks
+    updated_tasks = []
+
+    for task_data in data:
+        task_id = task_data.get('id')
+        if not task_id:
+            return Response(
+                {"error": "Task 'id' is required for updates."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            # Get the task instance
+            task = tasks.get(id=task_id)
+        except MicroGigPostTask.DoesNotExist:
+            return Response(
+                {"error": f"Task with id {task_id} not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize the task data and validate
+        serializer = GetMicroGigPostTaskSerializer(task, data=task_data, partial=True)
+        if serializer.is_valid():
+            # Save the updated task
+            serializer.save()
+            updated_tasks.append(serializer.data)
+        else:
+            return Response(
+                {"error": f"Invalid data for task with id {task_id}.", "details": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    return Response({"updated_tasks": updated_tasks}, status=status.HTTP_200_OK)
 
 
 

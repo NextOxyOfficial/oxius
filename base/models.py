@@ -13,6 +13,11 @@ from django.db.models.signals import post_save, pre_save
 class User(AbstractUser):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   name = models.CharField(max_length=100,blank=True, default="")
+  about = models.TextField(null=True, blank=True, default="")
+  face_link=models.CharField(null=True, blank=True, default="")
+  instagram_link=models.CharField(null=True, blank=True, default="")
+  gmail_link=models.CharField(null=True, blank=True, default="")
+  whatsapp_link=models.CharField(null=True, blank=True, default="")
   is_vendor = models.BooleanField(default=False)
   is_active = models.BooleanField(default=True) 
   phone = models.CharField(max_length=100, default='', blank=True)

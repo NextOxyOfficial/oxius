@@ -67,25 +67,45 @@
               </div> -->
             </div>
             <p class="w-full">
-              {{ service.user?.description }}
+              {{ service.user?.about }}
             </p>
 
             <div class="flex flex-col gap-3 my-3">
-              <div class="flex gap-2 items-center">
+              <div
+                class="flex gap-2 items-center"
+                v-if="service.user.face_link"
+              >
                 <UIcon name="logos:facebook" class="w-5 h-5" />
-                <a href="https:facebook.com/">https:facebook.com/</a>
+                <a :href="service.user.face_link">{{
+                  service.user.face_link
+                }}</a>
               </div>
-              <div class="flex gap-2 items-center">
+              <div
+                class="flex gap-2 items-center"
+                v-if="service.user.instagram_link"
+              >
                 <UIcon name="skill-icons:instagram" class="w-5 h-5" />
-                <a href="https:instagram.com/">https:instagram.com/</a>
+                <a :href="service.user.instagram_link">{{
+                  service.user.instagram_link
+                }}</a>
               </div>
-              <div class="flex gap-2 items-center">
+              <div
+                class="flex gap-2 items-center"
+                v-if="service.user.whatsapp_link"
+              >
                 <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
-                <a href="https:facebook.com/">https:facebook.com/</a>
+                <a :href="service.user.whatsapp_link">{{
+                  service.user.whatsapp_link
+                }}</a>
               </div>
-              <div class="flex gap-2 items-center">
+              <div
+                class="flex gap-2 items-center"
+                v-if="service.user.gmail_link"
+              >
                 <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
-                <a href="https:facebook.com/">https:facebook.com/</a>
+                <a :href="service.user.gmail_link">{{
+                  service.user.gmail_link
+                }}</a>
               </div>
             </div>
           </div>
