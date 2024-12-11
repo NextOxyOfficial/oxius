@@ -157,6 +157,7 @@ async function getGigData() {
 async function submitGig() {
   const res = await post(`/user-micro-gig-task-post/`, {
     gig: props.gid,
+    medias,
   });
   console.log(res);
 }

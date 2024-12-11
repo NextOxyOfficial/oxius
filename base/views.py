@@ -16,7 +16,8 @@ import base64
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-import uuid
+
+from uuid import UUID
 
 # Create your views here.
 
@@ -268,32 +269,33 @@ def getMicroGigPostTasks(request,email):
     serializer = MicroGigPostTaskSerializer(MicroGigPostTask.objects.filter(user=email), many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+from uuid import UUID
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def postMicroGigPostTask(request):
-     # Add the user ID (pk) to the incoming data
+    # Add the user ID (pk) to the incoming data
     data = request.data.copy()
     data['user'] = request.user.id
-    gig_id = data.get('gig')
-    print('Validated Data:', gig_id)
-    if not MicroGigPost.objects.filter(id=gig_id).exists():
-        raise ValidationError({'category': 'The specified category does not exist.'})                                                                                                             
     
     # Serialize and validate the data
     serializer = MicroGigPostTaskSerializer(data=data)
     
     if serializer.is_valid():
-        new_micro_gig_post_task=serializer.save(user=request.user)  # Save the new MicroGigPostTask instance
-        for file in data['medias']:
-            nm = MicroGigPostMedia.objects.create(
-                image = base64ToFile(file)
-            )
+        new_micro_gig_post_task = serializer.save(user=request.user)  # Save the new MicroGigPostTask instance
+        print(f"New MicroGigPostTask instance: {new_micro_gig_post_task}")  # Debugging: check the saved instance
+        
+        # Handle medias safely
+        for file in data.get('medias', []):
+            nm = MicroGigPostMedia.objects.create(image=base64ToFile(file))
             new_micro_gig_post_task.medias.add(nm)
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+    # Print errors if validation fails
     print(serializer.errors)
-    # Return errors if validation fails
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
   
 class UserBalance(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

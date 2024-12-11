@@ -197,7 +197,7 @@ class TaskStatus(models.TextChoices):
 
 class MicroGigPostTask(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='micro_gig_worker')
-    gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE)
+    gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE, null=False)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(

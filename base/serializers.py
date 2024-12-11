@@ -38,6 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
     
 
 class MicroGigPostTaskSerializer(serializers.ModelSerializer):
+    gig = serializers.PrimaryKeyRelatedField(queryset=MicroGigPost.objects.all())
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'
