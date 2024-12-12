@@ -112,6 +112,12 @@ class AdminNoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminNotice
         fields = '__all__'
+        def to_representation(self, instance):
+            representation = super().to_representation(instance)
+        # Format created_at to a human-readable format
+            if 'created_at' in representation and instance.created_at:
+                representation['created_at'] = instance.created_at.strftime("%A, %B %d, %Y %I:%M %p")
+            return representation
 
     # def validate_category(self, value):
     #     try:

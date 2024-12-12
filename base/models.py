@@ -50,6 +50,9 @@ class AdminNotice(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']  
     def __str__(self):
         return self.title
 
@@ -280,3 +283,4 @@ class PendingTask(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.title
+    

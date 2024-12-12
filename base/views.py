@@ -396,6 +396,12 @@ class UserBalance(generics.ListCreateAPIView):
     queryset = Balance.objects.all()
     lookup_field = 'email'
 
+class AdminMessage(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AdminNoticeSerializer
+    def get_queryset(self):
+        return AdminNotice.objects.all().order_by('-created_at')
+
 class GetMicroGigCategory(generics.ListAPIView):
     queryset = MicroGigCategory.objects.all()
     serializer_class = MicroGigCategorySerializer

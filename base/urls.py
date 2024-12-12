@@ -32,6 +32,7 @@ urlpatterns = [
   path('update-task-by-micro-gig-post/<uuid:gig_id>/tasks/', update_microgigpost_tasks, name='microgigpost-tasks-update'),
 
   path('user-balance/<str:email>/',UserBalance.as_view()),
+  path('admin-notice/',AdminMessage.as_view()),
   path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('auth/validate-token/', TokenValidationView.as_view(), name='validate_token'),
