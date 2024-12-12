@@ -29,7 +29,6 @@ const loader = ref(true);
 onMounted(() => {
   setTimeout(() => {
     if (!useCookie("jwt").value) {
-      navigateTo("/auth/login/");
       loader.value = false;
     } else {
       jwtLogin();

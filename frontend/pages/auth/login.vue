@@ -35,6 +35,9 @@ onMounted(() => {
     console.log(user);
     navigateTo("/");
   }
+  if (useCookie("jwt").value) {
+    navigateTo("/");
+  }
 });
 </script>
 
