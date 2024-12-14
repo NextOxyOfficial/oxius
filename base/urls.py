@@ -17,6 +17,7 @@ urlpatterns = [
   path('target-device/',GetTargetDevice.as_view()),
   path('target-country/',GetTargetCountry.as_view()),
   path('micro-gigs/',GetMicroGigs.as_view()),
+  path('classified-posts/filter/', ClassifiedCategoryPostFilterView.as_view(), name='classified_posts_filter'),
   # User Micro Gigs Start
   path('user-micro-gigs/<str:pk>/',getUserMicroGigs,name='user-micro-gigs'),
   path('get-user-micro-gig/<str:pk>/',get_micro_gig_post,name='user-micro-gig'),

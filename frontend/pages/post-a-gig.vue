@@ -222,14 +222,12 @@ const categories = ref([]);
 const network = ref([]);
 const device = ref([]);
 const country = ref([]);
-const mediaPreview = ref([]);
 
 const form = ref({
   price: 0,
   required_quantity: 0,
   instructions: "",
-  // title: "",
-  image: null, // This will be the file object when uploaded, not the preview URL yet.
+  title: "",
   medias: [],
   target_country: "",
   target_device: "",

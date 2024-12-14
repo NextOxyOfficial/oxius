@@ -16,7 +16,7 @@ import base64
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Q
 from uuid import UUID
 
 # Create your views here.
@@ -176,23 +176,49 @@ def post_classified_service(request):
     data = request.data.copy()  # Make a mutable copy of the data
     data['user'] = request.user.id  # Associate the authenticated user
     category_id = data.get('category')
+    
     if not ClassifiedCategory.objects.filter(id=category_id).exists():
         raise ValidationError({'category': 'The specified category does not exist.'})
     serializer = ClassifiedPostSerializer(data=data)
-    print(data)
+   
 
     if serializer.is_valid():
-        serializer.save(user=request.user)
+        new_classified_service_post = serializer.save(user=request.user)
+        for file in data.get('medias', []):
+            nm = ClassifiedCategoryPostMedia.objects.create(image=base64ToFile(file))
+            new_classified_service_post.medias.add(nm)
         
         return Response(
             {'message': 'Person Updated successfully', 'data': serializer.data},
             status=status.HTTP_201_CREATED
         )
-    print(serializer.errors)    
+        
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
     )
+
+class ClassifiedCategoryPostFilterView(APIView):
+    def get(self, request):
+        country = request.GET.get('country')
+        state = request.GET.get('state')
+        city = request.GET.get('city')
+
+        # Filter based on the query parameters
+        filters = Q()
+        if country:
+            filters &= Q(country__iexact=country)
+        if state:
+            filters &= Q(state__iexact=state)
+        if city:
+            filters &= Q(city__iexact=city)
+        
+
+        posts = ClassifiedCategoryPost.objects.filter(filters)
+
+        print(posts)
+        serializer = ClassifiedPostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def classifiedCategoryPosts(request, cid):

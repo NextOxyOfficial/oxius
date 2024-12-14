@@ -2,7 +2,7 @@
   <PublicSection>
     <UContainer>
       <h2 class="text-center text-4xl my-6">
-        {{ services[0]?.category_details.title }}
+        {{ categoryTitle }}
       </h2>
       <div class="flex justify-between items-end">
         <div>
@@ -13,7 +13,7 @@
               inactive-class="text-gray-500 dark:text-gray-400"
               >Home</ULink
             >
-            > {{ services[0]?.category_details.title }}
+            > {{ categoryTitle }}
           </p>
           <USelect
             icon="i-heroicons-bell-solid"
@@ -41,6 +41,67 @@
           />
         </UButtonGroup>
       </div>
+      <div class="grid md:grid-cols-4 gap-4">
+        <UFormGroup label="Country">
+          <USelectMenu
+            v-model="form.country"
+            color="white"
+            size="md"
+            :options="country"
+            placeholder="Country"
+            :ui="{
+              size: {
+                md: 'text-base',
+              },
+            }"
+            option-attribute="name"
+            value-attribute="iso2"
+          />
+        </UFormGroup>
+        <UFormGroup label="State">
+          <USelectMenu
+            v-model="form.state"
+            color="white"
+            size="md"
+            :options="state"
+            placeholder="State"
+            :ui="{
+              size: {
+                md: 'text-base',
+              },
+            }"
+            option-attribute="name"
+            value-attribute="iso2"
+          />
+        </UFormGroup>
+        <UFormGroup label="City">
+          <USelectMenu
+            v-model="form.city"
+            color="white"
+            size="md"
+            :options="city"
+            placeholder="City"
+            :ui="{
+              size: {
+                md: 'text-base',
+              },
+            }"
+            option-attribute="name"
+            value-attribute="name"
+          />
+        </UFormGroup>
+        <div class="pt-6">
+          <UButton
+            icon="i-heroicons-magnifying-glass-20-solid"
+            size="md"
+            color="primary"
+            variant="solid"
+            label="Search"
+            @click="filterSearch"
+          />
+        </div>
+      </div>
+
       <div class="mt-5">
         <UButton
           class="px-8"
@@ -80,7 +141,7 @@
                 <div class="flex gap-4">
                   <div>
                     <NuxtImg
-                      :src="'http://127.0.0.1:8000' + service.image"
+                      :src="staticURL + service.medias[0].image"
                       class="size-14 rounded-md"
                     />
                   </div>
@@ -123,9 +184,18 @@
 </template>
 
 <script setup>
-const { get } = useApi();
+const { get, staticURL } = useApi();
+const categoryTitle = ref("");
 const services = ref([]);
 const router = useRoute();
+const country = ref([]);
+const state = ref([]);
+const city = ref([]);
+const form = ref({
+  country: "",
+  state: "",
+  city: "",
+});
 
 console.log(router.params.id);
 
@@ -134,8 +204,62 @@ async function fetchServices() {
   console.log(response);
 
   services.value = response.data;
+  categoryTitle.value = response.data[0]?.category_details.title;
 }
 fetchServices();
+
+const ApiUrl = "https://api.countrystatecity.in/v1/countries";
+const headerOptions = {
+  method: "GET",
+  headers: {
+    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
+  },
+  redirect: "follow",
+};
+
+async function getCountry() {
+  const res = await $fetch(ApiUrl, headerOptions);
+  country.value = res;
+  console.log(res);
+}
+onMounted(() => {
+  setTimeout(() => {
+    getCountry();
+  }, 100);
+});
+
+watch(
+  () => form.value.country,
+  async (newValue, oldValue) => {
+    if (newValue) {
+      const res = await $fetch(
+        `${ApiUrl}/${form.value.country}/states/`,
+        headerOptions
+      );
+      state.value = res;
+    }
+  }
+);
+watch(
+  () => form.value.state,
+  async (newValue, oldValue) => {
+    if (newValue) {
+      const res = await $fetch(
+        `${ApiUrl}/${form.value.country}/states/${form.value.state}/cities`,
+        headerOptions
+      );
+      city.value = res;
+    }
+  }
+);
+
+async function filterSearch() {
+  const res = await get(
+    `/classified-posts/filter/?country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
+  );
+  console.log(res);
+  services.value = res.data;
+}
 </script>
 
 <style scoped>
