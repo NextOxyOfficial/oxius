@@ -86,9 +86,9 @@
         </p>
       </div>
       <div class="flex gap-4 justify-center">
-        <UButton size="md" color="primary" variant="solid" label="Referred" />
+        <p class="text-sm md:text-base">Referred</p>
         <div>|</div>
-        <UButton size="md" color="primary" variant="solid" label="50" />
+        <p class="text-sm md:text-base">50</p>
       </div>
     </div>
   </UCard>
