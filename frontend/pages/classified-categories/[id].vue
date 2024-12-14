@@ -25,7 +25,7 @@
             value-attribute="id"
           /> -->
       </div>
-      <p>Select Your Location</p>
+      <p class="text-base md:text-lg">Select Your Location</p>
       <div class="flex justify-between items-end gap-4">
         <!-- <UFormGroup label="Country">
           <USelectMenu
@@ -43,7 +43,7 @@
             value-attribute="iso2"
           />
         </UFormGroup> -->
-        <UFormGroup label="State" class="flex-1">
+        <UFormGroup label="State" class="w-1/4">
           <USelectMenu
             v-model="form.state"
             color="white"
@@ -59,7 +59,7 @@
             value-attribute="iso2"
           />
         </UFormGroup>
-        <UFormGroup label="City" class="flex-1">
+        <UFormGroup label="City" class="w-1/4">
           <USelectMenu
             v-model="form.city"
             color="white"
