@@ -79,7 +79,7 @@
       <div class="text-center text-xl font-bold">
         Referral Link:
         <p
-          class="cursor-pointer"
+          class="cursor-pointer text-blue-500"
           @click="CopyToClip('https://localhost:3000/')"
         >
           https://localhost:3000/
