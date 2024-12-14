@@ -77,7 +77,7 @@
     <UDivider label="" class="my-5" />
     <div class="flex flex-col gap-4">
       <div class="text-center text-xl font-bold">
-        Referral Link:
+        Refer & Earn 10% Commission
         <p
           class="cursor-pointer text-blue-500"
           @click="CopyToClip('https://localhost:3000/')"
@@ -86,9 +86,9 @@
         </p>
       </div>
       <div class="flex gap-4 justify-center">
-        <p class="text-sm md:text-base">Referred</p>
+        <p class="text-sm md:text-base">Referred User: 50</p>
         <div>|</div>
-        <p class="text-sm md:text-base">50</p>
+        <p class="text-sm md:text-base">Earnings: 50</p>
       </div>
     </div>
   </UCard>

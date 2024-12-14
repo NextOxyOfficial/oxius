@@ -63,7 +63,7 @@
                     size="md"
                     variant="ghost"
                     color="white"
-                    class="w-full text-base px-4 py-0 font-normal"
+                    class="w-full text-base px-4 py-0 font-normal text-blue-950"
                     @click.prevent="selectCategory(category.category)"
                     >{{ category.category }} ({{ category.count }})
                   </UButton>
@@ -97,7 +97,7 @@
                       />
                     </div>
                     <div>
-                      <h3 class="text-base font-semibold mb-1.5">
+                      <h3 class="text-base font-semibold mb-1.5 capitalize">
                         {{ gig.title }}
                       </h3>
                       <div class="flex gap-4">

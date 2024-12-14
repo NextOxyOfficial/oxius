@@ -5,3 +5,7 @@ html,
 body {
   @apply scroll-smooth;
 }
+
+body {
+  @apply text-slate-800;
+}
