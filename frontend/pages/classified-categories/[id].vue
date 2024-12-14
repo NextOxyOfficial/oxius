@@ -4,18 +4,17 @@
       <h2 class="text-center text-4xl my-6">
         {{ categoryTitle }}
       </h2>
-      <div class="flex justify-between items-end">
-        <div>
-          <p class="mb-3">
-            <ULink
-              to="/"
-              active-class="text-primary"
-              inactive-class="text-gray-500 dark:text-gray-400"
-              >Home</ULink
-            >
-            > {{ categoryTitle }}
-          </p>
-          <USelect
+      <div>
+        <p class="mb-3">
+          <ULink
+            to="/"
+            active-class="text-primary"
+            inactive-class="text-gray-500 dark:text-gray-400"
+            >Home</ULink
+          >
+          > {{ categoryTitle }}
+        </p>
+        <!-- <USelect
             icon="i-heroicons-bell-solid"
             color="white"
             size="md"
@@ -24,29 +23,11 @@
             placeholder="Category"
             option-attribute="title"
             value-attribute="id"
-          />
-        </div>
-        <UButtonGroup size="md" class="w-96">
-          <UInput
-            icon="i-heroicons-magnifying-glass-20-solid"
-            size="sm"
-            color="white"
-            :trailing="false"
-            placeholder="Search..."
-            v-model="form.title"
-            class="w-full"
-          />
-          <!-- <UButton
-            icon="i-heroicons-bell-solid"
-            size="md"
-            color="primary"
-            variant="solid"
-            label="Search"
           /> -->
-        </UButtonGroup>
       </div>
-      <div class="grid md:grid-cols-4 gap-4">
-        <UFormGroup label="Country">
+      <p>Select Your Location</p>
+      <div class="flex justify-between items-end gap-4">
+        <!-- <UFormGroup label="Country">
           <USelectMenu
             v-model="form.country"
             color="white"
@@ -61,8 +42,8 @@
             option-attribute="name"
             value-attribute="iso2"
           />
-        </UFormGroup>
-        <UFormGroup label="State">
+        </UFormGroup> -->
+        <UFormGroup label="State" class="flex-1">
           <USelectMenu
             v-model="form.state"
             color="white"
@@ -78,7 +59,7 @@
             value-attribute="iso2"
           />
         </UFormGroup>
-        <UFormGroup label="City">
+        <UFormGroup label="City" class="flex-1">
           <USelectMenu
             v-model="form.city"
             color="white"
@@ -94,7 +75,22 @@
             value-attribute="name"
           />
         </UFormGroup>
-        <div class="pt-6">
+        <UButtonGroup size="md" class="w-96 flex-1">
+          <UInput
+            icon="i-heroicons-magnifying-glass-20-solid"
+            size="md"
+            color="white"
+            :trailing="false"
+            placeholder="Search..."
+            v-model="form.title"
+            class="w-full"
+            :ui="{
+              padding: {
+                md: 'py-2.5',
+              },
+            }"
+          />
+
           <UButton
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -102,9 +98,13 @@
             variant="solid"
             label="Search"
             @click="filterSearch"
+            class="h-10"
           />
-        </div>
+        </UButtonGroup>
       </div>
+      <!-- <div class="grid md:grid-cols-4 gap-4">
+        <div class="pt-6"></div>
+      </div> -->
 
       <div class="mt-5">
         <UButton
@@ -192,7 +192,7 @@ const { get, staticURL } = useApi();
 const categoryTitle = ref("");
 const services = ref([]);
 const router = useRoute();
-const country = ref([]);
+const country = ref(["BN"]);
 const state = ref([]);
 const city = ref([]);
 const form = ref({
@@ -238,16 +238,16 @@ const headerOptions = {
   redirect: "follow",
 };
 
-async function getCountry() {
-  const res = await $fetch(ApiUrl, headerOptions);
-  country.value = res;
-  console.log(res);
-}
-onMounted(() => {
-  setTimeout(() => {
-    getCountry();
-  }, 100);
-});
+// async function getCountry() {
+//   const res = await $fetch(ApiUrl, headerOptions);
+//   country.value = res;
+//   console.log(res);
+// }
+// onMounted(() => {
+//   setTimeout(() => {
+//     getCountry();
+//   }, 100);
+// });
 
 watch(
   () => form.value.country,
