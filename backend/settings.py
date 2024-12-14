@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['adsyclub.com', 'www.adsyclub.com']
 AUTH_USER_MODEL = 'base.User'
 
 
@@ -49,7 +49,11 @@ INSTALLED_APPS = [
 
 CORS_ALLOWED_ORIGINS = [
    'http://localhost:3000',
-   'http://localhost:3001'
+   'http://localhost:3001'.
+   'http://adsyclub.com',
+   'https://adsyclub.com',
+   'http://www.adsyclub.com',
+   'https://www.adsyclub.com'
 ]
 
 REST_FRAMEWORK = {
