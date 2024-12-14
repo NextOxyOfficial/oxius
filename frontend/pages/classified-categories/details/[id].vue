@@ -30,11 +30,11 @@
           </template>
         </UButton>
       </div>
-      {{ service }}
-      <div class="w-full flex flex-col justify-center" v-if="service">
+      <div class="w-full flex flex-col justify-center" v-if="service.id">
         <h2 class="text-3xl font-bold">{{ service.title }}</h2>
-        {{ service?.medias[0] }}
+
         <NuxtImg
+          v-if="service?.medias[0]"
           :src="'http://127.0.0.1:8000' + service?.medias[0]?.image"
           class="max-w-[60%] w-full rounded-md self-center my-10"
         />
@@ -74,38 +74,38 @@
             <div class="flex flex-col gap-3 my-3">
               <div
                 class="flex gap-2 items-center"
-                v-if="service.user.face_link"
+                v-if="service.user?.face_link"
               >
                 <UIcon name="logos:facebook" class="w-5 h-5" />
-                <a :href="service.user.face_link">{{
-                  service.user.face_link
+                <a :href="service.user?.face_link">{{
+                  service.user?.face_link
                 }}</a>
               </div>
               <div
                 class="flex gap-2 items-center"
-                v-if="service.user.instagram_link"
+                v-if="service.user?.instagram_link"
               >
                 <UIcon name="skill-icons:instagram" class="w-5 h-5" />
-                <a :href="service.user.instagram_link">{{
-                  service.user.instagram_link
+                <a :href="service.user?.instagram_link">{{
+                  service.user?.instagram_link
                 }}</a>
               </div>
               <div
                 class="flex gap-2 items-center"
-                v-if="service.user.whatsapp_link"
+                v-if="service.user?.whatsapp_link"
               >
                 <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
-                <a :href="service.user.whatsapp_link">{{
-                  service.user.whatsapp_link
+                <a :href="service.user?.whatsapp_link">{{
+                  service.user?.whatsapp_link
                 }}</a>
               </div>
               <div
                 class="flex gap-2 items-center"
-                v-if="service.user.gmail_link"
+                v-if="service.user?.gmail_link"
               >
                 <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
-                <a :href="service.user.gmail_link">{{
-                  service.user.gmail_link
+                <a :href="service.user?.gmail_link">{{
+                  service.user?.gmail_link
                 }}</a>
               </div>
             </div>
@@ -117,19 +117,19 @@
 </template>
 
 <script setup>
-const { get } = useApi();
+const { baseURL } = useApi();
 const service = ref({});
 const router = useRoute();
 
 async function fetchServices() {
-  const response = await get(
-    `/classified-categories/post/${router.params.id}/`
+  const response = await $fetch(
+    `${baseURL}/classified-categories/post/${router.params.id}/`
   );
   console.log(response);
 
-  service.value = response.data;
+  service.value = response;
 }
 setTimeout(() => {
   fetchServices();
-}, 100);
+}, 20);
 </script>
