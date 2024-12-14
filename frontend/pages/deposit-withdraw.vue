@@ -1,6 +1,7 @@
 <template>
   <UContainer>
     <h1 class="text-center text-4xl my-8">Deposit/Withdraw</h1>
+
     <UDivider label="" class="mb-8" />
     <div class="flex items-center justify-between">
       <p
@@ -8,8 +9,9 @@
       >
         <span class="inline-flex items-center"
           >Available Balance:&nbsp;
-          <UIcon name="i-mdi:currency-bdt" class="" />500</span
-        >
+          <UIcon name="i-mdi:currency-bdt" class="" />
+          {{ user.user.balance }}
+        </span>
       </p>
       <div class="text-lg">
         <p
@@ -31,10 +33,13 @@
             :ui="{
               padding: { md: 'px-3 py-2' },
             }"
+            v-model="amount"
+            amount
           />
           <UInputMenu
             placeholder="Select payment method"
             :options="methods"
+            v-model="method"
             size="md"
             :ui="{
               padding: { md: 'px-3 py-2' },
@@ -86,8 +91,15 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
 const toast = useToast();
+const { put } = useApi();
+const { user } = useAuth();
 const methods = ["bkash", "nagad", "rocket", "upay"];
+const method = ref([]);
+const amount = ref(null);
 const columns = [
   {
     key: "id",
@@ -138,13 +150,25 @@ const statements = [
   // },
 ];
 
-const deposit = () => {
+const deposit = async () => {
   // Add deposit logic here
   toast.add({ title: "Deposit clicked" });
+  console.log(user.value);
+
+  const res = await put(`/persons/update/${user.value.user.email}/`, {
+    deposit: amount.value,
+    method: method.value,
+  });
+  console.log(res);
 };
 
-const withdraw = () => {
+const withdraw = async () => {
   // Add withdraw logic here
   toast.add({ title: "Withdraw clicked" });
+  const res = await put(`/persons/update/${user.value.user.email}/`, {
+    withdraw: amount.value,
+    method: method.value,
+  });
+  console.log(res);
 };
 </script>

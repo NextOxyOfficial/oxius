@@ -129,8 +129,6 @@
               @click="submitGig"
             />
           </div>
-
-          {{ gig }}
         </div>
       </UCard>
     </UContainer>

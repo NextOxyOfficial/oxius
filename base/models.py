@@ -19,7 +19,7 @@ class User(AbstractUser):
   gmail_link=models.CharField(null=True, blank=True, default="")
   whatsapp_link=models.CharField(null=True, blank=True, default="")
   is_vendor = models.BooleanField(default=False)
-  is_active = models.BooleanField(default=True) 
+  is_active = models.BooleanField(default=True)
   phone = models.CharField(max_length=100, default='', blank=True)
   email = models.EmailField(unique=True,default='', null=True)
   nid = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -247,6 +247,12 @@ class MicroGigPostTask(models.Model):
 class Balance(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user_balance')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    PAYMENT_STATUS = [
+      ('pending', 'Pending'),
+      ('approved', 'Approved'),
+    ]
+    status = models.CharField(choices=PAYMENT_STATUS,default='pending')
+    method = models.CharField(default='',blank=True,null=True)
     amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

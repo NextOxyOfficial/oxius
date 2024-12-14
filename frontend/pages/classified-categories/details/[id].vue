@@ -30,11 +30,12 @@
           </template>
         </UButton>
       </div>
-
-      <div class="w-full flex flex-col justify-center">
+      {{ service }}
+      <div class="w-full flex flex-col justify-center" v-if="service">
         <h2 class="text-3xl font-bold">{{ service.title }}</h2>
+        {{ service?.medias[0] }}
         <NuxtImg
-          :src="'http://127.0.0.1:8000' + service.image"
+          :src="'http://127.0.0.1:8000' + service?.medias[0]?.image"
           class="max-w-[60%] w-full rounded-md self-center my-10"
         />
 
@@ -128,5 +129,7 @@ async function fetchServices() {
 
   service.value = response.data;
 }
-fetchServices();
+setTimeout(() => {
+  fetchServices();
+}, 100);
 </script>

@@ -18,6 +18,7 @@ from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from uuid import UUID
+from decimal import Decimal
 
 # Create your views here.
 
@@ -53,20 +54,48 @@ def register(request):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def update_user(request,email):
+def update_user(request, email):
     print(request.data)
     data = request.data
-    data['id'] = request.user.id
-    serializer = UserSerializer(User.objects.get(email=email),data=data)
+    user = User.objects.get(email=email)
 
-    if serializer.is_valid():
-        serializer.save()
-        
-        return Response(
-            {'message': 'Person Updated successfully', 'data': serializer.data},
-            status=status.HTTP_201_CREATED
+    # Update balance based on withdraw or deposit
+    if 'withdraw' in data:
+        withdraw_amount = Decimal(data.get('withdraw', 0))
+        if user.balance < withdraw_amount:
+            return Response(
+                {'message': 'Insufficient balance'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.balance -= withdraw_amount
+        Balance.objects.create(
+            user=user,
+            amount=withdraw_amount,
+            method=data.get('method'),
+            status='pending',  # Set as pending until processed
         )
-    print(serializer.errors)    
+    elif 'deposit' in data:
+        deposit_amount = Decimal(data.get('deposit', 0))
+        user.balance += deposit_amount
+        Balance.objects.create(
+            user=user,
+            amount=deposit_amount,  # Use deposit_amount here
+            method=data.get('method'),
+            status='pending',  # Set as pending until processed
+        )
+
+    # Update other fields
+    data['id'] = user.id
+    serializer = UserSerializer(user, data=data, partial=True)  # Allow partial updates
+    if serializer.is_valid():
+        user.save()  # Save balance changes
+        serializer.save()  # Save other updated fields
+        return Response(
+            {'message': 'User updated successfully', 'data': serializer.data},
+            status=status.HTTP_200_OK
+        )
+
+    print(serializer.errors)
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
