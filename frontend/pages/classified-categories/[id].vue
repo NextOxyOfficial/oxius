@@ -19,8 +19,11 @@
             icon="i-heroicons-bell-solid"
             color="white"
             size="md"
-            :options="['United States', 'Canada']"
+            :options="categories"
+            v-model="form.category"
             placeholder="Category"
+            option-attribute="title"
+            value-attribute="id"
           />
         </div>
         <UButtonGroup size="md" class="w-96">
@@ -30,15 +33,16 @@
             color="white"
             :trailing="false"
             placeholder="Search..."
+            v-model="form.title"
             class="w-full"
           />
-          <UButton
+          <!-- <UButton
             icon="i-heroicons-bell-solid"
             size="md"
             color="primary"
             variant="solid"
             label="Search"
-          />
+          /> -->
         </UButtonGroup>
       </div>
       <div class="grid md:grid-cols-4 gap-4">
@@ -195,9 +199,10 @@ const form = ref({
   country: "",
   state: "",
   city: "",
+  title: "",
+  category: "",
 });
-
-console.log(router.params.id);
+const categories = ref([]);
 
 async function fetchServices() {
   const response = await get(`/classified-categories/${router.params.id}/`);
@@ -207,6 +212,22 @@ async function fetchServices() {
   categoryTitle.value = response.data[0]?.category_details.title;
 }
 fetchServices();
+
+async function getClassifiedGigsCategory() {
+  try {
+    const [categoriesResponse] = await Promise.all([
+      get("/classified-categories/"),
+    ]);
+
+    categories.value = categoriesResponse.data;
+  } catch (error) {
+    console.error("Error fetching micro-gigs data:", error);
+  }
+}
+
+onMounted(() => {
+  getClassifiedGigsCategory();
+});
 
 const ApiUrl = "https://api.countrystatecity.in/v1/countries";
 const headerOptions = {
@@ -255,7 +276,7 @@ watch(
 
 async function filterSearch() {
   const res = await get(
-    `/classified-posts/filter/?country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
+    `/classified-posts/filter/?category=${form.value.category}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
   console.log(res);
   services.value = res.data;

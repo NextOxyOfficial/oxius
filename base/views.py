@@ -203,9 +203,15 @@ class ClassifiedCategoryPostFilterView(APIView):
         country = request.GET.get('country')
         state = request.GET.get('state')
         city = request.GET.get('city')
+        category = request.GET.get('category')
+        title = request.GET.get('title')
 
         # Filter based on the query parameters
         filters = Q()
+        if category:
+            filters &= Q(category__id=category)
+        if title:
+            filters &= Q(title__icontains=title)
         if country:
             filters &= Q(country__iexact=country)
         if state:
