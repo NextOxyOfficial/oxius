@@ -119,9 +119,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'oxy-us',
-        'USER': 'postgres',
-        'PASSWORD': 'pgPass7431',
+        'NAME': 'adsyclub',
+        'USER': 'adsyclub',
+        'PASSWORD': 'adsyclub@123@',
         'HOST': 'localhost',
         'PORT': '5432',
     }
