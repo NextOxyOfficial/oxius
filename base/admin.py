@@ -17,4 +17,5 @@ admin.site.register(TargetNetwork)
 admin.site.register(ClassifiedCategoryPost)
 admin.site.register(Logo)
 admin.site.register(AdminNotice)
+admin.site.register(ClassifiedCategoryPostMedia)
 

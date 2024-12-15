@@ -23,6 +23,26 @@ from decimal import Decimal
 # Create your views here.
 
 
+# move this function to util later
+def base64ToFile(base64_data):
+    # Remove the prefix if it exists (e.g., "data:image/png;base64,")
+    if base64_data.startswith('data:image'):
+        base64_data = base64_data.split('base64,')[1]
+    
+    # Decode the Base64 string into bytes
+    file_data = base64.b64decode(base64_data)
+    
+    # Create a Django ContentFile object from the bytes
+    file = ContentFile(file_data)
+    
+    # You can create a filename, e.g., using the current timestamp or other logic
+    filename = "uploaded_image.png"  # Customize as needed
+    
+    # Save the file to the appropriate storage (e.g., media directory)
+    file.name = filename
+    return file
+
+
 @api_view(["GET"])
 def getLogo(request):
     serializer = logoSerializer(Logo.objects.get())
@@ -89,7 +109,14 @@ def update_user(request, email):
     serializer = UserSerializer(user, data=data, partial=True)  # Allow partial updates
     if serializer.is_valid():
         user.save()  # Save balance changes
-        serializer.save()  # Save other updated fields
+        # serializer.save()  # Save other updated fields
+        user_nid_post = serializer.save()
+
+        for file in data['nid']:
+            nm = NID.objects.create(
+                image = base64ToFile(file)
+            )
+            user_nid_post.nid.add(nm)
         return Response(
             {'message': 'User updated successfully', 'data': serializer.data},
             status=status.HTTP_200_OK
@@ -153,24 +180,7 @@ class GetMicroGigs(generics.ListCreateAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# move this function to util later
-def base64ToFile(base64_data):
-    # Remove the prefix if it exists (e.g., "data:image/png;base64,")
-    if base64_data.startswith('data:image'):
-        base64_data = base64_data.split('base64,')[1]
-    
-    # Decode the Base64 string into bytes
-    file_data = base64.b64decode(base64_data)
-    
-    # Create a Django ContentFile object from the bytes
-    file = ContentFile(file_data)
-    
-    # You can create a filename, e.g., using the current timestamp or other logic
-    filename = "uploaded_image.png"  # Customize as needed
-    
-    # Save the file to the appropriate storage (e.g., media directory)
-    file.name = filename
-    return file
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

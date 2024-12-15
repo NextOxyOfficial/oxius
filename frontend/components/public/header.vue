@@ -128,7 +128,7 @@ const logo = ref({});
 const isOpen = ref(false);
 
 async function getLogo() {
-  const res = await get('/logo/');
+  const res = await get("/logo/");
   console.log(res);
 
   logo.value = res.data;
@@ -153,52 +153,57 @@ watch(router.currentRoute, () => {
 // });
 const links = [
   {
-    label: 'Home',
-    to: '/',
-    icon: 'i-heroicons:home',
+    label: "Home",
+    to: "/",
+    icon: "i-heroicons:home",
   },
   {
-    label: 'Classified Services',
-    to: '#classified-services',
-    icon: 'i-heroicons:clipboard-document-list',
+    label: "Classified Services",
+    to: "#classified-services",
+    icon: "i-heroicons:clipboard-document-list",
   },
   {
-    label: 'Earn Money',
-    to: '#micro-gigs',
-    icon: 'i-healthicons:money-bag-outline',
+    label: "Earn Money",
+    to: "#micro-gigs",
+    icon: "i-healthicons:money-bag-outline",
   },
   {
-    label: 'FAQ',
-    to: '/faq',
-    icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
+    label: "FAQ",
+    to: "/faq",
+    icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
   },
 ];
 
 const accountLinks = [
   [
     {
-      label: 'Profile',
-      icon: 'i-heroicons-user',
-      to: '/my-account/',
+      label: "Profile",
+      icon: "i-heroicons-user",
+      to: "/my-account/",
     },
     {
-      label: 'Upload Center',
-      icon: 'material-symbols:drive-folder-upload-outline-sharp',
-      to: '/upload-center/',
+      label: "Transactions",
+      to: "/deposit-withdraw",
+      icon: "i-heroicons:currency-dollar",
     },
     {
-      label: 'Settings',
-      icon: 'material-symbols:settings-outline',
-      to: '/settings/',
+      label: "Upload Center",
+      icon: "material-symbols:drive-folder-upload-outline-sharp",
+      to: "/upload-center/",
     },
     {
-      label: 'Support',
-      icon: 'i-heroicons-question-mark-circle',
-      to: '/contact-us/',
+      label: "Settings",
+      icon: "material-symbols:settings-outline",
+      to: "/settings/",
     },
     {
-      label: 'Logout',
-      icon: 'bitcoin-icons:exit-filled',
+      label: "Support",
+      icon: "i-heroicons-question-mark-circle",
+      to: "/contact-us/",
+    },
+    {
+      label: "Logout",
+      icon: "bitcoin-icons:exit-filled",
       click: () => {
         logout();
       },

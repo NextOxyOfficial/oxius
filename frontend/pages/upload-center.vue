@@ -4,7 +4,33 @@
     <UDivider label="" class="mb-8" />
     <div class="w-1/2">
       <p class="text-2xl font-medium mb-5">Upload Here</p>
-      <UInput type="file" size="sm" icon="i-heroicons-folder" />
+      <div class="flex flex-wrap gap-5">
+        <div
+          class="relative max-w-[200px] max-h-[200px]"
+          v-for="(img, i) in form.nid"
+          :key="i"
+        >
+          <img :src="img" :alt="`Uploaded file ${i}`" />
+          <div
+            class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+            @click="deleteUpload(i)"
+          >
+            <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+          </div>
+        </div>
+        <div
+          class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+        >
+          <input
+            type="file"
+            name=""
+            id=""
+            class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+            @change="handleFileUpload($event, 'image')"
+          />
+          <UIcon name="i-heroicons-plus-solid" size="66" />
+        </div>
+      </div>
     </div>
     <div>
       <UButton
@@ -13,7 +39,50 @@
         color="primary"
         variant="solid"
         label="Upload"
+        @click="handleUploadSubmit"
       />
     </div>
   </UContainer>
 </template>
+
+<script setup>
+definePageMeta({
+  layout: "dashboard",
+});
+const { put } = useApi();
+const { user } = useAuth();
+const form = ref({
+  nid: [],
+});
+
+function handleFileUpload(event, field) {
+  const files = Array.from(event.target.files);
+  const reader = new FileReader();
+
+  // Event listener for successful read
+  reader.onload = () => {
+    form.value.nid.push(reader.result);
+  };
+
+  // Event listener for errors
+  reader.onerror = (error) => reject(error);
+
+  // Read the file as a data URL (Base64 string)
+  reader.readAsDataURL(files[0]);
+}
+
+function deleteUpload(ind) {
+  if (ind >= 0 && ind < form.value.nid.length) {
+    form.value.medias.splice(ind, 1);
+  }
+}
+console.log(user.value.user.email);
+
+async function handleUploadSubmit() {
+  const res = await put(
+    `/persons/update/${user.value.user.email}/`,
+    form.value
+  );
+  console.log(res);
+}
+</script>

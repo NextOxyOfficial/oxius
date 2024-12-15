@@ -1,14 +1,13 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-4xl my-8">Gig Media</h1>
+    <h1 class="text-center text-4xl my-8">Image / Video</h1>
     <UContainer>
       <UCard>
         <NuxtImg
           :src="router.query.url"
-          class="w-full max-w-xl"
+          class="w-full max-w-xl mx-auto"
           v-if="router.query.type == 'image'"
         />
-
         <video
           :src="router.query.url"
           class="w-full max-w-xl"
