@@ -507,3 +507,11 @@ class TokenValidationView(APIView):
         }
 
         return Response(data)
+    
+
+
+
+# for frontend
+
+def index(request, **args):
+    return render(request, 'index.html')

@@ -39,4 +39,5 @@ urlpatterns = [
   path('auth/validate-token/', TokenValidationView.as_view(), name='validate_token'),
   path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
   path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+  
 ]
