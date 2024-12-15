@@ -1,12 +1,12 @@
 <template>
   <UCard
     v-if="user?.user"
-    class="w-[700px] mx-auto mb-8 bg-primary/10"
+    class="md:w-[700px] mx-auto mb-8 bg-primary/10"
     :ui="{
       rounded: 'rounded-2xl',
     }"
   >
-    <div class="flex justify-between gap-6">
+    <div class="flex flex-col md:flex-row justify-between gap-6">
       <div>
         <h3 class="text-2xl font-bold">
           <span class="text-green-900 inline-flex items-center gap-1">
@@ -40,7 +40,7 @@
         />
       </div>
     </div>
-    <div class="flex justify-center gap-4 mt-8">
+    <div class="flex flex-col md:flex-row justify-center gap-4 mt-8">
       <UButton
         icon="i-token:cusd"
         size="md"
