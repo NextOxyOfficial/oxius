@@ -9,6 +9,8 @@ from django.db.models.signals import post_save, pre_save
 
 # Create your models here.
 
+class NID(models.Model):
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
 
 class User(AbstractUser):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -22,7 +24,7 @@ class User(AbstractUser):
   is_active = models.BooleanField(default=True)
   phone = models.CharField(max_length=100, default='', blank=True)
   email = models.EmailField(unique=True,default='', null=True)
-  nid = models.ImageField(upload_to='images/', blank=True, null=True)
+  nid = models.ManyToManyField(NID,null=True, blank=True)
   address = models.CharField(max_length=256,blank=True, default="")
   city=models.CharField(max_length=256,blank=True, default="")
   state=models.CharField(max_length=256,blank=True, default="")
@@ -40,6 +42,10 @@ class User(AbstractUser):
   def __str__(self):
       return self.email
   
+
+
+
+
 class Logo(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     def __str__(self):
