@@ -207,60 +207,7 @@
 	// 	favicon: "/static/favicon.ico",
 	// 	title: "Easy Business Manager",
 	// });
-	const links = [
-	  {
-	    label: "Home",
-	    to: "/",
-	    icon: "i-heroicons:home",
-	  },
-	  {
-	    label: "Classified Services",
-	    to: "#classified-services",
-	    icon: "i-heroicons:clipboard-document-list",
-	  },
-	  {
-	    label: "Earn Money",
-	    to: "#micro-gigs",
-	    icon: "i-healthicons:money-bag-outline",
-	  },
-	  {
-	    label: "FAQ",
-	    to: "/faq",
-	    icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
-	  },
-	];
 
-		const accountLinks = [
-			[
-				{
-					label: "Profile",
-					icon: "i-heroicons-user",
-					to: "/my-account/",
-				},
-				{
-					label: "Upload Center",
-					icon: "material-symbols:drive-folder-upload-outline-sharp",
-					to: "/upload-center/",
-				},
-				{
-					label: "Settings",
-					icon: "material-symbols:settings-outline",
-					to: "/settings/",
-				},
-				{
-					label: "Support",
-					icon: "i-heroicons-question-mark-circle",
-					to: "/contact-us/",
-				},
-				{
-					label: "Logout",
-					icon: "bitcoin-icons:exit-filled",
-					click: () => {
-						logout();
-					},
-				},
-			],
-		];
 	const accountLinks = [
 	  [
 	    {
