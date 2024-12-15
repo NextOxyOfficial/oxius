@@ -55,6 +55,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://www.adsyclub.com',
     'https://www.adsyclub.com'
 ]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://adsyclub.com',
+    'https://adsyclub.com',
+    'http://www.adsyclub.com',
+    'https://www.adsyclub.com'
+]
 
 REST_FRAMEWORK = {
     # Permissions: Define who can access your APIs
