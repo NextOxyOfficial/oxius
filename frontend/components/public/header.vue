@@ -39,9 +39,9 @@
 						alt="Logo"
 						class="h-12"
 					/>
-					<NuxtImg
+					<img
 						v-else
-						src="/images/logo.jpg"
+						src="/static/frontend/images/logo.jpg"
 						alt="Logo"
 					/>
 				</NuxtLink>
