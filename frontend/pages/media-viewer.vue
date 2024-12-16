@@ -1,21 +1,23 @@
 <template>
-	<section>
-		{{ router.query.url }}
-
-		<NuxtImg
-			:src="router.query.url"
-			class="w-full max-w-xl"
-			v-if="router.query.type == 'image'"
-		/>
-
-		<video
-			:src="router.query.url"
-			class="w-full max-w-xl"
-			v-if="router.query.type == 'video'"
-			controls
-			autoplay
-		></video>
-	</section>
+  <PublicSection>
+    <h1 class="text-center text-4xl my-8">Image / Video</h1>
+    <UContainer>
+      <UCard>
+        <NuxtImg
+          :src="router.query.url"
+          class="w-full max-w-xl mx-auto"
+          v-if="router.query.type == 'image'"
+        />
+        <video
+          :src="router.query.url"
+          class="w-full max-w-xl"
+          v-if="router.query.type == 'video'"
+          controls
+          autoplay
+        ></video>
+      </UCard>
+    </UContainer>
+  </PublicSection>
 </template>
 
 <script setup>

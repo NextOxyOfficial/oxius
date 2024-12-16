@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'base.User'
 
 
@@ -48,12 +48,24 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-   'http://localhost:3000',
-   'http://localhost:3001'
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://adsyclub.com',
+    'https://adsyclub.com',
+    'http://www.adsyclub.com',
+    'https://www.adsyclub.com'
+]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://adsyclub.com',
+    'https://adsyclub.com',
+    'http://www.adsyclub.com',
+    'https://www.adsyclub.com'
 ]
 
 REST_FRAMEWORK = {
-     # Permissions: Define who can access your APIs
+    # Permissions: Define who can access your APIs
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     # ],
@@ -63,7 +75,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
-
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
@@ -89,7 +102,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend/dist')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,7 +132,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'oxy-us',
+        'NAME': 'adsyclub',
         'USER': 'postgres',
         'PASSWORD': 'pgPass7431',
         'HOST': 'localhost',
@@ -163,7 +176,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/dist/static')
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
+MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type

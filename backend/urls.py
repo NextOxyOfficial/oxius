@@ -18,8 +18,19 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
-
-urlpatterns = [
+from base.views import index
+urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
-    path('api/', include('base.urls'))
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/', include('base.urls')),
+    # for frontend
+  path('', index, name='index'),
+    path('<str:param>', index, name='index2'),
+    path('<str:param>/', index, name='index2'),
+    path('<str:param>/<str:param2>', index, name='index2'),
+    path('<str:param>/<str:param2>/', index, name='index2'),
+    path('<str:param>/<str:param2>/<str:param3>', index, name='index2'),
+    path('<str:param>/<str:param2>/<str:param3>/', index, name='index2'),
+    path('<str:param>/<str:param2>/<str:param3>/<str:param4>', index, name='index2'),
+    path('<str:param>/<str:param2>/<str:param3>/<str:param4>/', index, name='index2'),
+]

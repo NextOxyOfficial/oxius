@@ -1,16 +1,15 @@
 <template>
 	<div class="min-h-[50vh]">
 		<UContainer>
-			<p class="text-2xl font-bold pb-6 border-b text-center mx-auto">Inbox</p>
+			<p class="text-2xl font-bold pb-6 border-b text-center mx-auto">In Box</p>
 			<!-- showing message -->
-			<div>
+			<div v-for="message in messages" :key="message.id">
 				<div class="flex items-center justify-between gap-3 py-2">
-					<p>#456487</p>
+					<!-- <p>ID: 45648798</p> -->
 					<p class="font-semibold">
-						Subject: Lorem ipsum dolor sit amet consectetur adipisicing elit.
-						Sint, neque.
+						{{ message.title }}
 					</p>
-					<p><span>Time: 12.00 PM</span> / Date: 12-08-24</p>
+					<p>{{ message.created_at }}</p>
 					<UButton
 						color="white"
 						label="Show Message"
@@ -22,37 +21,7 @@
 				<div class="message" v-if="toggleMsg">
 					<UCard>
 						<p>
-							Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto
-							numquam expedita, dolorem ratione dolore amet. Quidem error animi
-							voluptatem. Doloremque repudiandae eum iure reprehenderit
-							recusandae unde, repellat praesentium autem qui.
-						</p>
-					</UCard>
-				</div>
-			</div>
-			<div>
-				<div class="flex items-center justify-between gap-3 py-2">
-					<p>#456487</p>
-					<p class="font-semibold">
-						Subject: Lorem ipsum dolor sit amet consectetur adipisicing elit.
-						Sint, neque.
-					</p>
-					<p><span>Time: 12.00 PM</span> / Date: 12-08-24</p>
-					<UButton
-						color="white"
-						label="Show Message"
-						trailing-icon="i-heroicons-chevron-down-20-solid"
-						class="button"
-						@click="toggleMsg = !toggleMsg"
-					/>
-				</div>
-				<div class="message" v-if="toggleMsg">
-					<UCard>
-						<p>
-							Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto
-							numquam expedita, dolorem ratione dolore amet. Quidem error animi
-							voluptatem. Doloremque repudiandae eum iure reprehenderit
-							recusandae unde, repellat praesentium autem qui.
+							{{ message.message }}
 						</p>
 					</UCard>
 				</div>
@@ -63,6 +32,15 @@
 
 <script setup>
 const toggleMsg = ref(false);
+const messages = ref([]);
+const { get } = useApi();
+
+async function getAdminMessages() {
+	const res = await get("/admin-notice/");
+	console.log(res);
+	messages.value = res.data;
+}
+getAdminMessages();
 </script>
 
 <style lang="scss" scoped></style>

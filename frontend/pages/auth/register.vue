@@ -17,4 +17,8 @@
 // if (user) {
 //   navigateTo("/");
 // }
+if (!useCookie("jwt").value) {
+  navigateTo("/auth/login/");
+  loader.value = false;
+}
 </script>
