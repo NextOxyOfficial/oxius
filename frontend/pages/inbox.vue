@@ -1,11 +1,11 @@
 <template>
 	<div class="min-h-[50vh]">
 		<UContainer>
-			<p class="text-2xl font-bold pb-6 border-b text-center mx-auto">In Box</p>
+			<p class="text-2xl font-bold pb-6 border-b text-center mx-auto">Inbox</p>
 			<!-- showing message -->
 			<div>
 				<div class="flex items-center justify-between gap-3 py-2">
-					<p>ID: 45648798</p>
+					<p>#456487</p>
 					<p class="font-semibold">
 						Subject: Lorem ipsum dolor sit amet consectetur adipisicing elit.
 						Sint, neque.
@@ -32,7 +32,7 @@
 			</div>
 			<div>
 				<div class="flex items-center justify-between gap-3 py-2">
-					<p>ID: 45648798</p>
+					<p>#456487</p>
 					<p class="font-semibold">
 						Subject: Lorem ipsum dolor sit amet consectetur adipisicing elit.
 						Sint, neque.
