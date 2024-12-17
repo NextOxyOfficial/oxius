@@ -157,7 +157,7 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             raise NotFound({"error": f"No person found with email: {email}"})
 
 class GetClassifiedCategories(generics.ListCreateAPIView):
-    queryset = ClassifiedCategory.objects.filter().order_by('-created_at')
+    queryset = ClassifiedCategory.objects.filter().order_by('title')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
 
