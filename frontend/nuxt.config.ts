@@ -5,9 +5,9 @@ export default defineNuxtConfig({
 	ssr: false,
 	css: ["~/assets/css/main.css"],
 	modules: ["@nuxt/ui", "@nuxt/image"],
-	// app: {
-	// 	buildAssetsDir: "/static/frontend",
-	// },
+	app: {
+		buildAssetsDir: "/static/frontend",
+	},
 	runtimeConfig: {
 		public: {
 			baseURL: "http://127.0.0.1:8000",
