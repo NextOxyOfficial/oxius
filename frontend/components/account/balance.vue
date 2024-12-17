@@ -1,9 +1,10 @@
 <template>
   <UCard
     v-if="user?.user"
-    class="md:w-[700px] mx-auto mb-8 bg-primary/10"
+    class="md:w-[700px] mx-auto mb-8 bg-green-100 border-dashed border border-green-500"
     :ui="{
       rounded: 'rounded-2xl',
+      ring: '',
     }"
   >
     <div class="flex flex-col md:flex-row justify-between gap-6">
