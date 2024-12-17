@@ -41,14 +41,21 @@
         />
       </div>
     </div>
-    <div class="flex flex-col md:flex-row justify-center gap-4 mt-8">
+    <div
+      class="flex flex-wrap md:flex-row justify-center gap-2 md:gap-4 mt-8 w-full"
+    >
       <UButton
         icon="i-token:cusd"
         size="md"
         color="primary"
         variant="solid"
-        label="Deposit / Withdraw"
+        label="Deposit/Withdraw"
         to="/deposit-withdraw/"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+          gap: { md: 'gap-x-1 md:gap-x-2' },
+          padding: { md: 'px-1.5 py-0.5 md:px-3 md:py-2' },
+        }"
       />
       <UButton
         icon="i-material-symbols:mark-email-unread-outline"
@@ -57,6 +64,9 @@
         variant="solid"
         label="Inbox"
         to="/inbox/"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+        }"
       />
       <UButton
         icon="i-material-symbols:list-rounded"
@@ -65,6 +75,9 @@
         variant="solid"
         label="My Gigs"
         :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+        }"
       />
       <UButton
         icon="i-heroicons-plus-circle"
@@ -73,6 +86,9 @@
         variant="solid"
         label="Post A Gig"
         to="/post-a-gig"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+        }"
       />
     </div>
     <UDivider label="" class="my-5" />
