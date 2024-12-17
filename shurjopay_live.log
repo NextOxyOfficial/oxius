@@ -1,0 +1,656 @@
+Shurjopay Log file Generated
+ '2024-12-17 14:44:40,694 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:44:40,695 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:44:40,820 : ERROR :gs shurjopay_plugin.logger_config : authenticate  sp_code:1064, sp_message:Unauthorized'
+ '2024-12-17 14:44:40,837 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 45, in makePayment
+    result = engine.make_payment(model)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 152, in make_payment
+    self.AUTH_TOKEN = self.authenticate()
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 108, in authenticate
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('1064', 'Unauthorized')
+ '2024-12-17 14:45:20,500 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:53:00,094 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:53:00,095 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:53:00,390 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:53:03,597 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:53:03,680 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 727, in render
+    context = self.get_context(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 683, in get_context
+    'content': self.get_content(renderer, data, accepted_media_type, renderer_context),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 413, in get_content
+    content = renderer.render(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PaymentDetailsModel is not JSON serializable
+ '2024-12-17 14:53:40,107 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:53:42,411 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:53:42,412 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:53:42,639 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:53:45,930 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:53:45,954 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 727, in render
+    context = self.get_context(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 683, in get_context
+    'content': self.get_content(renderer, data, accepted_media_type, renderer_context),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 413, in get_content
+    content = renderer.render(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PaymentDetailsModel is not JSON serializable
+ '2024-12-17 14:54:13,527 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:54:14,631 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:54:14,631 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:54:14,858 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:54:18,843 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:55:40,995 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:55:50,770 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:55:50,771 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:55:50,988 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:55:54,191 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:56:33,964 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\backend\settings.py changed, reloading.'
+ '2024-12-17 14:59:23,410 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:59:23,411 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:59:23,693 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:59:27,058 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:59:27,084 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 727, in render
+    context = self.get_context(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 683, in get_context
+    'content': self.get_content(renderer, data, accepted_media_type, renderer_context),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 413, in get_content
+    content = renderer.render(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PaymentDetailsModel is not JSON serializable
+ '2024-12-17 15:00:11,080 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:00:20,083 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:00:20,084 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:00:20,384 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:00:23,676 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:00:39,248 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:00:40,494 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 22, in makePayment
+    model = PaymentRequestModel(
+            ^^^^^^^^^^^^^^^^^^^^
+TypeError: PaymentRequestModel.__init__() missing 1 required positional argument: 'amount'
+ '2024-12-17 15:00:55,879 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:02:38,213 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:02:38,213 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:02:38,444 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:02:41,841 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:03:22,704 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\urls.py changed, reloading.'
+ '2024-12-17 15:07:42,096 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:09:54,677 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:10:13,369 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:10:16,865 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\urls.py changed, reloading.'
+ '2024-12-17 15:10:27,211 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:10:27,211 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:10:27,411 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:10:30,689 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:10:31,775 : WARNING :gs django.request : log_response  Bad Request: /api/pay/'
+ '2024-12-17 15:10:59,115 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = shurjopay_plugin.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'shurjopay_plugin.shurjopay_plugin' has no attribute 'verify_payment'
+ '2024-12-17 15:11:22,905 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:11:24,046 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:11:24,046 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:11:24,198 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:11:24,253 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1068, sp_message:initiated'
+ '2024-12-17 15:11:24,253 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'initiated')'
+ '2024-12-17 15:11:24,274 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'initiated')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'initiated'))
+ '2024-12-17 15:12:19,323 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:204, sp_message:Merchant store or shurjoPay order id mismatch'
+ '2024-12-17 15:12:19,323 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')'
+ '2024-12-17 15:12:19,352 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch'))
+ '2024-12-17 15:12:28,230 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1068, sp_message:initiated'
+ '2024-12-17 15:12:28,231 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'initiated')'
+ '2024-12-17 15:12:28,248 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'initiated')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'initiated'))
+ '2024-12-17 15:12:53,228 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1000, sp_message:Success'
+ '2024-12-17 15:14:35,216 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:204, sp_message:Merchant store or shurjoPay order id mismatch'
+ '2024-12-17 15:14:35,216 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')'
+ '2024-12-17 15:14:35,237 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch'))
+ '2024-12-17 15:15:03,164 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:15:05,507 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:15:05,507 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:15:05,732 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:15:10,660 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:204, sp_message:Merchant store or shurjoPay order id mismatch'
+ '2024-12-17 15:15:10,660 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')'
+ '2024-12-17 15:15:10,677 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+ '2024-12-17 15:15:16,934 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1000, sp_message:Success'
+ '2024-12-17 15:19:38,935 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:19:39,116 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:24:58,756 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:24:58,788 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:25:33,647 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:25:33,732 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:26:35,969 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:26:36,045 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:26:52,912 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:26:53,028 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:26:58,649 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:27:56,256 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:29:18,038 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:29:53,940 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:31:31,271 : ERROR :gs django.request : log_response  Internal Server Error: /api/persons/update/asdf@asdf.com/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 115, in update_user
+    for file in data['nid']:
+                ~~~~^^^^^^^
+KeyError: 'nid'
+ '2024-12-17 15:31:31,314 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:31:31,314 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:31:31,521 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:31:34,807 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:34:08,061 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\backend\settings.py changed, reloading.'
+ '2024-12-17 15:34:13,833 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:34:13,833 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:34:13,983 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:34:17,254 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:34:37,675 : WARNING :gs django.request : log_response  Not Found: /media/images/Artboard_1-8.png'
