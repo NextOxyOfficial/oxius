@@ -151,9 +151,9 @@ async function handleForm() {
   const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
   console.log(res, "result");
 
-  // if (res.data.email) {
-  //   toast.add({ title: "Profile Data Updated!" });
-  // }
-  userProfile.value = res.data;
+  if (res.data.data.email) {
+    toast.add({ title: res.data.message });
+  }
+  userProfile.value = res.data.data;
 }
 </script>

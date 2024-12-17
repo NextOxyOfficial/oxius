@@ -77,7 +77,13 @@ def register(request):
 def update_user(request, email):
     print(request.data)
     data = request.data
-    user = User.objects.get(email=email)
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {'message': 'User not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     # Update balance based on withdraw or deposit
     if 'withdraw' in data:
@@ -91,7 +97,6 @@ def update_user(request, email):
         Balance.objects.create(
             user=user,
             amount=withdraw_amount,
-            method=data.get('method'),
             status='pending',  # Set as pending until processed
         )
     elif 'deposit' in data:
@@ -99,24 +104,27 @@ def update_user(request, email):
         user.balance += deposit_amount
         Balance.objects.create(
             user=user,
-            amount=deposit_amount,  # Use deposit_amount here
-            method=data.get('method'),
+            amount=deposit_amount,
             status='pending',  # Set as pending until processed
         )
+
+    # Remove email from data if it's unchanged
+    if 'email' in data and data['email'] == user.email:
+        data.pop('email')
 
     # Update other fields
     data['id'] = user.id
     serializer = UserSerializer(user, data=data, partial=True)  # Allow partial updates
     if serializer.is_valid():
         user.save()  # Save balance changes
-        # serializer.save()  # Save other updated fields
         user_nid_post = serializer.save()
 
-        for file in data['nid']:
-            nm = NID.objects.create(
-                image = base64ToFile(file)
-            )
-            user_nid_post.nid.add(nm)
+        if 'medias' in data:
+            for file in data['nid']:
+                nm = NID.objects.create(
+                    image=base64ToFile(file)
+                )
+                user_nid_post.nid.add(nm)
         return Response(
             {'message': 'User updated successfully', 'data': serializer.data},
             status=status.HTTP_200_OK

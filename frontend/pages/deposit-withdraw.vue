@@ -37,15 +37,6 @@
               v-model="amount"
               amount
             />
-            <UInputMenu
-              placeholder="Select payment method"
-              :options="methods"
-              v-model="method"
-              size="md"
-              :ui="{
-                padding: { md: 'px-3 py-2' },
-              }"
-            />
           </div>
           <div class="mt-3">
             <UCheckbox name="notifications" label="I accept terms & policy." />
@@ -99,7 +90,7 @@ definePageMeta({
 const toast = useToast();
 const { put, get } = useApi();
 const { user } = useAuth();
-const methods = ["bkash", "nagad", "rocket", "upay"];
+
 const method = ref([]);
 const amount = ref(null);
 const columns = [
@@ -157,17 +148,17 @@ const deposit = async () => {
   toast.add({ title: "Deposit clicked" });
   console.log(user.value);
 
-  // const res = await put(`/persons/update/${user.value.user.email}/`, {
-  // 	deposit: amount.value,
-  // 	method: method.value,
-  // });
-  // console.log(res);
   const payment = await get(
-    `/pay/?amount=${amount.value}&order_id=123&currency=USD&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
+    `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
   );
   console.log(payment.data);
   if (payment.data.checkout_url)
     window.open(payment.data.checkout_url, "_blank");
+
+  const res = await put(`/persons/update/${user.value.user.email}/`, {
+    deposit: amount.value,
+  });
+  // console.log(res);
 };
 
 const withdraw = async () => {
