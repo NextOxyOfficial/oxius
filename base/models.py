@@ -11,6 +11,8 @@ from django.db.models.signals import post_save, pre_save
 
 class NID(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
+    def __str__(self):
+      return str(self.id)
 
 class User(AbstractUser):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

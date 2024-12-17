@@ -23,7 +23,7 @@
         </h3>
       </div>
 
-      <div class="flex items-center">
+      <div class="flex items-center justify-between">
         <h3 class="text-xl font-bold inline-flex items-center">
           Pending Task:
           <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
@@ -42,7 +42,7 @@
       </div>
     </div>
     <div
-      class="flex flex-wrap md:flex-row justify-center gap-2 md:gap-4 mt-8 w-full"
+      class="grid grid-cols-2 md:grid-cols-[auto_auto_auto_auto] justify-center gap-2 md:gap-4 mt-8 w-full"
     >
       <UButton
         icon="i-token:cusd"
@@ -56,6 +56,7 @@
           gap: { md: 'gap-x-1 md:gap-x-2' },
           padding: { md: 'px-1.5 py-0.5 md:px-3 md:py-2' },
         }"
+        class="justify-center"
       />
       <UButton
         icon="i-material-symbols:mark-email-unread-outline"
@@ -67,6 +68,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
         }"
+        class="justify-center"
       />
       <UButton
         icon="i-material-symbols:list-rounded"
@@ -78,6 +80,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
         }"
+        class="justify-center"
       />
       <UButton
         icon="i-heroicons-plus-circle"
@@ -89,6 +92,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
         }"
+        class="justify-center"
       />
     </div>
     <UDivider label="" class="my-5" />

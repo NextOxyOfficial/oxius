@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from uuid import UUID
 from decimal import Decimal
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
@@ -75,7 +76,6 @@ def register(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_user(request, email):
-    print(request.data)
     data = request.data
     try:
         user = User.objects.get(email=email)
@@ -105,26 +105,22 @@ def update_user(request, email):
         Balance.objects.create(
             user=user,
             amount=deposit_amount,
-            status='pending',  # Set as pending until processed
+            status='pending',  
         )
 
     # Remove email from data if it's unchanged
     if 'email' in data and data['email'] == user.email:
         data.pop('email')
-
+    nids = data.pop('nid', [])
+    for file in nids:
+            nm = NID.objects.create(image=base64ToFile(file))
+            user.nid.add(nm)
     # Update other fields
     data['id'] = user.id
-    serializer = UserSerializer(user, data=data, partial=True)  # Allow partial updates
+    serializer = UserSerializer(user, data=data, partial=True)  
     if serializer.is_valid():
         user.save()  # Save balance changes
-        user_nid_post = serializer.save()
-
-        if 'medias' in data:
-            for file in data['nid']:
-                nm = NID.objects.create(
-                    image=base64ToFile(file)
-                )
-                user_nid_post.nid.add(nm)
+        serializer.save()      
         return Response(
             {'message': 'User updated successfully', 'data': serializer.data},
             status=status.HTTP_200_OK
@@ -164,10 +160,21 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         except User.DoesNotExist:
             raise NotFound({"error": f"No person found with email: {email}"})
 
+class ClassifiedCategoryPagination(PageNumberPagination):
+    page_size = 7
+
 class GetClassifiedCategories(generics.ListCreateAPIView):
-    queryset = ClassifiedCategory.objects.filter().order_by('title')
+    queryset = ClassifiedCategory.objects.all().order_by('title')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
+    pagination_class = ClassifiedCategoryPagination
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        paginator = self.pagination_class()
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+        serializer = self.get_serializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

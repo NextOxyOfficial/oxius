@@ -10,11 +10,11 @@
           <h2 class="text-2xl md:text-4xl">Classified Services</h2>
         </div>
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center gap-3"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3"
         >
           <UCard
-            class="text-center border border-dashed border-green-500 lg:w-[190px]"
-            v-for="service in services"
+            class="text-center border border-dashed border-green-500 lg:w-[150px]"
+            v-for="service in services?.results"
             :key="service.id"
             :ui="{
               body: {
@@ -45,6 +45,8 @@
             color="primary"
             variant="outline"
             label="Load More"
+            @click="loadMore(services.next)"
+            v-if="services && services.results && services.next"
           />
         </div>
       </UContainer>
@@ -133,7 +135,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="flex gap-16 items-center">
+                  <div class="flex gap-16 items-center justify-between">
                     <p
                       class="font-bold text-base text-green-900 inline-flex items-center"
                     >
@@ -197,6 +199,8 @@ async function getClassifiedCategories() {
     get("/classified-categories/"),
     get("/micro-gigs/"),
   ]);
+  console.log(serviceResponse.data);
+
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
@@ -230,5 +234,19 @@ const filteredMicroGigs = computed(() => {
 }); // Method to select a category
 const selectCategory = (category) => {
   selectedCategory.value = category || null;
+};
+
+const loadMore = async (url) => {
+  const getRecentNext = async (url) => {
+    const res = await $fetch(`${url}`);
+    console.log(res);
+    services.value.next = res.next;
+    services.value.results = [...services.value.results, ...res.results];
+    // recents.value.next = data?.value?.next;
+  };
+  // url = url.split("/api/");
+  // url = baseURL + "/api/" + url[1];
+  // getRecentsNext(url);
+  getRecentNext(url);
 };
 </script>

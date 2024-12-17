@@ -18,4 +18,5 @@ admin.site.register(ClassifiedCategoryPost)
 admin.site.register(Logo)
 admin.site.register(AdminNotice)
 admin.site.register(ClassifiedCategoryPostMedia)
+admin.site.register(NID)
 
