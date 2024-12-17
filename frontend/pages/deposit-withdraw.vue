@@ -97,7 +97,7 @@ definePageMeta({
   layout: "dashboard",
 });
 const toast = useToast();
-const { put } = useApi();
+const { put, get } = useApi();
 const { user } = useAuth();
 const methods = ["bkash", "nagad", "rocket", "upay"];
 const method = ref([]);
@@ -157,11 +157,17 @@ const deposit = async () => {
   toast.add({ title: "Deposit clicked" });
   console.log(user.value);
 
-  const res = await put(`/persons/update/${user.value.user.email}/`, {
-    deposit: amount.value,
-    method: method.value,
-  });
-  console.log(res);
+  // const res = await put(`/persons/update/${user.value.user.email}/`, {
+  // 	deposit: amount.value,
+  // 	method: method.value,
+  // });
+  // console.log(res);
+  const payment = await get(
+    `/pay/?amount=${amount.value}&order_id=123&currency=USD&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
+  );
+  console.log(payment.data);
+  if (payment.data.checkout_url)
+    window.open(payment.data.checkout_url, "_blank");
 };
 
 const withdraw = async () => {
