@@ -61,6 +61,7 @@ class MicroGigCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigCategory
         fields = '__all__'
+
 class TargetNetworkSerializer(serializers.ModelSerializer):
     class Meta:
         model = TargetNetwork

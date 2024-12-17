@@ -6,15 +6,19 @@
           padding: 'px-2',
         }"
       >
-        <h2 class="text-2xl md:text-4xl mb-12">Classified Services</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="flex items-center justify-between gap-6 mb-12">
+          <h2 class="text-2xl md:text-4xl">Classified Services</h2>
+        </div>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center gap-3"
+        >
           <UCard
-            class="text-center border border-dashed border-green-500"
+            class="text-center border border-dashed border-green-500 lg:w-[190px]"
             v-for="service in services"
             :key="service.id"
             :ui="{
               body: {
-                padding: 'px-3 py-1 sm:p-5',
+                padding: 'px-3 py-1 sm:p-2.5',
               },
               ring: '',
               background: 'bg-green-50/70',
@@ -34,6 +38,14 @@
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
           </UCard>
+        </div>
+        <div class="text-center mt-8">
+          <UButton
+            size="md"
+            color="primary"
+            variant="outline"
+            label="Load More"
+          />
         </div>
       </UContainer>
     </PublicSection>
@@ -182,8 +194,8 @@ categoryArray.value = Object.entries(categoryCounts).map(
 );
 async function getClassifiedCategories() {
   const [serviceResponse, gigResponse] = await Promise.all([
-    get('/classified-categories/'),
-    get('/micro-gigs/'),
+    get("/classified-categories/"),
+    get("/micro-gigs/"),
   ]);
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;
