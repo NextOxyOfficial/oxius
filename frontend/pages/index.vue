@@ -45,16 +45,17 @@
         <AccountBalance v-if="user" :user="user" :isUser="true" />
         <UCard
           :ui="{
-            body: 'p-0',
+            body: { padding: 'p-0' },
+            header: { padding: 'p-0' },
             rounded: 'rounded-md overflow-hidden',
           }"
         >
-          <div class="flex">
-            <div class="w-60 bg-slate-50/70">
-              <ul class="py-2">
+          <div class="flex flex-col md:flex-row w-full">
+            <div class="w-full md:w-60 bg-slate-50/70">
+              <ul class="py-2 text-center">
                 <li>
                   <p
-                    class="px-2 font-semibold pb-2"
+                    class="px-2 font-semibold pb-2 text-center"
                     @click.prevent="selectedCategory = null"
                   >
                     All Categories
@@ -95,7 +96,7 @@
                 }"
                 class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
               >
-                <div class="flex justify-between">
+                <div class="flex flex-col sm:flex-row sm:justify-between">
                   <div class="flex gap-4">
                     <div>
                       <NuxtImg
