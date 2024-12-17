@@ -25,8 +25,10 @@
             value-attribute="id"
           /> -->
       </div>
-      <p class="text-base md:text-lg">Select Your Location</p>
-      <div class="flex justify-between items-end gap-4">
+      <p class="text-base md:text-lg mb-3 font-semibold">
+        Select Your Location
+      </p>
+      <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <!-- <UFormGroup label="Country">
           <USelectMenu
             v-model="form.country"
@@ -43,7 +45,7 @@
             value-attribute="iso2"
           />
         </UFormGroup> -->
-        <UFormGroup label="State" class="w-1/4">
+        <UFormGroup class="md:w-1/4">
           <USelectMenu
             v-model="form.state"
             color="white"
@@ -59,7 +61,7 @@
             value-attribute="iso2"
           />
         </UFormGroup>
-        <UFormGroup label="City" class="w-1/4">
+        <UFormGroup class="md:w-1/4">
           <USelectMenu
             v-model="form.city"
             color="white"
@@ -75,7 +77,7 @@
             value-attribute="name"
           />
         </UFormGroup>
-        <UButtonGroup size="md" class="w-96 flex-1">
+        <UButtonGroup size="md" class="md:w-96 md:flex-1">
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -141,8 +143,12 @@
             <div
               class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
-              <div class="flex items-center justify-between w-full">
-                <div class="flex gap-4">
+              <div
+                class="flex flex-col sm:flex-row items-center justify-between w-full"
+              >
+                <div
+                  class="flex flex-col sm:flex-row gap-4 items-center sm:items-start"
+                >
                   <div>
                     <NuxtImg
                       :src="staticURL + service.medias[0].image"
@@ -174,7 +180,7 @@
                     </div>
                   </div>
                 </div>
-                <p class="inline-flex items-center">
+                <p class="inline-flex items-center my-3">
                   Price: <UIcon name="i-mdi:currency-bdt" />
                   {{ service.price }}
                 </p>
@@ -189,18 +195,18 @@
 
 <script setup>
 const { get, staticURL } = useApi();
-const categoryTitle = ref("");
+const categoryTitle = ref('');
 const services = ref([]);
 const router = useRoute();
-const country = ref(["BN"]);
+const country = ref(['BN']);
 const state = ref([]);
 const city = ref([]);
 const form = ref({
-  country: "",
-  state: "",
-  city: "",
-  title: "",
-  category: "",
+  country: '',
+  state: '',
+  city: '',
+  title: '',
+  category: '',
 });
 const categories = ref([]);
 
@@ -216,12 +222,12 @@ fetchServices();
 async function getClassifiedGigsCategory() {
   try {
     const [categoriesResponse] = await Promise.all([
-      get("/classified-categories/"),
+      get('/classified-categories/'),
     ]);
 
     categories.value = categoriesResponse.data;
   } catch (error) {
-    console.error("Error fetching micro-gigs data:", error);
+    console.error('Error fetching micro-gigs data:', error);
   }
 }
 
@@ -229,13 +235,13 @@ onMounted(() => {
   getClassifiedGigsCategory();
 });
 
-const ApiUrl = "https://api.countrystatecity.in/v1/countries";
+const ApiUrl = 'https://api.countrystatecity.in/v1/countries';
 const headerOptions = {
-  method: "GET",
+  method: 'GET',
   headers: {
-    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
+    'X-CSCAPI-KEY': 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==',
   },
-  redirect: "follow",
+  redirect: 'follow',
 };
 
 // async function getCountry() {

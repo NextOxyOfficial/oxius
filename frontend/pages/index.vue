@@ -1,17 +1,24 @@
 <template>
   <div class="py-10">
     <PublicSection id="classified-services">
-      <UContainer>
+      <UContainer
+        :ui="{
+          padding: 'px-2',
+        }"
+      >
         <h2 class="text-2xl md:text-4xl mb-12">Classified Services</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <UCard
-            class="text-center"
+            class="text-center border border-dashed border-green-500"
             v-for="service in services"
             :key="service.id"
             :ui="{
               body: {
-                padding: 'px-3 py-3 sm:p-5',
+                padding: 'px-3 py-1 sm:p-5',
               },
+              ring: '',
+              background: 'bg-green-50/70',
+              shadow: 'shadow-md',
             }"
           >
             <ULink
@@ -24,7 +31,7 @@
                 :title="service.title"
                 class="size-10 mx-auto"
               />
-              <h3 class="text-xl mt-4">{{ service.title }}</h3>
+              <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
           </UCard>
         </div>
@@ -174,8 +181,8 @@ categoryArray.value = Object.entries(categoryCounts).map(
 );
 async function getClassifiedCategories() {
   const [serviceResponse, gigResponse] = await Promise.all([
-    get("/classified-categories/"),
-    get("/micro-gigs/"),
+    get('/classified-categories/'),
+    get('/micro-gigs/'),
   ]);
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;
