@@ -231,14 +231,14 @@ const mediaPreview = ref([]);
 
 const form = ref({
   price: 0,
-  instructions: '',
-  title: '',
+  instructions: "",
+  title: "",
   medias: [],
-  category: '',
-  country: '',
-  state: '',
-  city: '',
-  location: '',
+  category: "",
+  country: "",
+  state: "",
+  city: "",
+  location: "",
   accepted_terms: false,
   accepted_privacy: false,
 });
@@ -268,35 +268,34 @@ function deleteUpload(ind) {
 async function handlePostGig() {
   console.log(form.value);
   const formData = new FormData();
-  formData.append('title', form.value.title);
-  formData.append('price', form.value.price);
-  formData.append('instructions', form.value.instructions);
-  formData.append('image', form.value.image);
-  formData.append('category', form.value.category);
-  formData.append('accepted_terms', form.value.accepted_terms);
-  formData.append('accepted_privacy', form.value.accepted_privacy);
-  formData.append('medias', form.value.medias); // Not needed as we are sending the image separately
-  formData.append('location', form.value.location); // Not needed as we are sending the image separately
-  formData.append('country', form.value.country);
-  formData.append('state', form.value.state);
-  formData.append('city', form.value.city);
+  formData.append("title", form.value.title);
+  formData.append("price", form.value.price);
+  formData.append("instructions", form.value.instructions);
+  formData.append("image", form.value.image);
+  formData.append("category", form.value.category);
+  formData.append("accepted_terms", form.value.accepted_terms);
+  formData.append("accepted_privacy", form.value.accepted_privacy);
+  formData.append("medias", form.value.medias); // Not needed as we are sending the image separately
+  formData.append("location", form.value.location); // Not needed as we are sending the image separately
+  formData.append("country", form.value.country);
+  formData.append("state", form.value.state);
+  formData.append("city", form.value.city);
 
-  const res = await post('/classified-categories-post/', form.value);
+  const res = await post("/classified-categories-post/", form.value);
   if (res.data) {
-    navigateTo('/');
-    toast.add({ title: 'Classified Service Added' });
+    navigateTo("/");
+    toast.add({ title: "Classified Service Added" });
   }
 }
 
 async function getMicroGigsCategory() {
   try {
     const [categoriesResponse] = await Promise.all([
-      get('/classified-categories/'),
+      get("/classified-categories/"),
     ]);
-
     categories.value = categoriesResponse.data;
   } catch (error) {
-    console.error('Error fetching micro-gigs data:', error);
+    console.error("Error fetching micro-gigs data:", error);
   }
 }
 
@@ -304,13 +303,13 @@ onMounted(() => {
   getMicroGigsCategory();
 });
 
-const ApiUrl = 'https://api.countrystatecity.in/v1/countries';
+const ApiUrl = "https://api.countrystatecity.in/v1/countries";
 const headerOptions = {
-  method: 'GET',
+  method: "GET",
   headers: {
-    'X-CSCAPI-KEY': 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==',
+    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
   },
-  redirect: 'follow',
+  redirect: "follow",
 };
 
 async function getCountry() {

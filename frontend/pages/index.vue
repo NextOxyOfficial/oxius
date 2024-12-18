@@ -18,7 +18,7 @@
             :key="service.id"
             :ui="{
               body: {
-                padding: 'px-3 py-1 sm:p-2.5',
+                padding: 'px-3 py-3 sm:p-2.5',
               },
               ring: '',
               background: 'bg-green-50/70',
@@ -199,7 +199,6 @@ async function getClassifiedCategories() {
     get("/classified-categories/"),
     get("/micro-gigs/"),
   ]);
-  console.log(serviceResponse.data);
 
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;

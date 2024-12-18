@@ -6,7 +6,7 @@
       <UDivider label="" class="mb-8" />
       <div class="flex flex-col md:flex-row items-center justify-between">
         <p
-          class="text-lg bg-green-100 border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
+          class="text-lg border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
         >
           <span class="inline-flex items-center"
             >Available Balance:&nbsp;
@@ -14,7 +14,7 @@
             {{ user.user.balance }}
           </span>
         </p>
-        <div class="text-lg">
+        <!-- <div class="text-lg">
           <p
             class="text-lg bg-green-100 border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
           >
@@ -23,7 +23,7 @@
               <UIcon name="i-mdi:currency-bdt" class="" />500</span
             >
           </p>
-        </div>
+        </div> -->
       </div>
       <div class="flex items-center">
         <div>

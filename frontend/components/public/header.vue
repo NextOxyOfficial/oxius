@@ -8,7 +8,16 @@
           width: 'w-screen max-w-[270px]',
         }"
       >
-        <UCard :ui="{ ring: '', rounded: '', shadow: '' }">
+        <UCard
+          :ui="{
+            header: {
+              padding: 'pb-0.5',
+            },
+            ring: '',
+            rounded: '',
+            shadow: '',
+          }"
+        >
           <template #header>
             <div class="w-full flex justify-end">
               <UButton
@@ -21,6 +30,15 @@
             </div>
           </template>
         </UCard>
+        <NuxtLink to="/" class="mx-auto">
+          <NuxtImg
+            v-if="logo?.image"
+            :src="staticURL + logo?.image"
+            alt="Logo"
+            class="h-12"
+          />
+          <img v-else src="/static-frontend/images/logo.jpg" alt="Logo" />
+        </NuxtLink>
         <UVerticalNavigation :links="links" />
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
@@ -35,7 +53,7 @@
         <NuxtLink to="/">
           <NuxtImg
             v-if="logo?.image"
-            :src="'http://127.0.0.1:8000/' + logo?.image"
+            :src="staticURL + logo?.image"
             alt="Logo"
             class="h-12"
           />
@@ -121,7 +139,7 @@
 
 <script setup>
 const { user, logout } = useAuth();
-const { get } = useApi();
+const { get, staticURL } = useApi();
 const openMenu = ref(false);
 const router = useRouter();
 const open = ref(true);
