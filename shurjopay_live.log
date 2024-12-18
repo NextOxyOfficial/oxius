@@ -1601,3 +1601,5 @@ Traceback (most recent call last):
   File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
     raise self.model.DoesNotExist(
 base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 16:16:20,538 : INFO :gs django.utils.autoreload : trigger_reload  C:\project\oxius\base\serializers.py changed, reloading.'
+ '2024-12-18 16:17:10,350 : INFO :gs django.utils.autoreload : trigger_reload  C:\project\oxius\base\serializers.py changed, reloading.'
