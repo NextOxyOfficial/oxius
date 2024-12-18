@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+*/shurjopay_live.log
+base/shurjopay_live.log
