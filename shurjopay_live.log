@@ -1,0 +1,1603 @@
+Shurjopay Log file Generated
+ '2024-12-17 14:44:40,694 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:44:40,695 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:44:40,820 : ERROR :gs shurjopay_plugin.logger_config : authenticate  sp_code:1064, sp_message:Unauthorized'
+ '2024-12-17 14:44:40,837 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 45, in makePayment
+    result = engine.make_payment(model)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 152, in make_payment
+    self.AUTH_TOKEN = self.authenticate()
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 108, in authenticate
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('1064', 'Unauthorized')
+ '2024-12-17 14:45:20,500 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:53:00,094 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:53:00,095 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:53:00,390 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:53:03,597 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:53:03,680 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 727, in render
+    context = self.get_context(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 683, in get_context
+    'content': self.get_content(renderer, data, accepted_media_type, renderer_context),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 413, in get_content
+    content = renderer.render(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PaymentDetailsModel is not JSON serializable
+ '2024-12-17 14:53:40,107 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:53:42,411 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:53:42,412 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:53:42,639 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:53:45,930 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:53:45,954 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 727, in render
+    context = self.get_context(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 683, in get_context
+    'content': self.get_content(renderer, data, accepted_media_type, renderer_context),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 413, in get_content
+    content = renderer.render(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PaymentDetailsModel is not JSON serializable
+ '2024-12-17 14:54:13,527 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:54:14,631 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:54:14,631 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:54:14,858 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:54:18,843 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:55:40,995 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 14:55:50,770 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:55:50,771 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:55:50,988 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:55:54,191 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:56:33,964 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\backend\settings.py changed, reloading.'
+ '2024-12-17 14:59:23,410 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 14:59:23,411 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 14:59:23,693 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 14:59:27,058 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 14:59:27,084 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 727, in render
+    context = self.get_context(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 683, in get_context
+    'content': self.get_content(renderer, data, accepted_media_type, renderer_context),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 413, in get_content
+    content = renderer.render(data, accepted_media_type, renderer_context)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\utils\encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PaymentDetailsModel is not JSON serializable
+ '2024-12-17 15:00:11,080 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:00:20,083 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:00:20,084 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:00:20,384 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:00:23,676 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:00:39,248 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:00:40,494 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 22, in makePayment
+    model = PaymentRequestModel(
+            ^^^^^^^^^^^^^^^^^^^^
+TypeError: PaymentRequestModel.__init__() missing 1 required positional argument: 'amount'
+ '2024-12-17 15:00:55,879 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:02:38,213 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:02:38,213 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:02:38,444 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:02:41,841 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:03:22,704 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\urls.py changed, reloading.'
+ '2024-12-17 15:07:42,096 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:09:54,677 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:10:13,369 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:10:16,865 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\urls.py changed, reloading.'
+ '2024-12-17 15:10:27,211 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:10:27,211 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:10:27,411 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:10:30,689 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:10:31,775 : WARNING :gs django.request : log_response  Bad Request: /api/pay/'
+ '2024-12-17 15:10:59,115 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = shurjopay_plugin.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'shurjopay_plugin.shurjopay_plugin' has no attribute 'verify_payment'
+ '2024-12-17 15:11:22,905 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:11:24,046 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:11:24,046 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:11:24,198 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:11:24,253 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1068, sp_message:initiated'
+ '2024-12-17 15:11:24,253 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'initiated')'
+ '2024-12-17 15:11:24,274 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'initiated')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'initiated'))
+ '2024-12-17 15:12:19,323 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:204, sp_message:Merchant store or shurjoPay order id mismatch'
+ '2024-12-17 15:12:19,323 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')'
+ '2024-12-17 15:12:19,352 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch'))
+ '2024-12-17 15:12:28,230 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1068, sp_message:initiated'
+ '2024-12-17 15:12:28,231 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'initiated')'
+ '2024-12-17 15:12:28,248 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'initiated')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'initiated'))
+ '2024-12-17 15:12:53,228 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1000, sp_message:Success'
+ '2024-12-17 15:14:35,216 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:204, sp_message:Merchant store or shurjoPay order id mismatch'
+ '2024-12-17 15:14:35,216 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')'
+ '2024-12-17 15:14:35,237 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 231, in verify_payment
+    raise ShurjopayException(
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py", line 34, in verifyPayment
+    payment_details = engine.verify_payment(oid)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\shurjopay_plugin\shurjopay_plugin.py", line 239, in verify_payment
+    raise ShurjopayException(self.PAYMENT_VERIFICATION_FAILED, ex)
+shurjopay_plugin.utils.ShurjopayException: ('Shurjopay Payment Verification Failed!', ShurjopayException('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch'))
+ '2024-12-17 15:15:03,164 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\base\pay.py changed, reloading.'
+ '2024-12-17 15:15:05,507 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:15:05,507 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:15:05,732 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:15:10,660 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:204, sp_message:Merchant store or shurjoPay order id mismatch'
+ '2024-12-17 15:15:10,660 : ERROR :gs shurjopay_plugin.logger_config : verify_payment  Shurjopay Payment Verification Failed!: ('Shurjopay Payment Verification Failed!', 'Merchant store or shurjoPay order id mismatch')'
+ '2024-12-17 15:15:10,677 : ERROR :gs django.request : log_response  Internal Server Error: /api/verify-pay/'
+ '2024-12-17 15:15:16,934 : INFO :gs shurjopay_plugin.logger_config : verify_payment  sp_code:1000, sp_message:Success'
+ '2024-12-17 15:19:38,935 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:19:39,116 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:24:58,756 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:24:58,788 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:25:33,647 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:25:33,732 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:26:35,969 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:26:36,045 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 15:26:52,912 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:26:53,028 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 48, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-17 15:26:58,649 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:27:56,256 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:29:18,038 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:29:53,940 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:31:31,271 : ERROR :gs django.request : log_response  Internal Server Error: /api/persons/update/asdf@asdf.com/'
+Traceback (most recent call last):
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aristo Computers\Desktop\office\adsyclub\base\views.py", line 115, in update_user
+    for file in data['nid']:
+                ~~~~^^^^^^^
+KeyError: 'nid'
+ '2024-12-17 15:31:31,314 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:31:31,314 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:31:31,521 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:31:34,807 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:34:08,061 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\Aristo Computers\Desktop\office\adsyclub\backend\settings.py changed, reloading.'
+ '2024-12-17 15:34:13,833 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 15:34:13,833 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 15:34:13,983 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 15:34:17,254 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 15:34:37,675 : WARNING :gs django.request : log_response  Not Found: /media/images/Artboard_1-8.png'
+ '2024-12-17 16:38:29,178 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:38:29,886 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 16:38:29,940 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 16:38:32,713 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:38:40,177 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 16:38:40,186 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 16:38:40,351 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 16:38:40,415 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 16:38:40,552 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 16:40:47,816 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/asdf@asdf.com/'
+ '2024-12-17 16:47:23,223 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 16:47:28,961 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:47:29,255 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 16:47:29,262 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 16:47:31,433 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:47:36,999 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 16:47:37,001 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 16:47:37,170 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 16:47:37,220 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 16:47:37,346 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 16:48:23,183 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 16:48:23,314 : ERROR :gs django.request : log_response  Internal Server Error: /api/pay/'
+ '2024-12-17 16:48:36,376 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:53:25,855 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/asdf@asdf.com/'
+ '2024-12-17 16:54:56,129 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:54:56,345 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 16:54:56,395 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 16:54:58,700 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:55:04,856 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/asdf@asdf.com/'
+ '2024-12-17 16:55:31,220 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:55:31,592 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 16:55:31,596 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 16:56:06,513 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 16:56:06,518 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 16:56:13,605 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:56:17,555 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:56:23,190 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:56:51,579 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 16:59:06,247 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 16:59:25,834 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 16:59:45,716 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:02:18,144 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:02:56,849 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:02:57,279 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 17:02:57,296 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 17:03:11,454 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:03:16,796 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 17:03:16,797 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 17:03:17,035 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 17:03:20,344 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 17:04:02,777 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 17:12:01,282 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:12:12,914 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 17:13:04,274 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:13:23,056 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 17:13:41,337 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:27:15,091 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 17:27:23,132 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 17:27:23,133 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 17:27:23,297 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 17:27:26,710 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 17:29:36,701 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 17:29:45,363 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\urls.py changed, reloading.'
+ '2024-12-17 17:31:25,137 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/'
+ '2024-12-17 17:31:25,137 : INFO :gs shurjopay_plugin.logger_config : authenticate  https://engine.shurjopayment.com/api/get_token'
+ '2024-12-17 17:31:25,305 : INFO :gs shurjopay_plugin.logger_config : authenticate  sp_code:200, sp_message:Successfully authenticated with Merchant'
+ '2024-12-17 17:31:28,530 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 17:32:50,540 : INFO :gs shurjopay_plugin.logger_config : make_payment  Shurjopay Payment Request Successful!'
+ '2024-12-17 18:11:33,438 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:11:33,798 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:11:33,974 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:11:56,235 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:11:56,284 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:32:17,371 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:32:17,730 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:32:17,759 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:33:37,963 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:33:38,458 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:33:38,540 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:38:49,298 : WARNING :gs django.request : log_response  Not Found: /media/images/Artboard_1-8.png'
+ '2024-12-17 18:39:44,155 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:39:44,928 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:39:44,945 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:41:19,579 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:41:19,705 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:41:19,713 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:41:41,732 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:41:42,197 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:41:42,329 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:47:26,028 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:47:26,353 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 18:47:26,467 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 18:58:53,302 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 18:59:04,179 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 18:59:24,000 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:01:08,278 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:01:57,748 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:02:38,601 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:03:06,997 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:04:21,326 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:04:47,043 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:05:08,135 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:05:08,522 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:05:08,738 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:05:44,273 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 19:05:50,556 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:05:50,884 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:05:51,080 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:07:21,970 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:07:22,153 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:13:53,455 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:13:53,460 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:14:06,947 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:14:07,234 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:14:07,316 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:15:48,318 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:15:48,342 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:15:55,407 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:15:55,912 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:15:55,988 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:19:02,402 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:19:02,426 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:19:24,049 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:19:24,294 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:19:24,339 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:20:31,941 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:20:31,944 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:20:45,890 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:20:46,186 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:20:46,262 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:21:08,123 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:21:08,142 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:22:46,110 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:22:46,117 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:24:00,861 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:24:00,991 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:26:04,722 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:26:04,726 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:26:38,528 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:26:38,748 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:26:38,835 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:29:01,040 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:29:01,552 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:29:01,597 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:30:17,194 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:30:17,244 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:30:27,010 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:30:27,142 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:30:27,181 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:30:40,976 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:30:41,336 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:30:41,360 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:31:41,546 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:31:41,664 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:31:46,947 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:32:13,848 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 19:34:39,344 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 19:34:47,843 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 19:38:15,226 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 19:38:31,472 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 19:46:30,185 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 19:46:44,424 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 19:47:50,016 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 19:49:35,795 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 19:50:09,157 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\admin.py changed, reloading.'
+ '2024-12-17 19:50:18,158 : WARNING :gs django.request : log_response  Not Found: /media/images/uploaded_image_rlDXepX.png'
+ '2024-12-17 19:50:32,510 : WARNING :gs django.request : log_response  Not Found: /media/images/uploaded_image_kHHweAp.png'
+ '2024-12-17 19:50:39,887 : WARNING :gs django.request : log_response  Not Found: /media/images/uploaded_image_GrGMYH5.png'
+ '2024-12-17 19:50:48,661 : WARNING :gs django.request : log_response  Not Found: /media/images/uploaded_image.png'
+ '2024-12-17 19:52:31,512 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:52:31,798 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-17 19:52:31,875 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-17 19:52:43,794 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:57:28,757 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:57:45,441 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 19:57:54,180 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:09:27,815 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:12:30,416 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:12:37,033 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:13:46,227 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:13:52,119 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:16:21,411 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:16:35,619 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:17:33,240 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\models.py changed, reloading.'
+ '2024-12-17 20:17:40,153 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:22:34,171 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:22:44,453 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:22:50,701 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 20:22:56,800 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:23:26,042 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:23:28,653 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:23:42,718 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:24:03,040 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:24:06,901 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:25:24,720 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:25:28,109 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:26:18,692 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:26:22,705 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:28:07,730 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:28:11,005 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:28:30,172 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:28:34,756 : WARNING :gs django.request : log_response  Bad Request: /api/persons/update/test10@test.com/'
+ '2024-12-17 20:33:13,624 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:38:36,058 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:38:47,628 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 20:38:54,730 : ERROR :gs django.request : log_response  Internal Server Error: /api/persons/update/test10@test.com/'
+Traceback (most recent call last):
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\rokomary\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py", line 117, in update_user
+    user_instance.nid.add(nm)
+    ^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_instance' where it is not associated with a value
+ '2024-12-17 20:40:31,501 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-17 20:41:47,942 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-17 20:42:05,883 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+<<<<<<< HEAD
+ '2024-12-18 13:43:05,846 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 13:43:06,143 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:11:35,484 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:11:35,666 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:12:29,553 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:12:29,652 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:14:15,738 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:14:15,899 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:14:53,203 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:14:53,320 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:16:18,147 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:16:18,269 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:17:10,731 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 15:17:10,843 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 16:00:40,772 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 16:00:41,075 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+=======
+ '2024-12-18 13:16:21,420 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 13:16:32,204 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 13:16:32,578 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 13:16:32,628 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 13:17:57,119 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 13:39:46,752 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 13:40:20,264 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 13:42:37,475 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 13:43:58,580 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 13:43:58,659 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 14:51:42,213 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 14:54:03,134 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 14:54:51,216 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 14:54:52,984 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 14:55:01,615 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 14:56:00,990 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-18 14:56:12,323 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 14:56:28,031 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 14:56:28,451 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 14:56:35,754 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 14:56:35,759 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 14:56:42,645 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 14:56:42,740 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 14:59:59,409 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 14:59:59,421 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:11:25,585 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 15:11:25,863 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:11:25,921 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:12:19,400 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-18 15:14:24,741 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-18 15:14:35,879 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 15:14:36,297 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:14:36,672 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:25:16,869 : WARNING :gs django.request : log_response  Not Found: /media/images/logo_3.png'
+ '2024-12-18 15:25:55,257 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:25:55,322 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:40:58,245 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-18 15:41:16,240 : INFO :gs django.utils.autoreload : trigger_reload  C:\Users\NextOxy\Desktop\office\oxy-us\base\views.py changed, reloading.'
+ '2024-12-18 15:46:44,685 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:46:44,769 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:52:22,527 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:52:22,863 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:52:39,024 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:52:39,029 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:52:45,616 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:52:45,635 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:54:20,852 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:54:20,880 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:55:05,468 : WARNING :gs django.request : log_response  Not Found: /media/images/banner-1-opt-300x300.jpg'
+ '2024-12-18 15:55:05,571 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273_KjP21mW.jpg'
+ '2024-12-18 15:55:08,614 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273.jpg'
+ '2024-12-18 15:56:16,336 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273.jpg'
+ '2024-12-18 15:56:41,588 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273.jpg'
+ '2024-12-18 15:57:01,438 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273.jpg'
+ '2024-12-18 15:57:09,593 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273.jpg'
+ '2024-12-18 15:58:18,422 : WARNING :gs django.request : log_response  Not Found: /media/images/blog-post-hand-made-2-opt-388x273.jpg'
+>>>>>>> 4a83a8ce95f1af1385f9a5551d4afc63d7e48234
+ '2024-12-18 16:05:10,120 : INFO :gs django.utils.autoreload : trigger_reload  C:\project\oxius\base\views.py changed, reloading.'
+ '2024-12-18 16:05:14,138 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
+ '2024-12-18 16:05:14,212 : ERROR :gs django.request : log_response  Internal Server Error: /api/logo/'
+Traceback (most recent call last):
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\base\views.py", line 49, in getLogo
+    serializer = logoSerializer(Logo.objects.get())
+                                ^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\project\oxius\venv\Lib\site-packages\django\db\models\query.py", line 649, in get
+    raise self.model.DoesNotExist(
+base.models.Logo.DoesNotExist: Logo matching query does not exist.
