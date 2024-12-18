@@ -172,7 +172,7 @@
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
                         <span class="text-sm">{{
-                          service?.category.title
+                          service?.category_details.title
                         }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
