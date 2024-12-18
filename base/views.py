@@ -88,6 +88,7 @@ def update_user(request, email):
     # Update balance based on withdraw or deposit
     if 'withdraw' in data:
         withdraw_amount = Decimal(data.get('withdraw', 0))
+        transaction_type = data.get('transaction_type')
         if user.balance < withdraw_amount:
             return Response(
                 {'message': 'Insufficient balance'},
@@ -97,14 +98,17 @@ def update_user(request, email):
         Balance.objects.create(
             user=user,
             amount=withdraw_amount,
+            transaction_type=transaction_type,
             status='pending',  # Set as pending until processed
         )
     elif 'deposit' in data:
         deposit_amount = Decimal(data.get('deposit', 0))
+        transaction_type = data.get('transaction_type')
         user.balance += deposit_amount
         Balance.objects.create(
             user=user,
             amount=deposit_amount,
+            transaction_type=transaction_type,
             status='pending',  
         )
 
@@ -231,12 +235,12 @@ def post_classified_service(request):
     data['user'] = request.user.id  # Associate the authenticated user
     category_id = data.get('category')
     
-    print(data)
+    
     
     if not ClassifiedCategory.objects.filter(id=category_id).exists():
         raise ValidationError({'category': 'The specified category does not exist.'})
     serializer = ClassifiedPostSerializer(data=data)
-   
+    
 
     if serializer.is_valid():
         new_classified_service_post = serializer.save(user=request.user)
@@ -248,7 +252,7 @@ def post_classified_service(request):
             {'message': 'Person Updated successfully', 'data': serializer.data},
             status=status.HTTP_201_CREATED
         )
-        
+    print(serializer.errors)    
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
@@ -479,11 +483,18 @@ def update_microgigpost_tasks(request, gig_id):
 
 
 
+# class UserBalance(generics.ListCreateAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = BalanceSerializer
+#     queryset = Balance.objects.all()
+#     lookup_field = 'user'
 class UserBalance(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BalanceSerializer
-    queryset = Balance.objects.all()
-    lookup_field = 'email'
+    
+    def get_queryset(self):
+        # Filter balances by the logged-in user
+        return Balance.objects.filter(user=self.request.user).order_by('-created_at')
 
 class AdminMessage(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

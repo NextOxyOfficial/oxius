@@ -75,21 +75,21 @@
           </UFormGroup>
         </div>
 
-        <UFormGroup label="Upload Photo/Video">
+        <!-- <UFormGroup label="Upload Photo/Video">
           <input
             type="file"
             name=""
             id=""
             @change="handleFileUpload($event, 'image')"
           />
-        </UFormGroup>
-        <div class="flex flex-wrap gap-5">
+        </UFormGroup> -->
+        <div class="flex flex-wrap gap-2 md:gap-5 mt-4">
           <div
-            class="relative max-w-[200px] max-h-[200px]"
+            class="relative max-w-[200px] max-h-[200px] overflow-hidden"
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="img" :alt="`Uploaded file ${i}`" />
+            <img :src="img" :alt="`Uploaded file ${i}`" class="object-cover" />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -97,6 +97,7 @@
               <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
             </div>
           </div>
+          <UFormGroup label="Upload Photo/Video"> </UFormGroup>
           <div
             class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
           >
@@ -243,6 +244,33 @@ const form = ref({
   accepted_privacy: false,
 });
 
+function validateForm() {
+  for (const key in form.value) {
+    const value = form.value[key];
+    // Check for empty strings, false values, or empty arrays
+    if (
+      (typeof value === "string" && !value.trim()) ||
+      (typeof value === "boolean" && !value) ||
+      (Array.isArray(value) && value.length === 0)
+    ) {
+      return false; // Validation failed
+    }
+  }
+  return true; // All fields are valid
+}
+
+async function handlePostGig() {
+  if (!validateForm()) {
+    toast.add({ title: "Please fill in all required fields." });
+    return;
+  }
+  const res = await post("/classified-categories-post/", form.value);
+  if (res.data) {
+    navigateTo("/");
+    toast.add({ title: "Classified Service Added" });
+  }
+}
+
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
   const reader = new FileReader();
@@ -262,29 +290,6 @@ function handleFileUpload(event, field) {
 function deleteUpload(ind) {
   if (ind >= 0 && ind < form.value.medias.length) {
     form.value.medias.splice(ind, 1);
-  }
-}
-
-async function handlePostGig() {
-  console.log(form.value);
-  const formData = new FormData();
-  formData.append("title", form.value.title);
-  formData.append("price", form.value.price);
-  formData.append("instructions", form.value.instructions);
-  formData.append("image", form.value.image);
-  formData.append("category", form.value.category);
-  formData.append("accepted_terms", form.value.accepted_terms);
-  formData.append("accepted_privacy", form.value.accepted_privacy);
-  formData.append("medias", form.value.medias); // Not needed as we are sending the image separately
-  formData.append("location", form.value.location); // Not needed as we are sending the image separately
-  formData.append("country", form.value.country);
-  formData.append("state", form.value.state);
-  formData.append("city", form.value.city);
-
-  const res = await post("/classified-categories-post/", form.value);
-  if (res.data) {
-    navigateTo("/");
-    toast.add({ title: "Classified Service Added" });
   }
 }
 

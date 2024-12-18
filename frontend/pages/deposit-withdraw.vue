@@ -39,7 +39,11 @@
             />
           </div>
           <div class="mt-3">
-            <UCheckbox name="notifications" label="I accept terms & policy." />
+            <UCheckbox
+              name="notifications"
+              label="I accept terms & policy."
+              v-model="policy"
+            />
           </div>
           <div class="my-2 space-x-3">
             <UButton size="sm" @click="deposit">Deposit</UButton>
@@ -52,6 +56,7 @@
       <h3 class="text-center text-lg md:text-3xl font-semibold mt-8">
         Deposit/Withdraw Statements
       </h3>
+
       <UTable :rows="statements" :columns="columns" class="mb-8 mt-4">
         <!-- <template v-slot:body="{ row }">
           <tr v-for="(row, index) in statements" :key="row.id">
@@ -87,20 +92,15 @@ definePageMeta({
 const toast = useToast();
 const { put, get } = useApi();
 const { user } = useAuth();
-
-const method = ref([]);
+const policy = ref(false);
 const amount = ref(null);
 const columns = [
   {
-    key: "id",
-    label: "#ID",
-  },
-  {
-    key: "time",
+    key: "created_at",
     label: "Time",
   },
   {
-    key: "deposit_withdraw",
+    key: "transaction_type",
     label: "Deposit/Withdraw",
   },
   {
@@ -113,23 +113,22 @@ const columns = [
   },
 ];
 
-const statements = [
-  {
-    id: 1,
-    time: "2:35",
-    deposit_withdraw: "Deposit",
-    amount: "300",
-    status: "Pending",
-    class: "text-yellow-400",
-  },
-  {
-    id: 2,
-    time: "2:35",
-    deposit_withdraw: "Withdraw",
-    amount: "300",
-    status: "Completed",
-  },
-
+const statements = ref([
+  // {
+  //   id: 1,
+  //   time: "2:35",
+  //   deposit_withdraw: "Deposit",
+  //   amount: "300",
+  //   status: "Pending",
+  //   class: "text-yellow-400",
+  // },
+  // {
+  //   id: 2,
+  //   time: "2:35",
+  //   deposit_withdraw: "Withdraw",
+  //   amount: "300",
+  //   status: "Completed",
+  // },
   // function getStatusClass(status) {
   //   if (status === 'Pending') {
   //     return 'text-yellow-400'; // Yellow for Pending
@@ -138,9 +137,13 @@ const statements = [
   //   }
   //   return ''; // Default class
   // },
-];
+]);
 
 const deposit = async () => {
+  if (!amount.value || !policy.value) {
+    toast.add({ title: "Please fill in all required fields." });
+    return;
+  }
   // Add deposit logic here
   toast.add({ title: "Deposit clicked" });
   console.log(user.value);
@@ -154,17 +157,34 @@ const deposit = async () => {
 
   const res = await put(`/persons/update/${user.value.user.email}/`, {
     deposit: amount.value,
+    transaction_type: "Deposit",
   });
-  // console.log(res);
+  console.log(res);
+  userBalance();
+  amount.value = "";
+  privacy.value = false;
 };
 
 const withdraw = async () => {
+  if (!amount.value || !policy.value) {
+    toast.add({ title: "Please fill in all required fields." });
+    return;
+  }
   // Add withdraw logic here
   toast.add({ title: "Withdraw clicked" });
   const res = await put(`/persons/update/${user.value.user.email}/`, {
     withdraw: amount.value,
-    method: method.value,
+    transaction_type: "Withdraw",
   });
   console.log(res);
+  userBalance();
+  amount.value = "";
+  privacy.value = false;
 };
+
+const userBalance = async () => {
+  const res = await get(`/user-balance/${user.value.user.email}/`);
+  statements.value = res.data;
+};
+userBalance();
 </script>
