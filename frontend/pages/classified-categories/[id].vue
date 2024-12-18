@@ -199,18 +199,18 @@
 
 <script setup>
 const { get, staticURL } = useApi();
-const categoryTitle = ref("");
+const categoryTitle = ref('');
 const services = ref([]);
 const router = useRoute();
-const country = ref(["BD"]);
+const country = ref(['BD']);
 const state = ref([]);
 const city = ref([]);
 const form = ref({
-  country: "",
-  state: "",
-  city: "",
-  title: "",
-  category: "",
+  country: '',
+  state: '',
+  city: '',
+  title: '',
+  category: '',
 });
 const categories = ref([]);
 
@@ -226,27 +226,27 @@ fetchServices();
 async function getClassifiedGigsCategory() {
   try {
     const [categoriesResponse] = await Promise.all([
-      get("/classified-categories/"),
+      get('/classified-categories/'),
     ]);
 
     categories.value = categoriesResponse.data;
   } catch (error) {
-    console.error("Error fetching micro-gigs data:", error);
+    console.error('Error fetching micro-gigs data:', error);
   }
 }
 
 onMounted(() => {
-  form.value.country = "BD";
+  form.value.country = 'BD';
   getClassifiedGigsCategory();
 });
 
-const ApiUrl = "https://api.countrystatecity.in/v1/countries";
+const ApiUrl = 'https://api.countrystatecity.in/v1/countries';
 const headerOptions = {
-  method: "GET",
+  method: 'GET',
   headers: {
-    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
+    'X-CSCAPI-KEY': 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==',
   },
-  redirect: "follow",
+  redirect: 'follow',
 };
 
 // async function getCountry() {
