@@ -156,11 +156,15 @@
                     />
                   </div>
                   <div>
-                    <h3 class="text-base font-bold mb-1.5">
+                    <h3
+                      class="text-base font-bold mb-1.5 text-center sm:text-left"
+                    >
                       {{ service?.title }}
                     </h3>
 
-                    <div class="flex gap-4">
+                    <div
+                      class="flex flex-col sm:flex-row items-center sm:items-start gap-4"
+                    >
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
                         <span class="text-sm">{{ service?.location }}</span>
