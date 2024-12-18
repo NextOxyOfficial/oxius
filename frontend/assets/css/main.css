@@ -7,5 +7,5 @@ body {
 }
 
 body {
-  @apply text-slate-800;
+  @apply bg-white text-slate-800 dark:text-slate-800 dark:bg-white;
 }

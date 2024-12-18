@@ -20,7 +20,7 @@
         }"
         class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
       >
-        <div class="flex justify-between">
+        <div class="flex flex-col gap-4 md:flex-row justify-between">
           <div class="flex gap-4">
             <div>
               <NuxtImg
@@ -52,7 +52,7 @@
               </div>
             </div>
           </div>
-          <div class="flex gap-1 items-center">
+          <div class="flex gap-1 items-center max-md:justify-center">
             <UButton
               size="md"
               color="primary"

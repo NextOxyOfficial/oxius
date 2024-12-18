@@ -7,6 +7,10 @@
           divide: 'divide-y divide-gray-100 dark:divide-gray-800',
           header: {
             background: 'bg-slate-50',
+            padding: 'px-2 py-3',
+          },
+          body: {
+            padding: 'px-2 py-3',
           },
           rounded: 'rounded-lg',
         }"
@@ -39,7 +43,7 @@
           </div>
         </template>
 
-        <div class="space-y-2 px-6 pb-8">
+        <div class="space-y-2 md:px-6 pb-8">
           <p class="text-2xl font-medium">Instruction</p>
 
           <p class="text-base text-justify">
@@ -92,7 +96,7 @@
 
           <div>
             <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
-            <UFormGroup size="xl" label="Submit Details" class="!mt-8 w-1/2">
+            <UFormGroup size="xl" label="Submit Details" class="!mt-8 md:w-1/2">
               <UTextarea
                 color="white"
                 variant="outline"

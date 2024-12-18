@@ -4,7 +4,7 @@
     <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
     <UContainer>
       <UDivider label="" class="mb-8" />
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col md:flex-row items-center justify-between">
         <p
           class="text-lg bg-green-100 border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
         >
@@ -49,13 +49,10 @@
           </div>
         </div>
       </div>
-
-      <UTable :rows="statements" :columns="columns" class="my-8">
-        <template #caption>
-          <caption class="text-center text-3xl font-semibold mb-4">
-            Deposit/Withdraw Statements
-          </caption>
-        </template>
+      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8">
+        Deposit/Withdraw Statements
+      </h3>
+      <UTable :rows="statements" :columns="columns" class="mb-8 mt-4">
         <!-- <template v-slot:body="{ row }">
           <tr v-for="(row, index) in statements" :key="row.id">
             <td>{{ row.id }}</td>
