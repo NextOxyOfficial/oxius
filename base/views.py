@@ -162,6 +162,10 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 class ClassifiedCategoryPagination(PageNumberPagination):
     page_size = 7
+    def get_page_size(self, request):
+        if request.query_params.get(self.page_query_param) in [None, '', '1']:
+            return 14
+        return self.page_size
 
 class GetClassifiedCategories(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')
@@ -179,10 +183,6 @@ class GetClassifiedCategories(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        # data = {
-        #     "message": "Product details fetched successfully",
-        #     "data": serializer.data,
-        # }
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class GetMicroGigs(generics.ListCreateAPIView):
@@ -294,6 +294,7 @@ def classifiedCategoryPost(request, pk):
 @api_view(['GET'])
 def gigDetails(request, gid):
     serializer = MicroGigPostDetailsSerializer(MicroGigPost.objects.get(id=gid))
+    print(serializer)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
