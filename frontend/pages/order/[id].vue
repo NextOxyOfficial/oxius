@@ -168,7 +168,7 @@ onMounted(() => {
 });
 const gig = ref();
 async function getGigData() {
-  const res = await get(`/micro-gigs/${route.params.id}`);
+  const res = await get(`/micro-gigs/${route.params.id}/`);
   gig.value = res.data;
 }
 
@@ -178,7 +178,6 @@ async function submitGig() {
     medias: medias.value,
     submit_details: submit_details.value,
   });
-  console.log(res);
 
   if (res.error) {
     toast.add({ title: "Something went wrong!" });
