@@ -231,6 +231,8 @@ def post_classified_service(request):
     data['user'] = request.user.id  # Associate the authenticated user
     category_id = data.get('category')
     
+    print(data)
+    
     if not ClassifiedCategory.objects.filter(id=category_id).exists():
         raise ValidationError({'category': 'The specified category does not exist.'})
     serializer = ClassifiedPostSerializer(data=data)
