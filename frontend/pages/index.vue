@@ -27,7 +27,7 @@
         </UButtonGroup>
         <UButton
           v-if="user?.user"
-          class="absolute left-2 md:right-20 top-32 md:top-[72px]"
+          class="absolute max-md:left-2 md:right-20 top-32 md:top-[72px]"
           size="md"
           color="primary"
           variant="solid"
