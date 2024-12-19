@@ -5,22 +5,24 @@
         <UHorizontalNavigation
           :links="links[1].items"
           :ui="{
-            base: 'before:hidden text-base lg:text-xl font-normal hover:text-green-500',
+            base: 'before:hidden font-normal hover:text-green-500',
             padding: 'px-1',
             inactive: 'hover:text-green-300 after:hidden',
             active: 'after:hidden',
             wrapper: 'justify-center',
+            size: 'text-base md:text-lg',
           }"
           class="w-full !bg-transparent hidden md:flex"
         />
         <UVerticalNavigation
           :links="links[1].items"
           :ui="{
-            base: 'before:hidden text-base justify-center lg:text-xl font-normal hover:text-green-500',
+            base: 'before:hidden justify-center font-normal hover:text-green-500',
             padding: 'px-1',
             inactive: 'hover:text-green-300 after:hidden',
             active: 'after:hidden',
             wrapper: 'justify-center',
+            size: 'text-base md:text-lg',
           }"
           class="w-full !bg-transparent md:hidden"
         />
@@ -56,7 +58,7 @@
           <div class="flex flex-col gap-4">
             <h4 class="font-bold hidden md:block text-center">We Accept</h4>
             <NuxtImg
-              src="/images/payment.png"
+              src="/payment.png"
               quality="100"
               format="webp"
               alt="Payment"

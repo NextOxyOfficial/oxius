@@ -9,7 +9,7 @@
   >
     <div class="flex flex-col md:flex-row justify-between gap-6">
       <div>
-        <h3 class="text-2xl font-bold">
+        <h3 class="text-2xl font-bold max-sm:text-center">
           <span class="text-green-900 inline-flex items-center gap-1">
             <UIcon
               name="i-material-symbols:account-balance-wallet-outline"
@@ -34,7 +34,7 @@
         <UButton
           size="xs"
           color="primary"
-          variant="solid"
+          variant="outline"
           label="View"
           class="ml-2"
           :to="`/pending-tasks/${user?.user.id}`"

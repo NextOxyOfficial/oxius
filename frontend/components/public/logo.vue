@@ -4,7 +4,7 @@
       v-if="logo?.image"
       :src="staticURL + logo?.image"
       alt="Logo"
-      class="h-7 md:h-12"
+      class="h-6 md:h-8"
     />
     <NuxtImg v-else src="/images/logo.jpg" alt="Logo" />
   </NuxtLink>

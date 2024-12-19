@@ -91,7 +91,7 @@ class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
         exclude = ['user']
 
 class BalanceSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%B %d, %Y, %I:%M %p",read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
     class Meta:
         model = Balance
         fields = '__all__'
@@ -99,7 +99,7 @@ class BalanceSerializer(serializers.ModelSerializer):
 class ClassifiedPostSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=ClassifiedCategory.objects.all())
     category_details = ClassifiedServicesSerializer(source='category', read_only=True)
-    created_at = serializers.DateTimeField(format="%B %d, %Y, %I:%M %p",read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
 
     class Meta:
         model = ClassifiedCategoryPost

@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h1 class="text-center text-4xl my-8">Add A Classified Post</h1>
+      <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
       <UDivider label="" class="mb-8" />
       <form
         action="#"
@@ -58,20 +58,28 @@
             />
           </UFormGroup>
           <UFormGroup label="Price">
-            <UInput
-              icon="i-mdi:currency-bdt"
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              placeholder="2.0"
-              class="max-w-40"
-              v-model="form.price"
-            />
+            <div class="flex gap-2 items-center">
+              <UInput
+                icon="i-mdi:currency-bdt"
+                type="text"
+                size="md"
+                color="white"
+                :disabled="negotiate"
+                :ui="{
+                  size: {
+                    md: 'text-base',
+                  },
+                }"
+                placeholder="2.0"
+                class="max-w-40"
+                v-model="form.price"
+              />
+              <UCheckbox
+                v-model="negotiate"
+                name="Negotiable"
+                label="Negotiable"
+              />
+            </div>
           </UFormGroup>
         </div>
 
@@ -83,6 +91,7 @@
             @change="handleFileUpload($event, 'image')"
           />
         </UFormGroup> -->
+        <UFormGroup label="Upload Photo/Video"> </UFormGroup>
         <div class="flex flex-wrap gap-2 md:gap-5 mt-4">
           <div
             class="relative max-w-[200px] max-h-[200px] overflow-hidden"
@@ -97,7 +106,7 @@
               <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
             </div>
           </div>
-          <UFormGroup label="Upload Photo/Video"> </UFormGroup>
+
           <div
             class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
           >
@@ -131,7 +140,7 @@
           />
         </UFormGroup> -->
         <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Country">
+          <!-- <UFormGroup label="Country">
             <USelectMenu
               v-model="form.country"
               color="white"
@@ -146,7 +155,7 @@
               option-attribute="name"
               value-attribute="iso2"
             />
-          </UFormGroup>
+          </UFormGroup> -->
           <UFormGroup label="State">
             <USelectMenu
               v-model="form.state"
@@ -163,9 +172,6 @@
               value-attribute="iso2"
             />
           </UFormGroup>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-4">
           <UFormGroup label="City">
             <USelectMenu
               v-model="form.city"
@@ -183,6 +189,8 @@
             />
           </UFormGroup>
         </div>
+
+        <div class="grid md:grid-cols-2 gap-4"></div>
         <div>
           <UFormGroup label="Address">
             <UTextarea
@@ -229,6 +237,7 @@ const state = ref([]);
 const city = ref([]);
 
 const mediaPreview = ref([]);
+const negotiate = ref(false);
 
 const form = ref({
   price: 0,
@@ -317,15 +326,13 @@ const headerOptions = {
   redirect: "follow",
 };
 
-async function getCountry() {
-  const res = await $fetch(ApiUrl, headerOptions);
-  country.value = res;
-  console.log(res);
-}
+// async function getCountry() {
+//   const res = await $fetch(ApiUrl, headerOptions);
+//   country.value = res;
+//   console.log(res);
+// }
 onMounted(() => {
-  setTimeout(() => {
-    getCountry();
-  }, 100);
+  country.value.push({ name: "BD", iso2: "BD" });
 });
 
 watch(

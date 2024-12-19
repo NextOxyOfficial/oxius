@@ -32,7 +32,8 @@
           </UButton>
         </div>
         <div class="w-full flex flex-col justify-center" v-if="service.id">
-          <h2 class="text-3xl font-bold">{{ service.title }}</h2>
+          <h2 class="text-3xl font-semibold">{{ service.title }}</h2>
+          <h4 class="text-xl font-semibold">{{ service.price }}</h4>
 
           <NuxtImg
             v-if="service?.medias[0]"

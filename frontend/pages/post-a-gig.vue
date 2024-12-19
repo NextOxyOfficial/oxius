@@ -82,7 +82,9 @@
         </UFormGroup>
 
         <!-- medias  -->
-
+        <label for="" class="block mt-3 font-semibold"
+          >Upload Photo/Video</label
+        >
         <div class="flex flex-wrap gap-5">
           <div
             class="relative max-w-[200px] max-h-[200px]"

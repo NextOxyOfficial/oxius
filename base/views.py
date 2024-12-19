@@ -291,6 +291,20 @@ def classifiedCategoryPosts(request, cid):
     serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.filter(category=cid),many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+def UserClassifiedCategoryPosts(request):
+    # Get the logged-in user
+    user = request.user
+
+    # Filter posts by category and user
+    posts = ClassifiedCategoryPost.objects.filter( user=user).order_by('title')
+
+    # Serialize the filtered posts
+    serializer = ClassifiedPostSerializer(posts, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 @api_view(['GET'])
 def classifiedCategoryPost(request, pk):
     serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.get(id=pk))

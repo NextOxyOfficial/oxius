@@ -13,6 +13,7 @@ urlpatterns = [
   path('classified-categories/<str:cid>/',classifiedCategoryPosts),
   path('classified-categories/post/<str:pk>/',classifiedCategoryPost),
   path('classified-categories-post/',post_classified_service),
+  path('user-classified-categories-post/',UserClassifiedCategoryPosts),
   path('micro-gigs-categories/',GetMicroGigCategory.as_view()),
   path('target-network/',GetTargetNetwork.as_view()),
   path('target-device/',GetTargetDevice.as_view()),

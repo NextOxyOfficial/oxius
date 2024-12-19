@@ -1,9 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h2 class="text-center text-4xl my-6">
-        {{ categoryTitle }}
-      </h2>
+      <h2 class="text-center text-2xl md:text-4xl my-6">My Classified Posts</h2>
       <div>
         <p class="mb-3">
           <ULink
@@ -196,7 +194,11 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
 const { get, staticURL } = useApi();
+const { user } = useAuth();
 const categoryTitle = ref("");
 const services = ref([]);
 const router = useRoute();
@@ -213,7 +215,7 @@ const form = ref({
 const categories = ref([]);
 
 async function fetchServices() {
-  const response = await get(`/classified-categories/${router.params.id}/`);
+  const response = await get(`/user-classified-categories-post/`);
   console.log(response);
 
   services.value = response.data;

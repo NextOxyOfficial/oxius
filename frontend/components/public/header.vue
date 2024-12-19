@@ -1,5 +1,5 @@
 <template>
-  <div class="my-3 sticky z-50 top-0 bg-white">
+  <div class="py-3 sticky z-50 top-0 bg-white">
     <UContainer>
       <USlideover
         v-model="isOpen"
@@ -30,8 +30,19 @@
             </div>
           </template>
         </UCard>
-        <PublicLogo :logo="logo" :staticURL="staticURL" />
-        <UVerticalNavigation :links="links" />
+        <PublicLogo
+          :logo="logo"
+          :staticURL="staticURL"
+          class="text-center mx-auto mb-4"
+        />
+        <UVerticalNavigation
+          :links="links"
+          :ui="{
+            inactive: 'after:hidden before:hidden',
+            active: 'after:hidden before:hidden',
+            padding: 'py-2',
+          }"
+        />
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
         <div class="block md:hidden">
@@ -72,14 +83,14 @@
                 },
               },
             }"
-            size="sm"
+            size="md"
           >
             <template #trailing>
               <UIcon name="i-heroicons-arrow-right-20-solid" class="w-5 h-5" />
             </template>
           </UButton>
         </div>
-        <div v-else class="flex relative">
+        <div v-else class="flex relative menu-container">
           <UButton
             size="sm"
             color="primary"
@@ -141,10 +152,26 @@ defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
+const handleClickOutside = (event) => {
+  const menuContainer = document.querySelector(".menu-container");
+  if (menuContainer && !menuContainer.contains(event.target)) {
+    openMenu.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+
 // if sidebar clicked and route changes, close sidebar if opened
 watch(router.currentRoute, () => {
   if (openMenu.value) {
     openMenu.value = false;
+    isOpen.value = false;
   }
 });
 // useSeoMeta({

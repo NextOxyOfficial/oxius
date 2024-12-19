@@ -1,16 +1,41 @@
 <template>
-  <div class="py-10">
+  <div class="pb-10">
     <PublicSection id="classified-services">
       <UContainer
         :ui="{
           padding: 'px-2',
         }"
+        class="relative"
       >
-        <div class="flex items-center justify-between gap-6 mb-12">
-          <h2 class="text-2xl md:text-4xl">Classified Services</h2>
-        </div>
+        <h2 class="text-2xl md:text-4xl max-sm:text-center mb-6 md:mb-8">
+          Classified Services
+        </h2>
+        <UButtonGroup
+          label="Search Category"
+          class="my-5 md:my-8 justify-center flex"
+          orientation="horizontal"
+          size="md"
+        >
+          <UInput
+            icon="i-heroicons-magnifying-glass-solid"
+            type="search"
+            size="md"
+            color="white"
+            placeholder="Search Category"
+          />
+          <UButton size="md" color="primary" variant="solid" label="Search" />
+        </UButtonGroup>
+        <UButton
+          v-if="user?.user"
+          class="absolute left-2 md:right-20 top-32 md:top-[72px]"
+          size="md"
+          color="primary"
+          variant="solid"
+          label="My Posts"
+          to="/my-gigs/"
+        />
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 max-md:mt-[92px]"
         >
           <UCard
             class="text-center border border-dashed border-green-500 lg:w-[150px]"
@@ -53,7 +78,7 @@
     </PublicSection>
     <PublicSection id="micro-gigs">
       <UContainer>
-        <h2 class="text-2xl md:text-4xl mb-12 text-center">
+        <h2 class="text-2xl md:text-4xl mb-6 md:mb-12 text-center">
           Micro Gigs (Quick Earn)
         </h2>
         <AccountBalance v-if="user" :user="user" :isUser="true" />
@@ -62,6 +87,8 @@
             body: { padding: 'p-0' },
             header: { padding: 'p-0' },
             rounded: 'rounded-md overflow-hidden',
+            ring: 'max-sm:ring-0',
+            shadow: '',
           }"
         >
           <div class="flex flex-col md:flex-row w-full">
@@ -69,7 +96,7 @@
               <ul class="py-2 text-center">
                 <li>
                   <p
-                    class="px-2 font-semibold pb-2 text-center"
+                    class="px-2 font-semibold pb-2 text-left"
                     @click.prevent="selectedCategory = null"
                   >
                     All Categories
@@ -92,7 +119,10 @@
                 </li>
               </ul>
             </div>
-            <div class="space-y-[0.5px] flex-1">
+            <div
+              class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md"
+            >
+              <p class="px-2 font-semibold pb-3.5">Available Gigs</p>
               <UCard
                 v-for="(gig, i) in filteredMicroGigs"
                 :key="i"
@@ -107,6 +137,7 @@
                   footer: {
                     padding: 'p-0',
                   },
+                  ring: 'max-sm:ring-1',
                 }"
                 class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
               >
@@ -135,7 +166,9 @@
                       </div>
                     </div>
                   </div>
-                  <div class="flex gap-16 items-center justify-between">
+                  <div
+                    class="flex gap-16 items-center justify-between max-sm:pl-[70px]"
+                  >
                     <p
                       class="font-bold text-base text-green-900 inline-flex items-center"
                     >
@@ -181,6 +214,9 @@ const services = ref([]);
 const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
+useHead({
+  title: "AdsyClub | Earn Quick Money & Enjoy Daily Life",
+});
 const categoryCounts = microGigs.value.reduce((acc, gig) => {
   const category = gig.category;
   if (!acc[category]) {
