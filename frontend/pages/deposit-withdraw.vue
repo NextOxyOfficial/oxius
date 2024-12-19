@@ -141,7 +141,12 @@
         Transaction History
       </h3>
 
-      <UTable :rows="statements" :columns="columns" class="mb-8 mt-4">
+      <UTable
+        :rows="statements"
+        :columns="columns"
+        class="mb-8 mt-4"
+        v-if="statements.length"
+      >
         <template #transaction_type-data="{ row }">
           <p>
             {{ row.transaction_type }} -
@@ -160,6 +165,9 @@
           </p>
         </template>
       </UTable>
+      <UCard v-else class="py-16 text-center">
+        <p>Transaction is empty!</p>
+      </UCard>
     </UContainer>
   </PublicSection>
 </template>

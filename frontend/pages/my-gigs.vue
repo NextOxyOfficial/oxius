@@ -23,10 +23,13 @@
             value-attribute="id"
           /> -->
       </div>
-      <p class="text-base md:text-lg mb-3 font-semibold">
+      <p class="text-base md:text-lg mb-3 font-semibold" v-if="services.length">
         Select Your Location
       </p>
-      <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
+      <div
+        class="flex flex-col md:flex-row justify-between md:items-end gap-4"
+        v-if="services.length"
+      >
         <!-- <UFormGroup label="Country">
           <USelectMenu
             v-model="form.country"
@@ -189,6 +192,9 @@
           </NuxtLink>
         </UCard>
       </div>
+      <UCard v-else class="py-16 text-center mt-6">
+        <p>Gig List is empty!</p>
+      </UCard>
     </UContainer>
   </PublicSection>
 </template>
