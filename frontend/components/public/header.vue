@@ -30,15 +30,7 @@
             </div>
           </template>
         </UCard>
-        <NuxtLink to="/" class="mx-auto">
-          <NuxtImg
-            v-if="logo?.image"
-            :src="staticURL + logo?.image"
-            alt="Logo"
-            class="h-12"
-          />
-          <img v-else src="/static-frontend/images/logo.jpg" alt="Logo" />
-        </NuxtLink>
+        <PublicLogo :logo="logo" :staticURL="staticURL" />
         <UVerticalNavigation :links="links" />
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
@@ -50,15 +42,7 @@
             color="gray"
           />
         </div>
-        <NuxtLink to="/">
-          <NuxtImg
-            v-if="logo?.image"
-            :src="staticURL + logo?.image"
-            alt="Logo"
-            class="h-12"
-          />
-          <img v-else src="/static-frontend/images/logo.jpg" alt="Logo" />
-        </NuxtLink>
+        <PublicLogo :logo="logo" :staticURL="staticURL" />
         <div class="hidden md:block">
           <UHorizontalNavigation
             :links="links"
