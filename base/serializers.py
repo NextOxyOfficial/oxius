@@ -47,7 +47,7 @@ class MicroGigPostTaskSerializer(serializers.ModelSerializer):
 
 class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    created_at = serializers.DateTimeField(format="%B %d, %Y, %I:%M %p",read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'
