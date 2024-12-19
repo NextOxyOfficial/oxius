@@ -215,7 +215,7 @@ const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
 useHead({
-  title: "AdsyClub | Earn Quick Money & Enjoy Daily Life",
+  title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
 });
 const categoryCounts = microGigs.value.reduce((acc, gig) => {
   const category = gig.category;
