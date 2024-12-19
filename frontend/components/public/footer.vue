@@ -33,7 +33,7 @@
           <h4 class="font-bold hidden md:block">Download Our App</h4>
           <ul class="flex gap-2 flex-1 max-md:justify-center">
             <li class="w-[90px] md:w-[117px]">
-              <img
+              <NuxtImg
                 src="/apple.png"
                 class="mx-auto w-[90px] md:w-[117px]"
                 quality="100"
@@ -42,7 +42,7 @@
               />
             </li>
             <li class="w-[90px] md:w-[119px]">
-              <img
+              <NuxtImg
                 src="/google.png"
                 class="mx-auto w-[90px] md:w-[119px]"
                 quality="100"
