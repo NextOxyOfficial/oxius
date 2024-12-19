@@ -12,7 +12,7 @@
         </h2>
         <UButtonGroup
           label="Search Category"
-          class="my-5 md:my-8 justify-center flex"
+          class="my-5 md:my-8 justify-center flex !shadow-none"
           orientation="horizontal"
           size="md"
         >
