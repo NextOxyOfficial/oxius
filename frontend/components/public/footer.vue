@@ -56,7 +56,7 @@
           <div class="flex flex-col gap-4">
             <h4 class="font-bold hidden md:block text-center">We Accept</h4>
             <NuxtImg
-              src="/payment.png"
+              src="/images/payment.png"
               quality="100"
               format="webp"
               alt="Payment"
