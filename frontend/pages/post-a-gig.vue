@@ -8,7 +8,12 @@
         class="max-w-2xl mx-auto space-y-3"
         @submit.prevent="handlePostGig"
       >
-        <UFormGroup label="Title">
+        <UFormGroup
+          label="Title"
+          required
+          v-slot="{ error }"
+          :error="!form.title && checkSubmit && 'You must enter a title!'"
+        >
           <UInput
             type="text"
             size="md"
@@ -27,7 +32,16 @@
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center">
-          <UFormGroup label="Budget Per Action">
+          <UFormGroup
+            label="Budget Per Action"
+            required
+            v-slot="{ error }"
+            :error="
+              form.price <= 0 &&
+              checkSubmit &&
+              'You must enter budget per action!'
+            "
+          >
             <UInput
               icon="i-mdi:currency-bdt"
               type="text"
@@ -43,7 +57,16 @@
               v-model="form.price"
             />
           </UFormGroup>
-          <UFormGroup label="Required Quantity">
+          <UFormGroup
+            label="Required Quantity"
+            required
+            v-slot="{ error }"
+            :error="
+              form.required_quantity <= 0 &&
+              checkSubmit &&
+              'You must enter required quantity!'
+            "
+          >
             <UInput
               type="text"
               size="md"
@@ -65,7 +88,14 @@
             <p>{{ form.price * form.required_quantity }}</p>
           </UFormGroup>
         </div>
-        <UFormGroup label="Instructions">
+        <UFormGroup
+          label="Instructions"
+          required
+          v-slot="{ error }"
+          :error="
+            !form.instructions && checkSubmit && 'You must enter instructions!'
+          "
+        >
           <UTextarea
             color="white"
             variant="outline"
@@ -132,7 +162,16 @@
           />
         </UFormGroup> -->
         <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Target Country">
+          <UFormGroup
+            label="Target Country"
+            required
+            v-slot="{ error }"
+            :error="
+              !form.target_country &&
+              checkSubmit &&
+              'You must select a target country!'
+            "
+          >
             <USelectMenu
               v-model="form.target_country"
               color="white"
@@ -148,7 +187,16 @@
               value-attribute="title"
             />
           </UFormGroup>
-          <UFormGroup label="Target Device">
+          <UFormGroup
+            label="Target Device"
+            required
+            v-slot="{ error }"
+            :error="
+              !form.target_device &&
+              checkSubmit &&
+              'You must select a target device!'
+            "
+          >
             <USelectMenu
               v-model="form.target_device"
               color="white"
@@ -167,7 +215,16 @@
           </UFormGroup>
         </div>
         <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Target Network">
+          <UFormGroup
+            label="Target Network"
+            required
+            v-slot="{ error }"
+            :error="
+              !form.target_network &&
+              checkSubmit &&
+              'You must select a target network!'
+            "
+          >
             <USelectMenu
               v-model="form.target_network"
               size="md"
@@ -183,7 +240,14 @@
               value-attribute="id"
             />
           </UFormGroup>
-          <UFormGroup label="Category">
+          <UFormGroup
+            label="Category"
+            required
+            v-slot="{ error }"
+            :error="
+              !form.category && checkSubmit && 'You must select a category!'
+            "
+          >
             <USelectMenu
               v-model="form.category"
               color="white"
@@ -222,18 +286,19 @@ const toast = useToast();
 const categories = ref([]);
 const network = ref([]);
 const device = ref([]);
-const country = ref([{ title: "Bangladesh" }]);
+const country = ref([{ title: 'Bangladesh' }]);
+const checkSubmit = ref(false);
 
 const form = ref({
   price: 0,
   required_quantity: 0,
-  instructions: "",
-  title: "",
+  instructions: '',
+  title: '',
   medias: [],
-  target_country: "Bangladesh",
-  target_device: "",
-  target_network: "",
-  category: "",
+  target_country: 'Bangladesh',
+  target_device: '',
+  target_network: '',
+  category: '',
 });
 
 function handleFileUpload(event, field) {
@@ -258,12 +323,31 @@ function deleteUpload(ind) {
   }
 }
 
+function validateForm() {
+  for (const key in form.value) {
+    const value = form.value[key];
+    // Check for empty strings, false values, or empty arrays
+    if (
+      (typeof value === 'string' && !value.trim()) ||
+      (typeof value === 'boolean' && !value) ||
+      (Array.isArray(value) && value.length === 0)
+    ) {
+      return false; // Validation failed
+    }
+  }
+  return true; // All fields are valid
+}
+
 async function handlePostGig() {
-  console.log(form.value);
-  const res = await post("/post-micro-gigs/", form.value);
+  if (!validateForm()) {
+    checkSubmit.value = true;
+    toast.add({ title: 'Please fill in all required fields.' });
+    return;
+  }
+  const res = await post('/post-micro-gigs/', form.value);
   if (res.data) {
-    navigateTo("/");
-    toast.add({ title: "MicroGig Added" });
+    navigateTo('/');
+    toast.add({ title: 'MicroGig Added' });
   }
 }
 
@@ -275,9 +359,9 @@ async function getMicroGigsCategory() {
       networksResponse,
       countriesResponse,
     ] = await Promise.all([
-      get("/micro-gigs-categories/"),
-      get("/target-device/"),
-      get("/target-network/"),
+      get('/micro-gigs-categories/'),
+      get('/target-device/'),
+      get('/target-network/'),
       // get("/target-country/"),
     ]);
 
@@ -286,7 +370,7 @@ async function getMicroGigsCategory() {
     network.value = networksResponse.data;
     // country.value = countriesResponse.data;
   } catch (error) {
-    console.error("Error fetching micro-gigs data:", error);
+    console.error('Error fetching micro-gigs data:', error);
   }
 }
 

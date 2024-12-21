@@ -76,7 +76,16 @@
               value-attribute="id"
             />
           </UFormGroup>
-          <UFormGroup label="Price">
+          <UFormGroup
+            label="Price"
+            v-slot="{ error }"
+            :error="
+              form.price <= 0 &&
+              !negotiate &&
+              checkSubmit &&
+              'Price must be greater than 0 or Negotiable'
+            "
+          >
             <div class="flex gap-2 items-center">
               <UInput
                 icon="i-mdi:currency-bdt"
@@ -251,7 +260,6 @@
         />
         <div class="text-center">
           <UButton
-            :disabled="!form.accepted_privacy || !form.accepted_terms"
             class="px-8"
             size="lg"
             color="primary"
