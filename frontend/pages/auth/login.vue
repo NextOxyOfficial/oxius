@@ -5,7 +5,7 @@
 		>
 			<div class="md:w-3/4">
 				<img
-					src="/static-frontend/images/register.webp"
+					src="/static/frontend/images/register.webp"
 					alt="Register"
 				/>
 			</div>
