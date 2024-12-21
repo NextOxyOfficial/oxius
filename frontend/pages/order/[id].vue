@@ -44,15 +44,19 @@
         </template>
 
         <div class="space-y-2 md:px-6 pb-8">
-          <p class="text-2xl font-medium">Instruction</p>
+          <p class="text-2xl font-medium text-center sm:text-left">
+            Instruction
+          </p>
 
           <p class="text-base text-justify">
             {{ gig.instructions }}
           </p>
           <!-- <UDivider label="" class="pt-4" /> -->
 
-          <p class="text-2xl font-medium !mt-8">Reference Photo/Video</p>
-          <div class="!mb-6 flex gap-1">
+          <p class="text-2xl font-medium !mt-8 text-center sm:text-left">
+            Reference Photo/Video
+          </p>
+          <div class="!mb-6 flex gap-1 justify-center sm:justify-start">
             <div class="" v-for="m in gig.medias" :key="m.id">
               <a
                 class="cursor-pointer"
@@ -95,7 +99,11 @@
           <UDivider label="" class="pt-4" />
 
           <div>
-            <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
+            <p
+              class="text-2xl font-medium !mb-2 !mt-8 text-center sm:text-left"
+            >
+              Upload Proof
+            </p>
             <UFormGroup
               size="xl"
               label="Submit Details"
@@ -188,7 +196,7 @@ async function getGigData() {
 }
 
 async function submitGig() {
-  if (submit_details === '' && medias.length === 0) {
+  if (submit_details.value === '' && medias.value.length === 0) {
     checkSubmit.value = true;
     toast.add({ title: 'You must enter submit details or upload proof!' });
     return;
