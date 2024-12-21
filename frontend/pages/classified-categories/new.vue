@@ -12,7 +12,7 @@
           label="Title"
           required
           v-slot="{ error }"
-          :error="!form.title && checkSubmit && 'You must enter a title'"
+          :error="!form.title && checkSubmit && 'You must enter a title!'"
         >
           <UInput
             type="text"
@@ -30,7 +30,14 @@
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center"></div>
-        <UFormGroup label="Instruction">
+        <UFormGroup
+          label="Instruction"
+          required
+          v-slot="{ error }"
+          :error="
+            !form.instructions && checkSubmit && 'You must enter instructions!'
+          "
+        >
           <UTextarea
             color="white"
             variant="outline"
@@ -46,7 +53,14 @@
           />
         </UFormGroup>
         <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Category">
+          <UFormGroup
+            label="Category"
+            required
+            v-slot="{ error }"
+            :error="
+              !form.category && checkSubmit && 'You must select a category'
+            "
+          >
             <USelectMenu
               v-model="form.category"
               color="white"
@@ -161,7 +175,12 @@
               value-attribute="iso2"
             />
           </UFormGroup> -->
-          <UFormGroup label="State">
+          <UFormGroup
+            label="State"
+            required
+            v-slot="{ error }"
+            :error="!form.state && checkSubmit && 'You must select a state!'"
+          >
             <USelectMenu
               v-model="form.state"
               color="white"
@@ -177,7 +196,12 @@
               value-attribute="iso2"
             />
           </UFormGroup>
-          <UFormGroup label="City">
+          <UFormGroup
+            label="City"
+            required
+            v-slot="{ error }"
+            :error="!form.city && checkSubmit && 'You must select a city'"
+          >
             <USelectMenu
               v-model="form.city"
               color="white"
@@ -197,7 +221,14 @@
 
         <div class="grid md:grid-cols-2 gap-4"></div>
         <div>
-          <UFormGroup label="Address">
+          <UFormGroup
+            label="Address"
+            required
+            v-slot="{ error }"
+            :error="
+              !form.location && checkSubmit && 'You must enter your address!'
+            "
+          >
             <UTextarea
               v-model="form.location"
               color="white"
@@ -220,6 +251,7 @@
         />
         <div class="text-center">
           <UButton
+            :disabled="!form.accepted_privacy || !form.accepted_terms"
             class="px-8"
             size="lg"
             color="primary"
