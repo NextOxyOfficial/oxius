@@ -147,7 +147,7 @@
       </div>
       <h3
         class="text-center text-lg md:text-3xl font-semibold mt-8"
-        v-if="statements.length"
+        v-if="statements?.length"
       >
         Transaction History
       </h3>
@@ -156,7 +156,7 @@
         :rows="statements"
         :columns="columns"
         class="mb-8 mt-4"
-        v-if="statements.length"
+        v-if="statements?.length"
       >
         <template #transaction_type-data="{ row }">
           <p>

@@ -295,7 +295,7 @@ const form = ref({
   instructions: '',
   title: '',
   medias: [],
-  target_country: '',
+  target_country: 'Bangladesh',
   target_device: '',
   target_network: '',
   category: '',

@@ -21,6 +21,6 @@ export default defineNuxtConfig({
     },
   },
   image: {
-    dir: "public",
+    dir: "/static/frontend/",
   },
 });

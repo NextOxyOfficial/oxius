@@ -93,6 +93,13 @@ class ClassifiedCategoryPost(models.Model):
     accepted_privacy = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    GIG_STATUS = [
+      ('pending', 'Pending'),
+      ('approved', 'Approved'),
+      ('rejected', 'Rejected'),
+    ]
+    git_status = models.CharField(
+      max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
 
@@ -154,6 +161,13 @@ class MicroGigPost(models.Model):
     active_gig = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    GIG_STATUS = [
+      ('pending', 'Pending'),
+      ('approved', 'Approved'),
+      ('rejected', 'Rejected'),
+    ]
+    git_status = models.CharField(
+      max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
 
