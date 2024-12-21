@@ -4,7 +4,7 @@
       class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0"
     >
       <div class="md:w-3/4">
-        <img src="/images/register.webp" alt="Register" />
+        <img src="/static/frontend/images/register.webp" alt="Register" />
       </div>
       <div class="md:pt-10 md:w-1/2">
         <CommonLoginForm v-if="login" />

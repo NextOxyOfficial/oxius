@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: ["@nuxt/ui", "@nuxt/image"],
   app: {
-    buildAssetsDir: "/",
+    buildAssetsDir: "/static/frontend",
   },
   runtimeConfig: {
     public: {
@@ -19,5 +19,8 @@ export default defineNuxtConfig({
         baseURL: "https://adsyclub.com",
       },
     },
+  },
+  image: {
+    dir: "/static/frontend/",
   },
 });
