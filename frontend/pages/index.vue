@@ -138,7 +138,9 @@
             >
               <p class="px-2 font-semibold pb-3.5">Available Gigs</p>
               <UCard
-                v-for="(gig, i) in filteredMicroGigs"
+                v-for="(gig, i) in filteredMicroGigs.filter(
+                  (gig) => gig.gig_status.toLowerCase() === 'approved'
+                )"
                 :key="i"
                 :ui="{
                   rounded: '',
@@ -253,6 +255,8 @@ async function getClassifiedCategories() {
 
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data;
+  console.log(gigResponse.data);
+
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
     if (!acc[category]) {

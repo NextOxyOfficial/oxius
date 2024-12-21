@@ -49,6 +49,11 @@
                     }}</span>
                   </p>
                 </div>
+                <div>
+                  <p>
+                    Status: <span class="capitalize">{{ gig.gig_status }}</span>
+                  </p>
+                </div>
               </div>
             </div>
           </div>

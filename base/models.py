@@ -84,6 +84,7 @@ class ClassifiedCategoryPost(models.Model):
     title = models.CharField(max_length=256)
     location = models.TextField(max_length=512)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    negotiable = models.BooleanField(default=False)
     country = models.CharField(null=True, blank=True,default='')
     state = models.CharField(null=True, blank=True,default='')
     city = models.CharField(null=True, blank=True,default='')
@@ -98,7 +99,7 @@ class ClassifiedCategoryPost(models.Model):
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
     ]
-    git_status = models.CharField(
+    gig_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
@@ -166,7 +167,7 @@ class MicroGigPost(models.Model):
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
     ]
-    git_status = models.CharField(
+    gig_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
