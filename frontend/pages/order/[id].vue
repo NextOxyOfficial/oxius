@@ -96,7 +96,18 @@
 
           <div>
             <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
-            <UFormGroup size="xl" label="Submit Details" class="!mt-8 md:w-1/2">
+            <UFormGroup
+              size="xl"
+              label="Submit Details"
+              class="!mt-8 md:w-1/2"
+              required
+              v-slot="{ error }"
+              :error="
+                !submit_details &&
+                checkSubmit &&
+                'You must enter submit details'
+              "
+            >
               <UTextarea
                 color="white"
                 variant="outline"
@@ -156,15 +167,15 @@
 </template>
 
 <script setup>
-const emit = defineEmits(["close"]);
-const props = defineProps(["gid"]);
+const emit = defineEmits(['close']);
+const props = defineProps(['gid']);
 const { get, staticURL, post } = useApi();
 const route = useRoute();
 const medias = ref([]);
-const submit_details = ref("");
+const submit_details = ref('');
 const accepted_terms = ref(false);
 const toast = useToast();
-
+const checkSubmit = ref(false);
 const accepted_condition = ref(false);
 
 onMounted(() => {
@@ -177,6 +188,12 @@ async function getGigData() {
 }
 
 async function submitGig() {
+  if (submit_details === '' && medias.length === 0) {
+    checkSubmit.value = true;
+    toast.add({ title: 'You must enter submit details or upload proof!' });
+    return;
+  }
+
   const res = await post(`/user-micro-gig-task-post/`, {
     gig: route.params.id,
     medias: medias.value,
@@ -184,11 +201,11 @@ async function submitGig() {
   });
 
   if (res.error) {
-    toast.add({ title: "Something went wrong!" });
+    toast.add({ title: 'Something went wrong!' });
   } else {
     console.log(true);
 
-    toast.add({ title: "Order Submitted Successfully!" });
+    toast.add({ title: 'Order Submitted Successfully!' });
   }
 }
 
