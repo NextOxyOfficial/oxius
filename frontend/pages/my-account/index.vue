@@ -27,15 +27,27 @@
               />
             </UFormGroup>
           </div>
-          <div class="sm:col-span-2">
+          <div class="col-span-2">
             <UFormGroup label="Address">
-              <UTextarea
+              <UInput
                 color="white"
                 variant="outline"
                 class="w-full"
                 resize
                 placeholder="Address"
                 v-model="userProfile.address"
+              />
+            </UFormGroup>
+          </div>
+          <div>
+            <UFormGroup label="Email">
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                placeholder="Phone"
+                v-model="userProfile.email"
+                readonly
               />
             </UFormGroup>
           </div>
@@ -72,7 +84,7 @@
               />
             </UFormGroup>
           </div>
-          <div></div>
+
           <div>
             <UFormGroup label="Phone">
               <UInput
@@ -85,50 +97,47 @@
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Email">
+            <UFormGroup label="Facebook Url">
               <UInput
                 type="text"
                 size="md"
                 color="white"
-                placeholder="Email"
-                v-model="userProfile.email"
-                readonly
-              />
-            </UFormGroup>
-          </div>
-          <div>
-            <UFormGroup label="Facebook Link">
-              <UInput
-                type="text"
-                size="md"
-                color="white"
-                placeholder="Facebook Link"
+                placeholder="Facebook Url"
                 v-model="userProfile.face_link"
-                readonly
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Instagram Link">
+            <UFormGroup label="Instagram Url">
               <UInput
                 type="text"
                 size="md"
                 color="white"
-                placeholder="Instagram Link"
+                placeholder="Instagram Url"
                 v-model="userProfile.instagram_link"
-                readonly
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Whatsapp Link">
+            <UFormGroup label="WhatsApp #">
               <UInput
                 type="text"
                 size="md"
                 color="white"
-                placeholder="Whatsapp Link"
+                placeholder="WhatsApp #"
                 v-model="userProfile.whatsapp_link"
-                readonly
+              />
+            </UFormGroup>
+          </div>
+          <div class="col-span-2">
+            <UFormGroup label="About Me">
+              <UTextarea
+                color="white"
+                variant="outline"
+                class="w-full"
+                v-model="userProfile.about"
+                resize
+                placeholder="Please provide information about your self, profession and services so that public can read about you and find interest"
               />
             </UFormGroup>
           </div>

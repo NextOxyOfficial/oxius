@@ -183,7 +183,9 @@
                     </div>
                   </div>
                 </div>
-                <div>
+                <div
+                  class="flex gap-16 items-center justify-between max-sm:pl-[70px] md:pr-2"
+                >
                   <p
                     class="inline-flex items-center my-3"
                     v-if="!service.negotiable"
@@ -192,10 +194,15 @@
                     {{ service.price }}
                   </p>
                   <p v-else>Negotiable</p>
-                  <p class="capitalize inline-flex items-center font-semibold">
+                  <p
+                    class="capitalize inline-flex items-center font-semibold"
+                    :class="
+                      service.gig_status === 'rejected' ? 'text-red-500' : ''
+                    "
+                  >
                     <UIcon
                       name="i-icon-park-outline:dot"
-                      class="text-green-500"
+                      class="text-green-500 text-lg"
                       v-if="service.gig_status === 'approved'"
                     />
                     {{

@@ -11,7 +11,6 @@
         <UFormGroup
           label="Title"
           required
-          v-slot="{ error }"
           :error="!form.title && checkSubmit && 'You must enter a title!'"
         >
           <UInput
@@ -33,7 +32,6 @@
         <UFormGroup
           label="Instruction"
           required
-          v-slot="{ error }"
           :error="
             !form.instructions && checkSubmit && 'You must enter instructions!'
           "
@@ -56,7 +54,6 @@
           <UFormGroup
             label="Category"
             required
-            v-slot="{ error }"
             :error="
               !form.category && checkSubmit && 'You must select a category'
             "
@@ -78,7 +75,6 @@
           </UFormGroup>
           <UFormGroup
             label="Price"
-            v-slot="{ error }"
             :error="
               form.price <= 0 &&
               !form.negotiable &&
@@ -187,7 +183,6 @@
           <UFormGroup
             label="State"
             required
-            v-slot="{ error }"
             :error="!form.state && checkSubmit && 'You must select a state!'"
           >
             <USelectMenu
@@ -208,7 +203,6 @@
           <UFormGroup
             label="City"
             required
-            v-slot="{ error }"
             :error="!form.city && checkSubmit && 'You must select a city'"
           >
             <USelectMenu
@@ -233,7 +227,6 @@
           <UFormGroup
             label="Address"
             required
-            v-slot="{ error }"
             :error="
               !form.location && checkSubmit && 'You must enter your address!'
             "
@@ -248,15 +241,16 @@
             />
           </UFormGroup>
         </div>
+
         <UCheckbox
-          name="notifications"
-          label="Accept Terms"
-          v-model="form.accepted_terms"
-        />
-        <UCheckbox
-          name="notifications"
-          label="Accept Privacy"
+          name="terms_privacy"
+          label="Accept Terms & Privacy "
           v-model="form.accepted_privacy"
+          :error="
+            !form.accepted_privacy &&
+            checkSubmit &&
+            'You must accept our Terms Condition & Privacy Policy!'
+          "
         />
         <div class="text-center">
           <UButton
@@ -293,26 +287,34 @@ const form = ref({
   city: "",
   location: "",
   negotiable: false,
-  accepted_terms: false,
   accepted_privacy: false,
 });
-
+const submitValues = ref({});
 function validateForm() {
-  for (const key in form.value) {
-    const value = form.value[key];
-    // Check for empty strings, false values, or empty arrays
+  if (form.value.price > 0) {
+    const { negotiable, ...rest } = form.value;
+    submitValues.value = rest;
+  } else if (form.value.negotiable) {
+    const { price, ...rest } = form.value;
+    submitValues.value = rest;
+  }
+
+  for (const key in submitValues.value) {
+    const value = submitValues.value[key];
     if (
       (typeof value === "string" && !value.trim()) ||
       (typeof value === "boolean" && !value) ||
       (Array.isArray(value) && value.length === 0)
     ) {
-      return false; // Validation failed
+      return false;
     }
   }
-  return true; // All fields are valid
+  return true;
 }
 
 async function handlePostGig() {
+  console.log(form.value);
+
   if (!validateForm()) {
     checkSubmit.value = true;
     toast.add({ title: "Please fill in all required fields." });

@@ -186,7 +186,7 @@
                 </div>
                 <p class="inline-flex items-center my-3">
                   Price: <UIcon name="i-mdi:currency-bdt" />
-                  {{ service.price }}
+                  {{ service.negotiable ? "Negotiable" : service.price }}
                 </p>
               </div>
             </div>

@@ -296,7 +296,7 @@ class ClassifiedCategoryPostFilterView(APIView):
 
 @api_view(['GET'])
 def classifiedCategoryPosts(request, cid):
-    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.filter(category=cid),many=True)
+    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.filter(category=cid).order_by('-created_at'),many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 

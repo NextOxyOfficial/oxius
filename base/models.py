@@ -44,6 +44,10 @@ class User(AbstractUser):
   def __str__(self):
       return self.email
 
+
+
+
+
 class Logo(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     def __str__(self):

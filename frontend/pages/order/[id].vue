@@ -67,7 +67,7 @@
                 "
               >
                 <NuxtImg
-                  class="h-48 w-64 object-cover shadow"
+                  class="w-20 object-cover shadow"
                   :src="staticURL + m.image"
                 />
               </a>
@@ -80,22 +80,13 @@
                 v-if="m.video"
               >
                 <video
-                  class="h-48 w-64 object-cover shadow"
+                  class="w-20 object-cover shadow"
                   :src="staticURL + m.video"
                 ></video>
               </a>
             </div>
           </div>
-          <UCheckbox
-            name="notifications"
-            v-model="accepted_terms"
-            label="I accept Terms & Conditions"
-          />
-          <UCheckbox
-            name="notifications"
-            v-model="accepted_condition"
-            label="I am aware that fake and fraud submission may lead to account ban!"
-          />
+
           <UDivider label="" class="pt-4" />
 
           <div>
@@ -157,6 +148,18 @@
               </div>
             </div>
           </div>
+          <div class="!mt-7">
+            <UCheckbox
+              name="notifications"
+              v-model="accepted_terms"
+              label="I accept Terms & Conditions"
+            />
+            <UCheckbox
+              name="notifications"
+              v-model="accepted_condition"
+              label="I am aware that fake and fraud submission may lead to account ban!"
+            />
+          </div>
           <div class="text-center">
             <UButton
               class="mt-8"
@@ -175,12 +178,12 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['close']);
-const props = defineProps(['gid']);
+const emit = defineEmits(["close"]);
+const props = defineProps(["gid"]);
 const { get, staticURL, post } = useApi();
 const route = useRoute();
 const medias = ref([]);
-const submit_details = ref('');
+const submit_details = ref("");
 const accepted_terms = ref(false);
 const toast = useToast();
 const checkSubmit = ref(false);
@@ -196,9 +199,9 @@ async function getGigData() {
 }
 
 async function submitGig() {
-  if (submit_details.value === '' && medias.value.length === 0) {
+  if (submit_details.value === "" && medias.value.length === 0) {
     checkSubmit.value = true;
-    toast.add({ title: 'You must enter submit details or upload proof!' });
+    toast.add({ title: "You must enter submit details or upload proof!" });
     return;
   }
 
@@ -209,11 +212,11 @@ async function submitGig() {
   });
 
   if (res.error) {
-    toast.add({ title: 'Something went wrong!' });
+    toast.add({ title: "Something went wrong!" });
   } else {
     console.log(true);
 
-    toast.add({ title: 'Order Submitted Successfully!' });
+    toast.add({ title: "Order Submitted Successfully!" });
   }
 }
 
