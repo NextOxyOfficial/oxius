@@ -161,8 +161,14 @@
                   <div class="flex gap-4">
                     <div>
                       <NuxtImg
+                        v-if="gig.medias[0].image"
                         :src="gig.medias[0].image"
                         class="size-14 rounded-full"
+                      />
+                      <img
+                        v-else
+                        src="/static/frontend/images/no-image.jpg"
+                        alt="No Image"
                       />
                     </div>
                     <div>

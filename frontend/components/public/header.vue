@@ -174,11 +174,11 @@ watch(router.currentRoute, () => {
     isOpen.value = false;
   }
 });
-// useSeoMeta({
-// 	ogImage: "/static/favicon.ico",
-// 	favicon: "/static/favicon.ico",
-// 	title: "Easy Business Manager",
-// });
+useSeoMeta({
+  ogImage: "/static/favicon.ico",
+  favicon: "/static/favicon.ico",
+  // title: "Easy Business Manager",
+});
 const links = [
   {
     label: "Home",

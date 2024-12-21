@@ -84,8 +84,8 @@
               class="radio-center"
             >
               <template #label="{ option }">
-                <NuxtImg
-                  :src="'/static-frontend/images/' + option.icon"
+                <img
+                  :src="'/static/frontend/images/' + option.icon"
                   class="size-10 object-contain inline-block"
                 />
               </template>
@@ -199,7 +199,7 @@ const bkash = ref(null);
 const rocket = ref(null);
 const options = [
   { value: "bkash", label: "BKash", icon: "bkash.png" },
-  { value: "nagad", label: "Nagad", icon: "nagad.jpg" },
+  { value: "nagad", label: "Nagad", icon: "nagad.png" },
   // { value: "rocket", label: "Rocket", icon: "i-heroicons-bell" },
 ];
 const columns = [
