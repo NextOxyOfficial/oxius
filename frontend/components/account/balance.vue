@@ -1,14 +1,15 @@
 <template>
   <UCard
     v-if="user?.user"
-    class="md:w-[700px] mx-auto mb-8 bg-primary/10"
+    class="md:w-[700px] mx-auto mb-8 bg-green-100 border-dashed border border-green-500"
     :ui="{
       rounded: 'rounded-2xl',
+      ring: '',
     }"
   >
     <div class="flex flex-col md:flex-row justify-between gap-6">
       <div>
-        <h3 class="text-2xl font-bold">
+        <h3 class="text-2xl font-bold max-sm:text-center">
           <span class="text-green-900 inline-flex items-center gap-1">
             <UIcon
               name="i-material-symbols:account-balance-wallet-outline"
@@ -22,7 +23,7 @@
         </h3>
       </div>
 
-      <div class="flex items-center">
+      <div class="flex items-center justify-between">
         <h3 class="text-xl font-bold inline-flex items-center">
           Pending Task:
           <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
@@ -33,21 +34,29 @@
         <UButton
           size="xs"
           color="primary"
-          variant="solid"
+          variant="outline"
           label="View"
           class="ml-2"
           :to="`/pending-tasks/${user?.user.id}`"
         />
       </div>
     </div>
-    <div class="flex flex-col md:flex-row justify-center gap-4 mt-8">
+    <div
+      class="grid grid-cols-2 md:grid-cols-[auto_auto_auto_auto] justify-center gap-2 md:gap-4 mt-8 w-full"
+    >
       <UButton
         icon="i-token:cusd"
         size="md"
         color="primary"
         variant="solid"
-        label="Deposit / Withdraw"
+        label="Deposit/Withdraw"
         to="/deposit-withdraw/"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+          gap: { md: 'gap-x-1 md:gap-x-2' },
+          padding: { md: 'px-1.5 py-0.5 md:px-3 md:py-2' },
+        }"
+        class="justify-center"
       />
       <UButton
         icon="i-material-symbols:mark-email-unread-outline"
@@ -56,6 +65,10 @@
         variant="solid"
         label="Inbox"
         to="/inbox/"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+        }"
+        class="justify-center"
       />
       <UButton
         icon="i-material-symbols:list-rounded"
@@ -64,6 +77,10 @@
         variant="solid"
         label="My Gigs"
         :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+        }"
+        class="justify-center"
       />
       <UButton
         icon="i-heroicons-plus-circle"
@@ -72,6 +89,10 @@
         variant="solid"
         label="Post A Gig"
         to="/post-a-gig"
+        :ui="{
+          size: { md: 'text-xs md:text-sm' },
+        }"
+        class="justify-center"
       />
     </div>
     <UDivider label="" class="my-5" />

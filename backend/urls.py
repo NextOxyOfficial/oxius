@@ -24,7 +24,7 @@ urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
     path('api/', include('base.urls')),
     # for frontend
-  path('', index, name='index'),
+    path('', index, name='index'),
     path('<str:param>', index, name='index2'),
     path('<str:param>/', index, name='index2'),
     path('<str:param>/<str:param2>', index, name='index2'),

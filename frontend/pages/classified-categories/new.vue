@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h1 class="text-center text-4xl my-8">Add A Classified Post</h1>
+      <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
       <UDivider label="" class="mb-8" />
       <form
         action="#"
@@ -58,38 +58,47 @@
             />
           </UFormGroup>
           <UFormGroup label="Price">
-            <UInput
-              icon="i-mdi:currency-bdt"
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              placeholder="2.0"
-              class="max-w-40"
-              v-model="form.price"
-            />
+            <div class="flex gap-2 items-center">
+              <UInput
+                icon="i-mdi:currency-bdt"
+                type="text"
+                size="md"
+                color="white"
+                :disabled="negotiate"
+                :ui="{
+                  size: {
+                    md: 'text-base',
+                  },
+                }"
+                placeholder="2.0"
+                class="max-w-40"
+                v-model="form.price"
+              />
+              <UCheckbox
+                v-model="negotiate"
+                name="Negotiable"
+                label="Negotiable"
+              />
+            </div>
           </UFormGroup>
         </div>
 
-        <UFormGroup label="Upload Photo/Video">
+        <!-- <UFormGroup label="Upload Photo/Video">
           <input
             type="file"
             name=""
             id=""
             @change="handleFileUpload($event, 'image')"
           />
-        </UFormGroup>
-        <div class="flex flex-wrap gap-5">
+        </UFormGroup> -->
+        <UFormGroup label="Upload Photo/Video"> </UFormGroup>
+        <div class="flex flex-wrap gap-2 md:gap-5 mt-4">
           <div
-            class="relative max-w-[200px] max-h-[200px]"
+            class="relative max-w-[200px] max-h-[200px] overflow-hidden"
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="img" :alt="`Uploaded file ${i}`" />
+            <img :src="img" :alt="`Uploaded file ${i}`" class="object-cover" />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -97,6 +106,7 @@
               <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
             </div>
           </div>
+
           <div
             class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
           >
@@ -130,7 +140,7 @@
           />
         </UFormGroup> -->
         <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup label="Country">
+          <!-- <UFormGroup label="Country">
             <USelectMenu
               v-model="form.country"
               color="white"
@@ -145,7 +155,7 @@
               option-attribute="name"
               value-attribute="iso2"
             />
-          </UFormGroup>
+          </UFormGroup> -->
           <UFormGroup label="State">
             <USelectMenu
               v-model="form.state"
@@ -162,9 +172,6 @@
               value-attribute="iso2"
             />
           </UFormGroup>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-4">
           <UFormGroup label="City">
             <USelectMenu
               v-model="form.city"
@@ -182,6 +189,8 @@
             />
           </UFormGroup>
         </div>
+
+        <div class="grid md:grid-cols-2 gap-4"></div>
         <div>
           <UFormGroup label="Address">
             <UTextarea
@@ -190,7 +199,7 @@
               variant="outline"
               class="w-full"
               resize
-              placeholder="Chewriya, Kushtia"
+              placeholder="1216-Mirpur, Dhaka"
             />
           </UFormGroup>
         </div>
@@ -228,6 +237,7 @@ const state = ref([]);
 const city = ref([]);
 
 const mediaPreview = ref([]);
+const negotiate = ref(false);
 
 const form = ref({
   price: 0,
@@ -242,6 +252,33 @@ const form = ref({
   accepted_terms: false,
   accepted_privacy: false,
 });
+
+function validateForm() {
+  for (const key in form.value) {
+    const value = form.value[key];
+    // Check for empty strings, false values, or empty arrays
+    if (
+      (typeof value === "string" && !value.trim()) ||
+      (typeof value === "boolean" && !value) ||
+      (Array.isArray(value) && value.length === 0)
+    ) {
+      return false; // Validation failed
+    }
+  }
+  return true; // All fields are valid
+}
+
+async function handlePostGig() {
+  if (!validateForm()) {
+    toast.add({ title: "Please fill in all required fields." });
+    return;
+  }
+  const res = await post("/classified-categories-post/", form.value);
+  if (res.data) {
+    navigateTo("/");
+    toast.add({ title: "Classified Service Added" });
+  }
+}
 
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
@@ -265,36 +302,12 @@ function deleteUpload(ind) {
   }
 }
 
-async function handlePostGig() {
-  console.log(form.value);
-  const formData = new FormData();
-  formData.append("title", form.value.title);
-  formData.append("price", form.value.price);
-  formData.append("instructions", form.value.instructions);
-  formData.append("image", form.value.image);
-  formData.append("category", form.value.category);
-  formData.append("accepted_terms", form.value.accepted_terms);
-  formData.append("accepted_privacy", form.value.accepted_privacy);
-  formData.append("medias", form.value.medias); // Not needed as we are sending the image separately
-  formData.append("location", form.value.location); // Not needed as we are sending the image separately
-  formData.append("country", form.value.country);
-  formData.append("state", form.value.state);
-  formData.append("city", form.value.city);
-
-  const res = await post("/classified-categories-post/", form.value);
-  if (res.data) {
-    navigateTo("/");
-    toast.add({ title: "Classified Service Added" });
-  }
-}
-
 async function getMicroGigsCategory() {
   try {
     const [categoriesResponse] = await Promise.all([
       get("/classified-categories/"),
     ]);
-
-    categories.value = categoriesResponse.data;
+    categories.value = categoriesResponse.data.results;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }
@@ -313,15 +326,13 @@ const headerOptions = {
   redirect: "follow",
 };
 
-async function getCountry() {
-  const res = await $fetch(ApiUrl, headerOptions);
-  country.value = res;
-  console.log(res);
-}
+// async function getCountry() {
+//   const res = await $fetch(ApiUrl, headerOptions);
+//   country.value = res;
+//   console.log(res);
+// }
 onMounted(() => {
-  setTimeout(() => {
-    getCountry();
-  }, 100);
+  country.value.push({ name: "BD", iso2: "BD" });
 });
 
 watch(

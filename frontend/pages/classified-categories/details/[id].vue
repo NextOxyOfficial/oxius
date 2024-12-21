@@ -32,7 +32,8 @@
           </UButton>
         </div>
         <div class="w-full flex flex-col justify-center" v-if="service.id">
-          <h2 class="text-3xl font-bold">{{ service.title }}</h2>
+          <h2 class="text-3xl font-semibold">{{ service.title }}</h2>
+          <h4 class="text-xl font-semibold">{{ service.price }}</h4>
 
           <NuxtImg
             v-if="service?.medias[0]"
@@ -43,17 +44,23 @@
           <p class="">
             {{ service.instructions }}
           </p>
-          <div class="my-3 flex items-center gap-4 mt-8">
+          <div class="my-3 flex flex-col sm:flex-row items-center gap-4 mt-8">
             <div>
-              <NuxtImg src="/avatar.png" class="h-56 w-56 rounded-full" />
+              <NuxtImg
+                src="/avatar.png"
+                class="h-36 w-36 md:h-56 md:w-56 rounded-full"
+              />
             </div>
             <div class="flex-1 max-w-md w-full">
               <div class="flex flex-col gap-1 w-full my-3">
-                <div class="flex items-center">
-                  <h3 class="text-2xl" v-if="service.user?.first_name">
+                <div class="flex items-center justify-center sm:justify-normal">
+                  <h3
+                    class="text-xl md:text-2xl"
+                    v-if="service.user?.first_name"
+                  >
                     {{ service.user?.first_name }} {{ service.user?.last_name }}
                   </h3>
-                  <h3 class="text-2xl" v-else>No Name Provided</h3>
+                  <h3 class="text-xl md:text-2xl" v-else>No Name Provided</h3>
                   <UIcon
                     name="mdi:check-decagram"
                     class="w-5 h-5 text-blue-600 mt-1"

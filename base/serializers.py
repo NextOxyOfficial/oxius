@@ -47,6 +47,7 @@ class MicroGigPostTaskSerializer(serializers.ModelSerializer):
 
 class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'
@@ -61,6 +62,7 @@ class MicroGigCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigCategory
         fields = '__all__'
+
 class TargetNetworkSerializer(serializers.ModelSerializer):
     class Meta:
         model = TargetNetwork
@@ -90,6 +92,7 @@ class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
         exclude = ['user']
 
 class BalanceSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
     class Meta:
         model = Balance
         fields = '__all__'
@@ -97,6 +100,7 @@ class BalanceSerializer(serializers.ModelSerializer):
 class ClassifiedPostSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=ClassifiedCategory.objects.all())
     category_details = ClassifiedServicesSerializer(source='category', read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
 
     class Meta:
         model = ClassifiedCategoryPost

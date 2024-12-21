@@ -82,7 +82,9 @@
         </UFormGroup>
 
         <!-- medias  -->
-
+        <label for="" class="block mt-3 font-semibold"
+          >Upload Photo/Video</label
+        >
         <div class="flex flex-wrap gap-5">
           <div
             class="relative max-w-[200px] max-h-[200px]"
@@ -137,14 +139,13 @@
               size="md"
               placeholder="Target Country"
               :options="country"
-              multiple
               :ui="{
                 size: {
                   md: 'text-base',
                 },
               }"
               option-attribute="title"
-              value-attribute="id"
+              value-attribute="title"
             />
           </UFormGroup>
           <UFormGroup label="Target Device">
@@ -221,7 +222,7 @@ const toast = useToast();
 const categories = ref([]);
 const network = ref([]);
 const device = ref([]);
-const country = ref([]);
+const country = ref([{ title: "Bangladesh" }]);
 
 const form = ref({
   price: 0,
@@ -277,13 +278,13 @@ async function getMicroGigsCategory() {
       get("/micro-gigs-categories/"),
       get("/target-device/"),
       get("/target-network/"),
-      get("/target-country/"),
+      // get("/target-country/"),
     ]);
 
     categories.value = categoriesResponse.data;
     device.value = devicesResponse.data;
     network.value = networksResponse.data;
-    country.value = countriesResponse.data;
+    // country.value = countriesResponse.data;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }

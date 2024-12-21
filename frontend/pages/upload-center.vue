@@ -49,6 +49,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+const toast = useToast();
 const { put } = useApi();
 const { user } = useAuth();
 const form = ref({
@@ -79,10 +80,14 @@ function deleteUpload(ind) {
 console.log(user.value.user.email);
 
 async function handleUploadSubmit() {
+  console.log(form.value);
+
   const res = await put(
     `/persons/update/${user.value.user.email}/`,
     form.value
   );
-  console.log(res);
+  if (res.data.message) {
+    toast.add({ title: res.data.message });
+  }
 }
 </script>

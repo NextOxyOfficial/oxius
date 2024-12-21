@@ -7,6 +7,10 @@
           divide: 'divide-y divide-gray-100 dark:divide-gray-800',
           header: {
             background: 'bg-slate-50',
+            padding: 'px-2 py-3',
+          },
+          body: {
+            padding: 'px-2 py-3',
           },
           rounded: 'rounded-lg',
         }"
@@ -39,18 +43,19 @@
           </div>
         </template>
 
-        <div class="space-y-2 px-6 pb-8">
+        <div class="space-y-2 md:px-6 pb-8">
           <p class="text-2xl font-medium">Instruction</p>
 
           <p class="text-base text-justify">
             {{ gig.instructions }}
           </p>
           <!-- <UDivider label="" class="pt-4" /> -->
+
           <p class="text-2xl font-medium !mt-8">Reference Photo/Video</p>
-          <div class="!mb-6 flex gap-1 cursor-pointer">
+          <div class="!mb-6 flex gap-1">
             <div class="" v-for="m in gig.medias" :key="m.id">
               <a
-                class=""
+                class="cursor-pointer"
                 v-if="m.image"
                 target="_blank"
                 :href="
@@ -88,8 +93,22 @@
             label="I am aware that fake and fraud submission may lead to account ban!"
           />
           <UDivider label="" class="pt-4" />
+
           <div>
             <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
+            <UFormGroup size="xl" label="Submit Details" class="!mt-8 md:w-1/2">
+              <UTextarea
+                color="white"
+                variant="outline"
+                class="w-full"
+                resize
+                placeholder="Submit Details"
+                v-model="submit_details"
+              />
+            </UFormGroup>
+            <label for="file" class="text-base block mt-8 mb-3 font-semibold"
+              >Upload</label
+            >
             <div class="flex flex-wrap gap-5">
               <div
                 class="relative max-w-[200px] max-h-[200px]"
@@ -104,6 +123,7 @@
                   <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
                 </div>
               </div>
+
               <div
                 class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
               >
@@ -141,6 +161,7 @@ const props = defineProps(["gid"]);
 const { get, staticURL, post } = useApi();
 const route = useRoute();
 const medias = ref([]);
+const submit_details = ref("");
 const accepted_terms = ref(false);
 const toast = useToast();
 
@@ -151,16 +172,16 @@ onMounted(() => {
 });
 const gig = ref();
 async function getGigData() {
-  const res = await get(`/micro-gigs/${route.params.id}`);
+  const res = await get(`/micro-gigs/${route.params.id}/`);
   gig.value = res.data;
 }
 
 async function submitGig() {
   const res = await post(`/user-micro-gig-task-post/`, {
     gig: route.params.id,
-    medias,
+    medias: medias.value,
+    submit_details: submit_details.value,
   });
-  console.log(res);
 
   if (res.error) {
     toast.add({ title: "Something went wrong!" });

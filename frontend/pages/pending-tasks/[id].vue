@@ -1,15 +1,18 @@
 <template>
   <PublicSection>
-    <AccountBalance v-if="user" :user="user" :isUser="true" />
-
     <UContainer>
-      <UTable :rows="pendingGigs" :columns="columns" class="my-8">
-        <template #caption>
-          <caption class="text-center text-3xl font-semibold mb-4">
-            Task Details
-          </caption>
-        </template>
-
+      <AccountBalance v-if="user" :user="user" :isUser="true" />
+      <p class="text-center text-2xl md:text-3xl font-semibold">
+        Pending Tasks List
+      </p>
+      <UTable
+        :rows="pendingGigs"
+        :columns="columns"
+        class="mb-8"
+        :ui="{
+          th: { base: 'truncate' },
+        }"
+      >
         <template #amount-data="{ row }">
           <p>
             {{ row.gig.price }}

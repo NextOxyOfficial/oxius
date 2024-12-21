@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from .pay import *
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,TokenVerifyView)
 
 urlpatterns = [
@@ -12,6 +13,7 @@ urlpatterns = [
   path('classified-categories/<str:cid>/',classifiedCategoryPosts),
   path('classified-categories/post/<str:pk>/',classifiedCategoryPost),
   path('classified-categories-post/',post_classified_service),
+  path('user-classified-categories-post/',UserClassifiedCategoryPosts),
   path('micro-gigs-categories/',GetMicroGigCategory.as_view()),
   path('target-network/',GetTargetNetwork.as_view()),
   path('target-device/',GetTargetDevice.as_view()),
@@ -39,5 +41,9 @@ urlpatterns = [
   path('auth/validate-token/', TokenValidationView.as_view(), name='validate_token'),
   path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
   path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-  
+  #payment
+  path('pay/',makePayment), 
+  # ?amount=1000&order_id=001&currency=BDT&customer_name=Mahabubul+Hasan&customer_address=Mohakhali&customer_phone=01311310975&customer_city=Dhaka&customer_post_code=1229
+  path('verify-pay/',verifyPayment), 
+  # ?sp_order_id=ADSYCLUB_67613e32050d9
 ]

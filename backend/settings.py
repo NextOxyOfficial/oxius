@@ -189,3 +189,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SP_USERNAME="lyriczsoft"
+SP_PASSWORD="lyrikskdzprvz&ud"
+SP_ENDPOINT="https://engine.shurjopayment.com"
+SP_RETURN="https://adsyclub.com/verify-payment"
+SP_CANCEL="https://adsyclub.com/deposit-withdraw/"
+SP_PREFIX="ADSYCLUB_"
