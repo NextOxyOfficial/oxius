@@ -32,7 +32,7 @@
           color="primary"
           variant="solid"
           label="My Posts"
-          to="/my-gigs/"
+          to="/my-classified-services/"
         />
         <div
           class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 max-md:mt-[92px]"

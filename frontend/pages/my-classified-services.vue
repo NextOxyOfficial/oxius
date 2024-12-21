@@ -2,7 +2,7 @@
   <PublicSection>
     <UContainer>
       <h2 class="text-center text-2xl md:text-4xl my-6">My Classified Posts</h2>
-      <div>
+      <!-- <div>
         <p class="mb-3">
           <ULink
             to="/"
@@ -12,7 +12,7 @@
           >
           > {{ categoryTitle }}
         </p>
-        <!-- <USelect
+        <USelect
             icon="i-heroicons-bell-solid"
             color="white"
             size="md"
@@ -21,7 +21,7 @@
             placeholder="Category"
             option-attribute="title"
             value-attribute="id"
-          /> -->
+          />
       </div>
       <p class="text-base md:text-lg mb-3 font-semibold" v-if="services.length">
         Select Your Location
@@ -30,7 +30,7 @@
         class="flex flex-col md:flex-row justify-between md:items-end gap-4"
         v-if="services.length"
       >
-        <!-- <UFormGroup label="Country">
+        <UFormGroup label="Country">
           <USelectMenu
             v-model="form.country"
             color="white"
@@ -45,7 +45,7 @@
             option-attribute="name"
             value-attribute="iso2"
           />
-        </UFormGroup> -->
+        </UFormGroup>
         <UFormGroup class="md:w-1/4">
           <USelectMenu
             v-model="form.state"
@@ -104,7 +104,7 @@
             class="h-10"
           />
         </UButtonGroup>
-      </div>
+      </div> -->
       <!-- <div class="grid md:grid-cols-4 gap-4">
         <div class="pt-6"></div>
       </div> -->
@@ -193,7 +193,7 @@
         </UCard>
       </div>
       <UCard v-else class="py-16 text-center mt-6">
-        <p>Gig List is empty!</p>
+        <p>Classified Post List is empty!</p>
       </UCard>
     </UContainer>
   </PublicSection>
