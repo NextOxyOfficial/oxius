@@ -22,8 +22,15 @@
             size="md"
             color="white"
             placeholder="Search Category"
+            v-model="title"
           />
-          <UButton size="md" color="primary" variant="solid" label="Search" />
+          <UButton
+            @click="handleSearch"
+            size="md"
+            color="primary"
+            variant="solid"
+            label="Search"
+          />
         </UButtonGroup>
         <UButton
           v-if="user?.user"
@@ -62,6 +69,13 @@
               />
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
+          </UCard>
+
+          <UCard
+            v-if="services && !services.count"
+            class="py-16 text-center w-full"
+          >
+            <p>No Categories have been found!</p>
           </UCard>
         </div>
         <div class="text-center mt-8">
@@ -214,6 +228,7 @@ const services = ref([]);
 const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
+const title = ref(null);
 useHead({
   title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
 });
@@ -284,4 +299,29 @@ const loadMore = async (url) => {
   // getRecentsNext(url);
   getRecentNext(url);
 };
+
+async function handleSearch() {
+  try {
+    const res = await get(`/classified-categories/?title=${title.value}`);
+    console.log(res);
+    services.value = res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+watch(
+  () => (title.value ? title.value.trim() : ""),
+  async (newValue) => {
+    if (!newValue) {
+      try {
+        const res = await get(`/classified-categories/`);
+        console.log(res);
+        services.value = res.data;
+      } catch (error) {
+        console.error("Error fetching classified categories:", error);
+      }
+    }
+  }
+);
 </script>

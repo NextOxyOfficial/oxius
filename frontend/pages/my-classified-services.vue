@@ -193,7 +193,7 @@
         </UCard>
       </div>
       <UCard v-else class="py-16 text-center mt-6">
-        <p>Classified Post List is empty!</p>
+        <p>You haven't made any post yet!</p>
       </UCard>
     </UContainer>
   </PublicSection>

@@ -165,18 +165,26 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             raise NotFound({"error": f"No person found with email: {email}"})
 
 class ClassifiedCategoryPagination(PageNumberPagination):
-    page_size = 7
-    def get_page_size(self, request):
-        if request.query_params.get(self.page_query_param) in [None, '', '1']:
-            return 14
-        return self.page_size
+    page_size = 14
+    # def get_page_size(self, request):
+    #     if request.query_params.get(self.page_query_param) in [None, '', '1']:
+    #         return 14
+    #     return self.page_size
 
 class GetClassifiedCategories(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
     pagination_class = ClassifiedCategoryPagination
-
+    def get_queryset(self):
+        """
+        Optionally filter the queryset by title.
+        """
+        queryset = super().get_queryset()
+        title = self.request.query_params.get('title', None)
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+        return queryset
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         paginator = self.pagination_class()
