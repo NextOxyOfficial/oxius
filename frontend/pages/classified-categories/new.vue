@@ -81,7 +81,7 @@
             v-slot="{ error }"
             :error="
               form.price <= 0 &&
-              !negotiate &&
+              !form.negotiable &&
               checkSubmit &&
               'Price must be greater than 0 or Negotiable'
             "
@@ -92,7 +92,7 @@
                 type="text"
                 size="md"
                 color="white"
-                :disabled="negotiate"
+                :disabled="form.negotiable"
                 :ui="{
                   size: {
                     md: 'text-base',
@@ -103,7 +103,7 @@
                 v-model="form.price"
               />
               <UCheckbox
-                v-model="negotiate"
+                v-model="form.negotiable"
                 name="Negotiable"
                 label="Negotiable"
               />
@@ -282,19 +282,17 @@ const state = ref([]);
 const city = ref([]);
 const checkSubmit = ref(false);
 
-const mediaPreview = ref([]);
-const negotiate = ref(false);
-
 const form = ref({
   price: 0,
-  instructions: '',
-  title: '',
+  instructions: "",
+  title: "",
   medias: [],
-  category: '',
-  country: '',
-  state: '',
-  city: '',
-  location: '',
+  category: "",
+  country: "",
+  state: "",
+  city: "",
+  location: "",
+  negotiable: false,
   accepted_terms: false,
   accepted_privacy: false,
 });
@@ -304,8 +302,8 @@ function validateForm() {
     const value = form.value[key];
     // Check for empty strings, false values, or empty arrays
     if (
-      (typeof value === 'string' && !value.trim()) ||
-      (typeof value === 'boolean' && !value) ||
+      (typeof value === "string" && !value.trim()) ||
+      (typeof value === "boolean" && !value) ||
       (Array.isArray(value) && value.length === 0)
     ) {
       return false; // Validation failed
@@ -317,13 +315,13 @@ function validateForm() {
 async function handlePostGig() {
   if (!validateForm()) {
     checkSubmit.value = true;
-    toast.add({ title: 'Please fill in all required fields.' });
+    toast.add({ title: "Please fill in all required fields." });
     return;
   }
-  const res = await post('/classified-categories-post/', form.value);
+  const res = await post("/classified-categories-post/", form.value);
   if (res.data) {
-    navigateTo('/');
-    toast.add({ title: 'Classified Service Added' });
+    navigateTo("/");
+    toast.add({ title: "Classified Service Added" });
   }
 }
 
@@ -352,11 +350,11 @@ function deleteUpload(ind) {
 async function getMicroGigsCategory() {
   try {
     const [categoriesResponse] = await Promise.all([
-      get('/classified-categories/'),
+      get("/classified-categories/"),
     ]);
     categories.value = categoriesResponse.data.results;
   } catch (error) {
-    console.error('Error fetching micro-gigs data:', error);
+    console.error("Error fetching micro-gigs data:", error);
   }
 }
 
@@ -364,13 +362,13 @@ onMounted(() => {
   getMicroGigsCategory();
 });
 
-const ApiUrl = 'https://api.countrystatecity.in/v1/countries';
+const ApiUrl = "https://api.countrystatecity.in/v1/countries";
 const headerOptions = {
-  method: 'GET',
+  method: "GET",
   headers: {
-    'X-CSCAPI-KEY': 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==',
+    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
   },
-  redirect: 'follow',
+  redirect: "follow",
 };
 
 // async function getCountry() {
@@ -379,7 +377,8 @@ const headerOptions = {
 //   console.log(res);
 // }
 onMounted(() => {
-  country.value.push({ name: 'BD', iso2: 'BD' });
+  country.value.push({ name: "BD", iso2: "BD" });
+  form.value.country = "BD";
 });
 
 watch(

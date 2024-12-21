@@ -183,10 +183,28 @@
                     </div>
                   </div>
                 </div>
-                <p class="inline-flex items-center my-3">
-                  Price: <UIcon name="i-mdi:currency-bdt" />
-                  {{ service.price }}
-                </p>
+                <div>
+                  <p
+                    class="inline-flex items-center my-3"
+                    v-if="!service.negotiable"
+                  >
+                    Price: <UIcon name="i-mdi:currency-bdt" />
+                    {{ service.price }}
+                  </p>
+                  <p v-else>Negotiable</p>
+                  <p class="capitalize inline-flex items-center font-semibold">
+                    <UIcon
+                      name="i-icon-park-outline:dot"
+                      class="text-green-500"
+                      v-if="service.gig_status === 'approved'"
+                    />
+                    {{
+                      service.gig_status === "approved"
+                        ? "Live"
+                        : service.gig_status
+                    }}
+                  </p>
+                </div>
               </div>
             </div>
           </NuxtLink>

@@ -51,7 +51,10 @@
                 </div>
                 <div>
                   <p>
-                    Status: <span class="capitalize">{{ gig.gig_status }}</span>
+                    Status:
+                    <span class="capitalize">{{
+                      gig.gig_status === "approved" ? "Live" : gig.gig_status
+                    }}</span>
                   </p>
                 </div>
               </div>
@@ -61,7 +64,7 @@
             <UButton
               size="md"
               color="primary"
-              variant="solid"
+              variant="outline"
               label="Pause"
               v-if="gig.active_gig"
               @click="handleAction(gig.id, 'pause', false)"
@@ -69,7 +72,7 @@
             <UButton
               size="md"
               color="primary"
-              variant="solid"
+              variant="outline"
               label="Activate"
               v-if="!gig.active_gig"
               @click="handleAction(gig.id, 'active', true)"
@@ -77,21 +80,21 @@
             <UButton
               size="md"
               color="primary"
-              variant="solid"
+              variant="outline"
               label="Edit"
               :to="`/edit-a-gig/${gig.id}`"
             />
             <UButton
               size="md"
               color="primary"
-              variant="solid"
+              variant="outline"
               label="Delete"
               @click="handleAction(gig.id, 'delete')"
             />
             <UButton
               size="md"
               color="primary"
-              variant="solid"
+              variant="outline"
               label="Details"
               :to="`/my-gigs/details/${gig.id}/`"
             />

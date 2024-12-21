@@ -136,7 +136,9 @@
             },
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
-          v-for="(service, i) in services"
+          v-for="(service, i) in services.filter(
+            (service) => service.gig_status.toLowerCase() === 'approved'
+          )"
           :key="{ i }"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
