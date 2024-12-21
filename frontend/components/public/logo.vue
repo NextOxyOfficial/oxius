@@ -6,7 +6,12 @@
       alt="Logo"
       class="h-6 md:h-8"
     />
-    <NuxtImg v-else src="/images/logo.jpg" alt="Logo" />
+    <NuxtImg
+      v-else
+      class="h-6 md:h-8"
+      src="/static/frontend/images/logo.jpg"
+      alt="Logo"
+    />
   </NuxtLink>
 </template>
 

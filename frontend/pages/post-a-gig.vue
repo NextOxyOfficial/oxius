@@ -222,18 +222,18 @@ const toast = useToast();
 const categories = ref([]);
 const network = ref([]);
 const device = ref([]);
-const country = ref([{ title: 'Bangladesh' }]);
+const country = ref([{ title: "Bangladesh" }]);
 
 const form = ref({
   price: 0,
   required_quantity: 0,
-  instructions: '',
-  title: '',
+  instructions: "",
+  title: "",
   medias: [],
-  target_country: '',
-  target_device: '',
-  target_network: '',
-  category: '',
+  target_country: "Bangladesh",
+  target_device: "",
+  target_network: "",
+  category: "",
 });
 
 function handleFileUpload(event, field) {
@@ -260,10 +260,10 @@ function deleteUpload(ind) {
 
 async function handlePostGig() {
   console.log(form.value);
-  const res = await post('/post-micro-gigs/', form.value);
+  const res = await post("/post-micro-gigs/", form.value);
   if (res.data) {
-    navigateTo('/');
-    toast.add({ title: 'MicroGig Added' });
+    navigateTo("/");
+    toast.add({ title: "MicroGig Added" });
   }
 }
 
@@ -275,9 +275,9 @@ async function getMicroGigsCategory() {
       networksResponse,
       countriesResponse,
     ] = await Promise.all([
-      get('/micro-gigs-categories/'),
-      get('/target-device/'),
-      get('/target-network/'),
+      get("/micro-gigs-categories/"),
+      get("/target-device/"),
+      get("/target-network/"),
       // get("/target-country/"),
     ]);
 
@@ -286,7 +286,7 @@ async function getMicroGigsCategory() {
     network.value = networksResponse.data;
     // country.value = countriesResponse.data;
   } catch (error) {
-    console.error('Error fetching micro-gigs data:', error);
+    console.error("Error fetching micro-gigs data:", error);
   }
 }
 
