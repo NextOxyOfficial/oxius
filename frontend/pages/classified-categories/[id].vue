@@ -12,7 +12,7 @@
             inactive-class="text-gray-500 dark:text-gray-400"
             >Home</ULink
           >
-          > {{ categoryTitle }}
+          <span v-if="services?.length">></span> {{ categoryTitle }}
         </p>
         <!-- <USelect
             icon="i-heroicons-bell-solid"
@@ -25,16 +25,10 @@
             value-attribute="id"
           /> -->
       </div>
-      <p
-        class="text-base md:text-lg mb-3 font-semibold"
-        v-if="services?.length"
-      >
+      <p class="text-base md:text-lg mb-3 font-semibold">
         Select Your Location
       </p>
-      <div
-        class="flex flex-col md:flex-row justify-between md:items-end gap-4"
-        v-if="services?.length"
-      >
+      <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <!-- <UFormGroup label="Country">
           <USelectMenu
             v-model="form.country"
@@ -198,7 +192,7 @@
         </UCard>
       </div>
       <UCard v-else class="py-16 text-center mt-6">
-        <p>Category is empty!</p>
+        <p>No offers have been found!</p>
       </UCard>
     </UContainer>
   </PublicSection>
@@ -294,7 +288,7 @@ watch(
 
 async function filterSearch() {
   const res = await get(
-    `/classified-posts/filter/?category=${form.value.category}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
+    `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
   console.log(res);
   services.value = res.data;

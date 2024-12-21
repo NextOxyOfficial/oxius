@@ -58,7 +58,7 @@
               amount
             />
           </div>
-          <div class="mt-3">
+          <div class="my-5">
             <UCheckbox
               name="notifications"
               label="I accept terms & policy."
@@ -74,12 +74,20 @@
         </div>
         <div v-if="currentTab === 2">
           <div class="my-3">
-            <URadioGroup v-model="selected" :options="options">
+            <URadioGroup
+              v-model="selected"
+              :options="options"
+              :ui="{}"
+              :ui-radio="{
+                wrapper: 'items-center',
+              }"
+              class="radio-center"
+            >
               <template #label="{ option }">
-                <p>
-                  <UIcon :name="option.icon" />
-                  {{ option.label }}
-                </p>
+                <NuxtImg
+                  :src="'/static-frontend/images/' + option.icon"
+                  class="size-10 object-contain inline-block"
+                />
               </template>
             </URadioGroup>
           </div>
@@ -124,7 +132,7 @@
             />
           </div>
 
-          <div class="mt-3">
+          <div class="my-5">
             <UCheckbox
               name="notifications"
               label="I accept terms & policy."
@@ -169,7 +177,7 @@
         </template>
       </UTable>
       <UCard v-else class="py-16 text-center">
-        <p>Transaction is empty!</p>
+        <p>No transactions have been found!</p>
       </UCard>
     </UContainer>
   </PublicSection>
@@ -190,9 +198,9 @@ const nagad = ref(null);
 const bkash = ref(null);
 const rocket = ref(null);
 const options = [
-  { value: "bkash", label: "BKash", icon: "i-heroicons-at-symbol" },
-  { value: "nagad", label: "Nagad", icon: "i-heroicons-phone" },
-  { value: "rocket", label: "Rocket", icon: "i-heroicons-bell" },
+  { value: "bkash", label: "BKash", icon: "bkash.png" },
+  { value: "nagad", label: "Nagad", icon: "nagad.jpg" },
+  // { value: "rocket", label: "Rocket", icon: "i-heroicons-bell" },
 ];
 const columns = [
   {
