@@ -27,7 +27,7 @@
               />
             </UFormGroup>
           </div>
-          <div class="col-span-2">
+          <div class="sm:col-span-2">
             <UFormGroup label="Address">
               <UTextarea
                 color="white"
@@ -92,6 +92,42 @@
                 color="white"
                 placeholder="Email"
                 v-model="userProfile.email"
+                readonly
+              />
+            </UFormGroup>
+          </div>
+          <div>
+            <UFormGroup label="Facebook Link">
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                placeholder="Facebook Link"
+                v-model="userProfile.face_link"
+                readonly
+              />
+            </UFormGroup>
+          </div>
+          <div>
+            <UFormGroup label="Instagram Link">
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                placeholder="Instagram Link"
+                v-model="userProfile.instagram_link"
+                readonly
+              />
+            </UFormGroup>
+          </div>
+          <div>
+            <UFormGroup label="Whatsapp Link">
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                placeholder="Whatsapp Link"
+                v-model="userProfile.whatsapp_link"
                 readonly
               />
             </UFormGroup>
