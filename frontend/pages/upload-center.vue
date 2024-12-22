@@ -5,11 +5,7 @@
     <div class="w-1/2">
       <p class="text-2xl font-medium mb-5">Upload Here</p>
       <div class="flex flex-wrap gap-5">
-        <div
-          class="relative max-w-[200px] max-h-[200px]"
-          v-for="(img, i) in form.nid"
-          :key="i"
-        >
+        <div class="relative max-w-[200px] max-h-[200px]" v-for="(img, i) in form.nid" :key="i">
           <img :src="img" :alt="`Uploaded file ${i}`" />
           <div
             class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
@@ -66,7 +62,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -80,14 +76,23 @@ function deleteUpload(ind) {
 console.log(user.value.user.email);
 
 async function handleUploadSubmit() {
-  console.log(form.value);
+  // Check if nid is empty
+  if (!form.value.nid.length) {
+    toast.add({ title: "Please upload your NID before submitting." });
+    return;
+  }
+  try {
+    const res = await put(`/persons/update/${user.value.user.email}/`, {
+      nid: form.value.nid,
+      kyc: true,
+    });
 
-  const res = await put(
-    `/persons/update/${user.value.user.email}/`,
-    form.value
-  );
-  if (res.data.message) {
-    toast.add({ title: res.data.message });
+    if (res.data.message) {
+      toast.add({ title: res.data.message, type: "success" });
+    }
+  } catch (error) {
+    console.error("Error during submission:", error);
+    toast.add({ title: "An error occurred. Please try again later.", type: "error" });
   }
 }
 </script>

@@ -3,11 +3,7 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
       <UDivider label="" class="mb-8" />
-      <form
-        action="#"
-        class="max-w-2xl mx-auto space-y-3"
-        @submit.prevent="handlePostGig"
-      >
+      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handlePostGig">
         <UFormGroup
           label="Title"
           required
@@ -32,9 +28,7 @@
         <UFormGroup
           label="Instruction"
           required
-          :error="
-            !form.instructions && checkSubmit && 'You must enter instructions!'
-          "
+          :error="!form.instructions && checkSubmit && 'You must enter instructions!'"
         >
           <UTextarea
             color="white"
@@ -54,9 +48,7 @@
           <UFormGroup
             label="Category"
             required
-            :error="
-              !form.category && checkSubmit && 'You must select a category'
-            "
+            :error="!form.category && checkSubmit && 'You must select a category'"
           >
             <USelectMenu
               v-model="form.category"
@@ -98,11 +90,7 @@
                 class="max-w-40"
                 v-model="form.price"
               />
-              <UCheckbox
-                v-model="form.negotiable"
-                name="Negotiable"
-                label="Negotiable"
-              />
+              <UCheckbox v-model="form.negotiable" name="Negotiable" label="Negotiable" />
             </div>
           </UFormGroup>
         </div>
@@ -227,9 +215,7 @@
           <UFormGroup
             label="Address"
             required
-            :error="
-              !form.location && checkSubmit && 'You must enter your address!'
-            "
+            :error="!form.location && checkSubmit && 'You must enter your address!'"
           >
             <UTextarea
               v-model="form.location"
@@ -254,6 +240,7 @@
         />
         <div class="text-center">
           <UButton
+            v-if="user.user.kyc"
             class="px-8"
             size="lg"
             color="primary"
@@ -261,14 +248,42 @@
             label="Post"
             type="submit"
           />
+          <UButton
+            v-else
+            class="px-8"
+            size="lg"
+            color="primary"
+            variant="solid"
+            label="Post"
+            @click="isOpen = true"
+          />
         </div>
       </form>
+      <UModal v-model="isOpen">
+        <div class="p-4 text-center space-y-3">
+          <h3 class="text-lg font-semibold">KYC Validation Failed!</h3>
+          <p>Please Upload your NID to get permission to post a service ad.</p>
+
+          <UButton
+            size="md"
+            color="primary"
+            variant="solid"
+            to="/upload-center"
+            label="Upload NID"
+          />
+        </div>
+      </UModal>
     </UContainer>
   </PublicSection>
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
+const isOpen = ref(false);
 const { get, post } = useApi();
+const { user } = useAuth();
 const toast = useToast();
 const categories = ref([]);
 const country = ref([]);
@@ -335,7 +350,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -349,9 +364,7 @@ function deleteUpload(ind) {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse] = await Promise.all([
-      get("/classified-categories/"),
-    ]);
+    const [categoriesResponse] = await Promise.all([get("/classified-categories/")]);
     categories.value = categoriesResponse.data.results;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
@@ -385,10 +398,7 @@ watch(
   () => form.value.country,
   async (newValue, oldValue) => {
     if (newValue) {
-      const res = await $fetch(
-        `${ApiUrl}/${form.value.country}/states/`,
-        headerOptions
-      );
+      const res = await $fetch(`${ApiUrl}/${form.value.country}/states/`, headerOptions);
       state.value = res;
     }
   }

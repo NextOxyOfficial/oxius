@@ -16,6 +16,7 @@ class NID(models.Model):
 
 class User(AbstractUser):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  image = models.ImageField(upload_to='images/', blank=True, null=True)
   name = models.CharField(max_length=100,blank=True, default="")
   about = models.TextField(null=True, blank=True, default="")
   face_link=models.CharField(null=True, blank=True, default="")
@@ -27,6 +28,7 @@ class User(AbstractUser):
   phone = models.CharField(max_length=100, default='', blank=True)
   email = models.EmailField(unique=True,default='', null=True)
   nid = models.ManyToManyField(NID,null=True, blank=True)
+  kyc = models.BooleanField(default=False)
   address = models.CharField(max_length=256,blank=True, default="")
   city=models.CharField(max_length=256,blank=True, default="")
   state=models.CharField(max_length=256,blank=True, default="")

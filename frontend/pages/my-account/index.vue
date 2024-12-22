@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <UContainer v-if="!loading">
+    <UContainer>
       <h1 class="text-center text-4xl my-8">My Profile Details</h1>
       <UDivider label="" class="mb-8" />
       <form action="#" class="max-w-lg mx-auto" @submit.prevent="handleForm">
@@ -130,6 +130,33 @@
             </UFormGroup>
           </div>
           <div class="col-span-2">
+            <label for="file" class="text-base block mt-8 mb-3 font-semibold">Profile Image</label>
+            <div class="flex flex-wrap gap-5">
+              <div class="relative max-w-[200px] max-h-[200px]" v-if="userProfile.image">
+                <img :src="userProfile.image" :alt="`Uploaded profile image`" />
+                <div
+                  class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+                  @click="deleteUpload(i)"
+                >
+                  <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+                </div>
+              </div>
+
+              <div
+                class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+              >
+                <input
+                  type="file"
+                  name=""
+                  id=""
+                  class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+                  @change="handleFileUpload($event, 'image')"
+                />
+                <UIcon name="i-heroicons-plus-solid" size="66" />
+              </div>
+            </div>
+          </div>
+          <div class="col-span-2">
             <UFormGroup label="About Me">
               <UTextarea
                 color="white"
@@ -154,19 +181,6 @@
         </div>
       </form>
     </UContainer>
-    <div v-else>
-      <NuxtLoadingIndicator class="!opacity-[1]" />
-      <section
-        class="h-screen w-screen flex items-center justify-center"
-        v-if="!user"
-      >
-        <UIcon
-          name="svg-spinners:bars-scale-middle"
-          dynamic
-          class="text-xl w-12 h-12 text-primary"
-        />
-      </section>
-    </div>
   </PublicSection>
 </template>
 
@@ -174,7 +188,7 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { get, put, patch } = useApi();
+const { get, put, patch, staticURL } = useApi();
 const { user } = useAuth();
 const userProfile = ref({});
 const toast = useToast();
@@ -190,7 +204,7 @@ onMounted(() => {
 });
 
 async function handleForm() {
-  const { groups, user_permissions, ...rest } = userProfile.value;
+  const { groups, user_permissions, nid, ...rest } = userProfile.value;
   console.log(rest);
 
   const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
@@ -198,7 +212,29 @@ async function handleForm() {
 
   if (res.data.data.email) {
     toast.add({ title: res.data.message });
+    res.data.data.image = staticURL + res.data.data.image;
+    userProfile.value = res.data.data;
+    console.log(res.data.data);
   }
-  userProfile.value = res.data.data;
+}
+
+function handleFileUpload(event, field) {
+  const files = Array.from(event.target.files);
+  const reader = new FileReader();
+
+  // Event listener for successful read
+  reader.onload = () => {
+    userProfile.value.image = reader.result;
+  };
+
+  // Event listener for errors
+  reader.onerror = error => reject(error);
+
+  // Read the file as a data URL (Base64 string)
+  reader.readAsDataURL(files[0]);
+}
+
+function deleteUpload(ind) {
+  userProfile.value.image = null;
 }
 </script>

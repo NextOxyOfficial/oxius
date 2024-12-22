@@ -111,26 +111,49 @@ def update_user(request, email):
             transaction_type=transaction_type,
             status='pending',  
         )
-
     # Remove email from data if it's unchanged
     if 'email' in data and data['email'] == user.email:
         data.pop('email')
     nids = data.pop('nid', [])
     for file in nids:
+        try:
             nm = NID.objects.create(image=base64ToFile(file))
             user.nid.add(nm)
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process NID', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    if 'image' in data:
+        try:
+            data['image'] = base64ToFile(data['image'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process image', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     # Update other fields
     data['id'] = user.id
-    serializer = UserSerializer(user, data=data, partial=True)  
-    if serializer.is_valid():
-        user.save()  # Save balance changes
-        serializer.save()      
-        return Response(
-            {'message': 'User updated successfully', 'data': serializer.data},
-            status=status.HTTP_200_OK
-        )
+    serializer = UserSerializer(user, data=data, partial=True)
 
-    print(serializer.errors)
+    if serializer.is_valid():
+        try:
+            user.save()  # Save any direct changes to the user instance
+            serializer.save()  # Save changes from the serializer
+            return Response(
+                {'message': 'User updated successfully', 'data': serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to save user', 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+
+    # Return validation errors if serializer is not valid
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
