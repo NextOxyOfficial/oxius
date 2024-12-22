@@ -18,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             # 'username': {'read_only': True},
         }
+        depth = 1
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():

@@ -3,11 +3,7 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
-      <form
-        action="#"
-        class="max-w-2xl mx-auto space-y-3"
-        @submit.prevent="handlePostGig"
-      >
+      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handlePostGig">
         <UFormGroup
           label="Title"
           required
@@ -36,11 +32,7 @@
             label="Budget Per Action"
             required
             v-slot="{ error }"
-            :error="
-              form.price <= 0 &&
-              checkSubmit &&
-              'You must enter budget per action!'
-            "
+            :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
           >
             <UInput
               icon="i-mdi:currency-bdt"
@@ -62,9 +54,7 @@
             required
             v-slot="{ error }"
             :error="
-              form.required_quantity <= 0 &&
-              checkSubmit &&
-              'You must enter required quantity!'
+              form.required_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
             "
           >
             <UInput
@@ -92,9 +82,7 @@
           label="Instructions"
           required
           v-slot="{ error }"
-          :error="
-            !form.instructions && checkSubmit && 'You must enter instructions!'
-          "
+          :error="!form.instructions && checkSubmit && 'You must enter instructions!'"
         >
           <UTextarea
             color="white"
@@ -112,9 +100,7 @@
         </UFormGroup>
 
         <!-- medias  -->
-        <label for="" class="block mt-3 font-semibold"
-          >Upload Photo/Video</label
-        >
+        <label for="" class="block mt-3 font-semibold">Upload Photo/Video</label>
         <div class="flex flex-wrap gap-5">
           <div
             class="relative max-w-[200px] max-h-[200px]"
@@ -166,11 +152,7 @@
             label="Target Country"
             required
             v-slot="{ error }"
-            :error="
-              !form.target_country &&
-              checkSubmit &&
-              'You must select a target country!'
-            "
+            :error="!form.target_country && checkSubmit && 'You must select a target country!'"
           >
             <USelectMenu
               v-model="form.target_country"
@@ -191,11 +173,7 @@
             label="Target Device"
             required
             v-slot="{ error }"
-            :error="
-              !form.target_device &&
-              checkSubmit &&
-              'You must select a target device!'
-            "
+            :error="!form.target_device && checkSubmit && 'You must select a target device!'"
           >
             <USelectMenu
               v-model="form.target_device"
@@ -219,11 +197,7 @@
             label="Target Network"
             required
             v-slot="{ error }"
-            :error="
-              !form.target_network &&
-              checkSubmit &&
-              'You must select a target network!'
-            "
+            :error="!form.target_network && checkSubmit && 'You must select a target network!'"
           >
             <USelectMenu
               v-model="form.target_network"
@@ -244,9 +218,7 @@
             label="Category"
             required
             v-slot="{ error }"
-            :error="
-              !form.category && checkSubmit && 'You must select a category!'
-            "
+            :error="!form.category && checkSubmit && 'You must select a category!'"
           >
             <USelectMenu
               v-model="form.category"
@@ -267,6 +239,7 @@
 
         <div class="text-center">
           <UButton
+            v-if="user.user.kyc"
             class="px-8 mt-10"
             size="lg"
             color="primary"
@@ -274,31 +247,59 @@
             label="Post"
             type="submit"
           />
+          <UButton
+            v-else
+            class="px-8"
+            size="lg"
+            color="primary"
+            variant="solid"
+            label="Post"
+            @click="isOpen = true"
+          />
         </div>
       </form>
     </UContainer>
+    <UModal v-model="isOpen">
+      <div class="p-4 text-center space-y-3">
+        <h3 class="text-lg font-semibold">KYC Validation Failed!</h3>
+        <p>Please Upload your NID to get permission to post a service ad.</p>
+
+        <UButton
+          size="md"
+          color="primary"
+          variant="solid"
+          to="/upload-center"
+          label="Upload NID"
+        />
+      </div>
+    </UModal>
   </PublicSection>
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
+const isOpen = ref(false);
+const { user } = useAuth();
 const { get, post } = useApi();
 const toast = useToast();
 const categories = ref([]);
 const network = ref([]);
 const device = ref([]);
-const country = ref([{ title: 'Bangladesh' }]);
+const country = ref([{ title: "Bangladesh" }]);
 const checkSubmit = ref(false);
 
 const form = ref({
   price: 0,
   required_quantity: 0,
-  instructions: '',
-  title: '',
+  instructions: "",
+  title: "",
   medias: [],
-  target_country: 'Bangladesh',
-  target_device: '',
-  target_network: '',
-  category: '',
+  target_country: "Bangladesh",
+  target_device: "",
+  target_network: "",
+  category: "",
 });
 
 function handleFileUpload(event, field) {
@@ -311,7 +312,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -328,8 +329,8 @@ function validateForm() {
     const value = form.value[key];
     // Check for empty strings, false values, or empty arrays
     if (
-      (typeof value === 'string' && !value.trim()) ||
-      (typeof value === 'boolean' && !value) ||
+      (typeof value === "string" && !value.trim()) ||
+      (typeof value === "boolean" && !value) ||
       (Array.isArray(value) && value.length === 0)
     ) {
       return false; // Validation failed
@@ -341,36 +342,32 @@ function validateForm() {
 async function handlePostGig() {
   if (!validateForm()) {
     checkSubmit.value = true;
-    toast.add({ title: 'Please fill in all required fields.' });
+    toast.add({ title: "Please fill in all required fields." });
     return;
   }
-  const res = await post('/post-micro-gigs/', form.value);
+  const res = await post("/post-micro-gigs/", form.value);
   if (res.data) {
-    navigateTo('/');
-    toast.add({ title: 'MicroGig Added' });
+    navigateTo("/");
+    toast.add({ title: "MicroGig Added" });
   }
 }
 
 async function getMicroGigsCategory() {
   try {
-    const [
-      categoriesResponse,
-      devicesResponse,
-      networksResponse,
-      countriesResponse,
-    ] = await Promise.all([
-      get('/micro-gigs-categories/'),
-      get('/target-device/'),
-      get('/target-network/'),
-      // get("/target-country/"),
-    ]);
+    const [categoriesResponse, devicesResponse, networksResponse, countriesResponse] =
+      await Promise.all([
+        get("/micro-gigs-categories/"),
+        get("/target-device/"),
+        get("/target-network/"),
+        // get("/target-country/"),
+      ]);
 
     categories.value = categoriesResponse.data;
     device.value = devicesResponse.data;
     network.value = networksResponse.data;
     // country.value = countriesResponse.data;
   } catch (error) {
-    console.error('Error fetching micro-gigs data:', error);
+    console.error("Error fetching micro-gigs data:", error);
   }
 }
 

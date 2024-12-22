@@ -59,14 +59,23 @@
             />
           </div>
           <div class="my-5">
-            <UCheckbox
-              name="notifications"
-              label="I accept terms & policy."
-              v-model="policy"
-            />
+            <UCheckbox name="notifications" label="I accept terms & policy." v-model="policy" />
           </div>
           <div class="my-2 space-x-3">
-            <UButton size="sm" @click="deposit">Deposit</UButton>
+            <UButton
+              v-if="
+                user.user.name &&
+                user.user.address &&
+                user.user.phone &&
+                user.user.city &&
+                user.user.zip
+              "
+              size="sm"
+              @click="deposit"
+              >Deposit</UButton
+            >
+            <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
+
             <!-- <UButton color="gray" @click="withdraw" variant="solid"
               >Withdraw</UButton
             > -->
@@ -133,11 +142,7 @@
           </div>
 
           <div class="my-5">
-            <UCheckbox
-              name="notifications"
-              label="I accept terms & policy."
-              v-model="policy"
-            />
+            <UCheckbox name="notifications" label="I accept terms & policy." v-model="policy" />
           </div>
           <div class="my-2 space-x-3">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -145,19 +150,11 @@
           </div>
         </div>
       </div>
-      <h3
-        class="text-center text-lg md:text-3xl font-semibold mt-8"
-        v-if="statements?.length"
-      >
+      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
         Transaction History
       </h3>
 
-      <UTable
-        :rows="statements"
-        :columns="columns"
-        class="mb-8 mt-4"
-        v-if="statements?.length"
-      >
+      <UTable :rows="statements" :columns="columns" class="mb-8 mt-4" v-if="statements?.length">
         <template #transaction_type-data="{ row }">
           <p>
             {{ row.transaction_type }} -
@@ -166,11 +163,7 @@
         </template>
         <template #status-data="{ row }">
           <p
-            :class="
-              row.status.toLowerCase() === 'pending'
-                ? 'text-yellow-500'
-                : 'text-green-500'
-            "
+            :class="row.status.toLowerCase() === 'pending' ? 'text-yellow-500' : 'text-green-500'"
           >
             {{ row.status }}
           </p>
@@ -180,6 +173,20 @@
         <p>No transactions have been found!</p>
       </UCard>
     </UContainer>
+    <UModal v-model="isOpen">
+      <div class="p-4 text-center space-y-3">
+        <h3 class="text-lg font-semibold">Profile Incomplete!</h3>
+        <p>Please complete your profile to make transactions.</p>
+
+        <UButton
+          size="md"
+          color="primary"
+          variant="solid"
+          to="/my-account"
+          label="Complete Profile"
+        />
+      </div>
+    </UModal>
   </PublicSection>
 </template>
 
@@ -187,6 +194,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+const isOpen = ref(false);
 const toast = useToast();
 const { put, get } = useApi();
 const { user } = useAuth();
@@ -253,15 +261,14 @@ const deposit = async () => {
     return;
   }
   // Add deposit logic here
-  toast.add({ title: "Deposit clicked" });
-  console.log(user.value);
+  // toast.add({ title: "Deposit clicked" });
+  // console.log(user.value);
 
   const payment = await get(
     `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
   );
   console.log(payment.data);
-  if (payment.data.checkout_url)
-    window.open(payment.data.checkout_url, "_blank");
+  if (payment.data.checkout_url) window.open(payment.data.checkout_url, "_blank");
 
   const res = await put(`/persons/update/${user.value.user.email}/`, {
     deposit: amount.value,
@@ -270,7 +277,7 @@ const deposit = async () => {
   console.log(res);
   userBalance();
   amount.value = "";
-  privacy.value = false;
+  policy.value = false;
 };
 
 const withdraw = async () => {

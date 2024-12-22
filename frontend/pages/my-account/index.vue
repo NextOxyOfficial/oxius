@@ -192,7 +192,6 @@ const { get, put, patch, staticURL } = useApi();
 const { user } = useAuth();
 const userProfile = ref({});
 const toast = useToast();
-console.log(user.value);
 
 async function getUserDetails() {
   const res = await get(`/persons/${user.value.user.email}/`);
@@ -204,7 +203,17 @@ onMounted(() => {
 });
 
 async function handleForm() {
-  const { groups, user_permissions, nid, ...rest } = userProfile.value;
+  const { groups, user_permissions, image, nid, ...rest } = userProfile.value;
+  rest.name = userProfile.value.first_name + " " + userProfile.value.last_name;
+  if (typeof image === "string") {
+    if (image.includes("data:image")) {
+      rest.image = image;
+    } else {
+      console.log("Image type is string; omitting from request.");
+    }
+  } else {
+    rest.image = image;
+  }
   console.log(rest);
 
   const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
