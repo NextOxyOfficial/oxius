@@ -291,25 +291,23 @@ const form = ref({
 });
 const submitValues = ref({});
 function validateForm() {
-  if (form.value.price > 0) {
-    const { negotiable, ...rest } = form.value;
-    submitValues.value = rest;
-  } else if (form.value.negotiable) {
-    const { price, ...rest } = form.value;
-    submitValues.value = rest;
-  }
+  // Determine the base submit values based on conditions
+  const { negotiable, price, ...rest } = form.value;
+  submitValues.value = negotiable ? { ...rest } : { ...rest, price };
 
+  // Validate each field in submitValues
   for (const key in submitValues.value) {
     const value = submitValues.value[key];
     if (
-      (typeof value === "string" && !value.trim()) ||
-      (typeof value === "boolean" && !value) ||
-      (Array.isArray(value) && value.length === 0)
+      (typeof value === "string" && !value.trim()) || // Check empty strings
+      (typeof value === "boolean" && !value) || // Check false booleans
+      (Array.isArray(value) && value.length === 0) // Check empty arrays
     ) {
-      return false;
+      return false; // Validation fails
     }
   }
-  return true;
+
+  return true; // Validation succeeds
 }
 
 async function handlePostGig() {
@@ -320,7 +318,7 @@ async function handlePostGig() {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
-  const res = await post("/classified-categories-post/", form.value);
+  const res = await post("/classified-categories-post/", submitValues.value);
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "Classified Service Added" });
