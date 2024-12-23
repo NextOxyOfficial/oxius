@@ -29,10 +29,14 @@
                   {{ gig.title }}
                 </span>
               </div>
-              <p class="text-lg font-bold text-green-900 inline-flex items-center pl-5">
+              <p
+                class="text-lg font-bold text-green-900 inline-flex items-center pl-5"
+              >
                 Earn:
                 <span class="inline-flex items-center"
-                  ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ gig.price }}</span
+                  ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
+                    gig.price
+                  }}</span
                 >
               </p>
             </div>
@@ -40,33 +44,42 @@
         </template>
 
         <div class="space-y-2 md:px-6 pb-8">
-          <p class="text-2xl font-medium text-center sm:text-left">Instruction</p>
+          <p class="text-xl font-medium sm:text-left">Instruction</p>
 
           <p class="text-base text-justify">
             {{ gig.instructions }}
           </p>
           <!-- <UDivider label="" class="pt-4" /> -->
 
-          <p class="text-2xl font-medium !mt-8 text-center sm:text-left">Reference Photo/Video</p>
-          <div class="!mb-6 flex gap-1 justify-center sm:justify-start">
+          <p class="text-xl font-medium !mt-8 sm:text-left">
+            Reference Photo/Video
+          </p>
+          <div class="!mb-6 flex gap-1">
             <div class="" v-for="m in gig.medias" :key="m.id">
               <a
                 class="cursor-pointer relative group"
                 v-if="m.image"
                 target="_blank"
-                :href="'/media-viewer?url=' + staticURL + m.image + '&type=image'"
+                :href="
+                  '/media-viewer?url=' + staticURL + m.image + '&type=image'
+                "
               >
                 <button
                   class="opacity-0 group-hover:opacity-100 absolute py-0.5 px-2 border bg-primary bg-opacity-90 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-md text-white"
                 >
                   View
                 </button>
-                <NuxtImg class="w-20 object-cover shadow" :src="staticURL + m.image" />
+                <NuxtImg
+                  class="w-20 object-cover shadow"
+                  :src="staticURL + m.image"
+                />
               </a>
               <a
                 class="cursor-pointer relative group"
                 target="_blank"
-                :href="'/media-viewer?url=' + staticURL + m.video + '&type=video'"
+                :href="
+                  '/media-viewer?url=' + staticURL + m.video + '&type=video'
+                "
                 v-if="m.video"
               >
                 <button
@@ -74,7 +87,10 @@
                 >
                   View
                 </button>
-                <video class="w-20 object-cover shadow" :src="staticURL + m.video"></video>
+                <video
+                  class="w-20 object-cover shadow"
+                  :src="staticURL + m.video"
+                ></video>
               </a>
             </div>
           </div>
@@ -82,14 +98,20 @@
           <UDivider label="" class="pt-4" />
 
           <div>
-            <p class="text-2xl font-medium !mb-2 !mt-8 text-center sm:text-left">Upload Proof</p>
+            <p class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left">
+              Upload Proof
+            </p>
             <UFormGroup
               size="xl"
               label="Submit Details"
               class="!mt-8 md:w-1/2"
               required
               v-slot="{ error }"
-              :error="!submit_details && checkSubmit && 'You must enter submit details'"
+              :error="
+                !submit_details &&
+                checkSubmit &&
+                'You must enter submit details'
+              "
             >
               <UTextarea
                 color="white"
@@ -100,7 +122,9 @@
                 v-model="submit_details"
               />
             </UFormGroup>
-            <label for="file" class="text-base block mt-8 mb-3 font-semibold">Upload</label>
+            <label for="file" class="text-base block mt-8 mb-3 font-semibold"
+              >Upload</label
+            >
             <div class="flex flex-wrap gap-5">
               <div
                 class="relative max-w-[200px] max-h-[200px]"
@@ -212,7 +236,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);

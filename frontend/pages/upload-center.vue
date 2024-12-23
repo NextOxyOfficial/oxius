@@ -5,7 +5,11 @@
     <div class="w-1/2">
       <p class="text-2xl font-medium mb-5">Upload Here</p>
       <div class="flex flex-wrap gap-5">
-        <div class="relative max-w-[200px] max-h-[200px]" v-for="(img, i) in form.nid" :key="i">
+        <div
+          class="relative max-w-[200px] max-h-[200px]"
+          v-for="(img, i) in form.nid"
+          :key="i"
+        >
           <img :src="img" :alt="`Uploaded file ${i}`" />
           <div
             class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
@@ -24,7 +28,7 @@
             class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
             @change="handleFileUpload($event, 'image')"
           />
-          <UIcon name="i-heroicons-plus-solid" size="66" />
+          <UInput type="file" size="xs" icon="i-heroicons-folder" />
         </div>
       </div>
     </div>
@@ -34,7 +38,7 @@
         size="md"
         color="primary"
         variant="solid"
-        label="Upload"
+        label="Submit"
         @click="handleUploadSubmit"
       />
     </div>
@@ -62,7 +66,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -70,7 +74,7 @@ function handleFileUpload(event, field) {
 
 function deleteUpload(ind) {
   if (ind >= 0 && ind < form.value.nid.length) {
-    form.value.medias.splice(ind, 1);
+    form.value.nid.splice(ind, 1);
   }
 }
 console.log(user.value.user.email);
@@ -84,7 +88,6 @@ async function handleUploadSubmit() {
   try {
     const res = await put(`/persons/update/${user.value.user.email}/`, {
       nid: form.value.nid,
-      kyc: true,
     });
 
     if (res.data.message) {
@@ -92,7 +95,10 @@ async function handleUploadSubmit() {
     }
   } catch (error) {
     console.error("Error during submission:", error);
-    toast.add({ title: "An error occurred. Please try again later.", type: "error" });
+    toast.add({
+      title: "An error occurred. Please try again later.",
+      type: "error",
+    });
   }
 }
 </script>

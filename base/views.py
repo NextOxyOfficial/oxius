@@ -539,7 +539,37 @@ class UserBalance(generics.ListCreateAPIView):
     
     def get_queryset(self):
         # Filter balances by the logged-in user
-        return Balance.objects.filter(user=self.request.user).order_by('-created_at')
+        return Balance.objects.filter(user=self.request.user).order_by('-updated_at')
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def postBalance(request):
+    # Add the user ID (pk) to the incoming data
+    data = request.data.copy()
+    data['user'] = request.user.id
+    
+    # Check if Balance with the given merchant_invoice_no exists
+    try:
+        does_exist = Balance.objects.get(merchant_invoice_no=data['merchant_invoice_no'])
+        return Response(
+            {"error": "Balance with this merchant invoice number already exists."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Balance.DoesNotExist:
+        # If the Balance doesn't exist, proceed with the operations
+        serializer = BalanceSerializer(data=data)
+        
+        if serializer.is_valid():
+            # Save the new Balance instance
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # Print errors if validation fails
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class AdminMessage(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

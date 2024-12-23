@@ -7,5 +7,5 @@ body {
 }
 
 body {
-  @apply bg-white text-slate-800 dark:text-slate-800 dark:bg-white;
+  @apply bg-[#fafafa] text-slate-800 dark:text-slate-800 dark:bg-[#f5f5f5ea];
 }

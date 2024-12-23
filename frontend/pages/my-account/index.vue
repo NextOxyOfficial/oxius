@@ -5,6 +5,46 @@
       <UDivider label="" class="mb-8" />
       <form action="#" class="max-w-lg mx-auto" @submit.prevent="handleForm">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label for="file" class="text-base block mt-8 mb-3 font-semibold"
+              >Profile Image</label
+            >
+            <div class="flex flex-wrap gap-5">
+              <div
+                class="relative max-w-[200px] max-h-[200px]"
+                v-if="userProfile.image"
+              >
+                <img
+                  :src="userProfile.image"
+                  :alt="`Uploaded profile image`"
+                  class="rounded-full size-[100px] object-cover"
+                />
+                <div
+                  class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+                  @click="deleteUpload(i)"
+                >
+                  <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+                </div>
+              </div>
+
+              <div
+                class="w-full h-full flex items-center justify-center max-w-[200px] max-h-[200px] relative pt-7"
+              >
+                <input
+                  type="file"
+                  name=""
+                  id=""
+                  class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+                  @change="handleFileUpload($event, 'image')"
+                />
+                <!-- <UIcon
+                  name="i-material-symbols:drive-folder-upload-outline"
+                  size="66"
+                /> -->
+                <UInput type="file" size="xs" icon="i-heroicons-folder" />
+              </div>
+            </div>
+          </div>
           <div>
             <UFormGroup label="First Name">
               <UInput
@@ -129,33 +169,7 @@
               />
             </UFormGroup>
           </div>
-          <div class="col-span-2">
-            <label for="file" class="text-base block mt-8 mb-3 font-semibold">Profile Image</label>
-            <div class="flex flex-wrap gap-5">
-              <div class="relative max-w-[200px] max-h-[200px]" v-if="userProfile.image">
-                <img :src="userProfile.image" :alt="`Uploaded profile image`" />
-                <div
-                  class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-                  @click="deleteUpload(i)"
-                >
-                  <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
-                </div>
-              </div>
 
-              <div
-                class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
-              >
-                <input
-                  type="file"
-                  name=""
-                  id=""
-                  class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
-                  @change="handleFileUpload($event, 'image')"
-                />
-                <UIcon name="i-heroicons-plus-solid" size="66" />
-              </div>
-            </div>
-          </div>
           <div class="col-span-2">
             <UFormGroup label="About Me">
               <UTextarea
@@ -237,7 +251,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);

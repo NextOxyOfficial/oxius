@@ -2,8 +2,10 @@
   <PublicSection>
     <UContainer class="mb-16">
       <div class="mx-auto" v-if="service">
-        <div class="flex items-center justify-between">
-          <p class="mb-3 mt-16">
+        <div
+          class="flex sm:items-center sm:justify-between flex-col-reverse sm:flex-row"
+        >
+          <p class="mb-3 mt-4 sm:mt-16 text-sm md:text-base italic">
             <ULink
               to="/"
               active-class="text-primary"
@@ -17,7 +19,7 @@
               inactive-class="text-gray-500 dark:text-gray-400"
               >{{ service.category_details?.title }}</ULink
             >
-            > {{ service.title }}
+            > <u>{{ service.title }}</u>
           </p>
 
           <UButton
@@ -32,8 +34,8 @@
           </UButton>
         </div>
         <div class="w-full flex flex-col justify-center" v-if="service.id">
-          <h2 class="text-3xl font-semibold">{{ service.title }}</h2>
-          <h4 class="text-xl font-semibold">{{ service.price }}</h4>
+          <h2 class="text-xl sm:text-3xl font-semibold">{{ service.title }}</h2>
+          <h4 class="text-lg sm:text-xl font-semibold">{{ service.price }}</h4>
 
           <NuxtImg
             v-if="service?.medias[0]"
@@ -44,16 +46,20 @@
           <p class="">
             {{ service.instructions }}
           </p>
-          <div class="my-3 flex flex-col sm:flex-row items-center gap-4 mt-8">
-            <div>
+          <div class="my-3 flex flex-col sm:flex-row gap-3 md:gap-8 mt-8">
+            <div class="pt-3">
               <NuxtImg
-                src="/avatar.png"
-                class="h-36 w-36 md:h-56 md:w-56 rounded-full"
+                v-if="service.user?.image"
+                :src="staticURL + service.user?.image"
+                class="h-24 w-24 mx-auto md:ml-0 md:h-32 md:w-32 rounded-full"
               />
+              <img v-else src="/static/frontend/avatar.png " alt="Avatar" />
             </div>
             <div class="flex-1 max-w-md w-full">
-              <div class="flex flex-col gap-1 w-full my-3">
-                <div class="flex items-center justify-center sm:justify-normal">
+              <div class="flex flex-col gap-1 w-full mb-3">
+                <div
+                  class="flex items-center justify-center sm:justify-normal gap-1"
+                >
                   <h3
                     class="text-xl md:text-2xl"
                     v-if="service.user?.first_name"
@@ -61,7 +67,9 @@
                     {{ service.user?.first_name }} {{ service.user?.last_name }}
                   </h3>
                   <h3 class="text-xl md:text-2xl" v-else>No Name Provided</h3>
+
                   <UIcon
+                    v-if="service.user.kyc"
                     name="mdi:check-decagram"
                     class="w-5 h-5 text-blue-600 mt-1"
                   />
@@ -102,18 +110,21 @@
                   class="flex gap-2 items-center"
                   v-if="service.user?.whatsapp_link"
                 >
-                  <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
+                  <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
                   <a :href="service.user?.whatsapp_link">{{
                     service.user?.whatsapp_link
                   }}</a>
                 </div>
-                <div
-                  class="flex gap-2 items-center"
-                  v-if="service.user?.gmail_link"
-                >
-                  <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
-                  <a :href="service.user?.gmail_link">{{
-                    service.user?.gmail_link
+                <div class="flex gap-2 items-center" v-if="service.user?.email">
+                  <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
+                  <a :href="'mailto:' + service.user?.email">{{
+                    service.user?.email
+                  }}</a>
+                </div>
+                <div class="flex gap-2 items-center" v-if="service.user?.phone">
+                  <UIcon name="material-symbols:call" class="w-5 h-5" />
+                  <a :href="'tel:' + service.user?.phone">{{
+                    service.user?.phone
                   }}</a>
                 </div>
               </div>
@@ -126,7 +137,7 @@
 </template>
 
 <script setup>
-const { baseURL } = useApi();
+const { baseURL, staticURL } = useApi();
 const service = ref({});
 const router = useRoute();
 

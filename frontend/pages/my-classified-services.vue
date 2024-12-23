@@ -2,113 +2,6 @@
   <PublicSection>
     <UContainer>
       <h2 class="text-center text-2xl md:text-4xl my-6">My Classified Posts</h2>
-      <!-- <div>
-        <p class="mb-3">
-          <ULink
-            to="/"
-            active-class="text-primary"
-            inactive-class="text-gray-500 dark:text-gray-400"
-            >Home</ULink
-          >
-          > {{ categoryTitle }}
-        </p>
-        <USelect
-            icon="i-heroicons-bell-solid"
-            color="white"
-            size="md"
-            :options="categories"
-            v-model="form.category"
-            placeholder="Category"
-            option-attribute="title"
-            value-attribute="id"
-          />
-      </div>
-      <p class="text-base md:text-lg mb-3 font-semibold" v-if="services.length">
-        Select Your Location
-      </p>
-      <div
-        class="flex flex-col md:flex-row justify-between md:items-end gap-4"
-        v-if="services.length"
-      >
-        <UFormGroup label="Country">
-          <USelectMenu
-            v-model="form.country"
-            color="white"
-            size="md"
-            :options="country"
-            placeholder="Country"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-            option-attribute="name"
-            value-attribute="iso2"
-          />
-        </UFormGroup>
-        <UFormGroup class="md:w-1/4">
-          <USelectMenu
-            v-model="form.state"
-            color="white"
-            size="md"
-            :options="state"
-            placeholder="State"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-            option-attribute="name"
-            value-attribute="iso2"
-          />
-        </UFormGroup>
-        <UFormGroup class="md:w-1/4">
-          <USelectMenu
-            v-model="form.city"
-            color="white"
-            size="md"
-            :options="city"
-            placeholder="City"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-            option-attribute="name"
-            value-attribute="name"
-          />
-        </UFormGroup>
-        <UButtonGroup size="md" class="md:w-96 md:flex-1">
-          <UInput
-            icon="i-heroicons-magnifying-glass-20-solid"
-            size="md"
-            color="white"
-            :trailing="false"
-            placeholder="Search..."
-            v-model="form.title"
-            class="w-full"
-            :ui="{
-              padding: {
-                md: 'py-2.5',
-              },
-            }"
-          />
-
-          <UButton
-            icon="i-heroicons-magnifying-glass-20-solid"
-            size="md"
-            color="primary"
-            variant="solid"
-            label="Search"
-            @click="filterSearch"
-            class="h-10"
-          />
-        </UButtonGroup>
-      </div> -->
-      <!-- <div class="grid md:grid-cols-4 gap-4">
-        <div class="pt-6"></div>
-      </div> -->
-
       <div class="mt-5">
         <UButton
           class="px-8"
@@ -145,7 +38,7 @@
               class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
-                class="flex flex-col sm:flex-row items-center justify-between w-full"
+                class="flex flex-col sm:flex-row items-center justify-between w-full relative"
               >
                 <div class="flex flex-row gap-4 items-center sm:items-start">
                   <div>
@@ -156,8 +49,26 @@
                   </div>
                   <div>
                     <h3
-                      class="text-base font-semibold mb-1.5 text-left line-clamp-2"
+                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 capitalize"
                     >
+                      <UIcon
+                        name="i-icon-park-outline:dot"
+                        class="text-green-500 text-lg"
+                        v-if="service.gig_status === 'approved'"
+                      />
+                      <span v-if="service.gig_status === 'approved'">Live</span>
+                      <span
+                        class="text-yellow-600"
+                        v-if="service.gig_status === 'pending'"
+                        >{{ service.gig_status }}</span
+                      >
+                      <span
+                        class="text-red-600"
+                        v-if="service.gig_status === 'rejected'"
+                        >{{ service.gig_status }}</span
+                      >
+
+                      |
                       {{ service?.title }}
                     </h3>
 
@@ -184,33 +95,16 @@
                   </div>
                 </div>
                 <div
-                  class="flex gap-16 items-center justify-between max-sm:pl-[70px] md:pr-2"
+                  class="flex gap-16 items-center justify-between max-sm:pl-[70px] md:pr-2 font-semibold max-sm:absolute max-sm:bottom-0 max-sm:right-0 text-sm sm:text-base"
                 >
                   <p
                     class="inline-flex items-center my-3"
                     v-if="!service.negotiable"
                   >
-                    Price: <UIcon name="i-mdi:currency-bdt" />
+                    <UIcon name="i-mdi:currency-bdt" />
                     {{ service.price }}
                   </p>
                   <p v-else>Negotiable</p>
-                  <p
-                    class="capitalize inline-flex items-center font-semibold"
-                    :class="
-                      service.gig_status === 'rejected' ? 'text-red-500' : ''
-                    "
-                  >
-                    <UIcon
-                      name="i-icon-park-outline:dot"
-                      class="text-green-500 text-lg"
-                      v-if="service.gig_status === 'approved'"
-                    />
-                    {{
-                      service.gig_status === "approved"
-                        ? "Live"
-                        : service.gig_status
-                    }}
-                  </p>
                 </div>
               </div>
             </div>

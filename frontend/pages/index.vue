@@ -106,7 +106,9 @@
           }"
         >
           <div class="flex flex-col md:flex-row w-full">
-            <div class="w-full md:w-60 bg-slate-50/70">
+            <div
+              class="w-full md:w-60 bg-slate-50/70 border-dashed border max-sm:rounded-lg max-sm:overflow-hidden"
+            >
               <ul class="py-2 text-center">
                 <li>
                   <p

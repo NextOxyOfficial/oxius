@@ -59,7 +59,11 @@
             />
           </div>
           <div class="my-5">
-            <UCheckbox name="notifications" label="I accept terms & policy." v-model="policy" />
+            <UCheckbox
+              name="notifications"
+              label="I accept terms & policy."
+              v-model="policy"
+            />
           </div>
           <div class="my-2 space-x-3">
             <UButton
@@ -108,7 +112,7 @@
               :ui="{
                 padding: { md: 'px-3 py-2' },
               }"
-              v-model="nagad"
+              v-model="payment_number"
             />
             <UInput
               v-if="selected === 'bkash'"
@@ -117,7 +121,7 @@
               :ui="{
                 padding: { md: 'px-3 py-2' },
               }"
-              v-model="bkash"
+              v-model="payment_number"
             />
             <UInput
               v-if="selected === 'rocket'"
@@ -136,13 +140,17 @@
               :ui="{
                 padding: { md: 'px-3 py-2' },
               }"
-              v-model="amount"
+              v-model="withdrawAmount"
               amount
             />
           </div>
 
           <div class="my-5">
-            <UCheckbox name="notifications" label="I accept terms & policy." v-model="policy" />
+            <UCheckbox
+              name="notifications"
+              label="I accept terms & policy."
+              v-model="policy"
+            />
           </div>
           <div class="my-2 space-x-3">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -150,20 +158,33 @@
           </div>
         </div>
       </div>
-      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
+      <h3
+        class="text-center text-lg md:text-3xl font-semibold mt-8"
+        v-if="statements?.length"
+      >
         Transaction History
       </h3>
 
-      <UTable :rows="statements" :columns="columns" class="mb-8 mt-4" v-if="statements?.length">
-        <template #transaction_type-data="{ row }">
+      <UTable
+        :rows="statements"
+        :columns="columns"
+        class="mb-8 mt-4"
+        v-if="statements?.length"
+      >
+        <template #payment_method-data="{ row }">
           <p>
             {{ row.transaction_type }} -
-            {{ row?.method ? row?.method : "nagad" }}
+            {{ row.payment_method }}
           </p>
         </template>
         <template #status-data="{ row }">
           <p
-            :class="row.status.toLowerCase() === 'pending' ? 'text-yellow-500' : 'text-green-500'"
+            class="capitalize"
+            :class="
+              row.bank_status.toLowerCase() === 'pending'
+                ? 'text-yellow-500'
+                : 'text-green-500'
+            "
           >
             {{ row.status }}
           </p>
@@ -196,14 +217,15 @@ definePageMeta({
 });
 const isOpen = ref(false);
 const toast = useToast();
-const { put, get } = useApi();
+const { post, get } = useApi();
 const { user } = useAuth();
 const policy = ref(false);
 const amount = ref(null);
+const withdrawAmount = ref(null);
 const currentTab = ref(1);
 const selected = ref("nagad");
-const nagad = ref(null);
-const bkash = ref(null);
+const payment_number = ref(null);
+const bkash_number = ref(null);
 const rocket = ref(null);
 const options = [
   { value: "bkash", label: "BKash", icon: "bkash.png" },
@@ -216,15 +238,15 @@ const columns = [
     label: "Time",
   },
   {
-    key: "transaction_type",
+    key: "payment_method",
     label: "Deposit/Withdraw",
   },
   {
-    key: "amount",
+    key: "payable_amount",
     label: "Amount",
   },
   {
-    key: "status",
+    key: "bank_status",
     label: "Status",
   },
 ];
@@ -268,37 +290,43 @@ const deposit = async () => {
     `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
   );
   console.log(payment.data);
-  if (payment.data.checkout_url) window.open(payment.data.checkout_url, "_blank");
+  if (payment.data.checkout_url)
+    window.open(payment.data.checkout_url, "_blank");
 
-  const res = await put(`/persons/update/${user.value.user.email}/`, {
-    deposit: amount.value,
-    transaction_type: "Deposit",
-  });
-  console.log(res);
+  // const res = await put(`/persons/update/${user.value.user.email}/`, {
+  //   deposit: amount.value,
+  //   transaction_type: "Deposit",
+  // });
+  // console.log(res);
   userBalance();
   amount.value = "";
   policy.value = false;
 };
 
 const withdraw = async () => {
-  if (!amount.value || !policy.value) {
+  // console.log({selected.value, card_number:payment_number.value, withdrawAmount.value});
+  if (!withdrawAmount.value || !policy.value) {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
   // Add withdraw logic here
-  toast.add({ title: "Withdraw clicked" });
-  const res = await put(`/persons/update/${user.value.user.email}/`, {
-    withdraw: amount.value,
+
+  // toast.add({ title: "Withdraw clicked" });
+  const res = await post(`/add-user-balance/`, {
+    payment_method: selected.value,
+    card_number: payment_number.value,
+    payable_amount: withdrawAmount.value,
     transaction_type: "Withdraw",
   });
   console.log(res);
   userBalance();
-  amount.value = "";
+  withdrawAmount.value = "";
   privacy.value = false;
 };
 
 const userBalance = async () => {
   const res = await get(`/user-balance/${user.value.user.email}/`);
+  console.log(res.data);
   statements.value = res.data;
 };
 userBalance();

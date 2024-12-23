@@ -146,7 +146,7 @@
               class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
-                class="flex flex-col sm:flex-row items-center justify-between w-full"
+                class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
               >
                 <div class="flex flex-row gap-4 items-center sm:items-start">
                   <div>
@@ -163,7 +163,7 @@
                     </h3>
 
                     <div
-                      class="flex flex-wrap items-center sm:items-start gap-4"
+                      class="flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
@@ -184,8 +184,10 @@
                     </div>
                   </div>
                 </div>
-                <p class="inline-flex items-center my-3">
-                  Price: <UIcon name="i-mdi:currency-bdt" />
+                <p
+                  class="text-sm md:text-base sm:inline-flex sm:items-center sm:my-3 max-sm:absolute max-sm:bottom-0 max-sm:right-0 font-semibold text-green-950"
+                >
+                  <UIcon name="i-mdi:currency-bdt" />
                   {{ service.negotiable ? "Negotiable" : service.price }}
                 </p>
               </div>

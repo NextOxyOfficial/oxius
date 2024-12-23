@@ -140,11 +140,11 @@ const links = [
 
       {
         label: "About Us",
-        to: "/about",
+        to: "/about/",
       },
       {
         label: "Contact Us",
-        to: "/",
+        to: "/contact-us/",
       },
     ],
   },

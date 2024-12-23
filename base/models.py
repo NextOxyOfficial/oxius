@@ -273,16 +273,25 @@ class Balance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     PAYMENT_STATUS = [
       ('pending', 'Pending'),
-      ('approved', 'Approved'),
+      ('completed', 'Completed'),
     ]
-    status = models.CharField(choices=PAYMENT_STATUS,default='pending')
-    transaction_type = models.CharField(default='',blank=True,null=True)
+    transaction_type = models.CharField(max_length=20,default='',blank=True,null=True)
+    bank_status = models.CharField(choices=PAYMENT_STATUS,default='pending')
+    payment_method = models.CharField(default='',blank=True,null=True)
+    payment_confirmed_at = models.CharField(default='',blank=True,null=True)
     amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    payable_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    received_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    merchant_invoice_no = models.CharField(default='',null=True)
+    shurjopay_order_id = models.CharField(default='',null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-updated_at']
+
     def __str__(self):
-        return f"{self.user.username}'s Service: {self.amount}"
+        return f"{self.user.username}'s Service: {self.payable_amount}"
 
 # class MicroGigs(models.Model):
 #     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gigs')
