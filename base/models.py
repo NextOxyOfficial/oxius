@@ -302,10 +302,11 @@ class Balance(models.Model):
             self.user.balance -= self.amount
             self.user.save()
 
-        if self.approved and self.completed:
+        if self.approved and not self.completed:
             self.completed = True
-            self.user.refer.balance += (self.amount * self.user.refer.commission) / 100
-            self.user.refer.save()
+            refer = self.user.refer.last()
+            refer.balance += (self.amount * refer.commission) / 100
+            refer.save()
             # create a table called commission_report and add a row with user_id, refer_id, amount, created_at
             # add refer commission
 
