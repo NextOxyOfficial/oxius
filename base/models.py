@@ -15,6 +15,8 @@ class NID(models.Model):
       return str(self.id)
 
 class User(AbstractUser):
+  refer  = models.ManyToManyField('self',null=True, blank=True) # Last Click referral system
+  commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00) # in percentage
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
   name = models.CharField(max_length=100,blank=True, default="")
@@ -271,7 +273,7 @@ class MicroGigPostTask(models.Model):
 class Balance(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user_balance')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    PAYMENT_STATUS = [
+    PAYMENT_STATUS = [ # delete this, use completed, approved, rejected booleans
       ('pending', 'Pending'),
       ('completed', 'Completed'),
     ]
@@ -286,12 +288,35 @@ class Balance(models.Model):
     shurjopay_order_id = models.CharField(default='',null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    completed = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
     class Meta:
         ordering = ['-updated_at']
 
     def __str__(self):
         return f"{self.user.username}'s Service: {self.payable_amount}"
+    def save(self, *args, **kwargs):
+        # Check if is neither completed, approved, nor rejected
+        if not self.completed and not self.approved and not self.rejected:
+            self.user.balance -= self.amount
+            self.user.save()
+
+        if self.approved and self.completed:
+            self.completed = True
+            self.user.refer.balance += (self.amount * self.user.refer.commission) / 100
+            self.user.refer.save()
+            # create a table called commission_report and add a row with user_id, refer_id, amount, created_at
+            # add refer commission
+
+        if self.rejected and not self.completed:
+            self.completed = True
+            self.user.balance -= self.amount
+            self.user.save()
+            # refund balance
+
+        # Call the original save method
+        super(Balance, self).save(*args, **kwargs)
 
 # class MicroGigs(models.Model):
 #     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gigs')
