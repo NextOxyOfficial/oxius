@@ -111,7 +111,7 @@
             }"
           >
             <UIcon name="i-heroicons-user-circle" class="text-xl" />
-            My Account
+            {{ $t("my_account") }}
             <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
             <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
           </UButton>
@@ -133,6 +133,7 @@
 </template>
 
 <script setup>
+const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get, staticURL } = useApi();
 const openMenu = ref(false);
@@ -181,22 +182,22 @@ useSeoMeta({
 });
 const links = [
   {
-    label: "Home",
+    label: t("home"),
     to: "/",
     icon: "i-heroicons:home",
   },
   {
-    label: "Classified Services",
+    label: t("classified_service"),
     to: "#classified-services",
     icon: "i-heroicons:clipboard-document-list",
   },
   {
-    label: "Earn Money",
+    label: t("earn_money"),
     to: "#micro-gigs",
     icon: "i-healthicons:money-bag-outline",
   },
   {
-    label: "FAQ",
+    label: t("faq"),
     to: "/faq",
     icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
   },
@@ -205,32 +206,32 @@ const links = [
 const accountLinks = [
   [
     {
-      label: "Profile",
+      label: t("profile"),
       icon: "i-heroicons-user",
       to: "/my-account/",
     },
     {
-      label: "Transactions",
+      label: t("transaction"),
       to: "/deposit-withdraw",
       icon: "i-heroicons:currency-dollar",
     },
     {
-      label: "Upload Center",
+      label: t("upload_center"),
       icon: "material-symbols:drive-folder-upload-outline-sharp",
       to: "/upload-center/",
     },
     {
-      label: "Settings",
+      label: t("settings"),
       icon: "material-symbols:settings-outline",
       to: "/settings/",
     },
     {
-      label: "Support",
+      label: t("support"),
       icon: "i-heroicons-question-mark-circle",
       to: "/contact-us/",
     },
     {
-      label: "Logout",
+      label: t("logout"),
       icon: "bitcoin-icons:exit-filled",
       click: () => {
         logout();
