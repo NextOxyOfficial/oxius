@@ -225,19 +225,25 @@ async function handleForm() {
     } else {
       console.log("Image type is string; omitting from request.");
     }
+  } else if (image === null) {
+    console.log("Image type is string; omitting from request.");
   } else {
     rest.image = image;
   }
   console.log(rest);
 
-  const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
-  console.log(res, "result");
+  try {
+    const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
+    console.log(res, "result");
 
-  if (res.data.data.email) {
-    toast.add({ title: res.data.message });
-    res.data.data.image = staticURL + res.data.data.image;
-    userProfile.value = res.data.data;
-    console.log(res.data.data);
+    if (res.data.data.email) {
+      toast.add({ title: res.data.message });
+      res.data.data.image = staticURL + res.data.data.image;
+      userProfile.value = res.data.data;
+      toast.add({ title: res });
+    }
+  } catch (error) {
+    toast.add({ title: error });
   }
 }
 
