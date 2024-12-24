@@ -53,7 +53,12 @@
                 :src="staticURL + service.user?.image"
                 class="h-24 w-24 mx-auto md:ml-0 md:h-32 md:w-32 rounded-full"
               />
-              <img v-else src="/static/frontend/avatar.png " alt="Avatar" />
+              <img
+                v-else
+                src="/static/frontend/avatar.png"
+                class="h-24 w-24 mx-auto md:ml-0 md:h-32 md:w-32 rounded-full"
+                alt="Avatar"
+              />
             </div>
             <div class="flex-1 max-w-md w-full">
               <div class="flex flex-col gap-1 w-full mb-3">
