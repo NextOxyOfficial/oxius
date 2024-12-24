@@ -89,7 +89,11 @@
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="staticURL + img.image" :alt="`Uploaded file ${i}`" />
+            <img
+              :src="staticURL + img.image"
+              class="max-h-[100px]"
+              :alt="`Uploaded file ${i}`"
+            />
             <!-- <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"

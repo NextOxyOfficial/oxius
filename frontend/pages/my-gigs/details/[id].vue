@@ -5,6 +5,14 @@
       {{ submittedTasks[0]?.gig.title }}
     </h1>
     <UContainer>
+      <USelect
+        color="white"
+        size="md"
+        :options="filterOptions"
+        v-model="selectedFilter"
+        placeholder="Search"
+        class="w-40 capitalize"
+      />
       <UTable :rows="submittedTasks" :columns="columns" class="my-8">
         <template #index-data="{ row }">
           <p>
@@ -96,6 +104,9 @@
 const isOpen = ref(false);
 const rejectionReason = ref("");
 const selectedTaskId = ref(null);
+const filterOptions = ["Approved", "Rejected"];
+
+const selectedFilter = ref("");
 const { get, staticURL, del, put } = useApi();
 const { user } = useAuth();
 const submittedTasks = ref([]);
@@ -171,6 +182,16 @@ async function submitRejection() {
   }
 }
 
+watch(selectedFilter, () => {
+  if (selectedFilter.value === "Approved") {
+    submittedTasks.value = submittedTasks.value.filter((task) => task.approved);
+    console.log("approved");
+  } else if (selectedFilter.value === "Rejected") {
+    submittedTasks.value = submittedTasks.value.filter((task) => task.rejected);
+    console.log("rejected");
+  }
+});
+
 const columns = [
   {
     key: "index",
@@ -187,7 +208,7 @@ const columns = [
   },
   {
     key: "created_at",
-    label: "Created At",
+    label: "Submitted At",
   },
   {
     key: "approve",

@@ -94,7 +94,7 @@
               color="primary"
               variant="outline"
               label="Delete"
-              @click="handleAction(gig.id, 'delete')"
+              @click="handlePop(gig.id)"
             />
             <UButton
               size="md"
@@ -114,9 +114,31 @@
         </UCard>
       </UContainer>
     </div>
+    <UModal v-model="isOpen">
+      <div class="py-10 px-6 text-center">
+        <h4 class="text-2xl font-medium mb-4">
+          It will delete the gig forever?
+        </h4>
+
+        <UButton
+          size="md"
+          color="primary"
+          variant="solid"
+          label="Confirm Delete"
+          @click="handleAction(currentId, 'delete')"
+        />
+      </div>
+    </UModal>
   </PublicSection>
 </template>
 <script setup>
+const isOpen = ref(false);
+const currentId = ref();
+function handlePop(id) {
+  isOpen.value = true;
+  currentId.value = id;
+}
+
 const { user } = useAuth();
 const gigs = ref([]);
 const route = useRoute();
@@ -128,7 +150,7 @@ async function handleAction(id, action, val) {
     : put("/update-user-micro-gig/" + id + "/", {
         active_gig: val,
       }));
-  console.log(res);
+  isOpen.value = false;
   if (res.data) {
     getUserGigs();
   }
@@ -137,7 +159,7 @@ async function handleAction(id, action, val) {
 async function getUserGigs() {
   try {
     const res = await get(`/user-micro-gigs/${route.params.id}/`);
-    console.log(res);
+
     gigs.value = res.data;
   } catch (error) {
     console.log(error);
