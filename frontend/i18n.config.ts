@@ -38,6 +38,8 @@ export default defineI18nConfig(() => ({
       earn: "Earn",
       terms_conditions: "Terms & Conditions",
       privacy_policy: "Privacy Policy",
+      we_accept: "We Accept",
+      download_app: "Download Our App",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -75,6 +77,8 @@ export default defineI18nConfig(() => ({
       earn: "উপার্জন",
       terms_conditions: "নিয়মাবলী ও শর্তাবলি",
       privacy_policy: "তথ্য সংরক্ষণ",
+      we_accept: "আমরা গ্রহণ করি",
+      download_app: "ডাউনলোড করুন আমাদের এ্যাপ",
     },
   },
 }));
