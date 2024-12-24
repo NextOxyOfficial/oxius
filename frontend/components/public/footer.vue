@@ -92,6 +92,7 @@
 </template>
 
 <script setup>
+const { t } = useI18n();
 const toggleStatus = ref("");
 
 function toggleLink(title) {
@@ -109,11 +110,13 @@ watch(toggleStatus, () => {
 
 const privacy = [
   {
-    label: "Terms & Conditions",
+    // label: "Terms & Conditions"
+    label: t("terms_conditions"),
     to: "/terms",
   },
   {
-    label: "Privacy Policy",
+    // label: "Privacy Policy",
+    label: t("privacy_policy"),
     to: "/privacy",
   },
 ];
@@ -126,24 +129,24 @@ const links = [
     title: "Services",
     items: [
       {
-        label: "Classified Services",
+        label: t("classified_service"),
         to: "/",
       },
       {
-        label: "Earn Money",
+        label: t("earn_money"),
         to: "/",
       },
       {
-        label: "Affiliates",
+        label: t("affiliates"),
         to: "/",
       },
 
       {
-        label: "About Us",
+        label: t("about_us"),
         to: "/about/",
       },
       {
-        label: "Contact Us",
+        label: t("contact_us"),
         to: "/contact-us/",
       },
     ],

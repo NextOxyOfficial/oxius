@@ -115,7 +115,7 @@
                     class="px-2 font-semibold pb-2 text-left"
                     @click.prevent="selectedCategory = null"
                   >
-                    All Categories
+                    {{ $t("all_category") }}
                   </p>
                   <UDivider label="" class="mb-2 px-4" />
                 </li>
@@ -138,7 +138,9 @@
             <div
               class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md"
             >
-              <p class="px-2 font-semibold pb-3.5">Available Gigs</p>
+              <p class="px-2 font-semibold pb-3.5">
+                {{ $t("available_gigs") }}
+              </p>
               <UCard
                 v-for="(gig, i) in filteredMicroGigs.filter(
                   (gig) =>

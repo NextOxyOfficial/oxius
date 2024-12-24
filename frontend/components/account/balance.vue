@@ -87,7 +87,7 @@
         size="md"
         color="black"
         variant="solid"
-        :label="t(post_gigs)"
+        :label="t('post_gigs')"
         to="/post-a-gig"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
@@ -98,19 +98,19 @@
     <UDivider label="" class="my-5" />
     <div class="flex flex-col gap-4">
       <div class="text-center text-xl font-bold">
-        Refer & Earn 5% Commission
+        {{ $t("refer") }}
         <ULink
           class="cursor-pointer text-blue-500 block"
           @click="CopyToClip('/coming-soon/')"
           to="/coming-soon/"
         >
-          Coming soon
+          {{ $t("coming_soon") }}
         </ULink>
       </div>
       <div class="flex gap-4 justify-center">
-        <p class="text-sm md:text-base">Referred User: 0</p>
+        <p class="text-sm md:text-base">{{ $t("refer_user") }}: 0</p>
         <div>|</div>
-        <p class="text-sm md:text-base">Earnings: 0</p>
+        <p class="text-sm md:text-base">{{ $t("earnings") }}: 0</p>
       </div>
     </div>
   </UCard>
