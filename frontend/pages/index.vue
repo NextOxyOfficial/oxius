@@ -130,7 +130,7 @@
                     color="white"
                     class="w-full text-base px-4 py-0 font-normal text-blue-950"
                     @click.prevent="selectCategory(category.category)"
-                    >{{ category.category }} ({{ category.count }})
+                    >{{ category.category }} ({{ category.active }})
                   </UButton>
                 </li>
               </ul>
@@ -141,7 +141,9 @@
               <p class="px-2 font-semibold pb-3.5">Available Gigs</p>
               <UCard
                 v-for="(gig, i) in filteredMicroGigs.filter(
-                  (gig) => gig.gig_status.toLowerCase() === 'approved'
+                  (gig) =>
+                    gig.gig_status.toLowerCase() === 'approved' &&
+                    gig.active_gig
                 )"
                 :key="i"
                 :ui="{
@@ -242,19 +244,19 @@ const title = ref(null);
 useHead({
   title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
 });
-const categoryCounts = microGigs.value.reduce((acc, gig) => {
-  const category = gig.category;
-  if (!acc[category]) {
-    acc[category] = 1;
-  } else {
-    acc[category]++;
-  }
-  return acc;
-}, {});
+// const categoryCounts = microGigs.value.reduce((acc, gig) => {
+//   const category = gig.category;
+//   if (!acc[category]) {
+//     acc[category] = 1;
+//   } else {
+//     acc[category]++;
+//   }
+//   return acc;
+// }, {});
 // Convert the result into an array of objects
-categoryArray.value = Object.entries(categoryCounts).map(
-  ([category, count]) => ({ category, count })
-);
+// categoryArray.value = Object.entries(categoryCounts).map(
+//   ([category, count]) => ({ category, count })
+// );
 async function getClassifiedCategories() {
   const [serviceResponse, gigResponse] = await Promise.all([
     get("/classified-categories/"),
@@ -267,15 +269,22 @@ async function getClassifiedCategories() {
 
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
+    const isActiveAndApproved = gig.active_gig && gig.gig_status === "approved";
+
     if (!acc[category]) {
-      acc[category] = 1;
-    } else {
-      acc[category]++;
+      acc[category] = { total: 0, active: 0 };
     }
+
+    acc[category].total++;
+    if (isActiveAndApproved) {
+      acc[category].active++;
+    }
+
     return acc;
   }, {});
+
   categoryArray.value = Object.entries(categoryCounts).map(
-    ([category, count]) => ({ category, count })
+    ([category, { total, active }]) => ({ category, total, active })
   );
 }
 const previewGid = ref();

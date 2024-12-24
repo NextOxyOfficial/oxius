@@ -99,12 +99,13 @@
     <div class="flex flex-col gap-4">
       <div class="text-center text-xl font-bold">
         Refer & Earn 10% Commission
-        <p
-          class="cursor-pointer text-blue-500"
-          @click="CopyToClip('https://localhost:3000/')"
+        <ULink
+          class="cursor-pointer text-blue-500 block"
+          @click="CopyToClip('/coming-soon/')"
+          to="/coming-soon/"
         >
-          https://localhost:3000/
-        </p>
+          Coming Soon
+        </ULink>
       </div>
       <div class="flex gap-4 justify-center">
         <p class="text-sm md:text-base">Referred User: 50</p>

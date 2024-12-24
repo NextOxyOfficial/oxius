@@ -33,10 +33,15 @@
                 <h3 class="text-base font-semibold mb-1.5 ml-5 capitalize">
                   {{ gig.title }}
                 </h3>
+
                 <UIcon
                   name="i-ci:dot-05-xl"
                   class="text-lg absolute top-1 left-0"
-                  :class="gig.active_gig ? 'text-green-500' : 'text-red-500'"
+                  :class="
+                    gig.gig_status === 'approved' && gig.active_gig
+                      ? 'text-green-500'
+                      : 'text-red-500'
+                  "
                 />
               </div>
               <div class="flex gap-4">

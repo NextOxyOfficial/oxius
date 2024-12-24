@@ -4,7 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/ui", "@nuxt/image"],
+  modules: ["@nuxt/ui", "@nuxt/image", "@nuxtjs/i18n"],
+  i18n: {
+    vueI18n: "./i18n.config.ts",
+  },
   app: {
     buildAssetsDir: "/static/frontend",
   },

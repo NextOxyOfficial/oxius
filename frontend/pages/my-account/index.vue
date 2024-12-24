@@ -240,7 +240,6 @@ async function handleForm() {
       toast.add({ title: res.data?.message });
       res.data.data.image = staticURL + res.data.data.image;
       userProfile.value = res.data.data;
-      toast.add({ title: res });
     }
   } catch (error) {
     toast.add({ title: error });

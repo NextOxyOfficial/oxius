@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@nuxt/image": "^1.8.1",
-    "@nuxt/ui": "^2.18.4",
+    "@nuxt/ui": "^2.20.0",
+    "@nuxtjs/i18n": "^9.1.1",
     "nuxt": "^3.13.0",
     "vue": "latest"
   },

@@ -345,7 +345,6 @@ def classifiedCategoryPost(request, pk):
 @api_view(['GET'])
 def gigDetails(request, gid):
     serializer = MicroGigPostDetailsSerializer(MicroGigPost.objects.get(id=gid))
-    print(serializer)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
