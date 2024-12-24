@@ -15,7 +15,7 @@
               name="i-material-symbols:account-balance-wallet-outline"
               class="mt-1"
             />
-            Balance :
+            {{ $t("balance") }}:
             <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
               user?.user.balance
             }}</span
@@ -25,7 +25,7 @@
 
       <div class="flex items-center justify-between">
         <h3 class="text-xl font-bold inline-flex items-center">
-          Pending Task:
+          {{ $t("pending_task") }}:
           <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
             user?.user.pending_balance
           }}
@@ -35,7 +35,7 @@
           size="xs"
           color="primary"
           variant="outline"
-          label="View"
+          :label="t('view')"
           class="ml-2"
           :to="`/pending-tasks/${user?.user.id}`"
         />
@@ -49,7 +49,7 @@
         size="md"
         color="primary"
         variant="solid"
-        label="Deposit/Withdraw"
+        :label="t('deposit_withdraw')"
         to="/deposit-withdraw/"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
@@ -63,7 +63,7 @@
         size="md"
         color="primary"
         variant="solid"
-        label="Inbox"
+        :label="t('inbox')"
         to="/inbox/"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
@@ -75,7 +75,7 @@
         size="md"
         color="primary"
         variant="solid"
-        label="My Gigs"
+        :label="t('my_gigs')"
         :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
@@ -87,7 +87,7 @@
         size="md"
         color="black"
         variant="solid"
-        label="Post A Gig"
+        :label="t(post_gigs)"
         to="/post-a-gig"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
@@ -117,6 +117,7 @@
 </template>
 
 <script setup>
+const { t } = useI18n();
 defineProps({
   user: {
     type: Object,

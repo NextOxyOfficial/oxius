@@ -8,7 +8,7 @@
         class="relative"
       >
         <h2 class="text-2xl md:text-4xl max-sm:text-center mb-6 md:mb-8">
-          Classified Services
+          {{ $t("classified_service") }}
         </h2>
         <UButtonGroup
           label="Search Category"
@@ -29,7 +29,7 @@
             size="md"
             color="primary"
             variant="solid"
-            label="Search"
+            :label="t('search')"
           />
         </UButtonGroup>
         <UButton
@@ -38,7 +38,7 @@
           size="md"
           color="primary"
           variant="solid"
-          label="My Posts"
+          :label="t('my_post')"
           to="/my-classified-services/"
         />
         <div
@@ -93,7 +93,7 @@
     <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-6 md:mb-12 text-center">
-          Micro Gigs (Quick Earn)
+          {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
         </h2>
         <AccountBalance v-if="user" :user="user" :isUser="true" />
         <UCard
@@ -233,6 +233,7 @@
 </template>
 
 <script setup>
+const { t } = useI18n();
 const isOpen = ref(false);
 const { get, staticURL } = useApi();
 const { user } = useAuth();
