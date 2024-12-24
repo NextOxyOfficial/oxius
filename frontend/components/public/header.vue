@@ -53,7 +53,7 @@
             color="gray"
           />
         </div>
-        <PublicLogo :logo="logo" :staticURL="staticURL" />
+        <PublicLogo :logo="logo" :staticURL="staticURL" class="mr-auto" />
         <div class="hidden md:block">
           <UHorizontalNavigation
             :links="links"

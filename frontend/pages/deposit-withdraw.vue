@@ -58,12 +58,32 @@
               amount
             />
           </div>
-          <div class="my-5">
-            <UCheckbox
-              name="notifications"
-              label="I accept terms & policy."
-              v-model="policy"
+          <div class="mt-4">
+            <img
+              src="/static/frontend/images/payment.png"
+              class="w-60"
+              alt="Payment Method"
             />
+          </div>
+          <div class="my-5">
+            <UFormGroup class="flex flex-row-reverse gap-2">
+              <template #label>
+                I accept
+                <ULink
+                  to="/terms/"
+                  active-class="text-primary"
+                  inactive-class="text-gray-500 dark:text-gray-400"
+                  >Terms & Condition</ULink
+                >,
+                <ULink
+                  to="/privacy/"
+                  active-class="text-primary"
+                  inactive-class="text-gray-500 dark:text-gray-400"
+                  >Privacy Policy</ULink
+                >.
+              </template>
+              <UCheckbox name="check" v-model="policy" />
+            </UFormGroup>
           </div>
           <div class="my-2 space-x-3">
             <UButton
@@ -146,15 +166,40 @@
           </div>
 
           <div class="my-5">
-            <UCheckbox
-              name="notifications"
-              label="I accept terms & policy."
-              v-model="policy"
-            />
+            <UFormGroup class="flex flex-row-reverse gap-2">
+              <template #label>
+                I accept
+                <ULink
+                  to="/terms/"
+                  active-class="text-primary"
+                  inactive-class="text-gray-500 dark:text-gray-400"
+                  >terms & condition</ULink
+                >,
+                <ULink
+                  to="/privacy/"
+                  active-class="text-primary"
+                  inactive-class="text-gray-500 dark:text-gray-400"
+                  >privacy policy</ULink
+                >.
+              </template>
+              <UCheckbox name="check" v-model="policy" />
+            </UFormGroup>
           </div>
           <div class="my-2 space-x-3">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
-            <UButton @click="withdraw" variant="solid">Withdraw</UButton>
+            <UButton
+              @click="withdraw"
+              variant="solid"
+              v-if="
+                user.user.name &&
+                user.user.address &&
+                user.user.phone &&
+                user.user.city &&
+                user.user.zip
+              "
+              >Withdraw</UButton
+            >
+            <UButton v-else size="sm" @click="isOpen = true">Withdraw</UButton>
           </div>
         </div>
       </div>
@@ -177,7 +222,7 @@
             {{ row.payment_method }}
           </p>
         </template>
-        <template #status-data="{ row }">
+        <template #bank_status-data="{ row }">
           <p
             class="capitalize"
             :class="
@@ -186,7 +231,7 @@
                 : 'text-green-500'
             "
           >
-            {{ row.status }}
+            {{ row.bank_status }}
           </p>
         </template>
       </UTable>

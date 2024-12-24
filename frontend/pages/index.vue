@@ -164,15 +164,29 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between">
                   <div class="flex gap-4">
                     <div>
-                      <NuxtImg
-                        v-if="gig.medias[0].image"
-                        :src="gig.medias[0].image"
+                      <img
+                        v-if="gig.medias[0].image && errorIndex.includes(i)"
+                        :src="
+                          errorIndex.includes(i)
+                            ? gig.category_details.image
+                            : gig.medias[0]?.image
+                        "
                         class="size-14 rounded-full"
+                        @error="handleImageError(i)"
+                      />
+                      <NuxtImg
+                        v-else-if="
+                          gig.medias[0].image && !errorIndex.includes(i)
+                        "
+                        :src="gig.medias[0]?.image"
+                        class="size-14 rounded-full"
+                        @error="handleImageError(i)"
                       />
                       <img
                         v-else
                         src="/static/frontend/images/no-image.jpg"
                         alt="No Image"
+                        class="size-14 rounded-full"
                       />
                     </div>
                     <div>
@@ -241,6 +255,7 @@ const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
 const title = ref(null);
+
 useHead({
   title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
 });
@@ -257,6 +272,14 @@ useHead({
 // categoryArray.value = Object.entries(categoryCounts).map(
 //   ([category, count]) => ({ category, count })
 // );
+const errorIndex = ref([]);
+function handleImageError(index) {
+  console.log(`Broken image detected at index: ${index}`);
+  if (!errorIndex.value.includes(index)) {
+    errorIndex.value.push(index); // Add index to errorIndex
+  }
+}
+
 async function getClassifiedCategories() {
   const [serviceResponse, gigResponse] = await Promise.all([
     get("/classified-categories/"),

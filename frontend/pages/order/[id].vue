@@ -55,7 +55,7 @@
             Reference Photo/Video
           </p>
           <div class="!mb-6 flex gap-1">
-            <div class="" v-for="m in gig.medias" :key="m.id">
+            <div class="" v-for="(m, i) in gig.medias" :key="m.id">
               <a
                 class="cursor-pointer relative group"
                 v-if="m.image"
@@ -69,9 +69,28 @@
                 >
                   View
                 </button>
+                <img
+                  v-if="m.image && errorIndex.includes(i)"
+                  :src="
+                    errorIndex.includes(i)
+                      ? staticURL + gig.category.image
+                      : staticURL + m.image
+                  "
+                  class="size-20"
+                  @error="handleImageError(i)"
+                  alt="Gig Image"
+                />
                 <NuxtImg
-                  class="w-20 object-cover shadow"
+                  v-else-if="m.image && !errorIndex.includes(i)"
                   :src="staticURL + m.image"
+                  class="size-20"
+                  @error="handleImageError(i)"
+                />
+                <img
+                  v-else
+                  :src="staticURL + gig.category.image"
+                  alt="No Image"
+                  class="size-20"
                 />
               </a>
               <a
@@ -97,74 +116,98 @@
 
           <UDivider label="" class="pt-4" />
 
-          <div>
-            <p class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left">
-              Upload Proof
-            </p>
-            <UFormGroup
-              size="xl"
-              label="Submit Details"
-              class="!mt-8 md:w-1/2"
-              required
-              v-slot="{ error }"
-              :error="
-                !submit_details &&
-                checkSubmit &&
-                'You must enter submit details'
-              "
-            >
-              <UTextarea
-                color="white"
-                variant="outline"
-                class="w-full"
-                resize
-                placeholder="Submit Details"
-                v-model="submit_details"
-              />
-            </UFormGroup>
-            <label for="file" class="text-base block mt-8 mb-3 font-semibold"
-              >Upload</label
-            >
-            <div class="flex flex-wrap gap-5">
-              <div
-                class="relative max-w-[200px] max-h-[200px]"
-                v-for="(img, i) in medias"
-                :key="i"
+          <div
+            class="border border-dashed !mt-5 pb-3 px-2 sm:p-5 bg-slate-50/50 rounded-xl"
+          >
+            <div>
+              <p
+                class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left"
               >
-                <img :src="img" :alt="`Uploaded file ${i}`" />
+                Upload Proof
+              </p>
+              <UFormGroup
+                size="xl"
+                label="Submit Details"
+                class="!mt-8 md:w-1/2"
+                required
+                :error="
+                  !submit_details &&
+                  checkSubmit &&
+                  'Enter your micro job detail contents'
+                "
+              >
+                <UTextarea
+                  color="white"
+                  variant="outline"
+                  class="w-full"
+                  resize
+                  placeholder="Enter your micro job detail contents..."
+                  v-model="submit_details"
+                />
+              </UFormGroup>
+              <label for="file" class="text-base block mt-8 mb-3 font-semibold"
+                >Upload</label
+              >
+              <div class="flex flex-wrap gap-5">
                 <div
-                  class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-                  @click="deleteUpload(i)"
+                  class="relative max-w-[200px] max-h-[200px]"
+                  v-for="(img, i) in medias"
+                  :key="i"
                 >
-                  <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+                  <img :src="img" :alt="`Uploaded file ${i}`" />
+                  <div
+                    class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+                    @click="deleteUpload(i)"
+                  >
+                    <UIcon
+                      name="i-heroicons-trash-solid"
+                      class="text-red-500"
+                    />
+                  </div>
+                </div>
+                <!-- <p v-if="!medias.length && checkSubmit" class="text-red-500">
+                  Add Images to submit the micro job
+                </p> -->
+
+                <div
+                  class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+                >
+                  <input
+                    type="file"
+                    name=""
+                    id=""
+                    class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+                    @change="handleFileUpload($event, 'image')"
+                  />
+                  <UIcon name="i-heroicons-plus-solid" size="66" />
                 </div>
               </div>
-
-              <div
-                class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
-              >
-                <input
-                  type="file"
-                  name=""
-                  id=""
-                  class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
-                  @change="handleFileUpload($event, 'image')"
-                />
-                <UIcon name="i-heroicons-plus-solid" size="66" />
-              </div>
             </div>
-          </div>
-          <div class="!mt-7">
-            <UCheckbox
-              name="notifications"
-              v-model="accepted_terms"
-              label="I accept Terms & Conditions"
-            />
-            <UCheckbox
-              name="notifications"
-              v-model="accepted_condition"
-              label="I am aware that fake and fraud submission may lead to account ban!"
-            />
+            <div class="!mt-7">
+              <UFormGroup class="flex flex-row-reverse justify-end gap-2">
+                <template #label>
+                  I accept
+                  <ULink
+                    to="/terms/"
+                    active-class="text-primary"
+                    inactive-class="text-gray-500 dark:text-gray-400"
+                    >Terms & Condition</ULink
+                  >,
+                  <ULink
+                    to="/privacy/"
+                    active-class="text-primary"
+                    inactive-class="text-gray-500 dark:text-gray-400"
+                    >Privacy Policy</ULink
+                  >.
+                </template>
+                <UCheckbox name="check" v-model="accepted_terms" />
+              </UFormGroup>
+              <UCheckbox
+                name="notifications"
+                v-model="accepted_condition"
+                label="I am aware that fake and fraud submission may lead to account ban!"
+              />
+            </div>
           </div>
           <div class="text-center">
             <UButton
@@ -195,6 +238,17 @@ const toast = useToast();
 const checkSubmit = ref(false);
 const accepted_condition = ref(false);
 
+const errorIndex = ref([]);
+
+function handleImageError(index) {
+  console.log(index);
+
+  console.log(`Broken image detected at index: ${index}`);
+  if (!errorIndex.value.includes(index)) {
+    errorIndex.value.push(index); // Add index to errorIndex
+  }
+}
+
 onMounted(() => {
   getGigData();
 });
@@ -205,24 +259,28 @@ async function getGigData() {
 }
 
 async function submitGig() {
-  if (submit_details.value === "" && medias.value.length === 0) {
+  if (
+    !submit_details.value.trim() ||
+    !accepted_terms.value ||
+    !accepted_condition.value
+  ) {
     checkSubmit.value = true;
-    toast.add({ title: "You must enter submit details or upload proof!" });
+    toast.add({ title: "Enter your micro job detail contents" });
     return;
-  }
-
-  const res = await post(`/user-micro-gig-task-post/`, {
-    gig: route.params.id,
-    medias: medias.value,
-    submit_details: submit_details.value,
-  });
-
-  if (res.error) {
-    toast.add({ title: "Something went wrong!" });
   } else {
-    console.log(true);
+    const res = await post(`/user-micro-gig-task-post/`, {
+      gig: route.params.id,
+      medias: medias.value,
+      submit_details: submit_details.value,
+    });
 
-    toast.add({ title: "Order Submitted Successfully!" });
+    if (res.error) {
+      toast.add({ title: "Something went wrong!" });
+    } else {
+      console.log(true);
+
+      toast.add({ title: "Order Submitted Successfully!" });
+    }
   }
 }
 

@@ -8,5 +8,8 @@ export default defineAppConfig({
     card: {
       background: "bg-white dark:bg-white",
     },
+    modal: {
+      container: "items-center sm:items-center",
+    },
   },
 });
