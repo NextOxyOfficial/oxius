@@ -236,8 +236,8 @@ async function handleForm() {
     const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
     console.log(res, "result");
 
-    if (res.data.data.email) {
-      toast.add({ title: res.data.message });
+    if (res.data?.data?.email) {
+      toast.add({ title: res.data?.message });
       res.data.data.image = staticURL + res.data.data.image;
       userProfile.value = res.data.data;
       toast.add({ title: res });
