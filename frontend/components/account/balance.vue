@@ -98,19 +98,19 @@
     <UDivider label="" class="my-5" />
     <div class="flex flex-col gap-4">
       <div class="text-center text-xl font-bold">
-        Refer & Earn 10% Commission
+        Refer & Earn 5% Commission
         <ULink
           class="cursor-pointer text-blue-500 block"
           @click="CopyToClip('/coming-soon/')"
           to="/coming-soon/"
         >
-          Coming Soon
+          Coming soon
         </ULink>
       </div>
       <div class="flex gap-4 justify-center">
-        <p class="text-sm md:text-base">Referred User: 50</p>
+        <p class="text-sm md:text-base">Referred User: 0</p>
         <div>|</div>
-        <p class="text-sm md:text-base">Earnings: 50</p>
+        <p class="text-sm md:text-base">Earnings: 0</p>
       </div>
     </div>
   </UCard>
