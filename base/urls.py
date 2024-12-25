@@ -20,6 +20,8 @@ urlpatterns = [
   path('target-country/',GetTargetCountry.as_view()),
   path('micro-gigs/',GetMicroGigs.as_view()),
   path('classified-posts/filter/', ClassifiedCategoryPostFilterView.as_view(), name='classified_posts_filter'),
+  path('delete-user-classified-post/<str:pk>/',delete_classified_post,name='user-classified-post'),
+  path('update-user-classified-post/<str:pk>/',update_classified_post,name='user-classified-post'),
   # User Micro Gigs Start
   path('user-micro-gigs/<str:pk>/',getUserMicroGigs,name='user-micro-gigs'),
   path('get-user-micro-gig/<str:pk>/',get_micro_gig_post,name='user-micro-gig'),

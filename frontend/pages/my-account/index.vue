@@ -3,6 +3,16 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">My Profile Details</h1>
       <UDivider label="" class="mb-8" />
+      <div class="text-center">
+        <h3 class="text-lg font-semibold">
+          Your account is <span v-if="!user.user.kyc">not</span> KYC verified!
+        </h3>
+        <UIcon
+          v-if="user.user.kyc"
+          name="mdi:check-decagram"
+          class="w-5 h-5 text-blue-600 mt-1"
+        />
+      </div>
       <form action="#" class="max-w-lg mx-auto" @submit.prevent="handleForm">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="col-span-2">
@@ -41,7 +51,12 @@
                   name="i-material-symbols:drive-folder-upload-outline"
                   size="66"
                 /> -->
-                <UInput type="file" size="xs" icon="i-heroicons-folder" />
+                <UInput
+                  type="file"
+                  size="xs"
+                  class="pointer-events-none"
+                  icon="i-heroicons-folder"
+                />
               </div>
             </div>
           </div>
@@ -202,7 +217,7 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { get, put, patch, staticURL } = useApi();
+const { get, put, staticURL } = useApi();
 const { user } = useAuth();
 const userProfile = ref({});
 const toast = useToast();

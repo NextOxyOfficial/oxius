@@ -16,9 +16,15 @@
           type="email"
           placeholder="Email"
         />
+        <p
+          v-if="error.email"
+          class="text-red-500 text-sm first-letter:uppercase"
+        >
+          {{ error.email[0] }}
+        </p>
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-md font-medium mb-2" for="email">
+        <label class="block text-gray-700 text-md font-medium mb-2" for="phone">
           Phone
         </label>
         <div class="flex">
@@ -44,6 +50,12 @@
             placeholder="017XXXXXXXX"
           />
         </div>
+        <p
+          v-if="error.phone"
+          class="text-red-500 text-sm first-letter:uppercase"
+        >
+          {{ error.phone[0] }}
+        </p>
       </div>
       <div class="mb-4">
         <label
@@ -121,6 +133,7 @@ const confirmPassword = ref("");
 const refer = ref("");
 const passwordMismatch = ref(false);
 const inValidRefer = ref(false);
+const error = ref("");
 
 const toast = useToast();
 
@@ -150,27 +163,17 @@ async function handleSubmit() {
 
   try {
     const res = await Api.post("/auth/register/", formData);
-    console.log(res);
-    if (res.data.message) {
+    if (res?.data?.message) {
+      error.value = "";
       const res2 = await login(email.value, password.value);
       if (res2) {
         toast.add({ title: "Login successful!" });
         navigateTo("/");
-        // if (res2.loggedIn) {
-        //   if (res2.user_type == "user") {
-        //     if (res2.is_superuser) {
-
-        //     } else {
-        //       navigateTo("/dashboard/user");
-        //     }
-        //   } else if (res2.user_type == "admin") {
-        //     navigateTo("/dashboard/admin");
-        //   } else if (res2.user_type == "vendor") {
-        //     navigateTo("/dashboard/vendor");
-        //   }
-        //   toast.add({ title: "Login successful!" });
-        // }
       }
+    } else {
+      toast.add({ title: res.error.data.errors.email[0] });
+      error.value = res.error.data.errors;
+      console.log(res.error.data);
     }
   } catch (error) {
     // set inValidRefer to true if error code from api is 444 (Invalid Refer Code)

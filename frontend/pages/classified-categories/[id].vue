@@ -137,7 +137,7 @@
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
           v-for="(service, i) in services.filter(
-            (service) => service.gig_status.toLowerCase() === 'approved'
+            (service) => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
         >
@@ -181,15 +181,23 @@
                           >Posted: {{ service?.created_at }}</span
                         >
                       </p>
+                      <p
+                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                      >
+                        <UIcon name="i-mdi:currency-bdt" />
+                        {{ service.negotiable ? "Negotiable" : service.price }}
+                      </p>
                     </div>
                   </div>
                 </div>
-                <p
-                  class="text-sm md:text-base sm:inline-flex sm:items-center sm:my-3 max-sm:absolute max-sm:bottom-0 max-sm:right-0 font-semibold text-green-950"
-                >
-                  <UIcon name="i-mdi:currency-bdt" />
-                  {{ service.negotiable ? "Negotiable" : service.price }}
-                </p>
+                <div>
+                  <p
+                    class="hidden text-sm md:text-base sm:flex sm:items-center sm:justify-end sm:my-3 font-semibold text-green-950"
+                  >
+                    <UIcon name="i-mdi:currency-bdt" />
+                    {{ service.negotiable ? "Negotiable" : service.price }}
+                  </p>
+                </div>
               </div>
             </div>
           </NuxtLink>
@@ -203,7 +211,8 @@
 </template>
 
 <script setup>
-const { get, staticURL } = useApi();
+const { get, put, del, staticURL } = useApi();
+const isOpen = ref(false);
 const categoryTitle = ref("");
 const services = ref([]);
 const router = useRoute();
@@ -217,33 +226,37 @@ const form = ref({
   title: "",
   category: "",
 });
-const categories = ref([]);
+// const categories = ref([]);
 
 async function fetchServices() {
   const response = await get(`/classified-categories/${router.params.id}/`);
   console.log(response);
 
-  services.value = response.data;
+  services.value = response.data?.filter(
+    (service) =>
+      service.service_status.toLowerCase() === "approved" &&
+      service.active_service
+  );
   categoryTitle.value = response.data[0]?.category_details.title;
 }
 fetchServices();
 
-async function getClassifiedGigsCategory() {
-  try {
-    const [categoriesResponse] = await Promise.all([
-      get("/classified-categories/"),
-    ]);
+// async function getClassifiedGigsCategory() {
+//   try {
+//     const [categoriesResponse] = await Promise.all([
+//       get("/classified-categories/"),
+//     ]);
 
-    categories.value = categoriesResponse.data;
-  } catch (error) {
-    console.error("Error fetching micro-gigs data:", error);
-  }
-}
+//     categories.value = categoriesResponse.data;
+//   } catch (error) {
+//     console.error("Error fetching micro-gigs data:", error);
+//   }
+// }
 
-onMounted(() => {
-  form.value.country = "BD";
-  getClassifiedGigsCategory();
-});
+// onMounted(() => {
+//   form.value.country = "BD";
+//   getClassifiedGigsCategory();
+// });
 
 const ApiUrl = "https://api.countrystatecity.in/v1/countries";
 const headerOptions = {

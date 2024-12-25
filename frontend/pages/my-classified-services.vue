@@ -54,18 +54,34 @@
                       <UIcon
                         name="i-icon-park-outline:dot"
                         class="text-green-500 text-lg"
-                        v-if="service.gig_status === 'approved'"
+                        v-if="
+                          service.service_status === 'approved' &&
+                          service.active_service
+                        "
                       />
-                      <span v-if="service.gig_status === 'approved'">Live</span>
+                      <span
+                        v-if="
+                          service.service_status === 'approved' &&
+                          service.active_service
+                        "
+                        >Live</span
+                      >
+
                       <span
                         class="text-yellow-600"
-                        v-if="service.gig_status === 'pending'"
-                        >{{ service.gig_status }}</span
+                        v-if="
+                          service.service_status.toLowerCase() === 'pending' ||
+                          !service.active_service
+                        "
+                        >Pending</span
                       >
                       <span
                         class="text-red-600"
-                        v-if="service.gig_status === 'rejected'"
-                        >{{ service.gig_status }}</span
+                        v-if="
+                          service.service_status.toLowerCase() === 'rejected' &&
+                          !service.active_service
+                        "
+                        >Rejected</span
                       >
 
                       |
@@ -105,6 +121,47 @@
                     {{ service.price }}
                   </p>
                   <p v-else>Negotiable</p>
+                  <div
+                    class="flex gap-1 items-center max-md:justify-center max-sm:mt-4"
+                  >
+                    <UButton
+                      size="md"
+                      color="primary"
+                      variant="outline"
+                      label="Pause"
+                      v-if="service.active_service"
+                      @click.prevent="handleAction(service.id, 'pause', false)"
+                    />
+                    <UButton
+                      size="md"
+                      color="primary"
+                      variant="outline"
+                      label="Activate"
+                      v-if="!service.active_service"
+                      @click.prevent="handleAction(service.id, 'active', true)"
+                    />
+                    <UButton
+                      size="md"
+                      color="primary"
+                      variant="outline"
+                      label="Edit"
+                      :to="`/edit-classified-post/${service.id}`"
+                    />
+                    <UButton
+                      size="md"
+                      color="primary"
+                      variant="outline"
+                      label="Delete"
+                      @click.prevent="handlePop(service.id)"
+                    />
+                    <!-- <UButton
+                      size="md"
+                      color="primary"
+                      variant="outline"
+                      label="Details"
+                      :to="`/my-gigs/details/${service.id}/`"
+                    /> -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -114,6 +171,21 @@
       <UCard v-else class="py-16 text-center mt-6">
         <p>You haven't made any post yet!</p>
       </UCard>
+      <UModal v-model="isOpen">
+        <div class="py-10 px-6 text-center">
+          <h4 class="text-2xl font-medium mb-4">
+            It will delete the gig forever?
+          </h4>
+
+          <UButton
+            size="md"
+            color="primary"
+            variant="solid"
+            label="Confirm Delete"
+            @click="handleAction(currentId, 'delete')"
+          />
+        </div>
+      </UModal>
     </UContainer>
   </PublicSection>
 </template>
@@ -122,7 +194,8 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { get, staticURL } = useApi();
+const { get, put, del, staticURL } = useApi();
+const isOpen = ref(false);
 const { user } = useAuth();
 const categoryTitle = ref("");
 const services = ref([]);
@@ -137,7 +210,11 @@ const form = ref({
   title: "",
   category: "",
 });
-const categories = ref([]);
+const currentId = ref();
+function handlePop(id) {
+  isOpen.value = true;
+  currentId.value = id;
+}
 
 async function fetchServices() {
   const response = await get(`/user-classified-categories-post/`);
@@ -148,21 +225,20 @@ async function fetchServices() {
 }
 fetchServices();
 
-async function getClassifiedGigsCategory() {
-  try {
-    const [categoriesResponse] = await Promise.all([
-      get("/classified-categories/"),
-    ]);
-
-    categories.value = categoriesResponse.data;
-  } catch (error) {
-    console.error("Error fetching micro-gigs data:", error);
+async function handleAction(id, action, val) {
+  const res = await (action === "delete"
+    ? del("/delete-user-classified-post/" + id + "/")
+    : put("/update-user-classified-post/" + id + "/", {
+        active_service: val,
+      }));
+  isOpen.value = false;
+  if (res.data) {
+    fetchServices();
   }
 }
 
 onMounted(() => {
   form.value.country = "BD";
-  getClassifiedGigsCategory();
 });
 
 const ApiUrl = "https://api.countrystatecity.in/v1/countries";

@@ -43,14 +43,11 @@ export function useAuth() {
           },
         }
       );
-      console.log(error);
 
       if (error.value) {
-        console.log("Login error:", error.value); // Log the error for debugging
-        return false; // Return false or handle error as needed
+        //console.log("Login error:", error.value); // Log the error for debugging
+        return error; // Return false or handle error as needed
       }
-
-      //console.log(data.value, 343); // Log the response data for debugging
 
       if (data.value) {
         user.value = data.value;

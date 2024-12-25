@@ -43,7 +43,7 @@
             class="max-w-[60%] w-full rounded-md self-center my-10"
           />
 
-          <p class="">
+          <p class="text-sm md:text-base">
             {{ service.instructions }}
           </p>
           <div class="my-3 flex flex-col sm:flex-row gap-3 md:gap-8 mt-8">

@@ -56,11 +56,7 @@ def getAdminNotice(request):
 
 @api_view(['POST'])
 def register(request):
-    """
-    Handles the registration of a new user.
-    """
     serializer = UserSerializer(data=request.data)
-
     if serializer.is_valid():
         serializer.save()
         return Response(
@@ -341,6 +337,42 @@ def classifiedCategoryPost(request, pk):
     serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.get(id=pk))
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_classified_post(request, pk):
+    try:
+        classified_post = get_object_or_404(ClassifiedCategoryPost, id=pk)
+        
+        # Check if the user is the owner or a superuser
+        if request.user == classified_post.user or request.user.is_superuser:
+            serializer = ClassifiedPostSerializer(classified_post, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
+    
+    except ClassifiedCategoryPost.DoesNotExist:
+        return Response({"error": "ClassifiedCategoryPost not found."}, status=status.HTTP_404_NOT_FOUND)
+
+# Micro Gig Post Delete
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_classified_post(request, pk):
+    try:
+        classified_post = get_object_or_404(ClassifiedCategoryPost, id=pk)
+        
+        # Check if the user is the owner or a superuser
+        if request.user == classified_post.user or request.user.is_superuser:
+            classified_post.delete()
+            return Response({"message": "ClassifiedCategoryPost deleted successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
+    
+    except ClassifiedCategoryPost.DoesNotExist:
+        return Response({"error": "ClassifiedCategoryPost not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def gigDetails(request, gid):
@@ -599,6 +631,19 @@ class GetTargetCountry(generics.ListAPIView):
     
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            # Extract error details
+            error_message = serializer.errors.get("non_field_errors", ["Invalid credentials"])[0]
+            return Response(
+                {"error": error_message},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class TokenValidationView(APIView):

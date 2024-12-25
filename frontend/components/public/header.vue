@@ -43,6 +43,7 @@
             padding: 'py-2',
           }"
         />
+        <PublicTranslateHandler class="px-2 mt-3" />
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
         <div class="block md:hidden">

@@ -27,7 +27,7 @@ class User(AbstractUser):
   whatsapp_link=models.CharField(null=True, blank=True, default="")
   is_vendor = models.BooleanField(default=False)
   is_active = models.BooleanField(default=True)
-  phone = models.CharField(max_length=100, default='', blank=True)
+  phone = models.CharField(unique=True,max_length=100, default='', blank=True)
   email = models.EmailField(unique=True,default='', null=True)
   nid = models.ManyToManyField(NID,null=True, blank=True)
   kyc = models.BooleanField(default=False)
@@ -69,7 +69,7 @@ class AdminNotice(models.Model):
         return self.title
 
 class ClassifiedCategory(models.Model):
-  user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='classified_categories')
+  user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='classified_categories')
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   title = models.CharField(max_length=256)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -86,8 +86,8 @@ class ClassifiedCategoryPostMedia(models.Model):
       return str(self.id)
 
 class ClassifiedCategoryPost(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='classified_categories_post')
-    category = models.ForeignKey(ClassifiedCategory,on_delete=models.CASCADE,related_name='classified_categories_post')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='classified_categories_post')
+    category = models.ForeignKey(ClassifiedCategory,on_delete=models.SET_NULL, null=True,related_name='classified_categories_post')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
     location = models.TextField(max_length=512)
@@ -102,18 +102,19 @@ class ClassifiedCategoryPost(models.Model):
     accepted_privacy = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    active_service = models.BooleanField(default=True)
     GIG_STATUS = [
       ('pending', 'Pending'),
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
     ]
-    gig_status = models.CharField(
+    service_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
 
 class MicroGigCategory(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gigs')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gigs')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -153,8 +154,8 @@ class MicroGigPostMedia(models.Model):
       return str(self.id)
      
 class MicroGigPost(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gig_posts')
-    category = models.ForeignKey(MicroGigCategory,on_delete=models.CASCADE,related_name='micro_gig_posts')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_posts')
+    category = models.ForeignKey(MicroGigCategory,on_delete=models.SET_NULL, null=True,related_name='micro_gig_posts')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
@@ -182,8 +183,8 @@ class MicroGigPost(models.Model):
         return self.title
 
 class MicroGigPostTask(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gig_worker')
-    gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_worker')
+    gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed = models.BooleanField(default=False)
@@ -272,10 +273,11 @@ class MicroGigPostTask(models.Model):
 
 
 class Balance(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user_balance')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='user_balance')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     PAYMENT_STATUS = [ # delete this, use completed, approved, rejected booleans
       ('pending', 'Pending'),
+      ('rejected', 'Rejected'),
       ('completed', 'Completed'),
     ]
     transaction_type = models.CharField(max_length=20,default='',blank=True,null=True)
@@ -342,7 +344,7 @@ class Balance(models.Model):
 #         return f"{self.user.username}'s Service: {self.amount}"
 
 class PendingTask(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='pending_tasks')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='pending_tasks')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
