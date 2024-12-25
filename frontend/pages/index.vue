@@ -63,7 +63,7 @@
               inactive-class="text-gray-500 dark:text-gray-400"
             >
               <NuxtImg
-                :src="service.image"
+                :src="service?.image"
                 :title="service.title"
                 class="size-10 mx-auto"
               />
@@ -167,10 +167,10 @@
                   <div class="flex gap-4">
                     <div>
                       <img
-                        v-if="gig.medias[0].image && errorIndex.includes(i)"
+                        v-if="gig.medias[0]?.image && errorIndex.includes(i)"
                         :src="
                           errorIndex.includes(i)
-                            ? gig.category_details.image
+                            ? gig.category_details?.image
                             : gig.medias[0]?.image
                         "
                         class="size-14 rounded-full"
@@ -178,7 +178,7 @@
                       />
                       <NuxtImg
                         v-else-if="
-                          gig.medias[0].image && !errorIndex.includes(i)
+                          gig.medias[0]?.image && !errorIndex.includes(i)
                         "
                         :src="gig.medias[0]?.image"
                         class="size-14 rounded-full"
