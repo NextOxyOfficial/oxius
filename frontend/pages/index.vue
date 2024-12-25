@@ -166,7 +166,7 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between">
                   <div class="flex gap-4">
                     <div>
-                      <img
+                      <NuxtImg
                         v-if="gig.medias[0]?.image && errorIndex.includes(i)"
                         :src="
                           errorIndex.includes(i)
@@ -184,9 +184,9 @@
                         class="size-14 rounded-full"
                         @error="handleImageError(i)"
                       />
-                      <img
+                      <NuxtImg
                         v-else
-                        src="/static/frontend/images/no-image.jpg"
+                        :src="gig.category_details?.image"
                         alt="No Image"
                         class="size-14 rounded-full"
                       />
