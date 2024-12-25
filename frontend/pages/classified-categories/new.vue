@@ -308,7 +308,7 @@ definePageMeta({
   layout: "dashboard",
 });
 const isOpen = ref(false);
-const { get, post, baseURL, staticURL } = useApi();
+const { get, post, put, baseURL, staticURL } = useApi();
 const { user } = useAuth();
 const toast = useToast();
 const categories = ref([]);
@@ -351,6 +351,7 @@ async function fetchServices() {
     location,
     negotiable,
     accepted_privacy,
+    service_status,
   } = response;
   form.value = {
     price,
@@ -364,6 +365,7 @@ async function fetchServices() {
     location,
     negotiable,
     accepted_privacy,
+    service_status,
   };
 }
 
@@ -388,14 +390,17 @@ function validateForm() {
 }
 
 async function handlePostGig() {
-  console.log(form.value);
-
   if (!validateForm()) {
     checkSubmit.value = true;
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
-  const res = await post("/classified-categories-post/", submitValues.value);
+  const { medias, ...rest } = form.value;
+  rest.service_status = "pending";
+
+  const res = await (router.query.id
+    ? put(`/update-user-classified-post/${router.query.id}/`, rest)
+    : post("/classified-categories-post/", submitValues.value));
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "Classified Service Added" });

@@ -340,6 +340,9 @@ def classifiedCategoryPost(request, pk):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_classified_post(request, pk):
+    print("User:", request.user)
+    print("Is authenticated:", request.user.is_authenticated)
+    print("Is superuser:", request.user.is_superuser)
     try:
         classified_post = get_object_or_404(ClassifiedCategoryPost, id=pk)
         
@@ -357,7 +360,7 @@ def update_classified_post(request, pk):
     except ClassifiedCategoryPost.DoesNotExist:
         return Response({"error": "ClassifiedCategoryPost not found."}, status=status.HTTP_404_NOT_FOUND)
 
-# Micro Gig Post Delete
+# Classified Post Delete
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_classified_post(request, pk):

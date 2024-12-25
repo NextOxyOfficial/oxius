@@ -3,14 +3,14 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">My Profile Details</h1>
       <UDivider label="" class="mb-8" />
-      <div class="text-center">
-        <h3 class="text-lg font-semibold">
-          Your account is <span v-if="!user.user.kyc">not</span> KYC verified!
-        </h3>
+      <div class="text-center flex gap-1 items-center justify-center">
+        <span v-if="user.user.name" class="font-semibold">{{
+          user.user.name
+        }}</span>
         <UIcon
           v-if="user.user.kyc"
           name="mdi:check-decagram"
-          class="w-5 h-5 text-blue-600 mt-1"
+          class="w-5 h-5 text-blue-600"
         />
       </div>
       <form action="#" class="max-w-lg mx-auto" @submit.prevent="handleForm">

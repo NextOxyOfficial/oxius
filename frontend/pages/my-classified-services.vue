@@ -218,8 +218,6 @@ function handlePop(id) {
 
 async function fetchServices() {
   const response = await get(`/user-classified-categories-post/`);
-  console.log(response);
-
   services.value = response.data;
   categoryTitle.value = response.data[0]?.category_details.title;
 }
@@ -286,13 +284,13 @@ watch(
   }
 );
 
-async function filterSearch() {
-  const res = await get(
-    `/classified-posts/filter/?category=${form.value.category}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
-  );
-  console.log(res);
-  services.value = res.data;
-}
+// async function filterSearch() {
+//   const res = await get(
+//     `/classified-posts/filter/?category=${form.value.category}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
+//   );
+//   console.log(res);
+//   services.value = res.data;
+// }
 </script>
 
 <style scoped>
