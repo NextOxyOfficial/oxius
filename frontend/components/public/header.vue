@@ -92,6 +92,7 @@
           </UButton>
         </div>
         <div v-else class="flex relative menu-container">
+          <PublicTranslateHandler class="px-2" />
           <UButton
             size="sm"
             color="primary"
