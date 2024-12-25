@@ -3,7 +3,11 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
       <UDivider label="" class="mb-8" />
-      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handlePostGig">
+      <form
+        action="#"
+        class="max-w-2xl mx-auto space-y-3"
+        @submit.prevent="handlePostGig"
+      >
         <UFormGroup
           label="Title"
           required
@@ -28,7 +32,9 @@
         <UFormGroup
           label="Instruction"
           required
-          :error="!form.instructions && checkSubmit && 'You must enter instructions!'"
+          :error="
+            !form.instructions && checkSubmit && 'You must enter instructions!'
+          "
         >
           <UTextarea
             color="white"
@@ -48,7 +54,9 @@
           <UFormGroup
             label="Category"
             required
-            :error="!form.category && checkSubmit && 'You must select a category'"
+            :error="
+              !form.category && checkSubmit && 'You must select a category'
+            "
           >
             <USelectMenu
               v-model="form.category"
@@ -90,7 +98,11 @@
                 class="max-w-40"
                 v-model="form.price"
               />
-              <UCheckbox v-model="form.negotiable" name="Negotiable" label="Negotiable" />
+              <UCheckbox
+                v-model="form.negotiable"
+                name="Negotiable"
+                label="Negotiable"
+              />
             </div>
           </UFormGroup>
         </div>
@@ -110,7 +122,18 @@
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="img" :alt="`Uploaded file ${i}`" class="object-cover" />
+            <img
+              v-if="img.image"
+              :src="staticURL + img.image"
+              :alt="`Uploaded file ${i}`"
+              class="object-cover"
+            />
+            <img
+              v-else
+              :src="img"
+              :alt="`Uploaded file ${i}`"
+              class="object-cover"
+            />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -215,7 +238,9 @@
           <UFormGroup
             label="Address"
             required
-            :error="!form.location && checkSubmit && 'You must enter your address!'"
+            :error="
+              !form.location && checkSubmit && 'You must enter your address!'
+            "
           >
             <UTextarea
               v-model="form.location"
@@ -274,6 +299,7 @@
         </div>
       </UModal>
     </UContainer>
+    {{ form }}
   </PublicSection>
 </template>
 
@@ -282,7 +308,7 @@ definePageMeta({
   layout: "dashboard",
 });
 const isOpen = ref(false);
-const { get, post } = useApi();
+const { get, post, baseURL, staticURL } = useApi();
 const { user } = useAuth();
 const toast = useToast();
 const categories = ref([]);
@@ -305,6 +331,42 @@ const form = ref({
   accepted_privacy: false,
 });
 const submitValues = ref({});
+
+const router = useRoute();
+
+async function fetchServices() {
+  const response = await $fetch(
+    `${baseURL}/classified-categories/post/${router.query.id}/`
+  );
+  console.log(response);
+  const {
+    price,
+    instructions,
+    title,
+    medias,
+    category,
+    country,
+    state,
+    city,
+    location,
+    negotiable,
+    accepted_privacy,
+  } = response;
+  form.value = {
+    price,
+    instructions,
+    title,
+    medias,
+    category,
+    country,
+    state,
+    city,
+    location,
+    negotiable,
+    accepted_privacy,
+  };
+}
+
 function validateForm() {
   // Determine the base submit values based on conditions
   const { negotiable, price, ...rest } = form.value;
@@ -350,7 +412,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -364,7 +426,9 @@ function deleteUpload(ind) {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse] = await Promise.all([get("/classified-categories/")]);
+    const [categoriesResponse] = await Promise.all([
+      get("/classified-categories/"),
+    ]);
     categories.value = categoriesResponse.data.results;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
@@ -373,6 +437,7 @@ async function getMicroGigsCategory() {
 
 onMounted(() => {
   getMicroGigsCategory();
+  fetchServices();
 });
 
 const ApiUrl = "https://api.countrystatecity.in/v1/countries";
@@ -398,7 +463,10 @@ watch(
   () => form.value.country,
   async (newValue, oldValue) => {
     if (newValue) {
-      const res = await $fetch(`${ApiUrl}/${form.value.country}/states/`, headerOptions);
+      const res = await $fetch(
+        `${ApiUrl}/${form.value.country}/states/`,
+        headerOptions
+      );
       state.value = res;
     }
   }

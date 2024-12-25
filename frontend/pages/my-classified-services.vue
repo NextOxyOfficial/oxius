@@ -145,7 +145,7 @@
                       color="primary"
                       variant="outline"
                       label="Edit"
-                      :to="`/edit-classified-post/${service.id}`"
+                      :to="`/classified-categories/new/?id=${service.id}`"
                     />
                     <UButton
                       size="md"
