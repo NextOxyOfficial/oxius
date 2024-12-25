@@ -33,7 +33,7 @@ const languageOption = [
   },
   {
     value: "bn",
-    label: "Bangla",
+    label: "বাংলা",
     icon: "i-flagpack:bd",
   },
 ];
