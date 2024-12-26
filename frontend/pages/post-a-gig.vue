@@ -13,6 +13,11 @@
           required
           v-slot="{ error }"
           :error="!form.title && checkSubmit && 'You must enter a title!'"
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
         >
           <UInput
             type="text"
@@ -26,9 +31,10 @@
                 md: 'text-base',
               },
               padding: { md: 'pl-[60px]' },
+              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
           >
-            <span class="absolute left-2 top-2">I Need</span>
+            <span class="absolute left-2 top-2 text-gray-200">I Need</span>
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center">
@@ -41,6 +47,11 @@
               checkSubmit &&
               'You must enter budget per action!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <UInput
               icon="i-mdi:currency-bdt"
@@ -51,6 +62,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               placeholder="2.0"
               class="max-w-40"
@@ -66,6 +78,11 @@
               checkSubmit &&
               'You must enter required quantity!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <UInput
               type="text"
@@ -75,16 +92,31 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
               }"
               placeholder="10"
               class="max-w-40"
               v-model="form.required_quantity"
             />
           </UFormGroup>
-          <UFormGroup label="*">
+          <UFormGroup
+            label="*"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+          >
             <p>=</p>
           </UFormGroup>
-          <UFormGroup label="Total Cost">
+          <UFormGroup
+            label="Total Cost"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+          >
             <p>{{ form.price * form.required_quantity }}</p>
           </UFormGroup>
         </div>
@@ -95,6 +127,11 @@
           :error="
             !form.instructions && checkSubmit && 'You must enter instructions!'
           "
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
         >
           <UTextarea
             color="white"
@@ -103,6 +140,7 @@
               size: {
                 md: 'text-base',
               },
+              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
             class="w-full"
             resize
@@ -112,7 +150,7 @@
         </UFormGroup>
 
         <!-- medias  -->
-        <label for="" class="block mt-3 font-semibold"
+        <label for="" class="block mt-3 font-semibold text-slate-700"
           >Upload Photo/Video</label
         >
         <div class="flex flex-wrap gap-5">
@@ -171,6 +209,11 @@
               checkSubmit &&
               'You must select a target country!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.target_country"
@@ -182,6 +225,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="title"
@@ -196,6 +240,11 @@
               checkSubmit &&
               'You must select a target device!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.target_device"
@@ -208,6 +257,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="id"
@@ -224,6 +274,11 @@
               checkSubmit &&
               'You must select a target network!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.target_network"
@@ -232,6 +287,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               :options="network"
               multiple
@@ -247,6 +303,11 @@
             :error="
               !form.category && checkSubmit && 'You must select a category!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.category"
@@ -258,6 +319,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="id"

@@ -6,22 +6,42 @@
       <form action="#" class="max-w-3xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="mb-4">
-            <UFormGroup label="Old Password">
+            <UFormGroup
+              label="Old Password"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 size="md"
                 color="white"
                 type="password"
                 placeholder="********"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div class="mb-4">
-            <UFormGroup label="New Password">
+            <UFormGroup
+              label="New Password"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="password"
                 size="md"
                 color="white"
                 placeholder="********"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
