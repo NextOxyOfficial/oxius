@@ -61,29 +61,56 @@
             </div>
           </div>
           <div>
-            <UFormGroup label="First Name">
+            <UFormGroup
+              label="First Name"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="First Name"
                 v-model="userProfile.first_name"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Last Name">
+            <UFormGroup
+              label="Last Name"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="Last Name"
                 v-model="userProfile.last_name"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div class="col-span-2">
-            <UFormGroup label="Address">
+            <UFormGroup
+              label="Address"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 color="white"
                 variant="outline"
@@ -91,11 +118,21 @@
                 resize
                 placeholder="Address"
                 v-model="userProfile.address"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Email">
+            <UFormGroup
+              label="Email"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
@@ -107,86 +144,163 @@
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="City">
+            <UFormGroup
+              label="City"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="City"
                 v-model="userProfile.city"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="State">
+            <UFormGroup
+              label="State"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="State"
                 v-model="userProfile.state"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Zip">
+            <UFormGroup
+              label="Zip"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="Zip"
                 v-model="userProfile.zip"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
 
           <div>
-            <UFormGroup label="Phone">
+            <UFormGroup
+              label="Phone"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="Phone"
                 v-model="userProfile.phone"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Facebook Url">
+            <UFormGroup
+              label="Facebook Url"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="Facebook Url"
                 v-model="userProfile.face_link"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="Instagram Url">
+            <UFormGroup
+              label="Instagram Url"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="Instagram Url"
                 v-model="userProfile.instagram_link"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
           <div>
-            <UFormGroup label="WhatsApp #">
+            <UFormGroup
+              label="WhatsApp #"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UInput
                 type="text"
                 size="md"
                 color="white"
                 placeholder="WhatsApp #"
                 v-model="userProfile.whatsapp_link"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>
 
           <div class="col-span-2">
-            <UFormGroup label="About Me">
+            <UFormGroup
+              label="About Me"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <UTextarea
                 color="white"
                 variant="outline"
@@ -194,6 +308,9 @@
                 v-model="userProfile.about"
                 resize
                 placeholder="Please provide information about your self, profession and services so that public can read about you and find interest"
+                :ui="{
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
               />
             </UFormGroup>
           </div>

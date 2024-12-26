@@ -1,5 +1,5 @@
 <template>
-  <footer class="py-10 bg-slate-100">
+  <footer class="py-10 bg-slate-100 dark:bg-slate-900">
     <UContainer>
       <div class="mb-8">
         <UHorizontalNavigation
@@ -29,10 +29,12 @@
       </div>
 
       <div
-        class="flex flex-col sm:flex-row justify-between gap-5 lg:gap-12 sm:items-center px-[7px] max-w-5xl mx-auto"
+        class="flex flex-col sm:flex-row justify-between gap-5 lg:gap-12 sm:items-center px-[7px] max-w-5xl mx-auto dark:text-gray-200"
       >
         <div class="flex flex-col gap-4">
-          <h4 class="font-bold hidden md:block">{{ $t("download_app") }}</h4>
+          <h4 class="font-bold hidden md:block">
+            {{ $t("download_app") }}
+          </h4>
           <ul class="flex gap-2 flex-1 max-md:justify-center">
             <li class="w-[90px] md:w-[117px]">
               <nuxt-link to="/coming-soon/">
@@ -87,7 +89,7 @@
         />
       </div>
       <UDivider label="" />
-      <p class="text-center py-6">
+      <p class="text-center py-6 dark:text-gray-200">
         Developed With
         <UIcon name="i-solar:hearts-bold" class="text-red-500" />
         By Lyricz Softwares & Technology Limited ©

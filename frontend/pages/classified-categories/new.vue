@@ -12,6 +12,11 @@
           label="Title"
           required
           :error="!form.title && checkSubmit && 'You must enter a title!'"
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
         >
           <UInput
             type="text"
@@ -24,6 +29,7 @@
               size: {
                 md: 'text-base',
               },
+              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
           >
           </UInput>
@@ -35,6 +41,11 @@
           :error="
             !form.instructions && checkSubmit && 'You must enter instructions!'
           "
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
         >
           <UTextarea
             color="white"
@@ -43,6 +54,7 @@
               size: {
                 md: 'text-base',
               },
+              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
             class="w-full"
             resize
@@ -57,6 +69,11 @@
             :error="
               !form.category && checkSubmit && 'You must select a category'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.category"
@@ -68,6 +85,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="id"
@@ -81,6 +99,11 @@
               checkSubmit &&
               'Price must be greater than 0 or Negotiable'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <div class="flex gap-2 items-center">
               <UInput
@@ -93,6 +116,7 @@
                   size: {
                     md: 'text-base',
                   },
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
                 }"
                 placeholder="2.0"
                 class="max-w-40"
@@ -102,6 +126,10 @@
                 v-model="form.negotiable"
                 name="Negotiable"
                 label="Negotiable"
+                :ui="{
+                  label:
+                    'text-sm font-medium text-gray-700 dark:text-slate-700',
+                }"
               />
             </div>
           </UFormGroup>
@@ -115,7 +143,15 @@
             @change="handleFileUpload($event, 'image')"
           />
         </UFormGroup> -->
-        <UFormGroup label="Upload Photo/Video"> </UFormGroup>
+        <UFormGroup
+          label="Upload Photo/Video"
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
+        >
+        </UFormGroup>
         <div class="flex flex-wrap gap-2 md:gap-5 mt-4">
           <div
             class="relative max-w-[200px] max-h-[200px] overflow-hidden"
@@ -195,6 +231,11 @@
             label="State"
             required
             :error="!form.state && checkSubmit && 'You must select a state!'"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.state"
@@ -206,6 +247,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="name"
               value-attribute="iso2"
@@ -215,6 +257,11 @@
             label="City"
             required
             :error="!form.city && checkSubmit && 'You must select a city'"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.city"
@@ -226,6 +273,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="name"
               value-attribute="name"
@@ -241,6 +289,11 @@
             :error="
               !form.location && checkSubmit && 'You must enter your address!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <UTextarea
               v-model="form.location"
@@ -249,6 +302,9 @@
               class="w-full"
               resize
               placeholder="1216-Mirpur, Dhaka"
+              :ui="{
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+              }"
             />
           </UFormGroup>
         </div>
@@ -262,6 +318,9 @@
             checkSubmit &&
             'You must accept our Terms Condition & Privacy Policy!'
           "
+          :ui="{
+            label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
+          }"
         />
         <div class="text-center">
           <UButton
@@ -299,7 +358,6 @@
         </div>
       </UModal>
     </UContainer>
-    {{ form }}
   </PublicSection>
 </template>
 

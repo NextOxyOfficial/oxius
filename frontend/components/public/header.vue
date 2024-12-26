@@ -1,5 +1,5 @@
 <template>
-  <div class="py-3 sticky z-50 top-0 bg-white">
+  <div class="py-3 sticky z-50 top-0 bg-white dark:bg-black">
     <UContainer>
       <USlideover
         v-model="isOpen"
