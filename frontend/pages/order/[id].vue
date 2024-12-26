@@ -229,6 +229,7 @@
 <script setup>
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
+const { jwtLogin } = useAuth();
 const { get, staticURL, post } = useApi();
 const route = useRoute();
 const medias = ref([]);
@@ -278,7 +279,7 @@ async function submitGig() {
       toast.add({ title: "Something went wrong!" });
     } else {
       console.log(true);
-
+      jwtLogin();
       toast.add({ title: "Order Submitted Successfully!" });
     }
   }

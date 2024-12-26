@@ -3,7 +3,11 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
-      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handlePostGig">
+      <form
+        action="#"
+        class="max-w-2xl mx-auto space-y-3"
+        @submit.prevent="handlePostGig"
+      >
         <UFormGroup
           label="Title"
           required
@@ -32,7 +36,11 @@
             label="Budget Per Action"
             required
             v-slot="{ error }"
-            :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
+            :error="
+              form.price <= 0 &&
+              checkSubmit &&
+              'You must enter budget per action!'
+            "
           >
             <UInput
               icon="i-mdi:currency-bdt"
@@ -54,7 +62,9 @@
             required
             v-slot="{ error }"
             :error="
-              form.required_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
+              form.required_quantity <= 0 &&
+              checkSubmit &&
+              'You must enter required quantity!'
             "
           >
             <UInput
@@ -82,7 +92,9 @@
           label="Instructions"
           required
           v-slot="{ error }"
-          :error="!form.instructions && checkSubmit && 'You must enter instructions!'"
+          :error="
+            !form.instructions && checkSubmit && 'You must enter instructions!'
+          "
         >
           <UTextarea
             color="white"
@@ -100,7 +112,9 @@
         </UFormGroup>
 
         <!-- medias  -->
-        <label for="" class="block mt-3 font-semibold">Upload Photo/Video</label>
+        <label for="" class="block mt-3 font-semibold"
+          >Upload Photo/Video</label
+        >
         <div class="flex flex-wrap gap-5">
           <div
             class="relative max-w-[200px] max-h-[200px]"
@@ -152,7 +166,11 @@
             label="Target Country"
             required
             v-slot="{ error }"
-            :error="!form.target_country && checkSubmit && 'You must select a target country!'"
+            :error="
+              !form.target_country &&
+              checkSubmit &&
+              'You must select a target country!'
+            "
           >
             <USelectMenu
               v-model="form.target_country"
@@ -173,7 +191,11 @@
             label="Target Device"
             required
             v-slot="{ error }"
-            :error="!form.target_device && checkSubmit && 'You must select a target device!'"
+            :error="
+              !form.target_device &&
+              checkSubmit &&
+              'You must select a target device!'
+            "
           >
             <USelectMenu
               v-model="form.target_device"
@@ -197,7 +219,11 @@
             label="Target Network"
             required
             v-slot="{ error }"
-            :error="!form.target_network && checkSubmit && 'You must select a target network!'"
+            :error="
+              !form.target_network &&
+              checkSubmit &&
+              'You must select a target network!'
+            "
           >
             <USelectMenu
               v-model="form.target_network"
@@ -218,7 +244,9 @@
             label="Category"
             required
             v-slot="{ error }"
-            :error="!form.category && checkSubmit && 'You must select a category!'"
+            :error="
+              !form.category && checkSubmit && 'You must select a category!'
+            "
           >
             <USelectMenu
               v-model="form.category"
@@ -312,7 +340,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -345,7 +373,12 @@ async function handlePostGig() {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
-  const res = await post("/post-micro-gigs/", form.value);
+  const balance = form.value.required_quantity * form.value.price;
+  const total_cost = balance + (10 / 100) * balance;
+  const submitValue = { ...form.value, total_cost, balance };
+  console.log(submitValue);
+
+  const res = await post("/post-micro-gigs/", submitValue);
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "MicroGig Added" });
@@ -354,13 +387,17 @@ async function handlePostGig() {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse, devicesResponse, networksResponse, countriesResponse] =
-      await Promise.all([
-        get("/micro-gigs-categories/"),
-        get("/target-device/"),
-        get("/target-network/"),
-        // get("/target-country/"),
-      ]);
+    const [
+      categoriesResponse,
+      devicesResponse,
+      networksResponse,
+      countriesResponse,
+    ] = await Promise.all([
+      get("/micro-gigs-categories/"),
+      get("/target-device/"),
+      get("/target-network/"),
+      // get("/target-country/"),
+    ]);
 
     categories.value = categoriesResponse.data;
     device.value = devicesResponse.data;

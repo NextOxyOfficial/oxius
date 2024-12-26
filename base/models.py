@@ -6,6 +6,7 @@ from django.utils.text import slugify
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
+from decimal import Decimal
 
 # Create your models here.
 
@@ -40,17 +41,13 @@ class User(AbstractUser):
   USER_TYPES = [
       ('admin', 'Admin'),
       ('user', 'User'),
-      ('vendor', 'Vendor'),
+      ('vendor', 'Vendor'), 
   ]
   user_type = models.CharField(
       max_length=20, choices=USER_TYPES, default='user')
 
   def __str__(self):
       return self.email
-
-
-
-
 
 class Logo(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -167,20 +164,39 @@ class MicroGigPost(models.Model):
     target_country = models.CharField(blank=True, null=True)
     target_device = models.ManyToManyField(TargetDevice,blank=True, null=True)
     total_cost = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    balance = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     accepted_terms = models.BooleanField(default=True)
     accepted_privacy = models.BooleanField(default=True)
     active_gig = models.BooleanField(default=True)
+    stop_gig = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     GIG_STATUS = [
       ('pending', 'Pending'),
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
+      ('completed', 'Completed'),
     ]
     gig_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        # Check if the gig is being stopped
+        if self.stop_gig and not self.gig_status == 'completed':
+            if self.required_quantity > 0:
+                # Refund the unfulfilled portion
+                self.user.balance += self.balance
+                self.user.save()
+                self.balance = 0
+
+        # Check if the gig is complete
+        if self.filled_quantity >= self.required_quantity:
+            self.active_gig = False
+            self.gig_status = 'completed'
+
+        super(MicroGigPost, self).save(*args, **kwargs)
 
 class MicroGigPostTask(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_worker')
@@ -202,12 +218,12 @@ class MicroGigPostTask(models.Model):
         # Check if task is neither completed, approved, nor rejected
         if not self.completed and not self.approved and not self.rejected:
             self.gig.filled_quantity += 1
+            self.gig.balance -= self.gig.price
             self.gig.save()
             self.user.pending_balance += self.gig.price
             self.user.save()
-
         # Mark as completed if approved
-        if self.approved and self.completed:
+        if self.approved and not self.completed:
             self.completed = True
             self.user.balance += self.gig.price
             self.user.pending_balance -= self.gig.price
@@ -217,6 +233,7 @@ class MicroGigPostTask(models.Model):
         # Reduce filled quantity and mark as completed if rejected
         if self.rejected and not self.completed:
             self.gig.filled_quantity -= 1
+            self.gig.balance += self.gig.price
             self.gig.save()
             self.completed = True
             self.user.pending_balance -= self.gig.price

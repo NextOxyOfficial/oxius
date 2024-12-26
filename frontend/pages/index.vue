@@ -138,9 +138,18 @@
             <div
               class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md"
             >
-              <p class="px-2 font-semibold pb-3.5">
-                {{ $t("available_gigs") }}
-              </p>
+              <div class="flex justify-between">
+                <p class="px-2 font-semibold pb-3.5">
+                  {{ $t("available_gigs") }}
+                </p>
+                <USelectMenu
+                  color="white"
+                  size="md"
+                  class="w-40"
+                  :options="['All', 'Available', 'Completed']"
+                  placeholder="Filter"
+                />
+              </div>
               <UCard
                 v-for="(gig, i) in filteredMicroGigs.filter(
                   (gig) =>
@@ -218,13 +227,23 @@
                     </p>
 
                     <UButton
-                      :disabled="user?.user?.id === gig.user"
+                      v-if="user?.user?.id !== gig.user.id"
+                      :disabled="user?.user?.id === gig.user.id"
                       size="sm"
                       color="primary"
                       variant="outline"
                       :to="`/order/${gig.id}/`"
                     >
                       Earn
+                    </UButton>
+                    <UButton
+                      v-else
+                      :disabled="user?.user?.id === gig.user.id"
+                      size="sm"
+                      color="primary"
+                      variant="outline"
+                    >
+                      Ineligible
                     </UButton>
                   </div>
                 </div>

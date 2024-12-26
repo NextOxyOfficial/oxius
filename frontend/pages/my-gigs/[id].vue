@@ -29,9 +29,10 @@
               />
             </div>
             <div>
+              <div class="italic">{{ formatDate(gig.created_at) }}</div>
               <div class="relative">
                 <h3 class="text-base font-semibold mb-1.5 ml-5 capitalize">
-                  {{ gig.title }}
+                  {{ gig.title }} <span class="italic">{{ gig.balance }}</span>
                 </h3>
 
                 <UIcon
@@ -132,6 +133,7 @@
   </PublicSection>
 </template>
 <script setup>
+const { formatDate } = useUtils();
 const isOpen = ref(false);
 const currentId = ref();
 function handlePop(id) {

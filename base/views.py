@@ -80,33 +80,6 @@ def update_user(request, email):
             {'message': 'User not found'},
             status=status.HTTP_404_NOT_FOUND
         )
-
-    # Update balance based on withdraw or deposit
-    if 'withdraw' in data:
-        withdraw_amount = Decimal(data.get('withdraw', 0))
-        transaction_type = data.get('transaction_type')
-        if user.balance < withdraw_amount:
-            return Response(
-                {'message': 'Insufficient balance'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        user.balance -= withdraw_amount
-        Balance.objects.create(
-            user=user,
-            amount=withdraw_amount,
-            transaction_type=transaction_type,
-            status='pending',  # Set as pending until processed
-        )
-    elif 'deposit' in data:
-        deposit_amount = Decimal(data.get('deposit', 0))
-        transaction_type = data.get('transaction_type')
-        user.balance += deposit_amount
-        Balance.objects.create(
-            user=user,
-            amount=deposit_amount,
-            transaction_type=transaction_type,
-            status='pending',  
-        )
     # Remove email from data if it's unchanged
     if 'email' in data and data['email'] == user.email:
         data.pop('email')
@@ -232,12 +205,15 @@ class GetMicroGigs(generics.ListCreateAPIView):
 @permission_classes([IsAuthenticated])
 def post_micro_gigs(request):
     data = request.data # Make a mutable copy of the data
-    print(data)
-    data['user'] = request.user.id  # Associate the authenticated user
+    user=request.user
+    data['user'] = user.id  # Associate the authenticated user
     serializer = MicroGigPostSerializer(data=data)
     if serializer.is_valid():
-        new_micro_gig_post = serializer.save(user=request.user)
-
+        if user.balance < data['total_cost']:
+            raise ValueError("Insufficient balance")
+        user.balance -= data['total_cost']
+        user.save()
+        new_micro_gig_post = serializer.save(user=user)
         for file in data['medias']:
             nm = MicroGigPostMedia.objects.create(
                 image = base64ToFile(file)
