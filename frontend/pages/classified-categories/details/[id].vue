@@ -51,19 +51,19 @@
               v-for="({ image }, index) in service?.medias"
               :key="index"
               :src="staticURL + image"
-              class="max-w-32 w-full rounded-md hidden sm:block"
+              class="max-w-32 w-full rounded-md hidden"
             />
             <UCarousel
               v-slot="{ item }"
               :items="service?.medias"
               :ui="{ item: 'basis-full' }"
-              class="rounded-lg overflow-hidden sm:hidden"
+              class="rounded-lg overflow-hidden"
               indicators
             >
               <NuxtImg
                 :key="index"
                 :src="staticURL + item.image"
-                class="w-full rounded-md max-w-40 mx-auto"
+                class="w-full rounded-md max-w-40 sm:max-w-52 mx-auto"
               />
             </UCarousel>
           </div>

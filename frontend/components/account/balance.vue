@@ -97,7 +97,7 @@
     </div>
     <UDivider label="" class="my-5" />
     <div class="flex flex-col gap-4">
-      <div class="text-center text-xl font-bold">
+      <div class="text-center text-xl font-bold w-full">
         {{ $t("refer") }}
         <UFormGroup label="">
           <input
@@ -105,12 +105,14 @@
             type="text"
             size="md"
             color="white"
+            class="text-xs py-0.5 px-1 w-72"
             :value="`https://adsyclub.com/auth/login/?ref=${user.user.username}`"
           />
           <UButton
-            size="md"
+            size="xs"
             color="primary"
             variant="solid"
+            class="py-1 px-1.5"
             @click="
               CopyToClip(
                 `https://adsyclub.com/auth/login/?ref=${user.user.username}`

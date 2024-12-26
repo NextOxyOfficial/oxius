@@ -33,7 +33,7 @@
               placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
           >
-            <span class="absolute left-2 top-2 text-gray-200">I Need</span>
+            <span class="absolute left-2 top-2">I Need</span>
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center">
@@ -115,6 +115,7 @@
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
               },
             }"
+            required
           >
             <p>
               {{
@@ -414,8 +415,9 @@ function deleteUpload(ind) {
 }
 
 function validateForm() {
-  for (const key in form.value) {
-    const value = form.value[key];
+  const { medias, ...rest } = form.value;
+  for (const key in rest) {
+    const value = rest[key];
     // Check for empty strings, false values, or empty arrays
     if (
       (typeof value === "string" && !value.trim()) ||

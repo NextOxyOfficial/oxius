@@ -178,8 +178,8 @@ watch(router.currentRoute, () => {
   }
 });
 useSeoMeta({
-  ogImage: "/static/favicon.ico",
-  favicon: "/static/favicon.ico",
+  ogImage: "/static/frontend/favicon.ico",
+  favicon: "/static/frontend/favicon.ico",
   // title: "Easy Business Manager",
 });
 const links = [
@@ -200,7 +200,7 @@ const links = [
   },
   {
     label: t("faq"),
-    to: "/faq",
+    to: "/coming-soon/",
     icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
   },
 ];

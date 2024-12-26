@@ -313,15 +313,16 @@
           name="terms_privacy"
           label="Accept Terms & Privacy "
           v-model="form.accepted_privacy"
-          :error="
-            !form.accepted_privacy &&
-            checkSubmit &&
-            'You must accept our Terms Condition & Privacy Policy!'
-          "
           :ui="{
             label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
           }"
         />
+        <p
+          v-if="!form.accepted_privacy && checkSubmit"
+          class="text-sm text-red-500"
+        >
+          You must accept our Terms Condition & Privacy Policy!
+        </p>
         <div class="text-center">
           <UButton
             v-if="user.user.kyc"
