@@ -5,7 +5,9 @@
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-8" />
       <div class="flex flex-col md:flex-row justify-between">
-        <p class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 font-bold">
+        <p
+          class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold"
+        >
           <span class="inline-flex items-center"
             >Available Balance:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
@@ -53,6 +55,7 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="amount"
               amount
@@ -66,7 +69,14 @@
             />
           </div>
           <div class="my-5">
-            <UFormGroup class="flex flex-row-reverse gap-2">
+            <UFormGroup
+              class="flex flex-row-reverse gap-2"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <template #label>
                 I accept
                 <ULink
@@ -131,6 +141,7 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="payment_number"
             />
@@ -140,6 +151,7 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="payment_number"
             />
@@ -149,6 +161,7 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="rocket"
             />
@@ -159,6 +172,7 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="withdrawAmount"
               amount
@@ -166,7 +180,14 @@
           </div>
 
           <div class="my-5">
-            <UFormGroup class="flex flex-row-reverse gap-2">
+            <UFormGroup
+              class="flex flex-row-reverse gap-2"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <template #label>
                 I accept
                 <ULink
@@ -215,6 +236,14 @@
         :columns="columns"
         class="mb-8 mt-4"
         v-if="statements?.length"
+        :ui="{
+          th: {
+            color: 'text-gray-900 dark:text-slate-700',
+          },
+          td: {
+            color: 'text-gray-500 dark:text-slate-500',
+          },
+        }"
       >
         <template #payment_method-data="{ row }">
           <p>
