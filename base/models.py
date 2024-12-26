@@ -10,13 +10,10 @@ from decimal import Decimal
 
 # Create your models here.
 
-class NID(models.Model):
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
-    def __str__(self):
-      return str(self.id)
 
 class User(AbstractUser):
   refer  = models.ManyToManyField('self',null=True, blank=True) # Last Click referral system
+  refer_count = models.IntegerField(default=0)
   commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00) # in percentage
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -30,7 +27,7 @@ class User(AbstractUser):
   is_active = models.BooleanField(default=True)
   phone = models.CharField(unique=True,max_length=100, default='', blank=True)
   email = models.EmailField(unique=True,default='', null=True)
-  nid = models.ManyToManyField(NID,null=True, blank=True)
+  kyc_pending = models.BooleanField(default=False)
   kyc = models.BooleanField(default=False)
   address = models.CharField(max_length=256,blank=True, default="")
   city=models.CharField(max_length=256,blank=True, default="")
@@ -48,6 +45,35 @@ class User(AbstractUser):
 
   def __str__(self):
       return self.email
+
+class NID(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='nid')
+    front = models.ImageField(upload_to='images/', blank=True, null=True)
+    back = models.ImageField(upload_to='images/', blank=True, null=True)
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    completed = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
+    def __str__(self):
+      return str(self.id)
+    def save(self, *args, **kwargs):
+        if not self.completed and not self.approved and not self.rejected:
+            self.user.kyc_pending = True
+            self.user.save()
+        if self.approved and not self.completed:
+            self.completed = True
+            self.user.kyc_pending = False
+            self.user.kyc = True
+            self.user.save()
+
+        if self.rejected and not self.completed:
+            self.completed = True
+            self.user.kyc_pending = False
+            self.user.kyc = False
+            self.user.save()
+
+        super(NID, self).save(*args, **kwargs)
+
 
 class Logo(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)

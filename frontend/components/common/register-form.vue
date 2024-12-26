@@ -90,27 +90,24 @@
           Passwords do not match
         </p>
       </div>
-      <!-- <div class="mb-4">
-				<label
-					class="block text-gray-700 text-md font-medium mb-2"
-					for="password"
-				>
-					Refer Code
-				</label>
-				<input
-					v-model="refer"
-					class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
-					id="password"
-					type="text"
-					placeholder="********"
-				/>
-				<p
-					v-if="inValidRefer"
-					class="text-red-500 text-sm"
-				>
-					Refer Code Is Invalid
-				</p>
-			</div> -->
+      <div class="mb-4">
+        <label
+          class="block text-gray-700 text-md font-medium mb-2"
+          for="password"
+        >
+          Refer Code
+        </label>
+        <input
+          v-model="refer"
+          class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
+          id="password"
+          type="text"
+          placeholder="********"
+        />
+        <p v-if="inValidRefer" class="text-red-500 text-sm">
+          Refer Code Is Invalid
+        </p>
+      </div>
       <div class="text-center">
         <button
           class="bg-orange-500 p-2 text-lg text-white px-10 uppercase rounded-md"
@@ -135,6 +132,11 @@ const passwordMismatch = ref(false);
 const inValidRefer = ref(false);
 const error = ref("");
 
+const route = useRoute();
+if (route.query.ref) {
+  refer.value = route.query.ref;
+}
+
 const toast = useToast();
 
 // Handle form submission
@@ -158,7 +160,7 @@ async function handleSubmit() {
     password: password.value,
     username: email.value,
     phone: phone.value,
-    // refer: refer.value,
+    refer: refer.value,
   };
 
   try {

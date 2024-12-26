@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 
+from cities_light.models import City, Region, Country
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -222,3 +223,33 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         }
 
         return data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = '__all__'
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = '__all__'
