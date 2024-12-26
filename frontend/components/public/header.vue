@@ -43,7 +43,7 @@
             padding: 'py-2',
           }"
         />
-        <PublicTranslateHandler class="px-2 mt-3" />
+        <!-- <PublicTranslateHandler class="px-2 mt-3" /> -->
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
         <div class="block md:hidden">
@@ -92,7 +92,7 @@
           </UButton>
         </div>
         <div v-else class="flex relative menu-container">
-          <PublicTranslateHandler class="px-2 max-sm:hidden" />
+          <!-- <PublicTranslateHandler class="px-2 max-sm:hidden" /> -->
           <UButton
             size="sm"
             color="primary"

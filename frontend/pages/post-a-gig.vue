@@ -11,7 +11,6 @@
         <UFormGroup
           label="Title"
           required
-          v-slot="{ error }"
           :error="!form.title && checkSubmit && 'You must enter a title!'"
           :ui="{
             label: {
@@ -41,7 +40,6 @@
           <UFormGroup
             label="Budget Per Action"
             required
-            v-slot="{ error }"
             :error="
               form.price <= 0 &&
               checkSubmit &&
@@ -72,7 +70,6 @@
           <UFormGroup
             label="Required Quantity"
             required
-            v-slot="{ error }"
             :error="
               form.required_quantity <= 0 &&
               checkSubmit &&
@@ -99,7 +96,7 @@
               v-model="form.required_quantity"
             />
           </UFormGroup>
-          <UFormGroup
+          <!-- <UFormGroup
             label="*"
             :ui="{
               label: {
@@ -108,22 +105,28 @@
             }"
           >
             <p>=</p>
-          </UFormGroup>
+          </UFormGroup> -->
+        </div>
+        <div>
           <UFormGroup
-            label="Total Cost"
+            label="Total Cost (Service handling fee 10% included)"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
               },
             }"
           >
-            <p>{{ form.price * form.required_quantity }}</p>
+            <p>
+              {{
+                form.price * form.required_quantity +
+                (form.price * form.required_quantity * 10) / 100
+              }}
+            </p>
           </UFormGroup>
         </div>
         <UFormGroup
           label="Instructions"
           required
-          v-slot="{ error }"
           :error="
             !form.instructions && checkSubmit && 'You must enter instructions!'
           "
@@ -203,7 +206,6 @@
           <UFormGroup
             label="Target Country"
             required
-            v-slot="{ error }"
             :error="
               !form.target_country &&
               checkSubmit &&
@@ -234,7 +236,6 @@
           <UFormGroup
             label="Target Device"
             required
-            v-slot="{ error }"
             :error="
               !form.target_device &&
               checkSubmit &&
@@ -268,7 +269,6 @@
           <UFormGroup
             label="Target Network"
             required
-            v-slot="{ error }"
             :error="
               !form.target_network &&
               checkSubmit &&
@@ -299,7 +299,6 @@
           <UFormGroup
             label="Category"
             required
-            v-slot="{ error }"
             :error="
               !form.category && checkSubmit && 'You must select a category!'
             "
@@ -436,7 +435,7 @@ async function handlePostGig() {
     return;
   }
   const balance = form.value.required_quantity * form.value.price;
-  const total_cost = balance + (10 / 100) * balance;
+  const total_cost = balance + (balance * 10) / 100;
   const submitValue = { ...form.value, total_cost, balance };
   console.log(submitValue);
 

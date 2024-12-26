@@ -143,7 +143,7 @@
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
             <div
-              class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
+              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
                 class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
@@ -157,7 +157,7 @@
                   </div>
                   <div>
                     <h3
-                      class="text-base font-semibold mb-1.5 text-left line-clamp-2"
+                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
                     >
                       {{ service?.title }}
                     </h3>
@@ -167,7 +167,9 @@
                     >
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm">{{ service?.location }}</span>
+                        <span class="text-sm first-letter:uppercase">{{
+                          service?.location
+                        }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
@@ -178,7 +180,7 @@
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
                         <span class="text-sm"
-                          >Posted: {{ service?.created_at }}</span
+                          >Posted: {{ formatDate(service?.created_at) }}</span
                         >
                       </p>
                       <p
@@ -211,7 +213,8 @@
 </template>
 
 <script setup>
-const { get, put, del, staticURL } = useApi();
+const { get, staticURL } = useApi();
+const { formatDate } = useUtils();
 
 // geo filter
 

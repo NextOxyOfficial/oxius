@@ -227,6 +227,12 @@
                 }"
               />
             </UFormGroup>
+            <p
+              class="text-sm text-red-500 first-letter:capitalize"
+              v-if="errors?.phone"
+            >
+              {{ errors.phone[0] }}
+            </p>
           </div>
           <div>
             <UFormGroup
@@ -338,6 +344,7 @@ const { get, put, staticURL } = useApi();
 const { user } = useAuth();
 const userProfile = ref({});
 const toast = useToast();
+const errors = ref({});
 
 async function getUserDetails() {
   const res = await get(`/persons/${user.value.user.email}/`);
@@ -349,7 +356,8 @@ onMounted(() => {
 });
 
 async function handleForm() {
-  const { groups, user_permissions, image, nid, ...rest } = userProfile.value;
+  const { groups, user_permissions, image, nid, refer, ...rest } =
+    userProfile.value;
   rest.name = userProfile.value.first_name + " " + userProfile.value.last_name;
   if (typeof image === "string") {
     if (image.includes("data:image")) {
@@ -372,6 +380,9 @@ async function handleForm() {
       toast.add({ title: res.data?.message });
       res.data.data.image = staticURL + res.data.data.image;
       userProfile.value = res.data.data;
+      errors.value = {};
+    } else {
+      errors.value = res?.error?.data.errors;
     }
   } catch (error) {
     toast.add({ title: error });

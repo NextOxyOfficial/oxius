@@ -34,18 +34,49 @@
           </UButton>
         </div>
         <div class="w-full flex flex-col justify-center" v-if="service.id">
-          <h2 class="text-xl sm:text-3xl font-semibold">{{ service.title }}</h2>
-          <h4 class="text-lg sm:text-xl font-semibold">{{ service.price }}</h4>
+          <h2 class="text-xl sm:text-3xl font-semibold first-letter:uppercase">
+            {{ service.title }}
+          </h2>
+          <h4 class="text-lg sm:text-xl font-semibold inline-flex items-center">
+            <UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
+              service.price
+            }}
+          </h4>
 
+          <div
+            v-if="service?.medias"
+            class="text-center my-10 flex gap-4 flex-wrap justify-center"
+          >
+            <NuxtImg
+              v-for="({ image }, index) in service?.medias"
+              :key="index"
+              :src="staticURL + image"
+              class="max-w-32 w-full rounded-md hidden sm:block"
+            />
+            <UCarousel
+              v-slot="{ item }"
+              :items="service?.medias"
+              :ui="{ item: 'basis-full' }"
+              class="rounded-lg overflow-hidden sm:hidden"
+              indicators
+            >
+              <NuxtImg
+                :key="index"
+                :src="staticURL + item.image"
+                class="w-full rounded-md max-w-40 mx-auto"
+              />
+            </UCarousel>
+          </div>
           <NuxtImg
-            v-if="service?.medias[0]"
-            :src="'http://127.0.0.1:8000' + service?.medias[0]?.image"
-            class="max-w-[60%] w-full rounded-md self-center my-10"
+            v-if="!service?.medias.length && service?.category_details.image"
+            :src="staticURL + service?.category_details.image"
+            class="max-w-32 w-full rounded-md self-center my-10 hidden sm:block"
           />
 
-          <p class="text-sm md:text-base">
-            {{ service.instructions }}
-          </p>
+          <div
+            class="text-sm md:text-base first-letter:uppercase my-8"
+            v-html="service.instructions"
+          ></div>
           <div class="my-3 flex flex-col sm:flex-row gap-3 md:gap-8 mt-8">
             <div class="pt-3">
               <NuxtImg
@@ -88,49 +119,55 @@
                 >
               </div> -->
               </div>
-              <p class="w-full">
-                {{ service.user?.about }}
-              </p>
+              <div class="px-2">
+                <div class="w-full" v-html="service.user?.about"></div>
 
-              <div class="flex flex-col gap-3 my-3">
-                <div
-                  class="flex gap-2 items-center"
-                  v-if="service.user?.face_link"
-                >
-                  <UIcon name="logos:facebook" class="w-5 h-5" />
-                  <a :href="service.user?.face_link">{{
-                    service.user?.face_link
-                  }}</a>
-                </div>
-                <div
-                  class="flex gap-2 items-center"
-                  v-if="service.user?.instagram_link"
-                >
-                  <UIcon name="skill-icons:instagram" class="w-5 h-5" />
-                  <a :href="service.user?.instagram_link">{{
-                    service.user?.instagram_link
-                  }}</a>
-                </div>
-                <div
-                  class="flex gap-2 items-center"
-                  v-if="service.user?.whatsapp_link"
-                >
-                  <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
-                  <a :href="service.user?.whatsapp_link">{{
-                    service.user?.whatsapp_link
-                  }}</a>
-                </div>
-                <div class="flex gap-2 items-center" v-if="service.user?.email">
-                  <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
-                  <a :href="'mailto:' + service.user?.email">{{
-                    service.user?.email
-                  }}</a>
-                </div>
-                <div class="flex gap-2 items-center" v-if="service.user?.phone">
-                  <UIcon name="material-symbols:call" class="w-5 h-5" />
-                  <a :href="'tel:' + service.user?.phone">{{
-                    service.user?.phone
-                  }}</a>
+                <div class="flex flex-col gap-3 my-3">
+                  <div
+                    class="flex gap-2 items-center"
+                    v-if="service.user?.face_link"
+                  >
+                    <UIcon name="logos:facebook" class="w-5 h-5" />
+                    <a :href="service.user?.face_link">{{
+                      service.user?.face_link
+                    }}</a>
+                  </div>
+                  <div
+                    class="flex gap-2 items-center"
+                    v-if="service.user?.instagram_link"
+                  >
+                    <UIcon name="skill-icons:instagram" class="w-5 h-5" />
+                    <a :href="service.user?.instagram_link">{{
+                      service.user?.instagram_link
+                    }}</a>
+                  </div>
+                  <div
+                    class="flex gap-2 items-center"
+                    v-if="service.user?.whatsapp_link"
+                  >
+                    <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
+                    <a :href="service.user?.whatsapp_link">{{
+                      service.user?.whatsapp_link
+                    }}</a>
+                  </div>
+                  <div
+                    class="flex gap-2 items-center"
+                    v-if="service.user?.email"
+                  >
+                    <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
+                    <a :href="'mailto:' + service.user?.email">{{
+                      service.user?.email
+                    }}</a>
+                  </div>
+                  <div
+                    class="flex gap-2 items-center"
+                    v-if="service.user?.phone"
+                  >
+                    <UIcon name="material-symbols:call" class="w-5 h-5" />
+                    <a :href="'tel:' + service.user?.phone">{{
+                      service.user?.phone
+                    }}</a>
+                  </div>
                 </div>
               </div>
             </div>

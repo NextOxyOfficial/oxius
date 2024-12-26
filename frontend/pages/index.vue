@@ -144,7 +144,7 @@
                 </p>
                 <USelectMenu
                   color="white"
-                  size="md"
+                  size="sm"
                   class="w-40"
                   :options="['All', 'Available', 'Completed']"
                   placeholder="Filter"
@@ -188,14 +188,14 @@
                       <NuxtImg
                         v-if="gig.medias[0]?.image && !errorIndex.includes(i)"
                         :src="gig.category_details?.image"
-                        class="size-14 rounded-full"
+                        class="size-12 rounded-full"
                         @error="handleImageError(i)"
                       />
                       <img
                         v-else
                         src="/static/frontend/images/no-image.jpg"
                         alt="No Image"
-                        class="size-14 rounded-full"
+                        class="size-12 rounded-full"
                       />
                     </div>
                     <div>
@@ -212,6 +212,9 @@
                             }}</span>
                           </p>
                         </div>
+                        <p class="text-sm">
+                          {{ formatDate(gig.created_at) }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -267,6 +270,7 @@
 
 <script setup>
 const { t } = useI18n();
+const { formatDate } = useUtils();
 const isOpen = ref(false);
 const { get, staticURL } = useApi();
 const { user } = useAuth();

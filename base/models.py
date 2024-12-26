@@ -216,6 +216,7 @@ class MicroGigPost(models.Model):
                 self.user.balance += self.balance
                 self.user.save()
                 self.balance = 0
+                self.gig_status = 'completed'
 
         # Check if the gig is complete
         if self.filled_quantity >= self.required_quantity:
@@ -225,7 +226,7 @@ class MicroGigPost(models.Model):
         super(MicroGigPost, self).save(*args, **kwargs)
 
 class MicroGigPostTask(models.Model):
-    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_worker')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='micro_gig_worker')
     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -330,8 +331,8 @@ class Balance(models.Model):
     amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     payable_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     received_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-    merchant_invoice_no = models.CharField(default='',null=True)
-    shurjopay_order_id = models.CharField(default='',null=True)
+    merchant_invoice_no = models.CharField(default='',blank=True,null=True)
+    shurjopay_order_id = models.CharField(default='',blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed = models.BooleanField(default=False)
@@ -343,9 +344,15 @@ class Balance(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Service: {self.payable_amount}"
     def save(self, *args, **kwargs):
+        # Normalize transaction_type to lowercase for consistency
+        self.transaction_type = (self.transaction_type or '').lower()
+        # Handle withdrawal
+        if self.transaction_type == 'withdraw':
+            self.user.balance -= self.payable_amount
+            self.user.save()
         # Check if is neither completed, approved, nor rejected
         if not self.completed and not self.approved and not self.rejected:
-            self.user.balance -= self.amount
+            self.user.balance -= Decimal(self.amount)
             self.user.save()
 
         if self.approved and not self.completed:
@@ -361,6 +368,8 @@ class Balance(models.Model):
             self.user.balance -= self.amount
             self.user.save()
             # refund balance
+        if self.transaction_type == 'withdraw':
+            self.user.balance -= self.payable_amount
 
         # Call the original save method
         super(Balance, self).save(*args, **kwargs)
