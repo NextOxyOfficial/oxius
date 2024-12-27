@@ -144,9 +144,9 @@
 </template>
 
 <script setup>
-definePageMeta({
-  layout: "dashboard",
-});
+// definePageMeta({
+//   layout: "dashboard",
+// });
 const { baseURL, staticURL } = useApi();
 const service = ref({});
 const router = useRoute();
