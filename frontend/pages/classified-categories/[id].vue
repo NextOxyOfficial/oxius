@@ -25,9 +25,7 @@
             value-attribute="id"
           /> -->
       </div>
-      <p class="text-base md:text-lg mb-3 font-semibold">
-        Select Your Location
-      </p>
+      <p class="text-base md:text-lg mb-3 font-semibold">Select Your Location</p>
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <!-- <UFormGroup label="Country">
           <USelectMenu
@@ -137,14 +135,12 @@
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
           v-for="(service, i) in services.filter(
-            (service) => service.service_status.toLowerCase() === 'approved'
+            service => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
-            <div
-              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
-            >
+            <div class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full">
               <div
                 class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
               >
@@ -167,25 +163,17 @@
                     >
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm first-letter:uppercase">{{
-                          service?.location
-                        }}</span>
+                        <span class="text-sm first-letter:uppercase">{{ service?.location }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{
-                          service?.category_details.title
-                        }}</span>
+                        <span class="text-sm">{{ service?.category_details.title }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
-                        <span class="text-sm"
-                          >Posted: {{ formatDate(service?.created_at) }}</span
-                        >
+                        <span class="text-sm">Posted: {{ formatDate(service?.created_at) }}</span>
                       </p>
-                      <p
-                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
-                      >
+                      <p class="text-sm md:text-base sm:hidden font-semibold text-green-950">
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
@@ -213,6 +201,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
 const { get, staticURL } = useApi();
 const { formatDate } = useUtils();
 
@@ -222,16 +213,12 @@ const regions = ref([]);
 const cities = ref();
 
 const selected_country = ref("Bangladesh");
-const regions_response = await get(
-  `/cities-light/regions/?country=${selected_country.value}`
-);
+const regions_response = await get(`/cities-light/regions/?country=${selected_country.value}`);
 regions.value = regions_response.data;
 const selected_region = ref();
 watch(selected_region, async () => {
   console.log(selected_region.value);
-  const cities_response = await get(
-    `/cities-light/cities/?region=${selected_region.value}`
-  );
+  const cities_response = await get(`/cities-light/cities/?region=${selected_region.value}`);
   cities.value = cities_response.data;
 });
 
@@ -257,9 +244,7 @@ async function fetchServices() {
   console.log(response);
 
   services.value = response.data?.filter(
-    (service) =>
-      service.service_status.toLowerCase() === "approved" &&
-      service.active_service
+    service => service.service_status.toLowerCase() === "approved" && service.active_service
   );
   categoryTitle.value = response.data[0]?.category_details.title;
 }

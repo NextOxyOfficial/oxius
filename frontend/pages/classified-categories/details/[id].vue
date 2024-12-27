@@ -2,9 +2,7 @@
   <PublicSection>
     <UContainer class="mb-16">
       <div class="mx-auto" v-if="service">
-        <div
-          class="flex sm:items-center sm:justify-between flex-col-reverse sm:flex-row"
-        >
+        <div class="flex sm:items-center sm:justify-between flex-col-reverse sm:flex-row">
           <p class="mb-3 mt-4 sm:mt-16 text-sm md:text-base italic">
             <ULink
               to="/"
@@ -38,9 +36,7 @@
             {{ service.title }}
           </h2>
           <h4 class="text-lg sm:text-xl font-semibold inline-flex items-center">
-            <UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
-              service.price
-            }}
+            <UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ service.price }}
           </h4>
 
           <div
@@ -61,7 +57,6 @@
               indicators
             >
               <NuxtImg
-                :key="index"
                 :src="staticURL + item.image"
                 class="w-full rounded-md max-w-40 sm:max-w-52 mx-auto"
               />
@@ -93,13 +88,8 @@
             </div>
             <div class="flex-1 max-w-md w-full">
               <div class="flex flex-col gap-1 w-full mb-3">
-                <div
-                  class="flex items-center justify-center sm:justify-normal gap-1"
-                >
-                  <h3
-                    class="text-xl md:text-2xl"
-                    v-if="service.user?.first_name"
-                  >
+                <div class="flex items-center justify-center sm:justify-normal gap-1">
+                  <h3 class="text-xl md:text-2xl" v-if="service.user?.first_name">
                     {{ service.user?.first_name }} {{ service.user?.last_name }}
                   </h3>
                   <h3 class="text-xl md:text-2xl" v-else>No Name Provided</h3>
@@ -123,50 +113,25 @@
                 <div class="w-full" v-html="service.user?.about"></div>
 
                 <div class="flex flex-col gap-3 my-3">
-                  <div
-                    class="flex gap-2 items-center"
-                    v-if="service.user?.face_link"
-                  >
+                  <div class="flex gap-2 items-center" v-if="service.user?.face_link">
                     <UIcon name="logos:facebook" class="w-5 h-5" />
-                    <a :href="service.user?.face_link">{{
-                      service.user?.face_link
-                    }}</a>
+                    <a :href="service.user?.face_link">{{ service.user?.face_link }}</a>
                   </div>
-                  <div
-                    class="flex gap-2 items-center"
-                    v-if="service.user?.instagram_link"
-                  >
+                  <div class="flex gap-2 items-center" v-if="service.user?.instagram_link">
                     <UIcon name="skill-icons:instagram" class="w-5 h-5" />
-                    <a :href="service.user?.instagram_link">{{
-                      service.user?.instagram_link
-                    }}</a>
+                    <a :href="service.user?.instagram_link">{{ service.user?.instagram_link }}</a>
                   </div>
-                  <div
-                    class="flex gap-2 items-center"
-                    v-if="service.user?.whatsapp_link"
-                  >
+                  <div class="flex gap-2 items-center" v-if="service.user?.whatsapp_link">
                     <UIcon name="logos:whatsapp-icon" class="w-5 h-5" />
-                    <a :href="service.user?.whatsapp_link">{{
-                      service.user?.whatsapp_link
-                    }}</a>
+                    <a :href="service.user?.whatsapp_link">{{ service.user?.whatsapp_link }}</a>
                   </div>
-                  <div
-                    class="flex gap-2 items-center"
-                    v-if="service.user?.email"
-                  >
+                  <div class="flex gap-2 items-center" v-if="service.user?.email">
                     <UIcon name="skill-icons:gmail-light" class="w-5 h-5" />
-                    <a :href="'mailto:' + service.user?.email">{{
-                      service.user?.email
-                    }}</a>
+                    <a :href="'mailto:' + service.user?.email">{{ service.user?.email }}</a>
                   </div>
-                  <div
-                    class="flex gap-2 items-center"
-                    v-if="service.user?.phone"
-                  >
+                  <div class="flex gap-2 items-center" v-if="service.user?.phone">
                     <UIcon name="material-symbols:call" class="w-5 h-5" />
-                    <a :href="'tel:' + service.user?.phone">{{
-                      service.user?.phone
-                    }}</a>
+                    <a :href="'tel:' + service.user?.phone">{{ service.user?.phone }}</a>
                   </div>
                 </div>
               </div>
@@ -187,9 +152,7 @@ const service = ref({});
 const router = useRoute();
 
 async function fetchServices() {
-  const response = await $fetch(
-    `${baseURL}/classified-categories/post/${router.params.id}/`
-  );
+  const response = await $fetch(`${baseURL}/classified-categories/post/${router.params.id}/`);
   console.log(response);
 
   service.value = response;
