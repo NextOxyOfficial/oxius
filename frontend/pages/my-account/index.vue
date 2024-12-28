@@ -13,7 +13,11 @@
           class="w-5 h-5 text-blue-600"
         />
       </div>
-      <form action="#" class="max-w-lg mx-auto" @submit.prevent="handleForm">
+      <form
+        action="#"
+        class="max-w-lg mx-auto border border-gray-100 p-2 md:p-6 rounded-xl bg-white"
+        @submit.prevent="handleForm"
+      >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="col-span-2">
             <label for="file" class="text-base block mt-8 mb-3 font-semibold"
@@ -60,7 +64,7 @@
               </div>
             </div>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="First Name"
               :ui="{
@@ -81,7 +85,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="Last Name"
               :ui="{
@@ -124,7 +128,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="Email"
               :ui="{
@@ -143,7 +147,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="City"
               :ui="{
@@ -164,7 +168,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="State"
               :ui="{
@@ -185,7 +189,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="Zip"
               :ui="{
@@ -207,7 +211,7 @@
             </UFormGroup>
           </div>
 
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="Phone"
               :ui="{
@@ -234,7 +238,7 @@
               {{ errors.phone[0] }}
             </p>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="Facebook Url"
               :ui="{
@@ -255,7 +259,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="Instagram Url"
               :ui="{
@@ -276,7 +280,7 @@
               />
             </UFormGroup>
           </div>
-          <div>
+          <div class="col-span-2 md:col-auto">
             <UFormGroup
               label="WhatsApp #"
               :ui="{
