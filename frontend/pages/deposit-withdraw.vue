@@ -25,7 +25,7 @@
           </p>
         </div> -->
       </div>
-      <div class="my-2 flex justify-center">
+      <div class="my-5 flex justify-center">
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
           variant="outline"
