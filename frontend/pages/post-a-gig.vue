@@ -3,10 +3,9 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
-      <form
+      <section
         action="#"
-        class="max-w-2xl mx-auto space-y-3"
-        @submit.prevent="handlePostGig"
+        class="max-w-2xl mx-auto space-y-3 py-3 px-2 sm:px-8 rounded-xl sm:py-6 bg-white"
       >
         <UFormGroup
           label="Title"
@@ -125,7 +124,7 @@
             </p>
           </UFormGroup>
         </div>
-        <UFormGroup
+        <!-- <UFormGroup
           label="Instructions"
           required
           :error="
@@ -151,7 +150,15 @@
             placeholder="Instructions"
             v-model="form.instructions"
           />
-        </UFormGroup>
+        </UFormGroup> -->
+        <p class="text-sm font-semibold">
+          Instructions <span class="text-red-500">*</span>
+        </p>
+        <CommonEditor
+          v-model="form.instructions"
+          @updateContent="updateContent"
+          class="border border-slate-300 p-2 bg-white"
+        />
 
         <!-- medias  -->
         <label for="" class="block mt-3 font-semibold text-slate-700"
@@ -327,7 +334,7 @@
           </UFormGroup>
         </div>
 
-        <div class="text-center">
+        <div class="text-center py-6">
           <UButton
             v-if="user.user.kyc"
             class="px-8 mt-10"
@@ -336,6 +343,7 @@
             variant="solid"
             label="Post"
             type="submit"
+            @click="handlePostGig"
           />
           <UButton
             v-else
@@ -347,7 +355,7 @@
             @click="isOpen = true"
           />
         </div>
-      </form>
+      </section>
     </UContainer>
     <UModal v-model="isOpen">
       <div class="p-4 text-center space-y-3">
@@ -392,6 +400,10 @@ const form = ref({
   category: "",
 });
 
+function updateContent(p) {
+  form.value.instructions = p;
+}
+
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
   const reader = new FileReader();
@@ -431,6 +443,8 @@ function validateForm() {
 }
 
 async function handlePostGig() {
+  console.log(form.value.instructions);
+
   if (!validateForm()) {
     checkSubmit.value = true;
     toast.add({ title: "Please fill in all required fields." });

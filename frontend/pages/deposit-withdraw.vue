@@ -14,16 +14,6 @@
             {{ user.user.balance }}
           </span>
         </p>
-        <!-- <div class="text-lg">
-          <p
-            class="text-lg bg-green-100 border-green-500 border py-2 max-w-72 w-full px-3 rounded-md mb-3 text-green-800 font-bold"
-          >
-            <span class="inline-flex items-center"
-              >Total Earnings:&nbsp;
-              <UIcon name="i-mdi:currency-bdt" class="" />500</span
-            >
-          </p>
-        </div> -->
       </div>
       <div class="my-5 flex justify-center">
         <UButton
@@ -51,7 +41,7 @@
         <div v-if="currentTab === 1">
           <div class="space-y-2">
             <UInput
-              placeholder="Enter amount"
+              placeholder="Enter Amount"
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
@@ -109,10 +99,6 @@
               >Deposit</UButton
             >
             <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
-
-            <!-- <UButton color="gray" @click="withdraw" variant="solid"
-              >Withdraw</UButton
-            > -->
           </div>
         </div>
         <div v-if="currentTab === 2">
@@ -175,7 +161,7 @@
           </div>
           <div class="space-y-2">
             <UInput
-              placeholder="Enter amount"
+              placeholder="Enter Amount"
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
@@ -184,11 +170,26 @@
               v-model="withdrawAmount"
               amount
             />
+            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
+              Please enter an amount
+            </p>
+            <p class="text-sm">
+              Total Deduction:
+              {{ withdrawAmount * 1 + (withdrawAmount * 2.95) / 100 }}
+            </p>
+            <p class="text-sm pt-2">
+              <span class="text-red-500">* </span>
+              <span class="inline-flex items-center">
+                Minimum withdrawal
+                <UIcon name="i-mdi:currency-bdt" class="text-base" />200</span
+              >
+            </p>
             <p class="text-sm">
               <span class="text-red-500">*</span> 2.95% Charges applicable
             </p>
-            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
-              Please enter an amount
+
+            <p v-if="errors?.insufficient" class="text-sm text-red-500">
+              You do not have enough balance
             </p>
           </div>
           <div class="my-5">
@@ -222,7 +223,7 @@
               Check this field
             </p>
           </div>
-          <div class="my-2 space-x-3">
+          <div class="my-2 space-x-3 mb-4">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
             <UButton
               @click="withdraw"
@@ -399,34 +400,38 @@ const deposit = async () => {
 };
 
 const withdraw = async () => {
-  errors.value = {};
-
-  // Check each field and add an error if invalid
   if (!withdrawAmount.value) {
-    errors.value.withdrawAmount = true;
-  }
-  if (!selected.value) {
-    errors.value.selected = true;
-  }
-  if (!payment_number.value) {
-    errors.value.payment_number = true;
-  }
-  if (!policy.value) {
-    errors.value.policy = true;
+    errors.value = { ...errors.value, withdrawAmount: true };
   }
 
-  // If there are any errors, stop execution
+  if (withdrawAmount.value > user.value.user.balance) {
+    errors.value = { ...errors.value, insufficient: true };
+  }
+
+  if (!selected.value) {
+    errors.value = { ...errors.value, selected: true };
+  }
+
+  if (!payment_number.value) {
+    errors.value = { ...errors.value, payment_number: true };
+  }
+
+  if (!policy.value) {
+    errors.value = { ...errors.value, policy: true };
+  }
+
   if (Object.keys(errors.value).length > 0) {
+    console.log("Errors:", errors.value);
     return;
   }
   errors.value = {};
-  // Add withdraw logic here
+  console.log(withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100);
 
-  // toast.add({ title: "Withdraw clicked" });
   const res = await post(`/add-user-balance/`, {
     payment_method: selected.value,
     card_number: payment_number.value,
-    payable_amount: withdrawAmount.value + (withdrawAmount.value * 2.95) / 100,
+    payable_amount:
+      withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100,
     transaction_type: "Withdraw",
   });
   console.log(res);

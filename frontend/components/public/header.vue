@@ -61,7 +61,28 @@
         />
         <div class="hidden md:block">
           <UHorizontalNavigation
-            :links="links"
+            :links="[
+              {
+                label: $t('home'),
+                to: '/',
+                icon: 'i-heroicons:home',
+              },
+              {
+                label: $t('classified_service'),
+                to: '#classified-services',
+                icon: 'i-heroicons:clipboard-document-list',
+              },
+              {
+                label: $t('earn_money'),
+                to: '#micro-gigs',
+                icon: 'i-healthicons:money-bag-outline',
+              },
+              {
+                label: $t('faq'),
+                to: '/coming-soon/',
+                icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
+              },
+            ]"
             class="border-b border-gray-200 dark:border-gray-800 text-lg"
             :ui="{
               wrapper: 'w-auto',
@@ -96,7 +117,7 @@
           </UButton>
         </div>
         <div v-else class="flex relative menu-container">
-          <!-- <PublicTranslateHandler class="px-2 max-sm:hidden" /> -->
+          <PublicTranslateHandler class="px-2 max-sm:hidden" />
           <UButton
             size="sm"
             color="primary"
@@ -126,7 +147,40 @@
             :class="openMenu ? '' : 'hidden'"
           >
             <UVerticalNavigation
-              :links="accountLinks"
+              :links="[
+                {
+                  label: $t('profile'),
+                  icon: 'i-heroicons-user',
+                  to: '/my-account/',
+                },
+                {
+                  label: $t('transaction'),
+                  to: '/deposit-withdraw',
+                  icon: 'i-heroicons:currency-dollar',
+                },
+                {
+                  label: $t('upload_center'),
+                  icon: 'material-symbols:drive-folder-upload-outline-sharp',
+                  to: '/upload-center/',
+                },
+                {
+                  label: $t('settings'),
+                  icon: 'material-symbols:settings-outline',
+                  to: '/settings/',
+                },
+                {
+                  label: $t('support'),
+                  icon: 'i-heroicons-question-mark-circle',
+                  to: '/contact-us/',
+                },
+                {
+                  label: $t('logout'),
+                  icon: 'bitcoin-icons:exit-filled',
+                  click: () => {
+                    logout();
+                  },
+                },
+              ]"
               :ui="{
                 label: 'text-base',
               }"

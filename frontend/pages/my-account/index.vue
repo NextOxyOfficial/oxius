@@ -3,7 +3,7 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">My Profile Details</h1>
       <UDivider label="" class="mb-8" />
-      <div class="text-center flex gap-1 items-center justify-center">
+      <div class="text-center flex gap-1 items-center justify-center mb-3">
         <span v-if="user.user.name" class="font-semibold">{{
           user.user.name
         }}</span>
@@ -15,12 +15,12 @@
       </div>
       <form
         action="#"
-        class="max-w-lg mx-auto border border-gray-100 p-2 md:p-6 rounded-xl bg-white"
+        class="max-w-xl mx-auto border border-gray-100 p-2 md:p-6 rounded-xl bg-white"
         @submit.prevent="handleForm"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="col-span-2">
-            <label for="file" class="text-base block mt-8 mb-3 font-semibold"
+            <label for="file" class="text-base block mb-3 font-semibold"
               >Profile Image</label
             >
             <div class="flex flex-wrap gap-5">
@@ -79,6 +79,7 @@
                 color="white"
                 placeholder="First Name"
                 v-model="userProfile.first_name"
+                :disabled="user.user.kyc"
                 :ui="{
                   placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
                 }"
@@ -100,6 +101,7 @@
                 color="white"
                 placeholder="Last Name"
                 v-model="userProfile.last_name"
+                :disabled="user.user.kyc"
                 :ui="{
                   placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
                 }"
@@ -116,6 +118,7 @@
               }"
             >
               <UInput
+                :disabled="user.user.kyc"
                 color="white"
                 variant="outline"
                 class="w-full"
@@ -144,6 +147,7 @@
                 placeholder="Phone"
                 v-model="userProfile.email"
                 readonly
+                :disabled="user.user.kyc"
               />
             </UFormGroup>
           </div>
@@ -161,6 +165,7 @@
                 size="md"
                 color="white"
                 placeholder="City"
+                :disabled="user.user.kyc"
                 v-model="userProfile.city"
                 :ui="{
                   placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
@@ -178,6 +183,7 @@
               }"
             >
               <UInput
+                :disabled="user.user.kyc"
                 type="text"
                 size="md"
                 color="white"
@@ -199,6 +205,7 @@
               }"
             >
               <UInput
+                :disabled="user.user.kyc"
                 type="text"
                 size="md"
                 color="white"
@@ -221,6 +228,8 @@
               }"
             >
               <UInput
+                :disabled="user.user.kyc"
+                readonly
                 type="text"
                 size="md"
                 color="white"

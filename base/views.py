@@ -57,11 +57,17 @@ def getAdminNotice(request):
 @api_view(['POST'])
 def register(request):
     data = request.data
-    # del data['refer']
-    # else refer = User.objects.filter(username=data['refer']).first() refer.refer_count ++
+    if 'refer' in data:
+        ref_by = User.objects.filter(username=data['refer']).first()
+    del data['refer']
     serializer = UserSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        new_user = serializer.save()
+        if ref_by:
+            new_user.refer = ref_by
+            new_user.save()
+            ref_by.refer_count += 1
+            ref_by.save()
         return Response(
             {'message': 'Person registered successfully', 'data': serializer.data},
             status=status.HTTP_201_CREATED

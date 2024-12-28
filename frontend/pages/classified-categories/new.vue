@@ -5,7 +5,7 @@
       <UDivider label="" class="mb-8" />
       <form
         action="#"
-        class="max-w-2xl mx-auto space-y-3"
+        class="max-w-2xl mx-auto space-y-3 bg-white px-2 py-3 sm:px-8 sm:py-6 rounded-lg"
         @submit.prevent="handlePostGig"
       >
         <UFormGroup
@@ -35,33 +35,15 @@
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center"></div>
-        <UFormGroup
-          label="Instruction"
-          required
-          :error="
-            !form.instructions && checkSubmit && 'You must enter instructions!'
-          "
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
-        >
-          <UTextarea
-            color="white"
-            variant="outline"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-            }"
-            class="w-full"
-            resize
-            placeholder="Instruction"
-            v-model="form.instructions"
-          />
-        </UFormGroup>
+
+        <p class="text-sm font-semibold">
+          Instructions <span class="text-red-500">*</span>
+        </p>
+        <CommonEditor
+          v-model="form.instructions"
+          @updateContent="updateContent"
+          class="border border-slate-300 p-2 bg-white"
+        />
         <div class="grid md:grid-cols-2 gap-4">
           <UFormGroup
             label="Category"
@@ -389,6 +371,9 @@ const form = ref({
   negotiable: false,
   accepted_privacy: false,
 });
+function updateContent(p) {
+  form.value.instructions = p;
+}
 const submitValues = ref({});
 
 const router = useRoute();

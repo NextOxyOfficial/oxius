@@ -123,9 +123,13 @@
         </UFormGroup>
       </div>
       <div class="flex gap-4 justify-center">
-        <p class="text-sm md:text-base">{{ $t("refer_user") }}: 0</p>
+        <p class="text-sm md:text-base">
+          {{ $t("refer_user") }}: {{ user.user.refer_count }}
+        </p>
         <div>|</div>
-        <p class="text-sm md:text-base">{{ $t("earnings") }}: 0</p>
+        <p class="text-sm md:text-base">
+          {{ $t("earnings") }}: {{ user.user.commission_earned }}
+        </p>
       </div>
     </div>
   </UCard>

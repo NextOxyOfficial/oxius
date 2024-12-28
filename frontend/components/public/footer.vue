@@ -3,7 +3,29 @@
     <UContainer>
       <div class="mb-8">
         <UHorizontalNavigation
-          :links="links[1].items"
+          :links="[
+            {
+              label: $t('classified_service'),
+              to: '/',
+            },
+            {
+              label: $t('earn_money'),
+              to: '/',
+            },
+            {
+              label: $t('affiliates'),
+              to: '/',
+            },
+
+            {
+              label: $t('about_us'),
+              to: '/about/',
+            },
+            {
+              label: $t('contact_us'),
+              to: '/contact-us/',
+            },
+          ]"
           :ui="{
             base: 'before:hidden font-normal hover:text-green-500',
             padding: 'px-1',
@@ -15,7 +37,29 @@
           class="w-full !bg-transparent hidden md:flex"
         />
         <UVerticalNavigation
-          :links="links[1].items"
+          :links="[
+            {
+              label: $t('classified_service'),
+              to: '/',
+            },
+            {
+              label: $t('earn_money'),
+              to: '/',
+            },
+            {
+              label: $t('affiliates'),
+              to: '/',
+            },
+
+            {
+              label: $t('about_us'),
+              to: '/about/',
+            },
+            {
+              label: $t('contact_us'),
+              to: '/contact-us/',
+            },
+          ]"
           :ui="{
             base: 'before:hidden justify-center font-normal hover:text-green-500',
             padding: 'px-1',
@@ -85,7 +129,16 @@
             active: 'after:hidden',
             wrapper: 'justify-center',
           }"
-          :links="privacy"
+          :links="[
+            {
+              label: $t('terms_conditions'),
+              to: '/terms',
+            },
+            {
+              label: $t('privacy_policy'),
+              to: '/privacy',
+            },
+          ]"
         />
       </div>
       <UDivider label="" />
@@ -118,12 +171,10 @@ watch(toggleStatus, () => {
 
 const privacy = [
   {
-    // label: "Terms & Conditions"
     label: t("terms_conditions"),
     to: "/terms",
   },
   {
-    // label: "Privacy Policy",
     label: t("privacy_policy"),
     to: "/privacy",
   },

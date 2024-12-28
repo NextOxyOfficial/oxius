@@ -14,6 +14,7 @@ from decimal import Decimal
 class User(AbstractUser):
   refer  = models.ManyToManyField('self',null=True, blank=True) # Last Click referral system
   refer_count = models.IntegerField(default=0)
+  commission_earned = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
   commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00) # in percentage
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -45,6 +46,10 @@ class User(AbstractUser):
 
   def __str__(self):
       return self.email
+  def save(self, *args, **kwargs):
+      if self.balance < 0:
+        raise ValueError("Balance can't be negative")
+      super(User, self).save(*args, **kwargs)
 
 class NID(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='nid')
@@ -236,6 +241,7 @@ class ReferBonus(models.Model):
         if not self.pk and not self.completed:
             self.completed = True
             self.user.balance += self.amount
+            self.user.commission_earned += self.amount
             self.user.save()
         super(ReferBonus, self).save(*args, **kwargs)
 class MicroGigPostTask(models.Model):

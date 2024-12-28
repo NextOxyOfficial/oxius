@@ -6,8 +6,16 @@
       v-model="currentLanguage"
       :options="languageOption"
       option-attribute="label"
+      class="w-32"
     >
-      <template #leading> <UIcon :name="currentLanguage.icon" /> </template>
+      <template #leading>
+        <UIcon
+          v-if="currentLanguage.icon === 'i-flag:us-4x3'"
+          name="i-flag:us-4x3"
+        />
+        <UIcon v-else name="i-flag:bd-4x3" />
+        <!-- <UIcon :name="currentLanguage.icon" /> -->
+      </template>
       <template #option="{ option: language }">
         <UIcon :name="language.icon" />
         <span>{{ language.label }}</span>
@@ -23,12 +31,12 @@ const languageOption = [
   {
     value: "en",
     label: "English",
-    icon: "i-flagpack:us",
+    icon: "i-flag:us-4x3",
   },
   {
     value: "bn",
     label: "বাংলা",
-    icon: "i-flagpack:bd",
+    icon: "i-flag:bd-4x3",
   },
 ];
 const currentLanguage = ref(languageOption[1]);
@@ -36,10 +44,8 @@ const currentLanguage = ref(languageOption[1]);
 watch(currentLanguage, () => {
   setLocale(currentLanguage.value.value);
   language.value = currentLanguage.value;
-  // window.location.reload();
 });
 onMounted(() => {
-  console.log(language.value);
   currentLanguage.value = language.value;
 
   if (language.value) {
