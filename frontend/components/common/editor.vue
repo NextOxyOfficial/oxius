@@ -362,6 +362,26 @@ const insertContent = (content) => {
   width: 100%;
   min-height: 400px;
   max-height: 800px;
+  overflow-y: auto;
+}
+/* width */
+.editor .tiptap::-webkit-scrollbar {
+  width: 3px;
+}
+
+/* Track */
+.editor .tiptap::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+.editor .tiptap::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+.editor .tiptap::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 .prose th,
 .prose td {

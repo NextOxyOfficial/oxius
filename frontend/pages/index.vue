@@ -185,10 +185,9 @@
                         class="size-14 rounded-full"
                         @error="handleImageError(i)"
                       /> -->
-                      {{ gig.medias }}{{ !errorIndex.includes(i) }}
-                      {{ gig.category_details }}
+
                       <NuxtImg
-                        v-if="gig.medias[0]?.image && !errorIndex.includes(i)"
+                        v-if="!errorIndex.includes(i)"
                         :src="gig.category_details?.image"
                         class="size-12 rounded-full"
                         @error="handleImageError(i)"

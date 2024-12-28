@@ -175,11 +175,15 @@
             </div>
           </NuxtLink>
         </UCard>
+        <h3 class="text-xl font-semibold mt-6">Nearby location ads</h3>
       </div>
       <UCard v-if="searchError" class="py-16 text-center mt-6">
         <p>No offers have been found!</p>
       </UCard>
-      <div class="services mt-4" v-if="services.length">
+      <h3 v-if="searchError" class="text-xl font-semibold mt-6">
+        Nearby location ads
+      </h3>
+      <div class="services mt-3" v-if="services.length">
         <UCard
           :ui="{
             background: '',

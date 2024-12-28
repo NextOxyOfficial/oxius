@@ -5,7 +5,7 @@
       <UDivider label="" class="mb-8" />
       <section
         action="#"
-        class="max-w-2xl mx-auto space-y-3 py-3 px-2 sm:px-8 rounded-xl sm:py-6 bg-white"
+        class="max-w-3xl mx-auto space-y-3 py-3 px-2 sm:px-8 rounded-xl sm:py-6 bg-white"
       >
         <UFormGroup
           label="Title"
