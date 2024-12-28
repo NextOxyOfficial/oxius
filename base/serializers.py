@@ -20,16 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
             # 'username': {'read_only': True},
         }
         depth = 1
-class UserSerializerGet(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # Exclude the password field for security
-        exclude = ('groups', 'user_permissions','password')
-        extra_kwargs = {
-            'password': {'write_only': True},
-            # 'username': {'read_only': True},
-        }
-        depth = 1
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -47,6 +37,18 @@ class UserSerializerGet(serializers.ModelSerializer):
         # Remove the password field from the output
         representation.pop('password', None)
         return representation
+    
+
+class UserSerializerGet(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Exclude the password field for security
+        exclude = ('groups', 'user_permissions','password')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            # 'username': {'read_only': True},
+        }
+        depth = 1
     
 
 class MicroGigPostTaskSerializer(serializers.ModelSerializer):
@@ -110,7 +112,7 @@ class BalanceSerializer(serializers.ModelSerializer):
 class ClassifiedPostSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=ClassifiedCategory.objects.all())
     category_details = ClassifiedServicesSerializer(source='category', read_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserSerializerGet(read_only=True)
     class Meta:
         model = ClassifiedCategoryPost
         fields = '__all__'
