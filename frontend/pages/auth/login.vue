@@ -5,8 +5,15 @@
     >
       <div class="md:w-3/4">
         <NuxtImg
+          v-if="banner.image"
           :src="staticURL + banner.image"
           class="rounded-xl max-h-[360px] object-contain"
+          alt="Register"
+        />
+        <img
+          v-else
+          src="/static/frontend/images/register.webp"
+          class="rounded-xl"
           alt="Register"
         />
       </div>
