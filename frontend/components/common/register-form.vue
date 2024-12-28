@@ -103,6 +103,7 @@
           id="password"
           type="text"
           placeholder="********"
+          readonly
         />
         <p v-if="inValidRefer" class="text-red-500 text-sm">
           Refer Code Is Invalid

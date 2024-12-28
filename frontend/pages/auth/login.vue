@@ -29,6 +29,10 @@
 <script setup>
 const login = ref(true);
 const { user, isAuthenticated } = useAuth();
+const router = useRoute();
+if (router.query.ref) {
+  login.value = false;
+}
 
 onMounted(() => {
   if (user?.user) {

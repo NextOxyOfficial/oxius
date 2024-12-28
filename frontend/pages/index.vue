@@ -75,7 +75,7 @@
             v-if="services && !services.count"
             class="py-16 text-center w-full"
           >
-            <p>No Categories have been found!</p>
+            <p>No categories have been found!</p>
           </UCard>
         </div>
         <div class="text-center mt-8">

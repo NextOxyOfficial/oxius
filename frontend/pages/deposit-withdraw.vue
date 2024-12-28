@@ -184,6 +184,9 @@
               v-model="withdrawAmount"
               amount
             />
+            <p class="text-sm">
+              <span class="text-red-500">*</span> 2.95% Charges applicable
+            </p>
             <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
               Please enter an amount
             </p>
@@ -214,6 +217,7 @@
               </template>
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
+
             <p v-if="errors?.policy" class="text-sm text-red-500">
               Check this field
             </p>
@@ -422,7 +426,7 @@ const withdraw = async () => {
   const res = await post(`/add-user-balance/`, {
     payment_method: selected.value,
     card_number: payment_number.value,
-    payable_amount: withdrawAmount.value,
+    payable_amount: withdrawAmount.value + (withdrawAmount.value * 2.95) / 100,
     transaction_type: "Withdraw",
   });
   console.log(res);

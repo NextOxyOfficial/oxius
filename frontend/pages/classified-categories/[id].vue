@@ -14,38 +14,14 @@
           >
           <span v-if="services?.length">></span> {{ categoryTitle }}
         </p>
-        <!-- <USelect
-            icon="i-heroicons-bell-solid"
-            color="white"
-            size="md"
-            :options="categories"
-            v-model="form.category"
-            placeholder="Category"
-            option-attribute="title"
-            value-attribute="id"
-          /> -->
       </div>
-      <p class="text-base md:text-lg mb-3 font-semibold">Select Your Location</p>
+      <p class="text-base md:text-lg mb-3 font-semibold">
+        Select Your Location
+      </p>
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
-        <!-- <UFormGroup label="Country">
-          <USelectMenu
-            v-model="form.country"
-            color="white"
-            size="md"
-            :options="country"
-            placeholder="Country"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-            }"
-            option-attribute="name"
-            value-attribute="iso2"
-          />
-        </UFormGroup> -->
         <UFormGroup class="md:w-1/4">
           <USelectMenu
-            v-model="selected_region"
+            v-model="form.state"
             color="white"
             size="md"
             :options="regions"
@@ -61,7 +37,7 @@
         </UFormGroup>
         <UFormGroup class="md:w-1/4">
           <USelectMenu
-            v-model="selected_city"
+            v-model="form.city"
             color="white"
             size="md"
             :options="cities"
@@ -102,9 +78,6 @@
           />
         </UButtonGroup>
       </div>
-      <!-- <div class="grid md:grid-cols-4 gap-4">
-        <div class="pt-6"></div>
-      </div> -->
 
       <div class="mt-5">
         <UButton
@@ -135,12 +108,14 @@
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
           v-for="(service, i) in services.filter(
-            service => service.service_status.toLowerCase() === 'approved'
+            (service) => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
-            <div class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full">
+            <div
+              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+            >
               <div
                 class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
               >
@@ -163,17 +138,25 @@
                     >
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm first-letter:uppercase">{{ service?.location }}</span>
+                        <span class="text-sm first-letter:uppercase">{{
+                          service?.location
+                        }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{ service?.category_details.title }}</span>
+                        <span class="text-sm">{{
+                          service?.category_details.title
+                        }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
-                        <span class="text-sm">Posted: {{ formatDate(service?.created_at) }}</span>
+                        <span class="text-sm"
+                          >Posted: {{ formatDate(service?.created_at) }}</span
+                        >
                       </p>
-                      <p class="text-sm md:text-base sm:hidden font-semibold text-green-950">
+                      <p
+                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                      >
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
@@ -201,56 +184,59 @@
 </template>
 
 <script setup>
-// definePageMeta({
-//   layout: "dashboard",
-// });
 const { get, staticURL } = useApi();
 const { formatDate } = useUtils();
+const form = ref({
+  country: "Bangladesh",
+  state: "",
+  city: "",
+  title: "",
+  category: "",
+});
+
+const categoryTitle = ref("");
+const services = ref([]);
+const router = useRoute();
 
 // geo filter
 
 const regions = ref([]);
 const cities = ref();
 
-const selected_country = ref("Bangladesh");
-const regions_response = await get(`/cities-light/regions/?country=${selected_country.value}`);
+const regions_response = await get(
+  `/cities-light/regions/?country=${form.value.country}`
+);
 regions.value = regions_response.data;
-const selected_region = ref();
-watch(selected_region, async () => {
-  console.log(selected_region.value);
-  const cities_response = await get(`/cities-light/cities/?region=${selected_region.value}`);
-  cities.value = cities_response.data;
-});
 
-const selected_city = ref();
+watch(
+  () => form.value.state,
+  async (newState) => {
+    console.log(newState);
+    if (newState) {
+      const cities_response = await get(
+        `/cities-light/cities/?region=${newState}`
+      );
+      cities.value = cities_response.data;
+    }
+  }
+);
 
 // geo filter
 
-const categoryTitle = ref("");
-const services = ref([]);
-const router = useRoute();
-
-const form = ref({
-  country: "",
-  state: "",
-  city: "",
-  title: "",
-  category: "",
-});
-// const categories = ref([]);
-
 async function fetchServices() {
   const response = await get(`/classified-categories/${router.params.id}/`);
-  console.log(response);
-
   services.value = response.data?.filter(
-    service => service.service_status.toLowerCase() === "approved" && service.active_service
+    (service) =>
+      service.service_status.toLowerCase() === "approved" &&
+      service.active_service
   );
   categoryTitle.value = response.data[0]?.category_details.title;
 }
 fetchServices();
 
 async function filterSearch() {
+  console.log(form.value);
+
   const res = await get(
     `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
@@ -258,9 +244,3 @@ async function filterSearch() {
   services.value = res.data;
 }
 </script>
-
-<style scoped>
-/* .service-card:nth-child(odd) {
-  background-color: rgb(235, 232, 232);
-} */
-</style>
