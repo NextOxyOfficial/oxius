@@ -3,11 +3,7 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
       <UDivider label="" class="mb-8" />
-      <form
-        action="#"
-        class="max-w-2xl mx-auto space-y-3"
-        @submit.prevent="handlePostGig"
-      >
+      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handlePostGig">
         <UFormGroup
           label="Title"
           required
@@ -38,9 +34,7 @@
         <UFormGroup
           label="Instruction"
           required
-          :error="
-            !form.instructions && checkSubmit && 'You must enter instructions!'
-          "
+          :error="!form.instructions && checkSubmit && 'You must enter instructions!'"
           :ui="{
             label: {
               base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -66,9 +60,7 @@
           <UFormGroup
             label="Category"
             required
-            :error="
-              !form.category && checkSubmit && 'You must select a category'
-            "
+            :error="!form.category && checkSubmit && 'You must select a category'"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -127,8 +119,7 @@
                 name="Negotiable"
                 label="Negotiable"
                 :ui="{
-                  label:
-                    'text-sm font-medium text-gray-700 dark:text-slate-700',
+                  label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
                 }"
               />
             </div>
@@ -164,12 +155,7 @@
               :alt="`Uploaded file ${i}`"
               class="object-cover"
             />
-            <img
-              v-else
-              :src="img"
-              :alt="`Uploaded file ${i}`"
-              class="object-cover"
-            />
+            <img v-else :src="img" :alt="`Uploaded file ${i}`" class="object-cover" />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -286,9 +272,7 @@
           <UFormGroup
             label="Address"
             required
-            :error="
-              !form.location && checkSubmit && 'You must enter your address!'
-            "
+            :error="!form.location && checkSubmit && 'You must enter your address!'"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -317,10 +301,7 @@
             label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
           }"
         />
-        <p
-          v-if="!form.accepted_privacy && checkSubmit"
-          class="text-sm text-red-500"
-        >
+        <p v-if="!form.accepted_privacy && checkSubmit" class="text-sm text-red-500">
           You must accept our Terms Condition & Privacy Policy!
         </p>
         <div class="text-center">
@@ -394,9 +375,7 @@ const submitValues = ref({});
 const router = useRoute();
 
 async function fetchServices() {
-  const response = await $fetch(
-    `${baseURL}/classified-categories/post/${router.query.id}/`
-  );
+  const response = await $fetch(`${baseURL}/classified-categories/post/${router.query.id}/`);
   console.log(response);
   const {
     price,
@@ -476,7 +455,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -490,9 +469,7 @@ function deleteUpload(ind) {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse] = await Promise.all([
-      get("/classified-categories/"),
-    ]);
+    const [categoriesResponse] = await Promise.all([get("/classified-categories/")]);
     categories.value = categoriesResponse.data.results;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
@@ -501,7 +478,11 @@ async function getMicroGigsCategory() {
 
 onMounted(() => {
   getMicroGigsCategory();
-  fetchServices();
+  console.log(router.query.id);
+
+  if (router.query.id) {
+    fetchServices();
+  }
 });
 
 const ApiUrl = "https://api.countrystatecity.in/v1/countries";
@@ -527,10 +508,7 @@ watch(
   () => form.value.country,
   async (newValue, oldValue) => {
     if (newValue) {
-      const res = await $fetch(
-        `${ApiUrl}/${form.value.country}/states/`,
-        headerOptions
-      );
+      const res = await $fetch(`${ApiUrl}/${form.value.country}/states/`, headerOptions);
       state.value = res;
     }
   }
