@@ -1,17 +1,18 @@
 <template>
   <div>
-    <h1 class="font-bold text-center md:p-5 text-2xl">REGISTER</h1>
     <form
       @submit.prevent="handleSubmit"
-      class="bg-white md:px-8 pt-6 md:pb-8 mb-4"
+      class="bg-white rounded-xl md:px-8 pt-6 pb-6 md:pb-8 mb-4 px-2 sm:px-8"
     >
-      <div class="mb-4">
+      <h1 class="font-bold text-center mb-4 text-2xl">REGISTER</h1>
+      <UDivider label="" />
+      <div class="my-4">
         <label class="block text-gray-700 text-md font-medium mb-2" for="email">
-          EMAIL
+          Email
         </label>
         <input
           v-model="email"
-          class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
+          class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md"
           id="email"
           type="email"
           placeholder="Email"
@@ -30,7 +31,7 @@
         <div class="flex">
           <div>
             <UButton
-              size="lg"
+              size="md"
               variant="solid"
               disabled
               label="+88"
@@ -44,7 +45,7 @@
           </div>
           <input
             v-model="phone"
-            class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md rounded-s-none"
+            class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md rounded-s-none"
             id="phone"
             type="phone"
             placeholder="017XXXXXXXX"
@@ -62,11 +63,11 @@
           class="block text-gray-700 text-md font-medium mb-2"
           for="password"
         >
-          PASSWORD
+          Password
         </label>
         <input
           v-model="password"
-          class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
+          class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md"
           id="password"
           type="password"
           placeholder="********"
@@ -77,11 +78,11 @@
           class="block text-gray-700 text-md font-medium mb-2"
           for="confirm-password"
         >
-          CONFIRM PASSWORD
+          Confirm Password
         </label>
         <input
           v-model="confirmPassword"
-          class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md mb-3"
+          class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md mb-3"
           id="confirm-password"
           type="password"
           placeholder="********"
@@ -95,11 +96,11 @@
           class="block text-gray-700 text-md font-medium mb-2"
           for="password"
         >
-          Refer Code
+          Referral Code
         </label>
         <input
           v-model="refer"
-          class="w-full py-2 px-3 text-gray-700 bg-[#D9D9D9] rounded-md"
+          class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md"
           id="password"
           type="text"
           placeholder="********"
@@ -109,9 +110,9 @@
           Refer Code Is Invalid
         </p>
       </div>
-      <div class="text-center">
+      <div class="text-center !mt-8">
         <button
-          class="bg-orange-500 p-2 text-lg text-white px-10 uppercase rounded-md"
+          class="bg-orange-500 py-1 text-base text-white px-6 capitalize rounded-md"
         >
           Register
         </button>

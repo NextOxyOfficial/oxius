@@ -46,7 +46,14 @@ def base64ToFile(base64_data):
 
 @api_view(["GET"])
 def getLogo(request):
-    serializer = logoSerializer(Logo.objects.get())
+    logo = get_object_or_404(Logo)
+    serializer = logoSerializer(logo)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def getAuthenticationBanner(request):
+    banner = get_object_or_404(AuthenticationBanner)
+    serializer = AuthenticationBannerSerializer(banner)
     return Response(serializer.data)
 
 @api_view(["GET"])

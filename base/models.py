@@ -85,6 +85,11 @@ class Logo(models.Model):
     def __str__(self):
         return f"Site Logo"
     
+class AuthenticationBanner(models.Model):
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    def __str__(self):
+        return f"Site Authentication Banner"
+    
 class AdminNotice(models.Model):
     title = models.CharField(max_length=256)
     message = models.TextField()

@@ -81,6 +81,7 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
 admin.site.register(ClassifiedCategoryPost, ClassifiedCategoryPostAdmin)
 
 admin.site.register(Logo)
+admin.site.register(AuthenticationBanner)
 
 
 class AdminNoticeAdmin(admin.ModelAdmin):

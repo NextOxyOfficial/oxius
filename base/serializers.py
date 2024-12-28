@@ -123,6 +123,11 @@ class logoSerializer(serializers.ModelSerializer):
         model = Logo
         fields = '__all__'
 
+class AuthenticationBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuthenticationBanner
+        fields = '__all__'
+
 class AdminNoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminNotice

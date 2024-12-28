@@ -15,6 +15,7 @@ router.register(r'countries', CountryViewSet)
 
 urlpatterns = [
   path('logo/',getLogo,name='logo'),
+  path('authentication-banner/',getAuthenticationBanner,name='authenticationBanner'),
   path('admin-notice/',getAdminNotice,name='admin_notice'),
   path('auth/register/', register, name='register_person'),
   path('persons/<str:email>/', PersonRetrieveUpdateDestroyView.as_view(),name='person_detail'),
