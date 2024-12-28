@@ -55,15 +55,15 @@ const columns = [
 
   {
     key: "title",
-    label: "Gig Title",
+    label: "Title",
   },
   {
     key: "amount",
-    label: "Gig Price",
+    label: "Price",
   },
   {
     key: "created_at",
-    label: "Created At",
+    label: "Created",
   },
   {
     key: "completed",
