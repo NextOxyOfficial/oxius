@@ -32,4 +32,7 @@ class NidAdmin(admin.ModelAdmin):
     list_display = ( 'user', 'approved', 'rejected', 'completed')
     list_filter = ('approved', 'rejected', 'completed')
 admin.site.register(NID, NidAdmin)
+class ReferBonusAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'user', 'amount')
+admin.site.register(ReferBonus, ReferBonusAdmin)
 

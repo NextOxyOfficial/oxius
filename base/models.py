@@ -225,6 +225,19 @@ class MicroGigPost(models.Model):
 
         super(MicroGigPost, self).save(*args, **kwargs)
 
+class ReferBonus(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='comission_bonus')
+    created_at = models.DateTimeField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    completed = models.BooleanField(default=False)
+    def __str__(self):
+        return str(self.created_at)
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.completed:
+            self.completed = True
+            self.user.balance += self.amount
+            self.user.save()
+        super(ReferBonus, self).save(*args, **kwargs)
 class MicroGigPostTask(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='micro_gig_worker')
     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True)
@@ -255,6 +268,7 @@ class MicroGigPostTask(models.Model):
             self.user.balance += self.gig.price
             self.user.pending_balance -= self.gig.price
             self.user.save()
+            ReferBonus.objects.create(user=self.user.refer,amount= (self.gig.price * self.user.refer.commission) / 100 )
             # add balance
 
         # Reduce filled quantity and mark as completed if rejected
@@ -357,9 +371,9 @@ class Balance(models.Model):
 
         if self.approved and not self.completed:
             self.completed = True
-            refer = self.user.refer.last()
-            refer.balance += (self.amount * refer.commission) / 100
-            refer.save()
+            # refer = self.user.refer.last()
+            # refer.balance += (self.amount * refer.commission) / 100
+            # refer.save()
             # create a table called commission_report and add a row with user_id, refer_id, amount, created_at
             # add refer commission
 
