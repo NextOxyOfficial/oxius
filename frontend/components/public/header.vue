@@ -1,5 +1,5 @@
 <template>
-  <div class="py-3 sticky z-50 top-0 bg-white">
+  <div class="py-3 sticky z-50 top-0 bg-white dark:bg-black">
     <UContainer>
       <USlideover
         v-model="isOpen"
@@ -43,7 +43,7 @@
             padding: 'py-2',
           }"
         />
-        <PublicTranslateHandler class="px-2 mt-3" />
+        <!-- <PublicTranslateHandler class="px-2 mt-3" /> -->
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
         <div class="block md:hidden">
@@ -92,7 +92,7 @@
           </UButton>
         </div>
         <div v-else class="flex relative menu-container">
-          <PublicTranslateHandler class="px-2 max-sm:hidden" />
+          <!-- <PublicTranslateHandler class="px-2 max-sm:hidden" /> -->
           <UButton
             size="sm"
             color="primary"
@@ -178,8 +178,8 @@ watch(router.currentRoute, () => {
   }
 });
 useSeoMeta({
-  ogImage: "/static/favicon.ico",
-  favicon: "/static/favicon.ico",
+  ogImage: "/static/frontend/favicon.ico",
+  favicon: "/static/frontend/favicon.ico",
   // title: "Easy Business Manager",
 });
 const links = [
@@ -200,7 +200,7 @@ const links = [
   },
   {
     label: t("faq"),
-    to: "/faq",
+    to: "/coming-soon/",
     icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
   },
 ];

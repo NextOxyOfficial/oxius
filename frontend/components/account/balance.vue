@@ -97,15 +97,30 @@
     </div>
     <UDivider label="" class="my-5" />
     <div class="flex flex-col gap-4">
-      <div class="text-center text-xl font-bold">
+      <div class="text-center text-xl font-bold w-full">
         {{ $t("refer") }}
-        <ULink
-          class="cursor-pointer text-blue-500 block"
-          @click="CopyToClip('/coming-soon/')"
-          to="/coming-soon/"
-        >
-          {{ $t("coming_soon") }}
-        </ULink>
+        <UFormGroup label="">
+          <input
+            icon="i-heroicons-bell-solid"
+            type="text"
+            size="md"
+            color="white"
+            class="text-xs py-0.5 px-1 w-72"
+            :value="`https://adsyclub.com/auth/login/?ref=${user.user.username}`"
+          />
+          <UButton
+            size="xs"
+            color="primary"
+            variant="solid"
+            class="py-1 px-1.5"
+            @click="
+              CopyToClip(
+                `https://adsyclub.com/auth/login/?ref=${user.user.username}`
+              )
+            "
+            label="Copy"
+          />
+        </UFormGroup>
       </div>
       <div class="flex gap-4 justify-center">
         <p class="text-sm md:text-base">{{ $t("refer_user") }}: 0</p>
@@ -117,6 +132,7 @@
 </template>
 
 <script setup>
+const { user } = useAuth();
 const { t } = useI18n();
 defineProps({
   user: {
@@ -130,6 +146,7 @@ defineProps({
 });
 function CopyToClip(text) {
   //Copy text to clipboard
+  console.log(text);
   navigator.clipboard.writeText(text);
 }
 </script>

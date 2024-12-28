@@ -2,9 +2,15 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: true },
+  colorMode: {
+    preference: "light",
+  },
   ssr: false,
   css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/ui", "@nuxt/image", "@nuxtjs/i18n"],
+  modules: ["@nuxt/ui", "@nuxt/image", "@nuxtjs/i18n", "nuxt-tiptap-editor"],
+  tiptap: {
+    prefix: "Tiptap", //prefix for Tiptap imports, composables not included
+  },
   i18n: {
     vueI18n: "./i18n.config.ts",
   },

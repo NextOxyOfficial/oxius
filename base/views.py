@@ -56,7 +56,10 @@ def getAdminNotice(request):
 
 @api_view(['POST'])
 def register(request):
-    serializer = UserSerializer(data=request.data)
+    data = request.data
+    # del data['refer']
+    # else refer = User.objects.filter(username=data['refer']).first() refer.refer_count ++
+    serializer = UserSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(
@@ -79,33 +82,6 @@ def update_user(request, email):
         return Response(
             {'message': 'User not found'},
             status=status.HTTP_404_NOT_FOUND
-        )
-
-    # Update balance based on withdraw or deposit
-    if 'withdraw' in data:
-        withdraw_amount = Decimal(data.get('withdraw', 0))
-        transaction_type = data.get('transaction_type')
-        if user.balance < withdraw_amount:
-            return Response(
-                {'message': 'Insufficient balance'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        user.balance -= withdraw_amount
-        Balance.objects.create(
-            user=user,
-            amount=withdraw_amount,
-            transaction_type=transaction_type,
-            status='pending',  # Set as pending until processed
-        )
-    elif 'deposit' in data:
-        deposit_amount = Decimal(data.get('deposit', 0))
-        transaction_type = data.get('transaction_type')
-        user.balance += deposit_amount
-        Balance.objects.create(
-            user=user,
-            amount=deposit_amount,
-            transaction_type=transaction_type,
-            status='pending',  
         )
     # Remove email from data if it's unchanged
     if 'email' in data and data['email'] == user.email:
@@ -148,7 +124,7 @@ def update_user(request, email):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
-
+    print(serializer.errors)
     # Return validation errors if serializer is not valid
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
@@ -232,12 +208,15 @@ class GetMicroGigs(generics.ListCreateAPIView):
 @permission_classes([IsAuthenticated])
 def post_micro_gigs(request):
     data = request.data # Make a mutable copy of the data
-    print(data)
-    data['user'] = request.user.id  # Associate the authenticated user
+    user=request.user
+    data['user'] = user.id  # Associate the authenticated user
     serializer = MicroGigPostSerializer(data=data)
     if serializer.is_valid():
-        new_micro_gig_post = serializer.save(user=request.user)
-
+        if user.balance < data['total_cost']:
+            raise ValueError("Insufficient balance")
+        user.balance -= Decimal(data['total_cost'])
+        user.save()
+        new_micro_gig_post = serializer.save(user=user)
         for file in data['medias']:
             nm = MicroGigPostMedia.objects.create(
                 image = base64ToFile(file)
@@ -582,26 +561,33 @@ def postBalance(request):
     # Add the user ID (pk) to the incoming data
     data = request.data.copy()
     data['user'] = request.user.id
+
+    # Check if 'merchant_invoice_no' exists in the data
+    if 'merchant_invoice_no' in data:
+        # Check if Balance with the given merchant_invoice_no exists
+        if Balance.objects.filter(merchant_invoice_no=data['merchant_invoice_no']).exists():
+            return Response(
+                {"error": "Balance with this merchant invoice number already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    # else:
+    #     # Return an error if 'merchant_invoice_no' is missing
+    #     return Response(
+    #         {"error": "The 'merchant_invoice_no' field is required."},
+    #         status=status.HTTP_400_BAD_REQUEST
+    #     )
     
-    # Check if Balance with the given merchant_invoice_no exists
-    try:
-        does_exist = Balance.objects.get(merchant_invoice_no=data['merchant_invoice_no'])
-        return Response(
-            {"error": "Balance with this merchant invoice number already exists."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    except Balance.DoesNotExist:
-        # If the Balance doesn't exist, proceed with the operations
-        serializer = BalanceSerializer(data=data)
-        
-        if serializer.is_valid():
-            # Save the new Balance instance
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        # Print errors if validation fails
-        print(serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Proceed with the operations if 'merchant_invoice_no' is valid
+    serializer = BalanceSerializer(data=data)
+    
+    if serializer.is_valid():
+        # Save the new Balance instance
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    # Print errors if validation fails
+    print(serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

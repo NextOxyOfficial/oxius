@@ -11,12 +11,17 @@
         :options="filterOptions"
         v-model="selectedFilter"
         placeholder="Search"
-        class="w-40 capitalize"
+        class="w-40 capitalize ml-auto"
       />
-      <UTable :rows="submittedTasks" :columns="columns" class="my-8">
+      <UTable :rows="submittedTasks" :columns="columns" class="mb-8 mt-3">
         <template #index-data="{ row }">
           <p>
             {{ row.id }}
+          </p>
+        </template>
+        <template #created_at-data="{ row }">
+          <p>
+            {{ formatDate(row.created_at) }}
           </p>
         </template>
 
@@ -32,26 +37,26 @@
         </template>
 
         <template #approve-data="{ row }">
-          <UButton
-            size="xs"
-            class="w-[67px] justify-center"
-            color="primary"
-            @click="handleOperation(row.id, 'approve')"
-            variant="outline"
-            :label="row.approved ? 'Approved' : 'Approve'"
-            :disabled="row.rejected || row.approved"
-          />
-        </template>
-        <template #reject-data="{ row }">
-          <UButton
-            size="xs"
-            class="w-[67px] justify-center"
-            color="red"
-            @click="openModal(row.id, 'reject')"
-            variant="outline"
-            :label="row.rejected ? 'Rejected' : 'Reject'"
-            :disabled="row.rejected || row.approved"
-          />
+          <div class="flex gap-1.5">
+            <UButton
+              size="xs"
+              class="w-[67px] justify-center"
+              color="primary"
+              @click="handleOperation(row.id, 'approve')"
+              variant="outline"
+              :label="row.approved ? 'Approved' : 'Approve'"
+              :disabled="row.rejected || row.approved"
+            />
+            <UButton
+              size="xs"
+              class="w-[67px] justify-center"
+              color="red"
+              @click="openModal(row.id, 'reject')"
+              variant="outline"
+              :label="row.rejected ? 'Rejected' : 'Reject'"
+              :disabled="row.rejected || row.approved"
+            />
+          </div>
         </template>
       </UTable>
     </UContainer>
@@ -104,10 +109,11 @@
 const isOpen = ref(false);
 const rejectionReason = ref("");
 const selectedTaskId = ref(null);
-const filterOptions = ["Approved", "Rejected"];
+const filterOptions = ["All", "Approved", "Rejected"];
 
 const selectedFilter = ref("");
 const { get, staticURL, del, put } = useApi();
+const { formatDate } = useUtils();
 const { user } = useAuth();
 const submittedTasks = ref([]);
 const route = useRoute();
@@ -200,19 +206,19 @@ const columns = [
 
   {
     key: "title",
-    label: "Gig Title",
+    label: "Title",
   },
   {
     key: "amount",
-    label: "Gig Price",
+    label: "Price",
   },
   {
     key: "created_at",
-    label: "Submitted At",
+    label: "Time",
   },
   {
     key: "approve",
-    label: "",
+    label: "Action",
   },
   {
     key: "reject",

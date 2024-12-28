@@ -3,12 +3,20 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
-      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handlePostGig">
+      <form
+        action="#"
+        class="max-w-2xl mx-auto space-y-3"
+        @submit.prevent="handlePostGig"
+      >
         <UFormGroup
           label="Title"
           required
-          v-slot="{ error }"
           :error="!form.title && checkSubmit && 'You must enter a title!'"
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
         >
           <UInput
             type="text"
@@ -22,6 +30,7 @@
                 md: 'text-base',
               },
               padding: { md: 'pl-[60px]' },
+              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
           >
             <span class="absolute left-2 top-2">I Need</span>
@@ -31,8 +40,16 @@
           <UFormGroup
             label="Budget Per Action"
             required
-            v-slot="{ error }"
-            :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
+            :error="
+              form.price <= 0 &&
+              checkSubmit &&
+              'You must enter budget per action!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <UInput
               icon="i-mdi:currency-bdt"
@@ -43,6 +60,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               placeholder="2.0"
               class="max-w-40"
@@ -52,10 +70,16 @@
           <UFormGroup
             label="Required Quantity"
             required
-            v-slot="{ error }"
             :error="
-              form.required_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
+              form.required_quantity <= 0 &&
+              checkSubmit &&
+              'You must enter required quantity!'
             "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <UInput
               type="text"
@@ -65,24 +89,53 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
               }"
               placeholder="10"
               class="max-w-40"
               v-model="form.required_quantity"
             />
           </UFormGroup>
-          <UFormGroup label="*">
+          <!-- <UFormGroup
+            label="*"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+          >
             <p>=</p>
-          </UFormGroup>
-          <UFormGroup label="Total Cost">
-            <p>{{ form.price * form.required_quantity }}</p>
+          </UFormGroup> -->
+        </div>
+        <div>
+          <UFormGroup
+            label="Total Cost (Service handling fee 10% included)"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+            required
+          >
+            <p>
+              {{
+                form.price * form.required_quantity +
+                (form.price * form.required_quantity * 10) / 100
+              }}
+            </p>
           </UFormGroup>
         </div>
         <UFormGroup
           label="Instructions"
           required
-          v-slot="{ error }"
-          :error="!form.instructions && checkSubmit && 'You must enter instructions!'"
+          :error="
+            !form.instructions && checkSubmit && 'You must enter instructions!'
+          "
+          :ui="{
+            label: {
+              base: 'block font-medium text-gray-700 dark:text-slate-700',
+            },
+          }"
         >
           <UTextarea
             color="white"
@@ -91,6 +144,7 @@
               size: {
                 md: 'text-base',
               },
+              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
             class="w-full"
             resize
@@ -100,7 +154,9 @@
         </UFormGroup>
 
         <!-- medias  -->
-        <label for="" class="block mt-3 font-semibold">Upload Photo/Video</label>
+        <label for="" class="block mt-3 font-semibold text-slate-700"
+          >Upload Photo/Video</label
+        >
         <div class="flex flex-wrap gap-5">
           <div
             class="relative max-w-[200px] max-h-[200px]"
@@ -151,8 +207,16 @@
           <UFormGroup
             label="Target Country"
             required
-            v-slot="{ error }"
-            :error="!form.target_country && checkSubmit && 'You must select a target country!'"
+            :error="
+              !form.target_country &&
+              checkSubmit &&
+              'You must select a target country!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.target_country"
@@ -164,6 +228,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="title"
@@ -172,8 +237,16 @@
           <UFormGroup
             label="Target Device"
             required
-            v-slot="{ error }"
-            :error="!form.target_device && checkSubmit && 'You must select a target device!'"
+            :error="
+              !form.target_device &&
+              checkSubmit &&
+              'You must select a target device!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.target_device"
@@ -186,6 +259,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="id"
@@ -196,8 +270,16 @@
           <UFormGroup
             label="Target Network"
             required
-            v-slot="{ error }"
-            :error="!form.target_network && checkSubmit && 'You must select a target network!'"
+            :error="
+              !form.target_network &&
+              checkSubmit &&
+              'You must select a target network!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.target_network"
@@ -206,6 +288,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               :options="network"
               multiple
@@ -217,8 +300,14 @@
           <UFormGroup
             label="Category"
             required
-            v-slot="{ error }"
-            :error="!form.category && checkSubmit && 'You must select a category!'"
+            :error="
+              !form.category && checkSubmit && 'You must select a category!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
           >
             <USelectMenu
               v-model="form.category"
@@ -230,6 +319,7 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'text-gray-400 dark:text-gray-200',
               }"
               option-attribute="title"
               value-attribute="id"
@@ -312,7 +402,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -325,8 +415,9 @@ function deleteUpload(ind) {
 }
 
 function validateForm() {
-  for (const key in form.value) {
-    const value = form.value[key];
+  const { medias, ...rest } = form.value;
+  for (const key in rest) {
+    const value = rest[key];
     // Check for empty strings, false values, or empty arrays
     if (
       (typeof value === "string" && !value.trim()) ||
@@ -345,7 +436,12 @@ async function handlePostGig() {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
-  const res = await post("/post-micro-gigs/", form.value);
+  const balance = form.value.required_quantity * form.value.price;
+  const total_cost = balance + (balance * 10) / 100;
+  const submitValue = { ...form.value, total_cost, balance };
+  console.log(submitValue);
+
+  const res = await post("/post-micro-gigs/", submitValue);
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "MicroGig Added" });
@@ -354,13 +450,17 @@ async function handlePostGig() {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse, devicesResponse, networksResponse, countriesResponse] =
-      await Promise.all([
-        get("/micro-gigs-categories/"),
-        get("/target-device/"),
-        get("/target-network/"),
-        // get("/target-country/"),
-      ]);
+    const [
+      categoriesResponse,
+      devicesResponse,
+      networksResponse,
+      countriesResponse,
+    ] = await Promise.all([
+      get("/micro-gigs-categories/"),
+      get("/target-device/"),
+      get("/target-network/"),
+      // get("/target-country/"),
+    ]);
 
     categories.value = categoriesResponse.data;
     device.value = devicesResponse.data;

@@ -5,16 +5,9 @@
       size="md"
       v-model="currentLanguage"
       :options="languageOption"
-      value-attribute="value"
       option-attribute="label"
     >
-      <!-- <template #leading>
-        <UIcon
-          v-if="currentLanguage.icon"
-          :name="currentLanguage.icon"
-          class="w-5 h-5"
-        />
-      </template> -->
+      <template #leading> <UIcon :name="currentLanguage.icon" /> </template>
       <template #option="{ option: language }">
         <UIcon :name="language.icon" />
         <span>{{ language.label }}</span>
@@ -25,6 +18,7 @@
 
 <script setup>
 const { setLocale } = useI18n();
+const language = useCookie("language");
 const languageOption = [
   {
     value: "en",
@@ -40,7 +34,19 @@ const languageOption = [
 const currentLanguage = ref(languageOption[1]);
 
 watch(currentLanguage, () => {
-  setLocale(currentLanguage.value);
+  setLocale(currentLanguage.value.value);
+  language.value = currentLanguage.value;
+  // window.location.reload();
+});
+onMounted(() => {
+  console.log(language.value);
+  currentLanguage.value = language.value;
+
+  if (language.value) {
+    setLocale(language.value.value);
+  } else {
+    setLocale("bn");
+  }
 });
 </script>
 

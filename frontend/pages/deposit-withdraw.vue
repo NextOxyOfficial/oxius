@@ -5,7 +5,9 @@
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-8" />
       <div class="flex flex-col md:flex-row justify-between">
-        <p class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 font-bold">
+        <p
+          class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold"
+        >
           <span class="inline-flex items-center"
             >Available Balance:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
@@ -53,6 +55,7 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="amount"
               amount
@@ -66,7 +69,14 @@
             />
           </div>
           <div class="my-5">
-            <UFormGroup class="flex flex-row-reverse gap-2">
+            <UFormGroup
+              class="flex flex-row-reverse gap-2"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <template #label>
                 I accept
                 <ULink
@@ -124,6 +134,9 @@
               </template>
             </URadioGroup>
           </div>
+          <p v-if="errors?.selected" class="text-sm text-red-500">
+            Please enter a payment method
+          </p>
           <div class="mb-3">
             <UInput
               v-if="selected === 'nagad'"
@@ -131,15 +144,18 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="payment_number"
             />
+
             <UInput
               v-if="selected === 'bkash'"
-              placeholder="Enter BKash Number"
+              placeholder="Enter Bkash Number"
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="payment_number"
             />
@@ -149,9 +165,13 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="rocket"
             />
+            <p v-if="errors?.payment_number" class="text-sm text-red-500">
+              Please enter a payment number
+            </p>
           </div>
           <div class="space-y-2">
             <UInput
@@ -159,14 +179,24 @@
               size="md"
               :ui="{
                 padding: { md: 'px-3 py-2' },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="withdrawAmount"
               amount
             />
+            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
+              Please enter an amount
+            </p>
           </div>
-
           <div class="my-5">
-            <UFormGroup class="flex flex-row-reverse gap-2">
+            <UFormGroup
+              class="flex flex-row-reverse gap-2"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
               <template #label>
                 I accept
                 <ULink
@@ -184,6 +214,9 @@
               </template>
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
+            <p v-if="errors?.policy" class="text-sm text-red-500">
+              Check this field
+            </p>
           </div>
           <div class="my-2 space-x-3">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -215,16 +248,27 @@
         :columns="columns"
         class="mb-8 mt-4"
         v-if="statements?.length"
+        :ui="{
+          th: {
+            color: 'text-gray-900 dark:text-slate-700',
+          },
+          td: {
+            color: 'text-gray-500 dark:text-slate-500',
+          },
+        }"
       >
+        <template #created_at-data="{ row }">
+          <p>{{ formatDate(row.created_at) }}</p>
+        </template>
         <template #payment_method-data="{ row }">
-          <p>
+          <p class="capitalize">
             {{ row.transaction_type }} -
             {{ row.payment_method }}
           </p>
         </template>
         <template #bank_status-data="{ row }">
           <p
-            class="capitalize"
+            class="capitalize font-semibold"
             :class="
               row.bank_status.toLowerCase() === 'pending'
                 ? 'text-yellow-500'
@@ -263,7 +307,8 @@ definePageMeta({
 const isOpen = ref(false);
 const toast = useToast();
 const { post, get } = useApi();
-const { user } = useAuth();
+const { user, jwtLogin } = useAuth();
+const { formatDate } = useUtils();
 const policy = ref(false);
 const amount = ref(null);
 const withdrawAmount = ref(null);
@@ -272,6 +317,7 @@ const selected = ref("nagad");
 const payment_number = ref(null);
 const bkash_number = ref(null);
 const rocket = ref(null);
+const errors = ref({});
 const options = [
   { value: "bkash", label: "BKash", icon: "bkash.png" },
   { value: "nagad", label: "Nagad", icon: "nagad.png" },
@@ -349,11 +395,27 @@ const deposit = async () => {
 };
 
 const withdraw = async () => {
-  // console.log({selected.value, card_number:payment_number.value, withdrawAmount.value});
-  if (!withdrawAmount.value || !policy.value) {
-    toast.add({ title: "Please fill in all required fields." });
+  errors.value = {};
+
+  // Check each field and add an error if invalid
+  if (!withdrawAmount.value) {
+    errors.value.withdrawAmount = true;
+  }
+  if (!selected.value) {
+    errors.value.selected = true;
+  }
+  if (!payment_number.value) {
+    errors.value.payment_number = true;
+  }
+  if (!policy.value) {
+    errors.value.policy = true;
+  }
+
+  // If there are any errors, stop execution
+  if (Object.keys(errors.value).length > 0) {
     return;
   }
+  errors.value = {};
   // Add withdraw logic here
 
   // toast.add({ title: "Withdraw clicked" });
@@ -365,8 +427,9 @@ const withdraw = async () => {
   });
   console.log(res);
   userBalance();
+  jwtLogin();
   withdrawAmount.value = "";
-  privacy.value = false;
+  policy.value = false;
 };
 
 const userBalance = async () => {

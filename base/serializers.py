@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 
+from cities_light.models import City, Region, Country
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,6 +15,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         # Exclude the password field for security
         exclude = ('groups', 'user_permissions')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            # 'username': {'read_only': True},
+        }
+        depth = 1
+class UserSerializerGet(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Exclude the password field for security
+        exclude = ('groups', 'user_permissions','password')
         extra_kwargs = {
             'password': {'write_only': True},
             # 'username': {'read_only': True},
@@ -48,7 +59,6 @@ class MicroGigPostTaskSerializer(serializers.ModelSerializer):
 
 class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'
@@ -93,7 +103,6 @@ class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
         exclude = ['user']
 
 class BalanceSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
     class Meta:
         model = Balance
         fields = '__all__'
@@ -101,8 +110,7 @@ class BalanceSerializer(serializers.ModelSerializer):
 class ClassifiedPostSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=ClassifiedCategory.objects.all())
     category_details = ClassifiedServicesSerializer(source='category', read_only=True)
-    created_at = serializers.DateTimeField(format="%Y-%m-%d",read_only=True)
-
+    user = UserSerializer(read_only=True)
     class Meta:
         model = ClassifiedCategoryPost
         fields = '__all__'
@@ -119,9 +127,6 @@ class AdminNoticeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         def to_representation(self, instance):
             representation = super().to_representation(instance)
-        # Format created_at to a human-readable format
-            if 'created_at' in representation and instance.created_at:
-                representation['created_at'] = instance.created_at.strftime("%A, %B %d, %Y %I:%M %p")
             return representation
 
     # def validate_category(self, value):
@@ -222,3 +227,33 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         }
 
         return data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = '__all__'
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = '__all__'

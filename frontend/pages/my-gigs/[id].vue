@@ -24,8 +24,8 @@
           <div class="flex gap-4">
             <div>
               <NuxtImg
-                :src="staticURL + gig.medias[0].image"
-                class="size-14 rounded-full"
+                :src="staticURL + gig?.category_details.image"
+                class="size-12 rounded-full"
               />
             </div>
             <div>
@@ -54,12 +54,35 @@
                     }}</span>
                   </p>
                 </div>
-                <div>
-                  <p>
-                    Status:
-                    <span class="capitalize">{{
-                      gig.gig_status === "approved" ? "Live" : gig.gig_status
-                    }}</span>
+                <p class="text-sm">{{ gig.balance }} /{{ gig.total_cost }}</p>
+                <p class="text-sm">
+                  {{ formatDate(gig.created_at) }}
+                </p>
+
+                <div class="text-sm">
+                  <p
+                    class="font-semibold capitalize"
+                    v-if="gig.gig_status === 'approved'"
+                  >
+                    Live
+                  </p>
+                  <p
+                    class="font-semibold capitalize"
+                    v-if="gig.gig_status === 'completed'"
+                  >
+                    {{ gig.gig_status }}
+                  </p>
+                  <p
+                    class="font-semibold capitalize"
+                    v-if="gig.gig_status === 'pending'"
+                  >
+                    {{ gig.gig_status }}
+                  </p>
+                  <p
+                    class="font-semibold capitalize"
+                    v-if="gig.gig_status === 'rejected'"
+                  >
+                    {{ gig.gig_status }}
                   </p>
                 </div>
               </div>
@@ -71,7 +94,7 @@
               color="primary"
               variant="outline"
               label="Pause"
-              v-if="gig.active_gig"
+              v-if="gig.active_gig && gig.gig_status !== 'completed'"
               @click="handleAction(gig.id, 'pause', false)"
             />
             <UButton
@@ -79,10 +102,11 @@
               color="primary"
               variant="outline"
               label="Activate"
-              v-if="!gig.active_gig"
+              v-if="!gig.active_gig && gig.gig_status !== 'completed'"
               @click="handleAction(gig.id, 'active', true)"
             />
             <UButton
+              v-if="gig.gig_status !== 'completed'"
               size="md"
               color="primary"
               variant="outline"
@@ -90,10 +114,11 @@
               :to="`/edit-a-gig/${gig.id}`"
             />
             <UButton
+              v-if="gig.gig_status !== 'completed'"
               size="md"
               color="primary"
               variant="outline"
-              label="Delete"
+              label="Complete"
               @click="handlePop(gig.id)"
             />
             <UButton
@@ -117,7 +142,7 @@
     <UModal v-model="isOpen">
       <div class="py-10 px-6 text-center">
         <h4 class="text-2xl font-medium mb-4">
-          It will delete the gig forever?
+          It will stop and complete the gig forever?
         </h4>
 
         <UButton
@@ -125,13 +150,14 @@
           color="primary"
           variant="solid"
           label="Confirm Delete"
-          @click="handleAction(currentId, 'delete')"
+          @click="handleAction(currentId, 'completed')"
         />
       </div>
     </UModal>
   </PublicSection>
 </template>
 <script setup>
+const { formatDate } = useUtils();
 const isOpen = ref(false);
 const currentId = ref();
 function handlePop(id) {
@@ -139,19 +165,23 @@ function handlePop(id) {
   currentId.value = id;
 }
 
-const { user } = useAuth();
+const { user, jwtLogin } = useAuth();
 const gigs = ref([]);
 const route = useRoute();
-const { get, staticURL, del, put } = useApi();
+const { get, staticURL, put } = useApi();
 
 async function handleAction(id, action, val) {
-  const res = await (action === "delete"
-    ? del("/delete-user-micro-gig/" + id + "/")
+  const res = await (action === "completed"
+    ? put("/update-user-micro-gig/" + id + "/", {
+        stop_gig: true,
+        active_gig: false,
+      })
     : put("/update-user-micro-gig/" + id + "/", {
         active_gig: val,
       }));
   isOpen.value = false;
   if (res.data) {
+    jwtLogin();
     getUserGigs();
   }
 }

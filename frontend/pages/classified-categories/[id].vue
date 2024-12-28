@@ -25,9 +25,7 @@
             value-attribute="id"
           /> -->
       </div>
-      <p class="text-base md:text-lg mb-3 font-semibold">
-        Select Your Location
-      </p>
+      <p class="text-base md:text-lg mb-3 font-semibold">Select Your Location</p>
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <!-- <UFormGroup label="Country">
           <USelectMenu
@@ -47,10 +45,10 @@
         </UFormGroup> -->
         <UFormGroup class="md:w-1/4">
           <USelectMenu
-            v-model="form.state"
+            v-model="selected_region"
             color="white"
             size="md"
-            :options="state"
+            :options="regions"
             placeholder="State"
             :ui="{
               size: {
@@ -58,15 +56,15 @@
               },
             }"
             option-attribute="name"
-            value-attribute="iso2"
+            value-attribute="name"
           />
         </UFormGroup>
         <UFormGroup class="md:w-1/4">
           <USelectMenu
-            v-model="form.city"
+            v-model="selected_city"
             color="white"
             size="md"
-            :options="city"
+            :options="cities"
             placeholder="City"
             :ui="{
               size: {
@@ -137,14 +135,12 @@
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
           v-for="(service, i) in services.filter(
-            (service) => service.service_status.toLowerCase() === 'approved'
+            service => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
-            <div
-              class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
-            >
+            <div class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full">
               <div
                 class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
               >
@@ -157,7 +153,7 @@
                   </div>
                   <div>
                     <h3
-                      class="text-base font-semibold mb-1.5 text-left line-clamp-2"
+                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
                     >
                       {{ service?.title }}
                     </h3>
@@ -167,23 +163,17 @@
                     >
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm">{{ service?.location }}</span>
+                        <span class="text-sm first-letter:uppercase">{{ service?.location }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{
-                          service?.category_details.title
-                        }}</span>
+                        <span class="text-sm">{{ service?.category_details.title }}</span>
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
-                        <span class="text-sm"
-                          >Posted: {{ service?.created_at }}</span
-                        >
+                        <span class="text-sm">Posted: {{ formatDate(service?.created_at) }}</span>
                       </p>
-                      <p
-                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
-                      >
+                      <p class="text-sm md:text-base sm:hidden font-semibold text-green-950">
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
@@ -211,14 +201,35 @@
 </template>
 
 <script setup>
-const { get, put, del, staticURL } = useApi();
-const isOpen = ref(false);
+// definePageMeta({
+//   layout: "dashboard",
+// });
+const { get, staticURL } = useApi();
+const { formatDate } = useUtils();
+
+// geo filter
+
+const regions = ref([]);
+const cities = ref();
+
+const selected_country = ref("Bangladesh");
+const regions_response = await get(`/cities-light/regions/?country=${selected_country.value}`);
+regions.value = regions_response.data;
+const selected_region = ref();
+watch(selected_region, async () => {
+  console.log(selected_region.value);
+  const cities_response = await get(`/cities-light/cities/?region=${selected_region.value}`);
+  cities.value = cities_response.data;
+});
+
+const selected_city = ref();
+
+// geo filter
+
 const categoryTitle = ref("");
 const services = ref([]);
 const router = useRoute();
-const country = ref(["BD"]);
-const state = ref([]);
-const city = ref([]);
+
 const form = ref({
   country: "",
   state: "",
@@ -233,75 +244,11 @@ async function fetchServices() {
   console.log(response);
 
   services.value = response.data?.filter(
-    (service) =>
-      service.service_status.toLowerCase() === "approved" &&
-      service.active_service
+    service => service.service_status.toLowerCase() === "approved" && service.active_service
   );
   categoryTitle.value = response.data[0]?.category_details.title;
 }
 fetchServices();
-
-// async function getClassifiedGigsCategory() {
-//   try {
-//     const [categoriesResponse] = await Promise.all([
-//       get("/classified-categories/"),
-//     ]);
-
-//     categories.value = categoriesResponse.data;
-//   } catch (error) {
-//     console.error("Error fetching micro-gigs data:", error);
-//   }
-// }
-
-// onMounted(() => {
-//   form.value.country = "BD";
-//   getClassifiedGigsCategory();
-// });
-
-const ApiUrl = "https://api.countrystatecity.in/v1/countries";
-const headerOptions = {
-  method: "GET",
-  headers: {
-    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
-  },
-  redirect: "follow",
-};
-
-// async function getCountry() {
-//   const res = await $fetch(ApiUrl, headerOptions);
-//   country.value = res;
-//   console.log(res);
-// }
-// onMounted(() => {
-//   setTimeout(() => {
-//     getCountry();
-//   }, 100);
-// });
-
-watch(
-  () => form.value.country,
-  async (newValue, oldValue) => {
-    if (newValue) {
-      const res = await $fetch(
-        `${ApiUrl}/${form.value.country}/states/`,
-        headerOptions
-      );
-      state.value = res;
-    }
-  }
-);
-watch(
-  () => form.value.state,
-  async (newValue, oldValue) => {
-    if (newValue) {
-      const res = await $fetch(
-        `${ApiUrl}/${form.value.country}/states/${form.value.state}/cities`,
-        headerOptions
-      );
-      city.value = res;
-    }
-  }
-);
 
 async function filterSearch() {
   const res = await get(

@@ -104,7 +104,7 @@
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
                         <span class="text-sm"
-                          >Posted: {{ service?.created_at }}</span
+                          >Posted: {{ formatDate(service?.created_at) }}</span
                         >
                       </p>
                     </div>
@@ -151,7 +151,7 @@
                       size="md"
                       color="primary"
                       variant="outline"
-                      label="Delete"
+                      label="Complete"
                       @click.prevent="handlePop(service.id)"
                     />
                     <!-- <UButton
@@ -182,7 +182,7 @@
             color="primary"
             variant="solid"
             label="Confirm Delete"
-            @click="handleAction(currentId, 'delete')"
+            @click="handleAction(currentId, 'complete')"
           />
         </div>
       </UModal>
@@ -194,22 +194,12 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { get, put, del, staticURL } = useApi();
+const { get, put, staticURL } = useApi();
+const { formatDate } = useUtils();
 const isOpen = ref(false);
-const { user } = useAuth();
 const categoryTitle = ref("");
 const services = ref([]);
-const router = useRoute();
-const country = ref(["BD"]);
-const state = ref([]);
-const city = ref([]);
-const form = ref({
-  country: "",
-  state: "",
-  city: "",
-  title: "",
-  category: "",
-});
+
 const currentId = ref();
 function handlePop(id) {
   isOpen.value = true;
@@ -224,8 +214,8 @@ async function fetchServices() {
 fetchServices();
 
 async function handleAction(id, action, val) {
-  const res = await (action === "delete"
-    ? del("/delete-user-classified-post/" + id + "/")
+  const res = await (action === "complete"
+    ? put("/update-user-classified-post/" + id + "/")
     : put("/update-user-classified-post/" + id + "/", {
         active_service: val,
       }));
@@ -234,63 +224,6 @@ async function handleAction(id, action, val) {
     fetchServices();
   }
 }
-
-onMounted(() => {
-  form.value.country = "BD";
-});
-
-const ApiUrl = "https://api.countrystatecity.in/v1/countries";
-const headerOptions = {
-  method: "GET",
-  headers: {
-    "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
-  },
-  redirect: "follow",
-};
-
-// async function getCountry() {
-//   const res = await $fetch(ApiUrl, headerOptions);
-//   country.value = res;
-//   console.log(res);
-// }
-// onMounted(() => {
-//   setTimeout(() => {
-//     getCountry();
-//   }, 100);
-// });
-
-watch(
-  () => form.value.country,
-  async (newValue, oldValue) => {
-    if (newValue) {
-      const res = await $fetch(
-        `${ApiUrl}/${form.value.country}/states/`,
-        headerOptions
-      );
-      state.value = res;
-    }
-  }
-);
-watch(
-  () => form.value.state,
-  async (newValue, oldValue) => {
-    if (newValue) {
-      const res = await $fetch(
-        `${ApiUrl}/${form.value.country}/states/${form.value.state}/cities`,
-        headerOptions
-      );
-      city.value = res;
-    }
-  }
-);
-
-// async function filterSearch() {
-//   const res = await get(
-//     `/classified-posts/filter/?category=${form.value.category}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
-//   );
-//   console.log(res);
-//   services.value = res.data;
-// }
 </script>
 
 <style scoped>

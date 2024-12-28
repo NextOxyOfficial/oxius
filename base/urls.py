@@ -1,7 +1,17 @@
-from django.urls import path
+from django.urls import path, include
 from .views import *
 from .pay import *
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,TokenVerifyView)
+
+
+from rest_framework.routers import DefaultRouter
+from .cities_light_views import CityViewSet, RegionViewSet, CountryViewSet
+
+router = DefaultRouter()
+router.register(r'cities', CityViewSet)
+router.register(r'regions', RegionViewSet)
+router.register(r'countries', CountryViewSet)
+
 
 urlpatterns = [
   path('logo/',getLogo,name='logo'),
@@ -49,4 +59,5 @@ urlpatterns = [
   # ?amount=1000&order_id=001&currency=BDT&customer_name=Mahabubul+Hasan&customer_address=Mohakhali&customer_phone=01311310975&customer_city=Dhaka&customer_post_code=1229
   path('verify-pay/',verifyPayment), 
   # ?sp_order_id=ADSYCLUB_67613e32050d9
+  path('cities-light/', include(router.urls)),
 ]

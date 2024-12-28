@@ -6,16 +6,14 @@ from django.utils.text import slugify
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
+from decimal import Decimal
 
 # Create your models here.
 
-class NID(models.Model):
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
-    def __str__(self):
-      return str(self.id)
 
 class User(AbstractUser):
   refer  = models.ManyToManyField('self',null=True, blank=True) # Last Click referral system
+  refer_count = models.IntegerField(default=0)
   commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00) # in percentage
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -29,7 +27,7 @@ class User(AbstractUser):
   is_active = models.BooleanField(default=True)
   phone = models.CharField(unique=True,max_length=100, default='', blank=True)
   email = models.EmailField(unique=True,default='', null=True)
-  nid = models.ManyToManyField(NID,null=True, blank=True)
+  kyc_pending = models.BooleanField(default=False)
   kyc = models.BooleanField(default=False)
   address = models.CharField(max_length=256,blank=True, default="")
   city=models.CharField(max_length=256,blank=True, default="")
@@ -40,7 +38,7 @@ class User(AbstractUser):
   USER_TYPES = [
       ('admin', 'Admin'),
       ('user', 'User'),
-      ('vendor', 'Vendor'),
+      ('vendor', 'Vendor'), 
   ]
   user_type = models.CharField(
       max_length=20, choices=USER_TYPES, default='user')
@@ -48,8 +46,33 @@ class User(AbstractUser):
   def __str__(self):
       return self.email
 
+class NID(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='nid')
+    front = models.ImageField(upload_to='images/', blank=True, null=True)
+    back = models.ImageField(upload_to='images/', blank=True, null=True)
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    completed = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
+    def __str__(self):
+      return str(self.id)
+    def save(self, *args, **kwargs):
+        if not self.completed and not self.approved and not self.rejected:
+            self.user.kyc_pending = True
+            self.user.save()
+        if self.approved and not self.completed:
+            self.completed = True
+            self.user.kyc_pending = False
+            self.user.kyc = True
+            self.user.save()
 
+        if self.rejected and not self.completed:
+            self.completed = True
+            self.user.kyc_pending = False
+            self.user.kyc = False
+            self.user.save()
 
+        super(NID, self).save(*args, **kwargs)
 
 
 class Logo(models.Model):
@@ -167,23 +190,43 @@ class MicroGigPost(models.Model):
     target_country = models.CharField(blank=True, null=True)
     target_device = models.ManyToManyField(TargetDevice,blank=True, null=True)
     total_cost = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    balance = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     accepted_terms = models.BooleanField(default=True)
     accepted_privacy = models.BooleanField(default=True)
     active_gig = models.BooleanField(default=True)
+    stop_gig = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     GIG_STATUS = [
       ('pending', 'Pending'),
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
+      ('completed', 'Completed'),
     ]
     gig_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        # Check if the gig is being stopped
+        if self.stop_gig and not self.gig_status == 'completed':
+            if self.required_quantity > 0:
+                # Refund the unfulfilled portion
+                self.user.balance += self.balance
+                self.user.save()
+                self.balance = 0
+                self.gig_status = 'completed'
+
+        # Check if the gig is complete
+        if self.filled_quantity >= self.required_quantity:
+            self.active_gig = False
+            self.gig_status = 'completed'
+
+        super(MicroGigPost, self).save(*args, **kwargs)
 
 class MicroGigPostTask(models.Model):
-    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_worker')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='micro_gig_worker')
     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -202,12 +245,12 @@ class MicroGigPostTask(models.Model):
         # Check if task is neither completed, approved, nor rejected
         if not self.completed and not self.approved and not self.rejected:
             self.gig.filled_quantity += 1
+            self.gig.balance -= self.gig.price
             self.gig.save()
             self.user.pending_balance += self.gig.price
             self.user.save()
-
         # Mark as completed if approved
-        if self.approved and self.completed:
+        if self.approved and not self.completed:
             self.completed = True
             self.user.balance += self.gig.price
             self.user.pending_balance -= self.gig.price
@@ -217,6 +260,7 @@ class MicroGigPostTask(models.Model):
         # Reduce filled quantity and mark as completed if rejected
         if self.rejected and not self.completed:
             self.gig.filled_quantity -= 1
+            self.gig.balance += self.gig.price
             self.gig.save()
             self.completed = True
             self.user.pending_balance -= self.gig.price
@@ -287,8 +331,8 @@ class Balance(models.Model):
     amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     payable_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     received_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-    merchant_invoice_no = models.CharField(default='',null=True)
-    shurjopay_order_id = models.CharField(default='',null=True)
+    merchant_invoice_no = models.CharField(default='',blank=True,null=True)
+    shurjopay_order_id = models.CharField(default='',blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed = models.BooleanField(default=False)
@@ -300,9 +344,15 @@ class Balance(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Service: {self.payable_amount}"
     def save(self, *args, **kwargs):
+        # Normalize transaction_type to lowercase for consistency
+        self.transaction_type = (self.transaction_type or '').lower()
+        # Handle withdrawal
+        if self.transaction_type == 'withdraw':
+            self.user.balance -= self.payable_amount
+            self.user.save()
         # Check if is neither completed, approved, nor rejected
         if not self.completed and not self.approved and not self.rejected:
-            self.user.balance -= self.amount
+            self.user.balance -= Decimal(self.amount)
             self.user.save()
 
         if self.approved and not self.completed:
@@ -318,6 +368,8 @@ class Balance(models.Model):
             self.user.balance -= self.amount
             self.user.save()
             # refund balance
+        if self.transaction_type == 'withdraw':
+            self.user.balance -= self.payable_amount
 
         # Call the original save method
         super(Balance, self).save(*args, **kwargs)
