@@ -46,9 +46,10 @@
         <div class="space-y-2 md:px-6 pb-8">
           <p class="text-xl font-medium sm:text-left">Instruction</p>
 
-          <p class="text-base text-justify">
-            {{ gig.instructions }}
-          </p>
+          <div
+            class="text-base text-justify prose"
+            v-html="gig.instructions"
+          ></div>
           <!-- <UDivider label="" class="pt-4" /> -->
 
           <p class="text-xl font-medium !mt-8 sm:text-left">

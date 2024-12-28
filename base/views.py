@@ -226,7 +226,11 @@ def post_micro_gigs(request):
     serializer = MicroGigPostSerializer(data=data)
     if serializer.is_valid():
         if user.balance < data['total_cost']:
-            raise ValueError("Insufficient balance")
+            # raise ValueError("Insufficient balance")
+            return Response(
+        {'message': 'Insufficient balance', 'errors': 'Insufficient balance'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
         user.balance -= Decimal(data['total_cost'])
         user.save()
         new_micro_gig_post = serializer.save(user=user)

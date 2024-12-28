@@ -6,7 +6,7 @@
       v-model="currentLanguage"
       :options="languageOption"
       option-attribute="label"
-      class="w-32"
+      class="sm:w-32"
     >
       <template #leading>
         <UIcon

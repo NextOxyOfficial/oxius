@@ -185,6 +185,8 @@
                         class="size-14 rounded-full"
                         @error="handleImageError(i)"
                       /> -->
+                      {{ gig.medias }}{{ !errorIndex.includes(i) }}
+                      {{ gig.category_details }}
                       <NuxtImg
                         v-if="gig.medias[0]?.image && !errorIndex.includes(i)"
                         :src="gig.category_details?.image"
@@ -230,7 +232,7 @@
                     </p>
 
                     <UButton
-                      v-if="user?.user?.id !== gig.user.id"
+                      v-if="user?.user && user?.user?.id !== gig.user.id"
                       :disabled="user?.user?.id === gig.user.id"
                       size="sm"
                       color="primary"
@@ -240,13 +242,22 @@
                       Earn
                     </UButton>
                     <UButton
-                      v-else
+                      v-if="user?.user?.id === gig.user.id"
                       :disabled="user?.user?.id === gig.user.id"
                       size="sm"
                       color="primary"
                       variant="outline"
                     >
                       Ineligible
+                    </UButton>
+                    <UButton
+                      v-if="!user?.user"
+                      size="sm"
+                      color="primary"
+                      variant="outline"
+                      :to="`/auth/login/`"
+                    >
+                      Earn
                     </UButton>
                   </div>
                 </div>

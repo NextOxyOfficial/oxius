@@ -116,8 +116,8 @@
             }"
             required
           >
-            <p>
-              {{
+            <p class="inline-flex gap-0.5 items-center">
+              <UIcon name="i-mdi:currency-bdt" />{{
                 form.price * form.required_quantity +
                 (form.price * form.required_quantity * 10) / 100
               }}
@@ -333,8 +333,13 @@
             />
           </UFormGroup>
         </div>
-
-        <div class="text-center py-6">
+        <div v-if="showError">
+          <span class="text-sm text-red-500">{{ showError }}!</span>
+          <nuxt-link to="/deposit-withdraw/" class="text-blue-950 text-sm">
+            Click here to make a deposit</nuxt-link
+          >
+        </div>
+        <div class="text-center pb-6">
           <UButton
             v-if="user.user.kyc"
             class="px-8 mt-10"
@@ -387,6 +392,7 @@ const network = ref([]);
 const device = ref([]);
 const country = ref([{ title: "Bangladesh" }]);
 const checkSubmit = ref(false);
+const showError = ref("");
 
 const form = ref({
   price: 0,
@@ -456,9 +462,14 @@ async function handlePostGig() {
   console.log(submitValue);
 
   const res = await post("/post-micro-gigs/", submitValue);
+  console.log(res);
+
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "MicroGig Added" });
+  } else {
+    toast.add({ title: res.error.data.errors });
+    showError.value = res.error.data.errors;
   }
 }
 

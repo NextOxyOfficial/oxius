@@ -18,6 +18,11 @@
             {{ row.gig.price }}
           </p>
         </template>
+        <template #created_at-data="{ row }">
+          <p>
+            {{ formatDate(row.created_at) }}
+          </p>
+        </template>
         <template #title-data="{ row }">
           <p>
             {{ row.gig.title }}
@@ -35,8 +40,7 @@
 <script setup>
 const { user } = useAuth();
 const { get } = useApi();
-
-const route = useRoute();
+const { formatDate } = useUtils();
 
 const pendingGigs = ref([]);
 

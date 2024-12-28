@@ -89,6 +89,96 @@
           to="/classified-categories/new/"
         />
       </div>
+      <div class="search mt-4" v-if="search.length">
+        <UCard
+          :ui="{
+            background: '',
+            ring: '',
+            shadow: '',
+            rounded: '',
+            body: {
+              padding: 'p-0 sm:p-0 flex-1 w-full',
+            },
+            header: {
+              padding: 'p-0',
+            },
+            footer: {
+              padding: 'p-0',
+            },
+          }"
+          class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
+          v-for="(service, i) in search.filter(
+            (service) => service.service_status.toLowerCase() === 'approved'
+          )"
+          :key="{ i }"
+        >
+          <NuxtLink :to="`/classified-categories/details/${service.id}`">
+            <div
+              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+            >
+              <div
+                class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
+              >
+                <div class="flex flex-row gap-4 items-center sm:items-start">
+                  <div>
+                    <NuxtImg
+                      :src="staticURL + service.medias[0].image"
+                      class="size-14 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <h3
+                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
+                    >
+                      {{ service?.title }}
+                    </h3>
+
+                    <div
+                      class="flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
+                    >
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-heroicons-map-pin-solid" />
+                        <span class="text-sm first-letter:uppercase">{{
+                          service?.location
+                        }}</span>
+                      </p>
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-tabler:category-filled" />
+                        <span class="text-sm">{{
+                          service?.category_details.title
+                        }}</span>
+                      </p>
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-heroicons-clock-solid" />
+                        <span class="text-sm"
+                          >Posted: {{ formatDate(service?.created_at) }}</span
+                        >
+                      </p>
+                      <p
+                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                      >
+                        <UIcon name="i-mdi:currency-bdt" />
+                        {{ service.negotiable ? "Negotiable" : service.price }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p
+                    class="hidden text-sm md:text-base sm:flex sm:items-center sm:justify-end sm:my-3 font-semibold text-green-950"
+                  >
+                    <UIcon name="i-mdi:currency-bdt" />
+                    {{ service.negotiable ? "Negotiable" : service.price }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </NuxtLink>
+        </UCard>
+      </div>
+      <UCard v-if="searchError" class="py-16 text-center mt-6">
+        <p>No offers have been found!</p>
+      </UCard>
       <div class="services mt-4" v-if="services.length">
         <UCard
           :ui="{
@@ -196,6 +286,8 @@ const form = ref({
 
 const categoryTitle = ref("");
 const services = ref([]);
+const search = ref([]);
+const searchError = ref(false);
 const router = useRoute();
 
 // geo filter
@@ -235,12 +327,14 @@ async function fetchServices() {
 fetchServices();
 
 async function filterSearch() {
-  console.log(form.value);
-
   const res = await get(
     `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
-  console.log(res);
-  services.value = res.data;
+
+  if (res.data.length > 0) {
+    search.value = res.data;
+  } else {
+    searchError.value = true;
+  }
 }
 </script>

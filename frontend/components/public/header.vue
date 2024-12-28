@@ -36,14 +36,35 @@
           class="text-center mx-auto mb-4"
         />
         <UVerticalNavigation
-          :links="links"
+          :links="[
+            {
+              label: $t('home'),
+              to: '/',
+              icon: 'i-heroicons:home',
+            },
+            {
+              label: $t('classified_service'),
+              to: '#classified-services',
+              icon: 'i-heroicons:clipboard-document-list',
+            },
+            {
+              label: $t('earn_money'),
+              to: '#micro-gigs',
+              icon: 'i-healthicons:money-bag-outline',
+            },
+            {
+              label: $t('faq'),
+              to: '/coming-soon/',
+              icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
+            },
+          ]"
           :ui="{
             inactive: 'after:hidden before:hidden',
             active: 'after:hidden before:hidden',
             padding: 'py-2',
           }"
         />
-        <!-- <PublicTranslateHandler class="px-2 mt-3" /> -->
+        <PublicTranslateHandler class="px-2 mt-3" />
       </USlideover>
       <div class="flex items-center justify-between gap-2 lg:gap-6">
         <div class="block md:hidden">
@@ -91,7 +112,8 @@
             }"
           />
         </div>
-        <div v-if="!user">
+        <div v-if="!user" class="flex relative menu-container">
+          <PublicTranslateHandler class="px-2 max-sm:hidden" />
           <UButton
             to="/auth/login/"
             label="Login/Register"
