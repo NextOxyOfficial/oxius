@@ -28,11 +28,11 @@
               size: {
                 md: 'text-base',
               },
-              padding: { md: 'pl-[60px]' },
+              // padding: { md: 'pl-[60px]' },
               placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
             }"
           >
-            <span class="absolute left-2 top-2">I Need</span>
+            <!-- <span class="absolute left-2 top-2">I Need</span> -->
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center">

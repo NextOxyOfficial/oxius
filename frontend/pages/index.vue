@@ -120,7 +120,7 @@
                   <UDivider label="" class="mb-2 px-4" />
                 </li>
 
-                <li v-for="category in categoryArray" :key="category.id">
+                <li v-for="category in categoryArray" :key="category?.id">
                   <UButton
                     :ui="{
                       rounded: '',
@@ -150,11 +150,13 @@
                   placeholder="Filter"
                 />
               </div>
+
               <UCard
                 v-for="(gig, i) in filteredMicroGigs.filter(
                   (gig) =>
                     gig.gig_status.toLowerCase() === 'approved' &&
-                    gig.active_gig
+                    gig.active_gig &&
+                    gig.user?.id
                 )"
                 :key="i"
                 :ui="{
@@ -172,7 +174,10 @@
                 }"
                 class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
               >
-                <div class="flex flex-col sm:flex-row sm:justify-between">
+                <div
+                  class="flex flex-col sm:flex-row sm:justify-between"
+                  v-if="gig.user"
+                >
                   <div class="flex gap-4">
                     <div>
                       <!-- <NuxtImg
@@ -326,7 +331,8 @@ async function getClassifiedCategories() {
 
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
-    const isActiveAndApproved = gig.active_gig && gig.gig_status === "approved";
+    const isActiveAndApproved =
+      gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
 
     if (!acc[category]) {
       acc[category] = { total: 0, active: 0 };
@@ -344,11 +350,11 @@ async function getClassifiedCategories() {
     ([category, { total, active }]) => ({ category, total, active })
   );
 }
-const previewGid = ref();
-function showGig(gid) {
-  previewGid.value = gid;
-  isOpen.value = true;
-}
+// const previewGid = ref();
+// function showGig(gid) {
+//   previewGid.value = gid;
+//   isOpen.value = true;
+// }
 setTimeout(() => {
   getClassifiedCategories();
 }, 20); // Filtered microGigs based on selected category
@@ -367,7 +373,6 @@ const selectCategory = (category) => {
 const loadMore = async (url) => {
   const getRecentNext = async (url) => {
     const res = await $fetch(`${url}`);
-    console.log(res);
     services.value.next = res.next;
     services.value.results = [...services.value.results, ...res.results];
     // recents.value.next = data?.value?.next;
@@ -394,7 +399,7 @@ watch(
     if (!newValue) {
       try {
         const res = await get(`/classified-categories/`);
-        console.log(res);
+
         services.value = res.data;
       } catch (error) {
         console.error("Error fetching classified categories:", error);

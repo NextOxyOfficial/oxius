@@ -7,15 +7,13 @@ from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
 from decimal import Decimal
+import random
+import string
 
 # Create your models here.
 
 
-class User(AbstractUser):
-  refer  = models.ManyToManyField('self',null=True, blank=True) # Last Click referral system
-  refer_count = models.IntegerField(default=0)
-  commission_earned = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-  commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00) # in percentage
+class User(AbstractUser): 
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
   name = models.CharField(max_length=100,blank=True, default="")
@@ -43,10 +41,23 @@ class User(AbstractUser):
   ]
   user_type = models.CharField(
       max_length=20, choices=USER_TYPES, default='user')
+  refer  = models.ManyToManyField('self',null=True, blank=True) 
+  refer_count = models.IntegerField(default=0)
+  commission_earned = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+  commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00)
+  referral_code = models.CharField(max_length=10, unique=True, editable=False)
+  nid_number = models.CharField(unique=True,null=True, blank=True,max_length=16)
 
   def __str__(self):
       return self.email
   def save(self, *args, **kwargs):
+      if not self.referral_code:
+            # Generate a unique referral code
+            while True:
+                code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                if not User.objects.filter(referral_code=code).exists():
+                    self.referral_code = code
+                    break
       if self.balance < 0:
         raise ValueError("Balance can't be negative")
       super(User, self).save(*args, **kwargs)

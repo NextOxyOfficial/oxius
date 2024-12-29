@@ -106,7 +106,7 @@
             size="md"
             color="white"
             class="text-xs py-0.5 px-1 w-72"
-            :value="`https://adsyclub.com/auth/login/?ref=${user.user.username}`"
+            :value="`https://adsyclub.com/auth/login/?ref=${user.user.referral_code}`"
           />
           <UButton
             size="xs"
@@ -115,7 +115,7 @@
             class="py-1 px-1.5"
             @click="
               CopyToClip(
-                `https://adsyclub.com/auth/login/?ref=${user.user.username}`
+                `https://adsyclub.com/auth/login/?ref=${user.user.referral_code}`
               )
             "
             label="Copy"
@@ -138,6 +138,7 @@
 <script setup>
 const { user } = useAuth();
 const { t } = useI18n();
+const toast = useToast();
 defineProps({
   user: {
     type: Object,
@@ -152,5 +153,6 @@ function CopyToClip(text) {
   //Copy text to clipboard
   console.log(text);
   navigator.clipboard.writeText(text);
+  toast.add({ title: "Link copied" });
 }
 </script>

@@ -31,6 +31,20 @@ class UserSerializer(serializers.ModelSerializer):
         # Hash the password
         validated_data['password'] = make_password(validated_data['password'])
         return User.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        # Check if the password is being updated
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+            validated_data.pop('password', None)  # Remove from validated_data
+
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+    
     def to_representation(self, instance):
         """Customize the serialized output."""
         representation = super().to_representation(instance)
