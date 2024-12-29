@@ -228,6 +228,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
 const { jwtLogin } = useAuth();

@@ -1,10 +1,10 @@
 <script setup>
-const { login, jwtLogin, logout, user, isAuthenticated, toBalance } = useAuth();
+const { login, jwtLogin, logout, user } = useAuth();
 
 onMounted(() => {
   setTimeout(() => {
     if (!useCookie("jwt").value) {
-      // navigateTo("/auth/login/");
+      navigateTo("/auth/login/");
     } else {
       jwtLogin();
     }
