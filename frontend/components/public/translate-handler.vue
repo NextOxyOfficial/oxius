@@ -10,14 +10,14 @@
     >
       <template #leading>
         <UIcon
-          v-if="currentLanguage.icon === 'i-flag:us-4x3'"
+          v-if="currentLanguage?.icon === 'i-flag:us-4x3'"
           name="i-flag:us-4x3"
         />
         <UIcon v-else name="i-flag:bd-4x3" />
         <!-- <UIcon :name="currentLanguage.icon" /> -->
       </template>
       <template #option="{ option: language }">
-        <UIcon :name="language.icon" />
+        <UIcon :name="language?.icon" />
         <span>{{ language.label }}</span>
       </template>
     </USelectMenu>
@@ -46,9 +46,8 @@ watch(currentLanguage, () => {
   language.value = currentLanguage.value;
 });
 onMounted(() => {
-  currentLanguage.value = language.value;
-
   if (language.value) {
+    currentLanguage.value = language.value;
     setLocale(language.value.value);
   } else {
     setLocale("bn");
