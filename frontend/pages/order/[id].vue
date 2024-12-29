@@ -155,7 +155,11 @@
                   v-for="(img, i) in medias"
                   :key="i"
                 >
-                  <img :src="img" :alt="`Uploaded file ${i}`" />
+                  <img
+                    :src="img"
+                    :alt="`Uploaded file ${i}`"
+                    class="h-full object-contain"
+                  />
                   <div
                     class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
                     @click="deleteUpload(i)"
@@ -203,11 +207,23 @@
                 </template>
                 <UCheckbox name="check" v-model="accepted_terms" />
               </UFormGroup>
+              <p
+                class="text-sm text-red-500"
+                v-if="!accepted_terms && checkSubmit"
+              >
+                Accept Terms & Condition, Privacy Policy
+              </p>
               <UCheckbox
                 name="notifications"
                 v-model="accepted_condition"
                 label="I am aware that fake and fraud submission may lead to account ban!"
               />
+              <p
+                class="text-sm text-red-500"
+                v-if="!accepted_condition && checkSubmit"
+              >
+                Accept Conditions
+              </p>
             </div>
           </div>
           <div class="text-center">
@@ -270,7 +286,6 @@ async function submitGig() {
     !accepted_condition.value
   ) {
     checkSubmit.value = true;
-    toast.add({ title: "Enter your micro job detail contents" });
     return;
   } else {
     const res = await post(`/user-micro-gig-task-post/`, {

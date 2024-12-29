@@ -224,6 +224,12 @@ const open = ref(true);
 const logo = ref({});
 const isOpen = ref(false);
 
+const colorMode = useColorMode();
+colorMode.preference = "light";
+onMounted(() => {
+  localStorage.setItem("nuxt-color-mode", "light");
+});
+
 async function getLogo() {
   const res = await get("/logo/");
   logo.value = res.data;
@@ -260,65 +266,5 @@ watch(router.currentRoute, () => {
 useSeoMeta({
   ogImage: "/static/frontend/favicon.ico",
   favicon: "/static/frontend/favicon.ico",
-  // title: "Easy Business Manager",
 });
-const links = [
-  {
-    label: t("home"),
-    to: "/",
-    icon: "i-heroicons:home",
-  },
-  {
-    label: t("classified_service"),
-    to: "#classified-services",
-    icon: "i-heroicons:clipboard-document-list",
-  },
-  {
-    label: t("earn_money"),
-    to: "#micro-gigs",
-    icon: "i-healthicons:money-bag-outline",
-  },
-  {
-    label: t("faq"),
-    to: "/coming-soon/",
-    icon: "i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question",
-  },
-];
-
-const accountLinks = [
-  [
-    {
-      label: t("profile"),
-      icon: "i-heroicons-user",
-      to: "/my-account/",
-    },
-    {
-      label: t("transaction"),
-      to: "/deposit-withdraw",
-      icon: "i-heroicons:currency-dollar",
-    },
-    {
-      label: t("upload_center"),
-      icon: "material-symbols:drive-folder-upload-outline-sharp",
-      to: "/upload-center/",
-    },
-    {
-      label: t("settings"),
-      icon: "material-symbols:settings-outline",
-      to: "/settings/",
-    },
-    {
-      label: t("support"),
-      icon: "i-heroicons-question-mark-circle",
-      to: "/contact-us/",
-    },
-    {
-      label: t("logout"),
-      icon: "bitcoin-icons:exit-filled",
-      click: () => {
-        logout();
-      },
-    },
-  ],
-];
 </script>

@@ -391,7 +391,9 @@ async function handleForm() {
 
     if (res.data?.data?.email) {
       toast.add({ title: res.data?.message });
-      res.data.data.image = staticURL + res.data.data.image;
+      res.data.data.image = res.data.data.image
+        ? staticURL + res.data.data.image
+        : null;
       userProfile.value = res.data.data;
       errors.value = {};
     } else {
