@@ -42,7 +42,7 @@ admin.site.register(MicroGigPostTask, MicroGigPostTaskAdmin)
 
 class BalanceAdmin(admin.ModelAdmin):
     
-    list_display = ('user', 'bank_status', 'payment_method','payment_confirmed_at','amount', 'payable_amount','received_amount','merchant_invoice_no','created_at', 'updated_at','completed','approved','rejected')
+    list_display = ('amount', 'user', 'bank_status', 'payment_method','payment_confirmed_at', 'payable_amount','received_amount','merchant_invoice_no','created_at', 'updated_at','completed','approved','rejected')
     
     list_filter = ('user', 'bank_status', 'payment_method','payment_confirmed_at','created_at', 'updated_at','completed','approved','rejected')
     
