@@ -26,7 +26,7 @@ admin.site.register(MicroGigPostMedia)
 
 
 class MicroGigPostAdmin(admin.ModelAdmin):
-    list_display = ('user', 'category', 'title', 'price', 'required_quantity', 'filled_quantity', 'instructions',  'total_cost', 'balance', 'active_gig', 'stop_gig', 'created_at', 'updated_at', 'gig_status')
+    list_display = ('title','user', 'category',  'price', 'required_quantity', 'filled_quantity', 'instructions',  'total_cost', 'balance', 'active_gig', 'stop_gig', 'created_at', 'updated_at', 'gig_status')
     
     list_filter = ('user', 'category', 'active_gig', 'stop_gig', 'created_at', 'updated_at')
     
@@ -52,7 +52,7 @@ admin.site.register(Balance, BalanceAdmin)
 
 
 class PendingTaskAdmin(admin.ModelAdmin):
-    list_display = ('user','title','price','created_at','updated_at')
+    list_display = ('title','user','title','price','created_at','updated_at')
     
 admin.site.register(PendingTask, PendingTaskAdmin)
 
@@ -76,7 +76,7 @@ admin.site.register(TargetNetwork, TargetNetworkAdmin)
 
 
 class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
-    list_display = ('user', 'category', 'title', 'price','location','negotiable', 'country', 'state', 'city', 'instructions','active_service', 'service_status', 'updated_at')
+    list_display = ('title', 'user', 'category',  'price','location','negotiable', 'country', 'state', 'city', 'instructions','active_service', 'service_status', 'updated_at')
     
 admin.site.register(ClassifiedCategoryPost, ClassifiedCategoryPostAdmin)
 
