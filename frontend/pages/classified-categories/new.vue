@@ -307,6 +307,7 @@
         </p>
         <div class="text-center">
           <UButton
+            :loading="isLoading"
             v-if="user.user.kyc"
             class="px-8"
             size="lg"
@@ -354,7 +355,7 @@
                 </h2>
 
                 <p className="text-gray-600 mb-6">
-                  Please Upload your NID to get permission to post a service ad.
+                  Please Upload your ID to get permission to post a service ad.
                 </p>
 
                 <!-- <button
@@ -403,6 +404,7 @@ const country = ref([]);
 const state = ref([]);
 const city = ref([]);
 const checkSubmit = ref(false);
+const isLoading = ref(false);
 
 const form = ref({
   price: 0,
@@ -485,6 +487,7 @@ async function handlePostGig() {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
+  isLoading.value = true;
   const { medias, ...rest } = form.value;
   rest.service_status = "pending";
 
@@ -495,6 +498,7 @@ async function handlePostGig() {
     navigateTo("/");
     toast.add({ title: "Classified Service Added" });
   }
+  isLoading.value = false;
 }
 
 function handleFileUpload(event, field) {

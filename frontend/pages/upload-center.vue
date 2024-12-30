@@ -2,7 +2,7 @@
   <UContainer class="mt-20 mb-12">
     <h1 class="text-center text-4xl my-8">Upload Center</h1>
     <UDivider label="" class="mb-8" />
-    <div class="w-1/2" v-if="Boolean(!formData.id)">
+    <div class="w-2/3 sm:w-1/2 max-sm:mx-auto" v-if="form && !form?.pending">
       <div class="flex gap-1 items-center mb-3">
         <span v-if="user.user.kyc" class="font-semibold">{{
           user.user.name
@@ -15,8 +15,10 @@
         />
       </div>
       <p class="text-lg md:text-xl font-medium mb-5">Upload Document</p>
-      <p class="text-sm md:text-base font-medium mb-2">NID Front</p>
-      <div class="flex flex-wrap flex-col gap-5">
+      <p class="text-sm md:text-base font-medium mb-2" v-if="!form.front">
+        NID Front
+      </p>
+      <div class="flex flex-wrap flex-col gap-5" v-if="!form.front">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.front">
           <img :src="form.front" :alt="`Uploaded file `" class="h-full" />
           <div
@@ -48,8 +50,10 @@
       <p class="text-sm text-red-500" v-if="errors.front">
         NID front is required
       </p>
-      <p class="text-sm md:text-base font-medium mb-2 mt-6">NID Back</p>
-      <div class="flex flex-wrap flex-col gap-5">
+      <p class="text-sm md:text-base font-medium mb-2 mt-6" v-if="!form.back">
+        NID Back
+      </p>
+      <div class="flex flex-wrap flex-col gap-5" v-if="!form.back">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.back">
           <img :src="form.back" :alt="`Uploaded file `" class="h-full" />
           <div
@@ -81,10 +85,10 @@
       <p class="text-sm text-red-500" v-if="errors.back">
         NID back is required
       </p>
-      <p class="text-sm md:text-base font-medium mb-2 mt-6">
+      <p class="text-sm md:text-base font-medium mb-2 mt-6" v-if="!form.selfie">
         Selfie with document
       </p>
-      <div class="flex flex-wrap flex-col gap-5">
+      <div class="flex flex-wrap flex-col gap-5" v-if="!form.selfie">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.selfie">
           <img :src="form.selfie" :alt="`Uploaded file `" class="h-full" />
           <div
@@ -155,21 +159,26 @@
     <div v-else>
       <UCard>
         <div>
-          <h4
-            class="text-center text-xl my-8 flex items-center justify-center gap-1"
+          <div
+            className="rounded-full bg-yellow-100 p-3 mb-4 max-w-16 flex items-center justify-center mx-auto"
           >
-            <div class="border border-yellow-400 p-2 rounded-full">
-              <UIcon name="i-heroicons-clock" />
-            </div>
-            ID verification is pending
+            <!-- <AlertCircle className="h-8 w-8 text-yellow-600" /> -->
+            <UIcon
+              name="i-line-md-alert-circle"
+              class="h-8 w-8 text-yellow-600 mx-auto"
+            />
+          </div>
+          <h4
+            class="text-center text-xl my-4 flex items-center justify-center gap-2"
+          >
+            ID Verification is pending
           </h4>
         </div>
       </UCard>
     </div>
     <div>
       <UButton
-        v-if="Boolean(!formData.id)"
-        :disabled="Boolean(formData.id)"
+        v-if="!form.pending"
         :loading="isLoading"
         class="mt-8"
         size="md"
@@ -197,7 +206,6 @@ const form = ref({
   other_document: null,
 });
 const errors = ref({});
-const formData = ref({});
 
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
@@ -238,7 +246,7 @@ async function handleUploadSubmit() {
 
     if (res.data?.message) {
       toast.add({ title: res.data.message, type: "success" });
-      formData.value = res.data.data;
+      form.value = res.data.data;
     }
   } catch (error) {
     console.error("Error during submission:", error);
@@ -255,11 +263,11 @@ async function get_nid() {
     const { data } = await get("/get-user-nid/");
 
     if (data) {
+      form.value = data.data;
       form.value = {
         front: staticURL + data.data.front,
         back: staticURL + data.data.back,
       };
-      formData.value = data.data;
     }
   } catch (error) {
     console.log(error);

@@ -24,7 +24,13 @@
               placeholder="Search Category"
               v-model="title"
             />
-            <UButton color="primary" variant="solid" :label="t('search')" />
+            <UButton
+              color="primary"
+              type="submit"
+              variant="solid"
+              :loading="isLoading"
+              :label="t('search')"
+            />
           </UButtonGroup>
         </form>
         <UButton
@@ -290,6 +296,7 @@ const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
 const title = ref(null);
+const isLoading = ref(false);
 
 useHead({
   title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
@@ -390,6 +397,7 @@ const loadMore = async (url) => {
 };
 
 async function handleSearch() {
+  isLoading.value = true;
   try {
     const res = await get(`/classified-categories/?title=${title.value}`);
     console.log(res);
@@ -397,6 +405,7 @@ async function handleSearch() {
   } catch (error) {
     console.log(error);
   }
+  isLoading.value = false;
 }
 
 watch(

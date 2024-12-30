@@ -68,6 +68,7 @@ class NID(models.Model):
     back = models.ImageField(upload_to='images/', blank=True, null=True)
     selfie = models.ImageField(upload_to='images/', blank=True, null=True)
     other_document = models.ImageField(upload_to='images/', blank=True, null=True)
+    pending = models.BooleanField(default=True)
     completed = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)
@@ -78,12 +79,14 @@ class NID(models.Model):
             self.user.kyc_pending = True
             self.user.save()
         if self.approved and not self.completed:
+            self.pending = False
             self.completed = True
             self.user.kyc_pending = False
             self.user.kyc = True
             self.user.save()
 
         if self.rejected and not self.completed:
+            self.pending = False
             self.completed = True
             self.user.kyc_pending = False
             self.user.kyc = False
