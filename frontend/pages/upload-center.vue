@@ -44,6 +44,7 @@
           />
         </div>
       </div>
+      <p class="text-sm text-red-500" v-if="errors.front">NID front required</p>
       <p class="text-sm md:text-base font-medium mb-2">NID Back</p>
       <div class="flex flex-wrap gap-5">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.back">
@@ -73,6 +74,7 @@
           />
         </div>
       </div>
+      <p class="text-sm text-red-500" v-if="errors.back">NID back required</p>
     </div>
     <div>
       <UButton
@@ -99,6 +101,7 @@ const form = ref({
   front: null,
   back: null,
 });
+const errors = ref({});
 const formData = ref({});
 
 function handleFileUpload(event, field) {
@@ -122,11 +125,18 @@ function deleteUpload(field) {
 }
 
 async function handleUploadSubmit() {
-  // Check if nid is empty
-  // if (!form.value.nid.length) {
-  //   toast.add({ title: "Please upload your NID before submitting." });
-  //   return;
-  // }
+  // Reset validation errors
+  errors.value.front = !form.value.front;
+  errors.value.back = !form.value.back;
+
+  // Check if validation failed
+  if (errors.value.front || errors.value.back) {
+    toast.add({
+      title: "Please fill in all required fields.",
+      type: "error",
+    });
+    return;
+  }
   try {
     const res = await post(`/add-user-nid/`, form.value);
 
