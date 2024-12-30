@@ -10,28 +10,23 @@
         <h2 class="text-2xl md:text-4xl max-sm:text-center mb-6 md:mb-8">
           {{ $t("classified_service") }}
         </h2>
-        <UButtonGroup
-          label="Search Category"
-          class="my-5 md:my-8 justify-center flex !shadow-none"
-          orientation="horizontal"
-          size="md"
-        >
-          <UInput
-            icon="i-heroicons-magnifying-glass-solid"
-            type="search"
+        <form @submit.prevent="handleSearch">
+          <UButtonGroup
+            label="Search Category"
+            class="my-5 md:my-8 justify-center flex !shadow-none"
+            orientation="horizontal"
             size="md"
-            color="white"
-            placeholder="Search Category"
-            v-model="title"
-          />
-          <UButton
-            @click="handleSearch"
-            size="md"
-            color="primary"
-            variant="solid"
-            :label="t('search')"
-          />
-        </UButtonGroup>
+          >
+            <UInput
+              icon="i-heroicons-magnifying-glass-solid"
+              type="search"
+              color="white"
+              placeholder="Search Category"
+              v-model="title"
+            />
+            <UButton color="primary" variant="solid" :label="t('search')" />
+          </UButtonGroup>
+        </form>
         <UButton
           v-if="user?.user"
           class="absolute max-md:left-2 md:right-20 top-32 md:top-[72px]"
