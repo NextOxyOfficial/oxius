@@ -15,16 +15,13 @@
         />
       </div>
       <p class="text-lg md:text-xl font-medium mb-5">Upload Document</p>
+      <p class="text-sm md:text-base font-medium mb-2">NID Front</p>
       <div class="flex flex-wrap gap-5">
-        <div
-          class="relative max-w-[200px] max-h-[200px]"
-          v-for="(img, i) in form.nid"
-          :key="i"
-        >
-          <img :src="img" :alt="`Uploaded file ${i}`" class="h-full" />
+        <div class="relative max-w-[200px] max-h-[200px]" v-if="form.front">
+          <img :src="form.front" :alt="`Uploaded file `" class="h-full" />
           <div
             class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-            @click="deleteUpload(i)"
+            @click="deleteUpload('front')"
           >
             <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
           </div>
@@ -37,7 +34,36 @@
             name=""
             id=""
             class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
-            @change="handleFileUpload($event, 'image')"
+            @change="handleFileUpload($event, 'front')"
+          />
+          <UInput
+            type="file"
+            size="xs"
+            icon="i-heroicons-folder"
+            class="cursor-default"
+          />
+        </div>
+      </div>
+      <p class="text-sm md:text-base font-medium mb-2">NID Back</p>
+      <div class="flex flex-wrap gap-5">
+        <div class="relative max-w-[200px] max-h-[200px]" v-if="form.back">
+          <img :src="form.back" :alt="`Uploaded file `" class="h-full" />
+          <div
+            class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+            @click="deleteUpload('back')"
+          >
+            <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+          </div>
+        </div>
+        <div
+          class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+        >
+          <input
+            type="file"
+            name=""
+            id=""
+            class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+            @change="handleFileUpload($event, 'back')"
           />
           <UInput
             type="file"
@@ -50,6 +76,7 @@
     </div>
     <div>
       <UButton
+        :disabled="Boolean(formData.id)"
         class="mt-8"
         size="md"
         color="primary"
@@ -66,11 +93,13 @@ definePageMeta({
   layout: "dashboard",
 });
 const toast = useToast();
-const { put } = useApi();
+const { get, put, post, staticURL } = useApi();
 const { user } = useAuth();
 const form = ref({
-  nid: [],
+  front: null,
+  back: null,
 });
+const formData = ref({});
 
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
@@ -78,7 +107,7 @@ function handleFileUpload(event, field) {
 
   // Event listener for successful read
   reader.onload = () => {
-    form.value.nid.push(reader.result);
+    form.value[field] = reader.result;
   };
 
   // Event listener for errors
@@ -88,23 +117,18 @@ function handleFileUpload(event, field) {
   reader.readAsDataURL(files[0]);
 }
 
-function deleteUpload(ind) {
-  if (ind >= 0 && ind < form.value.nid.length) {
-    form.value.nid.splice(ind, 1);
-  }
+function deleteUpload(field) {
+  form.value[field] = null;
 }
-console.log(user.value.user.email);
 
 async function handleUploadSubmit() {
   // Check if nid is empty
-  if (!form.value.nid.length) {
-    toast.add({ title: "Please upload your NID before submitting." });
-    return;
-  }
+  // if (!form.value.nid.length) {
+  //   toast.add({ title: "Please upload your NID before submitting." });
+  //   return;
+  // }
   try {
-    const res = await put(`/persons/update/${user.value.user.email}/`, {
-      nid: form.value.nid,
-    });
+    const res = await post(`/add-user-nid/`, form.value);
 
     if (res.data.message) {
       toast.add({ title: res.data.message, type: "success" });
@@ -117,4 +141,20 @@ async function handleUploadSubmit() {
     });
   }
 }
+
+async function get_nid() {
+  try {
+    const { data } = await get("/get-user-nid/");
+    console.log(data);
+    form.value = {
+      front: staticURL + data.data.front,
+      back: staticURL + data.data.back,
+    };
+    formData.value = data.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+get_nid();
 </script>

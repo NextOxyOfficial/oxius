@@ -85,6 +85,9 @@ def register(request):
         status=status.HTTP_400_BAD_REQUEST
     )
 
+
+
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_user(request, email):
@@ -99,16 +102,6 @@ def update_user(request, email):
     # Remove email from data if it's unchanged
     if 'email' in data and data['email'] == user.email:
         data.pop('email')
-    nids = data.pop('nid', [])
-    for file in nids:
-        try:
-            nm = NID.objects.create(image=base64ToFile(file))
-            user.nid.add(nm)
-        except Exception as e:
-            return Response(
-                {'message': 'Failed to process NID', 'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
     if 'image' in data:
         try:
@@ -118,8 +111,7 @@ def update_user(request, email):
                 {'message': 'Failed to process image', 'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-    # Update other fields
+        
     data['id'] = user.id
     serializer = UserSerializer(user, data=data, partial=True)
 
@@ -160,6 +152,97 @@ def update_user(request, email):
 #             serializer.save()
 #             return Response(serializer.data, status=status.HTTP_201_CREATED)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_nid(request):
+    try:
+        nid = NID.objects.get(user=request.user)
+        serializer = NIDSerializer(nid)
+        return Response(
+            {'message': 'NID details retrieved successfully', 'data': serializer.data},
+            status=status.HTTP_200_OK
+        )
+    except NID.DoesNotExist:
+        return Response(
+            {'message': 'NID not found for the user'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_nid(request):
+    data = request.data
+    data['user'] = request.user.id
+    if 'front' in data:
+        try:
+            data['front'] = base64ToFile(data['front'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process front image', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    if 'back' in data:
+        try:
+            data['back'] = base64ToFile(data['back'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process back image', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    serializer = NIDSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {'message': 'Nid Added successfully', 'data': serializer.data},
+            status=status.HTTP_200_OK)
+    print(serializer.errors)
+    return Response(
+            {'message': 'Failed to add NID', 'errors': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_nid(request):
+    try:
+        nid = NID.objects.get(user=request.user)
+    except NID.DoesNotExist:
+        return Response(
+            {'message': 'NID not found for the user'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    data = request.data
+    if 'front' in data:
+        try:
+            data['front'] = base64ToFile(data['front'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process front image', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    if 'back' in data:
+        try:
+            data['back'] = base64ToFile(data['back'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process back image', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    serializer = NIDSerializer(nid, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {'message': 'NID updated successfully', 'data': serializer.data},
+            status=status.HTTP_200_OK
+        )
+    return Response(
+        {'message': 'Failed to update NID', 'errors': serializer.errors},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+
 
 class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]

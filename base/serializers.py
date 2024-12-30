@@ -64,6 +64,10 @@ class UserSerializerGet(serializers.ModelSerializer):
         }
         depth = 1
     
+class NIDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NID
+        fields = '__all__'
 
 class MicroGigPostTaskSerializer(serializers.ModelSerializer):
     gig = serializers.PrimaryKeyRelatedField(queryset=MicroGigPost.objects.all())

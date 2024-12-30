@@ -66,7 +66,6 @@ class NID(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='nid')
     front = models.ImageField(upload_to='images/', blank=True, null=True)
     back = models.ImageField(upload_to='images/', blank=True, null=True)
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
     completed = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)
