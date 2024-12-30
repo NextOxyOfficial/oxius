@@ -755,10 +755,15 @@ class TokenValidationView(APIView):
 
         return Response(data)
     
-
+@api_view(['GET'])
+def get_faq(request):
+    faqs = Faq.objects.all()
+    serializer = FaqSerializer(faqs, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # for frontend
 
 def index(request, **args):
     return render(request, 'index.html')
+

@@ -282,3 +282,8 @@ class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = '__all__'
+
+class FaqSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Faq
+        fields = ('label', 'content')

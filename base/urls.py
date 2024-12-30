@@ -15,6 +15,7 @@ router.register(r'countries', CountryViewSet)
 
 urlpatterns = [
   path('logo/',getLogo,name='logo'),
+  path('faq/', get_faq, name='faq'),
   path('authentication-banner/',getAuthenticationBanner,name='authenticationBanner'),
   path('admin-notice/',getAdminNotice,name='admin_notice'),
   path('auth/register/', register, name='register_person'),
