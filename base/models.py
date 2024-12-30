@@ -41,7 +41,7 @@ class User(AbstractUser):
   ]
   user_type = models.CharField(
       max_length=20, choices=USER_TYPES, default='user')
-  refer  = models.ManyToManyField('self',null=True, blank=True) 
+  refer  = models.ForeignKey('self',on_delete=models.SET_NULL,null=True, blank=True) 
   refer_count = models.IntegerField(default=0)
   commission_earned = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
   commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00)
@@ -66,6 +66,8 @@ class NID(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='nid')
     front = models.ImageField(upload_to='images/', blank=True, null=True)
     back = models.ImageField(upload_to='images/', blank=True, null=True)
+    selfie = models.ImageField(upload_to='images/', blank=True, null=True)
+    other_document = models.ImageField(upload_to='images/', blank=True, null=True)
     completed = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)
@@ -259,6 +261,7 @@ class ReferBonus(models.Model):
             self.user.commission_earned += self.amount
             self.user.save()
         super(ReferBonus, self).save(*args, **kwargs)
+
 class MicroGigPostTask(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='micro_gig_worker')
     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True)
@@ -289,7 +292,7 @@ class MicroGigPostTask(models.Model):
             self.user.balance += self.gig.price
             self.user.pending_balance -= self.gig.price
             self.user.save()
-            ReferBonus.objects.create(user=self.user.refer,amount= (self.gig.price * self.user.refer.commission) / 100 )
+            ReferBonus.objects.create(user=self.user.refer,amount=(self.gig.price * self.user.refer.commission) / 100 )
             # add balance
 
         # Reduce filled quantity and mark as completed if rejected

@@ -131,7 +131,7 @@
               </ul>
             </div>
             <div
-              class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md"
+              class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md min-h-40"
             >
               <div class="flex justify-between">
                 <p class="px-2 font-semibold pb-3.5">
@@ -141,17 +141,18 @@
                   color="white"
                   size="sm"
                   class="w-40"
-                  :options="['All', 'Available', 'Completed']"
+                  :options="microGigsFilter"
+                  v-model="microGigsStatus"
                   placeholder="Filter"
+                  value-attribute="value"
+                  option-attribute="title"
                 />
               </div>
 
               <UCard
                 v-for="(gig, i) in filteredMicroGigs.filter(
                   (gig) =>
-                    gig.gig_status.toLowerCase() === 'approved' &&
-                    gig.active_gig &&
-                    gig.user?.id
+                    gig.gig_status.toLowerCase() === microGigsStatus.value
                 )"
                 :key="i"
                 :ui="{
@@ -306,6 +307,15 @@ useHead({
 // categoryArray.value = Object.entries(categoryCounts).map(
 //   ([category, count]) => ({ category, count })
 // );
+
+const microGigsFilter = [
+  { title: "All", value: "" },
+  { title: "Available", value: "approved" },
+  { title: "Completed", value: "completed" },
+];
+
+const microGigsStatus = ref(microGigsFilter[1]);
+
 const errorIndex = ref([]);
 function handleImageError(index) {
   console.log(`Broken image detected at index: ${index}`);
@@ -321,8 +331,9 @@ async function getClassifiedCategories() {
   ]);
 
   services.value = serviceResponse.data;
-  microGigs.value = gigResponse.data;
-  console.log(gigResponse.data);
+  microGigs.value = gigResponse.data?.filter(
+    (gig) => gig.active_gig && gig.user?.id && gig.status !== "approved"
+  );
 
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
@@ -403,3 +414,15 @@ watch(
   }
 );
 </script>
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+</style>

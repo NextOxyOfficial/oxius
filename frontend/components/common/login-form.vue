@@ -1,6 +1,63 @@
 <template>
   <div>
-    <form
+    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-8">
+      <transition name="fade" mode="out-in">
+        <!-- Login Form -->
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <div class="space-y-2">
+            <h2 class="text-2xl font-semibold text-gray-900">Welcome back</h2>
+            <p class="text-gray-600">
+              Enter your credentials to access your account
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <input
+                type="email"
+                placeholder="name@example.com"
+                v-model="username"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                v-model="password"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+              />
+            </div>
+          </div>
+
+          <UButton
+            type="submit"
+            :loading="isLoading"
+            class="w-full py-3 font-semibold text-sm px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors justify-center"
+          >
+            Sign in
+          </UButton>
+
+          <div class="flex items-center justify-between pt-2 font-semibold">
+            <NuxtLink
+              to="/auth/reset-password/"
+              class="text-purple-600 hover:text-purple-500 text-sm"
+            >
+              Forgot password?
+            </NuxtLink>
+            <NuxtLink
+              to="/auth/register/"
+              class="text-purple-600 hover:text-purple-500 text-sm"
+            >
+              Create account
+            </NuxtLink>
+          </div>
+        </form>
+      </transition>
+    </div>
+    <!-- <form
       class="bg-white md:px-8 py-6 md:pb-8 mb-4 px-2 sm:px-8"
       @submit.prevent="handleLogin"
     >
@@ -48,7 +105,7 @@
           Sign In
         </button>
       </div>
-    </form>
+    </form> -->
   </div>
 </template>
 
@@ -59,9 +116,11 @@ const username = ref("");
 const password = ref("");
 const btnDisabled = ref(false);
 const error = ref("");
+const isLoading = ref(false);
 
 async function handleLogin() {
   btnDisabled.value = true;
+  isLoading.value = true;
   try {
     const res = await login(username.value, password.value);
     if (res.loggedIn) {
@@ -75,7 +134,7 @@ async function handleLogin() {
   } catch (error) {
     console.log("error:", error);
   }
-  btnDisabled.value = false;
+  isLoading.value = false;
 }
 </script>
 

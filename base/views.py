@@ -65,7 +65,7 @@ def getAdminNotice(request):
 def register(request):
     data = request.data
     if 'refer' in data:
-        ref_by = User.objects.filter(username=data['refer']).first()
+        ref_by = User.objects.filter(referral_code=data['refer']).first()
     del data['refer']
     serializer = UserSerializer(data=data)
     if serializer.is_valid():
@@ -745,7 +745,7 @@ class TokenValidationView(APIView):
         # Generate tokens using Simple JWT
         refresh = RefreshToken.for_user(user)
 
-        user_data = UserSerializer(user).data
+        user_data = UserSerializerGet(user).data
         # Prepare the data to be returned
         data = {
             'refresh': str(refresh),

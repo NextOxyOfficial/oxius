@@ -2,7 +2,7 @@
   <UContainer class="mt-20 mb-12">
     <h1 class="text-center text-4xl my-8">Upload Center</h1>
     <UDivider label="" class="mb-8" />
-    <div class="w-1/2">
+    <div class="w-1/2" v-if="Boolean(!formData.id)">
       <div class="flex gap-1 items-center mb-3">
         <span v-if="user.user.kyc" class="font-semibold">{{
           user.user.name
@@ -16,7 +16,7 @@
       </div>
       <p class="text-lg md:text-xl font-medium mb-5">Upload Document</p>
       <p class="text-sm md:text-base font-medium mb-2">NID Front</p>
-      <div class="flex flex-wrap gap-5">
+      <div class="flex flex-wrap flex-col gap-5">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.front">
           <img :src="form.front" :alt="`Uploaded file `" class="h-full" />
           <div
@@ -27,6 +27,7 @@
           </div>
         </div>
         <div
+          v-if="!form.front"
           class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
         >
           <input
@@ -44,9 +45,11 @@
           />
         </div>
       </div>
-      <p class="text-sm text-red-500" v-if="errors.front">NID front required</p>
-      <p class="text-sm md:text-base font-medium mb-2">NID Back</p>
-      <div class="flex flex-wrap gap-5">
+      <p class="text-sm text-red-500" v-if="errors.front">
+        NID front is required
+      </p>
+      <p class="text-sm md:text-base font-medium mb-2 mt-6">NID Back</p>
+      <div class="flex flex-wrap flex-col gap-5">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.back">
           <img :src="form.back" :alt="`Uploaded file `" class="h-full" />
           <div
@@ -57,6 +60,7 @@
           </div>
         </div>
         <div
+          v-if="!form.back"
           class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
         >
           <input
@@ -74,11 +78,99 @@
           />
         </div>
       </div>
-      <p class="text-sm text-red-500" v-if="errors.back">NID back required</p>
+      <p class="text-sm text-red-500" v-if="errors.back">
+        NID back is required
+      </p>
+      <p class="text-sm md:text-base font-medium mb-2 mt-6">
+        Selfie with document
+      </p>
+      <div class="flex flex-wrap flex-col gap-5">
+        <div class="relative max-w-[200px] max-h-[200px]" v-if="form.selfie">
+          <img :src="form.selfie" :alt="`Uploaded file `" class="h-full" />
+          <div
+            class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+            @click="deleteUpload('selfie')"
+          >
+            <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+          </div>
+        </div>
+        <div
+          v-if="!form.selfie"
+          class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+        >
+          <input
+            type="file"
+            name=""
+            id=""
+            class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+            @change="handleFileUpload($event, 'selfie')"
+          />
+          <UInput
+            type="file"
+            size="xs"
+            icon="i-heroicons-folder"
+            class="cursor-default"
+          />
+        </div>
+      </div>
+      <UDivider label="" class="my-3" />
+      <p class="text-sm md:text-base font-medium mb-2 mt-6">Other document</p>
+      <div class="flex flex-wrap flex-col gap-5">
+        <div
+          class="relative max-w-[200px] max-h-[200px]"
+          v-if="form.other_document"
+        >
+          <img
+            :src="form.other_document"
+            :alt="`Uploaded file `"
+            class="h-full"
+          />
+          <div
+            class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+            @click="deleteUpload('other_document')"
+          >
+            <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+          </div>
+        </div>
+        <div
+          v-if="!form.other_document"
+          class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+        >
+          <input
+            type="file"
+            name=""
+            id=""
+            class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+            @change="handleFileUpload($event, 'other_document')"
+          />
+          <UInput
+            type="file"
+            size="xs"
+            icon="i-heroicons-folder"
+            class="cursor-default"
+          />
+        </div>
+      </div>
+    </div>
+    <div v-else>
+      <UCard>
+        <div>
+          <h4
+            class="text-center text-xl my-8 flex items-center justify-center gap-1"
+          >
+            <div class="border border-yellow-400 p-2 rounded-full">
+              <UIcon name="i-heroicons-clock" />
+            </div>
+            ID verification is pending
+          </h4>
+        </div>
+      </UCard>
     </div>
     <div>
       <UButton
+        v-if="Boolean(!formData.id)"
         :disabled="Boolean(formData.id)"
+        :loading="isLoading"
         class="mt-8"
         size="md"
         color="primary"
@@ -96,10 +188,13 @@ definePageMeta({
 });
 const toast = useToast();
 const { get, put, post, staticURL } = useApi();
+const isLoading = ref(false);
 const { user } = useAuth();
 const form = ref({
   front: null,
   back: null,
+  selfie: null,
+  other_document: null,
 });
 const errors = ref({});
 const formData = ref({});
@@ -137,11 +232,13 @@ async function handleUploadSubmit() {
     });
     return;
   }
+  isLoading.value = true;
   try {
     const res = await post(`/add-user-nid/`, form.value);
 
     if (res.data?.message) {
       toast.add({ title: res.data.message, type: "success" });
+      formData.value = res.data.data;
     }
   } catch (error) {
     console.error("Error during submission:", error);
@@ -150,6 +247,7 @@ async function handleUploadSubmit() {
       type: "error",
     });
   }
+  isLoading.value = false;
 }
 
 async function get_nid() {

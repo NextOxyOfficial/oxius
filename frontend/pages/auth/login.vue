@@ -1,7 +1,7 @@
 <template>
   <UContainer>
     <div
-      class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0"
+      class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0 max-w-5xl mx-auto"
     >
       <div class="md:w-3/4">
         <NuxtImg
@@ -17,35 +17,18 @@
           alt="Register"
         />
       </div>
-      <div class="md:pt-10 w-full md:w-1/2">
-        <CommonLoginForm v-if="login" />
-        <CommonRegisterForm v-else />
-        <p class="my-5 text-center tracking-wide" v-if="!login">
-          Already have an account?
-          <span @click="login = true" class="font-bold cursor-pointer"
-            >Login Now!</span
-          >
-        </p>
-        <p v-else class="my-5 text-center tracking-wide">
-          Don't have an account?
-          <span @click="login = false" class="font-bold cursor-pointer"
-            >Register Now!</span
-          >
-        </p>
+      <div class="md:py-10 w-full md:w-1/2">
+        <CommonLoginForm />
       </div>
     </div>
   </UContainer>
 </template>
 
 <script setup>
-const login = ref(true);
 const { user, isAuthenticated } = useAuth();
 const { get, staticURL } = useApi();
-const router = useRoute();
+
 const banner = ref({});
-if (router.query.ref) {
-  login.value = false;
-}
 
 async function getBanner() {
   const res = await get("/authentication-banner/");

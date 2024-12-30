@@ -53,16 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
         return representation
     
 
-class UserSerializerGet(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # Exclude the password field for security
-        exclude = ('groups', 'user_permissions','password')
-        extra_kwargs = {
-            'password': {'write_only': True},
-            # 'username': {'read_only': True},
-        }
-        depth = 1
+
     
 class NIDSerializer(serializers.ModelSerializer):
     class Meta:
@@ -82,6 +73,18 @@ class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'
+        depth = 1
+
+class UserSerializerGet(serializers.ModelSerializer):
+    micro_gig_worker = GetMicroGigPostTaskSerializer(many=True, read_only=True)
+    class Meta:
+        model = User
+        # Exclude the password field for security
+        exclude = ('groups', 'user_permissions','password')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            # 'username': {'read_only': True},
+        }
         depth = 1
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
@@ -111,6 +114,7 @@ class TargetCountrySerializer(serializers.ModelSerializer):
 class MicroGigPostSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=MicroGigCategory.objects.all())
     category_details = MicroGigCategorySerializer(source='category', read_only=True)
+    user = UserSerializerGet(read_only=True)
     class Meta:
         model = MicroGigPost
         fields = '__all__'

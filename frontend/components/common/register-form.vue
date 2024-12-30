@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form
+    <!-- <form
       @submit.prevent="handleSubmit"
       class="bg-white rounded-xl md:px-8 pt-6 pb-6 md:pb-8 mb-4 px-2 sm:px-8"
     >
@@ -117,34 +117,121 @@
           Register
         </button>
       </div>
-    </form>
+    </form> -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-8">
+      <transition name="fade" mode="out-in">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+          <div class="space-y-2">
+            <h2 class="text-2xl font-semibold text-gray-900">Create account</h2>
+            <p class="text-gray-600">Enter your details to register</p>
+          </div>
+
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="First name"
+                v-model="form.first_name"
+                class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Last name"
+                v-model="form.last_name"
+                class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+              />
+            </div>
+
+            <input
+              type="email"
+              placeholder="Email address"
+              v-model="form.email"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Phone number"
+              v-model="form.phone"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              v-model="form.password"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirm password"
+              v-model="form.confirmPassword"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Referral code (optional)"
+              v-model="form.refer"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+            />
+          </div>
+
+          <UButton
+            :loading="isLoading"
+            type="submit"
+            class="w-full py-3 font-semibold text-sm px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors justify-center"
+          >
+            Create account
+          </UButton>
+
+          <div class="text-center">
+            <NuxtLink
+              to="/auth/login/"
+              class="text-purple-600 hover:text-purple-500 text-sm font-semibold"
+            >
+              Already have an account? Sign in
+            </NuxtLink>
+          </div>
+        </form>
+      </transition>
+    </div>
   </div>
 </template>
 
 <script setup>
 const Api = useApi();
 const { login } = useAuth();
-
-const email = ref("");
-const phone = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const refer = ref("");
 const passwordMismatch = ref(false);
-const inValidRefer = ref(false);
+const isLoading = ref(false);
+
+const form = ref({
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  refer: "",
+});
+
 const error = ref("");
 
 const route = useRoute();
 if (route.query.ref) {
-  refer.value = route.query.ref;
+  form.value.refer = route.query.ref;
 }
 
 const toast = useToast();
 
 // Handle form submission
 async function handleSubmit() {
+  isLoading.value = true;
   // Check if password and confirm password match
-  if (password.value !== confirmPassword.value) {
+  if (form.value.password !== form.value.confirmPassword) {
     passwordMismatch.value = true;
     return;
   } else {
@@ -152,24 +239,27 @@ async function handleSubmit() {
   }
 
   // Check if email and password are filled
-  if (!email.value || !password.value) {
+  if (!form.value.email || !form.value.password) {
     toast.add("Please fill out all required fields");
     return;
   }
 
   const formData = {
-    email: email.value,
-    password: password.value,
-    username: email.value,
-    phone: phone.value,
-    refer: refer.value,
+    first_name: form.value.first_name,
+    last_name: form.value.last_name,
+    name: form.value.first_name + " " + form.value.last_name,
+    email: form.value.email,
+    password: form.value.password,
+    username: form.value.email,
+    phone: form.value.phone,
+    refer: form.value.refer,
   };
 
   try {
     const res = await Api.post("/auth/register/", formData);
     if (res?.data?.message) {
       error.value = "";
-      const res2 = await login(email.value, password.value);
+      const res2 = await login(form.value.email, form.value.password);
       if (res2) {
         toast.add({ title: "Login successful!" });
         navigateTo("/");
@@ -183,5 +273,6 @@ async function handleSubmit() {
     // set inValidRefer to true if error code from api is 444 (Invalid Refer Code)
     console.error("Error submitting the form:", error);
   }
+  isLoading.value = false;
 }
 </script>

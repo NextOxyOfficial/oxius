@@ -104,7 +104,7 @@
                   <h3 class="text-xl md:text-2xl" v-else>No Name Provided</h3>
 
                   <UIcon
-                    v-if="service.user.kyc"
+                    v-if="service.user?.kyc"
                     name="mdi:check-decagram"
                     class="w-5 h-5 text-blue-600 mt-1"
                   />

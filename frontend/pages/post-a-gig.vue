@@ -341,8 +341,9 @@
         </div>
         <div class="text-center pb-6">
           <UButton
+            :loading="isLoading"
             v-if="user.user.kyc"
-            class="px-8 mt-10"
+            class="px-8 mt-8"
             size="lg"
             color="primary"
             variant="solid"
@@ -352,7 +353,7 @@
           />
           <UButton
             v-else
-            class="px-8"
+            class="px-8 mt-8"
             size="lg"
             color="primary"
             variant="solid"
@@ -393,6 +394,7 @@ const device = ref([]);
 const country = ref([{ title: "Bangladesh" }]);
 const checkSubmit = ref(false);
 const showError = ref("");
+const isLoading = ref(false);
 
 const form = ref({
   price: 0,
@@ -456,6 +458,7 @@ async function handlePostGig() {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
+  isLoading.value = true;
   const balance = form.value.required_quantity * form.value.price;
   const total_cost = balance + (balance * 10) / 100;
   const submitValue = { ...form.value, total_cost, balance };
@@ -471,6 +474,7 @@ async function handlePostGig() {
     toast.add({ title: res.error.data.errors });
     showError.value = res.error.data.errors;
   }
+  isLoading.value = true;
 }
 
 async function getMicroGigsCategory() {
