@@ -130,7 +130,7 @@ async function handleUploadSubmit() {
   try {
     const res = await post(`/add-user-nid/`, form.value);
 
-    if (res.data.message) {
+    if (res.data?.message) {
       toast.add({ title: res.data.message, type: "success" });
     }
   } catch (error) {
@@ -145,12 +145,14 @@ async function handleUploadSubmit() {
 async function get_nid() {
   try {
     const { data } = await get("/get-user-nid/");
-    console.log(data);
-    form.value = {
-      front: staticURL + data.data.front,
-      back: staticURL + data.data.back,
-    };
-    formData.value = data.data;
+
+    if (data) {
+      form.value = {
+        front: staticURL + data.data.front,
+        back: staticURL + data.data.back,
+      };
+      formData.value = data.data;
+    }
   } catch (error) {
     console.log(error);
   }
