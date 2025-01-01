@@ -383,7 +383,7 @@ class Balance(models.Model):
         ordering = ['-updated_at']
 
     def __str__(self):
-        return f"{self.user.username}'s Service: {self.payable_amount}"
+        return f"{self.user}'s Service: {self.payable_amount}"
     def save(self, *args, **kwargs):
         # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or '').lower()
