@@ -2,7 +2,7 @@
   <PublicSection>
     <UContainer>
       <UCard class="max-w-lg mx-auto py-16">
-        <div v-if="verifyPaymentDetails?.shurjopay_message" class="text-center">
+        <div v-if="!showError" class="text-center">
           <UIcon
             name="i-material-symbols:check-circle-outline-rounded"
             class="text-3xl md:text-6xl text-green-500"
@@ -31,6 +31,7 @@ const router = useRoute();
 console.log(router.query.order_id);
 const toast = useToast();
 const verifyPaymentDetails = ref({});
+const showError = ref(false);
 
 async function addBalance() {
   const {
@@ -59,6 +60,7 @@ async function addBalance() {
     toast.add({ title: "Payment successfully!" });
   } else {
     toast.add({ title: res.error.data.error });
+    showError.value = true;
   }
 }
 
@@ -71,6 +73,7 @@ async function VerifyPayment() {
     verifyPaymentDetails.value = response.data;
   } else {
     toast.add({ title: response.error.data.error });
+    showError.value = true;
   }
 }
 onMounted(() => {

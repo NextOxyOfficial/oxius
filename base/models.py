@@ -391,10 +391,19 @@ class Balance(models.Model):
         if self.transaction_type == 'withdraw':
             self.user.balance -= self.payable_amount
             self.user.save()
-        # Check if is neither completed, approved, nor rejected
-        if not self.completed and not self.approved and not self.rejected:
-            self.user.balance -= Decimal(self.amount)
+        if self.transaction_type == 'withdraw' and self.rejected and not self.completed:
+            self.completed = True
+            self.user.balance += self.amount
             self.user.save()
+        if self.transaction_type == 'deposit':
+            self.user.balance += self.payable_amount
+            self.completed = True
+            self.approved = True
+            self.user.save()
+        # Check if is neither completed, approved, nor rejected
+        # if not self.completed and not self.approved and not self.rejected:
+        #     self.user.balance -= Decimal(self.amount)
+        #     self.user.save()
 
         if self.approved and not self.completed:
             self.completed = True
@@ -404,13 +413,13 @@ class Balance(models.Model):
             # create a table called commission_report and add a row with user_id, refer_id, amount, created_at
             # add refer commission
 
-        if self.rejected and not self.completed:
-            self.completed = True
-            self.user.balance -= self.amount
-            self.user.save()
+        # if self.rejected and not self.completed:
+        #     self.completed = True
+        #     self.user.balance -= self.amount
+        #     self.user.save()
             # refund balance
-        if self.transaction_type == 'withdraw':
-            self.user.balance -= self.payable_amount
+        # if self.transaction_type == 'withdraw':
+        #     self.user.balance -= self.payable_amount
 
         # Call the original save method
         super(Balance, self).save(*args, **kwargs)
