@@ -13,6 +13,7 @@
     "@nuxt/image": "^1.8.1",
     "@nuxt/ui": "^2.20.0",
     "@nuxtjs/google-adsense": "^3.0.0",
+    "@nuxtjs/i18n": "^9.1.1",
     "@tiptap/extension-color": "^2.2.1",
     "@tiptap/extension-highlight": "^2.2.2",
     "@tiptap/extension-image": "^2.2.3",
@@ -24,8 +25,8 @@
     "@tiptap/extension-text-style": "^2.2.1",
     "@tiptap/starter-kit": "^2.2.1",
     "@tiptap/vue-3": "^2.2.1",
-    "@nuxtjs/i18n": "^9.1.1",
     "nuxt": "^3.13.0",
+    "nuxt-aos": "^1.2.5",
     "nuxt-tiptap-editor": "^2.1.4",
     "vue": "latest"
   },

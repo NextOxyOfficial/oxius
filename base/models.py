@@ -359,6 +359,7 @@ class MicroGigPostTask(models.Model):
 
 class Balance(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='user_balance')
+    to_user = models.ForeignKey(User,on_delete=models.SET_NULL, blank=True, null=True,related_name='to_user')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     PAYMENT_STATUS = [ # delete this, use completed, approved, rejected booleans
       ('pending', 'Pending'),
@@ -388,6 +389,13 @@ class Balance(models.Model):
         # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or '').lower()
         # Handle withdrawal
+        if self.transaction_type == 'p2p' and self.to_user and not self.completed:
+            self.user.balance -= Decimal(self.payable_amount)
+            self.to_user.balance += Decimal(self.payable_amount)
+            self.user.save()
+            self.to_user.save()
+            self.completed = True
+            self.approved = True
         if self.transaction_type == 'withdraw':
             self.user.balance -= self.payable_amount
             self.user.save()
@@ -423,6 +431,7 @@ class Balance(models.Model):
 
         # Call the original save method
         super(Balance, self).save(*args, **kwargs)
+
 
 # class MicroGigs(models.Model):
 #     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gigs')

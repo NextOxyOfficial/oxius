@@ -254,6 +254,18 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             raise NotFound({"error": f"No person found with email: {email}"})
+@api_view(['GET'])
+def get_user_with_identifier(request, identifier):
+    print(identifier)
+    try:
+        user = User.objects.get(Q(email=identifier) | Q(phone=identifier))
+        return Response({
+            "id": user.id,
+            "email": user.email,
+            "phone": user.phone,  # Include additional fields as needed
+        })
+    except User.DoesNotExist:
+        raise NotFound({"error": f"No person found with email or phone: {identifier}"})
 
 class ClassifiedCategoryPagination(PageNumberPagination):
     page_size = 14
@@ -662,6 +674,8 @@ def postBalance(request):
     data = request.data.copy()
     data['user'] = request.user.id
     print(data)
+    
+    
 
     # Check if 'merchant_invoice_no' exists in the data
     if 'merchant_invoice_no' in data:
@@ -679,11 +693,17 @@ def postBalance(request):
     #     )
     
     # Proceed with the operations if 'merchant_invoice_no' is valid
+    if 'contact' in data and data['contact']:
+        to_user = User.objects.get(Q(email=data['contact']) | Q(phone=data['contact']))
+        del data['contact']
     serializer = BalanceSerializer(data=data)
     
     if serializer.is_valid():
         # Save the new Balance instance
-        serializer.save(user=request.user)
+        new_b = serializer.save(user=request.user)
+        if to_user:
+            new_b.to_user = to_user
+            new_b.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     # Print errors if validation fails

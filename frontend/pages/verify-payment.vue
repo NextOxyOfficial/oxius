@@ -2,20 +2,23 @@
   <PublicSection>
     <UContainer>
       <UCard class="max-w-lg mx-auto py-16">
-        <div v-if="!showError" class="text-center">
-          <UIcon
-            name="i-material-symbols:check-circle-outline-rounded"
-            class="text-3xl md:text-6xl text-green-500"
-          />
-          <p class="font-semibold">Payment Successful!</p>
+        <div v-if="!loader">
+          <div v-if="!showError" class="text-center">
+            <UIcon
+              name="i-material-symbols:check-circle-outline-rounded"
+              class="text-3xl md:text-6xl text-green-500"
+            />
+            <p class="font-semibold">Payment Successful!</p>
+          </div>
+          <div class="text-center" v-else>
+            <UIcon
+              name="i-gridicons:cross"
+              class="text-3xl md:text-6xl text-red-500"
+            />
+            <p class="font-semibold">Payment Unsuccessful!</p>
+          </div>
         </div>
-        <div class="text-center" v-else>
-          <UIcon
-            name="i-gridicons:cross"
-            class="text-3xl md:text-6xl text-red-500"
-          />
-          <p class="font-semibold">Payment Unsuccessful!</p>
-        </div>
+        <CommonPreloader v-else />
       </UCard>
     </UContainer>
   </PublicSection>
@@ -28,10 +31,10 @@ definePageMeta({
 const { get, post } = useApi();
 const props = defineProps({ something: Number }); // const emit = defineEmits(['emitChange', 'anotherEmit']);
 const router = useRoute();
-console.log(router.query.order_id);
 const toast = useToast();
 const verifyPaymentDetails = ref({});
 const showError = ref(false);
+const loader = ref(true);
 
 async function addBalance() {
   const {
@@ -62,18 +65,20 @@ async function addBalance() {
     toast.add({ title: res.error.data.error });
     showError.value = true;
   }
+  loader.value = false;
 }
 
 async function VerifyPayment() {
   const response = await get(
     "/verify-pay/?sp_order_id=" + router.query.order_id
   );
-  console.log(response);
+  console.log(response.data);
   if (response.data) {
     verifyPaymentDetails.value = response.data;
   } else {
     toast.add({ title: response.error.data.error });
     showError.value = true;
+    loader.value = false;
   }
 }
 onMounted(() => {
@@ -85,6 +90,7 @@ watch(verifyPaymentDetails, () => {
     addBalance();
   } else {
     toast.add({ title: "Payment Verification Failed!" });
+    loader.value = false;
   }
 });
 </script>

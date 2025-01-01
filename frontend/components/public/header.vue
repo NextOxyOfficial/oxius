@@ -90,12 +90,12 @@
               },
               {
                 label: $t('classified_service'),
-                to: '#classified-services',
+                to: '/#classified-services',
                 icon: 'i-heroicons:clipboard-document-list',
               },
               {
                 label: $t('earn_money'),
-                to: '#micro-gigs',
+                to: '/#micro-gigs',
                 icon: 'i-healthicons:money-bag-outline',
               },
               {
@@ -160,7 +160,7 @@
             }"
           >
             <UIcon name="i-heroicons-user-circle" class="text-xl" />
-            {{ $t("my_account") }}
+            Hi {{ user?.user?.first_name }}
             <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
             <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
           </UButton>

@@ -31,10 +31,20 @@
           variant="outline"
           size="md"
           :ui="{
-            rounded: 'rounded-s-none',
+            rounded: 'rounded-s-none rounded-e-none',
           }"
           @click="currentTab = 2"
           >Withdraw</UButton
+        >
+        <UButton
+          :color="`${currentTab == 3 ? 'green' : 'gray'}`"
+          variant="outline"
+          size="md"
+          :ui="{
+            rounded: 'rounded-s-none',
+          }"
+          @click="currentTab = 3"
+          >Tranfer</UButton
         >
       </div>
       <div class="flex items-center">
@@ -96,6 +106,7 @@
               "
               size="sm"
               @click="deposit"
+              :loading="isLoading"
               >Deposit</UButton
             >
             <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
@@ -240,6 +251,32 @@
             <UButton v-else size="sm" @click="isOpen = true">Withdraw</UButton>
           </div>
         </div>
+        <div v-if="currentTab === 3">
+          <UFormGroup label="User Email/Phone">
+            <UInput
+              type="text"
+              size="md"
+              color="white"
+              placeholder="Email/Phone"
+              v-model="transfer.contact"
+            />
+            <UInput
+              type="text"
+              size="md"
+              color="white"
+              placeholder="Amount"
+              class="my-3"
+              v-model="transfer.payable_amount"
+            />
+            <UButton
+              size="md"
+              color="primary"
+              variant="solid"
+              label="Transfer"
+              @click="handleTransfer"
+            />
+          </UFormGroup>
+        </div>
       </div>
       <h3
         class="text-center text-lg md:text-3xl font-semibold mt-8"
@@ -372,12 +409,13 @@ const statements = ref([
   //   return ''; // Default class
   // },
 ]);
-
+const isLoading = ref(false);
 const deposit = async () => {
   if (!amount.value || !policy.value) {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
+  isLoading.value = true;
   // Add deposit logic here
   // toast.add({ title: "Deposit clicked" });
   // console.log(user.value);
@@ -385,16 +423,19 @@ const deposit = async () => {
   const payment = await get(
     `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
   );
+
   console.log(payment.data);
-  if (payment.data.checkout_url)
+  if (payment.data.checkout_url) {
+    isLoading.value = false;
     window.open(payment.data.checkout_url, "_blank");
+  }
 
   // const res = await put(`/persons/update/${user.value.user.email}/`, {
   //   deposit: amount.value,
   //   transaction_type: "Deposit",
   // });
   // console.log(res);
-  userBalance();
+  getTransactionHistory();
   amount.value = "";
   policy.value = false;
 };
@@ -435,16 +476,33 @@ const withdraw = async () => {
     transaction_type: "Withdraw",
   });
   console.log(res);
-  userBalance();
+  getTransactionHistory();
   jwtLogin();
   withdrawAmount.value = "";
   policy.value = false;
 };
 
-const userBalance = async () => {
+const transfer = ref({
+  contact: "",
+  payable_amount: "",
+  transaction_type: "p2p",
+});
+
+async function handleTransfer() {
+  const { data, error } = await get(`/user/${transfer.value.contact}/`);
+  console.log(data, error);
+  if (data.email) {
+    const { data, error } = await post(`/add-user-balance/`, transfer.value);
+    console.log(data, error);
+    jwtLogin();
+    getTransactionHistory();
+  }
+}
+
+const getTransactionHistory = async () => {
   const res = await get(`/user-balance/${user.value.user.email}/`);
   console.log(res.data);
   statements.value = res.data;
 };
-userBalance();
+getTransactionHistory();
 </script>

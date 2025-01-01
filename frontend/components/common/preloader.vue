@@ -1,15 +1,26 @@
 <template>
-  <div class="preloader">
-    <div class="spinner">
-      <div class="spinner-ring"></div>
-      <div class="spinner-ring"></div>
-      <div class="spinner-ring"></div>
-      <div class="icon-wrapper">
-        <span class="font-bold text-3xl p-1">A</span>
+  <div class="w-full">
+    <div class="preloader">
+      <div class="spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="icon-wrapper">
+          <span class="font-bold text-3xl p-1">A</span>
+        </div>
       </div>
     </div>
+    <p class="text-sm text-gray-500 text-center">{{ text }}</p>
   </div>
 </template>
+
+<script setup>
+defineProps({
+  text: {
+    type: String,
+  },
+});
+</script>
 
 <style scoped>
 .preloader {

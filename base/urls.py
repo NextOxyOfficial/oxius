@@ -21,6 +21,7 @@ urlpatterns = [
   path('auth/register/', register, name='register_person'),
   path('persons/<str:email>/', PersonRetrieveUpdateDestroyView.as_view(),name='person_detail'),
   path('persons/update/<str:email>/', update_user,name='update_user'),
+  path('user/<str:identifier>/', get_user_with_identifier, name='get_user_with_identifier'),
   path('classified-categories/',GetClassifiedCategories.as_view()),
   path('classified-categories/<str:cid>/',classifiedCategoryPosts),
   path('classified-categories/post/<str:pk>/',classifiedCategoryPost),

@@ -210,7 +210,7 @@
                       <h3 class="text-base font-semibold mb-1.5 capitalize">
                         {{ gig.title }}
                       </h3>
-                      <div class="flex gap-4">
+                      <div class="flex gap-2 gap-x-4 md:gap-4 flex-wrap">
                         <div class="flex gap-1 items-center">
                           <UIcon name="i-heroicons-bell-solid" />
                           <p class="text-sm">
@@ -223,6 +223,14 @@
                         <p class="text-sm">
                           {{ formatDate(gig.created_at) }}
                         </p>
+                        <div class="flex gap-1 items-center text-sm">
+                          Posted By:
+                          <p class="text-sm">
+                            <span class="text-green-600">{{
+                              gig.user.name
+                            }}</span>
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

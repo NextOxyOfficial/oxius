@@ -7,7 +7,13 @@ export default defineNuxtConfig({
   },
   ssr: false,
   css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/ui", "@nuxt/image", "@nuxtjs/i18n", "nuxt-tiptap-editor"],
+  modules: [
+    "@nuxt/ui",
+    "@nuxt/image",
+    "@nuxtjs/i18n",
+    "nuxt-tiptap-editor",
+    "nuxt-aos",
+  ],
   tiptap: {
     prefix: "Tiptap", //prefix for Tiptap imports, composables not included
   },
@@ -15,7 +21,16 @@ export default defineNuxtConfig({
     vueI18n: "./i18n.config.ts",
   },
   app: {
-    buildAssetsDir: "/static/frontend",
+    buildAssetsDir: "/static/frontend/",
+    head: {
+      link: [
+        {
+          rel: "icon",
+          type: "image/x-icon",
+          href: "/static/frontend/favicon.ico",
+        },
+      ],
+    },
   },
   runtimeConfig: {
     public: {

@@ -111,6 +111,7 @@
             (service) => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
+          data-aos="zoom-out-right"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
             <div
@@ -160,6 +161,14 @@
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
+                      <div class="flex gap-1 items-center text-sm">
+                        Posted By:
+                        <p class="text-sm">
+                          <span class="text-green-600">{{
+                            service.user?.name
+                          }}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -176,6 +185,9 @@
           </NuxtLink>
         </UCard>
         <h3 class="text-xl font-semibold mt-6">Nearby location ads</h3>
+      </div>
+      <div v-if="isLoading">
+        <CommonPreloader text="Searching for ads in your city..." />
       </div>
       <UCard v-if="searchError" class="py-16 text-center mt-6">
         <p>No offers have been found!</p>
@@ -254,6 +266,14 @@
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
+                      <div class="flex gap-1 items-center text-sm">
+                        Posted By:
+                        <p class="text-sm">
+                          <span class="text-green-600">{{
+                            service.user?.name
+                          }}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -280,6 +300,7 @@
 <script setup>
 const { get, staticURL } = useApi();
 const { formatDate } = useUtils();
+const isLoading = ref(false);
 const form = ref({
   country: "Bangladesh",
   state: "",
@@ -331,14 +352,19 @@ async function fetchServices() {
 fetchServices();
 
 async function filterSearch() {
+  search.value = [];
+  isLoading.value = true;
   const res = await get(
     `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
 
-  if (res.data.length > 0) {
-    search.value = res.data;
-  } else {
-    searchError.value = true;
-  }
+  setTimeout(() => {
+    if (res.data.length > 0) {
+      search.value = res.data;
+    } else {
+      searchError.value = true;
+    }
+    isLoading.value = false;
+  }, 2000);
 }
 </script>

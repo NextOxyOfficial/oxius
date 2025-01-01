@@ -8,7 +8,7 @@
     }"
   >
     <div class="flex flex-col md:flex-row justify-between gap-6">
-      <div>
+      <div class="flex items-center justify-between">
         <h3 class="text-2xl font-bold max-sm:text-center">
           <span class="text-green-900 inline-flex items-center gap-1">
             <UIcon
@@ -18,9 +18,16 @@
             {{ $t("balance") }}:
             <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
               user?.user.balance
-            }}</span
-          >
+            }}
+          </span>
         </h3>
+        <!-- <UButton
+          size="xs"
+          color="primary"
+          variant="outline"
+          class="ml-2"
+          label="Transfer"
+        /> -->
       </div>
 
       <div class="flex items-center justify-between">
