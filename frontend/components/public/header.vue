@@ -30,11 +30,7 @@
             </div>
           </template>
         </UCard>
-        <PublicLogo
-          :logo="logo"
-          :staticURL="staticURL"
-          class="text-center mx-auto mb-4"
-        />
+        <PublicLogo :logo="logo" :staticURL="staticURL" class="text-center mx-auto mb-4" />
         <UVerticalNavigation
           :links="[
             {
@@ -75,11 +71,7 @@
             color="gray"
           />
         </div>
-        <PublicLogo
-          :logo="logo"
-          :staticURL="staticURL"
-          class="max-sm:mr-auto"
-        />
+        <PublicLogo :logo="logo" :staticURL="staticURL" class="max-sm:mr-auto" />
         <div class="hidden md:block">
           <UHorizontalNavigation
             :links="[
@@ -241,7 +233,7 @@ defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
-const handleClickOutside = (event) => {
+const handleClickOutside = event => {
   const menuContainer = document.querySelector(".menu-container");
   if (menuContainer && !menuContainer.contains(event.target)) {
     openMenu.value = false;
@@ -262,9 +254,5 @@ watch(router.currentRoute, () => {
     openMenu.value = false;
     isOpen.value = false;
   }
-});
-useSeoMeta({
-  ogImage: "/static/frontend/favicon.ico",
-  favicon: "/static/frontend/favicon.ico",
 });
 </script>
