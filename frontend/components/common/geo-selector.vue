@@ -1,16 +1,11 @@
-<script setup>
-const isOpen = ref(false);
-</script>
 <template>
   <div>
-    <UButton label="Open" @click="isOpen = true" />
-
-    <UModal v-model="isOpen">
+    <UModal v-model="isOpen" prevent-close>
       <div class="p-4">
         <div
           class="flex flex-col md:flex-row justify-between md:items-end gap-4"
         >
-          <UFormGroup class="md:w-1/4">
+          <UFormGroup class="md:w-2/4">
             <USelectMenu
               v-model="form.state"
               color="white"
@@ -26,7 +21,7 @@ const isOpen = ref(false);
               value-attribute="name"
             />
           </UFormGroup>
-          <UFormGroup class="md:w-1/4">
+          <UFormGroup class="md:w-2/4">
             <USelectMenu
               v-model="form.city"
               color="white"
@@ -43,11 +38,26 @@ const isOpen = ref(false);
             />
           </UFormGroup>
         </div>
+        <UButton
+          class="mt-4"
+          size="md"
+          color="primary"
+          variant="solid"
+          label="Add Location"
+          @click="addLocation"
+        />
       </div>
     </UModal>
   </div>
 </template>
 <script setup>
+const { get } = useApi();
+const isOpen = ref(false);
+const location = useCookie("location");
+
+if (!location.value) {
+  isOpen.value = true;
+}
 const form = ref({
   country: "Bangladesh",
   state: "",
@@ -73,6 +83,12 @@ watch(
     }
   }
 );
+
+function addLocation() {
+  location.value = form.value;
+  isOpen.value = false;
+  window.location.reload();
+}
 </script>
 
 <style scoped></style>

@@ -4,6 +4,7 @@
       <h2 class="text-center text-4xl my-6">
         {{ categoryTitle }}
       </h2>
+      <CommonGeoSelector />
       <div>
         <p class="mb-3">
           <ULink
@@ -299,15 +300,19 @@
 
 <script setup>
 const { get, staticURL } = useApi();
+const location = useCookie("location");
 const { formatDate } = useUtils();
 const isLoading = ref(false);
+
 const form = ref({
   country: "Bangladesh",
-  state: "",
-  city: "",
+  state: location.value?.state || "",
+  city: location.value?.city || "",
   title: "",
   category: "",
 });
+
+console.log(location.value);
 
 const categoryTitle = ref("");
 const services = ref([]);
@@ -366,5 +371,8 @@ async function filterSearch() {
     }
     isLoading.value = false;
   }, 2000);
+}
+if (location.value) {
+  filterSearch();
 }
 </script>

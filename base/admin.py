@@ -91,10 +91,42 @@ admin.site.register(AdminNotice, AdminNoticeAdmin)
 admin.site.register(ClassifiedCategoryPostMedia)
 
 
+from django.utils.html import format_html
+from django.contrib import admin
+from .models import NID
+
 class NidAdmin(admin.ModelAdmin):
-    list_display = ( 'user', 'approved', 'rejected', 'completed')
+    list_display = ('user', 'approved', 'rejected', 'completed', 'front_image', 'back_image', 'selfie_image', 'other_document_image')
     list_filter = ('approved', 'rejected', 'completed')
+    list_editable = ('approved', 'rejected')
+
+    def front_image(self, obj):
+        if obj.front:  # Assuming `front` is the field name for the front image
+            return format_html('<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>', obj.front.url, obj.front.url)
+        return "No Image"
+
+    def back_image(self, obj):
+        if obj.back:  # Assuming `back` is the field name for the back image
+            return format_html('<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>', obj.back.url, obj.back.url)
+        return "No Image"
+
+    def selfie_image(self, obj):
+        if obj.selfie:  # Assuming `selfie` is the field name for the selfie image
+            return format_html('<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>', obj.selfie.url, obj.selfie.url)
+        return "No Image"
+    
+    def other_document_image(self, obj):
+        if obj.other_document:  # Assuming `other_document` is the field name for the other document image
+            return format_html('<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>', obj.other_document.url, obj.other_document.url)
+        return "No Image"
+
+    front_image.short_description = 'Front Image'
+    back_image.short_description = 'Back Image'
+    selfie_image.short_description = 'Selfie'
+    other_document_image.short_description = 'Other Document'
+
 admin.site.register(NID, NidAdmin)
+
 
 
 class ReferBonusAdmin(admin.ModelAdmin):

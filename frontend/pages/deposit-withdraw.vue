@@ -252,7 +252,7 @@
           </div>
         </div>
         <div v-if="currentTab === 3">
-          <UFormGroup label="User Email/Phone">
+          <UFormGroup label="User Email/Phone" class="mb-4">
             <UInput
               type="text"
               size="md"
