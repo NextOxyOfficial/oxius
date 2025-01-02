@@ -46,7 +46,7 @@
                   <div>
                     <NuxtImg
                       :src="staticURL + service.medias[0].image"
-                      class="size-20 md:size-14 rounded-md"
+                      class="max-md:size-20 md:size-14 rounded-md"
                     />
                   </div>
                   <div>
