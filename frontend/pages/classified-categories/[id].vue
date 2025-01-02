@@ -312,8 +312,6 @@ const form = ref({
   category: "",
 });
 
-console.log(location.value);
-
 const categoryTitle = ref("");
 const services = ref([]);
 const search = ref([]);
@@ -329,18 +327,23 @@ const regions_response = await get(
   `/cities-light/regions/?country=${form.value.country}`
 );
 regions.value = regions_response.data;
-
+if (form.value.state) {
+  const cities_response = await get(
+    `/cities-light/cities/?region=${form.value.state}`
+  );
+  cities.value = cities_response.data;
+}
 watch(
   () => form.value.state,
   async (newState) => {
-    console.log(newState);
     if (newState) {
       const cities_response = await get(
         `/cities-light/cities/?region=${newState}`
       );
       cities.value = cities_response.data;
     }
-  }
+  },
+  { immediate: true }
 );
 
 // geo filter
@@ -357,6 +360,8 @@ async function fetchServices() {
 fetchServices();
 
 async function filterSearch() {
+  const { title, category, ...rest } = form.value;
+  location.value = rest;
   search.value = [];
   isLoading.value = true;
   const res = await get(

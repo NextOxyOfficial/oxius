@@ -108,10 +108,7 @@
         {{ $t("refer") }}
         <UFormGroup label="">
           <input
-            icon="i-heroicons-bell-solid"
             type="text"
-            size="md"
-            color="white"
             class="text-xs py-0.5 px-1 w-72"
             :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
           />
