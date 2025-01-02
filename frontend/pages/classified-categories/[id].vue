@@ -166,7 +166,7 @@
                         Posted By:
                         <p class="text-sm">
                           <span class="text-green-600"
-                            >{{ service.user?.name.slice(0, 5) }}...</span
+                            >{{ service.user?.name.slice(0, 6) }}***</span
                           >
                         </p>
                       </div>
@@ -271,7 +271,7 @@
                         Posted By:
                         <p class="text-sm">
                           <span class="text-green-600"
-                            >{{ service.user?.name.slice(0, 5) }}...</span
+                            >{{ service.user?.name.slice(0, 6) }}***</span
                           >
                         </p>
                       </div>

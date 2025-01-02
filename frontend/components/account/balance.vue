@@ -4,10 +4,13 @@
     class="md:w-[700px] mx-auto mb-8 bg-green-100 border-dashed border border-green-500"
     :ui="{
       rounded: 'rounded-2xl',
+      body: {
+        padding: 'px-2 py-3 sm:p-6',
+      },
       ring: '',
     }"
   >
-    <div class="flex flex-col md:flex-row justify-between gap-6">
+    <div class="flex flex-col md:flex-row justify-between gap-2 sm:gap-6">
       <div class="flex items-center justify-between">
         <h3 class="text-2xl font-bold max-sm:text-center">
           <span class="text-green-900 inline-flex items-center gap-1">
@@ -63,7 +66,7 @@
           gap: { md: 'gap-x-1 md:gap-x-2' },
           padding: { md: 'px-1.5 py-0.5 md:px-3 md:py-2' },
         }"
-        class="justify-center"
+        class="justify-center max-sm:py-1.5"
       />
       <UButton
         icon="i-material-symbols:mark-email-unread-outline"
@@ -75,7 +78,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
         }"
-        class="justify-center"
+        class="justify-center max-sm:py-1.5"
       />
       <UButton
         icon="i-material-symbols:list-rounded"
@@ -87,7 +90,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
         }"
-        class="justify-center"
+        class="justify-center max-sm:py-1.5"
       />
       <UButton
         icon="i-heroicons-plus-circle"
@@ -99,7 +102,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
         }"
-        class="justify-center"
+        class="justify-center max-sm:py-1.5"
       />
     </div>
     <UDivider label="" class="my-5" />

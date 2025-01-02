@@ -137,6 +137,7 @@
                       color="primary"
                       variant="outline"
                       label="Pause"
+                      :loading="isLoading"
                       v-if="service.active_service"
                       @click.prevent="handleAction(service.id, 'pause', false)"
                     />
@@ -145,6 +146,7 @@
                       color="primary"
                       variant="outline"
                       label="Activate"
+                      :loading="isLoading"
                       v-if="!service.active_service"
                       @click.prevent="handleAction(service.id, 'active', true)"
                     />
@@ -160,6 +162,7 @@
                       color="primary"
                       variant="outline"
                       label="Complete"
+                      :loading="isLoading"
                       @click.prevent="handlePop(service.id)"
                     />
                     <!-- <UButton
@@ -202,6 +205,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+const isLoading = ref(false);
 const { get, put, staticURL } = useApi();
 const { formatDate } = useUtils();
 const isOpen = ref(false);
@@ -222,6 +226,7 @@ async function fetchServices() {
 fetchServices();
 
 async function handleAction(id, action, val) {
+  isLoading.value = true;
   const res = await (action === "complete"
     ? put("/update-user-classified-post/" + id + "/")
     : put("/update-user-classified-post/" + id + "/", {
@@ -231,6 +236,7 @@ async function handleAction(id, action, val) {
   if (res.data) {
     fetchServices();
   }
+  isLoading.value = false;
 }
 </script>
 

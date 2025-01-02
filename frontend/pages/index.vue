@@ -235,15 +235,46 @@
                           Posted By:
                           <p class="text-sm">
                             <span class="text-green-600"
-                              >{{ gig.user.name.slice(0, 5) }}...</span
+                              >{{ gig.user.name.slice(0, 6) }}***</span
                             >
                           </p>
                         </div>
+                        <UButton
+                          v-if="user?.user && user?.user?.id !== gig.user.id"
+                          :disabled="user?.user?.id === gig.user.id"
+                          size="sm"
+                          class="ml-auto"
+                          color="primary"
+                          variant="outline"
+                          :to="`/order/${gig.id}/`"
+                        >
+                          Earn
+                        </UButton>
+                        <UButton
+                          v-if="user?.user?.id === gig.user.id"
+                          :disabled="user?.user?.id === gig.user.id"
+                          size="sm"
+                          class="ml-auto"
+                          color="primary"
+                          variant="outline"
+                        >
+                          Ineligible
+                        </UButton>
+                        <UButton
+                          v-if="!user?.user"
+                          size="sm"
+                          class="ml-auto"
+                          color="primary"
+                          variant="outline"
+                          :to="`/auth/login/`"
+                        >
+                          Earn
+                        </UButton>
                       </div>
                     </div>
                   </div>
                   <div
-                    class="flex gap-16 items-center justify-between max-sm:pl-16 max-sm:mt-2"
+                    class="hidden sm:flex gap-16 items-center justify-end md:justify-between max-sm:mt-2"
                   >
                     <p
                       class="font-bold text-base text-green-900 sm:inline-flex items-center hidden"
