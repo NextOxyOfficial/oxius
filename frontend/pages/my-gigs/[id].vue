@@ -142,14 +142,14 @@
     <UModal v-model="isOpen">
       <div class="py-10 px-6 text-center">
         <h4 class="text-2xl font-medium mb-4">
-          It will stop and complete the gig forever?
+          It will stop the gig for forever?
         </h4>
 
         <UButton
           size="md"
           color="primary"
           variant="solid"
-          label="Confirm Delete"
+          label="Stop"
           @click="handleAction(currentId, 'completed')"
         />
       </div>
@@ -191,6 +191,7 @@ async function getUserGigs() {
     const res = await get(`/user-micro-gigs/${route.params.id}/`);
 
     gigs.value = res.data;
+    console.log(res.data);
   } catch (error) {
     console.log(error);
   }

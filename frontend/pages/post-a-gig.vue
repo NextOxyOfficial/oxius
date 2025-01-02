@@ -448,6 +448,7 @@ const form = ref({
   target_device: "",
   target_network: "",
   category: "",
+  active_gig: true,
 });
 
 function updateContent(p) {
@@ -516,7 +517,7 @@ async function handlePostGig() {
     toast.add({ title: res.error.data.errors });
     showError.value = res.error.data.errors;
   }
-  isLoading.value = true;
+  isLoading.value = false;
 }
 
 async function getMicroGigsCategory() {
