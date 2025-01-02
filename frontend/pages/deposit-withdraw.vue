@@ -1,6 +1,8 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-2xl md:text-4xl my-8">Deposit/Withdraw</h1>
+    <h1 class="text-center text-2xl md:text-4xl my-8">
+      {{ $t("deposit_withdraw") }}
+    </h1>
     <UContainer>
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-8" />
@@ -9,7 +11,7 @@
           class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold"
         >
           <span class="inline-flex items-center"
-            >Available Balance:&nbsp;
+            >{{ $t("available_balance") }}:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
             {{ user.user.balance }}
           </span>
@@ -24,7 +26,7 @@
             rounded: 'rounded-e-none',
           }"
           @click="currentTab = 1"
-          >Deposit</UButton
+          >{{ $t("diposit") }}</UButton
         >
         <UButton
           :color="`${currentTab == 2 ? 'green' : 'gray'}`"
@@ -34,7 +36,7 @@
             rounded: 'rounded-s-none rounded-e-none',
           }"
           @click="currentTab = 2"
-          >Withdraw</UButton
+          >{{ $t("withdraw") }}</UButton
         >
         <UButton
           :color="`${currentTab == 3 ? 'green' : 'gray'}`"
@@ -44,7 +46,7 @@
             rounded: 'rounded-s-none',
           }"
           @click="currentTab = 3"
-          >Tranfer</UButton
+          >{{ $t("transfer") }}</UButton
         >
       </div>
       <div class="flex items-center">
@@ -107,7 +109,7 @@
               size="sm"
               @click="deposit"
               :loading="isLoading"
-              >Deposit</UButton
+              >{{ $t("diposit") }}</UButton
             >
             <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
           </div>
@@ -246,9 +248,11 @@
                 user.user.city &&
                 user.user.zip
               "
-              >Withdraw</UButton
+              >{{ $t("withdraw") }}</UButton
             >
-            <UButton v-else size="sm" @click="isOpen = true">Withdraw</UButton>
+            <UButton v-else size="sm" @click="isOpen = true">{{
+              $t("withdraw")
+            }}</UButton>
           </div>
         </div>
         <div v-if="currentTab === 3">
@@ -272,9 +276,9 @@
               size="md"
               color="primary"
               variant="solid"
-              label="Transfer"
               @click="handleTransfer"
-            />
+              >{{ $t("transfer") }}</UButton
+            >
           </UFormGroup>
         </div>
       </div>
@@ -282,7 +286,7 @@
         class="text-center text-lg md:text-3xl font-semibold mt-8"
         v-if="statements?.length"
       >
-        Transaction History
+        {{ $t("transaction_history") }}
       </h3>
 
       <UTable
@@ -322,7 +326,7 @@
         </template>
       </UTable>
       <UCard v-else class="py-16 text-center">
-        <p>No transactions have been found!</p>
+        <p>{{ $t("no_transactions_found") }}</p>
       </UCard>
     </UContainer>
     <UModal v-model="isOpen">

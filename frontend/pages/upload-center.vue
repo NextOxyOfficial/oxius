@@ -1,6 +1,6 @@
 <template>
   <UContainer class="mt-20 mb-12">
-    <h1 class="text-center text-4xl my-8">Upload Center</h1>
+    <h1 class="text-center text-4xl my-8">{{ $t("upload_center") }}</h1>
     <UDivider label="" class="mb-8" />
     <div class="w-2/3 sm:w-1/2 max-sm:mx-auto" v-if="form && !form?.pending">
       <div class="flex gap-1 items-center mb-3">
@@ -14,9 +14,11 @@
           class="w-5 h-5 text-blue-600"
         />
       </div>
-      <p class="text-lg md:text-xl font-medium mb-5">Upload Document</p>
+      <p class="text-lg md:text-xl font-medium mb-5">
+        {{ $t("upload_document") }}
+      </p>
       <p class="text-sm md:text-base font-medium mb-2" v-if="!form.front">
-        NID Front
+        {{ $t("nid_front") }}
       </p>
       <div class="flex flex-wrap flex-col gap-5" v-if="!form.front">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.front">
@@ -51,7 +53,7 @@
         NID front is required
       </p>
       <p class="text-sm md:text-base font-medium mb-2 mt-6" v-if="!form.back">
-        NID Back
+        {{ $t("nid_back") }}
       </p>
       <div class="flex flex-wrap flex-col gap-5" v-if="!form.back">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.back">

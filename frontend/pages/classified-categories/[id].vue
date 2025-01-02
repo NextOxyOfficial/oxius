@@ -17,7 +17,7 @@
         </p>
       </div>
       <p class="text-base md:text-lg mb-3 font-semibold">
-        Select Your Location
+        {{ $t("select_location") }}
       </p>
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <UFormGroup class="md:w-1/4">
