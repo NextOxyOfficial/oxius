@@ -196,7 +196,7 @@
       <h3 v-if="searchError" class="text-xl font-semibold mt-6">
         Nearby location ads
       </h3>
-      <div class="services mt-3" v-if="services.length">
+      <div class="services mt-3" v-if="services?.length">
         <UCard
           :ui="{
             background: '',
