@@ -51,6 +51,7 @@ export default defineI18nConfig(() => ({
       upload_document: "Upload Document",
       nid_front: "NID Front",
       nid_back: "NID Back",
+      customer_support: "Customer Support",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -101,6 +102,7 @@ export default defineI18nConfig(() => ({
       upload_document: "আপলোড ডকুমেন্ট",
       nid_front: "পরিচয়পত্র সামনে",
       nid_back: "পরিচয়পত্র পিছনে",
+      customer_support: "কাস্টোমার সাপোর্ট",
     },
   },
 }));
