@@ -128,9 +128,9 @@
                       class="size-14 rounded-md"
                     />
                   </div>
-                  <div>
+                  <div class="flex-1">
                     <h3
-                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
+                      class="text-base font-semibold sm:mb-1.5 text-left line-clamp-2 first-letter:uppercase"
                     >
                       {{ service?.title }}
                     </h3>
@@ -165,9 +165,9 @@
                       <div class="flex gap-1 items-center text-sm">
                         Posted By:
                         <p class="text-sm">
-                          <span class="text-green-600">{{
-                            service.user?.name
-                          }}</span>
+                          <span class="text-green-600"
+                            >{{ service.user?.name.slice(0, 5) }}...</span
+                          >
                         </p>
                       </div>
                     </div>
@@ -226,16 +226,16 @@
               <div
                 class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
               >
-                <div class="flex flex-row gap-4 items-center sm:items-start">
+                <div class="flex flex-row gap-4 items-start">
                   <div>
                     <NuxtImg
                       :src="staticURL + service.medias[0].image"
-                      class="size-14 rounded-md"
+                      class="size-9 sm:size-14 object-cover rounded-md"
                     />
                   </div>
-                  <div>
+                  <div class="flex-1">
                     <h3
-                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
+                      class="text-base font-semibold sm:mb-1.5 text-left line-clamp-2 first-letter:uppercase"
                     >
                       {{ service?.title }}
                     </h3>
@@ -270,9 +270,9 @@
                       <div class="flex gap-1 items-center text-sm">
                         Posted By:
                         <p class="text-sm">
-                          <span class="text-green-600">{{
-                            service.user?.name
-                          }}</span>
+                          <span class="text-green-600"
+                            >{{ service.user?.name.slice(0, 5) }}...</span
+                          >
                         </p>
                       </div>
                     </div>
