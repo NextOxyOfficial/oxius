@@ -158,7 +158,9 @@ def update_user(request, email):
 def get_nid(request):
     try:
         nid = NID.objects.get(user=request.user)
+        
         serializer = NIDSerializer(nid)
+        print(nid)
         return Response(
             {'message': 'NID details retrieved successfully', 'data': serializer.data},
             status=status.HTTP_200_OK
@@ -173,22 +175,16 @@ def get_nid(request):
 def add_nid(request):
     data = request.data
     data['user'] = request.user.id
-    if 'front' in data:
-        try:
-            data['front'] = base64ToFile(data['front'])
-        except Exception as e:
-            return Response(
-                {'message': 'Failed to process front image', 'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-    if 'back' in data:
-        try:
-            data['back'] = base64ToFile(data['back'])
-        except Exception as e:
-            return Response(
-                {'message': 'Failed to process back image', 'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    fields_to_process = ['front', 'back', 'selfie', 'other_document']
+    for field in fields_to_process:
+        if field in data and  data[field] not in [None, "", "null"]:
+            try:
+                data[field] = base64ToFile(data[field])
+            except Exception as e:
+                return Response(
+                    {'message': f'Failed to process {field} image', 'error': str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
     serializer = NIDSerializer(data=data)
     if serializer.is_valid():
         serializer.save()

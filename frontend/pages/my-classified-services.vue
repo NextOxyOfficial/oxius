@@ -40,7 +40,9 @@
               <div
                 class="flex flex-col sm:flex-row items-center justify-between w-full relative"
               >
-                <div class="flex flex-row gap-4 items-start">
+                <div
+                  class="flex flex-row gap-4 items-start text-sm sm:text-base"
+                >
                   <div>
                     <NuxtImg
                       :src="staticURL + service.medias[0].image"
@@ -49,7 +51,7 @@
                   </div>
                   <div class="flex-1">
                     <h3
-                      class="text-base font-semibold mb-1.5 text-left line-clamp-2 capitalize"
+                      class="text-sm sm:text-base font-semibold mb-1.5 text-left line-clamp-2 capitalize"
                     >
                       <UIcon
                         name="i-icon-park-outline:dot"
@@ -66,6 +68,14 @@
                         "
                         >Live</span
                       >
+                      <span
+                        class="text-green-700"
+                        v-if="
+                          service.service_status === 'completed' &&
+                          service.active_service
+                        "
+                        >Completed</span
+                      >
 
                       <span
                         class="text-yellow-600"
@@ -73,13 +83,17 @@
                           service.service_status.toLowerCase() === 'pending' ||
                           !service.active_service
                         "
-                        >Pending</span
+                        >{{
+                          service.service_status.toLowerCase() === "pending"
+                            ? "Pending"
+                            : "Paused"
+                        }}</span
                       >
                       <span
                         class="text-red-600"
                         v-if="
                           service.service_status.toLowerCase() === 'rejected' &&
-                          !service.active_service
+                          service.active_service
                         "
                         >Rejected</span
                       >
@@ -91,16 +105,6 @@
                     <div
                       class="flex flex-wrap items-center sm:items-start gap-4 gap-y-1"
                     >
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm">{{ service?.location }}</span>
-                      </p>
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{
-                          service?.category_details.title
-                        }}</span>
-                      </p>
                       <p
                         class="inline-flex sm:hidden items-center"
                         v-if="!service.negotiable"
@@ -109,17 +113,33 @@
                         {{ service.price }}
                       </p>
                       <p v-else class="sm:hidden">Negotiable</p>
+
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-tabler:category-filled" />
+                        <span class="text-sm">{{
+                          service?.category_details.title
+                        }}</span>
+                      </p>
+
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
                         <span class="text-sm"
                           >Posted: {{ formatDate(service?.created_at) }}</span
                         >
                       </p>
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-heroicons-map-pin-solid" />
+                        <span class="text-sm">{{ service?.location }}</span>
+                      </p>
                     </div>
                   </div>
                 </div>
                 <div
                   class="flex gap-16 items-center justify-between md:pr-2 font-semibold text-sm sm:text-base"
+                  v-if="
+                    service.service_status.toLowerCase() !== 'rejected' ||
+                    service.service_status.toLowerCase() !== 'completed'
+                  "
                 >
                   <p
                     class="sm:inline-flex items-center my-3 hidden"
@@ -161,7 +181,7 @@
                       size="md"
                       color="primary"
                       variant="outline"
-                      label="Complete"
+                      label="Stop"
                       :loading="isLoading"
                       @click.prevent="handlePop(service.id)"
                     />
@@ -185,14 +205,14 @@
       <UModal v-model="isOpen">
         <div class="py-10 px-6 text-center">
           <h4 class="text-2xl font-medium mb-4">
-            It will delete the gig forever?
+            It will stop the post forever
           </h4>
 
           <UButton
             size="md"
             color="primary"
             variant="solid"
-            label="Confirm Delete"
+            label="Confirm Complete"
             @click="handleAction(currentId, 'complete')"
           />
         </div>
@@ -228,7 +248,9 @@ fetchServices();
 async function handleAction(id, action, val) {
   isLoading.value = true;
   const res = await (action === "complete"
-    ? put("/update-user-classified-post/" + id + "/")
+    ? put("/update-user-classified-post/" + id + "/", {
+        service_status: "completed",
+      })
     : put("/update-user-classified-post/" + id + "/", {
         active_service: val,
       }));

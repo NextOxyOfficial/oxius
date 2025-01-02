@@ -74,7 +74,7 @@
 
           <UCard
             v-if="services && !services.count"
-            class="py-16 text-center w-full"
+            class="py-16 text-center w-full col-span-2 sm:col-span-3"
           >
             <p>No categories have been found!</p>
           </UCard>
@@ -224,7 +224,7 @@
                           {{ formatDate(gig.created_at) }}
                         </p>
                         <p
-                          class="font-bold text-base text-green-900 inline-flex items-center"
+                          class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto"
                         >
                           <UIcon
                             name="i-mdi:currency-bdt"

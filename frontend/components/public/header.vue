@@ -30,7 +30,11 @@
             </div>
           </template>
         </UCard>
-        <PublicLogo :logo="logo" :staticURL="staticURL" class="text-center mx-auto mb-4" />
+        <PublicLogo
+          :logo="logo"
+          :staticURL="staticURL"
+          class="text-center mx-auto mb-4"
+        />
         <UVerticalNavigation
           :links="[
             {
@@ -62,7 +66,7 @@
         />
         <PublicTranslateHandler class="px-2 mt-3" />
       </USlideover>
-      <div class="flex items-center justify-between gap-2 lg:gap-6">
+      <div class="flex items-center justify-between gap-3 lg:gap-6">
         <div class="block md:hidden">
           <UButton
             @click="isOpen = true"
@@ -71,7 +75,11 @@
             color="gray"
           />
         </div>
-        <PublicLogo :logo="logo" :staticURL="staticURL" class="max-sm:mr-auto" />
+        <PublicLogo
+          :logo="logo"
+          :staticURL="staticURL"
+          class="max-sm:mr-auto"
+        />
         <div class="hidden md:block">
           <UHorizontalNavigation
             :links="[
@@ -233,7 +241,7 @@ defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
-const handleClickOutside = event => {
+const handleClickOutside = (event) => {
   const menuContainer = document.querySelector(".menu-container");
   if (menuContainer && !menuContainer.contains(event.target)) {
     openMenu.value = false;

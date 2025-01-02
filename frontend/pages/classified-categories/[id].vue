@@ -128,7 +128,7 @@
                       class="size-14 rounded-md"
                     />
                   </div>
-                  <div class="flex-1">
+                  <div class="flex-1 text-sm sm:text-base">
                     <h3
                       class="text-base font-semibold sm:mb-1.5 text-left line-clamp-2 first-letter:uppercase"
                     >
@@ -138,11 +138,11 @@
                     <div
                       class="flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm first-letter:uppercase">{{
-                          service?.location
-                        }}</span>
+                      <p
+                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                      >
+                        <UIcon name="i-mdi:currency-bdt" />
+                        {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
@@ -156,12 +156,7 @@
                           >Posted: {{ formatDate(service?.created_at) }}</span
                         >
                       </p>
-                      <p
-                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
-                      >
-                        <UIcon name="i-mdi:currency-bdt" />
-                        {{ service.negotiable ? "Negotiable" : service.price }}
-                      </p>
+
                       <div class="flex gap-1 items-center text-sm">
                         Posted By:
                         <p class="text-sm">
@@ -170,6 +165,12 @@
                           >
                         </p>
                       </div>
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-heroicons-map-pin-solid" />
+                        <span class="text-sm first-letter:uppercase">{{
+                          service?.location
+                        }}</span>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -233,9 +234,9 @@
                       class="size-9 sm:size-14 object-cover rounded-md"
                     />
                   </div>
-                  <div class="flex-1">
+                  <div class="flex-1 text-sm sm:text-base">
                     <h3
-                      class="text-base font-semibold sm:mb-1.5 text-left line-clamp-2 first-letter:uppercase"
+                      class="text-sm sm:text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
                     >
                       {{ service?.title }}
                     </h3>
@@ -243,12 +244,13 @@
                     <div
                       class="flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm first-letter:uppercase">{{
-                          service?.location
-                        }}</span>
+                      <p
+                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                      >
+                        <UIcon name="i-mdi:currency-bdt" />
+                        {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
+
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
                         <span class="text-sm">{{
@@ -261,12 +263,7 @@
                           >Posted: {{ formatDate(service?.created_at) }}</span
                         >
                       </p>
-                      <p
-                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
-                      >
-                        <UIcon name="i-mdi:currency-bdt" />
-                        {{ service.negotiable ? "Negotiable" : service.price }}
-                      </p>
+
                       <div class="flex gap-1 items-center text-sm">
                         Posted By:
                         <p class="text-sm">
@@ -275,6 +272,12 @@
                           >
                         </p>
                       </div>
+                      <p class="inline-flex gap-1 items-center">
+                        <UIcon name="i-heroicons-map-pin-solid" />
+                        <span class="text-sm first-letter:uppercase">{{
+                          service?.location
+                        }}</span>
+                      </p>
                     </div>
                   </div>
                 </div>

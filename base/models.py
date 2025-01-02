@@ -155,6 +155,7 @@ class ClassifiedCategoryPost(models.Model):
       ('pending', 'Pending'),
       ('approved', 'Approved'),
       ('rejected', 'Rejected'),
+      ('completed', 'Completed'),
     ]
     service_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
