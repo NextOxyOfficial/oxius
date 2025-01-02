@@ -1,6 +1,6 @@
 <template>
   <UContainer class="mt-20 mb-12">
-    <h1 class="text-center text-4xl my-8">Upload Center</h1>
+    <h1 class="text-center text-4xl my-8">{{ $t("upload_center") }}</h1>
     <UDivider label="" class="mb-8" />
     <ul class="mb-4 space-y-1 text-sm font-medium">
       <li>

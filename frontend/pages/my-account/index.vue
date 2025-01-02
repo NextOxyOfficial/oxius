@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h1 class="text-center text-4xl my-8">My Profile Details</h1>
+      <h1 class="text-center text-4xl my-8">{{ $t("my_profile_details") }}</h1>
       <UDivider label="" class="mb-8" />
       <div class="text-center flex gap-1 items-center justify-center mb-3">
         <span v-if="user.user.name" class="font-semibold">{{

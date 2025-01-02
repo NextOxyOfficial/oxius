@@ -1,6 +1,6 @@
 <template>
   <UContainer class="mt-10 mb-16">
-    <h1 class="text-center text-4xl my-8">Customer Support</h1>
+    <h1 class="text-center text-4xl my-8">{{ $t("customer_support") }}</h1>
     <UDivider label="" class="mb-8" />
     <p class="text-center text-base first-letter:capitalize lowercase">
       Get Help and Support for All Your Service Needs

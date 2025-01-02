@@ -20,6 +20,7 @@ from django.db.models import Q
 from uuid import UUID
 from decimal import Decimal
 from rest_framework.pagination import PageNumberPagination
+from random import shuffle
 
 # Create your views here.
 
@@ -402,8 +403,14 @@ class ClassifiedCategoryPostFilterView(APIView):
 
 @api_view(['GET'])
 def classifiedCategoryPosts(request, cid):
-    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.filter(category=cid).order_by('-created_at'),many=True)
+    posts = list(ClassifiedCategoryPost.objects.filter(category=cid))
+    # for random category posts
+    shuffle(posts)
+    serializer = ClassifiedPostSerializer(posts, many=True)
+    
+    # serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.filter(category=cid).order_by('-created_at'),many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 
 @api_view(['GET'])
