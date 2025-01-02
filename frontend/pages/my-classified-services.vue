@@ -38,13 +38,15 @@
               class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
-                class="flex flex-col sm:flex-row items-center justify-between w-full relative"
+                class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full relative"
               >
-                <div class="flex flex-row gap-4 items-center sm:items-start">
+                <div
+                  class="flex flex-col sm:flex-row gap-2 lg:gap-4 items-center sm:items-start"
+                >
                   <div>
                     <NuxtImg
                       :src="staticURL + service.medias[0].image"
-                      class="size-14 rounded-md"
+                      class="max-md:size-20 md:size-14 rounded-md"
                     />
                   </div>
                   <div>
@@ -111,10 +113,10 @@
                   </div>
                 </div>
                 <div
-                  class="flex gap-16 items-center justify-between max-sm:pl-[70px] md:pr-2 font-semibold max-sm:absolute max-sm:bottom-0 max-sm:right-0 text-sm sm:text-base"
+                  class="flex flex-col sm:flex-row gap-2 sm:gap-5 md:gap-16 items-start sm:items-center justify-normal sm:justify-between md:pr-2 font-semibold text-sm sm:text-base"
                 >
                   <p
-                    class="inline-flex items-center my-3"
+                    class="inline-flex items-center my-3 justify-start"
                     v-if="!service.negotiable"
                   >
                     <UIcon name="i-mdi:currency-bdt" />
