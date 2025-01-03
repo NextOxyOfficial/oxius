@@ -214,7 +214,7 @@
                           {{ formatDate(gig.created_at) }}
                         </p>
                         <p
-                          class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto"
+                          class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
                         >
                           <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
                         </p>
@@ -239,7 +239,7 @@
                           v-if="user?.user?.id === gig.user.id"
                           :disabled="user?.user?.id === gig.user.id"
                           size="sm"
-                          class="ml-auto"
+                          class="ml-auto sm:hidden"
                           color="primary"
                           variant="outline"
                         >
@@ -248,7 +248,7 @@
                         <UButton
                           v-if="!user?.user"
                           size="sm"
-                          class="ml-auto"
+                          class="ml-auto sm:hidden"
                           color="primary"
                           variant="outline"
                           :to="`/auth/login/`"
