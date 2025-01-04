@@ -786,6 +786,25 @@ def get_faq(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def get_divisions(request):
+    divisions = Division.objects.all()
+    serializer = DivisionSerializer(divisions, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_districts(request, division_id):
+    districts = District.objects.filter(division=division_id)
+    serializer = DistrictSerializer(districts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_policestations(request, district_id):
+    policestations = PoliceStation.objects.filter(district=district_id)
+    serializer = PoliceStationSerializer(policestations, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 # for frontend
 
 def index(request, **args):

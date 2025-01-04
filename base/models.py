@@ -472,3 +472,23 @@ class Faq(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.label
+    
+
+class Division(models.Model):
+    name = models.CharField(max_length=256)
+    def __str__(self):
+        return self.name
+    
+class District(models.Model):
+    division = models.ForeignKey(Division, on_delete=models.CASCADE, related_name='district')
+    name = models.CharField(max_length=256)
+    
+    def __str__(self):
+        return self.name
+    
+class PoliceStation(models.Model):
+    district = models.ForeignKey(District, on_delete=models.CASCADE, related_name='police_station')
+    name = models.CharField(max_length=256)
+    
+    def __str__(self):
+        return self.name
