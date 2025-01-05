@@ -543,29 +543,11 @@ onMounted(() => {
   }
 });
 
-// const ApiUrl = "https://api.countrystatecity.in/v1/countries";
-// const headerOptions = {
-//   method: "GET",
-//   headers: {
-//     "X-CSCAPI-KEY": "NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==",
-//   },
-//   redirect: "follow",
-// };
-
-// async function getCountry() {
-//   const res = await $fetch(ApiUrl, headerOptions);
-//   country.value = res;
-//   console.log(res);
-// }
-// onMounted(() => {
-//   country.value.push({ name: "BD", iso2: "BD" });
-//   form.value.country = "BD";
-// });
-
 // geo filter
 
 const regions = ref([]);
 const cities = ref();
+const thanas = ref();
 
 const regions_response = await get(
   `/cities-light/regions/?country=${form.value.country}`
@@ -581,6 +563,19 @@ watch(
         `/cities-light/cities/?region=${newState}`
       );
       cities.value = cities_response.data;
+      console.log(cities_response.data);
+    }
+  }
+);
+
+watch(
+  () => form.value.city,
+  async (newCity) => {
+    console.log(newCity);
+    if (newCity) {
+      const thana_response = await get(`/thana/?city=${newCity}`);
+      thanas.value = thana_response.data;
+      console.log(thana_response.data);
     }
   }
 );

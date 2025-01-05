@@ -308,7 +308,7 @@ class GetMicroGigs(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
+# Micro Gig Post
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def post_micro_gigs(request):
@@ -342,6 +342,45 @@ def post_micro_gigs(request):
         status=status.HTTP_400_BAD_REQUEST
     )
 
+# Micro Gig Put Update
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_micro_gig_post(request, pk):
+    try:
+        micro_gig_post = get_object_or_404(MicroGigPost, id=pk)
+        
+        # Check if the user is the owner or a superuser
+        if request.user == micro_gig_post.user or request.user.is_superuser:
+            additional_cost = Decimal(request.data.get('additional_cost', 0))
+
+            # Ensure the user has enough balance for the additional cost
+            if request.user.balance < additional_cost:
+                return Response(
+                    {'message': 'Insufficient balance', 'errors': 'Insufficient balance'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Deduct additional cost from user balance
+            request.user.balance -= additional_cost
+            request.user.save()
+            print(micro_gig_post.total_cost + additional_cost)
+            # Adjust balance and quantity in micro_gig_post
+            micro_gig_post.total_cost = micro_gig_post.total_cost + additional_cost
+            micro_gig_post.balance += Decimal(request.data.get('balance', 0))
+            micro_gig_post.required_quantity += int(request.data.get('required_quantity', 0))
+            
+            # Update the MicroGigPost using serializer
+            serializer = MicroGigPostSerializer(micro_gig_post, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
+    
+    except MicroGigPost.DoesNotExist:
+        return Response({"error": "MicroGigPost not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -491,26 +530,7 @@ def get_micro_gig_post(request,pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# Micro Gig Post Update
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_micro_gig_post(request, pk):
-    try:
-        micro_gig_post = get_object_or_404(MicroGigPost, id=pk)
-        
-        # Check if the user is the owner or a superuser
-        if request.user == micro_gig_post.user or request.user.is_superuser:
-            serializer = MicroGigPostSerializer(micro_gig_post, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
-    
-    except MicroGigPost.DoesNotExist:
-        return Response({"error": "MicroGigPost not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 # Micro Gig Post Delete
 @api_view(['DELETE'])
@@ -786,23 +806,26 @@ def get_faq(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def get_divisions(request):
-    divisions = Division.objects.all()
-    serializer = DivisionSerializer(divisions, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def get_districts(request, division_id):
-    districts = District.objects.filter(division=division_id)
-    serializer = DistrictSerializer(districts, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
+# @api_view(['GET'])
+# def get_police_stations(request, district_id):
+#     police_stations = PoliceStation.objects.filter(district=district_id)
+#     serializer = PoliceStationSerializer(police_stations, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
+from .police_stations import CITY_AREAS 
 @api_view(['GET'])
-def get_policestations(request, district_id):
-    policestations = PoliceStation.objects.filter(district=district_id)
-    serializer = PoliceStationSerializer(policestations, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+def police_station(request):
+    city = request.GET.get('city', '').strip().capitalize()  # Get city from query param, capitalize to match dictionary keys
+    if not city:
+        return Response({"error": "City name is required"}, status=400)
+    
+    areas = CITY_AREAS.get(city, [])  # Fetch areas for the specified city
+    if not areas:
+        return Response({"error": f"No areas found for city: {city}"}, status=404)
+    
+    return Response(data=areas)
 
 
 # for frontend

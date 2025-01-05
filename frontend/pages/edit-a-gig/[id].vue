@@ -6,7 +6,7 @@
       <form
         action="#"
         class="max-w-2xl mx-auto space-y-3"
-        @submit.prevent="handlePostGig"
+        @submit.prevent="handleUpdateGig"
       >
         <UFormGroup label="Title">
           <UInput
@@ -27,8 +27,22 @@
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center">
-          <UFormGroup label="Budget Per Action">
+          <UFormGroup
+            required
+            label="Budget Per Action"
+            :error="
+              form.price <= 0 &&
+              checkSubmit &&
+              'You must enter budget per action!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+          >
             <UInput
+              disabled
               icon="i-mdi:currency-bdt"
               type="text"
               size="md"
@@ -37,14 +51,29 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               placeholder="2.0"
               class="max-w-40"
               v-model="form.price"
             />
           </UFormGroup>
-          <UFormGroup label="Required Quantity">
+          <UFormGroup
+            label="Required Quantity"
+            required
+            :error="
+              form.required_quantity <= 0 &&
+              checkSubmit &&
+              'You must enter required quantity!'
+            "
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+          >
             <UInput
+              disabled
               type="text"
               size="md"
               color="white"
@@ -52,34 +81,59 @@
                 size: {
                   md: 'text-base',
                 },
+                placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
               }"
               placeholder="10"
               class="max-w-40"
               v-model="form.required_quantity"
             />
           </UFormGroup>
-          <UFormGroup label="*">
-            <p>=</p>
-          </UFormGroup>
-          <UFormGroup label="Total Cost">
-            <p>{{ form.price * form.required_quantity }}</p>
-          </UFormGroup>
-        </div>
-        <UFormGroup label="Instructions">
-          <UTextarea
-            color="white"
-            variant="outline"
+          <!-- <UFormGroup
+            label="*"
             :ui="{
-              size: {
-                md: 'text-base',
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
               },
             }"
-            class="w-full"
-            resize
-            placeholder="Instructions"
-            v-model="form.instructions"
-          />
-        </UFormGroup>
+          >
+            <p>=</p>
+          </UFormGroup> -->
+          <UFormGroup
+            label="_"
+            :ui="{
+              label: {
+                base: 'opacity-0',
+              },
+            }"
+            ><UButton
+              icon="i-heroicons-plus-solid"
+              size="md"
+              color="primary"
+              variant="solid"
+              label="Add QTY"
+              @click="isOpen = true"
+            />
+          </UFormGroup>
+        </div>
+        <div>
+          <UFormGroup
+            label="Total Cost (Service handling fee 10% included)"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+            required
+          >
+            <p class="inline-flex gap-0.5 items-center">
+              <UIcon name="i-mdi:currency-bdt" />{{
+                form.price * form.required_quantity +
+                (form.price * form.required_quantity * 10) / 100
+              }}
+            </p>
+          </UFormGroup>
+        </div>
+        <div v-html="form.instructions" class="prose"></div>
 
         <!-- medias  -->
 
@@ -216,17 +270,116 @@
         </div>
       </form>
     </UContainer>
+    <UModal v-model="isOpen">
+      <UCard
+        :ui="{
+          ring: '',
+          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+        }"
+      >
+        <div>
+          <div class="flex gap-4 items-center">
+            <UFormGroup
+              required
+              label="Budget Per Action"
+              :error="
+                form.price <= 0 &&
+                checkSubmit &&
+                'You must enter budget per action!'
+              "
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
+              <UInput
+                disabled
+                icon="i-mdi:currency-bdt"
+                type="text"
+                size="md"
+                color="white"
+                :ui="{
+                  size: {
+                    md: 'text-base',
+                  },
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
+                }"
+                placeholder="2.0"
+                class="max-w-40"
+                v-model="form.price"
+              />
+            </UFormGroup>
+            <UFormGroup
+              label="Add Additional Quantity"
+              required
+              :error="
+                form.additional_quantity <= 0 &&
+                checkSubmit &&
+                'You must enter required quantity!'
+              "
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+            >
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                :ui="{
+                  size: {
+                    md: 'text-base',
+                  },
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
+                }"
+                placeholder="10"
+                class="max-w-40"
+                v-model="form.additional_quantity"
+              />
+            </UFormGroup>
+          </div>
+          <div>
+            <UFormGroup
+              label="Total Cost (Service handling fee 10% included)"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
+              required
+            >
+              <p class="inline-flex gap-0.5 items-center">
+                <UIcon name="i-mdi:currency-bdt" />{{
+                  form.price * form.additional_quantity +
+                  (form.price * form.additional_quantity * 10) / 100
+                }}
+              </p>
+            </UFormGroup>
+          </div>
+        </div>
+        <UButton
+          size="md"
+          color="primary"
+          variant="solid"
+          label="Pay"
+          class="mx-auto"
+        />
+      </UCard>
+    </UModal>
   </PublicSection>
 </template>
 
 <script setup>
-const { get, post, put, staticURL } = useApi();
+const { get, put, staticURL } = useApi();
 const toast = useToast();
 const categories = ref([]);
 const network = ref([]);
 const device = ref([]);
 const country = ref([]);
 const route = useRoute();
+const isOpen = ref(false);
 
 const form = ref({
   price: 0,
@@ -239,6 +392,7 @@ const form = ref({
   target_device: "",
   target_network: "",
   category: "",
+  additional_quantity: null,
 });
 
 function handleFileUpload(event, field) {
@@ -263,12 +417,21 @@ function deleteUpload(ind) {
   }
 }
 
-async function handlePostGig() {
-  console.log(form.value);
-  const res = await put(
-    `/update-user-micro-gig/${route.params.id}/`,
-    form.value
-  );
+async function handleUpdateGig() {
+  const required_quantity =
+    form.value.required_quantity * 1 + form.value.additional_quantity * 1;
+  const balance =
+    +form.value.balance + form.value.additional_quantity * form.value.price;
+
+  const additional_cost =
+    form.value.additional_quantity * form.value.price +
+    (form.value.price * form.value.additional_quantity * 10) / 100;
+  console.log({ required_quantity, additional_cost });
+  const res = await put(`/update-user-micro-gig/${route.params.id}/`, {
+    required_quantity,
+    additional_cost,
+    balance,
+  });
   if (res.data) {
     navigateTo("/");
     toast.add({ title: "MicroGig Updated" });

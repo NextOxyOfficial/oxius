@@ -170,7 +170,11 @@
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="img" :alt="`Uploaded file ${i}`" />
+            <img
+              :src="img"
+              :alt="`Uploaded file ${i}`"
+              class="h-full object-cover"
+            />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -439,8 +443,8 @@ const showError = ref("");
 const isLoading = ref(false);
 
 const form = ref({
-  price: 0,
-  required_quantity: 0,
+  price: null,
+  required_quantity: null,
   instructions: "",
   title: "",
   medias: [],

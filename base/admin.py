@@ -138,7 +138,3 @@ class FaqAdmin(admin.ModelAdmin):
     list_display = ('label', 'content', 'created_at', 'updated_at')
     
 admin.site.register(Faq, FaqAdmin)
-
-admin.site.register(Division)
-admin.site.register(District)
-admin.site.register(PoliceStation)

@@ -292,17 +292,3 @@ class FaqSerializer(serializers.ModelSerializer):
         model= Faq
         fields = ('label', 'content')
         
-class DivisionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Division
-        fields = '__all__'
-
-class DistrictSerializer(serializers.ModelSerializer):
-    class Meta:
-        model= District
-        fields = '__all__'
-        
-class PoliceStationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PoliceStation
-        fields = '__all__'

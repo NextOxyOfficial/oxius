@@ -474,21 +474,10 @@ class Faq(models.Model):
         return self.label
     
 
-class Division(models.Model):
-    name = models.CharField(max_length=256)
-    def __str__(self):
-        return self.name
+
     
-class District(models.Model):
-    division = models.ForeignKey(Division, on_delete=models.CASCADE, related_name='district')
-    name = models.CharField(max_length=256)
+# class PoliceStation(models.Model):
+#     name = models.CharField(max_length=256)
     
-    def __str__(self):
-        return self.name
-    
-class PoliceStation(models.Model):
-    district = models.ForeignKey(District, on_delete=models.CASCADE, related_name='police_station')
-    name = models.CharField(max_length=256)
-    
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name

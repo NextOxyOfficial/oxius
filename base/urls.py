@@ -66,9 +66,8 @@ urlpatterns = [
   path('verify-pay/',verifyPayment), 
   # ?sp_order_id=ADSYCLUB_67613e32050d9
   path('cities-light/', include(router.urls)),
+  path('thana/', police_station, name='thana')
   # division, distrct, policestation
-  path('division/', get_divisions, name='division'),
-  path('division/<str:division_id>/district/', get_districts, name='district'),
-  path('district/<str:district_id>/policestation/', get_policestations, name='policestation'),
+  # path('district/<str:district_id>/police_stations/', get_police_stations, name='police_station'),
   # user's address
 ]
