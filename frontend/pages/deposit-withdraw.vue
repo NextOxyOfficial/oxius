@@ -264,6 +264,7 @@
               placeholder="Email/Phone"
               v-model="transfer.contact"
             />
+            <p class="text-sm text-red-500">{{ transferErrors.contact }}</p>
             <UInput
               type="text"
               size="md"
@@ -272,14 +273,19 @@
               class="my-3"
               v-model="transfer.payable_amount"
             />
+            <p class="text-sm text-red-500">
+              {{ transferErrors.payable_amount }}
+            </p>
             <UButton
+              :loading="isLoading"
               size="md"
               color="primary"
               variant="solid"
-              @click="handleTransfer"
+              @click="sendToUser"
               >{{ $t("transfer") }}</UButton
             >
           </UFormGroup>
+          <p class="text-sm text-red-500">{{ transferErrors.user }}</p>
         </div>
       </div>
       <h3
@@ -307,7 +313,7 @@
           <p>{{ formatDate(row.created_at) }}</p>
         </template>
         <template #payment_method-data="{ row }">
-          <p class="capitalize">
+          <p class="uppercase">
             {{ row.transaction_type }} -
             {{ row.payment_method }}
           </p>
@@ -344,6 +350,7 @@
       </div>
     </UModal>
     <UModal
+      prevent-close
       v-model="isOpenTransfer"
       :ui="{
         inner: 'fixed inset-0 overflow-y-auto flex item-center justify-center',
@@ -351,7 +358,7 @@
           'flex min-h-full items-end sm:items-center justify-center text-center max-w-sm w-full',
       }"
     >
-      <div class="flex items-center justify-center">
+      <div class="flex items-center justify-center" v-if="!showSuccess">
         <div class="w-full max-w-sm">
           <!-- Glass Card Effect -->
           <div
@@ -366,21 +373,29 @@
             <div class="space-y-4 mb-6">
               <div class="flex justify-between items-center">
                 <p class="text-gray-500 text-xs">Transfer amount</p>
-                <p class="text-gray-900 text-lg font-semibold">₦10,456</p>
+                <p class="text-gray-900 text-lg font-semibold">
+                  <UIcon name="i-mdi:currency-bdt" class="" />
+                  {{ transfer.payable_amount }}
+                </p>
               </div>
 
               <div class="space-y-3">
                 <!-- Recipient Field -->
                 <div class="space-y-1">
                   <label class="text-xs text-gray-500">Recipient:</label>
-                  <p class="text-sm text-gray-800 font-medium">John Smith</p>
+                  <p
+                    class="text-sm text-gray-800 font-medium"
+                    v-if="transfer?.to_user"
+                  >
+                    {{ transfer?.to_user }}
+                  </p>
                 </div>
 
                 <!-- Email Field -->
                 <div class="space-y-1">
                   <label class="text-xs text-gray-500">Email:</label>
                   <p class="text-sm text-gray-800 font-medium">
-                    john.smith@example.com
+                    {{ transfer.contact }}
                   </p>
                 </div>
 
@@ -407,34 +422,114 @@
               class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
             >
               <p class="text-xs text-gray-500">Final amount</p>
-              <p class="text-gray-900 font-semibold">₦23,458.78</p>
+              <p class="text-gray-900 font-semibold">
+                <UIcon name="i-mdi:currency-bdt" class="" />
+                {{ transfer.payable_amount }}
+              </p>
             </div>
 
             <!-- Confirm Button -->
-            <button
-              @click="handleConfirm"
+            <UButton
+              @click="handleTransfer"
               :class="[
                 'w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                 'bg-black text-white hover:bg-gray-800 active:scale-98',
                 'focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'disabled:opacity-50 disabled:cursor-not-allowed justify-center',
               ]"
-              :disabled="loading"
+              :loading="isLoading"
             >
               <div class="flex items-center justify-center gap-2">
-                {{ loading ? "Processing..." : "Confirm Transfer" }}
+                {{ isLoading ? "Processing..." : "Confirm Transfer" }}
               </div>
-            </button>
+            </UButton>
           </div>
 
           <!-- Success Message -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center" v-else>
+        <div class="w-full max-w-sm flex-1">
+          <!-- Glass Card Effect -->
           <div
-            v-if="showSuccess"
-            class="mt-4 backdrop-blur-lg bg-white/70 rounded-lg p-3 border border-emerald-200/20 flex items-center gap-2 animate-fade-in"
+            class="backdrop-blur-lg bg-white/70 rounded-xl p-6 shadow-lg border border-white/20 w-full"
           >
-            <p class="text-emerald-600 text-sm">
-              Transfer confirmed successfully!
-            </p>
+            <!-- Title and Success Icon -->
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-green-700">
+                Transfer Successful
+              </h2>
+              <UIcon
+                name="i-rivet-icons-check-circle-breakout"
+                class="h-5 w-5"
+              />
+            </div>
+
+            <!-- Transfer Details -->
+            <div class="space-y-4 mb-6">
+              <div class="flex justify-between items-center">
+                <p class="text-gray-500 text-xs">Transferred amount</p>
+                <p class="text-gray-900 text-lg font-semibold">
+                  <UIcon name="i-mdi:currency-bdt" class="" />
+                  {{ transfer.payable_amount }}
+                </p>
+              </div>
+
+              <div class="space-y-3">
+                <!-- Recipient Field -->
+                <div class="space-y-1">
+                  <label class="text-xs text-gray-500">Recipient:</label>
+                  <p class="text-sm text-gray-800 font-medium">
+                    {{ transfer.to_user }}
+                  </p>
+                </div>
+
+                <!-- Email Field -->
+                <div class="space-y-1">
+                  <label class="text-xs text-gray-500">Email:</label>
+                  <p class="text-sm text-gray-800 font-medium">
+                    {{ transfer.contact }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <label class="text-xs text-gray-500">Time:</label>
+                  <span
+                    class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                  >
+                    Completed
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Final Amount -->
+            <div
+              class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+            >
+              <p class="text-xs text-gray-500">Final amount</p>
+              <p class="text-gray-900 font-semibold">
+                <UIcon name="i-mdi:currency-bdt" class="" />
+                {{ transfer.payable_amount }}
+              </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+              <button
+                @click="reset"
+                class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                View History
+              </button>
+              <button
+                @click="reset"
+                class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-black text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -446,6 +541,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+const showSuccess = ref(false);
 const isOpenTransfer = ref(false);
 const isOpen = ref(false);
 const toast = useToast();
@@ -587,17 +683,63 @@ const transfer = ref({
   contact: "",
   payable_amount: "",
   transaction_type: "p2p",
+  bank_status: "completed",
 });
 
-async function handleTransfer() {
+const transferErrors = ref({});
+
+async function sendToUser() {
+  isLoading.value = true;
+  transferErrors.value = {}; // Reset errors before validation
+
+  if (!transfer.value.contact) {
+    transferErrors.value.contact = "Contact is required.";
+  }
+
+  if (!transfer.value.payable_amount) {
+    transferErrors.value.payable_amount = "Payable amount is required.";
+  }
+
+  if (Object.keys(transferErrors.value).length > 0) {
+    // If there are validation errors, return early without proceeding
+    return;
+  }
   const { data, error } = await get(`/user/${transfer.value.contact}/`);
   console.log(data, error);
-  if (data.email) {
-    const { data, error } = await post(`/add-user-balance/`, transfer.value);
+  if (data) {
+    isOpenTransfer.value = true;
+  } else {
+    transferErrors.value.user = "User not found";
+  }
+  transfer.value.to_user = data.name;
+  isLoading.value = false;
+}
+
+async function handleTransfer() {
+  isLoading.value = true;
+  const { to_user, ...rest } = transfer.value;
+  if (to_user) {
+    const { data, error } = await post(`/add-user-balance/`, rest);
     console.log(data, error);
+    if (data) {
+      showSuccess.value = true;
+    }
     jwtLogin();
     getTransactionHistory();
   }
+  isLoading.value = false;
+}
+
+function reset() {
+  isOpenTransfer.value = false;
+  showSuccess.value = false;
+  transfer.value = {
+    contact: "",
+    payable_amount: "",
+    transaction_type: "p2p",
+    bank_status: "completed",
+    to_user: null,
+  };
 }
 
 const getTransactionHistory = async () => {

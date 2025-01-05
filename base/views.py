@@ -261,7 +261,8 @@ def get_user_with_identifier(request, identifier):
         return Response({
             "id": user.id,
             "email": user.email,
-            "phone": user.phone,  # Include additional fields as needed
+            "phone": user.phone,
+            "name":user.name  # Include additional fields as needed
         })
     except User.DoesNotExist:
         raise NotFound({"error": f"No person found with email or phone: {identifier}"})
