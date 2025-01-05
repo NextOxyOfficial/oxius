@@ -5,6 +5,7 @@ class Country(models.Model):
 
     def __str__(self):
         return f"{self.name_eng} - {self.name_eng}"
+    
 class Region(models.Model):
     name_eng = models.CharField(max_length=100)
     name_ban = models.CharField(max_length=100)

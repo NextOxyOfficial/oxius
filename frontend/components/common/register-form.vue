@@ -262,7 +262,7 @@ async function handleSubmit() {
       error.value = "";
       const res2 = await login(form.value.email, form.value.password);
       if (res2) {
-        const res = await Api.post("/send-sms/", { phone: form.value.phone });
+        const res = await Api.post(`/send-sms/?phone=${form.value.phone}`);
         console.log(res);
 
         toast.add({ title: "Login successful!" });

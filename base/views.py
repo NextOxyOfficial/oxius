@@ -841,8 +841,8 @@ def index(request, **args):
 @permission_classes([IsAuthenticated])
 @api_view(['POST', 'GET'])
 def smsSend(request):
-    phone =  request.GET('phone')
-    message = 'Welcome to ADSYCLUB'
+    phone =  request.GET.get('phone')
+    message = 'Welcome to AdsyClub.com! You can now connect people enjoy services around you and earn money by completing tasks. Thank you!'
     url = "http://api.smsinbd.com/sms-api/sendsms"
     payload = {
         'api_token' : settings.API_SMS,

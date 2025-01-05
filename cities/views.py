@@ -41,8 +41,8 @@ def regions(request):
 @api_view(["GET"])
 def cities(request):
     region_id = request.GET.get('region_id', None)
-    name_eng = request.GET.get('name_eng', None)
-    name_ban = request.GET.get('name_ban', None)
+    name_eng = request.GET.get('region_name_eng', None)
+    name_ban = request.GET.get('region_name_ban', None)
     zip_code = request.GET.get('zip', None)
 
     cities = City.objects.all()
@@ -63,18 +63,26 @@ def cities(request):
 @api_view(["GET"])
 def upazila(request):
     city_id = request.GET.get('city_id', None)
-    name_eng = request.GET.get('name_eng', None)
-    name_ban = request.GET.get('name_ban', None)
+    city_name_eng = request.GET.get('city_name_eng', None)  # Correct parameter name
+    city_name_ban = request.GET.get('city_name_ban', None)
 
     upazilas = Upazila.objects.all()
 
     if city_id:
         upazilas = upazilas.filter(city_id=city_id)
-    if name_eng:
-        upazilas = upazilas.filter(city_name_eng__icontains=name_eng)
-    if name_ban:
-        upazilas = upazilas.filter(city_name_ban__icontains=name_ban)
+    if city_name_eng:
+        upazilas = upazilas.filter(city__name_eng__icontains=city_name_eng)  # Correct field reference
+    if city_name_ban:
+        upazilas = upazilas.filter(city__name_ban__icontains=city_name_ban)  # Correct field reference
 
-    data = [{"id": upazila.id, "name_eng": upazila.name_eng, "name_ban": upazila.name_ban, "city": upazila.city.name_eng} for upazila in upazilas]
+    data = [
+        {
+            "id": upazila.id,
+            "name_eng": upazila.name_eng,
+            "name_ban": upazila.name_ban,
+            "city": upazila.city.name_eng,
+        }
+        for upazila in upazilas
+    ]
 
     return Response(data, status=status.HTTP_200_OK)

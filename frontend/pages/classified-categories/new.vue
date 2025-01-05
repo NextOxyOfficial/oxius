@@ -193,22 +193,6 @@
           />
         </UFormGroup> -->
         <div class="grid md:grid-cols-2 gap-4">
-          <!-- <UFormGroup label="Country">
-            <USelectMenu
-              v-model="form.country"
-              color="white"
-              size="md"
-              :options="country"
-              placeholder="Country"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="name"
-              value-attribute="iso2"
-            />
-          </UFormGroup> -->
           <UFormGroup
             label="State"
             required
@@ -231,8 +215,8 @@
                 },
                 placeholder: 'text-gray-400 dark:text-gray-200',
               }"
-              option-attribute="name"
-              value-attribute="name"
+              option-attribute="name_eng"
+              value-attribute="name_eng"
             />
           </UFormGroup>
           <UFormGroup
@@ -257,8 +241,8 @@
                 },
                 placeholder: 'text-gray-400 dark:text-gray-200',
               }"
-              option-attribute="name_ascii"
-              value-attribute="name_ascii"
+              option-attribute="name_eng"
+              value-attribute="name_eng"
             />
           </UFormGroup>
         </div>
@@ -286,8 +270,8 @@
                 },
                 placeholder: 'text-gray-400 dark:text-gray-200',
               }"
-              option-attribute="name"
-              value-attribute="name"
+              option-attribute="name_eng"
+              value-attribute="name_eng"
             />
           </UFormGroup>
         </div>
@@ -579,7 +563,7 @@ const cities = ref();
 const thanas = ref();
 
 const regions_response = await get(
-  `/cities-light/regions/?country=${form.value.country}`
+  `/geo/regions/?region_name_eng=${form.value.country}`
 );
 regions.value = regions_response.data;
 
@@ -589,7 +573,7 @@ watch(
     console.log(newState);
     if (newState) {
       const cities_response = await get(
-        `/cities-light/cities/?region=${newState}`
+        `/geo/cities/?city_name_eng=${newState}`
       );
       cities.value = cities_response.data;
       console.log(cities_response.data);
@@ -602,7 +586,9 @@ watch(
   async (newCity) => {
     console.log(newCity);
     if (newCity) {
-      const thana_response = await get(`/thana/?city=${newCity}`);
+      const thana_response = await get(
+        `/geo/upazilla/?city_name_eng=${newCity}`
+      );
       thanas.value = thana_response.data;
       console.log(thana_response.data);
     }
