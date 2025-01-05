@@ -20,10 +20,8 @@
               size: {
                 md: 'text-base',
               },
-              padding: { md: 'pl-[60px]' },
             }"
           >
-            <span class="absolute left-2 top-2">I Need</span>
           </UInput>
         </UFormGroup>
         <div class="flex gap-4 items-center">
@@ -133,7 +131,16 @@
             </p>
           </UFormGroup>
         </div>
-        <div v-html="form.instructions" class="prose"></div>
+        <CommonEditor
+          v-if="form.instructions"
+          :content="form.instructions"
+          @updateContent="
+            (content) => {
+              form.instructions = content;
+            }
+          "
+          class="border border-slate-300 p-2 bg-white pointer-events-none"
+        />
 
         <!-- medias  -->
 
@@ -168,25 +175,7 @@
             <!-- <UIcon name="i-heroicons-plus-solid" size="66" /> -->
           </div>
         </div>
-        <!-- <UFormGroup label="Upload Photo/Video">
-          <UInput
-            type="file"
-            size="md"
-            color="white"
-            :ui="{
-              color: {
-                white: {
-                  outline: 'ring-0',
-                },
-              },
-              size: {
-                md: 'text-base',
-              },
-            }"
-            placeholder="Budget Per Action"
-            class="max-w-72"
-          />
-        </UFormGroup> -->
+
         <div class="grid md:grid-cols-2 gap-4">
           <UFormGroup label="Target Country">
             <USelectMenu
@@ -201,6 +190,7 @@
                   md: 'text-base',
                 },
               }"
+              disabled
               option-attribute="title"
               value-attribute="id"
             />
@@ -218,6 +208,7 @@
                   md: 'text-base',
                 },
               }"
+              disabled
               option-attribute="title"
               value-attribute="id"
             />
@@ -238,6 +229,7 @@
               placeholder="Target Network"
               option-attribute="title"
               value-attribute="id"
+              disabled
             />
           </UFormGroup>
           <UFormGroup label="Category">
@@ -254,6 +246,7 @@
               }"
               option-attribute="title"
               value-attribute="id"
+              disabled
             />
           </UFormGroup>
         </div>
@@ -363,8 +356,9 @@
           size="md"
           color="primary"
           variant="solid"
-          label="Pay"
+          label="Confirm Addition"
           class="mx-auto"
+          @click="isOpen = false"
         />
       </UCard>
     </UModal>

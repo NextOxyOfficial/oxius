@@ -257,6 +257,35 @@
                 },
                 placeholder: 'text-gray-400 dark:text-gray-200',
               }"
+              option-attribute="name_ascii"
+              value-attribute="name_ascii"
+            />
+          </UFormGroup>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <UFormGroup
+            label="Thana"
+            required
+            :error="!form.thana && checkSubmit && 'You must select a Thana'"
+            :ui="{
+              label: {
+                base: 'block font-medium text-gray-700 dark:text-slate-700',
+              },
+            }"
+          >
+            <USelectMenu
+              v-model="form.thana"
+              color="white"
+              size="md"
+              :options="thanas"
+              placeholder="Thana"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+                placeholder: 'text-gray-400 dark:text-gray-200',
+              }"
               option-attribute="name"
               value-attribute="name"
             />

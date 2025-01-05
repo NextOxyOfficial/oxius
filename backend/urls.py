@@ -23,6 +23,7 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
     path('api/', include('base.urls')),
+    path('api/geo/', include('cities.urls')),
     # for frontend
     path('', index, name='index'),
     path('<str:param>', index, name='index2'),

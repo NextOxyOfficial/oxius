@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import *
 from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
@@ -21,6 +21,8 @@ from uuid import UUID
 from decimal import Decimal
 from rest_framework.pagination import PageNumberPagination
 from random import shuffle
+import requests
+from django.conf import settings
 
 # Create your views here.
 
@@ -833,3 +835,38 @@ def police_station(request):
 def index(request, **args):
     return render(request, 'index.html')
 
+
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST', 'GET'])
+def smsSend(request):
+    phone =  request.GET('phone')
+    message = 'Welcome to ADSYCLUB'
+    url = "http://api.smsinbd.com/sms-api/sendsms"
+    payload = {
+        'api_token' : settings.API_SMS,
+        'senderid' : '8809617614969',
+        'contact_number' : phone,
+        'message' : message,
+    }
+    response = requests.get(url, params = payload)
+    print(response.text)
+    return Response(response.text, status=status.HTTP_200_OK)
+
+@api_view(['POST', 'GET'])
+def sendOTP(request):
+    user = request.user
+    user.otp = random.randint(10000, 99999)
+    user.save()
+    message = f'Your OTP is {user.otp}'
+    url = "http://api.smsinbd.com/sms-api/sendsms"
+    payload = {
+        'api_token' : settings.API_SMS,
+        'senderid' : '8809617614969',
+        'contact_number' : user.phone,
+        'message' : message,
+    }
+    response = requests.get(url, params = payload)
+    print(response.text)
+    return Response(response.text, status=status.HTTP_200_OK)

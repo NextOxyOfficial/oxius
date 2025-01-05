@@ -16,6 +16,7 @@ import string
 class User(AbstractUser): 
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
+  otp = models.CharField(max_length=100,blank=True, default="000000")
   name = models.CharField(max_length=100,blank=True, default="")
   about = models.TextField(null=True, blank=True, default="")
   face_link=models.CharField(null=True, blank=True, default="")
