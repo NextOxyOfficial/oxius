@@ -239,6 +239,7 @@ const props = defineProps({
   content: String,
   pid: Number | String,
 });
+
 const emit = defineEmits(["updateContent"]);
 
 const editor = new Editor({
