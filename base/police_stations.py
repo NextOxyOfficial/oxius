@@ -49,5 +49,171 @@ CITY_AREAS = {
         {"name": "Vashantek"},
         {"name": "Vatara"},
         {"name": "Wari"}
+    ],
+    "Gazipur": [
+        {"name": "Joydebpur"},
+        {"name": "Kaliakoir"},
+        {"name": "Kapasia"},
+        {"name": "Kaliganj"},
+        {"name": "Sreepur"}
+    ],
+    "Narayanganj": [
+        {"name": "Narayanganj Sadar"},
+        {"name": "Araihazar"},
+        {"name": "Bandar"},
+        {"name": "Rupganj"},
+        {"name": "Sonargaon"}
+    ],
+    "Manikganj": [
+        {"name": "Manikganj Sadar"},
+        {"name": "Ghior"},
+        {"name": "Saturia"},
+        {"name": "Singair"},
+        {"name": "Shibalaya"}
+    ],
+    "Munshiganj": [
+        {"name": "Munshiganj Sadar"},
+        {"name": "Lohajang"},
+        {"name": "Sreenagar"},
+        {"name": "Tongibari"},
+        {"name": "Gazaria"}
+    ],
+    "Narsingdi": [
+        {"name": "Narsingdi Sadar"},
+        {"name": "Palash"},
+        {"name": "Shibpur"},
+        {"name": "Raipura"},
+        {"name": "Belabo"},
+        {"name": "Monohardi"}
+    ],
+    "Kishoreganj": [
+        {"name": "Kishoreganj Sadar"},
+        {"name": "Bhairab"},
+        {"name": "Hossainpur"},
+        {"name": "Itna"},
+        {"name": "Karimganj"},
+        {"name": "Katiadi"},
+        {"name": "Pakundia"},
+        {"name": "Tarail"}
+    ],
+    "Faridpur": [
+        {"name": "Faridpur Sadar"},
+        {"name": "Boalmari"},
+        {"name": "Alfadanga"},
+        {"name": "Madhukhali"},
+        {"name": "Bhanga"},
+        {"name": "Nagarkanda"},
+        {"name": "Saltha"}
+    ],
+    "Chattogram": [
+        {"name": "Kotwali"},
+        {"name": "Double Mooring"},
+        {"name": "Panchlaish"},
+        {"name": "Bakalia"},
+        {"name": "Chandgaon"},
+        {"name": "Bayezid"},
+        {"name": "Khulshi"},
+        {"name": "Pahartali"},
+        {"name": "Patenga"},
+        {"name": "Halishahar"},
+        {"name": "EPZ"},
+        {"name": "Sitakunda"},
+        {"name": "Anwara"},
+        {"name": "Patiya"},
+        {"name": "Raozan"},
+        {"name": "Boalkhali"},
+        {"name": "Sandwip"},
+        {"name": "Fatikchhari"},
+        {"name": "Mirsharai"},
+        {"name": "Lohagara"},
+        {"name": "Satkania"},
+        {"name": "Banshkhali"}
+    ],
+    "Cox's Bazar": [
+        {"name": "Cox's Bazar Sadar"},
+        {"name": "Chakaria"},
+        {"name": "Ramu"},
+        {"name": "Ukhiya"},
+        {"name": "Teknaf"},
+        {"name": "Moheshkhali"},
+        {"name": "Kutubdia"},
+        {"name": "Pekua"}
+    ],
+    "Cumilla": [
+        {"name": "Cumilla Sadar"},
+        {"name": "Laksam"},
+        {"name": "Muradnagar"},
+        {"name": "Daudkandi"},
+        {"name": "Debidwar"},
+        {"name": "Homna"},
+        {"name": "Titas"},
+        {"name": "Monohorgonj"},
+        {"name": "Barura"},
+        {"name": "Meghna"},
+        {"name": "Brahmanpara"},
+        {"name": "Chandina"}
+    ],
+    "Feni": [
+        {"name": "Feni Sadar"},
+        {"name": "Chhagalnaiya"},
+        {"name": "Daganbhuiyan"},
+        {"name": "Parshuram"},
+        {"name": "Fulgazi"},
+        {"name": "Sonagazi"}
+    ],
+    "Brahmanbaria": [
+        {"name": "Brahmanbaria Sadar"},
+        {"name": "Ashuganj"},
+        {"name": "Bancharampur"},
+        {"name": "Bijoynagar"},
+        {"name": "Nabinagar"},
+        {"name": "Kasba"},
+        {"name": "Sarail"},
+        {"name": "Akhaura"}
+    ],
+    "Noakhali": [
+        {"name": "Noakhali Sadar"},
+        {"name": "Begumganj"},
+        {"name": "Chatkhil"},
+        {"name": "Companiganj"},
+        {"name": "Hatiya"},
+        {"name": "Senbagh"},
+        {"name": "Subarnachar"}
+    ],
+    "Lakshmipur": [
+        {"name": "Lakshmipur Sadar"},
+        {"name": "Ramganj"},
+        {"name": "Ramgati"},
+        {"name": "Raipur"},
+        {"name": "Kamalnagar"}
+    ],
+    "Khagrachari": [
+        {"name": "Khagrachari Sadar"},
+        {"name": "Dighinala"},
+        {"name": "Panchhari"},
+        {"name": "Laxmichhari"},
+        {"name": "Mohalchhari"},
+        {"name": "Matiranga"},
+        {"name": "Ramgarh"},
+        {"name": "Manikchhari"}
+    ],
+    "Rangamati": [
+        {"name": "Rangamati Sadar"},
+        {"name": "Baghaichhari"},
+        {"name": "Barkal"},
+        {"name": "Juraichhari"},
+        {"name": "Kaptai"},
+        {"name": "Langadu"},
+        {"name": "Naniarchar"},
+        {"name": "Rajasthali"}
+    ],
+    "Bandarban": [
+        {"name": "Bandarban Sadar"},
+        {"name": "Thanchi"},
+        {"name": "Ruma"},
+        {"name": "Rowangchhari"},
+        {"name": "Lama"},
+        {"name": "Alikadam"},
+        {"name": "Naikhongchhari"}
     ]
 }
