@@ -5,11 +5,10 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
           <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            Customer Support
+            {{ $t("customer_support") }}
           </h1>
           <p class="text-slate-300 text-lg max-w-2xl mx-auto">
-            Get help and support for all your service needs through our
-            dedicated support channels
+            {{ $t("support_text") }}
           </p>
         </div>
       </div>
@@ -34,7 +33,7 @@
             </div>
             <div class="flex-1">
               <h2 class="text-2xl font-semibold text-slate-900 mb-3">
-                General Support
+                {{ $t("general_support") }}
               </h2>
               <p class="text-slate-600 mb-4">
                 Technical assistance and general inquiries for all our services
@@ -82,7 +81,7 @@
             </div>
             <div class="flex-1">
               <h2 class="text-2xl font-semibold text-slate-900 mb-3">
-                Partnership
+                {{ $t("partnership") }}
               </h2>
               <p class="text-slate-600 mb-4">
                 Business development and partnership opportunities
@@ -107,7 +106,7 @@
                     class="w-5 h-5 mr-2 text-slate-400"
                   />
                   <!-- <ClockIcon class="w-5 h-5 mr-2 text-slate-400" /> -->
-                  <span>Business Hours: 9AM - 6PM EST</span>
+                  <span>Business Hours: 9AM - 6PM </span>
                 </div>
               </div>
             </div>
