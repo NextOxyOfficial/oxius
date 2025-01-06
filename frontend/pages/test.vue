@@ -1,127 +1,166 @@
 <template>
-  <div class="min-h-screen bg-white flex items-center justify-center p-6">
-    <div class="w-full max-w-sm">
-      <!-- Glass Card Effect -->
-      <div
-        class="backdrop-blur-lg bg-white/70 rounded-xl p-6 shadow-lg border border-white/20"
-      >
-        <!-- Title -->
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">
-          Confirm Transfer
-        </h2>
-
-        <!-- Transfer Details -->
-        <div class="space-y-4 mb-6">
-          <div class="flex justify-between items-center">
-            <p class="text-gray-500 text-xs">Transfer amount</p>
-            <p class="text-gray-900 text-lg font-semibold">₦10,456</p>
-          </div>
-
-          <div class="space-y-3">
-            <!-- Recipient Field -->
-            <div class="space-y-1">
-              <label class="text-xs text-gray-500">Recipient:</label>
-              <p class="text-sm text-gray-800 font-medium">John Smith</p>
-            </div>
-
-            <!-- Email Field -->
-            <div class="space-y-1">
-              <label class="text-xs text-gray-500">Email:</label>
-              <p class="text-sm text-gray-800 font-medium">
-                john.smith@example.com
-              </p>
-            </div>
-
-            <!-- Name Field -->
-            <!-- <div class="space-y-1">
-              <label class="text-xs text-gray-500">Name:</label>
-              <p class="text-sm text-gray-800 font-medium">John Smith</p>
-            </div> -->
-
-            <!-- Time Field -->
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-500">Time:</label>
-              <span
-                class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
-              >
-                Instant
-              </span>
-            </div>
-          </div>
+  <div class="min-h-full bg-white pb-10">
+    <!-- Hero Section -->
+    <div class="bg-slate-900 py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            Customer Support
+          </h1>
+          <p class="text-slate-300 text-lg max-w-2xl mx-auto">
+            Get help and support for all your service needs through our
+            dedicated support channels
+          </p>
         </div>
+      </div>
+    </div>
 
-        <!-- Final Amount -->
+    <!-- Support Options Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- General Support Card -->
         <div
-          class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+          class="bg-white rounded-lg shadow-xl p-8 border border-slate-100 hover:border-slate-200 transition-all duration-300"
         >
-          <p class="text-xs text-gray-500">Final amount</p>
-          <p class="text-gray-900 font-semibold">₦23,458.78</p>
+          <div class="flex items-start space-x-5">
+            <div class="flex-shrink-0">
+              <div class="p-3 bg-slate-50 rounded-lg">
+                <UIcon
+                  name="i-material-symbols-headphones-rounded"
+                  class="w-8 h-8 text-slate-700"
+                />
+                <!-- <HeadphonesIcon class="w-8 h-8 text-slate-700" /> -->
+              </div>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-2xl font-semibold text-slate-900 mb-3">
+                General Support
+              </h2>
+              <p class="text-slate-600 mb-4">
+                Technical assistance and general inquiries for all our services
+              </p>
+              <div class="space-y-3">
+                <a
+                  href="mailto:support@adsyclub.com"
+                  class="flex items-center text-slate-700 hover:text-slate-900 group"
+                >
+                  <UIcon
+                    name="i-material-symbols-mail-outline-rounded"
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
+                  />
+                  <!-- <MailIcon
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
+                  /> -->
+                  <span class="font-medium">support@adsyclub.com</span>
+                </a>
+                <div class="flex items-center text-slate-600">
+                  <UIcon
+                    name="i-iconoir-clock"
+                    class="w-5 h-5 mr-2 text-slate-400"
+                  />
+                  <!-- <ClockIcon class="w-5 h-5 mr-2 text-slate-400" /> -->
+                  <span>24/7 Support Available</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Confirm Button -->
-        <button
-          @click="handleConfirm"
-          :class="[
-            'w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-            'bg-black text-white hover:bg-gray-800 active:scale-98',
-            'focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          ]"
-          :disabled="loading"
+        <!-- Partnership Card -->
+        <div
+          class="bg-white rounded-lg shadow-xl p-8 border border-slate-100 hover:border-slate-200 transition-all duration-300"
         >
-          <div class="flex items-center justify-center gap-2">
-            {{ loading ? "Processing..." : "Confirm Transfer" }}
+          <div class="flex items-start space-x-5">
+            <div class="flex-shrink-0">
+              <div class="p-3 bg-slate-50 rounded-lg">
+                <UIcon
+                  name="i-tabler-building"
+                  class="w-8 h-8 text-slate-700"
+                />
+                <!-- <BuildingIcon class="w-8 h-8 text-slate-700" /> -->
+              </div>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-2xl font-semibold text-slate-900 mb-3">
+                Partnership
+              </h2>
+              <p class="text-slate-600 mb-4">
+                Business development and partnership opportunities
+              </p>
+              <div class="space-y-3">
+                <a
+                  href="mailto:partnership@adsyclub.com"
+                  class="flex items-center text-slate-700 hover:text-slate-900 group"
+                >
+                  <!-- <MailIcon
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
+                  /> -->
+                  <UIcon
+                    name="i-material-symbols-mail-outline-rounded"
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
+                  />
+                  <span class="font-medium">partnership@adsyclub.com</span>
+                </a>
+                <div class="flex items-center text-slate-600">
+                  <UIcon
+                    name="i-iconoir-clock"
+                    class="w-5 h-5 mr-2 text-slate-400"
+                  />
+                  <!-- <ClockIcon class="w-5 h-5 mr-2 text-slate-400" /> -->
+                  <span>Business Hours: 9AM - 6PM EST</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </button>
+        </div>
       </div>
 
-      <!-- Success Message -->
-      <div
-        v-if="showSuccess"
-        class="mt-4 backdrop-blur-lg bg-white/70 rounded-lg p-3 border border-emerald-200/20 flex items-center gap-2 animate-fade-in"
-      >
-        <p class="text-emerald-600 text-sm">Transfer confirmed successfully!</p>
-      </div>
+      <!-- Additional Support Section -->
+      <!-- <div class="mt-16 mb-20">
+        <div class="bg-slate-50 rounded-xl p-8 md:p-12">
+          <div class="text-center max-w-3xl mx-auto">
+            <h2 class="text-2xl font-semibold text-slate-900 mb-4">
+              Need Additional Support?
+            </h2>
+            <p class="text-slate-600 mb-8">
+              Our dedicated team is ready to assist you with any questions or
+              concerns you may have
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                class="inline-flex items-center justify-center px-6 py-3 border border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-lg font-medium transition-colors duration-300"
+              >
+                <PhoneIcon class="w-5 h-5 mr-2" />
+                Schedule a Call
+              </button>
+              <button
+                class="inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white hover:bg-slate-800 rounded-lg font-medium transition-colors duration-300"
+              >
+                <MessageSquareIcon class="w-5 h-5 mr-2" />
+                Live Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-const loading = ref(false);
-const showSuccess = ref(false);
-
-const handleConfirm = async () => {
-  loading.value = true;
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  loading.value = false;
-  showSuccess.value = true;
-};
+// import {
+//   HeadphonesIcon,
+//   BuildingIcon,
+//   MailIcon,
+//   ClockIcon,
+//   PhoneIcon,
+//   MessageSquareIcon,
+// } from "lucide-vue-next";
 </script>
 
-<style>
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
-}
-
-.active\:scale-98:active {
-  transform: scale(0.98);
-}
-
-/* Glass morphism effect */
-.backdrop-blur-lg {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+<style scoped>
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05),
+    0 8px 10px -6px rgb(0 0 0 / 0.05);
 }
 </style>
