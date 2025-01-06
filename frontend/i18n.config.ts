@@ -52,6 +52,10 @@ export default defineI18nConfig(() => ({
       nid_front: "NID Front",
       nid_back: "NID Back",
       customer_support: "Customer Support",
+      support_text:
+        "Get help and support for all your service needs through our dedicated support channels",
+      general_support: "General Support",
+      partnership: "Partnership",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -87,7 +91,7 @@ export default defineI18nConfig(() => ({
       about_us: "আমাদের সম্পর্কে",
       contact_us: "যোগাযোগ",
       earn: "উপার্জন",
-      terms_conditions: "নিয়মাবলী ও শর্তাবলি",
+      terms_conditions: "নিয়মাবলি ও শর্তাবলি",
       privacy_policy: "তথ্য সংরক্ষণ",
       we_accept: "আমরা গ্রহণ করি",
       download_app: "ডাউনলোড করুন আমাদের এ্যাপ",
@@ -103,6 +107,9 @@ export default defineI18nConfig(() => ({
       nid_front: "পরিচয়পত্র সামনে",
       nid_back: "পরিচয়পত্র পিছনে",
       customer_support: "কাস্টোমার সাপোর্ট",
+      support_text: "আমাদের সাপোর্ট টিমের মাধ্যমে যে কোনো সমস্যা সমাধান করুন",
+      general_support: "সাধারণ তথ্যের জন্য",
+      partnership: "ব্যবসায়িক তথ্যের জন্য",
     },
   },
 }));
