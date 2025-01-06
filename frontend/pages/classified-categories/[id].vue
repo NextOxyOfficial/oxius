@@ -58,7 +58,7 @@
             color="white"
             size="md"
             :options="upazilas"
-            placeholder="Upazila"
+            placeholder="Thana"
             :ui="{
               size: {
                 md: 'text-base',
