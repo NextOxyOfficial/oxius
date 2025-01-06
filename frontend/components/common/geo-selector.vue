@@ -17,8 +17,8 @@
                   md: 'text-base',
                 },
               }"
-              option-attribute="name"
-              value-attribute="name"
+              option-attribute="name_eng"
+              value-attribute="name_eng"
             />
           </UFormGroup>
           <UFormGroup class="md:w-2/4">
@@ -33,8 +33,24 @@
                   md: 'text-base',
                 },
               }"
-              option-attribute="name"
-              value-attribute="name"
+              option-attribute="name_eng"
+              value-attribute="name_eng"
+            />
+          </UFormGroup>
+          <UFormGroup class="md:w-2/4">
+            <USelectMenu
+              v-model="form.upazila"
+              color="white"
+              size="md"
+              :options="upazilas"
+              placeholder="Upazila"
+              :ui="{
+                size: {
+                  md: 'text-base',
+                },
+              }"
+              option-attribute="name_eng"
+              value-attribute="name_eng"
             />
           </UFormGroup>
         </div>
@@ -62,12 +78,16 @@ const form = ref({
   country: "Bangladesh",
   state: "",
   city: "",
+  upazila: "",
 });
+// geo filter
+
 const regions = ref([]);
 const cities = ref();
+const upazilas = ref();
 
 const regions_response = await get(
-  `/cities-light/regions/?country=${form.value.country}`
+  `/geo/regions/?country_name_eng=${form.value.country}`
 );
 regions.value = regions_response.data;
 
@@ -77,12 +97,29 @@ watch(
     console.log(newState);
     if (newState) {
       const cities_response = await get(
-        `/cities-light/cities/?region=${newState}`
+        `/geo/cities/?region_name_eng=${newState}`
       );
       cities.value = cities_response.data;
+      console.log(cities_response.data);
     }
   }
 );
+
+watch(
+  () => form.value.city,
+  async (newCity) => {
+    console.log(newCity);
+    if (newCity) {
+      const thana_response = await get(
+        `/geo/upazila/?city_name_eng=${newCity}`
+      );
+      upazilas.value = thana_response.data;
+      console.log(thana_response.data);
+    }
+  }
+);
+
+// geo filter
 
 function addLocation() {
   location.value = form.value;

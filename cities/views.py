@@ -22,17 +22,17 @@ def countries(request):
 @api_view(["GET"])
 def regions(request):
     country_id = request.GET.get('country_id', None)
-    name_eng = request.GET.get('name_eng', None)
-    name_ban = request.GET.get('name_ban', None)
+    name_eng = request.GET.get('country_name_eng', None)
+    name_ban = request.GET.get('country_name_ban', None)
 
     regions = Region.objects.all()
 
     if country_id:
         regions = regions.filter(country_id=country_id)
     if name_eng:
-        regions = regions.filter(country_name_eng__icontains=name_eng)
+        regions = regions.filter(country__name_eng__icontains=name_eng)
     if name_ban:
-        regions = regions.filter(country_name_ban__icontains=name_ban)
+        regions = regions.filter(country__name_ban__icontains=name_ban)
 
     data = [{"id": region.id, "name_eng": region.name_eng, "name_ban": region.name_ban, "country": region.country.name_eng} for region in regions]
 
@@ -44,15 +44,14 @@ def cities(request):
     name_eng = request.GET.get('region_name_eng', None)
     name_ban = request.GET.get('region_name_ban', None)
     zip_code = request.GET.get('zip', None)
-
     cities = City.objects.all()
 
     if region_id:
         cities = cities.filter(region_id=region_id)
     if name_eng:
-        cities = cities.filter(region_name_eng__icontains=name_eng)
+        cities = cities.filter(region__name_eng__icontains=name_eng)
     if name_ban:
-        cities = cities.filter(region_name_ban__icontains=name_ban)
+        cities = cities.filter(region__name_ban__icontains=name_ban)
     if zip_code:
         cities = cities.filter(zip__icontains=zip_code)
 
@@ -63,26 +62,18 @@ def cities(request):
 @api_view(["GET"])
 def upazila(request):
     city_id = request.GET.get('city_id', None)
-    city_name_eng = request.GET.get('city_name_eng', None)  # Correct parameter name
-    city_name_ban = request.GET.get('city_name_ban', None)
+    name_eng = request.GET.get('city_name_eng', None)
+    name_ban = request.GET.get('city_name_ban', None)
 
     upazilas = Upazila.objects.all()
 
     if city_id:
         upazilas = upazilas.filter(city_id=city_id)
-    if city_name_eng:
-        upazilas = upazilas.filter(city__name_eng__icontains=city_name_eng)  # Correct field reference
-    if city_name_ban:
-        upazilas = upazilas.filter(city__name_ban__icontains=city_name_ban)  # Correct field reference
+    if name_eng:
+        upazilas = upazilas.filter(city__name_eng__icontains=name_eng)
+    if name_ban:
+        upazilas = upazilas.filter(city__name_ban__icontains=name_ban)
 
-    data = [
-        {
-            "id": upazila.id,
-            "name_eng": upazila.name_eng,
-            "name_ban": upazila.name_ban,
-            "city": upazila.city.name_eng,
-        }
-        for upazila in upazilas
-    ]
+    data = [{"id": upazila.id, "name_eng": upazila.name_eng, "name_ban": upazila.name_ban, "city": upazila.city.name_eng} for upazila in upazilas]
 
     return Response(data, status=status.HTTP_200_OK)
