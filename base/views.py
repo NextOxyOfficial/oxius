@@ -420,6 +420,7 @@ class ClassifiedCategoryPostFilterView(APIView):
         country = request.GET.get('country')
         state = request.GET.get('state')
         city = request.GET.get('city')
+        upazila = request.GET.get('upazila')
         category = request.GET.get('category')
         title = request.GET.get('title')
 
@@ -435,6 +436,8 @@ class ClassifiedCategoryPostFilterView(APIView):
             filters &= Q(state__iexact=state)
         if city:
             filters &= Q(city__iexact=city)
+        if upazila:
+            filters &= Q(upazila__iexact=upazila)
         
 
         posts = ClassifiedCategoryPost.objects.filter(filters)

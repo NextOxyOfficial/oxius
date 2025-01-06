@@ -262,7 +262,7 @@
               v-model="form.thana"
               color="white"
               size="md"
-              :options="thanas"
+              :options="upazilas"
               placeholder="Thana"
               :ui="{
                 size: {
@@ -560,10 +560,10 @@ onMounted(() => {
 
 const regions = ref([]);
 const cities = ref();
-const thanas = ref();
+const upazilas = ref();
 
 const regions_response = await get(
-  `/geo/regions/?region_name_eng=${form.value.country}`
+  `/geo/regions/?country_name_eng=${form.value.country}`
 );
 regions.value = regions_response.data;
 
@@ -573,7 +573,7 @@ watch(
     console.log(newState);
     if (newState) {
       const cities_response = await get(
-        `/geo/cities/?city_name_eng=${newState}`
+        `/geo/cities/?region_name_eng=${newState}`
       );
       cities.value = cities_response.data;
       console.log(cities_response.data);
@@ -587,9 +587,9 @@ watch(
     console.log(newCity);
     if (newCity) {
       const thana_response = await get(
-        `/geo/upazilla/?city_name_eng=${newCity}`
+        `/geo/upazila/?city_name_eng=${newCity}`
       );
-      thanas.value = thana_response.data;
+      upazilas.value = thana_response.data;
       console.log(thana_response.data);
     }
   }

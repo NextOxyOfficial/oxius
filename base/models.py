@@ -145,6 +145,7 @@ class ClassifiedCategoryPost(models.Model):
     country = models.CharField(null=True, blank=True,default='')
     state = models.CharField(null=True, blank=True,default='')
     city = models.CharField(null=True, blank=True,default='')
+    upazila = models.CharField(null=True, blank=True,default='')
     medias = models.ManyToManyField(ClassifiedCategoryPostMedia, null=True, blank=True)
     instructions = models.TextField(blank=True, null=True,default="")
     accepted_terms = models.BooleanField(default=True)
