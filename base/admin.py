@@ -1,17 +1,163 @@
 from django.contrib import admin
-
+from django.contrib.auth.admin import UserAdmin
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import *
 
-class UserAdmin(admin.ModelAdmin):
-    list_display = (
-        'email', 'name', 'phone', 'user_type', 'is_vendor', 
-        'is_active', 'kyc', 'kyc_pending', 'balance', 'pending_balance'
-    )
-    search_fields = ('email', 'phone', 'name')
-    list_filter = ('user_type', 'is_active', 'is_vendor', 'kyc', 'kyc_pending')
-    list_editable = ('is_active', 'is_vendor', 'user_type')
-admin.site.register(User, UserAdmin)
 
+# class CustomUserChangeForm(UserChangeForm):
+#     class Meta(UserChangeForm.Meta):
+#         model = User
+
+# class CustomUserCreationForm(UserCreationForm):
+#     class Meta(UserCreationForm.Meta):
+#         model = User
+
+# class CustomUserAdmin(UserAdmin):
+#     # form = CustomUserChangeForm
+#     # add_form = CustomUserCreationForm
+    
+#     list_display = ('email', 'username', 'phone', 'is_vendor', 'is_active')
+#     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
+    
+#     # def get_fieldsets(self, request, obj=None):
+#     #     if not obj:
+#     #         return self.add_fieldsets
+        
+#     #     return (
+#     #         (None, {'fields': ('email', 'password', 'change_password_button')}),
+#     #         ('Personal info', {'fields': ('username', 'name', 'phone', 'image', 'about')}),
+#     #         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_type')}),
+#     #         ('Important dates', {'fields': ('last_login', 'date_joined')}),
+#     #     )
+    
+#     # def get_readonly_fields(self, request, obj=None):
+#     #     if obj:
+#     #         return ('change_password_button',)
+#     #     return ()
+
+#     # def change_password_button(self, obj):
+#     #     if obj:
+#     #         url = reverse('admin:auth_user_password_change', args=[obj.pk])
+#     #         return format_html(
+#     #             '<a class="button" href="{}">Change Password</a>',
+#     #             url
+#     #         )
+#     #     return ''
+#     # change_password_button.short_description = 'Change Password'
+    
+#     add_fieldsets = (
+#         (None, {
+#             'classes': ('wide',),
+#             'fields': ('email', 'username', 'password1', 'password2'),
+#         }),
+#     )
+    
+#     search_fields = ('email', 'username', 'phone')
+#     ordering = ('email',)
+
+# # Unregister any existing User admin
+# try:
+#     admin.site.unregister(User)
+# except admin.sites.NotRegistered:
+#     pass
+
+# # Register the custom admin
+# admin.site.register(User, CustomUserAdmin)
+# admin.site.register(User)
+
+class CustomUserChangeForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = User
+
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+
+class CustomUserAdmin(UserAdmin):
+    form = CustomUserChangeForm
+    add_form = CustomUserCreationForm
+    
+    list_display = ('email', 'username', 'phone', 'is_vendor', 'is_active')
+    list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
+    
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return self.add_fieldsets
+        
+        return [(None, {'fields': (
+            'email',
+            'password',
+            'username',
+            'otp',
+            'name',
+            'phone',
+            'image',
+            'about',
+            'face_link',
+            'instagram_link',
+            'gmail_link',
+            'whatsapp_link',
+            'is_vendor',
+            'is_active',
+            'kyc_pending',
+            'kyc',
+            'address',
+            'city',
+            'state',
+            'zip',
+            'balance',
+            'pending_balance',
+            'user_type',
+            'refer',
+            'refer_count',
+            'commission_earned',
+            'commission',
+            'referral_code',
+            'nid_number',
+            'is_staff',
+            'is_superuser',
+            'groups',
+            'user_permissions',
+            'last_login',
+            'date_joined'
+        )})]
+    
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ('change_password_button', 'referral_code')
+        return ('referral_code',)
+
+    def change_password_button(self, obj):
+        if obj:
+            url = reverse('admin:auth_user_password_change', args=[obj.pk])
+            return format_html(
+                '<a class="button" href="{}">Change Password</a>',
+                url
+            )
+        return ''
+    change_password_button.short_description = 'Change Password'
+    
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'username', 'password1', 'password2'),
+        }),
+    )
+    
+    search_fields = ('email', 'username', 'phone')
+    ordering = ('email',)
+
+# Unregister any existing User admin
+try:
+    admin.site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
+
+# Register the custom admin
+admin.site.register(User, CustomUserAdmin)
 
 class ClassifiedCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'updated_at')

@@ -375,7 +375,7 @@
                 <p class="text-gray-500 text-xs">Transfer amount</p>
                 <p class="text-gray-900 text-lg font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
-                  {{ transfer.payable_amount }}
+                  {{ transfer?.payable_amount }}
                 </p>
               </div>
 
@@ -395,7 +395,7 @@
                 <div class="space-y-1">
                   <label class="text-xs text-gray-500">Email:</label>
                   <p class="text-sm text-gray-800 font-medium">
-                    {{ transfer.contact }}
+                    {{ transfer?.contact }}
                   </p>
                 </div>
 
@@ -424,7 +424,7 @@
               <p class="text-xs text-gray-500">Final amount</p>
               <p class="text-gray-900 font-semibold">
                 <UIcon name="i-mdi:currency-bdt" class="" />
-                {{ transfer.payable_amount }}
+                {{ transfer?.payable_amount }}
               </p>
             </div>
 
@@ -472,7 +472,7 @@
                 <p class="text-gray-500 text-xs">Transferred amount</p>
                 <p class="text-gray-900 text-lg font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
-                  {{ transfer.payable_amount }}
+                  {{ transfer?.payable_amount }}
                 </p>
               </div>
 
@@ -481,7 +481,7 @@
                 <div class="space-y-1">
                   <label class="text-xs text-gray-500">Recipient:</label>
                   <p class="text-sm text-gray-800 font-medium">
-                    {{ transfer.to_user }}
+                    {{ transfer?.to_user }}
                   </p>
                 </div>
 
@@ -489,7 +489,7 @@
                 <div class="space-y-1">
                   <label class="text-xs text-gray-500">Email:</label>
                   <p class="text-sm text-gray-800 font-medium">
-                    {{ transfer.contact }}
+                    {{ transfer?.contact }}
                   </p>
                 </div>
 
@@ -511,7 +511,7 @@
               <p class="text-xs text-gray-500">Final amount</p>
               <p class="text-gray-900 font-semibold">
                 <UIcon name="i-mdi:currency-bdt" class="" />
-                {{ transfer.payable_amount }}
+                {{ transfer?.payable_amount }}
               </p>
             </div>
 

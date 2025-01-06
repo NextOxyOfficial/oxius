@@ -16,12 +16,12 @@
             </div>
 
             <div class="space-y-4">
-              <div class="flex space-x-4 p-1 bg-gray-100 rounded-lg">
+              <div class="flex p-1 bg-gray-100 rounded-lg">
                 <button
                   type="button"
                   @click="form.method = 'email'"
                   :class="[
-                    'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200',
+                    'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 hidden',
                     form.method === 'email'
                       ? 'bg-white shadow-sm text-gray-900'
                       : 'text-gray-500 hover:text-gray-900',
@@ -66,6 +66,7 @@
             </div>
 
             <button
+              @click="sendOtpInstruction"
               type="submit"
               class="w-full py-3 text-sm font-semibold px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
             >
@@ -123,11 +124,18 @@
 </template>
 
 <script setup>
+const { post } = useApi();
 const showOtp = ref(false);
 const form = ref({
-  method: "email",
+  method: "phone",
   value: "",
 });
+
+const sendOtpInstruction = async () => {
+  console.log("Sending OTP instruction:", form.value.value);
+  const res = await post("/send-otp/", { phone: form.value.value });
+  console.log(res);
+};
 
 const otpForm = ref({
   otp: "",
@@ -137,9 +145,13 @@ function handleReset() {
   showOtp.value = true;
 }
 
-const handleOTP = () => {
+const handleOTP = async () => {
   console.log("OTP verification attempt:", otpForm.value);
-  otpForm.value = "login";
+  const res = await post("/verify-otp/", {
+    phone: form.value.value,
+    otp: otpForm.value.otp,
+  });
+  console.log(res);
 };
 </script>
 

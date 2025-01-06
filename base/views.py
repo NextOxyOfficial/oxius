@@ -24,6 +24,8 @@ from random import shuffle
 import requests
 from django.conf import settings
 
+from django.core.mail import send_mail
+
 # Create your views here.
 
 
@@ -858,19 +860,144 @@ def smsSend(request):
     print(response.text)
     return Response(response.text, status=status.HTTP_200_OK)
 
-@api_view(['POST', 'GET'])
+import json
+@api_view(['POST'])
 def sendOTP(request):
-    user = request.user
+    phone = request.data.get('phone')
+    print(phone)
+    
+    if not phone:
+        return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    
     user.otp = random.randint(10000, 99999)
     user.save()
-    message = f'Your OTP is {user.otp}'
+    message = f'Your One Time Password is {user.otp}'
     url = "http://api.smsinbd.com/sms-api/sendsms"
     payload = {
         'api_token' : settings.API_SMS,
         'senderid' : '8809617614969',
-        'contact_number' : user.phone,
+        'contact_number' : phone,
         'message' : message,
     }
-    response = requests.get(url, params = payload)
-    print(response.text)
-    return Response(response.text, status=status.HTTP_200_OK)
+    response = requests.get(url, params=payload)
+    try:
+        response_data = response.json()  # Convert the response to a dictionary
+    except json.JSONDecodeError:
+        return Response({'error': 'Failed to parse response from SMS provider'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    if response_data.get('status') == 'success':
+        return Response({
+            'message': response_data.get('message', 'OTP sent successfully'),
+            'smsid': response_data.get('smsid', 'N/A'),
+            'sms_count': response_data.get('SmsCount', 'N/A'),
+            'phone': phone,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({
+            'error': response_data.get('message', 'Failed to send OTP')
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def verifyOTP(request):
+    phone = request.data.get('phone')
+    otp = request.data.get('otp')
+    print(phone, otp)
+    
+    if not phone or not otp:
+        return Response({'error': 'Phone number and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if otp and str(user.otp) == str(otp):
+        user.otp = "000000"  # Clear OTP after successful verification
+        user.save()
+        return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['POST'])
+def reset_password_request(request):
+    method = request.data.get('method')
+    value = request.data.get(method)
+    
+    try:
+        user = User.objects.get(**{method: value})
+        # Generate OTP
+        otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        user.otp = otp
+        user.save()
+        
+        # Send OTP
+        if method == 'email':
+            send_mail(
+                'Password Reset OTP',
+                f'Your OTP for password reset is: {otp}',
+                settings.DEFAULT_FROM_EMAIL,
+                [value],
+                fail_silently=False,
+            )
+        else:
+            # Implement SMS sending logic here
+            pass
+            
+        return Response({'detail': 'Reset instructions sent'})
+    except User.DoesNotExist:
+        return Response(
+            {'detail': f'No user found with this {method}'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['POST'])
+def verify_reset_otp(request):
+    method = request.data.get('method')
+    value = request.data.get(method)
+    otp = request.data.get('otp')
+    
+    try:
+        user = User.objects.get(**{method: value})
+        if user.otp != otp:
+            return Response(
+                {'detail': 'Invalid OTP'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response({'detail': 'OTP verified'})
+    except User.DoesNotExist:
+        return Response(
+            {'detail': 'User not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['POST'])
+def set_new_password(request):
+    method = request.data.get('method')
+    value = request.data.get(method)
+    otp = request.data.get('otp')
+    password = request.data.get('password')
+    
+    try:
+        user = User.objects.get(**{method: value})
+        if user.otp != otp:
+            return Response(
+                {'detail': 'Invalid OTP'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.set_password(password)
+        user.otp = '000000'  # Reset OTP
+        user.save()
+        
+        return Response({'detail': 'Password reset successfully'})
+    except User.DoesNotExist:
+        return Response(
+            {'detail': 'User not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
