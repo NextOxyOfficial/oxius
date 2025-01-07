@@ -92,6 +92,8 @@ class CustomUserAdmin(UserAdmin):
             'password',
             'username',
             'otp',
+            'first_name',
+            'last_name',
             'name',
             'phone',
             'image',
