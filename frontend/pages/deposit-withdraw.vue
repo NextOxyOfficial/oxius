@@ -63,6 +63,9 @@
               amount
             />
           </div>
+          <p v-if="depositErrors.amount" class="text-sm text-red-500">
+            Please enter an amount
+          </p>
           <div class="mt-4">
             <img
               src="/static/frontend/images/payment.png"
@@ -97,6 +100,9 @@
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
           </div>
+          <p v-if="depositErrors.policy" class="text-sm text-red-500">
+            Please select this field
+          </p>
           <div class="my-2 space-x-3">
             <UButton
               v-if="
@@ -606,16 +612,22 @@ const statements = ref([
   //   return ''; // Default class
   // },
 ]);
+const depositErrors = ref({});
 const isLoading = ref(false);
 const deposit = async () => {
+  isLoading.value = true;
+  if (!amount.value) {
+    depositErrors.value = { ...depositErrors.value, amount: true };
+  }
+
+  if (!policy.value) {
+    depositErrors.value = { ...depositErrors.value, policy: true };
+  }
   if (!amount.value || !policy.value) {
     toast.add({ title: "Please fill in all required fields." });
+    isLoading.value = false;
     return;
   }
-  isLoading.value = true;
-  // Add deposit logic here
-  // toast.add({ title: "Deposit clicked" });
-  // console.log(user.value);
 
   const payment = await get(
     `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
@@ -627,11 +639,6 @@ const deposit = async () => {
     window.open(payment.data.checkout_url, "_blank");
   }
 
-  // const res = await put(`/persons/update/${user.value.user.email}/`, {
-  //   deposit: amount.value,
-  //   transaction_type: "Deposit",
-  // });
-  // console.log(res);
   getTransactionHistory();
   amount.value = "";
   policy.value = false;
@@ -642,12 +649,11 @@ const withdraw = async () => {
     errors.value = { ...errors.value, withdrawAmount: true };
   }
 
-  if (withdrawAmount.value > user.value.user.balance) {
-    errors.value = { ...errors.value, insufficient: true };
-  }
-
   if (!selected.value) {
     errors.value = { ...errors.value, selected: true };
+  }
+  if (withdrawAmount.value > user.value.user.balance) {
+    errors.value = { ...errors.value, insufficient: true };
   }
 
   if (!payment_number.value) {
@@ -690,7 +696,7 @@ const transferErrors = ref({});
 
 async function sendToUser() {
   isLoading.value = true;
-  transferErrors.value = {}; // Reset errors before validation
+  transferErrors.value = {};
 
   if (!transfer.value.contact) {
     transferErrors.value.contact = "Contact is required.";
@@ -701,7 +707,7 @@ async function sendToUser() {
   }
 
   if (Object.keys(transferErrors.value).length > 0) {
-    // If there are validation errors, return early without proceeding
+    isLoading.value = false;
     return;
   }
   const { data, error } = await get(`/user/${transfer.value.contact}/`);
