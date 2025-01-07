@@ -688,7 +688,8 @@ const withdraw = async () => {
 const transfer = ref({
   contact: "",
   payable_amount: "",
-  transaction_type: "p2p",
+  transaction_type: "Transfer",
+  payment_method: "p2p",
   bank_status: "completed",
 });
 

@@ -75,6 +75,7 @@ urlpatterns = [
   path('send-sms/', smsSend),
   path('send-otp/', sendOTP),
   path('verify-otp/', verifyOTP),
+  path('reset-password/', resetPassword),
 
   path('api/auth/reset-password/', reset_password_request),
   path('api/auth/verify-reset-otp/', verify_reset_otp),

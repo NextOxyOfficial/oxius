@@ -392,7 +392,7 @@ class Balance(models.Model):
         # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or '').lower()
         # Handle withdrawal
-        if self.transaction_type == 'p2p' and self.to_user and not self.completed:
+        if self.transaction_type == 'transfer' and self.to_user and not self.completed:
             self.user.balance -= Decimal(self.payable_amount)
             self.to_user.balance += Decimal(self.payable_amount)
             self.user.save()

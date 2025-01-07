@@ -25,6 +25,8 @@ import requests
 from django.conf import settings
 
 from django.core.mail import send_mail
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 
@@ -919,10 +921,30 @@ def verifyOTP(request):
     if otp and str(user.otp) == str(otp):
         user.otp = "000000"  # Clear OTP after successful verification
         user.save()
-        return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'message': 'OTP verified successfully', 'token': token.key}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['POST'])
+def resetPassword(request):
+    token_key = request.data.get('token')
+    new_password = request.data.get('new_password')
+
+    if not token_key or not new_password:
+        return Response({'error': 'Token and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        token = Token.objects.get(key=token_key)
+        user = token.user
+    except Token.DoesNotExist:
+        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.password = make_password(new_password)
+    user.save()
+    token.delete()  # Invalidate token after password reset
+    
+    return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def reset_password_request(request):
