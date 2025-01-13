@@ -140,7 +140,13 @@
                 <div class="flex flex-row gap-4 items-center sm:items-start">
                   <div>
                     <NuxtImg
+                      v-if="service.medias[0]?.image"
                       :src="staticURL + service.medias[0].image"
+                      class="size-14 rounded-md"
+                    />
+                    <img
+                      v-else
+                      :src="staticURL + service.category_details.image"
                       class="size-14 rounded-md"
                     />
                   </div>
@@ -246,8 +252,14 @@
                 <div class="flex flex-row gap-4 items-start">
                   <div>
                     <NuxtImg
+                      v-if="service.medias[0]?.image"
                       :src="staticURL + service.medias[0].image"
                       class="size-9 sm:size-14 object-cover rounded-md"
+                    />
+                    <img
+                      v-else
+                      :src="staticURL + service.category_details.image"
+                      class="size-14 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
