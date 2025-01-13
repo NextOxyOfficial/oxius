@@ -39,9 +39,8 @@
         <p class="text-sm font-semibold">
           Instructions <span class="text-red-500">*</span>
         </p>
-
         <CommonEditor
-          v-if="form.instructions"
+          v-if="router.query.id && form.instructions"
           :content="form.instructions"
           @updateContent="
             (content) => {
