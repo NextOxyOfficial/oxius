@@ -41,7 +41,6 @@
         </p>
         <CommonEditor
           v-if="form.instructions"
-          v-model="form.instructions"
           :content="form.instructions"
           @updateContent="
             (content) => {
