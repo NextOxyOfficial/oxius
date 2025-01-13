@@ -39,6 +39,7 @@
         <p class="text-sm font-semibold">
           Instructions <span class="text-red-500">*</span>
         </p>
+
         <CommonEditor
           v-if="form.instructions"
           :content="form.instructions"
@@ -47,6 +48,12 @@
               form.instructions = content;
             }
           "
+          class="border border-slate-300 p-2 bg-white"
+        />
+        <CommonEditor
+          v-else
+          v-model="form.instructions"
+          @updateContent="updateContent"
           class="border border-slate-300 p-2 bg-white"
         />
         <div class="grid md:grid-cols-2 gap-4">
