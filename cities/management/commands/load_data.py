@@ -29,10 +29,10 @@ class Command(BaseCommand):
                                     {"name_eng": "Laksam", "name_ban": "লাকসাম"},
                                     {"name_eng": "Muradnagar", "name_ban": "মুরাদনগর"},
                                     {"name_eng": "Nangalkot", "name_ban": "নাঙ্গলকোট"},
-                                    {"name_eng": "Cumillasadar", "name_ban": "কুমিল্লা সদর"},
+                                    {"name_eng": "Cumilla Sadar", "name_ban": "কুমিল্লা সদর"},
                                     {"name_eng": "Meghna", "name_ban": "মেঘনা"},
                                     {"name_eng": "Monohargonj", "name_ban": "মনোহরগঞ্জ"},
-                                    {"name_eng": "Sadarsouth", "name_ban": "সদর দক্ষিণ"},
+                                    {"name_eng": "Sadar South", "name_ban": "সদর দক্ষিণ"},
                                     {"name_eng": "Titas", "name_ban": "তিতাস"},
                                     {"name_eng": "Burichang", "name_ban": "বুড়িচং"},
                                     {"name_eng": "Bipara", "name_ban": "বিপাড়া"}
@@ -54,7 +54,7 @@ class Command(BaseCommand):
                                 "name_eng": "Brahmanbaria",
                                 "name_ban": "ব্রাহ্মণবাড়িয়া",
                                 "upazilas": [
-                                    {"name_eng": "Sadar", "name_ban": "ব্রাহ্মণবাড়িয়া সদর"},
+                                    {"name_eng": "Brahmanbaria Sadar", "name_ban": "ব্রাহ্মণবাড়িয়া সদর"},
                                     {"name_eng": "Kasba", "name_ban": "কসবা"},
                                     {"name_eng": "Nasirnagar", "name_ban": "নাসিরনগর"},
                                     {"name_eng": "Sarail", "name_ban": "সরাইল"},
@@ -107,8 +107,8 @@ class Command(BaseCommand):
                                     {"name_eng": "Kachua", "name_ban": "কচুয়া"},
                                     {"name_eng": "Shahrasti", "name_ban": "শাহরাস্তি"},
                                     {"name_eng": "Chandpur", "name_ban": "চাঁদপুর"},
-                                    {"name_eng": "Matlab south", "name_ban": "মতলব দক্ষিন"},
-                                    {"name_eng": "Matlab north", "name_ban": "মতলব উত্তর"},
+                                    {"name_eng": "Matlab South", "name_ban": "মতলব দক্ষিন"},
+                                    {"name_eng": "Matlab North", "name_ban": "মতলব উত্তর"},
                                     {"name_eng": "Hajiganj", "name_ban": "হাজীগঞ্জ"},
                                     {"name_eng": "Faridgonj", "name_ban": "ফরিদগঞ্জ"}
                                 ]
@@ -164,7 +164,7 @@ class Command(BaseCommand):
                                 "name_eng": "Khagrachhari",
                                 "name_ban": "খাগড়াছড়ি",
                                 "upazilas": [
-                                    {"name_eng": "Khagrasori sadar", "name_ban": "খাগড়াছড়ি সদর"},
+                                    {"name_eng": "Khagrasori Sadar", "name_ban": "খাগড়াছড়ি সদর"},
                                     {"name_eng": "Dighinala", "name_ban": "দিঘীনালা"},
                                     {"name_eng": "Panchari", "name_ban": "পানছড়ি"},
                                     {"name_eng": "Laxmichhari", "name_ban": "লক্ষীছড়ি"},
@@ -179,7 +179,7 @@ class Command(BaseCommand):
                                 "name_eng": "Bandarban",
                                 "name_ban": "বান্দরবান",
                                 "upazilas": [
-                                    {"name_eng": "Bandarban sadar", "name_ban": "বান্দরবান সদর"},
+                                    {"name_eng": "Bandarban Sadar", "name_ban": "বান্দরবান সদর"},
                                     {"name_eng": "Alikadam", "name_ban": "আলীকদম"},
                                     {"name_eng": "Naikhongchhari", "name_ban": "নাইক্ষ্যংছড়ি"},
                                     {"name_eng": "Rowangchhari", "name_ban": "রোয়াংছড়ি"},
@@ -204,7 +204,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Kazipur", "name_ban": "কাজীপুর"},
                                     {"name_eng": "Raigonj", "name_ban": "রায়গঞ্জ"},
                                     {"name_eng": "Shahjadpur", "name_ban": "শাহজাদপুর"},
-                                    {"name_eng": "Sirajganj sadar", "name_ban": "সিরাজগঞ্জ সদর"},
+                                    {"name_eng": "Sirajganj Sadar", "name_ban": "সিরাজগঞ্জ সদর"},
                                     {"name_eng": "Tarash", "name_ban": "তাড়াশ"},
                                     {"name_eng": "Ullapara", "name_ban": "উল্লাপাড়া"},
                                     {"name_eng": "Enayetpur", "name_ban": "এনায়েতপুর"},
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Sujanagar", "name_ban": "সুজানগর"},
                                     {"name_eng": "Ishurdi", "name_ban": "ঈশ্বরদী"},
                                     {"name_eng": "Bhangura", "name_ban": "ভাঙ্গুড়া"},
-                                    {"name_eng": "Pabna sadar", "name_ban": "পাবনা সদর"},
+                                    {"name_eng": "Pabna Sadar", "name_ban": "পাবনা সদর"},
                                     {"name_eng": "Bera", "name_ban": "বেড়া"},
                                     {"name_eng": "Atghoria", "name_ban": "আটঘরিয়া"},
                                     {"name_eng": "Chatmohar", "name_ban": "চাটমোহর"},
@@ -234,7 +234,7 @@ class Command(BaseCommand):
                                 "name_ban": "বগুড়া",
                                 "upazilas": [
                                     {"name_eng": "Kahaloo", "name_ban": "কাহালু"},
-                                    {"name_eng": "Bogra sadar", "name_ban": "বগুড়া সদর"},
+                                    {"name_eng": "Bogra Sadar", "name_ban": "বগুড়া সদর"},
                                     {"name_eng": "Shariakandi", "name_ban": "সারিয়াকান্দি"},
                                     {"name_eng": "Shajahanpur", "name_ban": "শাজাহানপুর"},
                                     {"name_eng": "Dupchanchia", "name_ban": "দুপচাচিঁয়া"},
@@ -252,7 +252,7 @@ class Command(BaseCommand):
                                 "name_eng": "Natore",
                                 "name_ban": "নাটোর",
                                 "upazilas": [
-                                    {"name_eng": "Natore sadar", "name_ban": "নাটোর সদর"},
+                                    {"name_eng": "Natore Sadar", "name_ban": "নাটোর সদর"},
                                     {"name_eng": "Singra", "name_ban": "সিংড়া"},
                                     {"name_eng": "Baraigram", "name_ban": "বড়াইগ্রাম"},
                                     {"name_eng": "Bagatipara", "name_ban": "বাগাতিপাড়া"},
@@ -295,7 +295,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Manda", "name_ban": "মান্দা"},
                                     {"name_eng": "Atrai", "name_ban": "আত্রাই"},
                                     {"name_eng": "Raninagar", "name_ban": "রাণীনগর"},
-                                    {"name_eng": "Naogaon sadar", "name_ban": "নওগাঁ সদর"},
+                                    {"name_eng": "Naogaon Sadar", "name_ban": "নওগাঁ সদর"},
                                     {"name_eng": "Porsha", "name_ban": "পোরশা"},
                                     {"name_eng": "Sapahar", "name_ban": "সাপাহার"},
                                 ]
@@ -318,7 +318,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Keshabpur", "name_ban": "কেশবপুর"},
                                     {"name_eng": "Sharsha", "name_ban": "শার্শা"},
                                     {"name_eng": "Kotowali", "name_ban": "কোতওয়ালি"},
-                                    {"name_eng": "Benapol port", "name_ban": "বেনাপল পোর্ট"},
+                                    {"name_eng": "Benapol Port", "name_ban": "বেনাপল পোর্ট"},
                                 ]
                             },
                             {
@@ -328,7 +328,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Assasuni", "name_ban": "আশাশুনি"},
                                     {"name_eng": "Debhata", "name_ban": "দেবহাটা"},
                                     {"name_eng": "Kalaroa", "name_ban": "কলারোয়া"},
-                                    {"name_eng": "Satkhira sadar", "name_ban": "সাতক্ষীরা সদর"},
+                                    {"name_eng": "Satkhira Sadar", "name_ban": "সাতক্ষীরা সদর"},
                                     {"name_eng": "Shyamnagar", "name_ban": "শ্যামনগর"},
                                     {"name_eng": "Tala", "name_ban": "তালা"},
                                     {"name_eng": "Kaliganj", "name_ban": "কালিগঞ্জ"},
@@ -340,7 +340,7 @@ class Command(BaseCommand):
                                 "name_ban": "মেহেরপুর",
                                 "upazilas": [
                                     {"name_eng": "Mujibnagar", "name_ban": "মুজিবনগর"},
-                                    {"name_eng": "Meherpur sadar", "name_ban": "মেহেরপুর সদর"},
+                                    {"name_eng": "Meherpur Sadar", "name_ban": "মেহেরপুর সদর"},
                                     {"name_eng": "Gangni", "name_ban": "গাংনী"}
                                 ]
                             },
@@ -348,7 +348,7 @@ class Command(BaseCommand):
                                 "name_eng": "Narail",
                                 "name_ban": "নড়াইল",
                                 "upazilas": [
-                                    {"name_eng": "Narail sadar", "name_ban": "নড়াইল সদর"},
+                                    {"name_eng": "Narail Sadar", "name_ban": "নড়াইল সদর"},
                                     {"name_eng": "Lohagara", "name_ban": "লোহাগড়া"},
                                     {"name_eng": "Kalia", "name_ban": "কালিয়া"}
                                 ]
@@ -357,7 +357,7 @@ class Command(BaseCommand):
                                 "name_eng": "Chuadanga",
                                 "name_ban": "চুয়াডাঙ্গা",
                                 "upazilas": [
-                                    {"name_eng": "Chuadanga sadar", "name_ban": "চুয়াডাঙ্গা সদর"},
+                                    {"name_eng": "Chuadanga Sadar", "name_ban": "চুয়াডাঙ্গা সদর"},
                                     {"name_eng": "Alamdanga", "name_ban": "আলমডাঙ্গা"},
                                     {"name_eng": "Damurhuda", "name_ban": "দামুড়হুদা"},
                                     {"name_eng": "Jibannagar", "name_ban": "জীবননগর"}
@@ -367,7 +367,7 @@ class Command(BaseCommand):
                                 "name_eng": "Kushtia",
                                 "name_ban": "কুষ্টিয়া",
                                 "upazilas": [
-                                    {"name_eng": "Kushtia sadar", "name_ban": "কুষ্টিয়া সদর"},
+                                    {"name_eng": "Kushtia Sadar", "name_ban": "কুষ্টিয়া সদর"},
                                     {"name_eng": "Kumarkhali", "name_ban": "কুমারখালী"},
                                     {"name_eng": "Khoksa", "name_ban": "খোকসা"},
                                     {"name_eng": "Mirpur", "name_ban": "মিরপুর"},
@@ -382,7 +382,7 @@ class Command(BaseCommand):
                                 "upazilas": [
                                     {"name_eng": "Shalikha", "name_ban": "শালিখা"},
                                     {"name_eng": "Sreepur", "name_ban": "শ্রীপুর"},
-                                    {"name_eng": "Magura sadar", "name_ban": "মাগুরা সদর"},
+                                    {"name_eng": "Magura Sadar", "name_ban": "মাগুরা সদর"},
                                     {"name_eng": "Mohammadpur", "name_ban": "মহম্মদপুর"}
                                 ]
                             },
@@ -437,7 +437,7 @@ class Command(BaseCommand):
                                 "name_eng": "Jhalakathi",
                                 "name_ban": "ঝালকাঠি",
                                 "upazilas": [
-                                    {"name_eng": "Jhalokati sadar", "name_ban": "ঝালকাঠি সদর"},
+                                    {"name_eng": "Jhalokati Sadar", "name_ban": "ঝালকাঠি সদর"},
                                     {"name_eng": "Kathalia", "name_ban": "কাঠালিয়া"},
                                     {"name_eng": "Nalchity", "name_ban": "নলছিটি"},
                                     {"name_eng": "Rajapur", "name_ban": "রাজাপুর"}
@@ -544,7 +544,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Barlekha", "name_ban": "বড়লেখা"},
                                     {"name_eng": "Kamolganj", "name_ban": "কমলগঞ্জ"},
                                     {"name_eng": "Kulaura", "name_ban": "কুলাউড়া"},
-                                    {"name_eng": "Moulovibazar model thana", "name_ban": "মৌলভীবাজার মডেল থানা"},
+                                    {"name_eng": "Moulovibazar Model", "name_ban": "মৌলভীবাজার মডেল"},
                                     {"name_eng": "Rajnagar", "name_ban": "রাজনগর"},
                                     {"name_eng": "Sreemangal", "name_ban": "শ্রীমঙ্গল"},
                                     {"name_eng": "Juri", "name_ban": "জুড়ী"}
@@ -733,7 +733,7 @@ class Command(BaseCommand):
                                     {"name_eng": "Shahjahanpur", "name_ban": "শাহজাহানপুর"},
                                     {"name_eng": "Shyampur", "name_ban": "শ্যামপুর"},
                                     {"name_eng": "Tejgaon", "name_ban": "তেজগাঁও"},
-                                    {"name_eng": "Sher-e-bangla", "name_ban": "সের-এ-বাংলা"},
+                                    {"name_eng": "Sher-E-Bangla", "name_ban": "শের-ই-বাংলা"},
                                     {"name_eng": "Tejgaon Shilpanchal ", "name_ban": "তেজগাঁও শিল্পাঞ্চল"},
                                     {"name_eng": "Turag ", "name_ban": "তুরাগ"},
                                     {"name_eng": "Uttara East", "name_ban": "উত্তরা পূর্ব"},
