@@ -251,7 +251,7 @@
           <UFormGroup
             label="Thana"
             required
-            :error="!form.thana && checkSubmit && 'You must select a Thana'"
+            :error="!form.upazila && checkSubmit && 'You must select a Thana'"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -259,7 +259,7 @@
             }"
           >
             <USelectMenu
-              v-model="form.thana"
+              v-model="form.upazila"
               color="white"
               size="md"
               :options="upazilas"
@@ -413,9 +413,6 @@ const { get, post, put, baseURL, staticURL } = useApi();
 const { user } = useAuth();
 const toast = useToast();
 const categories = ref([]);
-const country = ref([]);
-const state = ref([]);
-const city = ref([]);
 const checkSubmit = ref(false);
 const isLoading = ref(false);
 
@@ -484,8 +481,8 @@ function validateForm() {
     const value = submitValues.value[key];
     if (
       (typeof value === "string" && !value.trim()) || // Check empty strings
-      (typeof value === "boolean" && !value) || // Check false booleans
-      (Array.isArray(value) && value.length === 0) // Check empty arrays
+      (typeof value === "boolean" && !value) //|| // Check false booleans
+      //(Array.isArray(value) && value.length === 0) // Check empty arrays
     ) {
       return false; // Validation fails
     }

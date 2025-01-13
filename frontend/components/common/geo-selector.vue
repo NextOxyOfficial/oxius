@@ -142,7 +142,7 @@
                 size="md"
                 color="primary"
                 variant="solid"
-                label="Add Location"
+                label="Select Location"
                 @click="addLocation"
               />
               <!-- <button

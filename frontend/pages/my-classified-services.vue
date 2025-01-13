@@ -9,7 +9,7 @@
           color="primary"
           variant="solid"
           label="Post Ads"
-          to="/classified-categories/new/"
+          to="/classified-categories/post/"
         />
       </div>
       <div class="services mt-4" v-if="services.length">
@@ -175,7 +175,7 @@
                       color="primary"
                       variant="outline"
                       label="Edit"
-                      :to="`/classified-categories/new/?id=${service.id}`"
+                      :to="`/classified-categories/post/?id=${service.id}`"
                     />
                     <UButton
                       size="md"

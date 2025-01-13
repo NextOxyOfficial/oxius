@@ -103,7 +103,7 @@
           color="primary"
           variant="solid"
           label="Post Ads"
-          to="/classified-categories/new/"
+          to="/classified-categories/post/"
         />
       </div>
       <div class="search mt-4" v-if="search.length">
