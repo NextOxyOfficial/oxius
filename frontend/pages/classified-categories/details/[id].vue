@@ -37,6 +37,9 @@
           <h2 class="text-xl sm:text-3xl font-semibold first-letter:uppercase">
             {{ service.title }}
           </h2>
+          <p class="text-sm sm:text-base first-letter:capitalize">
+            {{ service?.location }}
+          </p>
           <h4 class="text-lg sm:text-xl font-semibold inline-flex items-center">
             <UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
               service.price

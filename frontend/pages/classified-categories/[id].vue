@@ -16,9 +16,21 @@
           <span v-if="services?.length">></span> {{ categoryTitle }}
         </p>
       </div>
-      <p class="text-base md:text-lg mb-3 font-semibold">
-        {{ $t("select_location") }}
-      </p>
+      <div class="flex items-center mb-3">
+        <p class="text-base md:text-lg font-semibold">
+          {{ $t("select_location") }}
+        </p>
+        <div class="block sm:hidden ml-auto w-max">
+          <UButton
+            class="px-8"
+            size="lg"
+            color="primary"
+            variant="solid"
+            label="Post Ads"
+            to="/classified-categories/post/"
+          />
+        </div>
+      </div>
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <UFormGroup class="md:w-1/4">
           <USelectMenu
@@ -79,7 +91,7 @@
             class="w-full"
             :ui="{
               padding: {
-                md: 'py-2.5',
+                md: 'sm:py-2.5',
               },
             }"
           />
@@ -96,7 +108,7 @@
         </UButtonGroup>
       </div>
 
-      <div class="mt-5">
+      <div class="mt-5 hidden sm:block">
         <UButton
           class="px-8"
           size="lg"
@@ -135,19 +147,19 @@
               class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
-                class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
+                class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
                 <div class="flex flex-row gap-4 items-center sm:items-start">
                   <div>
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="staticURL + service.medias[0].image"
-                      class="size-14 rounded-md"
+                      class="size-10 sm:size-14 rounded-md"
                     />
                     <img
                       v-else
                       :src="staticURL + service.category_details.image"
-                      class="size-14 rounded-md"
+                      class="size-10 sm:size-14 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
@@ -158,7 +170,7 @@
                     </h3>
 
                     <div
-                      class="flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
                       <p
                         class="text-sm md:text-base sm:hidden font-semibold text-green-950"
@@ -166,33 +178,36 @@
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.negotiable ? "Negotiable" : service.price }}
                       </p>
+
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
                         <span class="text-sm">{{
                           service?.category_details.title
                         }}</span>
                       </p>
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-clock-solid" />
-                        <span class="text-sm"
-                          >Posted: {{ formatDate(service?.created_at) }}</span
-                        >
-                      </p>
-
-                      <div class="flex gap-1 items-center text-sm">
-                        Posted By:
-                        <p class="text-sm">
-                          <span class="text-green-600"
-                            >{{ service.user?.name.slice(0, 6) }}***</span
-                          >
-                        </p>
-                      </div>
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm first-letter:uppercase">{{
+                      <p class="inline-flex gap-1 col-span-2">
+                        <UIcon
+                          name="i-heroicons-map-pin-solid"
+                          class="mt-0.5"
+                        />
+                        <span class="text-sm first-letter:uppercase flex-1">{{
                           service?.location
                         }}</span>
                       </p>
+                      <div class="flex col-span-2">
+                        <div class="flex gap-1 items-center flex-1">
+                          <UIcon name="i-heroicons-clock-solid" />
+                          <div class="flex-1">
+                            <span class="text-sm"
+                              >Posted: {{ formatDate(service?.created_at) }},
+                              By:
+                              <span class="text-green-600"
+                                >{{ service.user?.name.slice(0, 6) }}***</span
+                              ></span
+                            >
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -208,7 +223,7 @@
             </div>
           </NuxtLink>
         </UCard>
-        <h3 class="text-xl font-semibold mt-6">Nearby location ads</h3>
+        <h3 class="text-xl font-semibold mt-6">Nearby location's ads</h3>
       </div>
       <div v-if="isLoading">
         <CommonPreloader text="Searching for ads in your city..." />
@@ -247,19 +262,19 @@
               class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
-                class="flex flex-col sm:flex-row items-center justify-between w-full max-sm:relative"
+                class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
                 <div class="flex flex-row gap-4 items-start">
-                  <div>
+                  <div class="w-10 sm:w-14">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="staticURL + service.medias[0].image"
-                      class="size-9 sm:size-14 object-cover rounded-md"
+                      class="size-10 sm:size-14 object-cover rounded-md"
                     />
                     <img
                       v-else
                       :src="staticURL + service.category_details.image"
-                      class="size-14 rounded-md"
+                      class="size-10 sm:size-14 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
@@ -270,7 +285,7 @@
                     </h3>
 
                     <div
-                      class="flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
                       <p
                         class="text-sm md:text-base sm:hidden font-semibold text-green-950"
@@ -285,27 +300,29 @@
                           service?.category_details.title
                         }}</span>
                       </p>
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-clock-solid" />
-                        <span class="text-sm"
-                          >Posted: {{ formatDate(service?.created_at) }}</span
-                        >
-                      </p>
-
-                      <div class="flex gap-1 items-center text-sm">
-                        Posted By:
-                        <p class="text-sm">
-                          <span class="text-green-600"
-                            >{{ service.user?.name.slice(0, 6) }}***</span
-                          >
-                        </p>
-                      </div>
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-heroicons-map-pin-solid" />
-                        <span class="text-sm first-letter:uppercase">{{
+                      <p class="inline-flex gap-1 col-span-2">
+                        <UIcon
+                          name="i-heroicons-map-pin-solid"
+                          class="mt-0.5"
+                        />
+                        <span class="text-sm first-letter:uppercase flex-1">{{
                           service?.location
                         }}</span>
                       </p>
+                      <div class="flex col-span-2">
+                        <div class="flex gap-1 items-center flex-1">
+                          <UIcon name="i-heroicons-clock-solid" />
+                          <div class="flex-1">
+                            <span class="text-sm"
+                              >Posted: {{ formatDate(service?.created_at) }},
+                              By:
+                              <span class="text-green-600"
+                                >{{ service.user?.name.slice(0, 6) }}***</span
+                              ></span
+                            >
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
