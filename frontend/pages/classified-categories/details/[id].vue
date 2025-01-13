@@ -42,11 +42,15 @@
           <p class="text-sm sm:text-base first-letter:capitalize">
             {{ service?.location }}
           </p>
-          <h4 class="text-lg sm:text-xl font-semibold inline-flex items-center">
+          <h4
+            v-if="!service.negotiable"
+            class="text-base sm:text-xl font-semibold inline-flex items-center"
+          >
             <UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
               service.price
             }}
           </h4>
+          <h4 v-else class="text-base sm:text-xl font-semibold">Negotiable</h4>
 
           <div
             v-if="service?.medias"

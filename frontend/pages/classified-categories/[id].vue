@@ -227,7 +227,10 @@
             </div>
           </NuxtLink>
         </UCard>
-        <h3 class="text-xl font-semibold mt-6">Nearby location's ads</h3>
+        <UDivider label="" class="mt-5" />
+        <h3 class="text-xl font-semibold mt-6 text-green-900">
+          Nearby location's ads
+        </h3>
       </div>
       <div v-if="isLoading">
         <CommonPreloader text="Searching for ads in your city..." />
@@ -235,8 +238,9 @@
       <UCard v-if="searchError" class="py-16 text-center mt-6">
         <p>No offers have been found!</p>
       </UCard>
-      <h3 v-if="searchError" class="text-xl font-semibold mt-6">
-        Nearby location ads
+      <UDivider v-if="searchError" label="" class="mt-5" />
+      <h3 v-if="searchError" class="text-xl font-semibold mt-6 text-green-900">
+        Nearby location's ads
       </h3>
       <div class="services mt-3" v-if="services?.length">
         <UCard
