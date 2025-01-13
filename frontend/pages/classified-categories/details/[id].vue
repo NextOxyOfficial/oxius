@@ -34,7 +34,9 @@
           </UButton>
         </div>
         <div class="w-full flex flex-col justify-center" v-if="service.id">
-          <h2 class="text-xl sm:text-3xl font-semibold first-letter:uppercase">
+          <h2
+            class="text-xl sm:text-3xl font-semibold first-letter:uppercase text-green-900"
+          >
             {{ service.title }}
           </h2>
           <p class="text-sm sm:text-base first-letter:capitalize">

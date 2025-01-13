@@ -149,7 +149,7 @@
               <div
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
-                <div class="flex flex-row gap-4 items-center sm:items-start">
+                <div class="flex flex-row gap-4">
                   <div>
                     <NuxtImg
                       v-if="service.medias[0]?.image"
@@ -172,19 +172,23 @@
                     <div
                       class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
-                      <p
-                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
-                      >
-                        <UIcon name="i-mdi:currency-bdt" />
-                        {{ service.negotiable ? "Negotiable" : service.price }}
-                      </p>
+                      <div class="flex gap-2 col-span-2">
+                        <p
+                          class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                        >
+                          <UIcon name="i-mdi:currency-bdt" />
+                          {{
+                            service.negotiable ? "Negotiable" : service.price
+                          }}
+                        </p>
 
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{
-                          service?.category_details.title
-                        }}</span>
-                      </p>
+                        <p class="inline-flex gap-1 items-center">
+                          <UIcon name="i-tabler:category-filled" />
+                          <span class="text-sm">{{
+                            service?.category_details.title
+                          }}</span>
+                        </p>
+                      </div>
                       <p class="inline-flex gap-1 col-span-2">
                         <UIcon
                           name="i-heroicons-map-pin-solid"
@@ -287,19 +291,23 @@
                     <div
                       class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
-                      <p
-                        class="text-sm md:text-base sm:hidden font-semibold text-green-950"
-                      >
-                        <UIcon name="i-mdi:currency-bdt" />
-                        {{ service.negotiable ? "Negotiable" : service.price }}
-                      </p>
+                      <div class="flex gap-2 col-span-2">
+                        <p
+                          class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                        >
+                          <UIcon name="i-mdi:currency-bdt" />
+                          {{
+                            service.negotiable ? "Negotiable" : service.price
+                          }}
+                        </p>
 
-                      <p class="inline-flex gap-1 items-center">
-                        <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{
-                          service?.category_details.title
-                        }}</span>
-                      </p>
+                        <p class="inline-flex gap-1 items-center">
+                          <UIcon name="i-tabler:category-filled" />
+                          <span class="text-sm">{{
+                            service?.category_details.title
+                          }}</span>
+                        </p>
+                      </div>
                       <p class="inline-flex gap-1 col-span-2">
                         <UIcon
                           name="i-heroicons-map-pin-solid"
