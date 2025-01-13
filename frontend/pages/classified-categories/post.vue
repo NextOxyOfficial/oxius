@@ -40,8 +40,14 @@
           Instructions <span class="text-red-500">*</span>
         </p>
         <CommonEditor
+          v-if="form.instructions"
           v-model="form.instructions"
-          @updateContent="updateContent"
+          :content="form.instructions"
+          @updateContent="
+            (content) => {
+              form.instructions = content;
+            }
+          "
           class="border border-slate-300 p-2 bg-white"
         />
         <div class="grid md:grid-cols-2 gap-4">

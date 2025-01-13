@@ -45,8 +45,14 @@
                 >
                   <div>
                     <NuxtImg
+                      v-if="service.medias[0]?.image"
                       :src="staticURL + service.medias[0].image"
                       class="size-9 sm:size-14 rounded-md object-cover"
+                    />
+                    <img
+                      v-else
+                      :src="staticURL + service.category_details.image"
+                      class="size-14 rounded-md"
                     />
                   </div>
                   <div class="flex-1">

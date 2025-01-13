@@ -232,9 +232,6 @@ import TableRow from "@tiptap/extension-table-row";
 import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
 
-const imageSelector = ref(false);
-const tableSlide = ref(false);
-
 const props = defineProps({
   content: String,
   pid: Number | String,
@@ -278,33 +275,6 @@ onBeforeUnmount(() => {
 
 const editorButtons = ref(null);
 const { top: editorButtonsTop } = useElementBounding(editorButtons);
-
-function imageSelected(url) {
-  imageSelector.value = false;
-  var base = "https://media.ummesalma.org/f_webp&q_90";
-  // var base = "http://127.0.0.1:8000";
-  // console.log(url);
-  editor.commands.setImage({
-    src: base + url,
-    alt: "A boring example image",
-    title: "An example",
-  });
-}
-const aiSlide = ref(true);
-const aiPrompt = ref("");
-const enableAiSlide = () => {
-  try {
-    const node = editor.state.doc.nodeAt(editor.state.selection.$from.pos);
-    aiPrompt.value = node.text;
-  } catch (error) {
-    console.log(error);
-  }
-  aiSlide.value = true;
-};
-const insertContent = (content) => {
-  // console.log(content);
-  editor.commands.insertContent(content);
-};
 </script>
 
 <style>
