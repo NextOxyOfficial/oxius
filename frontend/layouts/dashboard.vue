@@ -10,6 +10,10 @@ onMounted(() => {
     }
   }, 1000);
 });
+useHead({
+  title:
+    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+});
 </script>
 
 <template>

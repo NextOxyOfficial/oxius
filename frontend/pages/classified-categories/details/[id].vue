@@ -187,9 +187,6 @@
 </template>
 
 <script setup>
-// definePageMeta({
-//   layout: "dashboard",
-// });
 const { baseURL, staticURL } = useApi();
 const service = ref({});
 const router = useRoute();
@@ -198,9 +195,15 @@ async function fetchServices() {
   const response = await $fetch(
     `${baseURL}/classified-categories/post/${router.params.id}/`
   );
-  console.log(response);
 
   service.value = response;
+  useHead({
+    title: `AdsyClub | ${
+      response?.title
+        ? response.title.charAt(0).toUpperCase() + response.title.slice(1)
+        : ""
+    }`,
+  });
 }
 setTimeout(() => {
   fetchServices();

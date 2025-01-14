@@ -345,9 +345,6 @@ const selectedCategory = ref(null);
 const title = ref(null);
 const isLoading = ref(false);
 
-// useHead({
-//   title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
-// });
 // const categoryCounts = microGigs.value.reduce((acc, gig) => {
 //   const category = gig.category;
 //   if (!acc[category]) {

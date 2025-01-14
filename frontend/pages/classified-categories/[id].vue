@@ -364,6 +364,11 @@ const location = useCookie("location");
 const { formatDate } = useUtils();
 const isLoading = ref(false);
 
+useHead({
+  title:
+    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+});
+
 const form = ref({
   country: "Bangladesh",
   state: location.value?.state || "",

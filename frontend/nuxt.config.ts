@@ -7,7 +7,13 @@ export default defineNuxtConfig({
   },
   ssr: false,
   css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/ui", "@nuxt/image", "@nuxtjs/i18n", "nuxt-tiptap-editor", "nuxt-aos"],
+  modules: [
+    "@nuxt/ui",
+    "@nuxt/image",
+    "@nuxtjs/i18n",
+    "nuxt-tiptap-editor",
+    "nuxt-aos",
+  ],
   tiptap: {
     prefix: "Tiptap", //prefix for Tiptap imports, composables not included
   },
@@ -17,9 +23,14 @@ export default defineNuxtConfig({
   app: {
     buildAssetsDir: "/static/frontend/",
     head: {
-      title: "AdsyClub | Earn Quick Money & Simplify Daily Life",
+      title:
+        "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
       meta: [
-        { name: "description", content: "AdsyClub | Earn Quick Money & Simplify Daily Life" },
+        {
+          name: "description",
+          content:
+            "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+        },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
       ],
       link: [
