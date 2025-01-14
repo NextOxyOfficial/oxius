@@ -308,11 +308,8 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
-    pagination_class = ClassifiedCategoryPagination
     def get_queryset(self):
-        """
-        Optionally filter the queryset by title.
-        """
+       
         queryset = super().get_queryset()
         title = self.request.query_params.get('title', None)
         if title:

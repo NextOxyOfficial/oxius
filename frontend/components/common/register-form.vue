@@ -231,17 +231,32 @@ const toast = useToast();
 // Handle form submission
 async function handleSubmit() {
   isLoading.value = true;
-  // Check if password and confirm password match
+
+  // Reset errors
+  error.value = {
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  };
+
+  // Validate fields
+  if (!form.value.first_name) error.value.first_name = "First name is required";
+  if (!form.value.last_name) error.value.last_name = "Last name is required";
+  if (!form.value.email) error.value.email = "Email is required";
+  if (!form.value.phone) error.value.phone = "Phone number is required";
+  if (!form.value.password) error.value.password = "Password is required";
+  if (!form.value.confirmPassword)
+    error.value.confirmPassword = "Confirm password is required";
   if (form.value.password !== form.value.confirmPassword) {
-    passwordMismatch.value = true;
-    return;
-  } else {
-    passwordMismatch.value = false;
+    error.value.confirmPassword = "Passwords do not match";
   }
 
-  // Check if email and password are filled
-  if (!form.value.email || !form.value.password) {
-    toast.add("Please fill out all required fields");
+  // If any error exists, stop submission
+  if (Object.values(error.value).some((err) => err)) {
+    isLoading.value = false;
     return;
   }
 
@@ -263,19 +278,18 @@ async function handleSubmit() {
       const res2 = await login(form.value.email, form.value.password);
       if (res2) {
         const res = await Api.post(`/send-sms/?phone=${form.value.phone}`);
-        console.log(res);
-
         toast.add({ title: "Login successful!" });
         navigateTo("/");
       }
     } else {
-      toast.add({ title: res.error.data.errors.email[0] });
-      error.value = res.error.data.errors;
-      console.log(res.error.data);
+      error.value.email = res.error.data.errors.email[0] || "An error occurred";
     }
-  } catch (error) {
-    // set inValidRefer to true if error code from api is 444 (Invalid Refer Code)
-    console.error("Error submitting the form:", error);
+  } catch (err) {
+    if (err.response?.status === 444) {
+      error.value.refer = "Invalid referral code";
+    } else {
+      console.error("Error submitting the form:", err);
+    }
   }
   isLoading.value = false;
 }
