@@ -549,8 +549,8 @@ async function getMicroGigsCategory() {
     const [categoriesResponse] = await Promise.all([
       get("/classified-categories-all/"),
     ]);
-    categories.value = categoriesResponse.data.results;
-    console.log(categoriesResponse.data.results);
+    categories.value = categoriesResponse.data;
+    console.log(categoriesResponse.data);
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }

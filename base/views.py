@@ -308,13 +308,7 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
-    def get_queryset(self):
-       
-        queryset = super().get_queryset()
-        title = self.request.query_params.get('title', None)
-        if title:
-            queryset = queryset.filter(title__icontains=title)
-        return queryset
+    
     
 class GetMicroGigs(generics.ListCreateAPIView):
     queryset = MicroGigPost.objects.filter().order_by('-created_at')
