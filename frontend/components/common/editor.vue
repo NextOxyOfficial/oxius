@@ -5,7 +5,7 @@
       class="head flex flex-wrap gap-1 font-semibold"
       :class="{ stickyButtons: editorButtonsTop < 30 }"
     >
-      <button class="!p-0 relative">
+      <button type="button" class="!p-0 relative">
         <input
           class="w-full h-full opacity-0"
           type="color"
@@ -25,7 +25,7 @@
           class="absolute pointer-events-none"
         />
       </button>
-      <button class="!p-0 relative cursor-pointer">
+      <button type="button" class="!p-0 relative cursor-pointer">
         <input
           class="w-full h-full opacity-0 cursor-pointer"
           type="color"
@@ -40,6 +40,7 @@
         />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleBold().run()"
         :disabled="!editor.can().chain().focus().toggleBold().run()"
         :class="{ 'is-active': editor.isActive('bold') }"
@@ -47,6 +48,7 @@
         B
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleItalic().run()"
         :disabled="!editor.can().chain().focus().toggleItalic().run()"
         :class="{ 'is-active': editor.isActive('italic') }"
@@ -54,13 +56,17 @@
         <UIcon name="i-ph-text-italic" class="w-4 h-4 md:w-6 md:h-6" dynamic />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleStrike().run()"
         :disabled="!editor.can().chain().focus().toggleStrike().run()"
         :class="{ 'is-active': editor.isActive('strike') }"
       >
         <del>S</del>
       </button>
-      <button @click="editor.chain().focus().unsetAllMarks().run()">
+      <button
+        type="button"
+        @click="editor.chain().focus().unsetAllMarks().run()"
+      >
         <UIcon
           name="i-mingcute-broom-line"
           class="w-4 h-4 md:w-6 md:h-6"
@@ -68,42 +74,49 @@
         />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().setParagraph().run()"
         :class="{ 'is-active': editor.isActive('paragraph') }"
       >
         P
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
         :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
       >
         H1
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
         :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
       >
         H2
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
         :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
       >
         H3
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
         :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }"
       >
         H4
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
         :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }"
       >
         H5
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
         :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }"
       >
@@ -111,6 +124,7 @@
       </button>
 
       <button
+        type="button"
         @click="editor.chain().focus().toggleHighlight().run()"
         :class="{ 'is-active': editor.isActive('highlight') }"
       >
@@ -118,6 +132,7 @@
       </button>
 
       <button
+        type="button"
         @click="editor.chain().focus().toggleBulletList().run()"
         :class="{ 'is-active': editor.isActive('bulletList') }"
       >
@@ -128,6 +143,7 @@
         />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleOrderedList().run()"
         :class="{ 'is-active': editor.isActive('orderedList') }"
       >
@@ -138,6 +154,7 @@
         />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleCode().run()"
         :disabled="!editor.can().chain().focus().toggleCode().run()"
         :class="{ 'is-active': editor.isActive('code') }"
@@ -145,6 +162,7 @@
         <UIcon name="i-ic-outline-code" class="w-4 h-4 md:w-6 md:h-6" dynamic />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleCodeBlock().run()"
         :class="{ 'is-active': editor.isActive('codeBlock') }"
       >
@@ -155,30 +173,38 @@
         />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().toggleBlockquote().run()"
         :class="{ 'is-active': editor.isActive('blockquote') }"
       >
         <UIcon name="i-ic-format-quote" class="w-4 h-4 md:w-6 md:h-6" dynamic />
       </button>
-      <button @click="editor.chain().focus().clearNodes().run()">
+      <button type="button" @click="editor.chain().focus().clearNodes().run()">
         <UIcon
           name="i-mingcute-broom-line"
           class="w-4 h-4 md:w-6 md:h-6"
           dynamic
         />
       </button>
-      <button @click="editor.chain().focus().setHorizontalRule().run()">
+      <button
+        type="button"
+        @click="editor.chain().focus().setHorizontalRule().run()"
+      >
         <UIcon
           name="i-ic-sharp-horizontal-rule"
           class="w-4 h-4 md:w-6 md:h-6"
           dynamic
         />
       </button>
-      <button @click="editor.chain().focus().setHardBreak().run()">
+      <button
+        type="button"
+        @click="editor.chain().focus().setHardBreak().run()"
+      >
         <UIcon name="i-codicon-newline" class="w-4 h-4 md:w-6 md:h-6" dynamic />
       </button>
 
       <button
+        type="button"
         @click="editor.chain().focus().undo().run()"
         :disabled="!editor.can().chain().focus().undo().run()"
       >
@@ -189,6 +215,7 @@
         />
       </button>
       <button
+        type="button"
         @click="editor.chain().focus().redo().run()"
         :disabled="!editor.can().chain().focus().redo().run()"
       >
@@ -198,7 +225,7 @@
           dynamic
         />
       </button>
-      <!-- <button
+      <!-- <button type="button"
         class="relative z-20 bg-green-400/10"
         @click="enableAiSlide"
         :class="{ 'is-active': aiSlide }"

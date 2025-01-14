@@ -182,6 +182,51 @@
           </div>
         </div>
       </div>
+      <p class="text-center font-medium text-sm sm:text-base">
+        Share with social medias
+      </p>
+      <div class="share-buttons-container">
+        <div class="share-list">
+          <!-- FACEBOOK -->
+          <a class="fb-h" @click.prevent="fbs_click" target="_blank">
+            <img
+              src="https://img.icons8.com/material-rounded/96/000000/facebook-f.png"
+            />
+          </a>
+
+          <!-- TWITTER -->
+          <a class="tw-h" @click.prevent="tbs_click" target="_blank">
+            <img
+              src="https://img.icons8.com/material-rounded/96/000000/twitter-squared.png"
+            />
+          </a>
+
+          <!-- LINKEDIN -->
+          <a class="li-h" @click.prevent="lbs_click" target="_blank">
+            <img
+              src="https://img.icons8.com/material-rounded/96/000000/linkedin.png"
+            />
+          </a>
+
+          <!-- REDDIT -->
+          <a class="re-h" @click.prevent="rbs_click" target="_blank">
+            <img src="https://img.icons8.com/ios-glyphs/90/000000/reddit.png" />
+          </a>
+
+          <!-- PINTEREST -->
+          <a
+            data-pin-do="buttonPin"
+            data-pin-config="none"
+            class="pi-h"
+            @click.prevent="pbs_click"
+            target="_blank"
+          >
+            <img
+              src="https://img.icons8.com/ios-glyphs/90/000000/pinterest.png"
+            />
+          </a>
+        </div>
+      </div>
     </UContainer>
   </PublicSection>
 </template>
@@ -208,4 +253,101 @@ async function fetchServices() {
 setTimeout(() => {
   fetchServices();
 }, 20);
+
+var pageLink = window.location.href;
+var pageTitle = String(document.title).replace(/\&/g, "%26");
+
+function fbs_click() {
+  window.open(
+    `http://www.facebook.com/sharer.php?u=${pageLink}&quote=${pageTitle}`,
+    "sharer",
+    "toolbar=0,status=0,width=626,height=436"
+  );
+  return false;
+}
+
+function tbs_click() {
+  window.open(
+    `https://twitter.com/intent/tweet?text=${pageTitle}&url=${pageLink}`,
+    "sharer",
+    "toolbar=0,status=0,width=626,height=436"
+  );
+  return false;
+}
+
+function lbs_click() {
+  window.open(
+    `https://www.linkedin.com/sharing/share-offsite/?url=${pageLink}`,
+    "sharer",
+    "toolbar=0,status=0,width=626,height=436"
+  );
+  return false;
+}
+
+function rbs_click() {
+  window.open(
+    `https://www.reddit.com/submit?url=${pageLink}`,
+    "sharer",
+    "toolbar=0,status=0,width=626,height=436"
+  );
+  return false;
+}
+
+function pbs_click() {
+  window.open(
+    `https://www.pinterest.com/pin/create/button/?&text=${pageTitle}&url=${pageLink}&description=${pageTitle}`,
+    "sharer",
+    "toolbar=0,status=0,width=626,height=436"
+  );
+  return false;
+}
 </script>
+
+<style scoped>
+.share-list {
+  display: flex;
+  flex-direction: row;
+}
+
+.share-list a {
+  border-radius: 100px;
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  margin: 10px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.share-list a img {
+  width: 100%;
+  height: 100%;
+  filter: invert(100%);
+}
+
+a.fb-h {
+  background: #3b5998;
+}
+
+a.tw-h {
+  background: #00acee;
+}
+
+a.li-h {
+  background: #0077b5;
+}
+
+a.re-h {
+  background: #ff5700;
+}
+
+a.pi-h {
+  background: #c8232c;
+}
+
+.share-buttons-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+</style>
