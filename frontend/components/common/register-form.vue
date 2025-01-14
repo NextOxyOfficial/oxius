@@ -176,23 +176,59 @@
               </p>
             </div>
             <div>
-              <input
-                type="password"
-                placeholder="Password"
-                v-model="form.password"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
-              />
+              <div class="relative">
+                <input
+                  :type="isPassword ? 'password' : 'text'"
+                  placeholder="Password"
+                  v-model="form.password"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+                />
+                <div
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
+                  @click="isPassword = !isPassword"
+                >
+                  <UIcon
+                    name="i-heroicons-solid-eye"
+                    class="w-5 h-5 text-gray-400"
+                    v-if="isPassword"
+                  />
+                  <UIcon
+                    name="i-heroicons-solid-eye-off"
+                    class="w-5 h-5 text-gray-400"
+                    v-else
+                  />
+                </div>
+              </div>
+
               <p v-if="error.password" class="text-red-500 text-sm">
                 {{ error.password }}
               </p>
             </div>
             <div>
-              <input
-                type="password"
-                placeholder="Confirm password"
-                v-model="form.confirmPassword"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
-              />
+              <div class="relative">
+                <input
+                  :type="isPassword ? 'password' : 'text'"
+                  placeholder="Confirm password"
+                  v-model="form.confirmPassword"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+                />
+                <!-- <div
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
+                  @click="isPassword = !isPassword"
+                >
+                  <UIcon
+                    name="i-heroicons-solid-eye"
+                    class="w-5 h-5 text-gray-400"
+                    v-if="isPassword"
+                  />
+                  <UIcon
+                    name="i-heroicons-solid-eye-off"
+                    class="w-5 h-5 text-gray-400"
+                    v-else
+                  />
+                </div> -->
+              </div>
+
               <p v-if="error.confirmPassword" class="text-red-500 text-sm">
                 {{ error.confirmPassword }}
               </p>
@@ -231,7 +267,7 @@
 const Api = useApi();
 const { login } = useAuth();
 
-const passwordMismatch = ref(false);
+const isPassword = ref(true);
 const isLoading = ref(false);
 
 const form = ref({
