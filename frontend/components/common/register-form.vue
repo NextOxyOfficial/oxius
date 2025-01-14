@@ -128,50 +128,75 @@
 
           <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="First name"
-                v-model="form.first_name"
-                class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Last name"
-                v-model="form.last_name"
-                class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
-                required
-              />
+              <div>
+                <input
+                  type="text"
+                  placeholder="First name"
+                  v-model="form.first_name"
+                  class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                />
+                <p v-if="error.first_name" class="text-red-500 text-sm">
+                  {{ error.first_name }}
+                </p>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Last name"
+                  v-model="form.last_name"
+                  class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                />
+                <p v-if="error.last_name" class="text-red-500 text-sm">
+                  {{ error.last_name }}
+                </p>
+              </div>
             </div>
 
-            <input
-              type="email"
-              placeholder="Email address"
-              v-model="form.email"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
-              required
-            />
-            <input
-              type="tel"
-              placeholder="Phone number"
-              v-model="form.phone"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              v-model="form.password"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Confirm password"
-              v-model="form.confirmPassword"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
-              required
-            />
+            <div>
+              <input
+                type="email"
+                placeholder="Email address"
+                v-model="form.email"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              />
+              <p v-if="error.email" class="text-red-500 text-sm">
+                {{ error.email }}
+              </p>
+            </div>
+
+            <div>
+              <input
+                type="text"
+                placeholder="Phone number"
+                v-model="form.phone"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              />
+              <p v-if="error.phone" class="text-red-500 text-sm">
+                {{ error.phone }}
+              </p>
+            </div>
+            <div>
+              <input
+                type="password"
+                placeholder="Password"
+                v-model="form.password"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              />
+              <p v-if="error.password" class="text-red-500 text-sm">
+                {{ error.password }}
+              </p>
+            </div>
+            <div>
+              <input
+                type="password"
+                placeholder="Confirm password"
+                v-model="form.confirmPassword"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+              />
+              <p v-if="error.confirmPassword" class="text-red-500 text-sm">
+                {{ error.confirmPassword }}
+              </p>
+            </div>
             <input
               type="text"
               placeholder="Referral code (optional)"
