@@ -459,6 +459,7 @@ async function filterSearch() {
   setTimeout(() => {
     if (res.data.length > 0) {
       search.value = res.data;
+      searchError.value = false;
     } else {
       searchError.value = true;
     }
