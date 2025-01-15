@@ -7,7 +7,7 @@
         <NuxtImg
           v-if="banner && banner.image"
           :src="staticURL + banner.image"
-          class="rounded-xl max-h-[360px] object-contain"
+          class="rounded-xl w-full max-h-[360px] object-contain"
           alt="Register"
         />
         <img
