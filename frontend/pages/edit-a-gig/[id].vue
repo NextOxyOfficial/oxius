@@ -3,11 +3,7 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
-      <form
-        action="#"
-        class="max-w-2xl mx-auto space-y-3"
-        @submit.prevent="handleUpdateGig"
-      >
+      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handleUpdateGig">
         <UFormGroup label="Title">
           <UInput
             type="text"
@@ -28,11 +24,7 @@
           <UFormGroup
             required
             label="Budget Per Action"
-            :error="
-              form.price <= 0 &&
-              checkSubmit &&
-              'You must enter budget per action!'
-            "
+            :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -60,9 +52,7 @@
             label="Required Quantity"
             required
             :error="
-              form.required_quantity <= 0 &&
-              checkSubmit &&
-              'You must enter required quantity!'
+              form.required_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
             "
             :ui="{
               label: {
@@ -135,7 +125,7 @@
           v-if="form.instructions"
           :content="form.instructions"
           @updateContent="
-            (content) => {
+            content => {
               form.instructions = content;
             }
           "
@@ -150,11 +140,7 @@
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img
-              :src="staticURL + img.image"
-              class="max-h-[100px]"
-              :alt="`Uploaded file ${i}`"
-            />
+            <img :src="img.image" class="max-h-[100px]" :alt="`Uploaded file ${i}`" />
             <!-- <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -275,11 +261,7 @@
             <UFormGroup
               required
               label="Budget Per Action"
-              :error="
-                form.price <= 0 &&
-                checkSubmit &&
-                'You must enter budget per action!'
-              "
+              :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
               :ui="{
                 label: {
                   base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -307,9 +289,7 @@
               label="Add Additional Quantity"
               required
               :error="
-                form.additional_quantity <= 0 &&
-                checkSubmit &&
-                'You must enter required quantity!'
+                form.additional_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
               "
               :ui="{
                 label: {
@@ -366,7 +346,7 @@
 </template>
 
 <script setup>
-const { get, put, staticURL } = useApi();
+const { get, put } = useApi();
 const toast = useToast();
 const categories = ref([]);
 const network = ref([]);
@@ -399,7 +379,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -412,10 +392,8 @@ function deleteUpload(ind) {
 }
 
 async function handleUpdateGig() {
-  const required_quantity =
-    form.value.required_quantity * 1 + form.value.additional_quantity * 1;
-  const balance =
-    +form.value.balance + form.value.additional_quantity * form.value.price;
+  const required_quantity = form.value.required_quantity * 1 + form.value.additional_quantity * 1;
+  const balance = +form.value.balance + form.value.additional_quantity * form.value.price;
 
   const additional_cost =
     form.value.additional_quantity * form.value.price +

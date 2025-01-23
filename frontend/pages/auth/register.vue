@@ -1,12 +1,10 @@
 <template>
   <UContainer>
-    <div
-      class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0"
-    >
+    <div class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0">
       <div class="md:w-3/4">
         <NuxtImg
           v-if="banner && banner.image"
-          :src="staticURL + banner.image"
+          :src="banner.image"
           class="rounded-xl w-full max-h-[360px] object-contain"
           alt="Register"
         />
@@ -27,7 +25,7 @@
 <script setup>
 const login = ref(true);
 const { user, isAuthenticated } = useAuth();
-const { get, staticURL } = useApi();
+const { get } = useApi();
 const router = useRoute();
 const banner = ref({});
 if (router.query.ref) {

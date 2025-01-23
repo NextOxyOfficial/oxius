@@ -6,7 +6,7 @@
       <div class="md:w-3/4">
         <NuxtImg
           v-if="banner && banner.image"
-          :src="staticURL + banner.image"
+          :src="banner.image"
           class="rounded-xl w-full max-h-[360px] object-contain"
           alt="Register"
         />
@@ -26,7 +26,7 @@
 
 <script setup>
 const { user, isAuthenticated } = useAuth();
-const { get, staticURL } = useApi();
+const { get } = useApi();
 
 const banner = ref({});
 

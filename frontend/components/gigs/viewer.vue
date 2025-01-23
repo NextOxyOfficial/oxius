@@ -23,14 +23,10 @@
               {{ gig.title }}
             </span>
           </div>
-          <p
-            class="text-lg font-bold text-green-900 inline-flex items-center pl-5"
-          >
+          <p class="text-lg font-bold text-green-900 inline-flex items-center pl-5">
             Earn:
             <span class="inline-flex items-center"
-              ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
-                gig.price
-              }}</span
+              ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ gig.price }}</span
             >
           </p>
         </div>
@@ -58,23 +54,17 @@
             class=""
             v-if="m.image"
             target="_blank"
-            :href="'/media-viewer?url=' + staticURL + m.image + '&type=image'"
+            :href="'/media-viewer?url=' + m.image + '&type=image'"
           >
-            <NuxtImg
-              class="h-48 w-64 object-cover shadow"
-              :src="staticURL + m.image"
-            />
+            <NuxtImg class="h-48 w-64 object-cover shadow" :src="m.image" />
           </a>
           <a
             class=""
             target="_blank"
-            :href="'/media-viewer?url=' + staticURL + m.video + '&type=video'"
+            :href="'/media-viewer?url=' + m.video + '&type=video'"
             v-if="m.video"
           >
-            <video
-              class="h-48 w-64 object-cover shadow"
-              :src="staticURL + m.video"
-            ></video>
+            <video class="h-48 w-64 object-cover shadow" :src="m.video"></video>
           </a>
         </div>
       </div>
@@ -92,11 +82,7 @@
       <div>
         <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
         <div class="flex flex-wrap gap-5">
-          <div
-            class="relative max-w-[200px] max-h-[200px]"
-            v-for="(img, i) in medias"
-            :key="i"
-          >
+          <div class="relative max-w-[200px] max-h-[200px]" v-for="(img, i) in medias" :key="i">
             <img :src="img" :alt="`Uploaded file ${i}`" />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
@@ -139,7 +125,7 @@
 <script setup>
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
-const { get, staticURL, post } = useApi();
+const { get, post } = useApi();
 const medias = ref([]);
 const accepted_terms = ref(false);
 
@@ -172,7 +158,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);

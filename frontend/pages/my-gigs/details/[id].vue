@@ -69,11 +69,7 @@
       >
         <template #header>
           <div class="flex items-center justify-between">
-            <h3
-              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-            >
-              Modal
-            </h3>
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Modal</h3>
             <UButton
               color="gray"
               variant="ghost"
@@ -112,7 +108,7 @@ const selectedTaskId = ref(null);
 const filterOptions = ["All", "Approved", "Rejected"];
 
 const selectedFilter = ref("");
-const { get, staticURL, del, put } = useApi();
+const { get, del, put } = useApi();
 const { formatDate } = useUtils();
 const { user } = useAuth();
 const submittedTasks = ref([]);
@@ -130,18 +126,15 @@ async function getUserGigs() {
 getUserGigs();
 
 async function handleOperation(taskId, operation) {
-  const res = await put(
-    `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
-    {
-      tasks: [
-        {
-          id: taskId,
-          approved: operation === "approve" ? true : false,
-          rejected: operation === "reject" ? true : false,
-        },
-      ],
-    }
-  );
+  const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
+    tasks: [
+      {
+        id: taskId,
+        approved: operation === "approve" ? true : false,
+        rejected: operation === "reject" ? true : false,
+      },
+    ],
+  });
   console.log(res);
   if (res.error) {
   } else {
@@ -163,19 +156,16 @@ async function submitRejection() {
   }
 
   try {
-    const res = await put(
-      `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
-      {
-        tasks: [
-          {
-            id: selectedTaskId.value,
-            approved: false,
-            rejected: true,
-            reason: rejectionReason.value,
-          },
-        ],
-      }
-    );
+    const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
+      tasks: [
+        {
+          id: selectedTaskId.value,
+          approved: false,
+          rejected: true,
+          reason: rejectionReason.value,
+        },
+      ],
+    });
     console.log(res);
     if (res.error) {
       console.log("Error:", res.error);
@@ -190,10 +180,10 @@ async function submitRejection() {
 
 watch(selectedFilter, () => {
   if (selectedFilter.value === "Approved") {
-    submittedTasks.value = submittedTasks.value.filter((task) => task.approved);
+    submittedTasks.value = submittedTasks.value.filter(task => task.approved);
     console.log("approved");
   } else if (selectedFilter.value === "Rejected") {
-    submittedTasks.value = submittedTasks.value.filter((task) => task.rejected);
+    submittedTasks.value = submittedTasks.value.filter(task => task.rejected);
     console.log("rejected");
   }
 });

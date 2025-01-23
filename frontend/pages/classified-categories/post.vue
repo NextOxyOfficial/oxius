@@ -36,14 +36,12 @@
         </UFormGroup>
         <div class="flex gap-4 items-center"></div>
 
-        <p class="text-sm font-semibold">
-          Instructions <span class="text-red-500">*</span>
-        </p>
+        <p class="text-sm font-semibold">Instructions <span class="text-red-500">*</span></p>
         <CommonEditor
           v-if="router.query.id && form.instructions"
           :content="form.instructions"
           @updateContent="
-            (content) => {
+            content => {
               form.instructions = content;
             }
           "
@@ -59,9 +57,7 @@
           <UFormGroup
             label="Category"
             required
-            :error="
-              !form.category && checkSubmit && 'You must select a category'
-            "
+            :error="!form.category && checkSubmit && 'You must select a category'"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -120,8 +116,7 @@
                 name="Negotiable"
                 label="Negotiable"
                 :ui="{
-                  label:
-                    'text-sm font-medium text-gray-700 dark:text-slate-700',
+                  label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
                 }"
               />
             </div>
@@ -153,16 +148,11 @@
           >
             <img
               v-if="img.image"
-              :src="staticURL + img.image"
+              :src="img.image"
               :alt="`Uploaded file ${i}`"
               class="object-cover"
             />
-            <img
-              v-else
-              :src="img"
-              :alt="`Uploaded file ${i}`"
-              class="object-cover"
-            />
+            <img v-else :src="img" :alt="`Uploaded file ${i}`" class="object-cover" />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -292,9 +282,7 @@
           <UFormGroup
             label="Address"
             required
-            :error="
-              !form.location && checkSubmit && 'You must enter your address!'
-            "
+            :error="!form.location && checkSubmit && 'You must enter your address!'"
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -323,10 +311,7 @@
             label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
           }"
         />
-        <p
-          v-if="!form.accepted_privacy && checkSubmit"
-          class="text-sm text-red-500"
-        >
+        <p v-if="!form.accepted_privacy && checkSubmit" class="text-sm text-red-500">
           You must accept our Terms Condition & Privacy Policy!
         </p>
         <div class="text-center">
@@ -352,9 +337,7 @@
         </div>
       </form>
       <UModal v-model="isOpen">
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <!-- <div 
               className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity"
               onClick={onClose}
@@ -368,15 +351,10 @@
                   className="rounded-full bg-red-100 p-3 mb-4 inline-flex items-center justify-center"
                 >
                   <!-- <AlertCircle className="h-8 w-8 text-red-600" /> -->
-                  <UIcon
-                    name="i-line-md-alert-circle"
-                    class="h-8 w-8 text-red-600"
-                  />
+                  <UIcon name="i-line-md-alert-circle" class="h-8 w-8 text-red-600" />
                 </div>
 
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  KYC Unverified
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">KYC Unverified</h2>
 
                 <p className="text-gray-600 mb-6">
                   Please Upload your ID to get permission to post a service ad.
@@ -398,10 +376,7 @@
                   block
                 >
                   <template #leading>
-                    <UIcon
-                      name="i-material-symbols-upload-rounded"
-                      class="h-5 w-5"
-                    />
+                    <UIcon name="i-material-symbols-upload-rounded" class="h-5 w-5" />
                   </template>
                 </UButton>
               </div>
@@ -420,7 +395,7 @@ definePageMeta({
   layout: "dashboard",
 });
 const isOpen = ref(false);
-const { get, post, put, baseURL, staticURL } = useApi();
+const { get, post, put, baseURL } = useApi();
 const { user } = useAuth();
 const toast = useToast();
 const categories = ref([]);
@@ -448,9 +423,7 @@ const submitValues = ref({});
 const router = useRoute();
 
 async function fetchServices() {
-  const response = await $fetch(
-    `${baseURL}/classified-categories/post/${router.query.id}/`
-  );
+  const response = await $fetch(`${baseURL}/classified-categories/post/${router.query.id}/`);
   console.log(response);
   const {
     price,
@@ -532,7 +505,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = error => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -546,9 +519,7 @@ function deleteUpload(ind) {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse] = await Promise.all([
-      get("/classified-categories-all/"),
-    ]);
+    const [categoriesResponse] = await Promise.all([get("/classified-categories-all/")]);
     categories.value = categoriesResponse.data;
     console.log(categoriesResponse.data);
   } catch (error) {
@@ -571,19 +542,15 @@ const regions = ref([]);
 const cities = ref();
 const upazilas = ref();
 
-const regions_response = await get(
-  `/geo/regions/?country_name_eng=${form.value.country}`
-);
+const regions_response = await get(`/geo/regions/?country_name_eng=${form.value.country}`);
 regions.value = regions_response.data;
 
 watch(
   () => form.value.state,
-  async (newState) => {
+  async newState => {
     console.log(newState);
     if (newState) {
-      const cities_response = await get(
-        `/geo/cities/?region_name_eng=${newState}`
-      );
+      const cities_response = await get(`/geo/cities/?region_name_eng=${newState}`);
       cities.value = cities_response.data;
       console.log(cities_response.data);
     }
@@ -592,12 +559,10 @@ watch(
 
 watch(
   () => form.value.city,
-  async (newCity) => {
+  async newCity => {
     console.log(newCity);
     if (newCity) {
-      const thana_response = await get(
-        `/geo/upazila/?city_name_eng=${newCity}`
-      );
+      const thana_response = await get(`/geo/upazila/?city_name_eng=${newCity}`);
       upazilas.value = thana_response.data;
       console.log(thana_response.data);
     }

@@ -23,10 +23,7 @@
         <div class="flex flex-col gap-4 md:flex-row justify-between">
           <div class="flex gap-4">
             <div>
-              <NuxtImg
-                :src="staticURL + gig?.category_details.image"
-                class="size-12 rounded-full"
-              />
+              <NuxtImg :src="gig?.category_details.image" class="size-12 rounded-full" />
             </div>
             <div>
               <div class="relative">
@@ -49,9 +46,7 @@
                   <UIcon name="i-heroicons-bell-solid" />
                   <p class="text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
-                    <span class="text-green-600">{{
-                      gig.required_quantity
-                    }}</span>
+                    <span class="text-green-600">{{ gig.required_quantity }}</span>
                   </p>
                 </div>
                 <p class="text-sm">{{ gig.balance }} /{{ gig.total_cost }}</p>
@@ -60,28 +55,14 @@
                 </p>
 
                 <div class="text-sm">
-                  <p
-                    class="font-semibold capitalize"
-                    v-if="gig.gig_status === 'approved'"
-                  >
-                    Live
-                  </p>
-                  <p
-                    class="font-semibold capitalize"
-                    v-if="gig.gig_status === 'completed'"
-                  >
+                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'approved'">Live</p>
+                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'completed'">
                     {{ gig.gig_status }}
                   </p>
-                  <p
-                    class="font-semibold capitalize"
-                    v-if="gig.gig_status === 'pending'"
-                  >
+                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'pending'">
                     {{ gig.gig_status }}
                   </p>
-                  <p
-                    class="font-semibold capitalize"
-                    v-if="gig.gig_status === 'rejected'"
-                  >
+                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'rejected'">
                     {{ gig.gig_status }}
                   </p>
                 </div>
@@ -141,9 +122,7 @@
     </div>
     <UModal v-model="isOpen">
       <div class="py-10 px-6 text-center">
-        <h4 class="text-2xl font-medium mb-4">
-          It will stop the gig for forever?
-        </h4>
+        <h4 class="text-2xl font-medium mb-4">It will stop the gig for forever?</h4>
 
         <UButton
           size="md"
@@ -168,7 +147,7 @@ function handlePop(id) {
 const { user, jwtLogin } = useAuth();
 const gigs = ref([]);
 const route = useRoute();
-const { get, staticURL, put } = useApi();
+const { get, put } = useApi();
 
 async function handleAction(id, action, val) {
   const res = await (action === "completed"
