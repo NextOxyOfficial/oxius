@@ -273,10 +273,6 @@ def get_user_with_identifier(request, identifier):
 
 class ClassifiedCategoryPagination(PageNumberPagination):
     page_size = 14
-    # def get_page_size(self, request):
-    #     if request.query_params.get(self.page_query_param) in [None, '', '1']:
-    #         return 14
-    #     return self.page_size
 
 class GetClassifiedCategories(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')

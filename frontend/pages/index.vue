@@ -319,7 +319,7 @@
 const { t } = useI18n();
 const { formatDate } = useUtils();
 const isOpen = ref(false);
-const { get } = useApi();
+const { get, baseURL } = useApi();
 const { user } = useAuth();
 const services = ref([]);
 const microGigs = ref([]);
@@ -416,9 +416,10 @@ const loadMore = async url => {
     services.value.results = [...services.value.results, ...res.results];
     // recents.value.next = data?.value?.next;
   };
-  // url = url.split("/api/");
-  // url = baseURL + "/api/" + url[1];
+  url = url.split("/api/");
+  url = baseURL + "/" + url[1];
   // getRecentsNext(url);
+  // url = url.replace("http://", "https://");
   getRecentNext(url);
 };
 
