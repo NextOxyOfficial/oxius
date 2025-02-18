@@ -281,7 +281,6 @@
       <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
         {{ $t("transaction_history") }}
       </h3>
-      {{ statements }}
       <UTable
         :rows="statements"
         :columns="columns"
