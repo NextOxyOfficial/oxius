@@ -46,8 +46,10 @@
               variant="outline"
               :label="row.approved ? 'Approved' : 'Approve'"
               :disabled="row.rejected || row.approved"
+              :loading="isLoading"
             />
             <UButton
+              v-if="row.approved === false"
               size="xs"
               class="w-[67px] justify-center"
               color="red"
@@ -55,6 +57,13 @@
               variant="outline"
               :label="row.rejected ? 'Rejected' : 'Reject'"
               :disabled="row.rejected || row.approved"
+              :loading="isLoading"
+            />
+
+            <UIcon
+              name="i-material-symbols:lab-profile-outline-sharp"
+              class="text-green-700 text-2xl cursor-pointer"
+              @click="viewDetails(row.id, 'view')"
             />
           </div>
         </template>
@@ -69,7 +78,9 @@
       >
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Modal</h3>
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+              Rejection Reason
+            </h3>
             <UButton
               color="gray"
               variant="ghost"
@@ -98,6 +109,26 @@
         />
       </UCard>
     </UModal>
+    <UModal v-model="isOpenTaskDetails">
+      <div class="p-6 bg-slate-100 border rounded-xl space-y-4">
+        <p>
+          {{ current_submitted_task_details.approved ? "Approved" : "Pending" }} ||
+          {{ formatDate(current_submitted_task_details.created_at) }}
+        </p>
+        <div class="bg-slate-50 p-4 rounded-xl space-y-3">
+          <div v-html="current_submitted_task_details.submit_details"></div>
+          <p>{{ current_submitted_task_details.media }}</p>
+        </div>
+        <UButton
+          size="md"
+          color="gray"
+          variant="outline"
+          label="Close"
+          class="max-w-fit"
+          @click="isOpenTaskDetails = false"
+        />
+      </div>
+    </UModal>
   </PublicSection>
 </template>
 
@@ -105,6 +136,7 @@
 const isOpen = ref(false);
 const rejectionReason = ref("");
 const selectedTaskId = ref(null);
+const isOpenTaskDetails = ref(false);
 const filterOptions = ["All", "Approved", "Rejected"];
 
 const selectedFilter = ref("");
@@ -112,7 +144,9 @@ const { get, del, put } = useApi();
 const { formatDate } = useUtils();
 const { user } = useAuth();
 const submittedTasks = ref([]);
+const current_submitted_task_details = ref([]);
 const route = useRoute();
+const isLoading = ref(false);
 
 async function getUserGigs() {
   try {
@@ -176,6 +210,12 @@ async function submitRejection() {
   } catch (error) {
     console.log("Error submitting rejection:", error);
   }
+}
+
+function viewDetails(taskId, operation) {
+  console.log(taskId, operation);
+  isOpenTaskDetails.value = true;
+  current_submitted_task_details.value = submittedTasks.value.find(task => task.id === taskId);
 }
 
 watch(selectedFilter, () => {

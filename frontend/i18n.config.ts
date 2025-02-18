@@ -5,7 +5,7 @@ export default defineI18nConfig(() => ({
     en: {
       welcome: "Welcome",
       home: "Home",
-      classified_service: "Classified Services",
+      classified_service: "My Services",
       earn_money: "Earn Money",
       faq: "FAQ",
       my_account: "My Account",
@@ -60,7 +60,7 @@ export default defineI18nConfig(() => ({
     bn: {
       welcome: "স্বাগতম",
       home: "হোম",
-      classified_service: "ক্লাসিফাইড সেবা",
+      classified_service: "আমার সেবা",
       earn_money: "টাকা উপার্জন",
       faq: "প্রশ্নোত্তর",
       my_account: "মাই একাউন্ট",

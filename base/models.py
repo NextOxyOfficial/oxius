@@ -225,6 +225,7 @@ class MicroGigPost(models.Model):
     stop_gig = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    action_link = models.URLField(blank=True, null=True,default='')
     GIG_STATUS = [
       ('pending', 'Pending'),
       ('approved', 'Approved'),
@@ -279,6 +280,7 @@ class MicroGigPostTask(models.Model):
     medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
     submit_details = models.TextField(blank=True, null=True,default='')
     reason = models.TextField( blank=True, null=True,default='')
+    task_completion_link = models.URLField(blank=True, null=True,default='')
     accepted_terms = models.BooleanField(default=True)
     accepted_condition = models.BooleanField(default=True)
     def __str__(self):
@@ -298,7 +300,8 @@ class MicroGigPostTask(models.Model):
             self.user.balance += self.gig.price
             self.user.pending_balance -= self.gig.price
             self.user.save()
-            ReferBonus.objects.create(user=self.user.refer,amount=(self.gig.price * self.user.refer.commission) / 100 )
+            if self.user.refer:
+                ReferBonus.objects.create(user=self.user.refer,amount=(self.gig.price * self.user.refer.commission) / 100 )
             # add balance
 
         # Reduce filled quantity and mark as completed if rejected
@@ -314,6 +317,18 @@ class MicroGigPostTask(models.Model):
         super(MicroGigPostTask, self).save(*args, **kwargs)
 
 
+# class MicroGigReport(models.Model):
+#     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_reports')
+#     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True,related_name='micro_gig_reports')
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     title = models.CharField(max_length=256)
+#     description = models.TextField(blank=True, null=True,default='')
+#     medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     def __str__(self):
+#         return self.title    
+    
 # class TaskStatus(models.TextChoices):
 #     PENDING = 'PENDING', _('Pending')
 #     APPROVED = 'APPROVED', _('Approved')

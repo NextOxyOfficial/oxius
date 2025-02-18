@@ -23,7 +23,10 @@
         <div class="flex flex-col gap-4 md:flex-row justify-between">
           <div class="flex gap-4">
             <div>
-              <NuxtImg :src="gig?.category_details.image" class="size-12 rounded-full" />
+              <NuxtImg
+                :src="gig?.category_details.image"
+                class="size-12 rounded-full object-contain"
+              />
             </div>
             <div>
               <div class="relative">

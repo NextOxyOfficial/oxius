@@ -45,7 +45,7 @@
           <div class="text-base text-justify prose" v-html="gig.instructions"></div>
           <!-- <UDivider label="" class="pt-4" /> -->
 
-          <p class="text-xl font-medium !mt-8 sm:text-left">Reference Photo/Video</p>
+          <p class="text-lg font-medium !mt-8 sm:text-left">Reference Photo/Video</p>
           <div class="!mb-6 flex gap-1">
             <div class="" v-for="(m, i) in gig.medias" :key="m.id">
               <a
@@ -89,7 +89,10 @@
               </a>
             </div>
           </div>
-
+          <p class="text-lg font-medium !mt-8 sm:text-left">Action Url</p>
+          <a :href="gig.action_link" target="_blank" class="text-blue-400">{{
+            gig.action_link
+          }}</a>
           <UDivider label="" class="pt-4" />
 
           <div class="border border-dashed !mt-5 pb-3 px-2 sm:p-5 bg-slate-50/50 rounded-xl">
@@ -144,6 +147,17 @@
                 </div>
               </div>
             </div>
+            <!-- <div>
+              <UFormGroup label="Upload Link">
+                <UInput
+                  type="text"
+                  size="md"
+                  color="white"
+                  placeholder="Enter your link"
+                  v-model="task_completion_link"
+                />
+              </UFormGroup>
+            </div> -->
             <div class="!mt-7">
               <UFormGroup class="flex flex-row-reverse justify-end gap-2">
                 <template #label>
@@ -199,7 +213,7 @@ definePageMeta({
 });
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
-const { jwtLogin } = useAuth();
+const { jwtLogin, user } = useAuth();
 const { get, post } = useApi();
 const route = useRoute();
 const medias = ref([]);
@@ -208,6 +222,7 @@ const accepted_terms = ref(false);
 const toast = useToast();
 const checkSubmit = ref(false);
 const accepted_condition = ref(false);
+// const task_completion_link = ref("");
 
 const errorIndex = ref([]);
 
@@ -246,6 +261,7 @@ async function submitGig() {
       console.log(true);
       jwtLogin();
       toast.add({ title: "Order Submitted Successfully!" });
+      navigateTo(`/pending-tasks/${user.value.user.id}/`);
     }
   }
 }

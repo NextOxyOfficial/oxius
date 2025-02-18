@@ -6,17 +6,7 @@
     <UContainer>
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-8" />
-      <div class="flex flex-col md:flex-row justify-between">
-        <p
-          class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold"
-        >
-          <span class="inline-flex items-center"
-            >{{ $t("available_balance") }}:&nbsp;
-            <UIcon name="i-mdi:currency-bdt" class="" />
-            {{ user.user.balance }}
-          </span>
-        </p>
-      </div>
+
       <div class="my-5 flex justify-center">
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
@@ -63,15 +53,9 @@
               amount
             />
           </div>
-          <p v-if="depositErrors.amount" class="text-sm text-red-500">
-            Please enter an amount
-          </p>
+          <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
           <div class="mt-4">
-            <img
-              src="/static/frontend/images/payment.png"
-              class="w-60"
-              alt="Payment Method"
-            />
+            <img src="/static/frontend/images/payment.png" class="w-60" alt="Payment Method" />
           </div>
           <div class="my-5">
             <UFormGroup
@@ -100,9 +84,7 @@
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
           </div>
-          <p v-if="depositErrors.policy" class="text-sm text-red-500">
-            Please select this field
-          </p>
+          <p v-if="depositErrors.policy" class="text-sm text-red-500">Please select this field</p>
           <div class="my-2 space-x-3">
             <UButton
               v-if="
@@ -139,9 +121,7 @@
               </template>
             </URadioGroup>
           </div>
-          <p v-if="errors?.selected" class="text-sm text-red-500">
-            Please enter a payment method
-          </p>
+          <p v-if="errors?.selected" class="text-sm text-red-500">Please enter a payment method</p>
           <div class="mb-3">
             <UInput
               v-if="selected === 'nagad'"
@@ -203,9 +183,7 @@
                 <UIcon name="i-mdi:currency-bdt" class="text-base" />200</span
               >
             </p>
-            <p class="text-sm">
-              <span class="text-red-500">*</span> 2.95% Charges applicable
-            </p>
+            <p class="text-sm"><span class="text-red-500">*</span> 2.95% Charges applicable</p>
 
             <p v-if="errors?.insufficient" class="text-sm text-red-500">
               You do not have enough balance
@@ -238,9 +216,7 @@
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
 
-            <p v-if="errors?.policy" class="text-sm text-red-500">
-              Check this field
-            </p>
+            <p v-if="errors?.policy" class="text-sm text-red-500">Check this field</p>
           </div>
           <div class="my-2 space-x-3 mb-4">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -256,9 +232,7 @@
               "
               >{{ $t("withdraw") }}</UButton
             >
-            <UButton v-else size="sm" @click="isOpen = true">{{
-              $t("withdraw")
-            }}</UButton>
+            <UButton v-else size="sm" @click="isOpen = true">{{ $t("withdraw") }}</UButton>
           </div>
         </div>
         <div v-if="currentTab === 3">
@@ -294,10 +268,16 @@
           <p class="text-sm text-red-500">{{ transferErrors.user }}</p>
         </div>
       </div>
-      <h3
-        class="text-center text-lg md:text-3xl font-semibold mt-8"
-        v-if="statements?.length"
-      >
+      <div class="flex flex-col md:flex-row justify-between">
+        <p class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold">
+          <span class="inline-flex items-center"
+            >{{ $t("available_balance") }}:&nbsp;
+            <UIcon name="i-mdi:currency-bdt" class="" />
+            {{ user.user.balance }}
+          </span>
+        </p>
+      </div>
+      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
         {{ $t("transaction_history") }}
       </h3>
 
@@ -328,9 +308,7 @@
           <p
             class="capitalize font-semibold"
             :class="
-              row.bank_status.toLowerCase() === 'pending'
-                ? 'text-yellow-500'
-                : 'text-green-500'
+              row.bank_status.toLowerCase() === 'pending' ? 'text-yellow-500' : 'text-green-500'
             "
           >
             {{ row.bank_status }}
@@ -368,87 +346,82 @@
         <div class="w-full max-w-sm">
           <!-- Glass Card Effect -->
           <div
-            class="backdrop-blur-lg bg-white/70 rounded-xl p-6 shadow-lg border border-white/20"
+            class="backdrop-blur-lg rounded-xl bg-slate-100 p-2 shadow-lg border border-white/20"
           >
-            <!-- Title -->
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">
-              Confirm Transfer
-            </h2>
+            <div class="border p-4 bg-slate-50 rounded-xl">
+              <!-- Title -->
+              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
 
-            <!-- Transfer Details -->
-            <div class="space-y-4 mb-6">
-              <div class="flex justify-between items-center">
-                <p class="text-gray-500 text-xs">Transfer amount</p>
-                <p class="text-gray-900 text-lg font-semibold">
+              <!-- Transfer Details -->
+              <div class="space-y-4 mb-6">
+                <div class="flex justify-between items-center">
+                  <p class="text-gray-500 text-xs">Transfer amount</p>
+                  <p class="text-gray-900 text-lg font-semibold">
+                    <UIcon name="i-mdi:currency-bdt" class="" />
+                    {{ transfer?.payable_amount }}
+                  </p>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Recipient Field -->
+                  <div class="space-y-1">
+                    <label class="text-xs text-gray-500">Recipient:</label>
+                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
+                      {{ transfer?.to_user }}
+                    </p>
+                  </div>
+
+                  <!-- Email Field -->
+                  <div class="space-y-1">
+                    <label class="text-xs text-gray-500">Email:</label>
+                    <p class="text-sm text-gray-800 font-medium">
+                      {{ transfer?.contact }}
+                    </p>
+                  </div>
+
+                  <!-- Name Field -->
+                  <!-- <div class="space-y-1">
+                  <label class="text-xs text-gray-500">Name:</label>
+                  <p class="text-sm text-gray-800 font-medium">John Smith</p>
+                </div> -->
+
+                  <!-- Time Field -->
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-500">Time:</label>
+                    <span
+                      class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                    >
+                      Instant
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Final Amount -->
+              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+                <p class="text-xs text-gray-500">Final amount</p>
+                <p class="text-gray-900 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
               </div>
 
-              <div class="space-y-3">
-                <!-- Recipient Field -->
-                <div class="space-y-1">
-                  <label class="text-xs text-gray-500">Recipient:</label>
-                  <p
-                    class="text-sm text-gray-800 font-medium"
-                    v-if="transfer?.to_user"
-                  >
-                    {{ transfer?.to_user }}
-                  </p>
+              <!-- Confirm Button -->
+              <UButton
+                @click="handleTransfer"
+                :class="[
+                  'w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                  'bg-black text-white hover:bg-gray-800 active:scale-98',
+                  'focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
+                  'disabled:opacity-50 disabled:cursor-not-allowed justify-center',
+                ]"
+                :loading="isLoading"
+              >
+                <div class="flex items-center justify-center gap-2">
+                  {{ isLoading ? "Processing..." : "Confirm Transfer" }}
                 </div>
-
-                <!-- Email Field -->
-                <div class="space-y-1">
-                  <label class="text-xs text-gray-500">Email:</label>
-                  <p class="text-sm text-gray-800 font-medium">
-                    {{ transfer?.contact }}
-                  </p>
-                </div>
-
-                <!-- Name Field -->
-                <!-- <div class="space-y-1">
-                  <label class="text-xs text-gray-500">Name:</label>
-                  <p class="text-sm text-gray-800 font-medium">John Smith</p>
-                </div> -->
-
-                <!-- Time Field -->
-                <div class="flex items-center gap-2">
-                  <label class="text-xs text-gray-500">Time:</label>
-                  <span
-                    class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
-                  >
-                    Instant
-                  </span>
-                </div>
-              </div>
+              </UButton>
             </div>
-
-            <!-- Final Amount -->
-            <div
-              class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
-            >
-              <p class="text-xs text-gray-500">Final amount</p>
-              <p class="text-gray-900 font-semibold">
-                <UIcon name="i-mdi:currency-bdt" class="" />
-                {{ transfer?.payable_amount }}
-              </p>
-            </div>
-
-            <!-- Confirm Button -->
-            <UButton
-              @click="handleTransfer"
-              :class="[
-                'w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                'bg-black text-white hover:bg-gray-800 active:scale-98',
-                'focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
-                'disabled:opacity-50 disabled:cursor-not-allowed justify-center',
-              ]"
-              :loading="isLoading"
-            >
-              <div class="flex items-center justify-center gap-2">
-                {{ isLoading ? "Processing..." : "Confirm Transfer" }}
-              </div>
-            </UButton>
           </div>
 
           <!-- Success Message -->
@@ -459,82 +432,79 @@
         <div class="w-full max-w-sm flex-1">
           <!-- Glass Card Effect -->
           <div
-            class="backdrop-blur-lg bg-white/70 rounded-xl p-6 shadow-lg border border-white/20 w-full"
+            class="backdrop-blur-lg bg-slate-100 rounded-xl p-2 shadow-lg border border-white/20 w-full"
           >
-            <!-- Title and Success Icon -->
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-green-700">
-                Transfer Successful
-              </h2>
-              <UIcon
-                name="i-rivet-icons-check-circle-breakout"
-                class="h-5 w-5"
-              />
-            </div>
+            <div class="border bg-slate-50 p-4 rounded-xl">
+              <!-- Title and Success Icon -->
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg sm:text-2xl font-semibold text-green-700">
+                  Transfer Successful
+                </h2>
+                <UIcon name="i-rivet-icons-check-circle-breakout" class="size-7 text-green-700" />
+              </div>
 
-            <!-- Transfer Details -->
-            <div class="space-y-4 mb-6">
-              <div class="flex justify-between items-center">
-                <p class="text-gray-500 text-xs">Transferred amount</p>
-                <p class="text-gray-900 text-lg font-semibold">
+              <!-- Transfer Details -->
+              <div class="space-y-4 mb-6">
+                <div class="flex justify-between items-center">
+                  <p class="text-gray-500 text-xs">Transferred amount</p>
+                  <p class="text-gray-900 text-lg font-semibold">
+                    <UIcon name="i-mdi:currency-bdt" class="" />
+                    {{ transfer?.payable_amount }}
+                  </p>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Recipient Field -->
+                  <div class="space-y-1">
+                    <label class="text-xs text-gray-500">Recipient:</label>
+                    <p class="text-sm sm:text-lg text-gray-800 font-medium">
+                      {{ transfer?.to_user }}
+                    </p>
+                  </div>
+
+                  <!-- Email Field -->
+                  <div class="space-y-1">
+                    <label class="text-xs text-gray-500">Email:</label>
+                    <p class="text-sm text-gray-800 font-medium">
+                      {{ transfer?.contact }}
+                    </p>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-500">Time:</label>
+                    <span
+                      class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                    >
+                      Completed
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Final Amount -->
+              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+                <p class="text-xs text-gray-500">Final amount</p>
+                <p class="text-gray-900 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
               </div>
 
-              <div class="space-y-3">
-                <!-- Recipient Field -->
-                <div class="space-y-1">
-                  <label class="text-xs text-gray-500">Recipient:</label>
-                  <p class="text-sm text-gray-800 font-medium">
-                    {{ transfer?.to_user }}
-                  </p>
-                </div>
-
-                <!-- Email Field -->
-                <div class="space-y-1">
-                  <label class="text-xs text-gray-500">Email:</label>
-                  <p class="text-sm text-gray-800 font-medium">
-                    {{ transfer?.contact }}
-                  </p>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <label class="text-xs text-gray-500">Time:</label>
-                  <span
-                    class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
-                  >
-                    Completed
-                  </span>
-                </div>
+              <!-- Action Buttons -->
+              <div class="flex gap-3">
+                <button
+                  @click="reset"
+                  class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  View History
+                </button>
+                <button
+                  @click="reset"
+                  class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-black text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                >
+                  Close
+                </button>
               </div>
-            </div>
-
-            <!-- Final Amount -->
-            <div
-              class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
-            >
-              <p class="text-xs text-gray-500">Final amount</p>
-              <p class="text-gray-900 font-semibold">
-                <UIcon name="i-mdi:currency-bdt" class="" />
-                {{ transfer?.payable_amount }}
-              </p>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex gap-3">
-              <button
-                @click="reset"
-                class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-              >
-                View History
-              </button>
-              <button
-                @click="reset"
-                class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-black text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
@@ -674,8 +644,7 @@ const withdraw = async () => {
   const res = await post(`/add-user-balance/`, {
     payment_method: selected.value,
     card_number: payment_number.value,
-    payable_amount:
-      withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100,
+    payable_amount: withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100,
     transaction_type: "Withdraw",
   });
   console.log(res);
