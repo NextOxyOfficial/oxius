@@ -393,6 +393,7 @@ class Balance(models.Model):
     received_amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     merchant_invoice_no = models.CharField(default='',blank=True,null=True)
     shurjopay_order_id = models.CharField(default='',blank=True,null=True)
+    card_number = models.CharField(default='',blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed = models.BooleanField(default=False)
@@ -407,7 +408,7 @@ class Balance(models.Model):
         # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or '').lower()
         # Handle withdrawal
-        if self.transaction_type == 'transfer' and self.to_user and not self.completed:
+        if self.transaction_type == 'transfer' and  self.to_user and not self.completed:
             self.user.balance -= Decimal(self.payable_amount)
             self.to_user.balance += Decimal(self.payable_amount)
             self.user.save()

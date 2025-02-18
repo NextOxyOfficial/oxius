@@ -21,14 +21,14 @@
         class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
       >
         <div class="flex flex-col gap-4 md:flex-row justify-between">
-          <div class="flex gap-4">
+          <div class="flex gap-2 sm:gap-4 flex-1">
             <div>
               <NuxtImg
                 :src="gig?.category_details.image"
                 class="size-12 rounded-full object-contain"
               />
             </div>
-            <div>
+            <div class="flex-1">
               <div class="relative">
                 <h3 class="text-base font-semibold mb-1.5 ml-5 capitalize">
                   {{ gig.title }}
@@ -44,20 +44,22 @@
                   "
                 />
               </div>
-              <div class="flex gap-4">
+              <div class="flex gap-1.5 sm:gap-4">
                 <div class="flex gap-1 items-center">
                   <UIcon name="i-heroicons-bell-solid" />
-                  <p class="text-sm">
+                  <p class="text-[10px] leading-tight sm:text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
                     <span class="text-green-600">{{ gig.required_quantity }}</span>
                   </p>
                 </div>
-                <p class="text-sm">{{ gig.balance }} /{{ gig.total_cost }}</p>
-                <p class="text-sm">
+                <p class="text-[10px] leading-tight sm:text-sm">
+                  {{ gig.balance }} /{{ gig.total_cost }}
+                </p>
+                <p class="text-[10px] leading-tight sm:text-sm">
                   {{ formatDate(gig.created_at) }}
                 </p>
 
-                <div class="text-sm">
+                <div class="text-[10px] leading-tight sm:text-sm">
                   <p class="font-semibold capitalize" v-if="gig.gig_status === 'approved'">Live</p>
                   <p class="font-semibold capitalize" v-if="gig.gig_status === 'completed'">
                     {{ gig.gig_status }}
@@ -119,7 +121,9 @@
     <div v-else>
       <UContainer>
         <UCard class="py-20">
-          <p class="text-center text-sm text-gray-500">No gigs found.</p>
+          <p class="text-center text-[10px] leading-tight sm:text-sm text-gray-500">
+            No gigs found.
+          </p>
         </UCard>
       </UContainer>
     </div>

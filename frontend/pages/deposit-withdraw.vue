@@ -6,7 +6,6 @@
     <UContainer>
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-8" />
-
       <div class="my-5 flex justify-center">
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
@@ -19,6 +18,7 @@
           >{{ $t("diposit") }}</UButton
         >
         <UButton
+          :loading="isWithdrawLoading"
           :color="`${currentTab == 2 ? 'green' : 'gray'}`"
           variant="outline"
           size="md"
@@ -38,6 +38,15 @@
           @click="currentTab = 3"
           >{{ $t("transfer") }}</UButton
         >
+      </div>
+      <div class="flex flex-col md:flex-row justify-between">
+        <p class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold">
+          <span class="inline-flex items-center"
+            >{{ $t("available_balance") }}:&nbsp;
+            <UIcon name="i-mdi:currency-bdt" class="" />
+            {{ user.user.balance }}
+          </span>
+        </p>
       </div>
       <div class="flex items-center">
         <div v-if="currentTab === 1">
@@ -268,19 +277,11 @@
           <p class="text-sm text-red-500">{{ transferErrors.user }}</p>
         </div>
       </div>
-      <div class="flex flex-col md:flex-row justify-between">
-        <p class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold">
-          <span class="inline-flex items-center"
-            >{{ $t("available_balance") }}:&nbsp;
-            <UIcon name="i-mdi:currency-bdt" class="" />
-            {{ user.user.balance }}
-          </span>
-        </p>
-      </div>
+
       <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
         {{ $t("transaction_history") }}
       </h3>
-
+      {{ statements }}
       <UTable
         :rows="statements"
         :columns="columns"
@@ -300,8 +301,8 @@
         </template>
         <template #payment_method-data="{ row }">
           <p class="uppercase">
-            {{ row.transaction_type }} -
-            {{ row.payment_method }}
+            {{ row.transaction_type }} - {{ row.payment_method }}
+            <span v-if="row.card_number">- {{ row.card_number }}</span>
           </p>
         </template>
         <template #bank_status-data="{ row }">
@@ -584,6 +585,7 @@ const statements = ref([
 ]);
 const depositErrors = ref({});
 const isLoading = ref(false);
+const isWithdrawLoading = ref(false);
 const deposit = async () => {
   isLoading.value = true;
   if (!amount.value) {
@@ -622,7 +624,9 @@ const withdraw = async () => {
   if (!selected.value) {
     errors.value = { ...errors.value, selected: true };
   }
-  if (withdrawAmount.value > user.value.user.balance) {
+  if (Number(withdrawAmount.value) > Number(user.value.user.balance)) {
+    console.log(withdrawAmount.value, user.value.user.balance);
+
     errors.value = { ...errors.value, insufficient: true };
   }
 
@@ -640,7 +644,7 @@ const withdraw = async () => {
   }
   errors.value = {};
   console.log(withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100);
-
+  isWithdrawLoading.value = true;
   const res = await post(`/add-user-balance/`, {
     payment_method: selected.value,
     card_number: payment_number.value,
@@ -652,6 +656,7 @@ const withdraw = async () => {
   jwtLogin();
   withdrawAmount.value = "";
   policy.value = false;
+  isWithdrawLoading.value = false;
 };
 
 const transfer = ref({

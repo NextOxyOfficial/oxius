@@ -45,7 +45,9 @@
           <div class="text-base text-justify prose" v-html="gig.instructions"></div>
           <!-- <UDivider label="" class="pt-4" /> -->
 
-          <p class="text-lg font-medium !mt-8 sm:text-left">Reference Photo/Video</p>
+          <p class="text-lg font-medium !mt-8 sm:text-left" v-if="gig.medias?.length">
+            Reference Photo/Video
+          </p>
           <div class="!mb-6 flex gap-1">
             <div class="" v-for="(m, i) in gig.medias" :key="m.id">
               <a
@@ -62,14 +64,14 @@
                 <img
                   v-if="m.image && errorIndex.includes(i)"
                   :src="errorIndex.includes(i) ? gig.category.image : m.image"
-                  class="size-20"
+                  class="size-20 object-contain"
                   @error="handleImageError(i)"
                   alt="Gig Image"
                 />
                 <NuxtImg
                   v-else-if="m.image && !errorIndex.includes(i)"
                   :src="m.image"
-                  class="size-20"
+                  class="size-20 object-contain"
                   @error="handleImageError(i)"
                 />
                 <img v-else :src="gig.category.image" alt="No Image" class="size-20" />
@@ -89,7 +91,7 @@
               </a>
             </div>
           </div>
-          <p class="text-lg font-medium !mt-8 sm:text-left">Action Url</p>
+          <p class="text-lg font-medium !mt-8 sm:text-left" v-if="gig.action_link">Action Url</p>
           <a :href="gig.action_link" target="_blank" class="text-blue-400">{{
             gig.action_link
           }}</a>
