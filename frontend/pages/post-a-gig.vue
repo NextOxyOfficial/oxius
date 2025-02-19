@@ -17,7 +17,6 @@
               base: 'block font-medium text-gray-700 dark:text-slate-700',
             },
           }"
-          class="sm:max-w-[50%]"
         >
           <USelectMenu
             v-model="form.category"
