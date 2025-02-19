@@ -637,11 +637,69 @@ def get_microgigpost_tasks(request, gig_id):
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+# Single Task Approve / Reject
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# def update_microgigpost_tasks(request, gig_id):
+#     try:
+#         # Retrieve the MicroGigPost instance
+#         micro_gig_post = MicroGigPost.objects.get(id=gig_id)
+#     except MicroGigPost.DoesNotExist:
+#         return Response(
+#             {"error": "MicroGigPost not found"},
+#             status=status.HTTP_404_NOT_FOUND
+#         )
+
+#     # Retrieve the tasks related to this MicroGigPost
+#     tasks = micro_gig_post.microgigposttask_set.all()
+
+#     # Validate and update each task
+#     data = request.data.get('tasks', [])
+#     if not isinstance(data, list):
+#         return Response(
+#             {"error": "Expected a list of tasks in 'tasks' field."},
+#             status=status.HTTP_400_BAD_REQUEST
+#         )
+
+#     # Create a list to track updated tasks
+#     updated_tasks = []
+
+#     for task_data in data:
+#         task_id = task_data.get('id')
+#         if not task_id:
+#             return Response(
+#                 {"error": "Task 'id' is required for updates."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#         try:
+#             # Get the task instance
+#             task = tasks.get(id=task_id)
+#         except MicroGigPostTask.DoesNotExist:
+#             return Response(
+#                 {"error": f"Task with id {task_id} not found."},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         # Serialize the task data and validate
+#         serializer = GetMicroGigPostTaskSerializer(task, data=task_data, partial=True)
+#         if serializer.is_valid():
+#             # Save the updated task
+#             serializer.save()
+#             updated_tasks.append(serializer.data)
+#         else:
+#             return Response(
+#                 {"error": f"Invalid data for task with id {task_id}.", "details": serializer.errors},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#     return Response({"updated_tasks": updated_tasks}, status=status.HTTP_200_OK)
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_microgigpost_tasks(request, gig_id):
     """
     Update tasks associated with a specific MicroGigPost.
+    Handles both individual task updates and bulk approvals.
     """
     try:
         # Retrieve the MicroGigPost instance
@@ -652,51 +710,52 @@ def update_microgigpost_tasks(request, gig_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # Retrieve the tasks related to this MicroGigPost
-    tasks = micro_gig_post.microgigposttask_set.all()
-
-    # Validate and update each task
-    data = request.data.get('tasks', [])
-    if not isinstance(data, list):
+    # Get the tasks data from request
+    tasks_data = request.data.get('tasks', [])
+    if not isinstance(tasks_data, list):
         return Response(
             {"error": "Expected a list of tasks in 'tasks' field."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Create a list to track updated tasks
     updated_tasks = []
+    errors = []
 
-    for task_data in data:
+    for task_data in tasks_data:
         task_id = task_data.get('id')
-        if not task_id:
-            return Response(
-                {"error": "Task 'id' is required for updates."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         try:
-            # Get the task instance
-            task = tasks.get(id=task_id)
-        except MicroGigPostTask.DoesNotExist:
-            return Response(
-                {"error": f"Task with id {task_id} not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            task = MicroGigPostTask.objects.get(id=task_id, gig=micro_gig_post)
+            
+            # Handle the update based on the task data
+            if 'approved' in task_data:
+                task.approved = task_data['approved']
+                task.rejected = False
+            elif 'rejected' in task_data:
+                task.rejected = task_data['rejected']
+                task.approved = False
+                if task_data.get('reason'):
+                    task.reason = task_data['reason']
 
-        # Serialize the task data and validate
-        serializer = GetMicroGigPostTaskSerializer(task, data=task_data, partial=True)
-        if serializer.is_valid():
-            # Save the updated task
-            serializer.save()
+            # Save the task
+            task.save()
+            
+            # Serialize the updated task
+            serializer = GetMicroGigPostTaskSerializer(task)
             updated_tasks.append(serializer.data)
-        else:
-            return Response(
-                {"error": f"Invalid data for task with id {task_id}.", "details": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
-    return Response({"updated_tasks": updated_tasks}, status=status.HTTP_200_OK)
+        except MicroGigPostTask.DoesNotExist:
+            errors.append(f"Task with id {task_id} not found")
 
+    if errors:
+        return Response(
+            {"errors": errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
+    return Response({
+        "message": "Tasks updated successfully",
+        "updated_tasks": updated_tasks
+    }, status=status.HTTP_200_OK)
 
 # class UserBalance(generics.ListCreateAPIView):
 #     permission_classes = [IsAuthenticated]
