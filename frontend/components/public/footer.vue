@@ -187,7 +187,7 @@
           container: 'flex items-center justify-evenly min-w-full',
         }"
         ><template #icon="{ link }">
-          <UIcon :name="link.icon" class="text-2xl text-green-500" /> </template
+          <UIcon :name="link.icon" class="text-3xl text-green-500" /> </template
       ></UHorizontalNavigation>
     </div>
   </footer>

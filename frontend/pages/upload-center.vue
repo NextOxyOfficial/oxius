@@ -193,19 +193,83 @@ const errors = ref({
 });
 
 function handleFileUpload(event, field) {
-  const files = Array.from(event.target.files);
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Check file size (limit to 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  if (file.size > maxSize) {
+    toast.add({
+      title: "File size too large. Maximum size is 5MB.",
+      type: "error",
+    });
+    return;
+  }
+
+  // Check file type
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/heif"];
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    toast.add({
+      title: "Please upload a valid image file (JPEG, PNG, HEIC).",
+      type: "error",
+    });
+    return;
+  }
+
   const reader = new FileReader();
 
-  // Event listener for successful read
   reader.onload = () => {
-    form.value[field] = reader.result;
+    // Create an image element to check dimensions
+    const img = new Image();
+    img.onload = () => {
+      // Compress image if needed
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Set maximum dimensions
+      const maxWidth = 1200;
+      const maxHeight = 1200;
+
+      let width = img.width;
+      let height = img.height;
+
+      // Calculate new dimensions while maintaining aspect ratio
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      // Set canvas dimensions
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw and compress image
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to base64 with reduced quality
+      const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+      // Update form value
+      form.value[field] = compressedBase64;
+    };
+
+    img.src = reader.result;
   };
 
-  // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = error => {
+    console.error("Error reading file:", error);
+    toast.add({
+      title: "Error reading file. Please try again.",
+      type: "error",
+    });
+  };
 
-  // Read the file as a data URL (Base64 string)
-  reader.readAsDataURL(files[0]);
+  reader.readAsDataURL(file);
 }
 
 function deleteUpload(field) {
