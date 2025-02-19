@@ -3,11 +3,15 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">{{ $t("post_gigs") }}</h1>
       <UDivider label="" class="mb-8" />
-      <section class="max-w-3xl mx-auto space-y-3 py-3 px-2 sm:px-8 rounded-xl sm:py-6 bg-white">
+      <section
+        class="max-w-3xl mx-auto space-y-3 py-3 px-2 sm:px-8 rounded-xl sm:py-6 bg-white"
+      >
         <UFormGroup
           label="Category"
           required
-          :error="!form.category && checkSubmit && 'You must select a category!'"
+          :error="
+            !form.category && checkSubmit && 'You must select a category!'
+          "
           :ui="{
             label: {
               base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -63,7 +67,11 @@
           <UFormGroup
             label="Budget Per Action"
             required
-            :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
+            :error="
+              form.price <= 0 &&
+              checkSubmit &&
+              'You must enter budget per action!'
+            "
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -90,7 +98,9 @@
             label="Required Quantity"
             required
             :error="
-              form.required_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
+              form.required_quantity <= 0 &&
+              checkSubmit &&
+              'You must enter required quantity!'
             "
             :ui="{
               label: {
@@ -129,7 +139,7 @@
             label="Total Cost (Service handling fee 10% included)"
             :ui="{
               label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
+                base: 'block font-medium text-gray-700 dark:text-slate-700 italic',
               },
             }"
             required
@@ -169,7 +179,9 @@
             v-model="form.instructions"
           />
         </UFormGroup> -->
-        <p class="text-sm font-semibold">Instructions <span class="text-red-500">*</span></p>
+        <p class="text-sm font-semibold">
+          Instructions <span class="text-red-500">*</span>
+        </p>
         <CommonEditor
           v-model="form.instructions"
           @updateContent="updateContent"
@@ -194,14 +206,20 @@
           </UFormGroup>
         </div>
         <!-- medias  -->
-        <label for="" class="block mt-3 font-semibold text-slate-700">Upload Photo/Video</label>
+        <label for="" class="block mt-3 font-semibold text-slate-700"
+          >Upload Photo/Video</label
+        >
         <div class="flex flex-wrap gap-5">
           <div
             class="relative max-w-[200px] max-h-[200px]"
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="img" :alt="`Uploaded file ${i}`" class="h-full object-cover" />
+            <img
+              :src="img"
+              :alt="`Uploaded file ${i}`"
+              class="h-full object-cover"
+            />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -245,7 +263,11 @@
           <UFormGroup
             label="Target Country"
             required
-            :error="!form.target_country && checkSubmit && 'You must select a target country!'"
+            :error="
+              !form.target_country &&
+              checkSubmit &&
+              'You must select a target country!'
+            "
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -271,7 +293,11 @@
           <UFormGroup
             label="Target Device"
             required
-            :error="!form.target_device && checkSubmit && 'You must select a target device!'"
+            :error="
+              !form.target_device &&
+              checkSubmit &&
+              'You must select a target device!'
+            "
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -300,7 +326,11 @@
           <UFormGroup
             label="Target Network"
             required
-            :error="!form.target_network && checkSubmit && 'You must select a target network!'"
+            :error="
+              !form.target_network &&
+              checkSubmit &&
+              'You must select a target network!'
+            "
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -369,10 +399,15 @@
                 className="rounded-full bg-red-100 p-3 mb-4 inline-flex items-center justify-center"
               >
                 <!-- <AlertCircle className="h-8 w-8 text-red-600" /> -->
-                <UIcon name="i-line-md-alert-circle" class="h-8 w-8 text-red-600" />
+                <UIcon
+                  name="i-line-md-alert-circle"
+                  class="h-8 w-8 text-red-600"
+                />
               </div>
 
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">KYC Unverified</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                KYC Unverified
+              </h2>
 
               <p className="text-gray-600 mb-6">
                 Please Upload your ID to get permission to post a service ad.
@@ -394,7 +429,10 @@
                 block
               >
                 <template #leading>
-                  <UIcon name="i-material-symbols-upload-rounded" class="h-5 w-5" />
+                  <UIcon
+                    name="i-material-symbols-upload-rounded"
+                    class="h-5 w-5"
+                  />
                 </template>
               </UButton>
             </div>
@@ -449,7 +487,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -506,13 +544,17 @@ async function handlePostGig() {
 
 async function getMicroGigsCategory() {
   try {
-    const [categoriesResponse, devicesResponse, networksResponse, countriesResponse] =
-      await Promise.all([
-        get("/micro-gigs-categories/"),
-        get("/target-device/"),
-        get("/target-network/"),
-        // get("/target-country/"),
-      ]);
+    const [
+      categoriesResponse,
+      devicesResponse,
+      networksResponse,
+      countriesResponse,
+    ] = await Promise.all([
+      get("/micro-gigs-categories/"),
+      get("/target-device/"),
+      get("/target-network/"),
+      // get("/target-country/"),
+    ]);
 
     categories.value = categoriesResponse.data;
     device.value = devicesResponse.data;

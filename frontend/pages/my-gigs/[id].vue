@@ -29,8 +29,33 @@
               />
             </div>
             <div class="flex-1">
-              <div class="relative">
-                <h3 class="text-base font-semibold ml-5 capitalize">
+              <div class="relative flex items-center">
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'approved'"
+                >
+                  Live
+                </span>
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'completed'"
+                >
+                  {{ gig.gig_status }}
+                </span>
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'pending'"
+                >
+                  {{ gig.gig_status }}
+                </span>
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'rejected'"
+                >
+                  {{ gig.gig_status }}
+                </span>
+                <span>|</span>
+                <h3 class="text-base font-semibold ml-1 capitalize">
                   {{ gig.title }}
                 </h3>
 
@@ -43,31 +68,6 @@
                       : 'text-red-500'
                   "
                 />
-
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'approved'"
-                >
-                  Live
-                </p>
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'completed'"
-                >
-                  {{ gig.gig_status }}
-                </p>
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'pending'"
-                >
-                  {{ gig.gig_status }}
-                </p>
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'rejected'"
-                >
-                  {{ gig.gig_status }}
-                </p>
               </div>
               <div class="flex gap-1.5 sm:gap-4">
                 <div class="flex gap-1 items-center">
@@ -146,6 +146,7 @@
         <UButton
           size="md"
           color="primary"
+          :loading="isLoading"
           variant="solid"
           label="Stop"
           @click="handleAction(currentId, 'completed')"
@@ -167,8 +168,10 @@ const { user, jwtLogin } = useAuth();
 const gigs = ref([]);
 const route = useRoute();
 const { get, put } = useApi();
+const isLoading = ref(false);
 
 async function handleAction(id, action, val) {
+  isLoading.value = true;
   const res = await (action === "completed"
     ? put("/update-user-micro-gig/" + id + "/", {
         stop_gig: true,
@@ -182,6 +185,7 @@ async function handleAction(id, action, val) {
     jwtLogin();
     getUserGigs();
   }
+  isLoading.value = false;
 }
 
 async function getUserGigs() {
