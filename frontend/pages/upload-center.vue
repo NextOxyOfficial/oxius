@@ -20,7 +20,11 @@
         <p class="text-sm md:text-base font-medium mb-2">ID Front</p>
         <div class="flex flex-wrap flex-col gap-5">
           <div class="relative max-w-[200px] max-h-[200px]" v-if="form.front">
-            <img :src="form.front" :alt="`Uploaded file `" class="h-full" />
+            <img
+              :src="form.front"
+              :alt="`Uploaded file `"
+              class="h-full object-contain max-h-[200px]"
+            />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload('front')"
@@ -46,7 +50,11 @@
         <p class="text-sm md:text-base font-medium mb-2 mt-6">ID Back</p>
         <div class="flex flex-wrap flex-col gap-5">
           <div class="relative max-w-[200px] max-h-[200px]" v-if="form.back">
-            <img :src="form.back" :alt="`Uploaded file `" class="h-full" />
+            <img
+              :src="form.back"
+              :alt="`Uploaded file `"
+              class="h-full object-contain max-h-[200px]"
+            />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload('back')"
@@ -72,7 +80,11 @@
         <p class="text-sm md:text-base font-medium mb-2 mt-6">Selfie with document</p>
         <div class="flex flex-wrap flex-col gap-5">
           <div class="relative max-w-[200px] max-h-[200px]" v-if="form.selfie">
-            <img :src="form.selfie" :alt="`Uploaded file `" class="h-full" />
+            <img
+              :src="form.selfie"
+              :alt="`Uploaded file `"
+              class="h-full object-contain max-h-[200px]"
+            />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload('selfie')"
@@ -102,7 +114,11 @@
       <p class="text-sm md:text-base font-medium mb-2 mt-6">Other document</p>
       <div class="flex flex-wrap flex-col gap-5">
         <div class="relative max-w-[200px] max-h-[200px]" v-if="form.other_document">
-          <img :src="form.other_document" :alt="`Uploaded file `" class="h-full" />
+          <img
+            :src="form.other_document"
+            :alt="`Uploaded file `"
+            class="h-full object-contain max-h-[200px]"
+          />
           <div
             class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
             @click="deleteUpload('other_document')"

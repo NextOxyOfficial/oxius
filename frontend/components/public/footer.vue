@@ -149,56 +149,54 @@
         {{ new Date().getFullYear() }}
       </p>
     </UContainer>
+    <div
+      class="sm:hidden block sticky z-50 bottom-2 mx-6 bg-green-50 dark:bg-black rounded-2xl border border-dashed"
+    >
+      <UHorizontalNavigation
+        v-if="user?.user?.id"
+        :links="[
+          {
+            // label: $t('home'),
+            to: '/',
+            icon: 'i-heroicons:home',
+          },
+          {
+            to: '/deposit-withdraw/',
+            icon: 'i-token:cusd',
+          },
+          {
+            // label: $t('faq'),
+            to: `/my-gigs/${user?.user?.id}/`,
+            icon: 'i-material-symbols:list-rounded',
+          },
+
+          {
+            // label: $t('earn_money'),
+            to: '/inbox/',
+            icon: 'i-material-symbols:mark-email-unread-outline',
+          },
+          {
+            icon: 'material-symbols:settings-outline',
+            to: '/settings/',
+          },
+        ]"
+        :ui="{
+          inactive: 'after:hidden before:hidden',
+          active: 'after:hidden before:hidden',
+          padding: 'py-1',
+          container: 'flex items-center justify-evenly min-w-full',
+        }"
+        ><template #icon="{ link }">
+          <UIcon :name="link.icon" class="text-2xl text-green-500" /> </template
+      ></UHorizontalNavigation>
+    </div>
   </footer>
-  <div
-    class="sm:hidden block sticky z-50 bottom-2 mx-6 bg-green-50 dark:bg-black rounded-2xl border border-dashed"
-  >
-    <UHorizontalNavigation
-      :links="links2"
-      :ui="{
-        inactive: 'after:hidden before:hidden',
-        active: 'after:hidden before:hidden',
-        padding: 'py-1',
-        container: 'flex items-center justify-evenly min-w-full',
-      }"
-      ><template #icon="{ link }">
-        <UIcon :name="link.icon" class="text-2xl text-green-500" /> </template
-    ></UHorizontalNavigation>
-  </div>
 </template>
 
 <script setup>
 const { t } = useI18n();
 const toggleStatus = ref("");
 const { user } = useAuth();
-
-const links2 = [
-  {
-    // label: $t('home'),
-    to: "/",
-    icon: "i-heroicons:home",
-  },
-  {
-    // label: $t('classified_service'),
-    to: "/deposit-withdraw/",
-    icon: "i-token:cusd",
-  },
-  {
-    // label: $t('faq'),
-    to: `/my-gigs/${user.value?.user?.id}/`,
-    icon: "i-material-symbols:list-rounded",
-  },
-
-  {
-    // label: $t('earn_money'),
-    to: "/inbox/",
-    icon: "i-material-symbols:mark-email-unread-outline",
-  },
-  {
-    icon: "material-symbols:settings-outline",
-    to: "/settings/",
-  },
-];
 
 function toggleLink(title) {
   if (toggleStatus.value === title) {
