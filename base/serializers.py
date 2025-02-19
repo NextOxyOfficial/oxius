@@ -115,6 +115,11 @@ class MicroGigPostSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=MicroGigCategory.objects.all())
     category_details = MicroGigCategorySerializer(source='category', read_only=True)
     user = UserSerializerGet(read_only=True)
+    submitted_tasks = MicroGigPostTaskSerializer(
+        source='microgigposttask_set', 
+        many=True, 
+        read_only=True
+    )
     class Meta:
         model = MicroGigPost
         fields = '__all__'

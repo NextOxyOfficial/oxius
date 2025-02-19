@@ -9,6 +9,8 @@ from django.db.models.signals import post_save, pre_save
 from decimal import Decimal
 import random
 import string
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 
@@ -236,6 +238,10 @@ class MicroGigPost(models.Model):
       max_length=20, choices=GIG_STATUS, default='pending')
     def __str__(self):
         return self.title
+    @property
+    def task_submissions(self):
+        """Returns all tasks with user information"""
+        return self.microgigposttask_set.all().select_related('user').order_by('-created_at')
     
     def save(self, *args, **kwargs):
         # Check if the gig is being stopped
@@ -285,6 +291,17 @@ class MicroGigPostTask(models.Model):
     accepted_condition = models.BooleanField(default=True)
     def __str__(self):
         return str(self.created_at)
+    
+    @property
+    def is_48_hours_passed(self):
+       
+        return timezone.now() >= (self.created_at + timedelta(hours=48))
+
+    def auto_approve(self):
+       
+        if self.is_48_hours_passed and not self.completed and not self.approved and not self.rejected:
+            self.approved = True
+            self.save()
 
     def save(self, *args, **kwargs):
         # Check if task is neither completed, approved, nor rejected

@@ -157,10 +157,7 @@
               </div>
 
               <UCard
-                v-for="(gig, i) in filteredMicroGigs.filter(
-                  (gig) =>
-                    gig.gig_status.toLowerCase() === microGigsStatus.value
-                )"
+                v-for="(gig, i) in filteredMicroGigs"
                 :key="i"
                 :ui="{
                   rounded: '',
@@ -351,20 +348,6 @@ const selectedCategory = ref(null);
 const title = ref(null);
 const isLoading = ref(false);
 
-// const categoryCounts = microGigs.value.reduce((acc, gig) => {
-//   const category = gig.category;
-//   if (!acc[category]) {
-//     acc[category] = 1;
-//   } else {
-//     acc[category]++;
-//   }
-//   return acc;
-// }, {});
-// Convert the result into an array of objects
-// categoryArray.value = Object.entries(categoryCounts).map(
-//   ([category, count]) => ({ category, count })
-// );
-
 const microGigsFilter = [
   { title: "All", value: "" },
   { title: "Available", value: "approved" },
@@ -417,22 +400,47 @@ async function getClassifiedCategories() {
     })
   );
 }
-// const previewGid = ref();
-// function showGig(gid) {
-//   previewGid.value = gid;
-//   isOpen.value = true;
-// }
+
 setTimeout(() => {
   getClassifiedCategories();
-}, 20); // Filtered microGigs based on selected category
+}, 20);
+
 const filteredMicroGigs = computed(() => {
-  if (!selectedCategory.value) {
-    return microGigs.value; // Show all products if no category is selected
+  if (!microGigs.value) return [];
+
+  let filtered = [...microGigs.value];
+
+  if (microGigsStatus.value?.value !== undefined) {
+    filtered = filtered.filter(
+      (gig) =>
+        microGigsStatus.value.value === "" ||
+        gig.gig_status.toLowerCase() === microGigsStatus.value.value
+    );
   }
-  return microGigs.value.filter(
-    (gig) => gig.category_details?.title === selectedCategory.value
-  );
-}); // Method to select a category
+
+  return filtered;
+});
+
+watch(
+  () => microGigsStatus.value,
+  (newStatus) => {
+    if (!microGigs.value) return;
+    console.log("New status:", newStatus);
+    let filtered = [...microGigs.value];
+
+    // Filter gigs based on status
+    const netArr = filtered.filter(
+      (gig) => newStatus === "" || gig.gig_status.toLowerCase() === newStatus
+    );
+
+    // Update microGigs with filtered results
+    console.log(netArr);
+    filteredMicroGigs.value = netArr;
+  },
+
+  { immediate: true }
+);
+
 const selectCategory = (category) => {
   selectedCategory.value = category || null;
 };
