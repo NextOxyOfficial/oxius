@@ -60,6 +60,12 @@
                 </h3>
 
                 <UIcon
+                  v-if="gig.gig_status === 'completed'"
+                  name="i-ci:dot-05-xl"
+                  class="text-lg absolute top-[3px] left-0 hidden"
+                />
+                <UIcon
+                  v-else
                   name="i-ci:dot-05-xl"
                   class="text-lg absolute top-[3px] left-0"
                   :class="

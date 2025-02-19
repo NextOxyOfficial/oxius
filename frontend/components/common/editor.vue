@@ -366,6 +366,9 @@ const setLink = () => {
   border-radius: 5px;
   font-weight: normal;
 }
+.editor p {
+  font-size: 16px;
+}
 .editor .head button:hover,
 .table-slide-over button:hover {
   background: rgba(118, 118, 118, 0.155);

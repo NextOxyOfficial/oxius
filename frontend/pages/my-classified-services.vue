@@ -34,16 +34,26 @@
           :key="{ i }"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
-            <div class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full">
-              <div class="flex flex-col sm:flex-row items-center justify-between w-full relative">
-                <div class="flex flex-row gap-4 items-start text-sm sm:text-base">
+            <div
+              class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full"
+            >
+              <div
+                class="flex flex-col sm:flex-row items-center justify-between w-full relative"
+              >
+                <div
+                  class="flex flex-row gap-4 items-start text-sm sm:text-base"
+                >
                   <div>
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
                       class="size-9 sm:size-14 rounded-md object-cover"
                     />
-                    <img v-else :src="service.category_details.image" class="size-14 rounded-md" />
+                    <img
+                      v-else
+                      :src="service.category_details.image"
+                      class="size-14 rounded-md"
+                    />
                   </div>
                   <div class="flex-1">
                     <h3
@@ -52,14 +62,24 @@
                       <UIcon
                         name="i-icon-park-outline:dot"
                         class="text-green-500 text-lg"
-                        v-if="service.service_status === 'approved' && service.active_service"
+                        v-if="
+                          service.service_status === 'approved' &&
+                          service.active_service
+                        "
                       />
-                      <span v-if="service.service_status === 'approved' && service.active_service"
+                      <span
+                        v-if="
+                          service.service_status === 'approved' &&
+                          service.active_service
+                        "
                         >Live</span
                       >
                       <span
                         class="text-green-700"
-                        v-if="service.service_status === 'completed' && service.active_service"
+                        v-if="
+                          service.service_status === 'completed' &&
+                          service.active_service
+                        "
                         >Completed</span
                       >
 
@@ -70,7 +90,9 @@
                           !service.active_service
                         "
                         >{{
-                          service.service_status.toLowerCase() === "pending" ? "Pending" : "Paused"
+                          service.service_status.toLowerCase() === "pending"
+                            ? "Pending"
+                            : "Paused"
                         }}</span
                       >
                       <span
@@ -86,8 +108,13 @@
                       {{ service?.title }}
                     </h3>
 
-                    <div class="flex flex-wrap items-center sm:items-start gap-4 gap-y-1">
-                      <p class="inline-flex sm:hidden items-center" v-if="!service.negotiable">
+                    <div
+                      class="flex flex-wrap items-center sm:items-start gap-4 gap-y-1"
+                    >
+                      <p
+                        class="inline-flex sm:hidden items-center"
+                        v-if="!service.negotiable"
+                      >
                         <UIcon name="i-mdi:currency-bdt" />
                         {{ service.price }}
                       </p>
@@ -95,12 +122,16 @@
 
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-tabler:category-filled" />
-                        <span class="text-sm">{{ service?.category_details.title }}</span>
+                        <span class="text-sm">{{
+                          service?.category_details.title
+                        }}</span>
                       </p>
 
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-clock-solid" />
-                        <span class="text-sm">Posted: {{ formatDate(service?.created_at) }}</span>
+                        <span class="text-sm"
+                          >Posted: {{ formatDate(service?.created_at) }}</span
+                        >
                       </p>
                       <p class="inline-flex gap-1 items-center">
                         <UIcon name="i-heroicons-map-pin-solid" />
@@ -109,6 +140,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div
                   class="flex gap-16 items-center justify-between md:pr-2 font-semibold text-sm sm:text-base"
                   v-if="
@@ -116,19 +148,27 @@
                     service.service_status.toLowerCase() !== 'completed'
                   "
                 >
-                  <p class="sm:inline-flex items-center my-3 hidden" v-if="!service.negotiable">
+                  <p
+                    class="sm:inline-flex items-center my-3 hidden"
+                    v-if="!service.negotiable"
+                  >
                     <UIcon name="i-mdi:currency-bdt" />
                     {{ service.price }}
                   </p>
                   <p v-else class="hidden sm:block">Negotiable</p>
-                  <div class="flex gap-1 items-center max-md:justify-center max-sm:mt-4">
+                  <div
+                    class="flex gap-1 items-center max-md:justify-center max-sm:mt-4"
+                  >
                     <UButton
                       size="md"
                       color="primary"
                       variant="outline"
                       label="Pause"
                       :loading="isLoading"
-                      v-if="service.active_service"
+                      v-if="
+                        service.active_service &&
+                        service.service_status !== 'completed'
+                      "
                       @click.prevent="handleAction(service.id, 'pause', false)"
                     />
                     <UButton
@@ -140,19 +180,26 @@
                       v-if="!service.active_service"
                       @click.prevent="handleAction(service.id, 'active', true)"
                     />
+
                     <UButton
                       size="md"
                       color="primary"
                       variant="outline"
                       label="Edit"
+                      v-if="service.service_status !== 'completed'"
                       :to="`/classified-categories/post/?id=${service.id}`"
                     />
                     <UButton
                       size="md"
                       color="primary"
                       variant="outline"
-                      label="Stop"
+                      :label="
+                        service.service_status === 'completed'
+                          ? 'Stopped'
+                          : 'Stop'
+                      "
                       :loading="isLoading"
+                      :disabled="service.service_status === 'completed'"
                       @click.prevent="handlePop(service.id)"
                     />
                     <!-- <UButton
@@ -174,7 +221,9 @@
       </UCard>
       <UModal v-model="isOpen">
         <div class="py-10 px-6 text-center">
-          <h4 class="text-2xl font-medium mb-4">It will stop the post forever</h4>
+          <h4 class="text-2xl font-medium mb-4">
+            It will stop the post forever
+          </h4>
 
           <UButton
             size="md"
