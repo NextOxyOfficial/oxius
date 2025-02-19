@@ -311,10 +311,16 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     
     
 class GetMicroGigs(generics.ListCreateAPIView):
-    queryset = MicroGigPost.objects.filter().order_by('-created_at')
+    
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
 
+    def get_queryset(self):
+        # Filter out pending and rejected gigs
+        return MicroGigPost.objects.exclude(
+            gig_status__in=['pending', 'rejected']
+        ).order_by('-created_at')
+    
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)

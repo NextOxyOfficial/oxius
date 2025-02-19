@@ -346,6 +346,10 @@ const categoryArray = ref([]);
 const selectedCategory = ref(null);
 const title = ref(null);
 const isLoading = ref(false);
+const { data } = await get("/micro-gigs/");
+microGigs.value = data;
+const res = get("/classified-categories/");
+services.value = res.data;
 
 const microGigsFilter = [
   { title: "All", value: "" },
@@ -364,16 +368,6 @@ function handleImageError(index) {
 }
 
 async function getClassifiedCategories() {
-  const [serviceResponse, gigResponse] = await Promise.all([
-    get("/classified-categories/"),
-    get("/micro-gigs/"),
-  ]);
-
-  services.value = serviceResponse.data;
-  microGigs.value = gigResponse.data?.filter(
-    (gig) => gig.active_gig && gig.user?.id && gig.status !== "approved"
-  );
-
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
     const isActiveAndApproved =
@@ -403,10 +397,10 @@ async function getClassifiedCategories() {
 setTimeout(() => {
   getClassifiedCategories();
 }, 20);
-
-const filteredMicroGigs = computed(() => {
+const filteredMicroGigs = ref([]);
+async function getMicroGigsFilteredValue() {
   if (!microGigs.value) return [];
-
+  console.log(microGigs.value);
   let filtered = [...microGigs.value];
 
   if (microGigsStatus.value?.value !== undefined) {
@@ -416,10 +410,13 @@ const filteredMicroGigs = computed(() => {
         gig.gig_status.toLowerCase() === microGigsStatus.value.value
     );
   }
+  console.log("mm", filtered);
 
-  return filtered;
-});
-
+  filteredMicroGigs.value = filtered;
+}
+setTimeout(() => {
+  getMicroGigsFilteredValue();
+}, 50);
 watch(
   () => microGigsStatus.value,
   (newStatus) => {

@@ -551,7 +551,7 @@ async function handlePostGig() {
     ? put(`/update-user-classified-post/${router.query.id}/`, rest)
     : post("/classified-categories-post/", submitValues.value));
   if (res.data) {
-    navigateTo("/");
+    navigateTo("/my-classified-services/");
     toast.add({ title: "Classified Service Added" });
   }
   isLoading.value = false;
