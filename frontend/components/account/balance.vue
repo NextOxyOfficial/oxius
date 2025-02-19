@@ -14,8 +14,12 @@
       <div class="flex items-center justify-between">
         <h3 class="text-2xl font-bold max-sm:text-center">
           <span class="text-green-900 inline-flex items-center gap-1">
-            <UIcon name="i-material-symbols:account-balance-wallet-outline" class="mt-1" />
-            {{ $t("balance") }}: <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
+            <UIcon
+              name="i-material-symbols:account-balance-wallet-outline"
+              class="mt-1"
+            />
+            {{ $t("balance") }}:
+            <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
               user?.user.balance
             }}
           </span>
@@ -29,9 +33,10 @@
         /> -->
       </div>
 
-      <div class="flex items-center justify-between">
+      <div class="flex items-center">
         <h3 class="text-xl font-bold inline-flex items-center">
-          {{ $t("pending_task") }}: <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
+          {{ $t("pending_task") }}:
+          <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
             user?.user.pending_balance
           }}
         </h3>
@@ -116,16 +121,22 @@
             variant="solid"
             class="py-1 px-1.5 ml-2"
             @click="
-              CopyToClip(`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`)
+              CopyToClip(
+                `https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`
+              )
             "
             label="Copy"
           />
         </UFormGroup>
       </div>
       <div class="flex gap-4 justify-center">
-        <p class="text-sm md:text-base">{{ $t("refer_user") }}: {{ user.user.refer_count }}</p>
+        <p class="text-sm md:text-base">
+          {{ $t("refer_user") }}: {{ user.user.refer_count }}
+        </p>
         <div>|</div>
-        <p class="text-sm md:text-base">{{ $t("earnings") }}: {{ user.user.commission_earned }}</p>
+        <p class="text-sm md:text-base">
+          {{ $t("earnings") }}: {{ user.user.commission_earned }}
+        </p>
       </div>
     </div>
   </UCard>

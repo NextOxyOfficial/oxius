@@ -78,7 +78,9 @@
       >
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+            <h3
+              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+            >
               Rejection Reason
             </h3>
             <UButton
@@ -102,6 +104,7 @@
         <UButton
           size="md"
           color="primary"
+          :loading="isRejectLoading"
           variant="solid"
           label="Submit Rejection"
           class="mt-4"
@@ -112,7 +115,8 @@
     <UModal v-model="isOpenTaskDetails">
       <div class="p-6 bg-slate-100 border rounded-xl space-y-4">
         <p>
-          {{ current_submitted_task_details.approved ? "Approved" : "Pending" }} ||
+          {{ current_submitted_task_details.approved ? "Approved" : "Pending" }}
+          ||
           {{ formatDate(current_submitted_task_details.created_at) }}
         </p>
         <div class="bg-slate-50 p-4 rounded-xl space-y-3">
@@ -147,6 +151,7 @@ const submittedTasks = ref([]);
 const current_submitted_task_details = ref([]);
 const route = useRoute();
 const isLoading = ref(false);
+const isRejectLoading = ref(false);
 
 async function getUserGigs() {
   try {
@@ -160,15 +165,18 @@ async function getUserGigs() {
 getUserGigs();
 
 async function handleOperation(taskId, operation) {
-  const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
-    tasks: [
-      {
-        id: taskId,
-        approved: operation === "approve" ? true : false,
-        rejected: operation === "reject" ? true : false,
-      },
-    ],
-  });
+  const res = await put(
+    `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
+    {
+      tasks: [
+        {
+          id: taskId,
+          approved: operation === "approve" ? true : false,
+          rejected: operation === "reject" ? true : false,
+        },
+      ],
+    }
+  );
   console.log(res);
   if (res.error) {
   } else {
@@ -188,18 +196,21 @@ async function submitRejection() {
     console.log("Task ID or rejection reason is missing");
     return;
   }
-
+  isRejectLoading.value = true;
   try {
-    const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
-      tasks: [
-        {
-          id: selectedTaskId.value,
-          approved: false,
-          rejected: true,
-          reason: rejectionReason.value,
-        },
-      ],
-    });
+    const res = await put(
+      `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
+      {
+        tasks: [
+          {
+            id: selectedTaskId.value,
+            approved: false,
+            rejected: true,
+            reason: rejectionReason.value,
+          },
+        ],
+      }
+    );
     console.log(res);
     if (res.error) {
       console.log("Error:", res.error);
@@ -210,20 +221,23 @@ async function submitRejection() {
   } catch (error) {
     console.log("Error submitting rejection:", error);
   }
+  isRejectLoading.value = false;
 }
 
 function viewDetails(taskId, operation) {
   console.log(taskId, operation);
   isOpenTaskDetails.value = true;
-  current_submitted_task_details.value = submittedTasks.value.find(task => task.id === taskId);
+  current_submitted_task_details.value = submittedTasks.value.find(
+    (task) => task.id === taskId
+  );
 }
 
 watch(selectedFilter, () => {
   if (selectedFilter.value === "Approved") {
-    submittedTasks.value = submittedTasks.value.filter(task => task.approved);
+    submittedTasks.value = submittedTasks.value.filter((task) => task.approved);
     console.log("approved");
   } else if (selectedFilter.value === "Rejected") {
-    submittedTasks.value = submittedTasks.value.filter(task => task.rejected);
+    submittedTasks.value = submittedTasks.value.filter((task) => task.rejected);
     console.log("rejected");
   }
 });

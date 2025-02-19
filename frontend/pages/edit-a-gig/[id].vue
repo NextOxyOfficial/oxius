@@ -3,7 +3,11 @@
     <UContainer>
       <h1 class="text-center text-4xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
-      <form action="#" class="max-w-2xl mx-auto space-y-3" @submit.prevent="handleUpdateGig">
+      <form
+        action="#"
+        class="max-w-2xl mx-auto space-y-3"
+        @submit.prevent="handleUpdateGig"
+      >
         <UFormGroup label="Title">
           <UInput
             type="text"
@@ -24,7 +28,11 @@
           <UFormGroup
             required
             label="Budget Per Action"
-            :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
+            :error="
+              form.price <= 0 &&
+              checkSubmit &&
+              'You must enter budget per action!'
+            "
             :ui="{
               label: {
                 base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -52,7 +60,9 @@
             label="Required Quantity"
             required
             :error="
-              form.required_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
+              form.required_quantity <= 0 &&
+              checkSubmit &&
+              'You must enter required quantity!'
             "
             :ui="{
               label: {
@@ -125,7 +135,7 @@
           v-if="form.instructions"
           :content="form.instructions"
           @updateContent="
-            content => {
+            (content) => {
               form.instructions = content;
             }
           "
@@ -140,7 +150,11 @@
             v-for="(img, i) in form.medias"
             :key="i"
           >
-            <img :src="img.image" class="max-h-[100px]" :alt="`Uploaded file ${i}`" />
+            <img
+              :src="img.image"
+              class="max-h-[100px]"
+              :alt="`Uploaded file ${i}`"
+            />
             <!-- <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
               @click="deleteUpload(i)"
@@ -240,6 +254,7 @@
         <div class="text-center">
           <UButton
             class="px-8 mt-10"
+            :loading="isLoading"
             size="lg"
             color="primary"
             variant="solid"
@@ -261,7 +276,11 @@
             <UFormGroup
               required
               label="Budget Per Action"
-              :error="form.price <= 0 && checkSubmit && 'You must enter budget per action!'"
+              :error="
+                form.price <= 0 &&
+                checkSubmit &&
+                'You must enter budget per action!'
+              "
               :ui="{
                 label: {
                   base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -289,7 +308,9 @@
               label="Add Additional Quantity"
               required
               :error="
-                form.additional_quantity <= 0 && checkSubmit && 'You must enter required quantity!'
+                form.additional_quantity <= 0 &&
+                checkSubmit &&
+                'You must enter required quantity!'
               "
               :ui="{
                 label: {
@@ -354,6 +375,7 @@ const device = ref([]);
 const country = ref([]);
 const route = useRoute();
 const isOpen = ref(false);
+const isLoading = ref(false);
 
 const form = ref({
   price: 0,
@@ -379,7 +401,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
@@ -392,22 +414,27 @@ function deleteUpload(ind) {
 }
 
 async function handleUpdateGig() {
-  const required_quantity = form.value.required_quantity * 1 + form.value.additional_quantity * 1;
-  const balance = +form.value.balance + form.value.additional_quantity * form.value.price;
+  const required_quantity =
+    form.value.required_quantity * 1 + form.value.additional_quantity * 1;
+  const balance =
+    +form.value.balance + form.value.additional_quantity * form.value.price;
 
   const additional_cost =
     form.value.additional_quantity * form.value.price +
     (form.value.price * form.value.additional_quantity * 10) / 100;
   console.log({ required_quantity, additional_cost });
+  isLoading.value = true;
   const res = await put(`/update-user-micro-gig/${route.params.id}/`, {
     required_quantity,
     additional_cost,
     balance,
   });
   if (res.data) {
+    isLoading.value = false;
     navigateTo("/");
     toast.add({ title: "MicroGig Updated" });
   }
+  isLoading.value = false;
 }
 
 async function getMicroGigsCategory() {

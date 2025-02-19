@@ -29,58 +29,63 @@
               />
             </div>
             <div class="flex-1">
-              <div class="relative">
-                <h3 class="text-base font-semibold ml-5 capitalize">
+              <div class="relative flex items-center">
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'approved'"
+                >
+                  Live
+                </span>
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'completed'"
+                >
+                  {{ gig.gig_status }}
+                </span>
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'pending'"
+                >
+                  {{ gig.gig_status }}
+                </span>
+                <span
+                  class="font-semibold capitalize text-sm ml-4 mr-1"
+                  v-if="gig.gig_status === 'rejected'"
+                >
+                  {{ gig.gig_status }}
+                </span>
+                <span>|</span>
+                <h3 class="text-base font-semibold ml-1 capitalize">
                   {{ gig.title }}
                 </h3>
 
                 <UIcon
                   name="i-ci:dot-05-xl"
-                  class="text-lg absolute top-1 left-0"
+                  class="text-lg absolute top-[3px] left-0"
                   :class="
                     gig.gig_status === 'approved' && gig.active_gig
                       ? 'text-green-500'
                       : 'text-red-500'
                   "
                 />
-
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'approved'"
-                >
-                  Live
-                </p>
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'completed'"
-                >
-                  {{ gig.gig_status }}
-                </p>
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'pending'"
-                >
-                  {{ gig.gig_status }}
-                </p>
-                <p
-                  class="font-semibold capitalize text-sm ml-5 mb-2"
-                  v-if="gig.gig_status === 'rejected'"
-                >
-                  {{ gig.gig_status }}
-                </p>
               </div>
-              <div class="flex gap-1.5 sm:gap-4">
+              <div class="flex gap-1 sm:gap-4">
                 <div class="flex gap-1 items-center">
-                  <UIcon name="i-heroicons-bell-solid" />
-                  <p class="text-sm">
+                  <UIcon
+                    name="i-heroicons-bell-solid"
+                    class="text-xs sm:text-sm"
+                  />
+                  <p class="text-xs sm:text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
                     <span class="text-green-600">{{
                       gig.required_quantity
                     }}</span>
                   </p>
                 </div>
-                <p class="text-sm">{{ gig.balance }} /{{ gig.total_cost }}</p>
-                <p class="text-sm">
+                <p class="text-xs sm:text-sm">
+                  {{ gig.balance }} /{{ gig.total_cost }}
+                </p>
+                <p class="text-xs sm:text-sm">
                   {{ formatDate(gig.created_at) }}
                 </p>
               </div>
@@ -146,6 +151,7 @@
         <UButton
           size="md"
           color="primary"
+          :loading="isLoading"
           variant="solid"
           label="Stop"
           @click="handleAction(currentId, 'completed')"
@@ -167,8 +173,10 @@ const { user, jwtLogin } = useAuth();
 const gigs = ref([]);
 const route = useRoute();
 const { get, put } = useApi();
+const isLoading = ref(false);
 
 async function handleAction(id, action, val) {
+  isLoading.value = true;
   const res = await (action === "completed"
     ? put("/update-user-micro-gig/" + id + "/", {
         stop_gig: true,
@@ -182,6 +190,7 @@ async function handleAction(id, action, val) {
     jwtLogin();
     getUserGigs();
   }
+  isLoading.value = false;
 }
 
 async function getUserGigs() {

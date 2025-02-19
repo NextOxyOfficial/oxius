@@ -21,7 +21,6 @@
               icon="i-heroicons-magnifying-glass-solid"
               type="search"
               color="white"
-              size="md"
               placeholder="Search Category"
               v-model="title"
             />
