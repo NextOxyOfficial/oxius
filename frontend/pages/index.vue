@@ -208,7 +208,9 @@
                       />
                     </div>
                     <div class="flex-1">
-                      <h3 class="text-base font-semibold mb-1.5 capitalize">
+                      <h3
+                        class="text-[15px] leading-tight font-semibold mb-1.5 capitalize"
+                      >
                         {{ gig.title }}
                       </h3>
                       <div class="flex gap-0.5 gap-x-4 md:gap-4 flex-wrap">
@@ -244,7 +246,7 @@
                           v-if="user?.user && user?.user?.id !== gig.user.id"
                           :disabled="user?.user?.id === gig.user.id"
                           size="sm"
-                          class="ml-auto sm:hidden"
+                          class="ml-auto sm:hidden w-[70px] justify-center"
                           color="primary"
                           variant="outline"
                           :to="`/order/${gig.id}/`"
@@ -255,7 +257,7 @@
                           v-if="user?.user?.id === gig.user.id"
                           :disabled="user?.user?.id === gig.user.id"
                           size="sm"
-                          class="ml-auto sm:hidden"
+                          class="ml-auto sm:hidden w-[70px] justify-center"
                           color="primary"
                           variant="outline"
                         >
@@ -264,7 +266,7 @@
                         <UButton
                           v-if="!user?.user"
                           size="sm"
-                          class="ml-auto sm:hidden"
+                          class="ml-auto sm:hidden w-[70px] justify-center"
                           color="primary"
                           variant="outline"
                           :to="`/auth/login/`"
@@ -291,6 +293,7 @@
                       size="sm"
                       color="primary"
                       variant="outline"
+                      class="w-[70px] justify-center"
                       :to="`/order/${gig.id}/`"
                     >
                       Earn
@@ -301,6 +304,7 @@
                       size="sm"
                       color="primary"
                       variant="outline"
+                      class="w-[70px] justify-center"
                     >
                       Ineligible
                     </UButton>
@@ -310,6 +314,7 @@
                       color="primary"
                       variant="outline"
                       :to="`/auth/login/`"
+                      class="w-[70px] justify-center"
                     >
                       Earn
                     </UButton>

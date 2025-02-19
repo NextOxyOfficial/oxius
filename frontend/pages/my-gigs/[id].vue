@@ -30,7 +30,7 @@
             </div>
             <div class="flex-1">
               <div class="relative">
-                <h3 class="text-base font-semibold mb-1.5 ml-5 capitalize">
+                <h3 class="text-base font-semibold ml-5 capitalize">
                   {{ gig.title }}
                 </h3>
 
@@ -43,34 +43,46 @@
                       : 'text-red-500'
                   "
                 />
+
+                <p
+                  class="font-semibold capitalize text-sm ml-5 mb-2"
+                  v-if="gig.gig_status === 'approved'"
+                >
+                  Live
+                </p>
+                <p
+                  class="font-semibold capitalize text-sm ml-5 mb-2"
+                  v-if="gig.gig_status === 'completed'"
+                >
+                  {{ gig.gig_status }}
+                </p>
+                <p
+                  class="font-semibold capitalize text-sm ml-5 mb-2"
+                  v-if="gig.gig_status === 'pending'"
+                >
+                  {{ gig.gig_status }}
+                </p>
+                <p
+                  class="font-semibold capitalize text-sm ml-5 mb-2"
+                  v-if="gig.gig_status === 'rejected'"
+                >
+                  {{ gig.gig_status }}
+                </p>
               </div>
               <div class="flex gap-1.5 sm:gap-4">
                 <div class="flex gap-1 items-center">
                   <UIcon name="i-heroicons-bell-solid" />
-                  <p class="text-[10px] leading-tight sm:text-sm">
+                  <p class="text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
-                    <span class="text-green-600">{{ gig.required_quantity }}</span>
+                    <span class="text-green-600">{{
+                      gig.required_quantity
+                    }}</span>
                   </p>
                 </div>
-                <p class="text-[10px] leading-tight sm:text-sm">
-                  {{ gig.balance }} /{{ gig.total_cost }}
-                </p>
-                <p class="text-[10px] leading-tight sm:text-sm">
+                <p class="text-sm">{{ gig.balance }} /{{ gig.total_cost }}</p>
+                <p class="text-sm">
                   {{ formatDate(gig.created_at) }}
                 </p>
-
-                <div class="text-[10px] leading-tight sm:text-sm">
-                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'approved'">Live</p>
-                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'completed'">
-                    {{ gig.gig_status }}
-                  </p>
-                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'pending'">
-                    {{ gig.gig_status }}
-                  </p>
-                  <p class="font-semibold capitalize" v-if="gig.gig_status === 'rejected'">
-                    {{ gig.gig_status }}
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -104,7 +116,7 @@
               size="md"
               color="primary"
               variant="outline"
-              label="Complete"
+              label="Stop"
               @click="handlePop(gig.id)"
             />
             <UButton
@@ -121,15 +133,15 @@
     <div v-else>
       <UContainer>
         <UCard class="py-20">
-          <p class="text-center text-[10px] leading-tight sm:text-sm text-gray-500">
-            No gigs found.
-          </p>
+          <p class="text-center text-sm text-gray-500">No gigs found.</p>
         </UCard>
       </UContainer>
     </div>
     <UModal v-model="isOpen">
       <div class="py-10 px-6 text-center">
-        <h4 class="text-2xl font-medium mb-4">It will stop the gig for forever?</h4>
+        <h4 class="text-2xl font-medium mb-4">
+          It will stop the gig for forever?
+        </h4>
 
         <UButton
           size="md"
