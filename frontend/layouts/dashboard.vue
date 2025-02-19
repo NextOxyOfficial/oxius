@@ -17,7 +17,7 @@ useHead({
 </script>
 
 <template>
-  <div>
+  <div class="font-AnekBangla">
     <NuxtLoadingIndicator class="!opacity-[1]" />
     <section
       class="h-screen w-screen flex items-center justify-center"

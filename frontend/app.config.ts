@@ -11,5 +11,15 @@ export default defineAppConfig({
     modal: {
       container: "items-center sm:items-center",
     },
+    input: {
+      size: {
+        "2xs": "text-base sm:text-xs",
+        xs: "text-base sm:text-xs",
+        sm: "text-base sm:text-sm",
+        md: "text-base sm:text-sm",
+        lg: "text-base sm:text-sm",
+        xl: "text-base sm:text-base",
+      },
+    },
   },
 });

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="font-AnekBangla">
     <template v-if="loader">
       <NuxtLoadingIndicator class="!opacity-[1]" />
       <section

@@ -13,12 +13,20 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
     "nuxt-tiptap-editor",
     "nuxt-aos",
+    "@nuxtjs/google-fonts",
   ],
+
   tiptap: {
     prefix: "Tiptap", //prefix for Tiptap imports, composables not included
   },
   i18n: {
     vueI18n: "./i18n.config.ts",
+  },
+  googleFonts: {
+    families: {
+      "Anek+Bangla": { wght: "200..800" },
+    },
+    display: "swap", // Optional: This is a good practice to improve performance
   },
   app: {
     buildAssetsDir: "/static/frontend/",

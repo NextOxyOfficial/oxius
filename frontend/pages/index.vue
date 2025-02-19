@@ -21,6 +21,7 @@
               icon="i-heroicons-magnifying-glass-solid"
               type="search"
               color="white"
+              size="md"
               placeholder="Search Category"
               v-model="title"
             />
@@ -63,7 +64,11 @@
               active-class="text-primary"
               inactive-class="text-gray-500 dark:text-gray-400"
             >
-              <NuxtImg :src="service?.image" :title="service.title" class="size-10 mx-auto" />
+              <NuxtImg
+                :src="service?.image"
+                :title="service.title"
+                class="size-10 mx-auto"
+              />
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
           </UCard>
@@ -153,7 +158,8 @@
 
               <UCard
                 v-for="(gig, i) in filteredMicroGigs.filter(
-                  gig => gig.gig_status.toLowerCase() === microGigsStatus.value
+                  (gig) =>
+                    gig.gig_status.toLowerCase() === microGigsStatus.value
                 )"
                 :key="i"
                 :ui="{
@@ -171,7 +177,10 @@
                 }"
                 class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
               >
-                <div class="flex flex-col sm:flex-row sm:justify-between" v-if="gig.user">
+                <div
+                  class="flex flex-col sm:flex-row sm:justify-between"
+                  v-if="gig.user"
+                >
                   <div class="flex gap-4">
                     <div>
                       <!-- <NuxtImg
@@ -207,7 +216,9 @@
                           <UIcon name="i-heroicons-bell-solid" />
                           <p class="text-sm">
                             <span class="">{{ gig.filled_quantity }}</span> /
-                            <span class="text-green-600">{{ gig.required_quantity }}</span>
+                            <span class="text-green-600">{{
+                              gig.required_quantity
+                            }}</span>
                           </p>
                         </div>
                         <p class="text-sm">
@@ -216,12 +227,17 @@
                         <p
                           class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
                         >
-                          <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
+                          <UIcon
+                            name="i-mdi:currency-bdt"
+                            class="text-base"
+                          />{{ gig.price }}
                         </p>
                         <div class="flex gap-1 items-center text-sm">
                           Posted By:
                           <p class="text-sm">
-                            <span class="text-green-600">{{ gig.user.name.slice(0, 6) }}***</span>
+                            <span class="text-green-600"
+                              >{{ gig.user.name.slice(0, 6) }}***</span
+                            >
                           </p>
                         </div>
                         <UButton
@@ -264,7 +280,9 @@
                     <p
                       class="font-bold text-base text-green-900 sm:inline-flex items-center hidden"
                     >
-                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
+                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                        gig.price
+                      }}
                     </p>
 
                     <UButton
@@ -366,12 +384,13 @@ async function getClassifiedCategories() {
 
   services.value = serviceResponse.data;
   microGigs.value = gigResponse.data?.filter(
-    gig => gig.active_gig && gig.user?.id && gig.status !== "approved"
+    (gig) => gig.active_gig && gig.user?.id && gig.status !== "approved"
   );
 
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
-    const isActiveAndApproved = gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
+    const isActiveAndApproved =
+      gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
 
     if (!acc[category]) {
       acc[category] = { total: 0, active: 0 };
@@ -385,11 +404,13 @@ async function getClassifiedCategories() {
     return acc;
   }, {});
 
-  categoryArray.value = Object.entries(categoryCounts).map(([category, { total, active }]) => ({
-    category,
-    total,
-    active,
-  }));
+  categoryArray.value = Object.entries(categoryCounts).map(
+    ([category, { total, active }]) => ({
+      category,
+      total,
+      active,
+    })
+  );
 }
 // const previewGid = ref();
 // function showGig(gid) {
@@ -403,14 +424,16 @@ const filteredMicroGigs = computed(() => {
   if (!selectedCategory.value) {
     return microGigs.value; // Show all products if no category is selected
   }
-  return microGigs.value.filter(gig => gig.category_details?.title === selectedCategory.value);
+  return microGigs.value.filter(
+    (gig) => gig.category_details?.title === selectedCategory.value
+  );
 }); // Method to select a category
-const selectCategory = category => {
+const selectCategory = (category) => {
   selectedCategory.value = category || null;
 };
 
-const loadMore = async url => {
-  const getRecentNext = async url => {
+const loadMore = async (url) => {
+  const getRecentNext = async (url) => {
     const res = await $fetch(`${url}`);
     services.value.next = res.next;
     services.value.results = [...services.value.results, ...res.results];
@@ -437,7 +460,7 @@ async function handleSearch() {
 
 watch(
   () => (title.value ? title.value.trim() : ""),
-  async newValue => {
+  async (newValue) => {
     if (!newValue) {
       try {
         const res = await get(`/classified-categories/`);

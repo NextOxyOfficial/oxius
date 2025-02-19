@@ -225,6 +225,21 @@
           dynamic
         />
       </button>
+      <button
+        @click="setLink"
+        type="button"
+        :class="{ 'is-active': editor.isActive('link') }"
+      >
+        <UIcon name="i-heroicons-link-16-solid" />
+      </button>
+
+      <button
+        type="button"
+        @click="editor.chain().focus().unsetLink().run()"
+        :disabled="!editor.isActive('link')"
+      >
+        <UIcon name="i-heroicons-link-slash-16-solid" />
+      </button>
       <!-- <button type="button"
         class="relative z-20 bg-green-400/10"
         @click="enableAiSlide"
@@ -258,6 +273,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
+import Link from "@tiptap/extension-link";
 
 const props = defineProps({
   content: String,
@@ -289,6 +305,9 @@ const editor = new Editor({
         class: "my-custom-class",
       },
     }),
+    Link.configure({
+      autolink: true,
+    }),
   ],
   content: props.content,
   onUpdate: () => {
@@ -302,6 +321,30 @@ onBeforeUnmount(() => {
 
 const editorButtons = ref(null);
 const { top: editorButtonsTop } = useElementBounding(editorButtons);
+
+const setLink = () => {
+  const selection = editor.state.selection;
+  const selectedText = selection.empty
+    ? ""
+    : editor.state.doc.textBetween(selection.from, selection.to);
+
+  const previousUrl = editor.getAttributes("link").href;
+  const url = window.prompt("URL", selectedText || previousUrl);
+
+  // cancelled
+  if (url === null) {
+    return;
+  }
+
+  // empty
+  if (url === "") {
+    editor.chain().focus().unsetLink().run();
+    return;
+  }
+
+  // update link
+  editor.chain().focus().setLink({ href: url }).run();
+};
 </script>
 
 <style>
