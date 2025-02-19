@@ -29,10 +29,14 @@
                   {{ gig.title }}
                 </span>
               </div>
-              <p class="text-lg font-bold text-green-900 inline-flex items-center pl-5">
+              <p
+                class="text-lg font-bold text-green-900 inline-flex items-center pl-5"
+              >
                 Earn:
                 <span class="inline-flex items-center"
-                  ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ gig.price }}</span
+                  ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
+                    gig.price
+                  }}</span
                 >
               </p>
             </div>
@@ -42,10 +46,16 @@
         <div class="space-y-2 md:px-6 pb-8">
           <p class="text-xl font-medium sm:text-left">Instruction</p>
 
-          <div class="text-base text-justify prose" v-html="gig.instructions"></div>
+          <div
+            class="text-base text-justify prose"
+            v-html="gig.instructions"
+          ></div>
           <!-- <UDivider label="" class="pt-4" /> -->
 
-          <p class="text-lg font-medium !mt-8 sm:text-left" v-if="gig.medias?.length">
+          <p
+            class="text-lg font-medium !mt-8 sm:text-left"
+            v-if="gig.medias?.length"
+          >
             Reference Photo/Video
           </p>
           <div class="!mb-6 flex gap-1">
@@ -74,7 +84,12 @@
                   class="size-20 object-contain"
                   @error="handleImageError(i)"
                 />
-                <img v-else :src="gig.category.image" alt="No Image" class="size-20" />
+                <img
+                  v-else
+                  :src="gig.category.image"
+                  alt="No Image"
+                  class="size-20"
+                />
               </a>
               <a
                 class="cursor-pointer relative group"
@@ -91,21 +106,36 @@
               </a>
             </div>
           </div>
-          <p class="text-lg font-medium !mt-8 sm:text-left" v-if="gig.action_link">Action Url</p>
+          <p
+            class="text-lg font-medium !mt-8 sm:text-left"
+            v-if="gig.action_link"
+          >
+            Action Url
+          </p>
           <a :href="gig.action_link" target="_blank" class="text-blue-400">{{
             gig.action_link
           }}</a>
           <UDivider label="" class="pt-4" />
 
-          <div class="border border-dashed !mt-5 pb-3 px-2 sm:p-5 bg-slate-50/50 rounded-xl">
+          <div
+            class="border border-dashed !mt-5 pb-3 px-2 sm:p-5 bg-slate-50/50 rounded-xl"
+          >
             <div>
-              <p class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left">Upload Proof</p>
+              <p
+                class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left"
+              >
+                Upload Proof
+              </p>
               <UFormGroup
                 size="xl"
                 label="Submit Details"
                 class="!mt-8 md:w-1/2"
                 required
-                :error="!submit_details && checkSubmit && 'Enter your micro job detail contents'"
+                :error="
+                  !submit_details &&
+                  checkSubmit &&
+                  'Enter your micro job detail contents'
+                "
               >
                 <UTextarea
                   color="white"
@@ -116,19 +146,28 @@
                   v-model="submit_details"
                 />
               </UFormGroup>
-              <label for="file" class="text-base block mt-8 mb-3 font-semibold">Upload</label>
+              <label for="file" class="text-base block mt-8 mb-3 font-semibold"
+                >Upload</label
+              >
               <div class="flex flex-wrap gap-5">
                 <div
                   class="relative max-w-[200px] max-h-[200px]"
                   v-for="(img, i) in medias"
                   :key="i"
                 >
-                  <img :src="img" :alt="`Uploaded file ${i}`" class="h-full object-contain" />
+                  <img
+                    :src="img"
+                    :alt="`Uploaded file ${i}`"
+                    class="h-full object-contain"
+                  />
                   <div
                     class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
                     @click="deleteUpload(i)"
                   >
-                    <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
+                    <UIcon
+                      name="i-heroicons-trash-solid"
+                      class="text-red-500"
+                    />
                   </div>
                 </div>
                 <!-- <p v-if="!medias.length && checkSubmit" class="text-red-500">
@@ -179,7 +218,10 @@
                 </template>
                 <UCheckbox name="check" v-model="accepted_terms" />
               </UFormGroup>
-              <p class="text-sm text-red-500" v-if="!accepted_terms && checkSubmit">
+              <p
+                class="text-sm text-red-500"
+                v-if="!accepted_terms && checkSubmit"
+              >
                 Accept Terms & Condition, Privacy Policy
               </p>
               <UCheckbox
@@ -187,7 +229,10 @@
                 v-model="accepted_condition"
                 label="I am aware that fake and fraud submission may lead to account ban!"
               />
-              <p class="text-sm text-red-500" v-if="!accepted_condition && checkSubmit">
+              <p
+                class="text-sm text-red-500"
+                v-if="!accepted_condition && checkSubmit"
+              >
                 Accept Conditions
               </p>
             </div>
@@ -224,6 +269,7 @@ const accepted_terms = ref(false);
 const toast = useToast();
 const checkSubmit = ref(false);
 const accepted_condition = ref(false);
+const isLoading = ref(false);
 // const task_completion_link = ref("");
 
 const errorIndex = ref([]);
@@ -247,10 +293,15 @@ async function getGigData() {
 }
 
 async function submitGig() {
-  if (!submit_details.value.trim() || !accepted_terms.value || !accepted_condition.value) {
+  if (
+    !submit_details.value.trim() ||
+    !accepted_terms.value ||
+    !accepted_condition.value
+  ) {
     checkSubmit.value = true;
     return;
   } else {
+    isLoading.value = true;
     const res = await post(`/user-micro-gig-task-post/`, {
       gig: route.params.id,
       medias: medias.value,
@@ -263,8 +314,10 @@ async function submitGig() {
       console.log(true);
       jwtLogin();
       toast.add({ title: "Order Submitted Successfully!" });
+      isLoading.value = false;
       navigateTo(`/pending-tasks/${user.value.user.id}/`);
     }
+    isLoading.value = false;
   }
 }
 
@@ -278,7 +331,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);
