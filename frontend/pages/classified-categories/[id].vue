@@ -171,7 +171,7 @@
                     </h3>
 
                     <div
-                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
                     >
                       <div class="flex gap-2 col-span-2">
                         <p
@@ -294,7 +294,7 @@
                     </h3>
 
                     <div
-                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
                     >
                       <div class="flex gap-2 col-span-2">
                         <p

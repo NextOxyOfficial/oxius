@@ -40,7 +40,9 @@
         >
       </div>
       <div class="flex flex-col md:flex-row justify-between">
-        <p class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold">
+        <p
+          class="text-lg py-2 max-w-72 w-full mb-3 text-green-800 dark:text-green-600 font-bold"
+        >
           <span class="inline-flex items-center"
             >{{ $t("available_balance") }}:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
@@ -62,9 +64,15 @@
               amount
             />
           </div>
-          <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
+          <p v-if="depositErrors.amount" class="text-sm text-red-500">
+            Please enter an amount
+          </p>
           <div class="mt-4">
-            <img src="/static/frontend/images/payment.png" class="w-60" alt="Payment Method" />
+            <img
+              src="/static/frontend/images/payment.png"
+              class="w-60"
+              alt="Payment Method"
+            />
           </div>
           <div class="my-5">
             <UFormGroup
@@ -80,20 +88,22 @@
                 <ULink
                   to="/terms/"
                   active-class="text-primary"
-                  inactive-class="text-gray-500 dark:text-gray-400"
+                  inactive-class="text-green-500 dark:text-green-400"
                   >Terms & Condition</ULink
                 >,
                 <ULink
                   to="/privacy/"
                   active-class="text-primary"
-                  inactive-class="text-gray-500 dark:text-gray-400"
+                  inactive-class="text-green-500 dark:text-green-400"
                   >Privacy Policy</ULink
                 >.
               </template>
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
           </div>
-          <p v-if="depositErrors.policy" class="text-sm text-red-500">Please select this field</p>
+          <p v-if="depositErrors.policy" class="text-sm text-red-500">
+            Please select this field
+          </p>
           <div class="my-2 space-x-3">
             <UButton
               v-if="
@@ -130,7 +140,9 @@
               </template>
             </URadioGroup>
           </div>
-          <p v-if="errors?.selected" class="text-sm text-red-500">Please enter a payment method</p>
+          <p v-if="errors?.selected" class="text-sm text-red-500">
+            Please enter a payment method
+          </p>
           <div class="mb-3">
             <UInput
               v-if="selected === 'nagad'"
@@ -192,7 +204,9 @@
                 <UIcon name="i-mdi:currency-bdt" class="text-base" />200</span
               >
             </p>
-            <p class="text-sm"><span class="text-red-500">*</span> 2.95% Charges applicable</p>
+            <p class="text-sm">
+              <span class="text-red-500">*</span> 2.95% Charges applicable
+            </p>
 
             <p v-if="errors?.insufficient" class="text-sm text-red-500">
               You do not have enough balance
@@ -212,20 +226,22 @@
                 <ULink
                   to="/terms/"
                   active-class="text-primary"
-                  inactive-class="text-gray-500 dark:text-gray-400"
-                  >terms & condition</ULink
+                  inactive-class="text-green-500 dark:text-green-400"
+                  >Terms & Condition</ULink
                 >,
                 <ULink
                   to="/privacy/"
                   active-class="text-primary"
-                  inactive-class="text-gray-500 dark:text-gray-400"
-                  >privacy policy</ULink
+                  inactive-class="text-green-500 dark:text-green-400"
+                  >Privacy Policy</ULink
                 >.
               </template>
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
 
-            <p v-if="errors?.policy" class="text-sm text-red-500">Check this field</p>
+            <p v-if="errors?.policy" class="text-sm text-red-500">
+              Check this field
+            </p>
           </div>
           <div class="my-2 space-x-3 mb-4">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -241,7 +257,9 @@
               "
               >{{ $t("withdraw") }}</UButton
             >
-            <UButton v-else size="sm" @click="isOpen = true">{{ $t("withdraw") }}</UButton>
+            <UButton v-else size="sm" @click="isOpen = true">{{
+              $t("withdraw")
+            }}</UButton>
           </div>
         </div>
         <div v-if="currentTab === 3">
@@ -265,20 +283,50 @@
             <p class="text-sm text-red-500">
               {{ transferErrors.payable_amount }}
             </p>
-            <UButton
-              :loading="isLoading"
-              size="md"
-              color="primary"
-              variant="solid"
-              @click="sendToUser"
-              >{{ $t("transfer") }}</UButton
+            <UFormGroup
+              class="flex flex-row-reverse gap-2"
+              :ui="{
+                label: {
+                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                },
+              }"
             >
+              <template #label>
+                I accept
+                <ULink
+                  to="/terms/"
+                  active-class="text-primary"
+                  inactive-class="text-green-500 dark:text-green-400"
+                  >Terms & Condition</ULink
+                >,
+                <ULink
+                  to="/privacy/"
+                  active-class="text-primary"
+                  inactive-class="text-green-500 dark:text-green-400"
+                  >Privacy Policy</ULink
+                >.
+              </template>
+              <UCheckbox name="check" v-model="policy" />
+            </UFormGroup>
+            <div class="mt-2">
+              <UButton
+                :loading="isLoading"
+                size="md"
+                color="primary"
+                variant="solid"
+                @click="sendToUser"
+                >{{ $t("transfer") }}</UButton
+              >
+            </div>
           </UFormGroup>
           <p class="text-sm text-red-500">{{ transferErrors.user }}</p>
         </div>
       </div>
 
-      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
+      <h3
+        class="text-center text-lg md:text-3xl font-semibold mt-8"
+        v-if="statements?.length"
+      >
         {{ $t("transaction_history") }}
       </h3>
       <UTable
@@ -308,7 +356,9 @@
           <p
             class="capitalize font-semibold"
             :class="
-              row.bank_status.toLowerCase() === 'pending' ? 'text-yellow-500' : 'text-green-500'
+              row.bank_status.toLowerCase() === 'pending'
+                ? 'text-yellow-500'
+                : 'text-green-500'
             "
           >
             {{ row.bank_status }}
@@ -350,7 +400,9 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
+              <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                Confirm Transfer
+              </h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
@@ -366,7 +418,10 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
+                    <p
+                      class="text-sm text-gray-800 font-medium"
+                      v-if="transfer?.to_user"
+                    >
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -398,7 +453,9 @@
               </div>
 
               <!-- Final Amount -->
-              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+              <div
+                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+              >
                 <p class="text-xs text-gray-500">Final amount</p>
                 <p class="text-gray-900 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -440,7 +497,10 @@
                 <h2 class="text-lg sm:text-2xl font-semibold text-green-700">
                   Transfer Successful
                 </h2>
-                <UIcon name="i-rivet-icons-check-circle-breakout" class="size-7 text-green-700" />
+                <UIcon
+                  name="i-rivet-icons-check-circle-breakout"
+                  class="size-7 text-green-700"
+                />
               </div>
 
               <!-- Transfer Details -->
@@ -482,7 +542,9 @@
               </div>
 
               <!-- Final Amount -->
-              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+              <div
+                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+              >
                 <p class="text-xs text-gray-500">Final amount</p>
                 <p class="text-gray-900 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -647,7 +709,8 @@ const withdraw = async () => {
   const res = await post(`/add-user-balance/`, {
     payment_method: selected.value,
     card_number: payment_number.value,
-    payable_amount: withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100,
+    payable_amount:
+      withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100,
     transaction_type: "Withdraw",
   });
   console.log(res);
