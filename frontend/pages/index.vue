@@ -13,7 +13,7 @@
         <form @submit.prevent="handleSearch">
           <UButtonGroup
             label="Search Category"
-            class="my-5 md:my-8 justify-center flex !shadow-none max-w-md w-full mx-auto"
+            class="my-5 md:my-8 justify-center flex !shadow-none"
             orientation="horizontal"
             size="md"
           >
@@ -21,10 +21,8 @@
               icon="i-heroicons-magnifying-glass-solid"
               type="search"
               color="white"
-              size="md"
               placeholder="Search Category"
               v-model="title"
-              class="w-full"
             />
             <UButton
               color="primary"
