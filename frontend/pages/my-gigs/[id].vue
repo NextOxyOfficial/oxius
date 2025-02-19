@@ -61,7 +61,7 @@
 
                 <UIcon
                   name="i-ci:dot-05-xl"
-                  class="text-lg absolute top-1 left-0"
+                  class="text-lg absolute top-[3px] left-0"
                   :class="
                     gig.gig_status === 'approved' && gig.active_gig
                       ? 'text-green-500'
@@ -69,18 +69,23 @@
                   "
                 />
               </div>
-              <div class="flex gap-1.5 sm:gap-4">
+              <div class="flex gap-1 sm:gap-4">
                 <div class="flex gap-1 items-center">
-                  <UIcon name="i-heroicons-bell-solid" />
-                  <p class="text-sm">
+                  <UIcon
+                    name="i-heroicons-bell-solid"
+                    class="text-xs sm:text-sm"
+                  />
+                  <p class="text-xs sm:text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
                     <span class="text-green-600">{{
                       gig.required_quantity
                     }}</span>
                   </p>
                 </div>
-                <p class="text-sm">{{ gig.balance }} /{{ gig.total_cost }}</p>
-                <p class="text-sm">
+                <p class="text-xs sm:text-sm">
+                  {{ gig.balance }} /{{ gig.total_cost }}
+                </p>
+                <p class="text-xs sm:text-sm">
                   {{ formatDate(gig.created_at) }}
                 </p>
               </div>
