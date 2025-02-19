@@ -4,8 +4,14 @@
       <h1 class="text-center text-4xl my-8">{{ $t("my_profile_details") }}</h1>
       <UDivider label="" class="mb-8" />
       <div class="text-center flex gap-1 items-center justify-center mb-3">
-        <span v-if="user.user.name" class="font-semibold">{{ user.user.name }}</span>
-        <UIcon v-if="user.user.kyc" name="mdi:check-decagram" class="w-5 h-5 text-blue-600" />
+        <span v-if="user.user.name" class="font-semibold">{{
+          user.user.name
+        }}</span>
+        <UIcon
+          v-if="user.user.kyc"
+          name="mdi:check-decagram"
+          class="w-5 h-5 text-blue-600"
+        />
       </div>
       <form
         action="#"
@@ -14,9 +20,14 @@
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="col-span-2">
-            <label for="file" class="text-base block mb-3 font-semibold">Profile Image</label>
+            <label for="file" class="text-base block mb-3 font-semibold"
+              >Profile Image</label
+            >
             <div class="flex flex-wrap gap-5">
-              <div class="relative max-w-[200px] max-h-[200px]" v-if="userProfile.image">
+              <div
+                class="relative max-w-[200px] max-h-[200px]"
+                v-if="userProfile.image"
+              >
                 <img
                   :src="userProfile.image"
                   :alt="`Uploaded profile image`"
@@ -229,7 +240,10 @@
                 }"
               />
             </UFormGroup>
-            <p class="text-sm text-red-500 first-letter:capitalize" v-if="errors?.phone">
+            <p
+              class="text-sm text-red-500 first-letter:capitalize"
+              v-if="errors?.phone"
+            >
               {{ errors.phone[0] }}
             </p>
           </div>
@@ -324,6 +338,7 @@
           <UButton
             class="px-8"
             size="lg"
+            :loading="isLoading"
             color="primary"
             variant="solid"
             label="Save"
@@ -344,6 +359,7 @@ const { user } = useAuth();
 const userProfile = ref({});
 const toast = useToast();
 const errors = ref({});
+const isLoading = ref(false);
 
 async function getUserDetails() {
   const res = await get(`/persons/${user.value.user.email}/`);
@@ -355,7 +371,8 @@ onMounted(() => {
 });
 
 async function handleForm() {
-  const { groups, user_permissions, image, nid, refer, ...rest } = userProfile.value;
+  const { groups, user_permissions, image, nid, refer, ...rest } =
+    userProfile.value;
   rest.name = userProfile.value.first_name + " " + userProfile.value.last_name;
   if (typeof image === "string") {
     if (image.includes("data:image")) {
@@ -369,7 +386,7 @@ async function handleForm() {
     rest.image = image;
   }
   console.log(rest);
-
+  isLoading.value = true;
   try {
     const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
     console.log(res, "result");
@@ -385,6 +402,7 @@ async function handleForm() {
   } catch (error) {
     toast.add({ title: error });
   }
+  isLoading.value = false;
 }
 
 function handleFileUpload(event, field) {
@@ -397,7 +415,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);

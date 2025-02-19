@@ -80,7 +80,7 @@
             value-attribute="name_eng"
           />
         </UFormGroup>
-        <UButtonGroup size="md" class="w-1/4">
+        <UButtonGroup size="md" class="flex-1">
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -97,8 +97,9 @@
           />
 
           <UButton
-            icon="i-heroicons-magnifying-glass-20-solid"
+            :icon="isLoading ? `` : `i-heroicons-magnifying-glass-20-solid`"
             size="md"
+            :loading="isLoading"
             color="primary"
             variant="solid"
             label="Search"
