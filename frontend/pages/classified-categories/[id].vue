@@ -80,7 +80,7 @@
             value-attribute="name_eng"
           />
         </UFormGroup>
-        <UButtonGroup size="md" class="md:w-96 md:flex-1">
+        <UButtonGroup size="md" class="w-1/4">
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -137,13 +137,15 @@
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
           v-for="(service, i) in search.filter(
-            service => service.service_status.toLowerCase() === 'approved'
+            (service) => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
           data-aos="zoom-out-right"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
-            <div class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full">
+            <div
+              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+            >
               <div
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
@@ -171,18 +173,27 @@
                       class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
                       <div class="flex gap-2 col-span-2">
-                        <p class="text-sm md:text-base sm:hidden font-semibold text-green-950">
+                        <p
+                          class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                        >
                           <UIcon name="i-mdi:currency-bdt" />
-                          {{ service.negotiable ? "Negotiable" : service.price }}
+                          {{
+                            service.negotiable ? "Negotiable" : service.price
+                          }}
                         </p>
 
                         <p class="inline-flex gap-1 items-center">
                           <UIcon name="i-tabler:category-filled" />
-                          <span class="text-sm">{{ service?.category_details.title }}</span>
+                          <span class="text-sm">{{
+                            service?.category_details.title
+                          }}</span>
                         </p>
                       </div>
                       <p class="inline-flex gap-1 col-span-2">
-                        <UIcon name="i-heroicons-map-pin-solid" class="mt-0.5" />
+                        <UIcon
+                          name="i-heroicons-map-pin-solid"
+                          class="mt-0.5"
+                        />
                         <span class="text-sm first-letter:uppercase flex-1">{{
                           service?.location
                         }}</span>
@@ -192,7 +203,8 @@
                           <UIcon name="i-heroicons-clock-solid" />
                           <div class="flex-1">
                             <span class="text-sm"
-                              >Posted: {{ formatDate(service?.created_at) }}, By:
+                              >Posted: {{ formatDate(service?.created_at) }},
+                              By:
                               <span class="text-green-600"
                                 >{{ service.user?.name.slice(0, 6) }}***</span
                               ></span
@@ -216,7 +228,9 @@
           </NuxtLink>
         </UCard>
         <UDivider label="" class="mt-5" />
-        <h3 class="text-xl font-semibold mt-6 text-green-900">Nearby location's ads</h3>
+        <h3 class="text-xl font-semibold mt-6 text-green-900">
+          Nearby location's ads
+        </h3>
       </div>
       <div v-if="isLoading">
         <CommonPreloader text="Searching for ads in your city..." />
@@ -247,12 +261,14 @@
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
           v-for="(service, i) in services.filter(
-            service => service.service_status.toLowerCase() === 'approved'
+            (service) => service.service_status.toLowerCase() === 'approved'
           )"
           :key="{ i }"
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
-            <div class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full">
+            <div
+              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+            >
               <div
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
@@ -280,18 +296,27 @@
                       class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-4 text-gray-600"
                     >
                       <div class="flex gap-2 col-span-2">
-                        <p class="text-sm md:text-base sm:hidden font-semibold text-green-950">
+                        <p
+                          class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                        >
                           <UIcon name="i-mdi:currency-bdt" />
-                          {{ service.negotiable ? "Negotiable" : service.price }}
+                          {{
+                            service.negotiable ? "Negotiable" : service.price
+                          }}
                         </p>
 
                         <p class="inline-flex gap-1 items-center">
                           <UIcon name="i-tabler:category-filled" />
-                          <span class="text-sm">{{ service?.category_details.title }}</span>
+                          <span class="text-sm">{{
+                            service?.category_details.title
+                          }}</span>
                         </p>
                       </div>
                       <p class="inline-flex gap-1 col-span-2">
-                        <UIcon name="i-heroicons-map-pin-solid" class="mt-0.5" />
+                        <UIcon
+                          name="i-heroicons-map-pin-solid"
+                          class="mt-0.5"
+                        />
                         <span class="text-sm first-letter:uppercase flex-1">{{
                           service?.location
                         }}</span>
@@ -301,7 +326,8 @@
                           <UIcon name="i-heroicons-clock-solid" />
                           <div class="flex-1">
                             <span class="text-sm"
-                              >Posted: {{ formatDate(service?.created_at) }}, By:
+                              >Posted: {{ formatDate(service?.created_at) }},
+                              By:
                               <span class="text-green-600"
                                 >{{ service.user?.name.slice(0, 6) }}***</span
                               ></span
@@ -339,7 +365,8 @@ const { formatDate } = useUtils();
 const isLoading = ref(false);
 
 useHead({
-  title: "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+  title:
+    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
 });
 
 const form = ref({
@@ -364,26 +391,34 @@ const regions = ref([]);
 const cities = ref();
 const upazilas = ref();
 
-const regions_response = await get(`/geo/regions/?country_name_eng=${form.value.country}`);
+const regions_response = await get(
+  `/geo/regions/?country_name_eng=${form.value.country}`
+);
 regions.value = regions_response.data;
 
 if (form.value.state) {
-  const cities_response = await get(`/geo/cities/?region_name_eng=${form.value.state}`);
+  const cities_response = await get(
+    `/geo/cities/?region_name_eng=${form.value.state}`
+  );
   cities.value = cities_response.data;
   console.log(cities_response.data);
 }
 if (form.value.city) {
-  const thana_response = await get(`/geo/upazila/?city_name_eng=${form.value.city}`);
+  const thana_response = await get(
+    `/geo/upazila/?city_name_eng=${form.value.city}`
+  );
   upazilas.value = thana_response.data;
   console.log(thana_response.data);
 }
 
 watch(
   () => form.value.state,
-  async newState => {
+  async (newState) => {
     console.log(newState);
     if (newState) {
-      const cities_response = await get(`/geo/cities/?region_name_eng=${newState}`);
+      const cities_response = await get(
+        `/geo/cities/?region_name_eng=${newState}`
+      );
       cities.value = cities_response.data;
       console.log(cities_response.data);
     }
@@ -392,10 +427,12 @@ watch(
 
 watch(
   () => form.value.city,
-  async newCity => {
+  async (newCity) => {
     console.log(newCity);
     if (newCity) {
-      const thana_response = await get(`/geo/upazila/?city_name_eng=${newCity}`);
+      const thana_response = await get(
+        `/geo/upazila/?city_name_eng=${newCity}`
+      );
       upazilas.value = thana_response.data;
       console.log(thana_response.data);
     }
@@ -407,7 +444,9 @@ watch(
 async function fetchServices() {
   const response = await get(`/classified-categories/${router.params.id}/`);
   services.value = response.data?.filter(
-    service => service.service_status.toLowerCase() === "approved" && service.active_service
+    (service) =>
+      service.service_status.toLowerCase() === "approved" &&
+      service.active_service
   );
   categoryTitle.value = response.data[0]?.category_details.title;
 }
