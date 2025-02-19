@@ -187,7 +187,7 @@
           class="border border-slate-300 p-2 bg-white"
         />
         <div>
-          <UFormGroup label="Action Link">
+          <UFormGroup label="URL">
             <UInput
               type="text"
               size="md"
@@ -198,7 +198,7 @@
                 },
                 placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
-              placeholder="Action Link"
+              placeholder="Task URL"
               v-model="form.action_link"
               class="sm:max-w-[50%]"
             />
@@ -499,7 +499,7 @@ function deleteUpload(ind) {
 }
 
 function validateForm() {
-  const { medias, ...rest } = form.value;
+  const { medias, action_link, ...rest } = form.value;
   for (const key in rest) {
     const value = rest[key];
     // Check for empty strings, false values, or empty arrays
