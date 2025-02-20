@@ -358,6 +358,7 @@ const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
 services.value = res.data;
+const toast = useToast();
 
 const microGigsFilter = [
   { title: "All", value: "" },
@@ -376,8 +377,6 @@ function handleImageError(index) {
 }
 
 async function getMicroGigsCategories() {
-  console.log(microGigs.value);
-
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
     const id = gig.category_details.id;
@@ -409,36 +408,6 @@ async function getMicroGigsCategories() {
 setTimeout(() => {
   getMicroGigsCategories();
 }, 20);
-const filteredMicroGigs = ref([]);
-// async function getMicroGigsFilteredValue() {
-//   if (!microGigs.value) return [];
-//   console.log(microGigs.value);
-//   let filtered = [...microGigs.value];
-
-//   if (microGigsStatus.value?.value !== undefined) {
-//     filtered = filtered.filter(
-//       (gig) =>
-//         microGigsStatus.value.value === "" ||
-//         gig.gig_status.toLowerCase() === microGigsStatus.value.value
-//     );
-//   }
-
-//   if (user.value?.user.id) {
-//     filtered = filtered.filter((gig) => {
-//       const hasSubmittedTask = gig.submitted_tasks.some(
-//         (task) => task.user === user.value?.user.id
-//       );
-//       // Return gigs where user hasn't submitted a task
-//       return !hasSubmittedTask;
-//     });
-//   }
-//   // console.log(filtered, user.value?.user.id);
-
-//   filteredMicroGigs.value = filtered;
-// }
-// setTimeout(() => {
-//   getMicroGigsFilteredValue();
-// }, 50);
 
 async function getMicroGigsByAvailability(e) {
   if (e === "completed") {
@@ -453,43 +422,6 @@ async function getMicroGigsByAvailability(e) {
   }
 }
 
-// watch(
-//   () => microGigsStatus.value,
-//   (newStatus) => {
-//     if (!microGigs.value) return;
-
-//     let filtered = [...microGigs.value];
-
-//     if (newStatus === "completed") {
-//       // Show only gigs where user has submitted a task
-//       if (user.value?.user.id) {
-//         filtered = filtered.filter((gig) => {
-//           const hasSubmittedTask = gig.submitted_tasks?.some(
-//             (task) => task.user === user.value.user.id
-//           );
-//           return hasSubmittedTask;
-//         });
-//       }
-//     } else if (newStatus === "approved") {
-//       // Show only gigs where user hasn't submitted a task
-//       if (user.value?.user.id) {
-//         filtered = filtered.filter((gig) => {
-//           const hasSubmittedTask = gig.submitted_tasks?.some(
-//             (task) => task.user === user.value.user.id
-//           );
-//           return !hasSubmittedTask;
-//         });
-//       }
-//     } else {
-//       // Show all gigs
-//       filteredMicroGigs.value = microGigs.value;
-//     }
-
-//     // filteredMicroGigs.value = filtered;
-//   },
-//   { immediate: true }
-// );
-const toast = useToast();
 const selectCategory = async (category) => {
   console.log(category);
 
