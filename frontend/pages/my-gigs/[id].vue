@@ -29,7 +29,7 @@
               />
             </div>
             <div class="flex-1">
-              <div class="relative flex items-center">
+              <div class="relative flex">
                 <span
                   class="font-semibold capitalize text-sm ml-4 mr-1"
                   v-if="gig.gig_status === 'approved'"
@@ -55,9 +55,9 @@
                   {{ gig.gig_status }}
                 </span>
                 <span>|</span>
-                <h3 class="text-base font-semibold ml-1 capitalize">
-                  {{ gig.title }}
-                </h3>
+                <span class="text-base font-semibold ml-1 capitalize">{{
+                  gig.title
+                }}</span>
 
                 <UIcon
                   v-if="gig.gig_status === 'completed'"
