@@ -273,6 +273,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
+import Paragraph from "@tiptap/extension-paragraph";
 import Link from "@tiptap/extension-link";
 
 const props = defineProps({
@@ -307,6 +308,14 @@ const editor = new Editor({
     }),
     Link.configure({
       autolink: true,
+      HTMLAttributes: {
+        class: "text-wrap",
+      },
+    }),
+    Paragraph.configure({
+      HTMLAttributes: {
+        class: "text-wrap",
+      },
     }),
   ],
   content: props.content,

@@ -47,7 +47,7 @@
           <p class="text-xl font-medium sm:text-left">Instruction</p>
 
           <div
-            class="text-base text-justify prose"
+            class="text-base text-justify prose overflow-hidden"
             v-html="gig.instructions"
           ></div>
           <!-- <UDivider label="" class="pt-4" /> -->
