@@ -318,7 +318,7 @@ class GetMicroGigs(generics.ListCreateAPIView):
     def get_queryset(self):
         # Filter out pending and rejected gigs
         return MicroGigPost.objects.exclude(
-            gig_status__in=['pending', 'rejected']
+            gig_status__in=['pending', 'rejected','completed']
         ).order_by('-created_at')
     
     def list(self, request, *args, **kwargs):
@@ -582,26 +582,33 @@ def getMicroGigPostTasks(request,email):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def postMicroGigPostTask(request):
-    # Add the user ID (pk) to the incoming data
     data = request.data.copy()
     data['user'] = request.user.id
+    gig_id = data.get('gig')
+
+    # Check if user has already submitted a task for this gig
+    existing_task = MicroGigPostTask.objects.filter(
+        user=request.user,
+        gig_id=gig_id
+    ).exists()
+
+    if existing_task:
+        return Response({
+            "error": "You have already submitted a task for this gig"
+        }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Serialize and validate the data
+    # If no existing task, proceed with creation
     serializer = MicroGigPostTaskSerializer(data=data)
-    
     if serializer.is_valid():
-        new_micro_gig_post_task = serializer.save(user=request.user)  # Save the new MicroGigPostTask instance
-        print(f"New MicroGigPostTask instance: {new_micro_gig_post_task}")  # Debugging: check the saved instance
+        new_micro_gig_post_task = serializer.save(user=request.user)
         
-        # Handle medias safely
+        # Handle medias
         for file in data.get('medias', []):
             nm = MicroGigPostMedia.objects.create(image=base64ToFile(file))
             new_micro_gig_post_task.medias.add(nm)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-    # Print errors if validation fails
-    print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   

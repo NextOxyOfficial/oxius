@@ -79,19 +79,19 @@
                 <div class="flex gap-1 items-center">
                   <UIcon
                     name="i-heroicons-bell-solid"
-                    class="text-xs sm:text-sm"
+                    class="text-sm sm:text-sm"
                   />
-                  <p class="text-xs sm:text-sm">
+                  <p class="text-sm sm:text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
                     <span class="text-green-600">{{
                       gig.required_quantity
                     }}</span>
                   </p>
                 </div>
-                <p class="text-xs sm:text-sm">
+                <p class="text-sm sm:text-sm">
                   {{ gig.balance }} /{{ gig.total_cost }}
                 </p>
-                <p class="text-xs sm:text-sm">
+                <p class="text-sm sm:text-sm">
                   {{ formatDate(gig.created_at) }}
                 </p>
               </div>

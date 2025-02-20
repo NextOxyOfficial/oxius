@@ -309,7 +309,8 @@ async function submitGig() {
     });
 
     if (res.error) {
-      toast.add({ title: "Something went wrong!" });
+      console.log(res.error?.data?.error);
+      toast.add({ title: res.error?.data?.error });
     } else {
       console.log(true);
       jwtLogin();

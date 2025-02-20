@@ -64,7 +64,11 @@
               active-class="text-primary"
               inactive-class="text-gray-500 dark:text-gray-400"
             >
-              <NuxtImg :src="service?.image" :title="service.title" class="size-10 mx-auto" />
+              <NuxtImg
+                :src="service?.image"
+                :title="service.title"
+                class="size-10 mx-auto"
+              />
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
           </UCard>
@@ -146,6 +150,7 @@
                   class="w-40"
                   :options="microGigsFilter"
                   v-model="microGigsStatus"
+                  @change="getMicroGigsFilteredValueCheck($event)"
                   placeholder="Filter"
                   value-attribute="value"
                   option-attribute="title"
@@ -170,7 +175,10 @@
                 }"
                 class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
               >
-                <div class="flex flex-col sm:flex-row sm:justify-between" v-if="gig.user">
+                <div
+                  class="flex flex-col sm:flex-row sm:justify-between"
+                  v-if="gig.user"
+                >
                   <div class="flex gap-4">
                     <div>
                       <!-- <NuxtImg
@@ -198,7 +206,9 @@
                       />
                     </div>
                     <div class="flex-1">
-                      <h3 class="text-[15px] leading-tight font-semibold mb-1.5 capitalize">
+                      <h3
+                        class="text-[15px] leading-tight font-semibold mb-1.5 capitalize"
+                      >
                         {{ gig.title }}
                       </h3>
                       <div class="flex gap-0.5 gap-x-4 md:gap-4 flex-wrap">
@@ -206,7 +216,9 @@
                           <UIcon name="i-heroicons-bell-solid" />
                           <p class="text-sm">
                             <span class="">{{ gig.filled_quantity }}</span> /
-                            <span class="text-green-600">{{ gig.required_quantity }}</span>
+                            <span class="text-green-600">{{
+                              gig.required_quantity
+                            }}</span>
                           </p>
                         </div>
                         <p class="text-sm">
@@ -215,12 +227,17 @@
                         <p
                           class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
                         >
-                          <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
+                          <UIcon
+                            name="i-mdi:currency-bdt"
+                            class="text-base"
+                          />{{ gig.price }}
                         </p>
                         <div class="flex gap-1 items-center text-sm">
                           Posted By:
                           <p class="text-sm">
-                            <span class="text-green-600">{{ gig.user.name.slice(0, 6) }}***</span>
+                            <span class="text-green-600"
+                              >{{ gig.user.name.slice(0, 6) }}***</span
+                            >
                           </p>
                         </div>
                         <UButton
@@ -263,7 +280,9 @@
                     <p
                       class="font-bold text-base text-green-900 sm:inline-flex items-center hidden"
                     >
-                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
+                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                        gig.price
+                      }}
                     </p>
 
                     <UButton
@@ -353,7 +372,8 @@ function handleImageError(index) {
 async function getClassifiedCategories() {
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
-    const isActiveAndApproved = gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
+    const isActiveAndApproved =
+      gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
 
     if (!acc[category]) {
       acc[category] = { total: 0, active: 0 };
@@ -367,11 +387,13 @@ async function getClassifiedCategories() {
     return acc;
   }, {});
 
-  categoryArray.value = Object.entries(categoryCounts).map(([category, { total, active }]) => ({
-    category,
-    total,
-    active,
-  }));
+  categoryArray.value = Object.entries(categoryCounts).map(
+    ([category, { total, active }]) => ({
+      category,
+      total,
+      active,
+    })
+  );
 }
 
 setTimeout(() => {
@@ -385,44 +407,103 @@ async function getMicroGigsFilteredValue() {
 
   if (microGigsStatus.value?.value !== undefined) {
     filtered = filtered.filter(
-      gig =>
+      (gig) =>
         microGigsStatus.value.value === "" ||
         gig.gig_status.toLowerCase() === microGigsStatus.value.value
     );
   }
-  console.log("mm", filtered);
+
+  if (user.value?.user.id) {
+    filtered = filtered.filter((gig) => {
+      const hasSubmittedTask = gig.submitted_tasks.some(
+        (task) => task.user === user.value?.user.id
+      );
+      // Return gigs where user hasn't submitted a task
+      return !hasSubmittedTask;
+    });
+  }
+  // console.log(filtered, user.value?.user.id);
 
   filteredMicroGigs.value = filtered;
 }
-setTimeout(() => {
-  getMicroGigsFilteredValue();
-}, 50);
-watch(
-  () => microGigsStatus.value,
-  newStatus => {
-    if (!microGigs.value) return;
-    console.log("New status:", newStatus);
-    let filtered = [...microGigs.value];
+// setTimeout(() => {
+//   getMicroGigsFilteredValue();
+// }, 50);
 
-    // Filter gigs based on status
-    const netArr = filtered.filter(
-      gig => newStatus === "" || gig.gig_status.toLowerCase() === newStatus
-    );
+function getMicroGigsFilteredValueCheck(e) {
+  if (!microGigs.value) return;
 
-    // Update microGigs with filtered results
-    console.log(netArr);
-    filteredMicroGigs.value = netArr;
-  },
+  let filtered = [...microGigs.value];
 
-  { immediate: true }
-);
+  if (e === "completed") {
+    // Show only gigs where user has submitted a task
+    if (user.value?.user.id) {
+      filtered = filtered.filter((gig) => {
+        const hasSubmittedTask = gig.submitted_tasks?.some(
+          (task) => task.user === user.value.user.id
+        );
+        return hasSubmittedTask;
+      });
+    }
+  } else if (e === "approved") {
+    // Show only gigs where user hasn't submitted a task
+    if (user.value?.user.id) {
+      filtered = filtered.filter((gig) => {
+        const hasSubmittedTask = gig.submitted_tasks?.some(
+          (task) => task.user === user.value.user.id
+        );
+        return !hasSubmittedTask;
+      });
+    }
+  } else {
+    // Show all gigs
+    filteredMicroGigs.value = microGigs.value;
+  }
+}
 
-const selectCategory = category => {
+// watch(
+//   () => microGigsStatus.value,
+//   (newStatus) => {
+//     if (!microGigs.value) return;
+
+//     let filtered = [...microGigs.value];
+
+//     if (newStatus === "completed") {
+//       // Show only gigs where user has submitted a task
+//       if (user.value?.user.id) {
+//         filtered = filtered.filter((gig) => {
+//           const hasSubmittedTask = gig.submitted_tasks?.some(
+//             (task) => task.user === user.value.user.id
+//           );
+//           return hasSubmittedTask;
+//         });
+//       }
+//     } else if (newStatus === "approved") {
+//       // Show only gigs where user hasn't submitted a task
+//       if (user.value?.user.id) {
+//         filtered = filtered.filter((gig) => {
+//           const hasSubmittedTask = gig.submitted_tasks?.some(
+//             (task) => task.user === user.value.user.id
+//           );
+//           return !hasSubmittedTask;
+//         });
+//       }
+//     } else {
+//       // Show all gigs
+//       filteredMicroGigs.value = microGigs.value;
+//     }
+
+//     // filteredMicroGigs.value = filtered;
+//   },
+//   { immediate: true }
+// );
+
+const selectCategory = (category) => {
   selectedCategory.value = category || null;
 };
 
-const loadMore = async url => {
-  const getRecentNext = async url => {
+const loadMore = async (url) => {
+  const getRecentNext = async (url) => {
     const res = await $fetch(`${url}`);
     services.value.next = res.next;
     services.value.results = [...services.value.results, ...res.results];
@@ -439,7 +520,7 @@ async function handleSearch() {
   isLoading.value = true;
   try {
     const res = await get(`/classified-categories/?title=${title.value}`);
-    console.log(res);
+
     services.value = res.data;
   } catch (error) {
     console.log(error);
@@ -449,7 +530,7 @@ async function handleSearch() {
 
 watch(
   () => (title.value ? title.value.trim() : ""),
-  async newValue => {
+  async (newValue) => {
     if (!newValue) {
       try {
         const res = await get(`/classified-categories/`);
