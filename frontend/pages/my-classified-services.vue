@@ -57,11 +57,11 @@
                   </div>
                   <div class="flex-1">
                     <h3
-                      class="text-sm sm:text-base font-semibold mb-1.5 text-left line-clamp-2 capitalize"
+                      class="text-sm sm:text-base font-semibold mb-1.5 text-left line-clamp-2 capitalize relative"
                     >
                       <UIcon
                         name="i-icon-park-outline:dot"
-                        class="text-green-500 text-lg"
+                        class="text-green-500 text-lg top-[1px] md:top-[3px] absolute"
                         v-if="
                           service.service_status === 'approved' &&
                           service.active_service
@@ -72,10 +72,11 @@
                           service.service_status === 'approved' &&
                           service.active_service
                         "
+                        class="ml-4"
                         >Live</span
                       >
                       <span
-                        class="text-green-700"
+                        class="text-green-700 ml-4"
                         v-if="
                           service.service_status === 'completed' &&
                           service.active_service
@@ -84,7 +85,7 @@
                       >
 
                       <span
-                        class="text-yellow-600"
+                        class="text-yellow-600 ml-4"
                         v-if="
                           service.service_status.toLowerCase() === 'pending' ||
                           !service.active_service
@@ -96,7 +97,7 @@
                         }}</span
                       >
                       <span
-                        class="text-red-600"
+                        class="text-red-600 ml-4"
                         v-if="
                           service.service_status.toLowerCase() === 'rejected' &&
                           service.active_service

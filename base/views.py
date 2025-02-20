@@ -196,7 +196,7 @@ def add_nid(request):
     if serializer.is_valid():
         serializer.save()
         return Response(
-            {'message': 'Nid Added successfully', 'data': serializer.data},
+            {'message': 'NID Added successfully', 'data': serializer.data},
             status=status.HTTP_200_OK)
     print(serializer.errors)
     return Response(
