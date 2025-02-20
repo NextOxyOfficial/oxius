@@ -31,6 +31,12 @@
               variant="solid"
               :loading="isLoading"
               :label="t('search')"
+              size="md"
+              :ui="{
+                padding: {
+                  md: 'px-6 py-2',
+                },
+              }"
             />
           </UButtonGroup>
         </form>
