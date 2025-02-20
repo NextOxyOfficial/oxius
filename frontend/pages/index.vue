@@ -432,9 +432,9 @@ async function getMicroGigsFilteredValue() {
 
   filteredMicroGigs.value = filtered;
 }
-// setTimeout(() => {
-//   getMicroGigsFilteredValue();
-// }, 50);
+setTimeout(() => {
+  getMicroGigsFilteredValue();
+}, 50);
 
 function getMicroGigsFilteredValueCheck(e) {
   if (!microGigs.value) return;
