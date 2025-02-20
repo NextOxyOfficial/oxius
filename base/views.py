@@ -311,15 +311,41 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     
     
 class GetMicroGigs(generics.ListCreateAPIView):
-    
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        # Filter out pending and rejected gigs
-        return MicroGigPost.objects.exclude(
-            gig_status__in=['pending', 'rejected','completed']
-        ).order_by('-created_at')
+        queryset = MicroGigPost.objects.exclude(
+            gig_status__in=['pending', 'rejected', 'completed']
+        )
+        
+        # Get category from query params
+        category = self.request.query_params.get('category', None)
+        show_submitted = self.request.query_params.get('show_submitted', None)
+        show_all = self.request.query_params.get('show_all', None)
+        user = self.request.user
+
+        if category:
+            queryset = queryset.filter(category=category)
+        
+        if user.is_authenticated and show_all != 'true':
+            if show_submitted == 'true':
+                # Show only gigs where user has submitted tasks
+                queryset = queryset.filter(
+                    microgigposttask__user=user
+                ).distinct()
+            elif show_submitted == 'false':
+                # Show only gigs where user hasn't submitted tasks
+                queryset = queryset.exclude(
+                    microgigposttask__user=user
+                )
+            else:
+                # Default: Show only gigs where user hasn't submitted tasks
+                queryset = queryset.exclude(
+                    microgigposttask__user=user
+                )
+        
+        return queryset.order_by('-created_at')
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

@@ -136,8 +136,8 @@
                     size="md"
                     variant="ghost"
                     color="white"
-                    class="w-full text-base px-4 py-0 font-normal text-blue-950"
-                    @click.prevent="selectCategory(category.category)"
+                    class="w-full text-base px-4 py-0 font-normal text-blue-950 capitalize"
+                    @click.prevent="selectCategory(category)"
                     >{{ category.category }} ({{ category.active }})
                   </UButton>
                 </li>
@@ -156,7 +156,7 @@
                   class="w-40"
                   :options="microGigsFilter"
                   v-model="microGigsStatus"
-                  @change="getMicroGigsFilteredValueCheck($event)"
+                  @change="getMicroGigsByAvailability($event)"
                   placeholder="Filter"
                   value-attribute="value"
                   option-attribute="title"
@@ -164,7 +164,7 @@
               </div>
 
               <UCard
-                v-for="(gig, i) in filteredMicroGigs"
+                v-for="(gig, i) in microGigs"
                 :key="i"
                 :ui="{
                   rounded: '',
@@ -375,14 +375,17 @@ function handleImageError(index) {
   }
 }
 
-async function getClassifiedCategories() {
+async function getMicroGigsCategories() {
+  console.log(microGigs.value);
+
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
+    const id = gig.category_details.id;
     const isActiveAndApproved =
       gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
 
     if (!acc[category]) {
-      acc[category] = { total: 0, active: 0 };
+      acc[category] = { total: 0, active: 0, id: id };
     }
 
     acc[category].total++;
@@ -394,76 +397,59 @@ async function getClassifiedCategories() {
   }, {});
 
   categoryArray.value = Object.entries(categoryCounts).map(
-    ([category, { total, active }]) => ({
+    ([category, { total, active, id }]) => ({
       category,
       total,
       active,
+      id,
     })
   );
 }
 
 setTimeout(() => {
-  getClassifiedCategories();
+  getMicroGigsCategories();
 }, 20);
 const filteredMicroGigs = ref([]);
-async function getMicroGigsFilteredValue() {
-  if (!microGigs.value) return [];
-  console.log(microGigs.value);
-  let filtered = [...microGigs.value];
+// async function getMicroGigsFilteredValue() {
+//   if (!microGigs.value) return [];
+//   console.log(microGigs.value);
+//   let filtered = [...microGigs.value];
 
-  if (microGigsStatus.value?.value !== undefined) {
-    filtered = filtered.filter(
-      (gig) =>
-        microGigsStatus.value.value === "" ||
-        gig.gig_status.toLowerCase() === microGigsStatus.value.value
-    );
-  }
+//   if (microGigsStatus.value?.value !== undefined) {
+//     filtered = filtered.filter(
+//       (gig) =>
+//         microGigsStatus.value.value === "" ||
+//         gig.gig_status.toLowerCase() === microGigsStatus.value.value
+//     );
+//   }
 
-  if (user.value?.user.id) {
-    filtered = filtered.filter((gig) => {
-      const hasSubmittedTask = gig.submitted_tasks.some(
-        (task) => task.user === user.value?.user.id
-      );
-      // Return gigs where user hasn't submitted a task
-      return !hasSubmittedTask;
-    });
-  }
-  // console.log(filtered, user.value?.user.id);
+//   if (user.value?.user.id) {
+//     filtered = filtered.filter((gig) => {
+//       const hasSubmittedTask = gig.submitted_tasks.some(
+//         (task) => task.user === user.value?.user.id
+//       );
+//       // Return gigs where user hasn't submitted a task
+//       return !hasSubmittedTask;
+//     });
+//   }
+//   // console.log(filtered, user.value?.user.id);
 
-  filteredMicroGigs.value = filtered;
-}
-setTimeout(() => {
-  getMicroGigsFilteredValue();
-}, 50);
+//   filteredMicroGigs.value = filtered;
+// }
+// setTimeout(() => {
+//   getMicroGigsFilteredValue();
+// }, 50);
 
-function getMicroGigsFilteredValueCheck(e) {
-  if (!microGigs.value) return;
-
-  let filtered = [...microGigs.value];
-
+async function getMicroGigsByAvailability(e) {
   if (e === "completed") {
-    // Show only gigs where user has submitted a task
-    if (user.value?.user.id) {
-      filtered = filtered.filter((gig) => {
-        const hasSubmittedTask = gig.submitted_tasks?.some(
-          (task) => task.user === user.value.user.id
-        );
-        return hasSubmittedTask;
-      });
-    }
+    const { data, error } = await get(`/micro-gigs/?show_submitted=true`);
+    microGigs.value = data;
   } else if (e === "approved") {
-    // Show only gigs where user hasn't submitted a task
-    if (user.value?.user.id) {
-      filtered = filtered.filter((gig) => {
-        const hasSubmittedTask = gig.submitted_tasks?.some(
-          (task) => task.user === user.value.user.id
-        );
-        return !hasSubmittedTask;
-      });
-    }
+    const { data, error } = await get(`/micro-gigs/?show_submitted=false`);
+    microGigs.value = data;
   } else {
-    // Show all gigs
-    filteredMicroGigs.value = microGigs.value;
+    const { data, error } = await get(`/micro-gigs/`);
+    microGigs.value = data;
   }
 }
 
@@ -503,9 +489,20 @@ function getMicroGigsFilteredValueCheck(e) {
 //   },
 //   { immediate: true }
 // );
+const toast = useToast();
+const selectCategory = async (category) => {
+  console.log(category);
 
-const selectCategory = (category) => {
   selectedCategory.value = category || null;
+  try {
+    const { data, error } = await get(
+      `/micro-gigs/?category=${category.id}&show_submitted=${false}`
+    );
+    microGigs.value = data;
+  } catch (error) {
+    console.log(error);
+    toast.add({ title: "error" });
+  }
 };
 
 const loadMore = async (url) => {
