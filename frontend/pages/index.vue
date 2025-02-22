@@ -31,6 +31,12 @@
               variant="solid"
               :loading="isLoading"
               :label="t('search')"
+              size="md"
+              :ui="{
+                padding: {
+                  md: 'px-6 py-2',
+                },
+              }"
             />
           </UButtonGroup>
         </form>
@@ -64,7 +70,11 @@
               active-class="text-primary"
               inactive-class="text-gray-500 dark:text-gray-400"
             >
-              <NuxtImg :src="service?.image" :title="service.title" class="size-10 mx-auto" />
+              <NuxtImg
+                :src="service?.image"
+                :title="service.title"
+                class="size-9 mx-auto"
+              />
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
           </UCard>
@@ -126,8 +136,8 @@
                     size="md"
                     variant="ghost"
                     color="white"
-                    class="w-full text-base px-4 py-0 font-normal text-blue-950"
-                    @click.prevent="selectCategory(category.category)"
+                    class="w-full text-base px-4 py-0 font-normal text-blue-950 capitalize"
+                    @click.prevent="selectCategory(category)"
                     >{{ category.category }} ({{ category.active }})
                   </UButton>
                 </li>
@@ -146,6 +156,7 @@
                   class="w-40"
                   :options="microGigsFilter"
                   v-model="microGigsStatus"
+                  @change="getMicroGigsByAvailability($event)"
                   placeholder="Filter"
                   value-attribute="value"
                   option-attribute="title"
@@ -153,7 +164,7 @@
               </div>
 
               <UCard
-                v-for="(gig, i) in filteredMicroGigs"
+                v-for="(gig, i) in microGigs"
                 :key="i"
                 :ui="{
                   rounded: '',
@@ -170,7 +181,10 @@
                 }"
                 class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
               >
-                <div class="flex flex-col sm:flex-row sm:justify-between" v-if="gig.user">
+                <div
+                  class="flex flex-col sm:flex-row sm:justify-between"
+                  v-if="gig.user"
+                >
                   <div class="flex gap-4">
                     <div>
                       <!-- <NuxtImg
@@ -198,7 +212,9 @@
                       />
                     </div>
                     <div class="flex-1">
-                      <h3 class="text-[15px] leading-tight font-semibold mb-1.5 capitalize">
+                      <h3
+                        class="text-[15px] leading-tight font-semibold mb-1.5 capitalize"
+                      >
                         {{ gig.title }}
                       </h3>
                       <div class="flex gap-0.5 gap-x-4 md:gap-4 flex-wrap">
@@ -206,7 +222,9 @@
                           <UIcon name="i-heroicons-bell-solid" />
                           <p class="text-sm">
                             <span class="">{{ gig.filled_quantity }}</span> /
-                            <span class="text-green-600">{{ gig.required_quantity }}</span>
+                            <span class="text-green-600">{{
+                              gig.required_quantity
+                            }}</span>
                           </p>
                         </div>
                         <p class="text-sm">
@@ -215,12 +233,17 @@
                         <p
                           class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
                         >
-                          <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
+                          <UIcon
+                            name="i-mdi:currency-bdt"
+                            class="text-base"
+                          />{{ gig.price }}
                         </p>
                         <div class="flex gap-1 items-center text-sm">
                           Posted By:
                           <p class="text-sm">
-                            <span class="text-green-600">{{ gig.user.name.slice(0, 6) }}***</span>
+                            <span class="text-green-600"
+                              >{{ gig.user.name.slice(0, 6) }}***</span
+                            >
                           </p>
                         </div>
                         <UButton
@@ -263,7 +286,9 @@
                     <p
                       class="font-bold text-base text-green-900 sm:inline-flex items-center hidden"
                     >
-                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ gig.price }}
+                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                        gig.price
+                      }}
                     </p>
 
                     <UButton
@@ -333,6 +358,7 @@ const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
 services.value = res.data;
+const toast = useToast();
 
 const microGigsFilter = [
   { title: "All", value: "" },
@@ -350,13 +376,15 @@ function handleImageError(index) {
   }
 }
 
-async function getClassifiedCategories() {
+async function getMicroGigsCategories() {
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
     const category = gig.category_details.title;
-    const isActiveAndApproved = gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
+    const id = gig.category_details.id;
+    const isActiveAndApproved =
+      gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
 
     if (!acc[category]) {
-      acc[category] = { total: 0, active: 0 };
+      acc[category] = { total: 0, active: 0, id: id };
     }
 
     acc[category].total++;
@@ -367,62 +395,50 @@ async function getClassifiedCategories() {
     return acc;
   }, {});
 
-  categoryArray.value = Object.entries(categoryCounts).map(([category, { total, active }]) => ({
-    category,
-    total,
-    active,
-  }));
+  categoryArray.value = Object.entries(categoryCounts).map(
+    ([category, { total, active, id }]) => ({
+      category,
+      total,
+      active,
+      id,
+    })
+  );
 }
 
 setTimeout(() => {
-  getClassifiedCategories();
+  getMicroGigsCategories();
 }, 20);
-const filteredMicroGigs = ref([]);
-async function getMicroGigsFilteredValue() {
-  if (!microGigs.value) return [];
-  console.log(microGigs.value);
-  let filtered = [...microGigs.value];
 
-  if (microGigsStatus.value?.value !== undefined) {
-    filtered = filtered.filter(
-      gig =>
-        microGigsStatus.value.value === "" ||
-        gig.gig_status.toLowerCase() === microGigsStatus.value.value
-    );
+async function getMicroGigsByAvailability(e) {
+  if (e === "completed") {
+    const { data, error } = await get(`/micro-gigs/?show_submitted=true`);
+    microGigs.value = data;
+  } else if (e === "approved") {
+    const { data, error } = await get(`/micro-gigs/?show_submitted=false`);
+    microGigs.value = data;
+  } else {
+    const { data, error } = await get(`/micro-gigs/`);
+    microGigs.value = data;
   }
-  console.log("mm", filtered);
-
-  filteredMicroGigs.value = filtered;
 }
-setTimeout(() => {
-  getMicroGigsFilteredValue();
-}, 50);
-watch(
-  () => microGigsStatus.value,
-  newStatus => {
-    if (!microGigs.value) return;
-    console.log("New status:", newStatus);
-    let filtered = [...microGigs.value];
 
-    // Filter gigs based on status
-    const netArr = filtered.filter(
-      gig => newStatus === "" || gig.gig_status.toLowerCase() === newStatus
-    );
+const selectCategory = async (category) => {
+  console.log(category);
 
-    // Update microGigs with filtered results
-    console.log(netArr);
-    filteredMicroGigs.value = netArr;
-  },
-
-  { immediate: true }
-);
-
-const selectCategory = category => {
   selectedCategory.value = category || null;
+  try {
+    const { data, error } = await get(
+      `/micro-gigs/?category=${category.id}&show_submitted=${false}`
+    );
+    microGigs.value = data;
+  } catch (error) {
+    console.log(error);
+    toast.add({ title: "error" });
+  }
 };
 
-const loadMore = async url => {
-  const getRecentNext = async url => {
+const loadMore = async (url) => {
+  const getRecentNext = async (url) => {
     const res = await $fetch(`${url}`);
     services.value.next = res.next;
     services.value.results = [...services.value.results, ...res.results];
@@ -439,7 +455,7 @@ async function handleSearch() {
   isLoading.value = true;
   try {
     const res = await get(`/classified-categories/?title=${title.value}`);
-    console.log(res);
+
     services.value = res.data;
   } catch (error) {
     console.log(error);
@@ -449,7 +465,7 @@ async function handleSearch() {
 
 watch(
   () => (title.value ? title.value.trim() : ""),
-  async newValue => {
+  async (newValue) => {
     if (!newValue) {
       try {
         const res = await get(`/classified-categories/`);

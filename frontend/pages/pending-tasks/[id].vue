@@ -2,7 +2,9 @@
   <PublicSection>
     <UContainer>
       <AccountBalance v-if="user" :user="user" :isUser="true" />
-      <p class="text-center text-2xl md:text-3xl font-semibold">Pending Tasks List</p>
+      <p class="text-center text-2xl md:text-3xl font-semibold">
+        Pending Tasks List
+      </p>
 
       <UTable
         :rows="pendingGigs"
@@ -20,6 +22,18 @@
         <template #created_at-data="{ row }">
           <p>
             {{ formatDate(row.created_at) }}
+          </p>
+        </template>
+        <template #auto_approve-data="{ row }">
+          <p
+            class="text-sm"
+            :class="{
+              'text-red-500':
+                getRemainingTime(row.created_at) === 'Auto Approved',
+              'text-orange-500': getRemainingTime(row.created_at),
+            }"
+          >
+            {{ getRemainingTime(row.created_at) }}
           </p>
         </template>
         <template #title-data="{ row }">
@@ -53,6 +67,15 @@
           <div v-html="currentTaskDetails.submit_details"></div>
           <p>{{ currentTaskDetails.media }}</p>
         </div>
+
+        <div v-if="currentTaskDetails.medias">
+          <NuxtImg
+            v-for="media in currentTaskDetails.medias"
+            :key="media.id"
+            :src="media.image"
+            :alt="media.image"
+          />
+        </div>
         <UButton
           size="md"
           color="gray"
@@ -83,7 +106,23 @@ getPendingTasks();
 
 async function showDetails(id) {
   isOpen.value = true;
-  currentTaskDetails.value = pendingGigs.value.find(task => task.id === id);
+  currentTaskDetails.value = pendingGigs.value.find((task) => task.id === id);
+}
+
+function getRemainingTime(createdAt) {
+  const created = new Date(createdAt);
+  const deadline = new Date(created.getTime() + 48 * 60 * 60 * 1000); // 48 hours in milliseconds
+  const now = new Date();
+  const remaining = deadline - now;
+
+  if (remaining <= 0) {
+    return "Time expired";
+  }
+
+  const hours = Math.floor(remaining / (60 * 60 * 1000));
+  const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+
+  return `${hours}h ${minutes}m`;
 }
 
 const columns = [
@@ -107,6 +146,10 @@ const columns = [
   {
     key: "completed",
     label: "Status",
+  },
+  {
+    key: "auto_approve",
+    label: "Auto Approval",
   },
   {
     key: "action",

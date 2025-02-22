@@ -196,7 +196,7 @@ def add_nid(request):
     if serializer.is_valid():
         serializer.save()
         return Response(
-            {'message': 'Nid Added successfully', 'data': serializer.data},
+            {'message': 'NID Added successfully', 'data': serializer.data},
             status=status.HTTP_200_OK)
     print(serializer.errors)
     return Response(
@@ -311,15 +311,41 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     
     
 class GetMicroGigs(generics.ListCreateAPIView):
-    
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        # Filter out pending and rejected gigs
-        return MicroGigPost.objects.exclude(
-            gig_status__in=['pending', 'rejected']
-        ).order_by('-created_at')
+        queryset = MicroGigPost.objects.exclude(
+            gig_status__in=['pending', 'rejected', 'completed']
+        )
+        
+        # Get category from query params
+        category = self.request.query_params.get('category', None)
+        show_submitted = self.request.query_params.get('show_submitted', None)
+        show_all = self.request.query_params.get('show_all', None)
+        user = self.request.user
+
+        if category:
+            queryset = queryset.filter(category=category)
+        
+        if user.is_authenticated and show_all != 'true':
+            if show_submitted == 'true':
+                # Show only gigs where user has submitted tasks
+                queryset = queryset.filter(
+                    microgigposttask__user=user
+                ).distinct()
+            elif show_submitted == 'false':
+                # Show only gigs where user hasn't submitted tasks
+                queryset = queryset.exclude(
+                    microgigposttask__user=user
+                )
+            else:
+                # Default: Show only gigs where user hasn't submitted tasks
+                queryset = queryset.exclude(
+                    microgigposttask__user=user
+                )
+        
+        return queryset.order_by('-created_at')
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -582,26 +608,33 @@ def getMicroGigPostTasks(request,email):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def postMicroGigPostTask(request):
-    # Add the user ID (pk) to the incoming data
     data = request.data.copy()
     data['user'] = request.user.id
+    gig_id = data.get('gig')
+
+    # Check if user has already submitted a task for this gig
+    existing_task = MicroGigPostTask.objects.filter(
+        user=request.user,
+        gig_id=gig_id
+    ).exists()
+
+    if existing_task:
+        return Response({
+            "error": "You have already submitted a task for this gig"
+        }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Serialize and validate the data
+    # If no existing task, proceed with creation
     serializer = MicroGigPostTaskSerializer(data=data)
-    
     if serializer.is_valid():
-        new_micro_gig_post_task = serializer.save(user=request.user)  # Save the new MicroGigPostTask instance
-        print(f"New MicroGigPostTask instance: {new_micro_gig_post_task}")  # Debugging: check the saved instance
+        new_micro_gig_post_task = serializer.save(user=request.user)
         
-        # Handle medias safely
+        # Handle medias
         for file in data.get('medias', []):
             nm = MicroGigPostMedia.objects.create(image=base64ToFile(file))
             new_micro_gig_post_task.medias.add(nm)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-    # Print errors if validation fails
-    print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   
@@ -996,7 +1029,37 @@ def verifyOTP(request):
         return Response({'message': 'OTP verified successfully', 'token': token.key}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+from django.contrib.auth.hashers import check_password
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+    print(old_password, new_password)
+    # Validate input
+    if not old_password or not new_password:
+        return Response({
+            'error': 'Both old password and new password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if old password is correct
+    if not check_password(old_password, user.password):
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Set new password
+    user.set_password(new_password)
+    user.save()
+
+    return Response({
+        'message': 'Password changed successfully'
+    }, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 def resetPassword(request):
     token_key = request.data.get('token')

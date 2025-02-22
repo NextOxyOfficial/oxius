@@ -29,7 +29,7 @@
               />
             </div>
             <div class="flex-1">
-              <div class="relative flex items-center">
+              <div class="relative flex">
                 <span
                   class="font-semibold capitalize text-sm ml-4 mr-1"
                   v-if="gig.gig_status === 'approved'"
@@ -55,9 +55,9 @@
                   {{ gig.gig_status }}
                 </span>
                 <span>|</span>
-                <h3 class="text-base font-semibold ml-1 capitalize">
-                  {{ gig.title }}
-                </h3>
+                <span class="text-base font-semibold ml-1 capitalize">{{
+                  gig.title
+                }}</span>
 
                 <UIcon
                   v-if="gig.gig_status === 'completed'"
@@ -79,19 +79,19 @@
                 <div class="flex gap-1 items-center">
                   <UIcon
                     name="i-heroicons-bell-solid"
-                    class="text-xs sm:text-sm"
+                    class="text-sm sm:text-sm"
                   />
-                  <p class="text-xs sm:text-sm">
+                  <p class="text-sm sm:text-sm">
                     <span class="">{{ gig.filled_quantity }}</span> /
                     <span class="text-green-600">{{
                       gig.required_quantity
                     }}</span>
                   </p>
                 </div>
-                <p class="text-xs sm:text-sm">
+                <p class="text-sm sm:text-sm">
                   {{ gig.balance }} /{{ gig.total_cost }}
                 </p>
-                <p class="text-xs sm:text-sm">
+                <p class="text-sm sm:text-sm">
                   {{ formatDate(gig.created_at) }}
                 </p>
               </div>

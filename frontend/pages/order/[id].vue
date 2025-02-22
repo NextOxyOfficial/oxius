@@ -194,6 +194,7 @@
           </div>
           <div class="text-center">
             <UButton
+              v-if="user.user.kyc"
               class="mt-8"
               icon="i-heroicons-check-solid"
               size="md"
@@ -202,9 +203,66 @@
               label="I Completed!"
               @click="submitGig"
             />
+            <UButton
+              v-else
+              class="px-8 mt-8"
+              size="lg"
+              color="primary"
+              variant="solid"
+              label="Post"
+              @click="isOpen = true"
+            />
           </div>
         </div>
       </UCard>
+      <UModal v-model="isOpen">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <!-- <div 
+              className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity"
+              onClick={onClose}
+            /> -->
+          <div
+            className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
+          >
+            <div className="px-6 py-8">
+              <div className="flex flex-col items-center text-center">
+                <div
+                  className="rounded-full bg-red-100 p-3 mb-4 inline-flex items-center justify-center"
+                >
+                  <!-- <AlertCircle className="h-8 w-8 text-red-600" /> -->
+                  <UIcon name="i-line-md-alert-circle" class="h-8 w-8 text-red-600" />
+                </div>
+
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">KYC Unverified</h2>
+
+                <p className="text-gray-600 mb-6">
+                  Please Upload your ID to get permission to post a service ad.
+                </p>
+
+                <!-- <button
+                  className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                  onClick="{handleUpload}"
+                >
+                  <Upload className="h-5 w-5 mr-2" />
+                  Upload NID
+                </button> -->
+                <UButton
+                  size="md"
+                  color="primary"
+                  variant="solid"
+                  to="/upload-center"
+                  label="Upload NID"
+                  block
+                >
+                  <template #leading>
+                    <UIcon name="i-material-symbols-upload-rounded" class="h-5 w-5" />
+                  </template>
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </UModal>
     </UContainer>
   </PublicSection>
 </template>
@@ -225,7 +283,7 @@ const toast = useToast();
 const checkSubmit = ref(false);
 const accepted_condition = ref(false);
 const isLoading = ref(false);
-// const task_completion_link = ref("");
+const isOpen = ref(false);
 
 const errorIndex = ref([]);
 
@@ -260,7 +318,8 @@ async function submitGig() {
     });
 
     if (res.error) {
-      toast.add({ title: "Something went wrong!" });
+      console.log(res.error?.data?.error);
+      toast.add({ title: res.error?.data?.error });
     } else {
       console.log(true);
       jwtLogin();

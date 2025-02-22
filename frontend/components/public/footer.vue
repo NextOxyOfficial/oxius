@@ -150,7 +150,7 @@
       </p>
     </UContainer>
     <div
-      class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 bg-green-50 dark:bg-black rounded-2xl border border-dashed"
+      class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 bg-green-50 dark:bg-black rounded-2xl border border-dashed shadow-md"
     >
       <UHorizontalNavigation
         v-if="user?.user?.id"
@@ -158,7 +158,7 @@
           {
             // label: $t('home'),
             to: '/',
-            icon: 'i-heroicons:home',
+            icon: 'i-heroicons-home',
           },
           {
             to: '/deposit-withdraw/',

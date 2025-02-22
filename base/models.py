@@ -276,7 +276,7 @@ class ReferBonus(models.Model):
         super(ReferBonus, self).save(*args, **kwargs)
 
 class MicroGigPostTask(models.Model):
-    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='micro_gig_worker')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='micro_gig_worker')
     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

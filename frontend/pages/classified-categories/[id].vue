@@ -80,7 +80,7 @@
             value-attribute="name_eng"
           />
         </UFormGroup>
-        <UButtonGroup size="md" class="flex-1 sm:flex-none sm:w-2/4">
+        <UButtonGroup size="md" class="flex-1 md:flex-none md:w-2/4">
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -88,7 +88,7 @@
             :trailing="false"
             placeholder="Search..."
             v-model="form.title"
-            class="sm:w-full"
+            class="w-full"
             :ui="{
               padding: {
                 md: 'sm:py-2.5',
@@ -97,14 +97,18 @@
           />
 
           <UButton
-            :icon="isLoading ? `` : `i-heroicons-magnifying-glass-20-solid`"
             size="md"
             :loading="isLoading"
             color="primary"
             variant="solid"
             label="Search"
             @click="filterSearch"
-            class="h-10"
+            class="sm:h-10 max-sm:!text-base"
+            :ui="{
+              padding: {
+                md: 'sm:py-2.5',
+              },
+            }"
           />
         </UButtonGroup>
       </div>
