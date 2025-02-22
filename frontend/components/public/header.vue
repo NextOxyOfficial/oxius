@@ -36,12 +36,12 @@
             {
               label: $t('home'),
               to: '/',
-              icon: 'i-heroicons:home',
+              icon: 'i-heroicons-home',
             },
             {
               label: $t('classified_service'),
               to: '#classified-services',
-              icon: 'i-heroicons:clipboard-document-list',
+              icon: 'i-heroicons-clipboard-document-list',
             },
             {
               label: $t('earn_money'),
@@ -78,12 +78,12 @@
               {
                 label: $t('home'),
                 to: '/',
-                icon: 'i-heroicons:home',
+                icon: 'i-heroicons-home',
               },
               {
                 label: $t('classified_service'),
                 to: '/#classified-services',
-                icon: 'i-heroicons:clipboard-document-list',
+                icon: 'i-heroicons-clipboard-document-list',
               },
               {
                 label: $t('earn_money'),
@@ -170,7 +170,7 @@
                 {
                   label: $t('transaction'),
                   to: '/deposit-withdraw',
-                  icon: 'i-heroicons:currency-dollar',
+                  icon: 'i-heroicons-currency-dollar',
                 },
                 {
                   label: $t('upload_center'),
@@ -233,7 +233,7 @@ defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
-const handleClickOutside = event => {
+const handleClickOutside = (event) => {
   const menuContainer = document.querySelector(".menu-container");
   if (menuContainer && !menuContainer.contains(event.target)) {
     openMenu.value = false;

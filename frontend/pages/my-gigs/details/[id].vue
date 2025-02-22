@@ -345,7 +345,7 @@ const columns = [
   },
   {
     key: "auto_approve",
-    label: "Auto Approve",
+    label: "Auto Approval",
   },
   {
     key: "approve",

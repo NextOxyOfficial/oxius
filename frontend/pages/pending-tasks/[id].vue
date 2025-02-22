@@ -144,12 +144,12 @@ const columns = [
     label: "Created",
   },
   {
-    key: "auto_approve",
-    label: "Auto Approval",
-  },
-  {
     key: "completed",
     label: "Status",
+  },
+  {
+    key: "auto_approve",
+    label: "Auto Approval",
   },
   {
     key: "action",

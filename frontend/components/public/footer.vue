@@ -158,7 +158,7 @@
           {
             // label: $t('home'),
             to: '/',
-            icon: 'i-heroicons:home',
+            icon: 'i-heroicons-home',
           },
           {
             to: '/deposit-withdraw/',
