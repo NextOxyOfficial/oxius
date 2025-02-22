@@ -97,14 +97,18 @@
           />
 
           <UButton
-            :icon="isLoading ? `` : `i-heroicons-magnifying-glass-20-solid`"
             size="md"
             :loading="isLoading"
             color="primary"
             variant="solid"
             label="Search"
             @click="filterSearch"
-            class="h-10"
+            class="sm:h-10 max-sm:!text-base"
+            :ui="{
+              padding: {
+                md: 'sm:py-2.5',
+              },
+            }"
           />
         </UButtonGroup>
       </div>

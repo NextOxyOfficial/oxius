@@ -46,7 +46,20 @@
             {{ row.gig.title }}
           </p>
         </template>
-
+        <template #auto_approve-data="{ row }">
+          <p
+            class="text-sm"
+            :class="{
+              'text-red-500':
+                getRemainingTime(row.created_at) === 'Auto Approved',
+              'text-orange-500': getRemainingTime(row.created_at).includes(
+                'remaining'
+              ),
+            }"
+          >
+            {{ getRemainingTime(row.created_at) }}
+          </p>
+        </template>
         <template #approve-data="{ row }">
           <div class="flex gap-1.5">
             <UButton
@@ -296,6 +309,22 @@ watch(selectedFilter, () => {
   }
 });
 
+function getRemainingTime(createdAt) {
+  const created = new Date(createdAt);
+  const deadline = new Date(created.getTime() + 48 * 60 * 60 * 1000); // 48 hours in milliseconds
+  const now = new Date();
+  const remaining = deadline - now;
+
+  if (remaining <= 0) {
+    return "Time expired";
+  }
+
+  const hours = Math.floor(remaining / (60 * 60 * 1000));
+  const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+
+  return `${hours}h ${minutes}m remaining`;
+}
+
 const columns = [
   {
     key: "index",
@@ -313,6 +342,10 @@ const columns = [
   {
     key: "created_at",
     label: "সময়",
+  },
+  {
+    key: "auto_approve",
+    label: "Auto Approve",
   },
   {
     key: "approve",
