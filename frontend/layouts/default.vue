@@ -24,7 +24,7 @@ const loader = ref(true);
 
 onMounted(() => {
   setTimeout(() => {
-    if (!useCookie("jwt").value) {
+    if (!useCookie("adsyclub-jwt").value) {
       loader.value = false;
     } else {
       jwtLogin();

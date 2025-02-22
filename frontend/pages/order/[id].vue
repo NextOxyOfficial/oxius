@@ -29,14 +29,10 @@
                   {{ gig.title }}
                 </span>
               </div>
-              <p
-                class="text-lg font-bold text-green-900 inline-flex items-center pl-5"
-              >
+              <p class="text-lg font-bold text-green-900 inline-flex items-center pl-5">
                 Earn:
                 <span class="inline-flex items-center"
-                  ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
-                    gig.price
-                  }}</span
+                  ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ gig.price }}</span
                 >
               </p>
             </div>
@@ -46,16 +42,10 @@
         <div class="space-y-2 md:px-6 pb-8">
           <p class="text-xl font-medium sm:text-left">Instruction</p>
 
-          <div
-            class="text-base text-justify prose"
-            v-html="gig.instructions"
-          ></div>
+          <div class="text-base text-justify prose" v-html="gig.instructions"></div>
           <!-- <UDivider label="" class="pt-4" /> -->
 
-          <p
-            class="text-lg font-medium !mt-8 sm:text-left"
-            v-if="gig.medias?.length"
-          >
+          <p class="text-lg font-medium !mt-8 sm:text-left" v-if="gig.medias?.length">
             Reference Photo/Video
           </p>
           <div class="!mb-6 flex gap-1">
@@ -84,12 +74,7 @@
                   class="size-20 object-contain"
                   @error="handleImageError(i)"
                 />
-                <img
-                  v-else
-                  :src="gig.category.image"
-                  alt="No Image"
-                  class="size-20"
-                />
+                <img v-else :src="gig.category.image" alt="No Image" class="size-20" />
               </a>
               <a
                 class="cursor-pointer relative group"
@@ -106,36 +91,21 @@
               </a>
             </div>
           </div>
-          <p
-            class="text-lg font-medium !mt-8 sm:text-left"
-            v-if="gig.action_link"
-          >
-            Action Url
-          </p>
+          <p class="text-lg font-medium !mt-8 sm:text-left" v-if="gig.action_link">Action Url</p>
           <a :href="gig.action_link" target="_blank" class="text-blue-400">{{
             gig.action_link
           }}</a>
           <UDivider label="" class="pt-4" />
 
-          <div
-            class="border border-dashed !mt-5 pb-3 px-2 sm:p-5 bg-slate-50/50 rounded-xl"
-          >
+          <div class="border border-dashed !mt-5 pb-3 px-2 sm:p-5 bg-slate-50/50 rounded-xl">
             <div>
-              <p
-                class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left"
-              >
-                Upload Proof
-              </p>
+              <p class="text-xl font-medium !mb-2 !mt-8 text-center sm:text-left">Upload Proof</p>
               <UFormGroup
                 size="xl"
                 label="Submit Details"
                 class="!mt-8 md:w-1/2"
                 required
-                :error="
-                  !submit_details &&
-                  checkSubmit &&
-                  'Enter your micro job detail contents'
-                "
+                :error="!submit_details && checkSubmit && 'Enter your micro job detail contents'"
               >
                 <UTextarea
                   color="white"
@@ -146,28 +116,19 @@
                   v-model="submit_details"
                 />
               </UFormGroup>
-              <label for="file" class="text-base block mt-8 mb-3 font-semibold"
-                >Upload</label
-              >
+              <label for="file" class="text-base block mt-8 mb-3 font-semibold">Upload</label>
               <div class="flex flex-wrap gap-5">
                 <div
                   class="relative max-w-[200px] max-h-[200px]"
                   v-for="(img, i) in medias"
                   :key="i"
                 >
-                  <img
-                    :src="img"
-                    :alt="`Uploaded file ${i}`"
-                    class="h-full object-contain"
-                  />
+                  <img :src="img" :alt="`Uploaded file ${i}`" class="h-full object-contain" />
                   <div
                     class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
                     @click="deleteUpload(i)"
                   >
-                    <UIcon
-                      name="i-heroicons-trash-solid"
-                      class="text-red-500"
-                    />
+                    <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
                   </div>
                 </div>
                 <!-- <p v-if="!medias.length && checkSubmit" class="text-red-500">
@@ -218,10 +179,7 @@
                 </template>
                 <UCheckbox name="check" v-model="accepted_terms" />
               </UFormGroup>
-              <p
-                class="text-sm text-red-500"
-                v-if="!accepted_terms && checkSubmit"
-              >
+              <p class="text-sm text-red-500" v-if="!accepted_terms && checkSubmit">
                 Accept Terms & Condition, Privacy Policy
               </p>
               <UCheckbox
@@ -229,10 +187,7 @@
                 v-model="accepted_condition"
                 label="I am aware that fake and fraud submission may lead to account ban!"
               />
-              <p
-                class="text-sm text-red-500"
-                v-if="!accepted_condition && checkSubmit"
-              >
+              <p class="text-sm text-red-500" v-if="!accepted_condition && checkSubmit">
                 Accept Conditions
               </p>
             </div>
@@ -293,11 +248,7 @@ async function getGigData() {
 }
 
 async function submitGig() {
-  if (
-    !submit_details.value.trim() ||
-    !accepted_terms.value ||
-    !accepted_condition.value
-  ) {
+  if (!submit_details.value.trim() || !accepted_terms.value || !accepted_condition.value) {
     checkSubmit.value = true;
     return;
   } else {
@@ -323,18 +274,95 @@ async function submitGig() {
 
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
+  if (!files.length) return;
+
+  const file = files[0];
+
+  // Validate file size (5MB limit)
+  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  if (file.size > maxSize) {
+    toast.add({
+      title: "File size too large",
+      description: "Maximum size allowed is 5MB",
+      color: "red",
+    });
+    return;
+  }
+
+  // Validate file type
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/heif"];
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    toast.add({
+      title: "Invalid file type",
+      description: "Please upload a valid image (JPEG, PNG, HEIC)",
+      color: "red",
+    });
+    return;
+  }
+
+  // Create new FileReader instance
   const reader = new FileReader();
 
-  // Event listener for successful read
   reader.onload = () => {
-    medias.value.push(reader.result);
+    // Create an image element for compression
+    const img = new Image();
+    img.onload = () => {
+      // Create canvas for image compression
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Calculate new dimensions (max 1200px)
+      let width = img.width;
+      let height = img.height;
+      const maxWidth = 1200;
+      const maxHeight = 1200;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      // Set canvas dimensions
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw and compress image
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to compressed base64
+      const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+      // Add to medias array
+      medias.value.push(compressedBase64);
+    };
+
+    img.onerror = () => {
+      toast.add({
+        title: "Error processing image",
+        description: "Please try another image",
+        color: "red",
+      });
+    };
+
+    img.src = reader.result;
   };
 
-  // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = () => {
+    toast.add({
+      title: "Error reading file",
+      description: "Please try again",
+      color: "red",
+    });
+  };
 
-  // Read the file as a data URL (Base64 string)
-  reader.readAsDataURL(files[0]);
+  reader.readAsDataURL(file);
 }
 
 function deleteUpload(ind) {

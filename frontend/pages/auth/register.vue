@@ -45,7 +45,7 @@ onMounted(() => {
     console.log(user);
     navigateTo("/");
   }
-  if (useCookie("jwt").value) {
+  if (useCookie("adsyclub-jwt").value) {
     navigateTo("/");
   }
 });
