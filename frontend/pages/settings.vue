@@ -4,7 +4,7 @@
       <h1 class="text-center text-4xl my-8">{{ $t("settings") }}</h1>
       <UDivider label="" class="mb-8" />
       <h2 class="text-2xl my-4 md:text-center">পাসওয়ার্ড পরিবর্তন</h2>
-      <form action="#" class="max-w-3xl mx-auto">
+      <form action="#" class="max-w-3xl mx-auto" @submit.prevent="handleSave">
         <UCard
           :ui="{
             background: 'bg-green-50/50',
@@ -31,6 +31,7 @@
                   color="white"
                   type="password"
                   placeholder="********"
+                  v-model="old_password"
                   :ui="{
                     placeholder:
                       'placeholder-gray-400 dark:placeholder-gray-200',
@@ -52,6 +53,7 @@
                   size="md"
                   color="white"
                   placeholder="********"
+                  v-model="new_password"
                   :ui="{
                     placeholder:
                       'placeholder-gray-400 dark:placeholder-gray-200',
@@ -76,6 +78,27 @@
   </PublicSection>
 </template>
 
-<script setup></script>
+<script setup>
+const { post } = useApi();
+const old_password = ref("");
+const new_password = ref("");
+const toast = useToast();
+async function handleSave() {
+  console.log("Save password");
+  try {
+    const { data } = await post("/change-password/", {
+      old_password,
+      new_password,
+    });
+    if (data) {
+      toast.add({ title: data.message });
+      old_password.value = "";
+      new_password.value = "";
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+</script>
 
 <style scoped></style>

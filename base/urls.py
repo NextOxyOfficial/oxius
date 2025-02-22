@@ -71,7 +71,7 @@ urlpatterns = [
   # division, distrct, policestation
   # path('district/<str:district_id>/police_stations/', get_police_stations, name='police_station'),
   # user's address
-
+  path('change-password/', change_password, name='change-password'),
   # sms and otp 
   path('send-sms/', smsSend),
   path('send-otp/', sendOTP),

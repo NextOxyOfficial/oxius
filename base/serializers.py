@@ -68,8 +68,14 @@ class MicroGigPostTaskSerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
 
+class MicroGigPostMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MicroGigPostMedia
+        fields = '__all__'
+        depth = 1
 class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+   
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'

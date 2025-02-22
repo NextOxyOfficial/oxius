@@ -30,9 +30,7 @@
             :class="{
               'text-red-500':
                 getRemainingTime(row.created_at) === 'Auto Approved',
-              'text-orange-500': getRemainingTime(row.created_at).includes(
-                'remaining'
-              ),
+              'text-orange-500': getRemainingTime(row.created_at),
             }"
           >
             {{ getRemainingTime(row.created_at) }}
@@ -68,6 +66,15 @@
         <div class="bg-slate-50 p-4 rounded-xl space-y-3">
           <div v-html="currentTaskDetails.submit_details"></div>
           <p>{{ currentTaskDetails.media }}</p>
+        </div>
+
+        <div v-if="currentTaskDetails.medias">
+          <NuxtImg
+            v-for="media in currentTaskDetails.medias"
+            :key="media.id"
+            :src="media.image"
+            :alt="media.image"
+          />
         </div>
         <UButton
           size="md"
@@ -115,7 +122,7 @@ function getRemainingTime(createdAt) {
   const hours = Math.floor(remaining / (60 * 60 * 1000));
   const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
 
-  return `${hours}h ${minutes}m remaining`;
+  return `${hours}h ${minutes}m`;
 }
 
 const columns = [
@@ -138,7 +145,7 @@ const columns = [
   },
   {
     key: "auto_approve",
-    label: "Auto Approve",
+    label: "Auto Approval",
   },
   {
     key: "completed",

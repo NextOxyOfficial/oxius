@@ -1029,7 +1029,37 @@ def verifyOTP(request):
         return Response({'message': 'OTP verified successfully', 'token': token.key}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+from django.contrib.auth.hashers import check_password
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+    print(old_password, new_password)
+    # Validate input
+    if not old_password or not new_password:
+        return Response({
+            'error': 'Both old password and new password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if old password is correct
+    if not check_password(old_password, user.password):
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Set new password
+    user.set_password(new_password)
+    user.save()
+
+    return Response({
+        'message': 'Password changed successfully'
+    }, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 def resetPassword(request):
     token_key = request.data.get('token')

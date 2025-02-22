@@ -73,7 +73,7 @@
               <NuxtImg
                 :src="service?.image"
                 :title="service.title"
-                class="size-10 mx-auto"
+                class="size-9 mx-auto"
               />
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
