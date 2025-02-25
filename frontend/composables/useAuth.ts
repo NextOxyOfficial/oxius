@@ -5,7 +5,7 @@ export function useAuth() {
   // const { getUserDetails } = useStoreUser();
   const notifs = useState<array>("notifs", () => []);
   const isAuthenticated = computed(() => user.value !== null);
-  const jwt = useCookie("jwt");
+  const jwt = useCookie("adsyclub-jwt");
 
   const jwtLogin = async () => {
     const { data, pending, error, refresh } = await useFetch<any>(
@@ -28,7 +28,7 @@ export function useAuth() {
     if (data.value) {
       user.value = data.value;
       // getUserDetails(data.value);
-      const jwt = useCookie("jwt");
+      const jwt = useCookie("adsyclub-jwt");
       jwt.value = data.value.access;
       const username = useCookie("username");
 
@@ -54,7 +54,7 @@ export function useAuth() {
 
       if (data.value) {
         user.value = data.value;
-        const jwt = useCookie("jwt");
+        const jwt = useCookie("adsyclub-jwt");
         jwt.value = data.value.access;
         const username = useCookie("username");
         if (data.value.face) {
@@ -75,7 +75,7 @@ export function useAuth() {
 
   const logout = async () => {
     user.value = null;
-    const jwt = useCookie("jwt");
+    const jwt = useCookie("adsyclub-jwt");
     jwt.value = null;
     // getUserDetails(null);
     navigateTo("/");

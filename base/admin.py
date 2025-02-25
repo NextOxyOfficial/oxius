@@ -80,7 +80,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     
-    list_display = ('email', 'username', 'phone', 'is_vendor', 'is_active')
+    list_display = ('email','first_name','balance','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined')
     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
     
     def get_fieldsets(self, request, obj=None):
@@ -150,7 +150,8 @@ class CustomUserAdmin(UserAdmin):
     )
     
     search_fields = ('email', 'username', 'phone')
-    ordering = ('email',)
+    ordering = ('-date_joined',)
+    
 
 # Unregister any existing User admin
 try:
@@ -182,8 +183,12 @@ admin.site.register(MicroGigPost, MicroGigPostAdmin)
 
 
 class MicroGigPostTaskAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'approved', 'rejected', 'completed')
+    list_display = ('user','user__first_name','gig','gig__price','submit_details','created_at', 'approved', 'rejected', 'completed', 'reason')
     list_filter = ('approved', 'rejected', 'completed')
+    
+    @admin.display(ordering='-created_at')
+    def created_at(self,obj):
+        return obj.created_at
     
 admin.site.register(MicroGigPostTask, MicroGigPostTaskAdmin)
 
@@ -200,7 +205,7 @@ admin.site.register(Balance, BalanceAdmin)
 
 
 class PendingTaskAdmin(admin.ModelAdmin):
-    list_display = ('title','user','title','price','created_at','updated_at')
+    list_display = ('title','user','price','created_at','updated_at')
     
 admin.site.register(PendingTask, PendingTaskAdmin)
 
