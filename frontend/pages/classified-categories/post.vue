@@ -520,7 +520,9 @@ async function fetchServices() {
 function validateForm() {
   // Determine the base submit values based on conditions
   const { negotiable, price, ...rest } = form.value;
-  submitValues.value = negotiable ? { ...rest } : { ...rest, price };
+  submitValues.value = negotiable
+    ? { ...rest, negotiable }
+    : { ...rest, price };
 
   // Validate each field in submitValues
   for (const key in submitValues.value) {
@@ -545,6 +547,7 @@ async function handlePostGig() {
   }
   isLoading.value = true;
   const { medias, ...rest } = form.value;
+  console.log(form.value);
   rest.service_status = "pending";
 
   const res = await (router.query.id
