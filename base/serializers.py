@@ -75,7 +75,7 @@ class MicroGigPostMediaSerializer(serializers.ModelSerializer):
         depth = 1
 class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-   
+    user_details = UserSerializer(source='user', read_only=True)
     class Meta:
         model = MicroGigPostTask
         fields = '__all__'

@@ -46,6 +46,11 @@
             {{ row.gig.title }}
           </p>
         </template>
+        <template #user_details-data="{ row }">
+          <p>
+            {{ row.user_details.name }}
+          </p>
+        </template>
         <template #auto_approve-data="{ row }">
           <p
             class="text-sm"
@@ -334,6 +339,10 @@ const columns = [
   {
     key: "title",
     label: "নাম",
+  },
+  {
+    key: "user_details",
+    label: "ব্যবহারকারীর নাম",
   },
   {
     key: "amount",

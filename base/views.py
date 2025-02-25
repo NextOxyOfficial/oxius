@@ -71,9 +71,26 @@ def getAdminNotice(request):
 @api_view(['POST'])
 def register(request):
     data = request.data
+    
+    # Check if user with phone or email already exists
+    if User.objects.filter(phone=data.get('phone')).exists():
+        return Response(
+            {'error': 'User with this phone number already exists'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
+    if User.objects.filter(email=data.get('email')).exists():
+        return Response(
+            {'error': 'User with this email already exists'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Handle referral
+    ref_by = None
     if 'refer' in data:
         ref_by = User.objects.filter(referral_code=data['refer']).first()
-    del data['refer']
+        del data['refer']
+
     serializer = UserSerializer(data=data)
     if serializer.is_valid():
         new_user = serializer.save()
@@ -91,8 +108,6 @@ def register(request):
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
     )
-
-
 
 
 @api_view(['PUT'])

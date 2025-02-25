@@ -239,6 +239,9 @@
               v-model="form.refer"
               class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
             />
+            <p v-if="submitError" class="text-red-500 text-sm">
+              {{ submitError }}
+            </p>
           </div>
 
           <UButton
@@ -281,6 +284,7 @@ const form = ref({
 });
 
 const error = ref("");
+const submitError = ref("");
 
 const route = useRoute();
 if (route.query.ref) {
@@ -334,6 +338,8 @@ async function handleSubmit() {
 
   try {
     const res = await Api.post("/auth/register/", formData);
+    console.log(res);
+
     if (res?.data?.message) {
       error.value = "";
       const res2 = await login(form.value.email, form.value.password);
@@ -343,7 +349,7 @@ async function handleSubmit() {
         navigateTo("/");
       }
     } else {
-      error.value.email = res.error.data.errors.email[0] || "An error occurred";
+      submitError.value = res.error.data.error || "An error occurred";
     }
   } catch (err) {
     if (err.response?.status === 444) {
