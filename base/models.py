@@ -294,7 +294,8 @@ class MicroGigPostTask(models.Model):
     
     @property
     def is_48_hours_passed(self):
-       
+        if not self.created_at:
+            return False
         return timezone.now() >= (self.created_at + timedelta(hours=48))
 
     def auto_approve(self):
@@ -304,6 +305,8 @@ class MicroGigPostTask(models.Model):
             self.save()
 
     def save(self, *args, **kwargs):
+        if self.is_48_hours_passed and not self.completed and not self.approved and not self.rejected:
+            self.approved = True
         # Check if task is neither completed, approved, nor rejected
         if not self.completed and not self.approved and not self.rejected:
             self.gig.filled_quantity += 1

@@ -196,6 +196,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CELERY_BEAT_SCHEDULE = {
+    'auto-approve-tasks': {
+        'task': 'base.tasks.check_and_auto_approve_tasks',
+        'schedule': timedelta(minutes=30),  # Run every 30 minutes
+    },
+}
 
 SP_USERNAME="lyriczsoft"
 SP_PASSWORD="lyrikskdzprvz&ud"

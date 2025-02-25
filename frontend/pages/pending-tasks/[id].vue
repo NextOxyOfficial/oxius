@@ -74,6 +74,7 @@
             :key="media.id"
             :src="media.image"
             :alt="media.image"
+            class="max-h-[200px] object-contain"
           />
         </div>
         <UButton
