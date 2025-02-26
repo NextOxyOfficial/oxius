@@ -448,13 +448,10 @@ def post_classified_service(request):
     data = request.data.copy()  # Make a mutable copy of the data
     data['user'] = request.user.id  # Associate the authenticated user
     category_id = data.get('category')
-    
-    
     if not ClassifiedCategory.objects.filter(id=category_id).exists():
         raise ValidationError({'category': 'The specified category does not exist.'})
     serializer = ClassifiedPostSerializer(data=data)
     
-
     if serializer.is_valid():
         new_classified_service_post = serializer.save(user=request.user)
         for file in data.get('medias', []):
@@ -470,6 +467,30 @@ def post_classified_service(request):
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST
     )
+
+class ClassifiedPostPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class GetClassifiedPosts(generics.ListAPIView):
+    serializer_class = ClassifiedPostSerializer
+    pagination_class = ClassifiedPostPagination
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = ClassifiedCategoryPost.objects.filter(
+            service_status='approved'
+        ).order_by('-created_at')
+        title = self.request.query_params.get('title', None)
+        
+        if title:
+            queryset = queryset.filter(
+                Q(title__icontains=title) |
+                Q(instructions__icontains=title)
+            )
+        
+        return queryset
 
 class ClassifiedCategoryPostFilterView(APIView):
     def get(self, request):
@@ -581,9 +602,20 @@ def gigDetails(request, gid):
 # All Micro Gig Post
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getUserMicroGigs(request,pk):
-    serializer = MicroGigPostSerializer(MicroGigPost.objects.filter(user=pk), many=True)
+def getUserMicroGigs(request, pk):
+    # Order completed gigs to appear at the bottom
+    queryset = MicroGigPost.objects.filter(user=pk).order_by(
+        # This puts non-completed gigs first, then completed ones
+        models.Case(
+            models.When(gig_status='completed', then=1),
+            default=0
+        ),
+        '-created_at'  # Within each group, show newest first
+    )
+    
+    serializer = MicroGigPostSerializer(queryset, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 # Micro Gig Post
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -677,7 +709,10 @@ def get_microgigpost_tasks(request, gig_id):
         )
 
     # Get all tasks associated with this MicroGigPost
-    tasks = micro_gig_post.microgigposttask_set.all().order_by('-created_at')
+    tasks = micro_gig_post.microgigposttask_set.all().order_by(models.Case(
+            models.When(gig_status='completed', then=1),
+            default=0
+        ),'-created_at')
 
     # Serialize the tasks
     serializer = GetMicroGigPostTaskSerializer(tasks, many=True)

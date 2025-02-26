@@ -98,6 +98,118 @@
         </div>
       </UContainer>
     </PublicSection>
+    <PublicSection v-if="classifiedPosts.results?.length" id="classified-posts">
+      <UContainer>
+        <h2 class="text-4xl my-6">
+          {{ $t("classified_service") }}
+        </h2>
+        <UCard
+          :ui="{
+            background: '',
+            ring: '',
+            shadow: '',
+            rounded: '',
+            body: {
+              padding: 'p-0 sm:p-0 flex-1 w-full',
+            },
+            header: {
+              padding: 'p-0',
+            },
+            footer: {
+              padding: 'p-0',
+            },
+          }"
+          class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
+          v-for="service in classifiedPosts.results"
+          :key="service.id"
+        >
+          <NuxtLink :to="`/classified-categories/details/${service.id}`">
+            <div
+              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+            >
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
+              >
+                <div class="flex flex-row gap-4 items-start">
+                  <div class="w-10 sm:w-14">
+                    <NuxtImg
+                      v-if="service.medias[0]?.image"
+                      :src="service.medias[0].image"
+                      class="size-10 sm:size-14 object-cover rounded-md"
+                    />
+                    <img
+                      v-else
+                      :src="service.category_details.image"
+                      class="size-10 sm:size-14 rounded-md"
+                    />
+                  </div>
+                  <div class="flex-1 text-sm sm:text-base">
+                    <h3
+                      class="text-sm sm:text-base font-semibold mb-1.5 text-left line-clamp-2 first-letter:uppercase"
+                    >
+                      {{ service?.title }}
+                    </h3>
+
+                    <div
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
+                    >
+                      <div class="flex gap-2 col-span-2">
+                        <p
+                          class="text-sm md:text-base sm:hidden font-semibold text-green-950"
+                        >
+                          <UIcon name="i-mdi:currency-bdt" />
+                          {{
+                            service.negotiable ? "Negotiable" : service.price
+                          }}
+                        </p>
+
+                        <p class="inline-flex gap-1 items-center">
+                          <UIcon name="i-tabler:category-filled" />
+                          <span class="text-sm">{{
+                            service?.category_details.title
+                          }}</span>
+                        </p>
+                      </div>
+                      <p class="inline-flex gap-1 col-span-2">
+                        <UIcon
+                          name="i-heroicons-map-pin-solid"
+                          class="mt-0.5"
+                        />
+                        <span class="text-sm first-letter:uppercase flex-1">{{
+                          service?.location
+                        }}</span>
+                      </p>
+                      <div class="flex col-span-2">
+                        <div class="flex gap-1 items-center flex-1">
+                          <UIcon name="i-heroicons-clock-solid" />
+                          <div class="flex-1">
+                            <span class="text-sm"
+                              >Posted: {{ formatDate(service?.created_at) }},
+                              By:
+                              <span class="text-green-600"
+                                >{{ service.user?.name.slice(0, 6) }}***</span
+                              ></span
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p
+                    class="hidden text-sm md:text-base sm:flex sm:items-center sm:justify-end sm:my-3 font-semibold text-green-950"
+                  >
+                    <UIcon name="i-mdi:currency-bdt" />
+                    {{ service.negotiable ? "Negotiable" : service.price }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </NuxtLink>
+        </UCard>
+      </UContainer>
+    </PublicSection>
     <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-6 md:mb-12 text-center">
@@ -358,6 +470,7 @@ const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
 services.value = res.data;
+const classifiedPosts = ref([]);
 const toast = useToast();
 
 const microGigsFilter = [
@@ -452,29 +565,62 @@ const loadMore = async (url) => {
 };
 
 async function handleSearch() {
-  isLoading.value = true;
-  try {
-    const res = await get(`/classified-categories/?title=${title.value}`);
-
-    services.value = res.data;
-  } catch (error) {
-    console.log(error);
+  if (!title.value?.trim()) {
+    toast.add({
+      title: "Please enter a search term",
+      color: "orange",
+    });
+    return;
   }
-  isLoading.value = false;
+
+  isLoading.value = true;
+
+  try {
+    const [categoriesRes, postsRes] = await Promise.all([
+      get(
+        `/classified-categories/?title=${encodeURIComponent(
+          title.value.trim()
+        )}`
+      ),
+      get(`/classified-posts/?title=${encodeURIComponent(title.value.trim())}`),
+    ]);
+
+    services.value = categoriesRes.data;
+    classifiedPosts.value = postsRes.data;
+  } catch (error) {
+    console.error("Search error:", error);
+    toast.add({
+      title: error?.message || "An error occurred while searching",
+      color: "red",
+    });
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 watch(
   () => (title.value ? title.value.trim() : ""),
   async (newValue) => {
     if (!newValue) {
+      isLoading.value = true;
       try {
-        const res = await get(`/classified-categories/`);
-
+        const res = await get("/classified-categories/");
         services.value = res.data;
+        classifiedPosts.value = [];
       } catch (error) {
-        console.error("Error fetching classified categories:", error);
+        console.error("Error fetching categories:", error);
+        toast.add({
+          title: "Failed to refresh categories",
+          color: "red",
+        });
+      } finally {
+        isLoading.value = false;
       }
     }
+  },
+  {
+    debounce: 300,
+    immediate: false,
   }
 );
 </script>
