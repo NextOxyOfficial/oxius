@@ -435,10 +435,10 @@ class Balance(models.Model):
             self.to_user.save()
             self.completed = True
             self.approved = True
-        if self.transaction_type == 'withdraw' and not self.completed:
+        if self.transaction_type == 'withdraw' and not self.completed and not self.approved:
             self.user.balance -= self.payable_amount
             self.user.save()
-        if self.transaction_type == 'withdraw' and self.completed:
+        if self.transaction_type == 'withdraw' and self.approved:
             self.completed = True
             self.approved = True
             self.user.save()
