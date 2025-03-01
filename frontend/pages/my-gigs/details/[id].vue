@@ -55,11 +55,8 @@
           <p
             class="text-sm"
             :class="{
-              'text-red-500':
-                getRemainingTime(row.created_at) === 'Auto Approved',
-              'text-orange-500': getRemainingTime(row.created_at).includes(
-                'remaining'
-              ),
+              'text-red-500': getRemainingTime(row.created_at) === 'Auto Approved',
+              'text-orange-500': getRemainingTime(row.created_at).includes('remaining'),
             }"
           >
             {{ getRemainingTime(row.created_at) }}
@@ -107,9 +104,7 @@
       >
         <template #header>
           <div class="flex items-center justify-between">
-            <h3
-              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
-            >
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
               Rejection Reason
             </h3>
             <UButton
@@ -194,18 +189,15 @@ async function getUserGigs() {
 getUserGigs();
 
 async function handleOperation(taskId, operation) {
-  const res = await put(
-    `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
-    {
-      tasks: [
-        {
-          id: taskId,
-          approved: operation === "approve" ? true : false,
-          rejected: operation === "reject" ? true : false,
-        },
-      ],
-    }
-  );
+  const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
+    tasks: [
+      {
+        id: taskId,
+        approved: operation === "approve" ? true : false,
+        rejected: operation === "reject" ? true : false,
+      },
+    ],
+  });
   console.log(res);
   if (res.error) {
   } else {
@@ -218,7 +210,7 @@ const isApproveAllLoading = ref(false);
 
 // Add this computed property
 const hasUnapprovedTasks = computed(() => {
-  return submittedTasks.value.some((task) => !task.approved && !task.rejected);
+  return submittedTasks.value.some(task => !task.approved && !task.rejected);
 });
 
 // Add this new function to handle approving all tasks
@@ -226,23 +218,20 @@ async function handleApproveAll() {
   isApproveAllLoading.value = true;
   try {
     const unapprovedTasks = submittedTasks.value
-      .filter((task) => !task.approved && !task.rejected)
-      .map((task) => ({
+      .filter(task => !task.approved && !task.rejected)
+      .map(task => ({
         id: task.id,
         approved: true,
         rejected: false,
       }));
 
-    if (unapprovedTasks.length === 0) {
+    if (unapprovedTasks?.length === 0) {
       return;
     }
 
-    const res = await put(
-      `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
-      {
-        tasks: unapprovedTasks,
-      }
-    );
+    const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
+      tasks: unapprovedTasks,
+    });
 
     if (res.error) {
       console.error("Error approving all tasks:", res.error);
@@ -270,19 +259,16 @@ async function submitRejection() {
   }
   isRejectLoading.value = true;
   try {
-    const res = await put(
-      `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
-      {
-        tasks: [
-          {
-            id: selectedTaskId.value,
-            approved: false,
-            rejected: true,
-            reason: rejectionReason.value,
-          },
-        ],
-      }
-    );
+    const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
+      tasks: [
+        {
+          id: selectedTaskId.value,
+          approved: false,
+          rejected: true,
+          reason: rejectionReason.value,
+        },
+      ],
+    });
     console.log(res);
     if (res.error) {
       console.log("Error:", res.error);
@@ -299,17 +285,15 @@ async function submitRejection() {
 function viewDetails(taskId, operation) {
   console.log(taskId, operation);
   isOpenTaskDetails.value = true;
-  current_submitted_task_details.value = submittedTasks.value.find(
-    (task) => task.id === taskId
-  );
+  current_submitted_task_details.value = submittedTasks.value.find(task => task.id === taskId);
 }
 
 watch(selectedFilter, () => {
   if (selectedFilter.value === "Approved") {
-    submittedTasks.value = submittedTasks.value.filter((task) => task.approved);
+    submittedTasks.value = submittedTasks.value.filter(task => task.approved);
     console.log("approved");
   } else if (selectedFilter.value === "Rejected") {
-    submittedTasks.value = submittedTasks.value.filter((task) => task.rejected);
+    submittedTasks.value = submittedTasks.value.filter(task => task.rejected);
     console.log("rejected");
   }
 });
