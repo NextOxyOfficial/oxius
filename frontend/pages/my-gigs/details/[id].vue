@@ -52,8 +52,10 @@
           </p>
         </template>
         <template #auto_approve-data="{ row }">
+          <p v-if="row.approved" class="text-sm text-green-500">Approved</p>
+          <p v-if="row.rejected" class="text-sm text-green-500">Rejected</p>
           <p
-            v-if="!row.approved"
+            v-else
             class="text-sm"
             :class="{
               'text-red-500': getRemainingTime(row.created_at) === 'Auto Approved',
@@ -62,7 +64,6 @@
           >
             {{ getRemainingTime(row.created_at) }}
           </p>
-          <p v-else class="text-sm text-green-500">Approved</p>
         </template>
         <template #approve-data="{ row }">
           <div class="flex gap-1.5">
