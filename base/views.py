@@ -709,10 +709,15 @@ def get_microgigpost_tasks(request, gig_id):
         )
 
     # Get all tasks associated with this MicroGigPost
-    tasks = micro_gig_post.microgigposttask_set.all().order_by(models.Case(
-            models.When(gig_status='completed', then=1),
-            default=0
-        ),'-created_at')
+    tasks = micro_gig_post.microgigposttask_set.all().order_by(
+        models.Case(
+            # Order: pending (not approved and not rejected) first, then approved, then rejected
+            models.When(approved=True, then=1),
+            models.When(rejected=True, then=2),
+            default=0  # Pending tasks
+        ),
+        '-created_at'  # Then by creation date (newest first)
+    )
 
     # Serialize the tasks
     serializer = GetMicroGigPostTaskSerializer(tasks, many=True)
