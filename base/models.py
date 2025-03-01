@@ -261,7 +261,7 @@ class MicroGigPost(models.Model):
         super(MicroGigPost, self).save(*args, **kwargs)
 
 class ReferBonus(models.Model):
-    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, unique=True, related_name='comission_bonus')
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='comission_bonus')
     created_at = models.DateTimeField(auto_now_add=True)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     completed = models.BooleanField(default=False)
