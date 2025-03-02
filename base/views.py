@@ -90,7 +90,14 @@ def register(request):
     if 'refer' in data:
         ref_by = User.objects.filter(referral_code=data['refer']).first()
         del data['refer']
-
+    if 'image' in data:
+        try:
+            data['image'] = base64ToFile(data['image'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process image', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     serializer = UserSerializer(data=data)
     if serializer.is_valid():
         new_user = serializer.save()
@@ -103,7 +110,7 @@ def register(request):
             {'message': 'Person registered successfully', 'data': serializer.data},
             status=status.HTTP_201_CREATED
         )
-
+    print(serializer.errors)
     return Response(
         {'message': 'Validation failed', 'errors': serializer.errors},
         status=status.HTTP_400_BAD_REQUEST

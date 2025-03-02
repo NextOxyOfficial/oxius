@@ -233,6 +233,145 @@
                 {{ error.confirmPassword }}
               </p>
             </div>
+            <div class="col-span-2">
+              <label for="file" class="text-base block mb-3 font-semibold"
+                >Profile Image</label
+              >
+              <div class="flex flex-wrap gap-5">
+                <div
+                  class="relative max-w-[200px] max-h-[200px]"
+                  v-if="userProfile.image"
+                >
+                  <img
+                    :src="userProfile.image"
+                    :alt="`Uploaded profile image`"
+                    class="rounded-full size-[100px] object-cover"
+                  />
+                  <div
+                    class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
+                    @click="deleteUpload(i)"
+                  >
+                    <UIcon
+                      name="i-heroicons-trash-solid"
+                      class="text-red-500"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="w-full h-full flex items-center justify-center max-w-[200px] max-h-[200px] relative pt-7"
+                >
+                  <input
+                    type="file"
+                    name=""
+                    id=""
+                    class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
+                    @change="handleFileUpload($event, 'image')"
+                  />
+                  <!-- <UIcon
+                  name="i-material-symbols:drive-folder-upload-outline"
+                  size="66"
+                /> -->
+                  <UInput
+                    type="file"
+                    size="xs"
+                    class="pointer-events-none"
+                    icon="i-heroicons-folder"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="grid gap-4">
+              <div class="col-span-2 md:col-auto">
+                <UFormGroup
+                  label=""
+                  :ui="{
+                    label: {
+                      base: 'block font-medium text-gray-700 dark:text-slate-700',
+                    },
+                  }"
+                >
+                  <UInput
+                    type="text"
+                    size="md"
+                    color="white"
+                    placeholder="City"
+                    v-model="form.city"
+                    :ui="{
+                      placeholder:
+                        'placeholder-gray-400 dark:placeholder-gray-200',
+                    }"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="col-span-2 md:col-auto">
+                <UFormGroup
+                  label=""
+                  :ui="{
+                    label: {
+                      base: 'block font-medium text-gray-700 dark:text-slate-700',
+                    },
+                  }"
+                >
+                  <UInput
+                    type="text"
+                    size="md"
+                    color="white"
+                    placeholder="State"
+                    v-model="form.state"
+                    :ui="{
+                      placeholder:
+                        'placeholder-gray-400 dark:placeholder-gray-200',
+                    }"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="col-span-2 md:col-auto">
+                <UFormGroup
+                  label=""
+                  :ui="{
+                    label: {
+                      base: 'block font-medium text-gray-700 dark:text-slate-700',
+                    },
+                  }"
+                >
+                  <UInput
+                    type="text"
+                    size="md"
+                    color="white"
+                    placeholder="Zip"
+                    v-model="form.zip"
+                    :ui="{
+                      placeholder:
+                        'placeholder-gray-400 dark:placeholder-gray-200',
+                    }"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="col-span-2">
+                <UFormGroup
+                  label=""
+                  :ui="{
+                    label: {
+                      base: 'block font-medium text-gray-700 dark:text-slate-700',
+                    },
+                  }"
+                >
+                  <UInput
+                    color="white"
+                    variant="outline"
+                    class="w-full"
+                    resize
+                    placeholder="Address"
+                    v-model="form.address"
+                    :ui="{
+                      placeholder:
+                        'placeholder-gray-400 dark:placeholder-gray-200',
+                    }"
+                  />
+                </UFormGroup>
+              </div>
+            </div>
             <input
               type="text"
               placeholder="Referral code (optional)"
@@ -269,7 +408,6 @@
 <script setup>
 const Api = useApi();
 const { login } = useAuth();
-
 const isPassword = ref(true);
 const isLoading = ref(false);
 
@@ -282,6 +420,8 @@ const form = ref({
   confirmPassword: "",
   refer: "",
 });
+
+const userProfile = ref({});
 
 const error = ref("");
 const submitError = ref("");
@@ -334,6 +474,11 @@ async function handleSubmit() {
     username: form.value.email,
     phone: form.value.phone,
     refer: form.value.refer,
+    image: userProfile.value.image,
+    city: form.value.city,
+    state: form.value.state,
+    zip: form.value.zip,
+    address: form.value.address,
   };
 
   try {
@@ -359,5 +504,25 @@ async function handleSubmit() {
     }
   }
   isLoading.value = false;
+}
+
+function handleFileUpload(event, field) {
+  const files = Array.from(event.target.files);
+  const reader = new FileReader();
+
+  // Event listener for successful read
+  reader.onload = () => {
+    userProfile.value.image = reader.result;
+  };
+
+  // Event listener for errors
+  reader.onerror = (error) => reject(error);
+
+  // Read the file as a data URL (Base64 string)
+  reader.readAsDataURL(files[0]);
+}
+
+function deleteUpload(ind) {
+  userProfile.value.image = null;
 }
 </script>
