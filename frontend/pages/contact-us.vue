@@ -7,6 +7,11 @@
           <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
             {{ $t("customer_support") }}
           </h1>
+          <a
+            href="tel:+8801896144067"
+            class="text-slate-300 text-xl max-w-2xl mx-auto block"
+            >+8801896144067</a
+          >
           <p class="text-slate-300 text-lg max-w-2xl mx-auto">
             {{ $t("support_text") }}
           </p>

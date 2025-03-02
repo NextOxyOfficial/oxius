@@ -53,13 +53,17 @@
         </template>
         <template #auto_approve-data="{ row }">
           <p v-if="row.approved" class="text-sm text-green-500">Approved</p>
-          <p v-if="row.rejected" class="text-sm text-green-500">Rejected</p>
+          <p v-if="row.rejected" class="text-sm text-red-500">Rejected</p>
+
           <p
-            v-else
+            v-if="!row.completed"
             class="text-sm"
             :class="{
-              'text-red-500': getRemainingTime(row.created_at) === 'Auto Approved',
-              'text-orange-500': getRemainingTime(row.created_at).includes('remaining'),
+              'text-red-500':
+                getRemainingTime(row.created_at) === 'Auto Approved',
+              'text-orange-500': getRemainingTime(row.created_at).includes(
+                'remaining'
+              ),
             }"
           >
             {{ getRemainingTime(row.created_at) }}
@@ -68,6 +72,17 @@
         <template #approve-data="{ row }">
           <div class="flex gap-1.5">
             <UButton
+              v-if="row.rejected"
+              size="xs"
+              class="w-[67px] justify-center"
+              color="primary"
+              @click="handleOperation(row.id, 'approve')"
+              variant="outline"
+              :label="'Approve'"
+              :loading="isLoading"
+            />
+            <UButton
+              v-else
               size="xs"
               class="w-[67px] justify-center"
               color="primary"
@@ -78,7 +93,7 @@
               :loading="isLoading"
             />
             <UButton
-              v-if="row.approved === false"
+              v-if="!row.rejected && !row.approved"
               size="xs"
               class="w-[67px] justify-center"
               color="red"
@@ -107,7 +122,9 @@
       >
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+            <h3
+              class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+            >
               Rejection Reason
             </h3>
             <UButton
@@ -128,6 +145,9 @@
           placeholder="Rejection Reason"
           v-model="rejectionReason"
         />
+        <p class="text-red-500 text-sm" v-if="rejectionFieldMissing">
+          {{ rejectionFieldMissing }}
+        </p>
         <UButton
           size="md"
           color="primary"
@@ -192,15 +212,18 @@ async function getUserGigs() {
 getUserGigs();
 
 async function handleOperation(taskId, operation) {
-  const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
-    tasks: [
-      {
-        id: taskId,
-        approved: operation === "approve" ? true : false,
-        rejected: operation === "reject" ? true : false,
-      },
-    ],
-  });
+  const res = await put(
+    `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
+    {
+      tasks: [
+        {
+          id: taskId,
+          approved: operation === "approve" ? true : false,
+          rejected: operation === "reject" ? true : false,
+        },
+      ],
+    }
+  );
   console.log(res);
   if (res.error) {
   } else {
@@ -213,7 +236,7 @@ const isApproveAllLoading = ref(false);
 
 // Add this computed property
 const hasUnapprovedTasks = computed(() => {
-  return submittedTasks.value.some(task => !task.approved && !task.rejected);
+  return submittedTasks.value.some((task) => !task.approved && !task.rejected);
 });
 
 // Add this new function to handle approving all tasks
@@ -221,8 +244,8 @@ async function handleApproveAll() {
   isApproveAllLoading.value = true;
   try {
     const unapprovedTasks = submittedTasks.value
-      .filter(task => !task.approved && !task.rejected)
-      .map(task => ({
+      .filter((task) => !task.approved && !task.rejected)
+      .map((task) => ({
         id: task.id,
         approved: true,
         rejected: false,
@@ -232,9 +255,12 @@ async function handleApproveAll() {
       return;
     }
 
-    const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
-      tasks: unapprovedTasks,
-    });
+    const res = await put(
+      `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
+      {
+        tasks: unapprovedTasks,
+      }
+    );
 
     if (res.error) {
       console.error("Error approving all tasks:", res.error);
@@ -254,24 +280,29 @@ function openModal(taskId, operation) {
   selectedTaskId.value = taskId;
   rejectionReason.value = "";
 }
-
+const rejectionFieldMissing = ref("");
 async function submitRejection() {
   if (!selectedTaskId.value || !rejectionReason.value) {
+    rejectionFieldMissing = "Provide the rejection reason!";
     console.log("Task ID or rejection reason is missing");
     return;
   }
+  rejectionFieldMissing = "";
   isRejectLoading.value = true;
   try {
-    const res = await put(`/update-task-by-micro-gig-post/${route.params.id}/tasks/`, {
-      tasks: [
-        {
-          id: selectedTaskId.value,
-          approved: false,
-          rejected: true,
-          reason: rejectionReason.value,
-        },
-      ],
-    });
+    const res = await put(
+      `/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
+      {
+        tasks: [
+          {
+            id: selectedTaskId.value,
+            approved: false,
+            rejected: true,
+            reason: rejectionReason.value,
+          },
+        ],
+      }
+    );
     console.log(res);
     if (res.error) {
       console.log("Error:", res.error);
@@ -288,15 +319,17 @@ async function submitRejection() {
 function viewDetails(taskId, operation) {
   console.log(taskId, operation);
   isOpenTaskDetails.value = true;
-  current_submitted_task_details.value = submittedTasks.value.find(task => task.id === taskId);
+  current_submitted_task_details.value = submittedTasks.value.find(
+    (task) => task.id === taskId
+  );
 }
 
 watch(selectedFilter, () => {
   if (selectedFilter.value === "Approved") {
-    submittedTasks.value = submittedTasks.value.filter(task => task.approved);
+    submittedTasks.value = submittedTasks.value.filter((task) => task.approved);
     console.log("approved");
   } else if (selectedFilter.value === "Rejected") {
-    submittedTasks.value = submittedTasks.value.filter(task => task.rejected);
+    submittedTasks.value = submittedTasks.value.filter((task) => task.rejected);
     console.log("rejected");
   }
 });

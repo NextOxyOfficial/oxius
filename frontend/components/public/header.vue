@@ -1,5 +1,7 @@
 <template>
-  <div class="py-3 sticky z-50 top-0 bg-white dark:bg-black">
+  <div
+    class="py-3 sticky z-50 top-2 bg-slate-100/80 shadow-sm md:shadow-md rounded-2xl mx-2 mt-2 dark:bg-black max-w-[1280px] md:mx-auto"
+  >
     <UContainer>
       <USlideover
         v-model="isOpen"
@@ -139,7 +141,7 @@
             @click="openMenu = !openMenu"
             :ui="{
               size: {
-                sm: 'text-xs md:text-sm',
+                sm: 'text-sm',
               },
               padding: {
                 sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
@@ -151,8 +153,13 @@
               },
             }"
           >
-            <UIcon name="i-heroicons-user-circle" class="text-xl" />
-            Hi {{ user?.user?.first_name }}
+            <UIcon
+              v-if="user?.user?.kyc"
+              name="mdi:check-decagram"
+              class="w-5 h-5 text-blue-600"
+            />
+            <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
+            Hi {{ (user?.user?.first_name).slice(0, 12) }}
             <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
             <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
           </UButton>

@@ -101,6 +101,7 @@
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
           </div>
+
           <p v-if="depositErrors.policy" class="text-sm text-red-500">
             Please select this field
           </p>
@@ -280,6 +281,9 @@
               class="my-3"
               v-model="transfer.payable_amount"
             />
+            <p class="text-sm text-red-500" v-if="transferErrors.transfer">
+              *Insufficient Fund
+            </p>
             <p class="text-sm text-red-500">
               {{ transferErrors.payable_amount }}
             </p>
@@ -297,7 +301,7 @@
                   to="/terms/"
                   active-class="text-primary"
                   inactive-class="text-green-500 dark:text-green-400"
-                  >Terms & Condition</ULink
+                  >Terms & Conditions</ULink
                 >,
                 <ULink
                   to="/privacy/"
@@ -308,6 +312,9 @@
               </template>
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
+            <p class="text-sm text-red-500" v-if="depositErrors.policy">
+              *Please Accept Terms & Conditions, Privacy Policy
+            </p>
             <div class="mt-2">
               <UButton
                 :loading="isLoading"
@@ -734,6 +741,16 @@ const transferErrors = ref({});
 async function sendToUser() {
   isLoading.value = true;
   transferErrors.value = {};
+
+  if (
+    transfer.value.payable_amount > user.value?.user.balance ||
+    !policy.value
+  ) {
+    transferErrors.value = { transfer: "insufficient Balance" };
+    depositErrors.value.policy = true;
+    isLoading.value = false;
+    return;
+  }
 
   if (!transfer.value.contact) {
     transferErrors.value.contact = "Contact is required.";

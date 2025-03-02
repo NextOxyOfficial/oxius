@@ -233,7 +233,7 @@
                 {{ error.confirmPassword }}
               </p>
             </div>
-            <div class="col-span-2">
+            <!-- <div class="col-span-2">
               <label for="file" class="text-base block mb-3 font-semibold"
                 >Profile Image</label
               >
@@ -268,10 +268,10 @@
                     class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
                     @change="handleFileUpload($event, 'image')"
                   />
-                  <!-- <UIcon
+                  <UIcon
                   name="i-material-symbols:drive-folder-upload-outline"
                   size="66"
-                /> -->
+                />
                   <UInput
                     type="file"
                     size="xs"
@@ -280,7 +280,7 @@
                   />
                 </div>
               </div>
-            </div>
+            </div> -->
             <div class="grid gap-4">
               <div class="col-span-2 md:col-auto">
                 <UFormGroup
@@ -474,7 +474,7 @@ async function handleSubmit() {
     username: form.value.email,
     phone: form.value.phone,
     refer: form.value.refer,
-    image: userProfile.value.image,
+    // image: userProfile.value.image,
     city: form.value.city,
     state: form.value.state,
     zip: form.value.zip,

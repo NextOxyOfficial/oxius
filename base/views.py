@@ -788,109 +788,173 @@ def get_microgigpost_tasks(request, gig_id):
 
 #     return Response({"updated_tasks": updated_tasks}, status=status.HTTP_200_OK)
 
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# def update_microgigpost_tasks(request, gig_id):
+#     """
+#     Update tasks associated with a specific MicroGigPost.
+#     Handles both individual task updates and bulk approvals.
+#     """
+#     try:
+#         # Retrieve the MicroGigPost instance
+#         micro_gig_post = MicroGigPost.objects.get(id=gig_id)
+        
+#         # Check authorization - only gig owner or admin can update tasks
+#         if request.user != micro_gig_post.user and not request.user.is_staff:
+#             return Response(
+#                 {"error": "You don't have permission to update tasks for this gig"},
+#                 status=status.HTTP_403_FORBIDDEN
+#             )
+            
+#     except MicroGigPost.DoesNotExist:
+#         return Response(
+#             {"error": "MicroGigPost not found"},
+#             status=status.HTTP_404_NOT_FOUND
+#         )
+
+#     # Get the tasks data from request
+#     tasks_data = request.data.get('tasks')
+#     print(tasks_data)
+#     if not tasks_data:
+#         return Response(
+#             {"error": "No tasks provided in the request"},
+#             status=status.HTTP_400_BAD_REQUEST
+#         )
+        
+#     if not isinstance(tasks_data, list):
+#         return Response(
+#             {"error": "Expected a list of tasks in 'tasks' field"},
+#             status=status.HTTP_400_BAD_REQUEST
+#         )
+
+#     updated_tasks = []
+#     errors = []
+
+#     # Validate all task IDs before making any changes
+#     for index, task_data in enumerate(tasks_data):
+#         if not task_data.get('id'):
+#             errors.append({
+#                 "index": index,
+#                 "error": "Task ID is required"
+#             })
+    
+#     if errors:
+#         return Response(
+#             {"errors": errors},
+#             status=status.HTTP_400_BAD_REQUEST
+#         )
+
+#     # Process each task update
+#     try:
+#         for task_data in tasks_data:
+#             task_id = task_data.get('id')
+#             try:
+#                 task = MicroGigPostTask.objects.get(id=task_id, gig=micro_gig_post)
+                
+#                 # Handle the update based on the task data
+#                 if 'approved' in task_data:
+#                     task.approved = task_data['approved']
+#                     if task_data['approved']:
+#                         task.rejected = False
+#                 elif 'rejected' in task_data:
+#                     task.rejected = task_data['rejected']
+#                     if task_data['rejected']:
+#                         task.approved = False
+#                         if task_data.get('reason'):
+#                             task.reason = task_data['reason']
+
+#                 # Save the task
+#                 task.save()
+                
+#                 # Serialize the updated task
+#                 serializer = GetMicroGigPostTaskSerializer(task)
+#                 updated_tasks.append(serializer.data)
+
+#             except MicroGigPostTask.DoesNotExist:
+#                 errors.append({
+#                     "task_id": task_id,
+#                     "error": f"Task not found or doesn't belong to this gig"
+#                 })
+
+#         if errors:
+#             return Response(
+#                 {"message": "Some tasks could not be updated", "errors": errors},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         return Response({
+#             "message": "Tasks updated successfully",
+#             "updated_tasks": updated_tasks
+#         }, status=status.HTTP_200_OK)
+        
+#     except Exception as e:
+#         return Response({
+#             "error": "An error occurred while updating tasks",
+#             "detail": str(e)
+#         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_microgigpost_tasks(request, gig_id):
-    """
-    Update tasks associated with a specific MicroGigPost.
-    Handles both individual task updates and bulk approvals.
-    """
     try:
-        # Retrieve the MicroGigPost instance
         micro_gig_post = MicroGigPost.objects.get(id=gig_id)
         
-        # Check authorization - only gig owner or admin can update tasks
         if request.user != micro_gig_post.user and not request.user.is_staff:
             return Response(
                 {"error": "You don't have permission to update tasks for this gig"},
                 status=status.HTTP_403_FORBIDDEN
             )
             
-    except MicroGigPost.DoesNotExist:
-        return Response(
-            {"error": "MicroGigPost not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        tasks_data = request.data.get('tasks', [])
+        if not tasks_data:
+            return Response(
+                {"error": "No tasks provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    # Get the tasks data from request
-    tasks_data = request.data.get('tasks')
-    if not tasks_data:
-        return Response(
-            {"error": "No tasks provided in the request"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-        
-    if not isinstance(tasks_data, list):
-        return Response(
-            {"error": "Expected a list of tasks in 'tasks' field"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    updated_tasks = []
-    errors = []
-
-    # Validate all task IDs before making any changes
-    for index, task_data in enumerate(tasks_data):
-        if not task_data.get('id'):
-            errors.append({
-                "index": index,
-                "error": "Task ID is required"
-            })
-    
-    if errors:
-        return Response(
-            {"errors": errors},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Process each task update
-    try:
+        updated_tasks = []
         for task_data in tasks_data:
             task_id = task_data.get('id')
             try:
                 task = MicroGigPostTask.objects.get(id=task_id, gig=micro_gig_post)
                 
-                # Handle the update based on the task data
-                if 'approved' in task_data:
-                    task.approved = task_data['approved']
-                    if task_data['approved']:
-                        task.rejected = False
-                elif 'rejected' in task_data:
-                    task.rejected = task_data['rejected']
-                    if task_data['rejected']:
-                        task.approved = False
-                        if task_data.get('reason'):
-                            task.reason = task_data['reason']
+                # Update task status
+                if task_data.get('rejected'):
+                    task.rejected = True
+                    task.approved = False
+                    task.reason = task_data.get('reason', '')  # Set rejection reason
+                    # task.completed = True  # Mark as completed when rejected
+                elif task_data.get('approved'):
+                    task.approved = True
+                    task.rejected = False
+                    # task.completed = True  # Mark as completed when approved
 
-                # Save the task
                 task.save()
-                
-                # Serialize the updated task
                 serializer = GetMicroGigPostTaskSerializer(task)
                 updated_tasks.append(serializer.data)
 
             except MicroGigPostTask.DoesNotExist:
-                errors.append({
-                    "task_id": task_id,
-                    "error": f"Task not found or doesn't belong to this gig"
-                })
-
-        if errors:
-            return Response(
-                {"message": "Some tasks could not be updated", "errors": errors},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                return Response(
+                    {"error": f"Task {task_id} not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
         return Response({
             "message": "Tasks updated successfully",
             "updated_tasks": updated_tasks
         }, status=status.HTTP_200_OK)
-        
+
+    except MicroGigPost.DoesNotExist:
+        return Response(
+            {"error": "MicroGigPost not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e:
-        return Response({
-            "error": "An error occurred while updating tasks",
-            "detail": str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error updating tasks: {str(e)}")  # Add logging
+        return Response(
+            {"error": "Server error occurred"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 # class UserBalance(generics.ListCreateAPIView):
 #     permission_classes = [IsAuthenticated]

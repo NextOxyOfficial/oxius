@@ -25,7 +25,10 @@
           </p>
         </template>
         <template #auto_approve-data="{ row }">
+          <p v-if="row.approved" class="text-green-500 text-sm">Approved</p>
+          <p v-if="row.rejected" class="text-red-500 text-sm">Rejected</p>
           <p
+            v-if="!row.approved && !row.rejected"
             class="text-sm"
             :class="{
               'text-red-500':
@@ -59,7 +62,7 @@
     </UContainer>
     <UModal v-model="isOpen">
       <div class="p-6 bg-slate-100 border rounded-xl space-y-4">
-        <p>
+        <p class="font-semibold">
           {{ currentTaskDetails.approved ? "Approved" : "Pending" }} ||
           {{ formatDate(currentTaskDetails.created_at) }}
         </p>
@@ -76,6 +79,16 @@
             :alt="media.image"
             class="max-h-[200px] object-contain"
           />
+        </div>
+
+        <div
+          class="bg-white p-2 text-center rounded-xl"
+          v-if="currentTaskDetails?.reason"
+        >
+          <p class="font-semibold text-red-500 text-base">Rejected Reason</p>
+          <p class="text-base">
+            {{ currentTaskDetails.reason }}
+          </p>
         </div>
         <UButton
           size="md"
