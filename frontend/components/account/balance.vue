@@ -48,6 +48,11 @@
           :label="t('view')"
           class="ml-2"
           :to="`/pending-tasks/${user?.user.id}`"
+          :ui="{
+            padding: {
+              xs: 'px-2.5 py-2',
+            },
+          }"
         />
       </div>
     </div>
@@ -64,7 +69,7 @@
         :ui="{
           size: { md: 'text-xs md:text-sm' },
           gap: { md: 'gap-x-1 md:gap-x-2' },
-          padding: { md: 'px-1.5 py-0.5 md:px-3 md:py-2' },
+          padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
       />
@@ -77,6 +82,7 @@
         to="/inbox/"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
+          padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
       />
@@ -89,6 +95,7 @@
         :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
+          padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
       />
@@ -101,6 +108,7 @@
         to="/post-a-gig"
         :ui="{
           size: { md: 'text-xs md:text-sm' },
+          padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
       />
