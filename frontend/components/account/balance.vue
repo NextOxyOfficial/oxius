@@ -67,7 +67,7 @@
         :label="t('deposit_withdraw')"
         to="/deposit-withdraw/"
         :ui="{
-          size: { md: 'text-xs md:text-sm' },
+          size: { md: 'text-sm' },
           gap: { md: 'gap-x-1 md:gap-x-2' },
           padding: { md: 'px-2.5 py-2' },
         }"
@@ -81,7 +81,7 @@
         :label="t('inbox')"
         to="/inbox/"
         :ui="{
-          size: { md: 'text-xs md:text-sm' },
+          size: { md: 'text-sm' },
           padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
@@ -94,7 +94,7 @@
         :label="t('my_gigs')"
         :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
         :ui="{
-          size: { md: 'text-xs md:text-sm' },
+          size: { md: 'text-sm' },
           padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
@@ -107,7 +107,7 @@
         :label="t('post_gigs')"
         to="/post-a-gig"
         :ui="{
-          size: { md: 'text-xs md:text-sm' },
+          size: { md: 'text-sm' },
           padding: { md: 'px-2.5 py-2' },
         }"
         class="justify-center max-sm:py-1.5"
