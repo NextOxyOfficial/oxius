@@ -214,7 +214,7 @@ class MicroGigPost(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     required_quantity = models.IntegerField()
     filled_quantity = models.IntegerField(default=0)
-    medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
+    medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True, related_name='micro_gig_posts')
     instructions = models.TextField(blank=True, null=True,default="")
     target_network = models.ManyToManyField(TargetNetwork,blank=True, null=True)
     target_country = models.CharField(blank=True, null=True)
