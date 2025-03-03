@@ -179,6 +179,10 @@ class MicroGigPostAdmin(admin.ModelAdmin):
     
     list_filter = ('user', 'category', 'active_gig', 'stop_gig', 'created_at', 'updated_at')
     
+    @admin.display(ordering='-created_at')
+    def created_at(self,obj):
+        return obj.created_at
+        
 admin.site.register(MicroGigPost, MicroGigPostAdmin)
 
 
