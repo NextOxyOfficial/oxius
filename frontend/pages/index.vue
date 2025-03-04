@@ -39,14 +39,45 @@
               }"
             />
           </UButtonGroup>
+        </form>
+        <div
+          class="border bg-white w-full max-w-lg mx-auto rounded-md p-2 space-y-3 mb-5"
+          v-if="
+            searchServices?.results?.length || classifiedPosts.results?.length
+          "
+        >
+          <ul class="flex flex-wrap" v-if="searchServices?.results?.length">
+            <li v-for="service in searchServices?.results" :key="service.id">
+              <NuxtLink
+                class="p-2 border border-dashed border-green-400 flex gap-1 items-center rounded-md bg-green-50"
+                :to="`/classified-categories/${service.id}`"
+              >
+                <NuxtImg
+                  :src="service?.image"
+                  :title="service.title"
+                  class="size-4"
+                />
+                <span class="truncate">{{ service.title }}</span></NuxtLink
+              >
+            </li>
+          </ul>
+          <UDivider
+            label=""
+            v-if="
+              searchServices?.results?.length && classifiedPosts.results?.length
+            "
+          />
           <ul v-if="classifiedPosts.results?.length">
             <li v-for="service of classifiedPosts.results" :key="service.id">
-              <NuxtLink :to="`/classified-categories/details/${service.id}`">
+              <NuxtLink
+                :to="`/classified-categories/details/${service.id}`"
+                class="capitalize block p-2 hover:bg-green-50"
+              >
                 {{ service.title }}
               </NuxtLink>
             </li>
           </ul>
-        </form>
+        </div>
         <UButton
           v-if="user?.user"
           class="absolute max-md:left-2 md:right-20 top-32 md:top-[72px]"
@@ -219,7 +250,7 @@
       </UContainer>
     </PublicSection> -->
 
-    <div class="h-96 overflow-auto border max-w-5xl mx-auto p-4">
+    <!-- <div class="h-96 overflow-auto border max-w-5xl mx-auto p-4">
       <UCard
         :ui="{
           background: '',
@@ -319,7 +350,7 @@
           </div>
         </NuxtLink>
       </UCard>
-    </div>
+    </div> -->
     <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-6 md:mb-12 text-center">
@@ -571,6 +602,7 @@ const isOpen = ref(false);
 const { get, baseURL } = useApi();
 const { user } = useAuth();
 const services = ref([]);
+const searchServices = ref([]);
 const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
@@ -712,14 +744,42 @@ async function handleSearch() {
   }
 }
 
+// watch(
+//   () => (title.value ? title.value.trim() : ""),
+//   async (newValue) => {
+//     if (!newValue) {
+//       isLoading.value = true;
+//       try {
+//         const res = await get("/classified-categories/");
+//         services.value = res.data;
+//         classifiedPosts.value = [];
+//       } catch (error) {
+//         console.error("Error fetching categories:", error);
+//         toast.add({
+//           title: "Failed to refresh categories",
+//           color: "red",
+//         });
+//       } finally {
+//         isLoading.value = false;
+//       }
+//     }
+//   },
+//   {
+//     debounce: 300,
+//     immediate: false,
+//   }
+// );
+// Replace the existing watch function with this:
 watch(
-  () => (title.value ? title.value.trim() : ""),
+  () => title.value,
   async (newValue) => {
-    if (!newValue) {
+    // Don't trigger search if value is empty
+    if (!newValue?.trim()) {
       isLoading.value = true;
       try {
         const res = await get("/classified-categories/");
         services.value = res.data;
+        searchServices.value = [];
         classifiedPosts.value = [];
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -730,13 +790,41 @@ watch(
       } finally {
         isLoading.value = false;
       }
+      return;
+    }
+
+    // Perform search
+    isLoading.value = true;
+    try {
+      const [categoriesRes, postsRes] = await Promise.all([
+        get(
+          `/classified-categories/?title=${encodeURIComponent(newValue.trim())}`
+        ),
+        get(`/classified-posts/?title=${encodeURIComponent(newValue.trim())}`),
+      ]);
+
+      services.value = categoriesRes.data;
+      searchServices.value = categoriesRes.data;
+      classifiedPosts.value = postsRes.data;
+    } catch (error) {
+      console.error("Search error:", error);
+      toast.add({
+        title: error?.message || "An error occurred while searching",
+        color: "red",
+      });
+    } finally {
+      isLoading.value = false;
     }
   },
   {
-    debounce: 300,
+    // Add debounce to prevent too many API calls while typing
+    debounce: 500,
+    // Don't run on component mount
     immediate: false,
   }
 );
+
+// You can now remove the handleSearch function and update the template:
 </script>
 <style>
 .fade-enter-active,
