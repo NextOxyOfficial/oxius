@@ -41,12 +41,15 @@
           </UButtonGroup>
         </form>
         <div
-          class="border bg-white w-full max-w-lg mx-auto rounded-md p-2 space-y-3 mb-5"
+          class="border bg-white w-full max-w-lg mx-auto rounded-md p-2 space-y-3 mb-5 relative z-50"
           v-if="
             searchServices?.results?.length || classifiedPosts.results?.length
           "
         >
-          <ul class="flex flex-wrap" v-if="searchServices?.results?.length">
+          <ul
+            class="flex flex-wrap gap-1"
+            v-if="searchServices?.results?.length"
+          >
             <li v-for="service in searchServices?.results" :key="service.id">
               <NuxtLink
                 class="p-2 border border-dashed border-green-400 flex gap-1 items-center rounded-md bg-green-50"
