@@ -1,5 +1,5 @@
 <template>
-  <div class="transaction-history">
+  <div class="transaction-history h-max">
     <h1 class="text-3xl font-bold text-center mb-2">Transaction History</h1>
     <p class="text-center text-gray-600 mb-6">
       View your recent mobile recharge transactions
@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div class="transactions">
+    <div class="transactions overflow-auto h-[460px]">
       <div
         v-if="filteredTransactions.length === 0"
         class="text-center py-8 text-gray-500"
@@ -90,7 +90,7 @@
           <div class="text-right">
             <span class="text-base font-bold">${{ transaction.amount }}</span>
             <div
-              class="package-type text-xs px-2 py-1 rounded-full inline-block mt-1"
+              class="package-type text-xs px-2 py-1 rounded-full inline-block mt-1 ml-1"
               :class="getPackageClass(transaction.packageType)"
             >
               {{ transaction.packageType }}
@@ -111,7 +111,7 @@
               <span class="text-gray-500">Calls:</span> {{ transaction.calls }}
             </div>
             <div>
-              <span class="text-gray-500">Status:</span>
+              <span class="text-gray-500">Status: </span>
               <span
                 :class="
                   transaction.status === 'Completed'
@@ -123,15 +123,6 @@
               </span>
             </div>
           </div>
-        </div>
-
-        <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between">
-          <span class="text-xs text-gray-500"
-            >Transaction ID: {{ transaction.id }}</span
-          >
-          <button class="text-sm text-emerald-600 hover:text-emerald-700">
-            View Details
-          </button>
         </div>
       </div>
     </div>
@@ -168,6 +159,11 @@
 
 <script setup>
 import { WifiIcon, PhoneIcon, ZapIcon } from "lucide-vue-next";
+definePageMeta({
+  layout: "dashboard",
+});
+const { get } = useApi();
+const { user } = useAuth();
 
 const searchQuery = ref("");
 const activeFilter = ref("all");
@@ -265,6 +261,9 @@ const transactions = ref([
     status: "Processing",
   },
 ]);
+
+const { data } = await get(`/mobile-recharge/recharges/`);
+transactions.value = data;
 
 const filteredTransactions = computed(() => {
   let result = transactions.value;

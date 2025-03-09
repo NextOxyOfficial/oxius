@@ -70,7 +70,10 @@
           </button>
         </div>
       </div>
-
+      <div class="text-slate-700">
+        <span>Available Balance</span>:&nbsp;
+        <span><span class="text-xl">৳</span> {{ user?.user.balance }}</span>
+      </div>
       <!-- Popular Packages -->
       <div class="mb-10">
         <div class="flex items-center justify-between">
@@ -215,7 +218,7 @@
     <!-- Recharge Modal -->
     <div
       v-if="selectedPackage"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 top-10 bottom-10 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
     >
       <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
         <div class="flex justify-between items-start mb-4">
@@ -270,7 +273,7 @@
             Cancel
           </button>
           <button
-            @click="processRecharge"
+            @click="handleRecharge"
             class="flex-1 py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md"
           >
             Recharge
@@ -287,31 +290,31 @@
       <check-circle-icon class="w-5 h-5 mr-2" />
       <span>Recharge successful!</span>
     </div>
-  </div>
-
-  <UModal
-    v-model="isHistory"
-    fullscreen
-    :ui="{
-      fullscreen: 'w-auto h-auto',
-    }"
-  >
-    <div class="flex justify-end">
+    <UModal
+      v-model="isHistory"
+      fullscreen
+      :ui="{
+        fullscreen: 'w-auto h-auto',
+      }"
+      class="relative"
+    >
       <UButton
         icon="i-heroicons-x-mark"
         size="sm"
-        color="red"
-        variant="ghost"
-        class="m-3"
+        variant="solid"
+        class="m-3 absolute top-0 right-0 bg-slate-500"
         :trailing="false"
         @click="isHistory = false"
       />
-    </div>
-    <MobileRechargeHistory />
-  </UModal>
+      <MobileRechargeHistory />
+    </UModal>
+  </div>
 </template>
 
 <script setup>
+const { user } = useAuth();
+const { post } = useApi();
+
 const toast = useToast();
 const isHistory = ref(false);
 
@@ -343,6 +346,19 @@ onMounted(() => {
   fetchPackages();
 });
 
+async function submitRecharge() {
+  try {
+    await post("/mobile-recharge/recharges/", selectedPackage);
+    showToast.value = true;
+    toast.success("Recharge successful!");
+    setTimeout(() => {
+      showToast.value = false;
+    }, 3000);
+  } catch (err) {
+    toast.error(err || "Recharge failed. Please try again.");
+  }
+}
+
 function getTagClass(type) {
   switch (type) {
     case "data":
@@ -365,18 +381,25 @@ async function handleRecharge() {
     toast.error("Please enter a valid phone number");
     return;
   }
-
+  console.log(selectedPackage.value);
+  const submitValues = {
+    package: selectedPackage.value.id,
+    phone_number: phoneNumber.value,
+    operator: selectedPackage.value.operator,
+    amount: selectedPackage.value.price,
+  };
   try {
-    await processRecharge(selectedPackage.value.id, phoneNumber.value);
-    selectedPackage.value = null;
-    showToast.value = true;
-    toast.success("Recharge successful!");
+    console.log(submitValues);
 
-    setTimeout(() => {
+    const res = await post("/mobile-recharge/recharges/", submitValues);
+    if (res.data) {
+      showToast.value = true;
+      toast.add({ title: "Recharge successful!" });
+
       showToast.value = false;
-    }, 3000);
+    }
   } catch (err) {
-    toast.error(err || "Recharge failed. Please try again.");
+    console.log(err);
   }
 }
 </script>

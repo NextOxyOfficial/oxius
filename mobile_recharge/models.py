@@ -16,6 +16,7 @@ class Operator(models.Model):
         return self.name
 
 class PackageType(models.TextChoices):
+    BALANCE = 'balance', 'Balance'
     DATA = 'data', 'Data'
     VOICE = 'voice', 'Voice'
     COMBO = 'combo', 'Combo'
@@ -36,6 +37,7 @@ class Package(models.Model):
 
 class Recharge(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recharges')
+    operator = models.ForeignKey(Operator, on_delete=models.SET_NULL, null=True, related_name='operator')
     package = models.ForeignKey(Package, on_delete=models.SET_NULL, null=True)
     phone_number = models.CharField(max_length=20)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
