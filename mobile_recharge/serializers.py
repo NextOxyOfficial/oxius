@@ -13,10 +13,29 @@ class PackageSerializer(serializers.ModelSerializer):
         fields = ['id', 'operator', 'type', 'price', 'data', 'validity', 'calls', 'popular']
 
 class RechargeSerializer(serializers.ModelSerializer):
+    package = serializers.PrimaryKeyRelatedField(
+        queryset=Package.objects.all(),
+        help_text="The ID of the selected package"
+    )
+    
+    package_details = PackageSerializer(
+        source='package',
+        read_only=True
+    )
+    operator = serializers.PrimaryKeyRelatedField(
+        queryset=Operator.objects.all(),
+        help_text="The ID of the selected operator"
+    )
+    
+    operator_details = OperatorSerializer(
+        source='operator',
+        read_only=True
+    )
+    
     class Meta:
         model = Recharge
-        fields = ['id', 'package', 'phone_number', 'amount', 'created_at']
-        read_only_fields = ['user', 'status', 'transaction_id']
+        fields = '__all__'
+        read_only_fields = ['user', 'transaction_id']
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user

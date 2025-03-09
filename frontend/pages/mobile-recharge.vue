@@ -3,9 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-10">
-        <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">
-          Mobile Recharge
-        </h1>
+        <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">Mobile Recharge</h1>
         <p class="mt-3 text-xl text-gray-500">
           Choose the perfect recharge package for your needs
         </p>
@@ -27,9 +25,7 @@
 
         <!-- Operator Filter -->
         <div class="my-6 text-center">
-          <h3 class="text-sm font-medium text-gray-700 mb-3">
-            Select Operator
-          </h3>
+          <h3 class="text-sm font-medium text-gray-700 mb-3">Select Operator</h3>
           <div class="flex justify-center gap-4">
             <button
               v-for="(operator, index) in operators"
@@ -48,9 +44,7 @@
               >
                 <img :src="operator.icon" alt="gp-logo" class="h-5 w-5" />
               </div>
-              <span class="mt-2 text-xs md:text-base font-medium">{{
-                operator.name
-              }}</span>
+              <span class="mt-2 text-xs md:text-base font-medium">{{ operator.name }}</span>
             </button>
           </div>
         </div>
@@ -77,14 +71,8 @@
       <!-- Popular Packages -->
       <div class="mb-10">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">
-            Popular Packages
-          </h2>
-          <UButton
-            label="Recharge History"
-            @click="isHistory = true"
-            size="md"
-          />
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">Popular Packages</h2>
+          <UButton label="Recharge History" @click="isHistory = true" size="md" />
         </div>
         <div
           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mx-auto max-w-7xl"
@@ -123,10 +111,7 @@
                   <span>{{ pack.data }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
-                  <UIcon
-                    name="i-uit-calender"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
-                  />
+                  <UIcon name="i-uit-calender" class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
                   <span>{{ pack.validity }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
@@ -186,10 +171,7 @@
                   <span>{{ pack.data }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
-                  <UIcon
-                    name="i-uit-calender"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
-                  />
+                  <UIcon name="i-uit-calender" class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
                   <span>{{ pack.validity }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
@@ -223,10 +205,7 @@
       <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
         <div class="flex justify-between items-start mb-4">
           <h3 class="text-xl font-bold text-gray-900">Confirm Recharge</h3>
-          <button
-            @click="selectedPackage = null"
-            class="text-gray-400 hover:text-gray-500"
-          >
+          <button @click="selectedPackage = null" class="text-gray-400 hover:text-gray-500">
             <x-icon class="w-5 h-5" />
           </button>
         </div>
@@ -251,9 +230,7 @@
         </div>
 
         <div class="mb-4">
-          <label
-            for="phone"
-            class="block text-sm font-medium text-gray-700 mb-1"
+          <label for="phone" class="block text-sm font-medium text-gray-700 mb-1"
             >Mobile Number</label
           >
           <input
@@ -312,6 +289,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
 const { user } = useAuth();
 const { post } = useApi();
 
@@ -345,19 +325,6 @@ onMounted(() => {
   fetchOperators();
   fetchPackages();
 });
-
-async function submitRecharge() {
-  try {
-    await post("/mobile-recharge/recharges/", selectedPackage);
-    showToast.value = true;
-    toast.success("Recharge successful!");
-    setTimeout(() => {
-      showToast.value = false;
-    }, 3000);
-  } catch (err) {
-    toast.error(err || "Recharge failed. Please try again.");
-  }
-}
 
 function getTagClass(type) {
   switch (type) {
@@ -393,10 +360,9 @@ async function handleRecharge() {
 
     const res = await post("/mobile-recharge/recharges/", submitValues);
     if (res.data) {
-      showToast.value = true;
       toast.add({ title: "Recharge successful!" });
-
-      showToast.value = false;
+      isHistory.value = false;
+      selectedPackage.value = null;
     }
   } catch (err) {
     console.log(err);

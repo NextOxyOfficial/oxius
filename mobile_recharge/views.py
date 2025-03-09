@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from .models import *
 from .serializers import *
 
+from django.db import transaction
+from rest_framework.exceptions import ValidationError
+
+
 class OperatorListView(generics.ListAPIView):
     queryset = Operator.objects.filter(active=True)
     serializer_class = OperatorSerializer
@@ -33,12 +37,15 @@ class RechargeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Recharge.objects.filter(user=self.request.user)
+        # Admin/staff can see all recharges
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Recharge.objects.all().order_by('-created_at')
+        # Regular users can only see their own recharges
+        return Recharge.objects.filter(user=self.request.user).order_by('-created_at')
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
-            print(serializer.errors)
             return Response({
                 'status': 'error',
                 'message': 'Invalid recharge details',
@@ -46,23 +53,40 @@ class RechargeListCreateView(generics.ListCreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            self.perform_create(serializer)
+            recharge = self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response({
                 'status': 'success',
                 'message': 'Recharge initiated successfully',
                 'data': serializer.data
             }, status=status.HTTP_201_CREATED, headers=headers)
+        except ValidationError as e:
+            return Response({
+                'status': 'error',
+                'message': str(e),
+            }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({
                 'status': 'error',
                 'message': 'Failed to process recharge',
                 'detail': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        print(serializer.errors)
     
+    @transaction.atomic
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        amount = serializer.validated_data.get('amount') or serializer.validated_data['package'].price
+        
+        # Check if user has sufficient balance
+        if user.balance < amount:
+            raise ValidationError(f"Insufficient balance. Required: ${amount}, Available: ${user.balance}")
+        
+        # Deduct amount from user balance
+        user.balance -= amount
+        user.save()
+        
+        # Create the recharge record
+        return serializer.save(user=user)
 
 class RechargeDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = RechargeSerializer
