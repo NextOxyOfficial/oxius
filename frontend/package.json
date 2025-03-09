@@ -32,7 +32,8 @@
     "nuxt": "^3.13.0",
     "nuxt-aos": "^1.2.5",
     "nuxt-tiptap-editor": "^2.1.4",
-    "vue": "latest"
+    "vue": "latest",
+    "vue-qrcode-reader": "^5.7.1"
   },
   "devDependencies": {
     "@iconify-json/logos": "^1.2.3"

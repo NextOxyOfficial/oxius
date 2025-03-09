@@ -3,7 +3,11 @@
     <div class="ads-container">
       <div class="ads-header">
         <div class="ads-title">
-          <ClockIcon class="clock-icon" size="18" />
+          <UIcon
+            name="i-fluent-clock-20-regular"
+            class="clock-icon"
+            size="18"
+          />
           <h2>FEATURED ADS</h2>
         </div>
         <div class="pagination-dots">
@@ -39,7 +43,10 @@
               <div class="ad-footer">
                 <div class="ad-price">${{ formatPrice(ad.price) }}</div>
                 <div class="ad-date">
-                  <CalendarIcon size="14" />
+                  <UIcon
+                    name="i-uit-calender"
+                    class="w-3.5 h-3.5 text-gray-500"
+                  />
                   <span>{{ ad.date }}</span>
                 </div>
               </div>
@@ -53,7 +60,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { ClockIcon, CalendarIcon } from "lucide-vue-next";
 
 // Sample data - in a real app, this would come from an API
 const initialAds = [

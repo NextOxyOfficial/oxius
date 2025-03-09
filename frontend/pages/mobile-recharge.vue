@@ -21,7 +21,7 @@
             placeholder="Search packages..."
           />
           <span class="absolute right-3 top-3 text-gray-400">
-            <search-icon class="w-5 h-5" />
+            <UIcon name="i-gg-search" class="w-5 h-5" />
           </span>
         </div>
 
@@ -106,15 +106,24 @@
 
               <div class="mt-2 space-y-1">
                 <div class="flex items-center text-sm text-gray-600">
-                  <wifi-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <UIcon
+                    name="i-material-symbols-light-wifi-sharp"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
+                  />
                   <span>{{ pack.data }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
-                  <calendar-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <UIcon
+                    name="i-uit-calender"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
+                  />
                   <span>{{ pack.validity }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
-                  <phone-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <UIcon
+                    name="i-material-symbols-call-outline-rounded"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
+                  />
                   <span>{{ pack.calls }}</span>
                 </div>
               </div>
@@ -160,15 +169,24 @@
 
               <div class="mt-2 space-y-1">
                 <div class="flex items-center text-sm text-gray-600">
-                  <wifi-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <UIcon
+                    name="i-material-symbols-light-wifi-sharp"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
+                  />
                   <span>{{ pack.data }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
-                  <calendar-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <UIcon
+                    name="i-uit-calender"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
+                  />
                   <span>{{ pack.validity }}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-600">
-                  <phone-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <UIcon
+                    name="i-material-symbols-call-outline-rounded"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-400"
+                  />
                   <span>{{ pack.calls }}</span>
                 </div>
               </div>

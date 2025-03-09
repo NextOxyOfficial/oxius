@@ -7,36 +7,46 @@
         }"
         class="relative"
       >
-        <h2 class="text-2xl md:text-4xl max-sm:text-center mb-6 md:mb-8">
-          {{ $t("classified_service") }}
-        </h2>
+        <div class="flex items-center justify-between mb-6 md:mb-8">
+          <h2 class="text-2xl md:text-4xl max-sm:text-center">
+            {{ $t("classified_service") }}
+          </h2>
+          <UButton
+            v-if="user?.user"
+            size="md"
+            color="primary"
+            variant="solid"
+            :label="t('my_post')"
+            to="/my-classified-services/"
+          />
+        </div>
         <form @submit.prevent="handleSearch" class="max-w-sm mx-auto">
           <UButtonGroup
             label="Search Category"
-            class="my-5 md:my-8 justify-center flex !shadow-none"
+            class="my-1 md:my-8 justify-center flex !shadow-none"
             orientation="horizontal"
             size="md"
           >
             <UInput
-              icon="i-heroicons-magnifying-glass-solid"
               type="search"
               color="white"
-              placeholder="Search Category"
+              placeholder="খুঁজুন"
               v-model="title"
               class="w-full"
             />
             <UButton
-              color="primary"
+              icon="i-heroicons-magnifying-glass-solid"
+              color="gray"
               type="submit"
-              variant="solid"
               :loading="isLoading"
-              :label="t('search')"
               size="md"
+              class="w-16"
               :ui="{
                 padding: {
-                  md: 'px-6 py-2',
+                  md: 'px-3 py-2',
                 },
               }"
+              block
             />
           </UButtonGroup>
         </form>
@@ -81,15 +91,7 @@
             </li>
           </ul>
         </div>
-        <UButton
-          v-if="user?.user"
-          class="absolute max-md:left-2 md:right-20 top-32 md:top-[72px]"
-          size="md"
-          color="primary"
-          variant="solid"
-          :label="t('my_post')"
-          to="/my-classified-services/"
-        />
+
         <div
           class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 max-md:mt-[92px]"
         >
