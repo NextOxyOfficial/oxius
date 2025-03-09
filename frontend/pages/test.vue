@@ -1,166 +1,330 @@
 <template>
-  <div class="min-h-full bg-white pb-10">
-    <!-- Hero Section -->
-    <div class="bg-slate-900 py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            Customer Support
-          </h1>
-          <p class="text-slate-300 text-lg max-w-2xl mx-auto">
-            Get help and support for all your service needs through our
-            dedicated support channels
-          </p>
+  <div class="classified-ads-container w-full overflow-hidden bg-gray-50 py-6">
+    <h2 class="text-center text-2xl font-bold mb-4">Classified Ads</h2>
+
+    <!-- First row of ads -->
+    <div class="relative overflow-hidden mb-4">
+      <div
+        class="ads-row flex animate-scroll"
+        :style="{
+          animationDuration: `${firstRowDuration}s`,
+          animationPlayState: isPaused ? 'paused' : 'running',
+        }"
+        @mouseenter="isPaused = true"
+        @mouseleave="isPaused = false"
+      >
+        <div
+          v-for="(ad, index) in firstRowAds"
+          :key="`row1-${index}`"
+          class="ad-card"
+        >
+          <div
+            class="bg-white rounded-lg shadow-md p-4 mx-2 min-w-[280px] h-[160px] flex flex-col"
+          >
+            <div class="flex items-center mb-2">
+              <div
+                class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-3"
+              >
+                <img
+                  :src="`/placeholder.svg?height=48&width=48&text=${ad.category}`"
+                  alt=""
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">{{ ad.title }}</h3>
+                <p class="text-xs text-gray-500">{{ ad.category }}</p>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 flex-grow">{{ ad.description }}</p>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-primary font-bold"
+                >${{ ad.price.toFixed(2) }}</span
+              >
+              <button
+                class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary/90 transition-colors"
+              >
+                Contact
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Duplicate the ads for seamless looping -->
+        <div
+          v-for="(ad, index) in firstRowAds"
+          :key="`row1-dup-${index}`"
+          class="ad-card"
+        >
+          <div
+            class="bg-white rounded-lg shadow-md p-4 mx-2 min-w-[280px] h-[160px] flex flex-col"
+          >
+            <div class="flex items-center mb-2">
+              <div
+                class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-3"
+              >
+                <img
+                  :src="`/placeholder.svg?height=48&width=48&text=${ad.category}`"
+                  alt=""
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">{{ ad.title }}</h3>
+                <p class="text-xs text-gray-500">{{ ad.category }}</p>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 flex-grow">{{ ad.description }}</p>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-primary font-bold"
+                >${{ ad.price.toFixed(2) }}</span
+              >
+              <button
+                class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary/90 transition-colors"
+              >
+                Contact
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Support Options Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
-      <div class="grid md:grid-cols-2 gap-8">
-        <!-- General Support Card -->
+    <!-- Second row of ads (scrolling in opposite direction) -->
+    <div class="relative overflow-hidden">
+      <div
+        class="ads-row flex animate-scroll-reverse"
+        :style="{
+          animationDuration: `${secondRowDuration}s`,
+          animationPlayState: isPaused ? 'paused' : 'running',
+        }"
+        @mouseenter="isPaused = true"
+        @mouseleave="isPaused = false"
+      >
         <div
-          class="bg-white rounded-lg shadow-xl p-8 border border-slate-100 hover:border-slate-200 transition-all duration-300"
+          v-for="(ad, index) in secondRowAds"
+          :key="`row2-${index}`"
+          class="ad-card"
         >
-          <div class="flex items-start space-x-5">
-            <div class="flex-shrink-0">
-              <div class="p-3 bg-slate-50 rounded-lg">
-                <UIcon
-                  name="i-material-symbols-headphones-rounded"
-                  class="w-8 h-8 text-slate-700"
+          <div
+            class="bg-white rounded-lg shadow-md p-4 mx-2 min-w-[280px] h-[160px] flex flex-col"
+          >
+            <div class="flex items-center mb-2">
+              <div
+                class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-3"
+              >
+                <img
+                  :src="`/placeholder.svg?height=48&width=48&text=${ad.category}`"
+                  alt=""
+                  class="w-full h-full object-cover"
                 />
-                <!-- <HeadphonesIcon class="w-8 h-8 text-slate-700" /> -->
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">{{ ad.title }}</h3>
+                <p class="text-xs text-gray-500">{{ ad.category }}</p>
               </div>
             </div>
-            <div class="flex-1">
-              <h2 class="text-2xl font-semibold text-slate-900 mb-3">
-                General Support
-              </h2>
-              <p class="text-slate-600 mb-4">
-                Technical assistance and general inquiries for all our services
-              </p>
-              <div class="space-y-3">
-                <a
-                  href="mailto:support@adsyclub.com"
-                  class="flex items-center text-slate-700 hover:text-slate-900 group"
-                >
-                  <UIcon
-                    name="i-material-symbols-mail-outline-rounded"
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
-                  />
-                  <!-- <MailIcon
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
-                  /> -->
-                  <span class="font-medium">support@adsyclub.com</span>
-                </a>
-                <div class="flex items-center text-slate-600">
-                  <UIcon
-                    name="i-iconoir-clock"
-                    class="w-5 h-5 mr-2 text-slate-400"
-                  />
-                  <!-- <ClockIcon class="w-5 h-5 mr-2 text-slate-400" /> -->
-                  <span>24/7 Support Available</span>
-                </div>
-              </div>
+            <p class="text-sm text-gray-600 flex-grow">{{ ad.description }}</p>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-primary font-bold"
+                >${{ ad.price.toFixed(2) }}</span
+              >
+              <button
+                class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary/90 transition-colors"
+              >
+                Contact
+              </button>
             </div>
           </div>
         </div>
-
-        <!-- Partnership Card -->
+        <!-- Duplicate the ads for seamless looping -->
         <div
-          class="bg-white rounded-lg shadow-xl p-8 border border-slate-100 hover:border-slate-200 transition-all duration-300"
+          v-for="(ad, index) in secondRowAds"
+          :key="`row2-dup-${index}`"
+          class="ad-card"
         >
-          <div class="flex items-start space-x-5">
-            <div class="flex-shrink-0">
-              <div class="p-3 bg-slate-50 rounded-lg">
-                <UIcon
-                  name="i-tabler-building"
-                  class="w-8 h-8 text-slate-700"
+          <div
+            class="bg-white rounded-lg shadow-md p-4 mx-2 min-w-[280px] h-[160px] flex flex-col"
+          >
+            <div class="flex items-center mb-2">
+              <div
+                class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-3"
+              >
+                <img
+                  :src="`/placeholder.svg?height=48&width=48&text=${ad.category}`"
+                  alt=""
+                  class="w-full h-full object-cover"
                 />
-                <!-- <BuildingIcon class="w-8 h-8 text-slate-700" /> -->
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">{{ ad.title }}</h3>
+                <p class="text-xs text-gray-500">{{ ad.category }}</p>
               </div>
             </div>
-            <div class="flex-1">
-              <h2 class="text-2xl font-semibold text-slate-900 mb-3">
-                Partnership
-              </h2>
-              <p class="text-slate-600 mb-4">
-                Business development and partnership opportunities
-              </p>
-              <div class="space-y-3">
-                <a
-                  href="mailto:partnership@adsyclub.com"
-                  class="flex items-center text-slate-700 hover:text-slate-900 group"
-                >
-                  <!-- <MailIcon
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
-                  /> -->
-                  <UIcon
-                    name="i-material-symbols-mail-outline-rounded"
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-slate-600"
-                  />
-                  <span class="font-medium">partnership@adsyclub.com</span>
-                </a>
-                <div class="flex items-center text-slate-600">
-                  <UIcon
-                    name="i-iconoir-clock"
-                    class="w-5 h-5 mr-2 text-slate-400"
-                  />
-                  <!-- <ClockIcon class="w-5 h-5 mr-2 text-slate-400" /> -->
-                  <span>Business Hours: 9AM - 6PM EST</span>
-                </div>
-              </div>
+            <p class="text-sm text-gray-600 flex-grow">{{ ad.description }}</p>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-primary font-bold"
+                >${{ ad.price.toFixed(2) }}</span
+              >
+              <button
+                class="text-xs bg-primary text-white px-3 py-1 rounded-full hover:bg-primary/90 transition-colors"
+              >
+                Contact
+              </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Additional Support Section -->
-      <!-- <div class="mt-16 mb-20">
-        <div class="bg-slate-50 rounded-xl p-8 md:p-12">
-          <div class="text-center max-w-3xl mx-auto">
-            <h2 class="text-2xl font-semibold text-slate-900 mb-4">
-              Need Additional Support?
-            </h2>
-            <p class="text-slate-600 mb-8">
-              Our dedicated team is ready to assist you with any questions or
-              concerns you may have
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                class="inline-flex items-center justify-center px-6 py-3 border border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white rounded-lg font-medium transition-colors duration-300"
-              >
-                <PhoneIcon class="w-5 h-5 mr-2" />
-                Schedule a Call
-              </button>
-              <button
-                class="inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white hover:bg-slate-800 rounded-lg font-medium transition-colors duration-300"
-              >
-                <MessageSquareIcon class="w-5 h-5 mr-2" />
-                Live Chat
-              </button>
-            </div>
-          </div>
-        </div>
-      </div> -->
+    <!-- Controls -->
+    <div class="flex justify-center mt-4">
+      <button
+        @click="togglePause"
+        class="flex items-center gap-2 px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
+      >
+        <span v-if="isPaused">▶ Resume</span>
+        <span v-else>⏸️ Pause</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-// import {
-//   HeadphonesIcon,
-//   BuildingIcon,
-//   MailIcon,
-//   ClockIcon,
-//   PhoneIcon,
-//   MessageSquareIcon,
-// } from "lucide-vue-next";
+// Control the animation state
+const isPaused = ref(false);
+const firstRowDuration = ref(40); // seconds for first row to complete one cycle
+const secondRowDuration = ref(35); // seconds for second row to complete one cycle
+
+// Toggle pause/play
+const togglePause = () => {
+  isPaused.value = !isPaused.value;
+};
+
+// Sample data for the first row
+const firstRowAds = ref([
+  {
+    title: "2019 Honda Civic",
+    category: "Vehicles",
+    description:
+      "Excellent condition, low mileage, one owner, all service records available.",
+    price: 15999.99,
+  },
+  {
+    title: "iPhone 13 Pro",
+    category: "Electronics",
+    description:
+      "Like new, 256GB, Pacific Blue, includes original box and accessories.",
+    price: 799.99,
+  },
+  {
+    title: "Modern Apartment",
+    category: "Real Estate",
+    description:
+      "2BR/2BA downtown apartment, newly renovated, all utilities included.",
+    price: 1850.0,
+  },
+  {
+    title: "Graphic Designer",
+    category: "Jobs",
+    description:
+      "Seeking experienced graphic designer for full-time position, remote work available.",
+    price: 65000.0,
+  },
+  {
+    title: "Vintage Guitar",
+    category: "Music",
+    description:
+      "1970s Fender Stratocaster, excellent condition, original hardware.",
+    price: 2499.99,
+  },
+  {
+    title: "Mountain Bike",
+    category: "Sports",
+    description:
+      'Trek Fuel EX 8, carbon frame, 29" wheels, hydraulic disc brakes.',
+    price: 1299.99,
+  },
+]);
+
+// Sample data for the second row
+const secondRowAds = ref([
+  {
+    title: "Antique Desk",
+    category: "Furniture",
+    description:
+      "Solid oak writing desk from the 1920s, excellent condition, original hardware.",
+    price: 850.0,
+  },
+  {
+    title: "Web Developer",
+    category: "Jobs",
+    description:
+      "Full-stack developer needed, React/Node.js experience required, competitive salary.",
+    price: 95000.0,
+  },
+  {
+    title: "Labrador Puppies",
+    category: "Pets",
+    description:
+      "AKC registered yellow lab puppies, 8 weeks old, vaccinated and dewormed.",
+    price: 1200.0,
+  },
+  {
+    title: "Luxury Watch",
+    category: "Fashion",
+    description:
+      "Omega Seamaster, automatic movement, stainless steel, box and papers included.",
+    price: 3999.99,
+  },
+  {
+    title: "Beachfront Condo",
+    category: "Real Estate",
+    description:
+      "3BR/2BA oceanfront property, private balcony, community pool and gym.",
+    price: 499000.0,
+  },
+  {
+    title: "Professional Camera",
+    category: "Electronics",
+    description:
+      "Sony Alpha a7 III, 24.2MP, 4K video, includes 3 lenses and carrying case.",
+    price: 2199.99,
+  },
+]);
 </script>
 
 <style scoped>
-.shadow-xl {
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05),
-    0 8px 10px -6px rgb(0 0 0 / 0.05);
+.ads-row {
+  width: fit-content;
+}
+
+.ad-card {
+  flex-shrink: 0;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll {
+  animation: scroll linear infinite;
+}
+
+.animate-scroll-reverse {
+  animation: scroll-reverse linear infinite;
 }
 </style>
