@@ -176,8 +176,8 @@
             icon: 'i-material-symbols:mark-email-unread-outline',
           },
           {
-            icon: 'material-symbols:settings-outline',
-            to: '/settings/',
+            icon: 'i-ic-baseline-install-mobile',
+            to: '/mobile-recharge/',
           },
         ]"
         :ui="{

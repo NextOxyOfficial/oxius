@@ -55,6 +55,11 @@
               to: '/coming-soon/',
               icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
             },
+            {
+              label: 'মোবাইল রিচার্জ',
+              to: '/mobile-recharge',
+              icon: 'i-ic-baseline-install-mobile',
+            },
           ]"
           :ui="{
             inactive: 'after:hidden before:hidden',
@@ -199,6 +204,7 @@
                   icon: 'i-heroicons-question-mark-circle',
                   to: '/contact-us/',
                 },
+
                 {
                   label: $t('logout'),
                   icon: 'bitcoin-icons:exit-filled',
@@ -245,7 +251,7 @@ defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
-const handleClickOutside = (event) => {
+const handleClickOutside = event => {
   const menuContainer = document.querySelector(".menu-container");
   if (menuContainer && !menuContainer.contains(event.target)) {
     openMenu.value = false;

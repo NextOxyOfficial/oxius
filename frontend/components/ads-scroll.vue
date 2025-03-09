@@ -3,11 +3,7 @@
     <div class="ads-container">
       <div class="ads-header">
         <div class="ads-title">
-          <UIcon
-            name="i-fluent-clock-20-regular"
-            class="clock-icon"
-            size="18"
-          />
+          <UIcon name="i-fluent-clock-20-regular" class="clock-icon" size="18" />
           <h2>সাম্প্রতিক পোষ্ট</h2>
         </div>
         <div class="pagination-dots" v-if="adsArray?.results?.length > 0">
@@ -28,17 +24,15 @@
         @mouseenter="pauseAutoScroll"
         @mouseleave="resumeAutoScroll"
       >
-        <div
-          ref="carouselInnerRef"
-          class="carousel-inner"
-          :style="carouselStyle"
-        >
+        <div ref="carouselInnerRef" class="carousel-inner" :style="carouselStyle">
           <div v-for="(ad, index) in displayedAds" :key="index" class="ad-card">
             <div class="ad-image">
               <NuxtImg :src="getImageSrc(ad)" :alt="ad.title" />
             </div>
             <div class="ad-content">
-              <h3>{{ ad.title }}</h3>
+              <NuxtLink :to="`/classified-categories/details/${ad.id}`"
+                ><h3>{{ ad.title }}</h3></NuxtLink
+              >
               <div class="ad-location">{{ ad.upazila }}, {{ ad.city }}</div>
               <div class="ad-footer">
                 <div class="ad-price">
@@ -46,10 +40,7 @@
                   {{ formatPrice(ad.price) }}
                 </div>
                 <div class="ad-date">
-                  <UIcon
-                    name="i-uit-calender"
-                    class="w-3.5 h-3.5 text-gray-500"
-                  />
+                  <UIcon name="i-uit-calender" class="w-3.5 h-3.5 text-gray-500" />
                   <span>{{ formatDate(ad.created_at) }}</span>
                 </div>
               </div>
@@ -100,12 +91,7 @@ const displayedAds = computed(() => {
   if (adsArray.value.length === 0) return [];
 
   // Create a circular array by duplicating the ads multiple times
-  return [
-    ...adsArray.value,
-    ...adsArray.value,
-    ...adsArray.value,
-    ...adsArray.value,
-  ];
+  return [...adsArray.value, ...adsArray.value, ...adsArray.value, ...adsArray.value];
 });
 function getImageSrc(ad) {
   // Check for media in nested objects
@@ -138,14 +124,14 @@ const carouselStyle = computed(() => {
 });
 
 // Touch handling
-const handleTouchStart = (e) => {
+const handleTouchStart = e => {
   isDragging.value = true;
   startX.value = e.touches[0].clientX;
   startScrollPos.value = scrollPosition.value;
   pauseAutoScroll();
 };
 
-const handleTouchMove = (e) => {
+const handleTouchMove = e => {
   if (!isDragging.value) return;
 
   const currentX = e.touches[0].clientX;
@@ -155,7 +141,7 @@ const handleTouchMove = (e) => {
   scrollPosition.value = startScrollPos.value - diff;
 };
 
-const handleTouchEnd = (e) => {
+const handleTouchEnd = e => {
   if (!isDragging.value) return;
 
   isDragging.value = false;
@@ -205,7 +191,7 @@ const resumeAutoScroll = () => {
 };
 
 // Format price with commas
-const formatPrice = (price) => {
+const formatPrice = price => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
@@ -263,8 +249,8 @@ window.addEventListener("resize", () => {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 .ads-header {
