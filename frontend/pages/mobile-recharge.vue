@@ -17,7 +17,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder="Search packages..."
           />
           <span class="absolute right-3 top-3 text-gray-400">
@@ -38,7 +38,7 @@
               :class="[
                 'flex flex-col items-center justify-center p-3 rounded-lg border transition-all',
                 selectedOperator === operator.id
-                  ? 'border-emerald-500 bg-emerald-50'
+                  ? 'border-green-500 bg-green-50'
                   : 'border-gray-200 bg-white hover:border-gray-300',
               ]"
             >
@@ -62,7 +62,7 @@
             :class="[
               'px-4 py-2 rounded-full text-sm font-medium transition-colors',
               activeFilter === filter.value
-                ? 'bg-emerald-500 text-white'
+                ? 'bg-green-500 text-white'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
             ]"
           >
@@ -73,9 +73,16 @@
 
       <!-- Popular Packages -->
       <div class="mb-10">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">
-          Popular Packages
-        </h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Popular Packages
+          </h2>
+          <UButton
+            label="Recharge History"
+            @click="isHistory = true"
+            size="md"
+          />
+        </div>
         <div
           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mx-auto max-w-7xl"
         >
@@ -131,7 +138,7 @@
               <div class="mt-3">
                 <button
                   @click="selectPackage(pack)"
-                  class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                  class="w-full py-1.5 px-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
                 >
                   Recharge Now
                 </button>
@@ -156,7 +163,7 @@
               <div class="flex justify-between items-start">
                 <div>
                   <span
-                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full"
+                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
                     {{ pack.type }}
@@ -194,7 +201,7 @@
               <div class="mt-3">
                 <button
                   @click="selectPackage(pack)"
-                  class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                  class="w-full py-1.5 px-3 bg-green-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
                 >
                   Recharge Now
                 </button>
@@ -250,7 +257,7 @@
             v-model="phoneNumber"
             type="tel"
             id="phone"
-            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
             placeholder="Enter mobile number"
           />
         </div>
@@ -264,7 +271,7 @@
           </button>
           <button
             @click="processRecharge"
-            class="flex-1 py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md"
+            class="flex-1 py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md"
           >
             Recharge
           </button>
@@ -275,16 +282,38 @@
     <!-- Success Toast -->
     <div
       v-if="showToast"
-      class="fixed bottom-4 right-4 bg-emerald-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center"
+      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center"
     >
       <check-circle-icon class="w-5 h-5 mr-2" />
       <span>Recharge successful!</span>
     </div>
   </div>
+
+  <UModal
+    v-model="isHistory"
+    fullscreen
+    :ui="{
+      fullscreen: 'w-auto h-auto',
+    }"
+  >
+    <div class="flex justify-end">
+      <UButton
+        icon="i-heroicons-x-mark"
+        size="sm"
+        color="red"
+        variant="ghost"
+        class="m-3"
+        :trailing="false"
+        @click="isHistory = false"
+      />
+    </div>
+    <MobileRechargeHistory />
+  </UModal>
 </template>
 
 <script setup>
 const toast = useToast();
+const isHistory = ref(false);
 
 const {
   operators,
