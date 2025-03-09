@@ -8,7 +8,7 @@
             class="clock-icon"
             size="18"
           />
-          <h2>FEATURED ADS</h2>
+          <h2>সাম্প্রতিক পোষ্ট</h2>
         </div>
         <div class="pagination-dots">
           <span
