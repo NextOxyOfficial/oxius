@@ -27,6 +27,8 @@
     "@tiptap/extension-text-style": "^2.2.1",
     "@tiptap/starter-kit": "^2.2.1",
     "@tiptap/vue-3": "^2.2.1",
+    "date-fns": "^4.1.0",
+    "lucide-vue-next": "^0.479.0",
     "nuxt": "^3.13.0",
     "nuxt-aos": "^1.2.5",
     "nuxt-tiptap-editor": "^2.1.4",

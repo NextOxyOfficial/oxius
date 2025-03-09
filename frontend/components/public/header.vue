@@ -94,8 +94,13 @@
               },
               {
                 label: $t('faq'),
-                to: '/faq/',
+                to: '/faq',
                 icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
+              },
+              {
+                label: 'মোবাইল রিচার্জ',
+                to: '/mobile-recharge',
+                icon: 'i-ic-baseline-install-mobile',
               },
             ]"
             class="border-b border-gray-200 dark:border-gray-800 text-lg"

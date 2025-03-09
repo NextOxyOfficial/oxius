@@ -62,13 +62,11 @@
                 class="w-8 h-8 flex items-center justify-center rounded-full"
                 :class="operator.bgColor"
               >
-                <component
-                  :is="operator.icon"
-                  class="w-5 h-5"
-                  :class="operator.iconColor"
-                />
+                <img :src="operator.icon" alt="gp-logo" class="h-5 w-5" />
               </div>
-              <span class="mt-2 text-xs font-medium">{{ operator.name }}</span>
+              <span class="mt-2 text-xs md:text-base font-medium">{{
+                operator.name
+              }}</span>
             </button>
           </div>
         </div>
@@ -79,58 +77,56 @@
         <h2 class="text-xl font-semibold text-gray-800 mb-4">
           Popular Packages
         </h2>
-        <div class="flex justify-center">
+        <div
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mx-auto max-w-7xl"
+        >
           <div
-            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto justify-items-center"
+            v-for="(pack, index) in popularPackages"
+            :key="index"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
           >
-            <div
-              v-for="(pack, index) in popularPackages"
-              :key="index"
-              class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
-            >
-              <div class="p-2">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span
-                      class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full"
-                      :class="getTagClass(pack.type)"
-                    >
-                      {{ pack.type }}
-                    </span>
-                    <h3 class="mt-1 text-base font-bold text-gray-900">
-                      {{ pack.price }}
-                    </h3>
-                  </div>
+            <div class="p-2">
+              <div class="flex justify-between items-start">
+                <div>
                   <span
-                    v-if="pack.popular"
-                    class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium"
-                    >Popular</span
+                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full"
+                    :class="getTagClass(pack.type)"
                   >
+                    {{ pack.type }}
+                  </span>
+                  <h3 class="mt-1 text-base font-bold text-gray-900">
+                    {{ pack.price }}
+                  </h3>
                 </div>
+                <span
+                  v-if="pack.popular"
+                  class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium"
+                  >Popular</span
+                >
+              </div>
 
-                <div class="mt-2 space-y-1">
-                  <div class="flex items-center text-sm text-gray-600">
-                    <wifi-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                    <span>{{ pack.data }}</span>
-                  </div>
-                  <div class="flex items-center text-sm text-gray-600">
-                    <calendar-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                    <span>{{ pack.validity }}</span>
-                  </div>
-                  <div class="flex items-center text-sm text-gray-600">
-                    <phone-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                    <span>{{ pack.calls }}</span>
-                  </div>
+              <div class="mt-2 space-y-1">
+                <div class="flex items-center text-sm text-gray-600">
+                  <wifi-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <span>{{ pack.data }}</span>
                 </div>
+                <div class="flex items-center text-sm text-gray-600">
+                  <calendar-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <span>{{ pack.validity }}</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-600">
+                  <phone-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <span>{{ pack.calls }}</span>
+                </div>
+              </div>
 
-                <div class="mt-3">
-                  <button
-                    @click="selectPackage(pack)"
-                    class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                  >
-                    Recharge Now
-                  </button>
-                </div>
+              <div class="mt-3">
+                <button
+                  @click="selectPackage(pack)"
+                  class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                >
+                  Recharge Now
+                </button>
               </div>
             </div>
           </div>
@@ -140,53 +136,51 @@
       <!-- All Packages -->
       <div>
         <h2 class="text-xl font-semibold text-gray-800 mb-4">All Packages</h2>
-        <div class="flex justify-center">
+        <div
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mx-auto max-w-7xl"
+        >
           <div
-            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto justify-items-center"
+            v-for="(pack, index) in filteredPackages"
+            :key="index"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
           >
-            <div
-              v-for="(pack, index) in filteredPackages"
-              :key="index"
-              class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
-            >
-              <div class="p-2">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span
-                      class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full"
-                      :class="getTagClass(pack.type)"
-                    >
-                      {{ pack.type }}
-                    </span>
-                    <h3 class="mt-1 text-base font-bold text-gray-900">
-                      {{ pack.price }}
-                    </h3>
-                  </div>
-                </div>
-
-                <div class="mt-2 space-y-1">
-                  <div class="flex items-center text-sm text-gray-600">
-                    <wifi-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                    <span>{{ pack.data }}</span>
-                  </div>
-                  <div class="flex items-center text-sm text-gray-600">
-                    <calendar-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                    <span>{{ pack.validity }}</span>
-                  </div>
-                  <div class="flex items-center text-sm text-gray-600">
-                    <phone-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                    <span>{{ pack.calls }}</span>
-                  </div>
-                </div>
-
-                <div class="mt-3">
-                  <button
-                    @click="selectPackage(pack)"
-                    class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+            <div class="p-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span
+                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full"
+                    :class="getTagClass(pack.type)"
                   >
-                    Recharge Now
-                  </button>
+                    {{ pack.type }}
+                  </span>
+                  <h3 class="mt-1 text-base font-bold text-gray-900">
+                    {{ pack.price }}
+                  </h3>
                 </div>
+              </div>
+
+              <div class="mt-2 space-y-1">
+                <div class="flex items-center text-sm text-gray-600">
+                  <wifi-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <span>{{ pack.data }}</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-600">
+                  <calendar-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <span>{{ pack.validity }}</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-600">
+                  <phone-icon class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                  <span>{{ pack.calls }}</span>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <button
+                  @click="selectPackage(pack)"
+                  class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                >
+                  Recharge Now
+                </button>
               </div>
             </div>
           </div>
@@ -308,21 +302,21 @@ const operators = [
   {
     id: 1,
     name: "Grameenphone",
-    icon: SignalIcon,
+    icon: "/gp-logo.png",
     bgColor: "bg-green-100",
     iconColor: "text-green-600",
   },
   {
     id: 2,
     name: "Banglalink",
-    icon: ZapIcon,
+    icon: "/banglalink-logo.png",
     bgColor: "bg-orange-100",
     iconColor: "text-orange-600",
   },
   {
     id: 3,
     name: "Robi",
-    icon: RadioIcon,
+    icon: "/robi.png",
     bgColor: "bg-red-100",
     iconColor: "text-red-600",
   },
