@@ -20,7 +20,10 @@
             to="/my-classified-services/"
           />
         </div>
-        <form @submit.prevent="handleSearch" class="max-w-sm mx-auto">
+        <form
+          @submit.prevent="handleSearch"
+          class="w-full sm:max-w-sm sm:mx-auto"
+        >
           <UButtonGroup
             label="Search Category"
             class="my-1 md:my-8 justify-center flex !shadow-none"
@@ -84,16 +87,21 @@
             <li v-for="service of classifiedPosts.results" :key="service.id">
               <NuxtLink
                 :to="`/classified-categories/details/${service.id}`"
-                class="capitalize block p-2 hover:bg-green-50"
+                class="capitalize p-2 hover:bg-green-50 flex gap-1 items-center"
               >
-                {{ service.title }}
+                <NuxtImg
+                  :src="service?.image"
+                  :title="service.title"
+                  class="size-4"
+                />
+                <span class="truncate">{{ service.title }}</span>
               </NuxtLink>
             </li>
           </ul>
         </div>
 
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 max-md:mt-[92px]"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-4"
         >
           <UCard
             class="text-center border border-dashed border-green-500 lg:w-[150px]"
@@ -129,7 +137,7 @@
             <p>No categories have been found!</p>
           </UCard>
         </div>
-        <div class="text-center mt-8">
+        <div class="text-center mt-8" v-if="services.next">
           <UButton
             size="md"
             color="primary"

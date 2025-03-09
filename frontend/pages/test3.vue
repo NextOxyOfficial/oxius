@@ -539,7 +539,7 @@
                       <dd
                         class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
                       >
-                        {{ formatDetailDate(selectedTransaction?.time) }}
+                        {{ formatDate(selectedTransaction?.time) }}
                       </dd>
                     </div>
                     <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">

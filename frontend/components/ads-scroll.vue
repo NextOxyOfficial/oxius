@@ -10,9 +10,9 @@
           />
           <h2>সাম্প্রতিক পোষ্ট</h2>
         </div>
-        <div class="pagination-dots">
+        <div class="pagination-dots" v-if="adsArray?.results?.length > 0">
           <span
-            v-for="(_, index) in Math.ceil(ads.length / 2)"
+            v-for="(_, index) in Math.ceil(adsArray?.results?.length / 2)"
             :key="index"
             :class="['dot', { active: index === activeDotIndex }]"
           ></span>
@@ -35,19 +35,22 @@
         >
           <div v-for="(ad, index) in displayedAds" :key="index" class="ad-card">
             <div class="ad-image">
-              <img :src="ad.image" :alt="ad.title" />
+              <NuxtImg :src="getImageSrc(ad)" :alt="ad.title" />
             </div>
             <div class="ad-content">
               <h3>{{ ad.title }}</h3>
-              <div class="ad-location">{{ ad.location }}</div>
+              <div class="ad-location">{{ ad.upazila }}, {{ ad.city }}</div>
               <div class="ad-footer">
-                <div class="ad-price">${{ formatPrice(ad.price) }}</div>
+                <div class="ad-price">
+                  <span class="text-xl font-medium">৳</span>
+                  {{ formatPrice(ad.price) }}
+                </div>
                 <div class="ad-date">
                   <UIcon
                     name="i-uit-calender"
                     class="w-3.5 h-3.5 text-gray-500"
                   />
-                  <span>{{ ad.date }}</span>
+                  <span>{{ formatDate(ad.created_at) }}</span>
                 </div>
               </div>
             </div>
@@ -59,50 +62,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+const { get } = useApi();
+const { formatDate } = useUtils();
+const ads = ref([]);
+const { data } = await get(`/classified-posts/`);
 
-// Sample data - in a real app, this would come from an API
-const initialAds = [
-  {
-    id: 1,
-    title: "Audi R8",
-    location: "New York, US",
-    price: 4850000,
-    date: "5 Aug",
-    image:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-03-09%20at%201.51.03%20PM-UamQHftOoT8mzSm9X2ss9noKhTuuJb.jpeg",
-  },
-  {
-    id: 2,
-    title: "Luxury Home Near New York",
-    location: "New York, US",
-    price: 4850000,
-    date: "25 Aug",
-    image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070",
-  },
-  {
-    id: 3,
-    title: "Waterfront Villa",
-    location: "Miami, US",
-    price: 3250000,
-    date: "12 Aug",
-    image:
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075",
-  },
-  {
-    id: 4,
-    title: "Tesla Model S",
-    location: "Los Angeles, US",
-    price: 89000,
-    date: "3 Aug",
-    image:
-      "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070",
-  },
-];
+ads.value = data;
 
-// State
-const ads = ref([...initialAds]);
 const carouselRef = ref(null);
 const carouselInnerRef = ref(null);
 const cardWidth = ref(220);
@@ -114,12 +80,47 @@ const isPaused = ref(false);
 const activeDotIndex = ref(0);
 const animationSpeed = ref(0.5); // pixels per frame
 let animationId = null;
+const adsArray = computed(() => {
+  if (!ads.value) return [];
 
+  // Check if the response has a results array (paginated response)
+  if (ads.value.results && Array.isArray(ads.value.results)) {
+    return ads.value.results;
+  }
+
+  // If the response is directly an array
+  if (Array.isArray(ads.value)) {
+    return ads.value;
+  }
+
+  return [];
+});
 // For infinite scroll effect, duplicate the ads multiple times
 const displayedAds = computed(() => {
+  if (adsArray.value.length === 0) return [];
+
   // Create a circular array by duplicating the ads multiple times
-  return [...ads.value, ...ads.value, ...ads.value, ...ads.value];
+  return [
+    ...adsArray.value,
+    ...adsArray.value,
+    ...adsArray.value,
+    ...adsArray.value,
+  ];
 });
+function getImageSrc(ad) {
+  // Check for media in nested objects
+  if (ad.medias && ad.medias.length > 0 && ad.medias[0].image) {
+    return ad.medias[0].image;
+  }
+
+  // Direct image property
+  if (ad.image) {
+    return ad.image;
+  }
+
+  // Fallback image
+  return "https://placehold.co/300x200?text=No+Image";
+}
 
 // Computed style for the carousel
 const carouselStyle = computed(() => {
@@ -218,10 +219,10 @@ onMounted(() => {
     if (containerWidth < 640) {
       cardWidth.value = containerWidth * 0.7 - 16; // 70% of container width minus margin
       // Adjust animation speed based on screen size
-      animationSpeed.value = 0.3;
+      animationSpeed.value = 0.8;
     } else {
       cardWidth.value = containerWidth / 2 - 16; // 2 cards per view
-      animationSpeed.value = 0.5;
+      animationSpeed.value = 0.8;
     }
   }
 
