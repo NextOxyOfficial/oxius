@@ -24,6 +24,7 @@ urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
     path('api/', include('base.urls')),
     path('api/geo/', include('cities.urls')),
+    path('api/', include('mobile_recharge.urls')),
     # for frontend
     path('', index, name='index'),
     path('<str:param>', index, name='index2'),

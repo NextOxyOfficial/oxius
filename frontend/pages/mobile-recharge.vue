@@ -25,24 +25,8 @@
           </span>
         </div>
 
-        <div class="mt-4 flex flex-wrap gap-2">
-          <button
-            v-for="(filter, index) in filters"
-            :key="index"
-            @click="activeFilter = filter.value"
-            :class="[
-              'px-4 py-2 rounded-full text-sm font-medium transition-colors',
-              activeFilter === filter.value
-                ? 'bg-emerald-500 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-            ]"
-          >
-            {{ filter.label }}
-          </button>
-        </div>
-
         <!-- Operator Filter -->
-        <div class="mt-6 text-center">
+        <div class="my-6 text-center">
           <h3 class="text-sm font-medium text-gray-700 mb-3">
             Select Operator
           </h3>
@@ -69,6 +53,21 @@
               }}</span>
             </button>
           </div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button
+            v-for="(filter, index) in filters"
+            :key="index"
+            @click="activeFilter = filter.value"
+            :class="[
+              'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+              activeFilter === filter.value
+                ? 'bg-emerald-500 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
+            ]"
+          >
+            {{ filter.label }}
+          </button>
         </div>
       </div>
 
@@ -267,168 +266,36 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import {
-  Search as SearchIcon,
-  Wifi as WifiIcon,
-  Calendar as CalendarIcon,
-  Phone as PhoneIcon,
-  X as XIcon,
-  CheckCircle as CheckCircleIcon,
-  Signal as SignalIcon,
-  Globe as GlobeIcon,
-  Zap as ZapIcon,
-  Radio as RadioIcon,
-} from "lucide-vue-next";
+const toast = useToast();
 
-// State
-const searchQuery = ref("");
-const activeFilter = ref("all");
+const {
+  operators,
+  popularPackages,
+  filteredPackages,
+  isLoading,
+  error,
+  searchQuery,
+  activeFilter,
+  selectedOperator,
+  fetchOperators,
+  fetchPackages,
+  processRecharge,
+} = useMobileRecharge();
+
 const selectedPackage = ref(null);
 const phoneNumber = ref("");
 const showToast = ref(false);
-const selectedOperator = ref(1); // Default to first operator
-
-// Filters
-const filters = [
-  { label: "All Packages", value: "all" },
-  { label: "Data", value: "data" },
-  { label: "Voice", value: "voice" },
-  { label: "Combo", value: "combo" },
-];
-
-// Operators
-const operators = [
-  {
-    id: 1,
-    name: "Grameenphone",
-    icon: "/gp-logo.png",
-    bgColor: "bg-green-100",
-    iconColor: "text-green-600",
-  },
-  {
-    id: 2,
-    name: "Banglalink",
-    icon: "/banglalink-logo.png",
-    bgColor: "bg-orange-100",
-    iconColor: "text-orange-600",
-  },
-  {
-    id: 3,
-    name: "Robi",
-    icon: "/robi.png",
-    bgColor: "bg-red-100",
-    iconColor: "text-red-600",
-  },
-];
-
-// Package data
-const allPackages = [
-  {
-    id: 1,
-    type: "data",
-    price: "$10",
-    data: "5 GB",
-    validity: "28 days",
-    calls: "No calls included",
-    popular: true,
-  },
-  {
-    id: 2,
-    type: "voice",
-    price: "$15",
-    data: "1 GB",
-    validity: "30 days",
-    calls: "Unlimited calls",
-    popular: false,
-  },
-  {
-    id: 3,
-    type: "combo",
-    price: "$20",
-    data: "10 GB",
-    validity: "30 days",
-    calls: "100 minutes",
-    popular: true,
-  },
-  {
-    id: 4,
-    type: "data",
-    price: "$25",
-    data: "20 GB",
-    validity: "30 days",
-    calls: "No calls included",
-    popular: false,
-  },
-  {
-    id: 5,
-    type: "combo",
-    price: "$30",
-    data: "30 GB",
-    validity: "30 days",
-    calls: "Unlimited calls",
-    popular: true,
-  },
-  {
-    id: 6,
-    type: "voice",
-    price: "$5",
-    data: "500 MB",
-    validity: "7 days",
-    calls: "50 minutes",
-    popular: false,
-  },
-  {
-    id: 7,
-    type: "data",
-    price: "$8",
-    data: "3 GB",
-    validity: "14 days",
-    calls: "No calls included",
-    popular: false,
-  },
-  {
-    id: 8,
-    type: "combo",
-    price: "$40",
-    data: "50 GB",
-    validity: "60 days",
-    calls: "Unlimited calls",
-    popular: false,
-  },
-];
-
-// Computed properties
-const popularPackages = computed(() => {
-  return allPackages.filter((pack) => pack.popular);
+const filters = ref([
+  { value: "all", label: "All" },
+  { value: "data", label: "Data" },
+  { value: "voice", label: "Voice" },
+  { value: "combo", label: "Combo" },
+]);
+onMounted(() => {
+  fetchOperators();
+  fetchPackages();
 });
 
-const filteredPackages = computed(() => {
-  let filtered = allPackages;
-
-  // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(
-      (pack) =>
-        pack.type.toLowerCase().includes(query) ||
-        pack.price.toLowerCase().includes(query) ||
-        pack.data.toLowerCase().includes(query)
-    );
-  }
-
-  // Apply type filter
-  if (activeFilter.value !== "all") {
-    filtered = filtered.filter((pack) => pack.type === activeFilter.value);
-  }
-
-  // In a real app, you would filter by operator here
-  // For demo purposes, we'll just return the filtered packages
-
-  return filtered;
-});
-
-// Methods
 function getTagClass(type) {
   switch (type) {
     case "data":
@@ -446,20 +313,23 @@ function selectPackage(pack) {
   selectedPackage.value = pack;
 }
 
-function processRecharge() {
+async function handleRecharge() {
   if (!phoneNumber.value) {
-    alert("Please enter a valid phone number");
+    toast.error("Please enter a valid phone number");
     return;
   }
 
-  // Here you would typically make an API call to process the recharge
-  // For demo purposes, we'll just show a success message
-  selectedPackage.value = null;
-  showToast.value = true;
+  try {
+    await processRecharge(selectedPackage.value.id, phoneNumber.value);
+    selectedPackage.value = null;
+    showToast.value = true;
+    toast.success("Recharge successful!");
 
-  // Hide toast after 3 seconds
-  setTimeout(() => {
-    showToast.value = false;
-  }, 3000);
+    setTimeout(() => {
+      showToast.value = false;
+    }, 3000);
+  } catch (err) {
+    toast.error(err || "Recharge failed. Please try again.");
+  }
 }
 </script>

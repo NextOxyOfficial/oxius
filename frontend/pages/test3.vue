@@ -610,18 +610,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-import { format } from "date-fns";
-
-// Sample accounts data
-const accounts = [
-  { id: "1", name: "Checking Account", balance: 2500.0 },
-  { id: "2", name: "Savings Account", balance: 10000.0 },
-  { id: "3", name: "dfgdfg", balance: 2500.0 },
-  { id: "2", name: "Savings Account", balance: 10000.0 },
-  { id: "3", name: "Investment Account", balance: 5000.0 },
-];
-
+const { formatDate } = useUtils();
 // Sample transaction data generator
 const generateTransactions = (count) => {
   const types = ["deposit", "withdraw", "transfer"];
@@ -823,14 +812,14 @@ const submitTransaction = () => {
   currentPage.value = 1;
 };
 
-const formatDate = (date) => {
-  return format(new Date(date), "MMM d, yyyy h:mm a");
-};
+// const formatDate = (date) => {
+//   return format(new Date(date), "MMM d, yyyy h:mm a");
+// };
 
-const formatDetailDate = (date) => {
-  if (!date) return "";
-  return format(new Date(date), "PPPP p");
-};
+// const formatDetailDate = (date) => {
+//   if (!date) return "";
+//   return format(new Date(date), "PPPP p");
+// };
 
 const formatAmount = (amount, type) => {
   if (type === "deposit") return `+$${amount.toFixed(2)}`;
