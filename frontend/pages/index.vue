@@ -158,6 +158,25 @@
           {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
         </h2>
         <AccountBalance v-if="user" :user="user" :isUser="true" />
+        <NuxtLink
+          to="/mobile-recharge"
+          class="my-3 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+        >
+          <div class="flex gap-2">
+            <h2 class="text-base text-gray-900 sm:text-xl text-center">
+              Mobile Recharge
+            </h2>
+            <div class="flex justify-center gap-2">
+              <NuxtImg
+                v-for="operator in operators"
+                :key="operator.id"
+                :src="operator.icon"
+                :title="operator.title"
+                class="size-6"
+              />
+            </div>
+          </div>
+        </NuxtLink>
         <UCard
           :ui="{
             body: { padding: 'p-0' },
@@ -626,6 +645,12 @@ watch(
 );
 
 // You can now remove the handleSearch function and update the template:
+
+const operators = ref([]);
+const operatorsRes = await get("/mobile-recharge/operators/");
+console.log(operatorsRes);
+
+operators.value = operatorsRes.data;
 </script>
 <style>
 .fade-enter-active,
