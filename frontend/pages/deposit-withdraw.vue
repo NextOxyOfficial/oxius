@@ -116,7 +116,7 @@
               "
               size="sm"
               @click="deposit"
-              :loading="isLoading"
+              :loading="isDepositLoading"
               >{{ $t("diposit") }}</UButton
             >
             <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
@@ -363,7 +363,7 @@
           </div>
         </div>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -475,7 +475,10 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500 capitalize">
+                <div
+                  class="text-sm text-gray-500 capitalize"
+                  v-if="transaction.to_user_details"
+                >
                   {{ transaction.to_user_details.name }}
                 </div>
               </td>
@@ -1024,6 +1027,7 @@
                         Recipient
                       </dt>
                       <dd
+                        v-if="transaction.to_user_details"
                         class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-mono"
                       >
                         {{ selectedTransaction?.to_user_details.phone }}/{{
@@ -1034,6 +1038,7 @@
                     <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Name</dt>
                       <dd
+                        v-if="transaction.to_user_details"
                         class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
                       >
                         {{ selectedTransaction?.to_user_details.name }}
@@ -1138,6 +1143,7 @@ const payment_number = ref(null);
 const errors = ref({});
 const depositErrors = ref({});
 const isLoading = ref(false);
+const isDepositLoading = ref(false);
 const isWithdrawLoading = ref(false);
 const selectedTransaction = ref(null);
 const showDetailsModal = ref(false);
@@ -1344,7 +1350,7 @@ const deposit = async () => {
   }
 
   try {
-    isLoading.value = true;
+    isDepositLoading.value = true;
 
     const payment = await get(
       `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
@@ -1368,7 +1374,7 @@ const deposit = async () => {
     });
     console.error("Deposit error:", error);
   } finally {
-    isLoading.value = false;
+    isDepositLoading.value = false;
   }
 };
 
@@ -1428,6 +1434,7 @@ const withdraw = async () => {
     policy.value = false;
     await getTransactionHistory();
     await jwtLogin();
+    isWithdrawLoading.value = false;
   } catch (error) {
     toast.add({
       title: "Withdrawal failed",
@@ -1476,6 +1483,8 @@ async function sendToUser() {
 
     transfer.value.to_user = data.name;
     isOpenTransfer.value = true;
+
+    isLoading.value = false;
   } catch (error) {
     toast.add({
       title: "Error finding user",

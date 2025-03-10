@@ -140,8 +140,8 @@ class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
 class BalanceSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     user_details = UserSerializer(source='user', read_only=True)
-    to_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    to_user_details = UserSerializer(source='user', read_only=True)
+    to_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
+    to_user_details = UserSerializer(source='to_user', read_only=True)
     class Meta:
         model = Balance
         fields = '__all__'

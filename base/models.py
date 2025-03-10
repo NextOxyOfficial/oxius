@@ -451,26 +451,9 @@ class Balance(models.Model):
             self.completed = True
             self.approved = True
             self.user.save()
-        # Check if is neither completed, approved, nor rejected
-        # if not self.completed and not self.approved and not self.rejected:
-        #     self.user.balance -= Decimal(self.amount)
-        #     self.user.save()
 
         if self.approved and not self.completed:
             self.completed = True
-            # refer = self.user.refer.last()
-            # refer.balance += (self.amount * refer.commission) / 100
-            # refer.save()
-            # create a table called commission_report and add a row with user_id, refer_id, amount, created_at
-            # add refer commission
-
-        # if self.rejected and not self.completed:
-        #     self.completed = True
-        #     self.user.balance -= self.amount
-        #     self.user.save()
-            # refund balance
-        # if self.transaction_type == 'withdraw':
-        #     self.user.balance -= self.payable_amount
 
         # Call the original save method
         super(Balance, self).save(*args, **kwargs)

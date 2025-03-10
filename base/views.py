@@ -977,7 +977,7 @@ def postBalance(request):
     data = request.data.copy()
     data['user'] = request.user.id
     print(data)
-    
+    to_user = None
     
 
     # Check if 'merchant_invoice_no' exists in the data
