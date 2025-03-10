@@ -4,10 +4,10 @@
       <!-- Header -->
       <div class="text-center mb-10">
         <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">
-          Mobile Recharge
+          {{ $t("mobile_recharge") }}
         </h1>
         <p class="mt-3 text-xl text-gray-500">
-          Choose the perfect recharge package for your needs
+          {{ $t("recharge_package_choice") }}
         </p>
       </div>
 
@@ -18,7 +18,7 @@
             v-model="searchQuery"
             type="text"
             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="Search packages..."
+            :placeholder="t('search_packages')"
           />
           <span class="absolute right-3 top-4 text-gray-400">
             <UIcon name="i-gg-search" class="w-5 h-5" />
@@ -28,7 +28,7 @@
         <!-- Operator Filter -->
         <div class="my-6 text-center">
           <h3 class="text-sm font-medium text-gray-700 mb-3">
-            Select Operator
+            {{ $t("select_operator") }}
           </h3>
           <div class="flex justify-center gap-4">
             <button
@@ -71,17 +71,18 @@
         </div>
       </div>
       <div class="text-slate-700">
-        <span>Available Balance</span>:&nbsp;
+        <span>{{ $t("available_balance") }}</span
+        >:&nbsp;
         <span><span class="text-xl">৳</span> {{ user?.user.balance }}</span>
       </div>
       <!-- Popular Packages -->
-      <div class="mb-10">
+      <div class="mb-10 mt-3">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
-            Popular Packages
+            {{ $t("popular_packages") }}
           </h2>
           <UButton
-            label="Recharge History"
+            :label="t('recharge_history')"
             icon="i-icon-park-outline-history-query"
             @click="isHistory = true"
             size="md"
@@ -144,7 +145,7 @@
                   @click="selectPackage(pack)"
                   class="w-full py-1.5 px-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
                 >
-                  Recharge Now
+                  {{ $t("recharge_now") }}
                 </button>
               </div>
             </div>
@@ -154,7 +155,9 @@
 
       <!-- All Packages -->
       <div>
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">All Packages</h2>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+          {{ $t("all_packages") }}
+        </h2>
         <div
           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mx-auto max-w-7xl"
         >
@@ -207,7 +210,7 @@
                   @click="selectPackage(pack)"
                   class="w-full py-1.5 px-3 bg-green-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
                 >
-                  Recharge Now
+                  {{ $t("recharge_now") }}
                 </button>
               </div>
             </div>
@@ -318,6 +321,7 @@ definePageMeta({
 });
 const { user, jwtLogin } = useAuth();
 const { post } = useApi();
+const { t } = useI18n();
 
 const toast = useToast();
 const isHistory = ref(false);

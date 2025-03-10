@@ -103,7 +103,7 @@
                 icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
               },
               {
-                label: 'মোবাইল রিচার্জ',
+                label: $t('mobile_recharge'),
                 to: '/mobile-recharge',
                 icon: 'i-uil-mobile-vibrate',
               },

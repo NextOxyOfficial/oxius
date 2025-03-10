@@ -1,8 +1,10 @@
 <template>
   <div class="transaction-history h-max">
-    <h1 class="text-3xl font-bold text-center mb-2">Recharge History</h1>
+    <h1 class="text-3xl font-bold text-center mb-2">
+      {{ $t("recharge_history") }}
+    </h1>
     <p class="text-center text-gray-600 mb-6">
-      View your recent mobile recharge transactions
+      {{ $t("mobile_recharge_transactions") }}
     </p>
 
     <div class="filters mb-6">
@@ -102,7 +104,9 @@
             </div>
           </div>
           <div class="text-right">
-            <span class="text-base font-bold">${{ transaction.amount }}</span>
+            <span class="text-base font-bold"
+              ><span class="text-xl">৳</span> {{ transaction.amount }}</span
+            >
             <div
               v-if="transaction.package?.type"
               class="package-type text-xs px-2 py-1 rounded-full inline-block mt-1 ml-1"
