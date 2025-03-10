@@ -869,8 +869,8 @@
           class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
         >
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <div class="flex items-start">
+              <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
                 <h3
                   class="text-lg leading-6 font-medium text-gray-900"
                   id="modal-title"
@@ -879,20 +879,20 @@
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 gap-4">
                       <dt class="text-sm font-medium text-gray-500">
                         Transaction ID
                       </dt>
                       <dd
-                        class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-mono"
+                        class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
                       >
                         {{ selectedTransaction?.id }}
                       </dd>
                     </div>
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Type</dt>
                       <dd
-                        class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex items-center uppercase"
+                        class="text-sm text-gray-900 mt-0 col-span-2 flex items-center uppercase"
                       >
                         <span
                           v-if="selectedTransaction?.type === 'deposit'"
@@ -953,42 +953,41 @@
                         {{ selectedTransaction?.transaction_type }}
                       </dd>
                     </div>
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">
                         Recipient
                       </dt>
                       <dd
                         v-if="selectedTransaction?.to_user_details"
-                        class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-mono"
+                        class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
                       >
-                        {{ selectedTransaction?.to_user_details?.phone }}/{{
-                          selectedTransaction?.to_user_details?.email
-                        }}
+                        <p>
+                          {{ selectedTransaction?.to_user_details?.phone }}
+                        </p>
+                        {{ selectedTransaction?.to_user_details?.email }}
                       </dd>
                     </div>
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Name</dt>
                       <dd
                         v-if="selectedTransaction?.to_user_details"
-                        class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
+                        class="text-sm text-gray-900 mt-0 col-span-2"
                       >
                         {{ selectedTransaction?.to_user_details.name }}
                       </dd>
                     </div>
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">
                         Date & Time
                       </dt>
-                      <dd
-                        class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
-                      >
+                      <dd class="text-sm text-gray-900 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
                     </div>
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Amount</dt>
                       <dd
-                        class="mt-1 text-sm font-medium sm:mt-0 sm:col-span-2"
+                        class="text-sm font-medium mt-0 col-span-2"
                         :class="{
                           'text-green-600':
                             selectedTransaction?.transaction_type === 'deposit',
@@ -1010,11 +1009,9 @@
                         }}
                       </dd>
                     </div>
-                    <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Status</dt>
-                      <dd
-                        class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
-                      >
+                      <dd class="text-sm text-gray-900 mt-0 col-span-2">
                         <span
                           v-if="selectedTransaction"
                           class="px-2 inline-flex text-sm leading-5 font-medium rounded-full capitalize"
