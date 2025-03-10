@@ -99,7 +99,7 @@
               <div class="flex justify-between items-start">
                 <div>
                   <span
-                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full"
+                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
                     {{ pack.type }}

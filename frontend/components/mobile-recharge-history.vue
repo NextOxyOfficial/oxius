@@ -19,6 +19,17 @@
           All Transactions
         </button>
         <button
+          @click="activeFilter = 'balance'"
+          :class="[
+            'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+            activeFilter === 'balance'
+              ? 'bg-green-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+          ]"
+        >
+          Balance
+        </button>
+        <button
           @click="activeFilter = 'data'"
           :class="[
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',

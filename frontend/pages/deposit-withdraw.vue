@@ -364,7 +364,7 @@
         </div>
       </div>
       <div class="overflow-hidden">
-        <table
+        <!-- <table
           class="w-full divide-y divide-gray-200 overflow-hidden overflow-x-scroll"
         >
           <thead class="bg-gray-50">
@@ -564,8 +564,137 @@
               </td>
             </tr>
           </tbody>
-        </table>
-        <UTable />
+        </table> -->
+        <UTable :columns="columns" :rows="paginatedTransactions">
+          <template #type-data="{ row }">
+            <div class="flex items-center">
+              <span
+                v-if="row.transaction_type === 'Deposit'"
+                class="flex-shrink-0 h-5 w-5 text-green-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 5v14" />
+                  <path d="m19 12-7 7-7-7" />
+                </svg>
+              </span>
+              <span
+                v-else-if="row.transaction_type === 'Withdraw'"
+                class="flex-shrink-0 h-5 w-5 text-red-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 19V5" />
+                  <path d="m5 12 7-7 7 7" />
+                </svg>
+              </span>
+              <span v-else class="flex-shrink-0 h-5 w-5 text-blue-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M8 3 4 7l4 4" />
+                  <path d="M4 7h16" />
+                  <path d="m16 21 4-4-4-4" />
+                  <path d="M20 17H4" />
+                </svg>
+              </span>
+              <span class="ml-2 text-sm text-gray-900 capitalize">{{
+                row.transaction_type
+              }}</span>
+            </div>
+          </template>
+          <template #recipient-data="{ row }">
+            <div
+              class="text-sm text-gray-500 capitalize"
+              v-if="row?.to_user_details"
+            >
+              {{ row?.to_user_details?.name }}
+            </div>
+          </template>
+          <template #method-data="{ row }">
+            <div class="text-sm text-gray-500 capitalize">
+              {{ row?.payment_method }}
+            </div>
+          </template>
+          <template #time-data="{ row }">
+            <div class="text-sm text-gray-500">
+              {{ formatDate(row.created_at) }}
+            </div>
+          </template>
+          <template #amount-data="{ row }">
+            <div
+              class="text-sm font-medium"
+              :class="{
+                'text-green-600': row.transaction_type === 'Deposit',
+                'text-red-600': row.transaction_type === 'Withdraw',
+                'text-blue-600': row.transaction_type === 'Transfer',
+              }"
+            >
+              {{
+                formatAmount(
+                  row.payable_amount,
+                  row.transaction_type.toLowerCase()
+                )
+              }}
+            </div>
+          </template>
+          <template #status-data="{ row }">
+            <span
+              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+              :class="{
+                'bg-green-100 text-green-800': row.bank_status === 'completed',
+                'bg-yellow-100 text-yellow-800': row.bank_status === 'pending',
+                'bg-red-100 text-red-800': row.bank_status === 'failed',
+              }"
+            >
+              {{
+                row.bank_status.charAt(0).toUpperCase() +
+                row.bank_status.slice(1)
+              }}
+            </span>
+          </template>
+          <template #action-data="{ row }">
+            <button
+              @click="openTransactionDetails(row)"
+              class="text-primary-600 hover:text-primary-900 focus:outline-none focus:underline"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-eye h-5 w-5"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span class="sr-only">View details</span>
+            </button>
+          </template>
+        </UTable>
       </div>
       <!-- Pagination -->
       <div
@@ -1030,18 +1159,18 @@
                         Recipient
                       </dt>
                       <dd
-                        v-if="transaction.to_user_details"
+                        v-if="selectedTransaction?.to_user_details"
                         class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-mono"
                       >
-                        {{ selectedTransaction?.to_user_details.phone }}/{{
-                          selectedTransaction?.to_user_details.email
+                        {{ selectedTransaction?.to_user_details?.phone }}/{{
+                          selectedTransaction?.to_user_details?.email
                         }}
                       </dd>
                     </div>
                     <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Name</dt>
                       <dd
-                        v-if="transaction.to_user_details"
+                        v-if="selectedTransaction?.to_user_details"
                         class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
                       >
                         {{ selectedTransaction?.to_user_details.name }}
@@ -1075,8 +1204,8 @@
                         {{
                           selectedTransaction
                             ? formatAmount(
-                                selectedTransaction.payable_amount,
-                                selectedTransaction.transaction_type
+                                selectedTransaction?.payable_amount,
+                                selectedTransaction?.transaction_type
                               )
                             : ""
                         }}
@@ -1092,14 +1221,14 @@
                           class="px-2 inline-flex text-sm leading-5 font-medium rounded-full capitalize"
                           :class="{
                             'bg-green-100 text-green-800':
-                              selectedTransaction.status === 'completed',
+                              selectedTransaction?.status === 'completed',
                             'bg-yellow-100 text-yellow-800':
-                              selectedTransaction.status === 'pending',
+                              selectedTransaction?.status === 'pending',
                             'bg-red-100 text-red-800':
-                              selectedTransaction.status === 'failed',
+                              selectedTransaction?.status === 'failed',
                           }"
                         >
-                          {{ selectedTransaction.bank_status }}
+                          {{ selectedTransaction?.bank_status }}
                         </span>
                       </dd>
                     </div>
@@ -1150,6 +1279,37 @@ const isDepositLoading = ref(false);
 const isWithdrawLoading = ref(false);
 const selectedTransaction = ref(null);
 const showDetailsModal = ref(false);
+
+const columns = [
+  {
+    key: "type",
+    label: "Type",
+  },
+  {
+    key: "recipient",
+    label: "Recipient",
+  },
+  {
+    key: "method",
+    label: "Method",
+  },
+  {
+    key: "time",
+    label: "Time",
+  },
+  {
+    key: "amount",
+    label: "Amount",
+  },
+  {
+    key: "status",
+    label: "Status",
+  },
+  {
+    key: "action",
+    label: "Action",
+  },
+];
 
 // Transaction filtering and pagination
 const filters = ref({
