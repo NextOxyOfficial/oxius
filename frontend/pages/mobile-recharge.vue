@@ -316,7 +316,7 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { user } = useAuth();
+const { user, jwtLogin } = useAuth();
 const { post } = useApi();
 
 const toast = useToast();
@@ -341,6 +341,7 @@ const phoneNumber = ref("");
 const showToast = ref(false);
 const filters = ref([
   { value: "all", label: "All" },
+  { value: "balance", label: "Balance" },
   { value: "data", label: "Data" },
   { value: "voice", label: "Voice" },
   { value: "combo", label: "Combo" },
@@ -387,6 +388,7 @@ async function handleRecharge() {
       toast.add({ title: "Recharge successful!" });
       isHistory.value = false;
       selectedPackage.value = null;
+      jwtLogin();
     }
   } catch (err) {
     console.log(err);
