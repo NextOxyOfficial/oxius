@@ -103,6 +103,7 @@ def makePayment(request):
         return Response(payment_details_dict, status=status.HTTP_200_OK)
     
     except Exception as e:
+        print(str(e))
         return Response(
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR

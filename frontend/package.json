@@ -32,6 +32,7 @@
     "nuxt": "^3.13.0",
     "nuxt-aos": "^1.2.5",
     "nuxt-tiptap-editor": "^2.1.4",
+    "qr-scanner": "^1.4.2",
     "vue": "latest",
     "vue-qrcode-reader": "^5.7.1"
   },
