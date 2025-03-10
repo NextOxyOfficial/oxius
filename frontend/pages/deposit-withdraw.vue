@@ -364,7 +364,9 @@
         </div>
       </div>
       <div class="overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table
+          class="w-full divide-y divide-gray-200 overflow-hidden overflow-x-scroll"
+        >
           <thead class="bg-gray-50">
             <tr>
               <th
@@ -563,6 +565,7 @@
             </tr>
           </tbody>
         </table>
+        <UTable />
       </div>
       <!-- Pagination -->
       <div
