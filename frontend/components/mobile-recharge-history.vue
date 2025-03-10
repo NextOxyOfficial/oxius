@@ -1,7 +1,9 @@
 <template>
   <div class="transaction-history h-max">
-    <h1 class="text-3xl font-bold text-center mb-2">Transaction History</h1>
-    <p class="text-center text-gray-600 mb-6">View your recent mobile recharge transactions</p>
+    <h1 class="text-3xl font-bold text-center mb-2">Recharge History</h1>
+    <p class="text-center text-gray-600 mb-6">
+      View your recent mobile recharge transactions
+    </p>
 
     <div class="filters mb-6">
       <div class="filter-buttons flex flex-wrap gap-2">
@@ -10,7 +12,7 @@
           :class="[
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === 'all'
-              ? 'bg-emerald-500 text-white'
+              ? 'bg-green-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
           ]"
         >
@@ -21,7 +23,7 @@
           :class="[
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === 'data'
-              ? 'bg-emerald-500 text-white'
+              ? 'bg-green-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
           ]"
         >
@@ -32,7 +34,7 @@
           :class="[
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === 'voice'
-              ? 'bg-emerald-500 text-white'
+              ? 'bg-green-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
           ]"
         >
@@ -43,7 +45,7 @@
           :class="[
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === 'combo'
-              ? 'bg-emerald-500 text-white'
+              ? 'bg-green-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
           ]"
         >
@@ -53,7 +55,10 @@
     </div>
 
     <div class="transactions overflow-auto h-[460px]">
-      <div v-if="filteredTransactions.length === 0" class="text-center py-8 text-gray-500">
+      <div
+        v-if="filteredTransactions.length === 0"
+        class="text-center py-8 text-gray-500"
+      >
         No transactions found
       </div>
 
@@ -76,7 +81,9 @@
                 />
               </div>
               <div>
-                <h3 class="font-semibold">{{ transaction?.operator_details.name }}</h3>
+                <h3 class="font-semibold">
+                  {{ transaction?.operator_details.name }}
+                </h3>
                 <p class="text-sm text-gray-600">
                   {{ formatDate(transaction.created_at) }}
                 </p>
@@ -95,23 +102,32 @@
           </div>
         </div>
 
-        <div class="mt-2 text-xs text-gray-700" v-if="transaction.package_details">
+        <div
+          class="mt-2 text-xs text-gray-700"
+          v-if="transaction.package_details"
+        >
           <div class="grid grid-cols-2 gap-1">
             <div>
-              <span class="text-gray-500">Data:</span> {{ transaction.package_details.data }}
+              <span class="text-gray-500">Data:</span>
+              {{ transaction.package_details.data }}
             </div>
             <div>
               <span class="text-gray-500">Duration:</span>
               {{ transaction.package_details.validity }} days
             </div>
             <div>
-              <span class="text-gray-500">Calls:</span> {{ transaction.package_details.calls }}
+              <span class="text-gray-500">Calls:</span>
+              {{ transaction.package_details.calls }}
             </div>
             <div>
               <span class="text-gray-500">Status: </span>
               <span
                 class="capitalize"
-                :class="transaction.status === 'completed' ? 'text-green-600' : 'text-orange-500'"
+                :class="
+                  transaction.status === 'completed'
+                    ? 'text-green-600'
+                    : 'text-orange-500'
+                "
               >
                 {{ transaction.status }}
               </span>
@@ -176,7 +192,7 @@ const filteredTransactions = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(
-      t =>
+      (t) =>
         t.operator.toLowerCase().includes(query) ||
         t.packageType.toLowerCase().includes(query) ||
         t.amount.toString().includes(query) ||
@@ -186,7 +202,7 @@ const filteredTransactions = computed(() => {
 
   // Apply package type filter
   if (activeFilter.value !== "all") {
-    result = result.filter(t => t.packageType === activeFilter.value);
+    result = result.filter((t) => t.packageType === activeFilter.value);
   }
 
   // Apply pagination
@@ -203,7 +219,7 @@ const totalTransactions = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(
-      t =>
+      (t) =>
         t.operator.toLowerCase().includes(query) ||
         t.packageType.toLowerCase().includes(query) ||
         t.amount.toString().includes(query) ||
@@ -213,7 +229,7 @@ const totalTransactions = computed(() => {
 
   // Apply package type filter
   if (activeFilter.value !== "all") {
-    result = result.filter(t => t.packageType === activeFilter.value);
+    result = result.filter((t) => t.packageType === activeFilter.value);
   }
 
   return result.length;
@@ -223,7 +239,7 @@ const totalPages = computed(() => {
   return Math.ceil(totalTransactions.value / itemsPerPage);
 });
 
-const getPackageClass = packageType => {
+const getPackageClass = (packageType) => {
   switch (packageType) {
     case "data":
       return "bg-green-100 text-green-800";
@@ -236,7 +252,7 @@ const getPackageClass = packageType => {
   }
 };
 
-const getOperatorClass = operator => {
+const getOperatorClass = (operator) => {
   switch (operator) {
     case "Grameenphone":
       return "bg-green-100 text-green-800";
@@ -249,7 +265,7 @@ const getOperatorClass = operator => {
   }
 };
 
-const getOperatorIcon = operator => {
+const getOperatorIcon = (operator) => {
   switch (operator) {
     case "Grameenphone":
       return;
