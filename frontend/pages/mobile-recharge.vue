@@ -316,7 +316,7 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { user } = useAuth();
+const { user, jwtLogin } = useAuth();
 const { post } = useApi();
 
 const toast = useToast();
@@ -388,6 +388,7 @@ async function handleRecharge() {
       toast.add({ title: "Recharge successful!" });
       isHistory.value = false;
       selectedPackage.value = null;
+      jwtLogin();
     }
   } catch (err) {
     console.log(err);
