@@ -68,6 +68,7 @@ const { get } = useApi();
 const { formatDate } = useUtils();
 const ads = ref([]);
 const { data } = await get(`/classified-posts/`);
+console.log(data);
 
 ads.value = data;
 
@@ -83,20 +84,21 @@ const activeDotIndex = ref(0);
 const animationSpeed = ref(0.5); // pixels per frame
 let animationId = null;
 const adsArray = computed(() => {
-  if (!ads.value) return [];
+  if (!ads.value?.results) return [];
 
   // Check if the response has a results array (paginated response)
   if (ads.value.results && Array.isArray(ads.value.results)) {
-    return ads.value.results;
+    return ads.value?.results;
   }
 
   // If the response is directly an array
-  if (Array.isArray(ads.value)) {
-    return ads.value;
+  if (Array.isArray(ads.value.results)) {
+    return ads.value?.results;
   }
 
   return [];
 });
+
 // For infinite scroll effect, duplicate the ads multiple times
 const displayedAds = computed(() => {
   if (adsArray.value.length === 0) return [];

@@ -56,6 +56,17 @@ export default defineI18nConfig(() => ({
         "Get help and support for all your service needs through our dedicated support channels",
       general_support: "General Support",
       partnership: "Partnership",
+      mobile_recharge: "Mobile Recharge",
+      recharge_package_choice:
+        "Choose the perfect recharge package for your needs",
+      select_operator: "Select Operator",
+      recharge_history: "Recharge History",
+      popular_packages: "Popular Packages",
+      all_packages: "All Packages",
+      recharge_now: "Recharge Now",
+      search_packages: "Search Packages",
+      mobile_recharge_transactions:
+        "View your recent mobile recharge transactions",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -110,6 +121,16 @@ export default defineI18nConfig(() => ({
       support_text: "আমাদের সাপোর্ট টিমের মাধ্যমে যে কোনো সমস্যা সমাধান করুন",
       general_support: "সাধারণ তথ্যের জন্য",
       partnership: "ব্যবসায়িক তথ্যের জন্য",
+      mobile_recharge: "মোবাইল রিচার্জ",
+      recharge_package_choice: "রিচার্জের জন্য প্যাকেজ সিলেক্ট করুন",
+      select_operator: "অপারেটার সিলেক্ট করুন",
+      recharge_history: "রিচার্জ বিবরণী",
+      popular_packages: "পপুলার প্যাকেজ",
+      all_packages: "সকল প্যাকেজ",
+      recharge_now: "রিচার্জ করুন",
+      search_packages: "প্যাকেজ খুঁজুন",
+      mobile_recharge_transactions:
+        "আপনার সাম্প্রতিক মোবাইল রিচার্জ লেনদেন দেখুন",
     },
   },
 }));

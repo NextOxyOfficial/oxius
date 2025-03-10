@@ -34,7 +34,7 @@
             <UInput
               type="search"
               color="white"
-              placeholder="খুঁজুন"
+              placeholder="খুঁজুন যা প্রয়োজন"
               v-model="title"
               class="w-full"
             />
