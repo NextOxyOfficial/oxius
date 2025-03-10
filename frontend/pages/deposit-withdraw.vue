@@ -348,7 +348,7 @@
 								icon="i-ic:twotone-qr-code-scanner"
 								size="md"
 								color="primary"
-								variant="outline"
+								variant="ghost"
 								label=""
 								class="absolute z-30 right-0"
 								@click="scanQr = !scanQr"
@@ -380,7 +380,7 @@
 							type="text"
 							size="md"
 							color="white"
-							placeholder="Email/Phone"
+							placeholder="Enter Email/Phone Or Scan Code"
 							v-model="transfer.contact"
 						/>
 						<p class="text-sm text-red-500">{{ transferErrors.contact }}</p>
