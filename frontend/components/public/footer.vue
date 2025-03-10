@@ -176,7 +176,7 @@
             icon: 'i-material-symbols:mark-email-unread-outline',
           },
           {
-            icon: 'i-ic-baseline-install-mobile',
+            icon: 'i-uil-mobile-vibrate',
             to: '/mobile-recharge/',
           },
         ]"
@@ -186,9 +186,15 @@
           padding: 'py-1',
           container: 'flex items-center justify-evenly min-w-full',
         }"
-        ><template #icon="{ link }">
-          <UIcon :name="link.icon" class="text-3xl text-green-500" /> </template
-      ></UHorizontalNavigation>
+      >
+        <template #icon="{ link, isActive }">
+          <UIcon
+            :name="link.icon"
+            class="text-3xl"
+            :class="isActive ? `text-green-600` : `text-green-400`"
+          />
+        </template>
+      </UHorizontalNavigation>
     </div>
   </footer>
 </template>

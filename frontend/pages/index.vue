@@ -14,6 +14,7 @@
           <UButton
             v-if="user?.user"
             size="md"
+            icon="i-material-symbols-light-lists-rounded"
             color="primary"
             variant="solid"
             :label="t('my_post')"

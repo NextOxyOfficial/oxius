@@ -105,7 +105,7 @@
               {
                 label: 'মোবাইল রিচার্জ',
                 to: '/mobile-recharge',
-                icon: 'i-ic-baseline-install-mobile',
+                icon: 'i-uil-mobile-vibrate',
               },
             ]"
             class="border-b border-gray-200 dark:border-gray-800 text-lg"
@@ -251,7 +251,7 @@ defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
-const handleClickOutside = event => {
+const handleClickOutside = (event) => {
   const menuContainer = document.querySelector(".menu-container");
   if (menuContainer && !menuContainer.contains(event.target)) {
     openMenu.value = false;

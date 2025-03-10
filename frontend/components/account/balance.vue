@@ -45,6 +45,7 @@
           size="xs"
           color="primary"
           variant="outline"
+          icon="i-mdi-eye-outline"
           :label="t('view')"
           class="ml-2"
           :to="`/pending-tasks/${user?.user.id}`"
