@@ -341,6 +341,7 @@ const phoneNumber = ref("");
 const showToast = ref(false);
 const filters = ref([
   { value: "all", label: "All" },
+  { value: "balance", label: "Balance" },
   { value: "data", label: "Data" },
   { value: "voice", label: "Voice" },
   { value: "combo", label: "Combo" },
