@@ -41,7 +41,11 @@ class Recharge(models.Model):
     package = models.ForeignKey(Package, on_delete=models.SET_NULL, null=True)
     phone_number = models.CharField(max_length=20)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, default='completed')
+    RECHARGE_STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+    ]
+    status = models.CharField(max_length=20, choices=RECHARGE_STATUS, default='pending')
     transaction_id = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
