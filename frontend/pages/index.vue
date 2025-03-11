@@ -91,8 +91,8 @@
                 class="capitalize p-2 hover:bg-green-50 flex gap-1 items-center"
               >
                 <NuxtImg
-                  v-if="service?.image"
-                  :src="service?.image"
+                  v-if="service?.medias[0]?.image"
+                  :src="service?.medias[0]?.image"
                   :title="service.title"
                   class="size-4"
                 />

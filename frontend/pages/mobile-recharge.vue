@@ -113,7 +113,7 @@
                       v-if="pack.operator_details"
                       :src="pack.operator_details.icon"
                       :alt="pack.operator_details.name"
-                      class="size-4"
+                      class="size-5"
                     />
                   </div>
                 </div>
@@ -191,7 +191,7 @@
                       v-if="pack.operator_details"
                       :src="pack.operator_details.icon"
                       :alt="pack.operator_details.name"
-                      class="size-4"
+                      class="size-5"
                     />
                   </div>
                 </div>
