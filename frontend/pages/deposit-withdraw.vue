@@ -85,7 +85,7 @@
           </div>
           <div class="my-5">
             <UFormGroup
-              class="flex flex-row-reverse gap-2"
+              class="flex flex-row-reverse gap-2 max-sm:justify-end"
               :ui="{
                 label: {
                   base: 'block font-medium text-gray-700 dark:text-slate-700',
@@ -224,7 +224,7 @@
           </div>
           <div class="my-5">
             <UFormGroup
-              class="flex flex-row-reverse gap-2"
+              class="flex flex-row-reverse gap-2 max-sm:justify-end"
               :ui="{
                 label: {
                   base: 'block font-medium text-gray-700 dark:text-slate-700',
