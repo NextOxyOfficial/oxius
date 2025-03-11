@@ -91,7 +91,8 @@
                 class="capitalize p-2 hover:bg-green-50 flex gap-1 items-center"
               >
                 <NuxtImg
-                  :src="service?.image"
+                  v-if="service?.category_details"
+                  :src="service?.category_details?.image"
                   :title="service.title"
                   class="size-4"
                 />
@@ -154,13 +155,13 @@
     <AdsScroll />
     <PublicSection id="micro-gigs">
       <UContainer>
-        <h2 class="text-2xl md:text-4xl mb-6 md:mb-12 text-center">
+        <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">
           {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
         </h2>
         <AccountBalance v-if="user" :user="user" :isUser="true" />
         <NuxtLink
           to="/mobile-recharge"
-          class="my-3 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+          class="mb-6 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
         >
           <div class="flex gap-2">
             <h2 class="text-base text-gray-900 sm:text-xl text-center">

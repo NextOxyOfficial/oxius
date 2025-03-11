@@ -35,6 +35,7 @@
 
       <div class="flex items-center">
         <h3 class="text-xl font-bold inline-flex items-center">
+          <UIcon name="i-ic:outline-watch-later" class="mr-1" />
           {{ $t("pending_task") }}:
           <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
             user?.user.pending_balance
@@ -123,7 +124,7 @@
         <UButtonGroup>
           <input
             type="text"
-            class="text-xs py-1 px-0.5 w-72"
+            class="text-xs py-1 px-0.5 w-60 sm:w-72"
             :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
           />
           <UButton

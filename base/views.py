@@ -488,7 +488,12 @@ class GetClassifiedPosts(generics.ListAPIView):
     def get_queryset(self):
         queryset = ClassifiedCategoryPost.objects.filter(
             service_status='approved'
-        ).order_by('-created_at')
+        ).select_related(
+            'category'     
+        ).defer(
+        'user'  # Tell Django not to load the user field
+    ).order_by('-created_at')
+        
         title = self.request.query_params.get('title', None)
         
         if title:
