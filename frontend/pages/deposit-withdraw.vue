@@ -327,7 +327,7 @@
               />
               <UModal v-model="scanQr">
                 <div
-                  class="px-4 py-12 flex items-center justify-center relative"
+                  class="px-4 py-12 flex flex-col gap-2 items-center justify-center relative bg-slate-100"
                 >
                   <UButton
                     icon="i-heroicons-x-mark"
@@ -337,6 +337,12 @@
                     @click="scanQr = false"
                     class="absolute top-1 right-1 rounded-full"
                   />
+
+                  <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
+                  <h3 class="text-base font-semibold capitalize">
+                    Point camera on the payee's QR code
+                  </h3>
+
                   <qrcode-stream
                     @scanned="
                       (res) => {

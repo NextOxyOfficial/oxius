@@ -52,7 +52,7 @@
             },
             {
               label: $t('faq'),
-              to: '/coming-soon/',
+              to: '/faq/',
               icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
             },
             {

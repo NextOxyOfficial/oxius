@@ -439,15 +439,29 @@ def update_micro_gig_post(request, pk):
             # Update the MicroGigPost using serializer
             serializer = MicroGigPostSerializer(micro_gig_post, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                try:
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                except ValidationError as e:
+                    # Return the validation error message from the model
+                    return Response(
+                        {"error": str(e)},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
     
+    except ValidationError as e:
+        # Handle any validation errors that might occur outside the serializer.save()
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except MicroGigPost.DoesNotExist:
         return Response({"error": "MicroGigPost not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Unexpected error in update_micro_gig_post: {str(e)}")
+        return Response({"error": "Can't stop the gig. You have pending tasks"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
