@@ -12,7 +12,6 @@ class Command(BaseCommand):
         print('Available for auto approve:',len(pending_tasks))
         for task in pending_tasks:
             task.approved = True
-            task.completed = True
             task.save()
             
             self.stdout.write(

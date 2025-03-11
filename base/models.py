@@ -315,7 +315,8 @@ class MicroGigPostTask(models.Model):
             self.user.pending_balance += self.gig.price
             self.user.save()
         # Mark as completed if approved
-        if self.approved and not self.completed:
+        if self.approved and (not self.completed or self.rejected ):
+            self.rejected = False
             self.completed = True
             self.user.balance += self.gig.price
             self.user.pending_balance -= self.gig.price
