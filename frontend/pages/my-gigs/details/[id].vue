@@ -238,16 +238,18 @@
 	getUserGigs();
 
 	async function handleOperation(taskId, operation) {
+		let update = {
+			id: taskId,
+		};
+		if (operation === "approve") {
+			update.approved = true;
+		} else {
+			update.rejected = true;
+		}
 		const res = await put(
 			`/update-task-by-micro-gig-post/${route.params.id}/tasks/`,
 			{
-				tasks: [
-					{
-						id: taskId,
-						approved: operation === "approve" ? true : false,
-						rejected: operation === "reject" ? true : false,
-					},
-				],
+				tasks: [update],
 			}
 		);
 		console.log(res);

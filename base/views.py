@@ -30,6 +30,27 @@ from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 
+@api_view(['POST'])
+def login_as_view(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    login_as = request.data.get("login_as")  # Username of the user to log in as
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None and user.is_staff:  # check if user is admin 
+        try:
+            login_as_user = User.objects.get(username=login_as)  # Get the user to log in as
+            refresh = RefreshToken.for_user(login_as_user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        except User.DoesNotExist:
+            return Response({"error": "Target user not found"}, status=404)
+    else:
+        return Response({"error": "Invalid admin credentials"}, status=400)
+
 
 # move this function to util later
 def base64ToFile(base64_data):
@@ -940,12 +961,10 @@ def update_microgigpost_tasks(request, gig_id):
                 # Update task status
                 if task_data.get('rejected'):
                     task.rejected = True
-                    task.approved = False
                     task.reason = task_data.get('reason', '')  # Set rejection reason
                     # task.completed = True  # Mark as completed when rejected
                 elif task_data.get('approved'):
                     task.approved = True
-                    task.rejected = False
                     # task.completed = True  # Mark as completed when approved
 
                 task.save()

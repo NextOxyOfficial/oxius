@@ -188,13 +188,15 @@ admin.site.register(MicroGigPost, MicroGigPostAdmin)
 
 
 class MicroGigPostTaskAdmin(admin.ModelAdmin):
-    list_display = ('user','user__first_name','gig','gig__price','submit_details','created_at', 'approved', 'rejected', 'completed', 'reason')
-    list_filter = ('approved', 'rejected', 'completed')
+    list_display = ('user', 'gig', 'submit_details', 'created_at', 'approved', 'rejected', 'completed', 'reason')
+    list_filter = ('user', 'approved', 'rejected', 'completed')
+    
+    autocomplete_fields = ['user']  # Enables search instead of a long dropdown
     
     @admin.display(ordering='-created_at')
-    def created_at(self,obj):
+    def created_at(self, obj):
         return obj.created_at
-    
+
 admin.site.register(MicroGigPostTask, MicroGigPostTaskAdmin)
 
 
