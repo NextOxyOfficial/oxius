@@ -96,22 +96,30 @@
             :key="index"
             class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
           >
-            <div class="p-2">
+            <div class="p-2 relative">
               <div class="flex justify-between items-start">
-                <div>
+                <div class="w-full">
                   <span
                     class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
                     {{ pack.type }}
                   </span>
-                  <h3 class="mt-1 text-base font-bold text-gray-900">
-                    {{ pack.price }}
-                  </h3>
+                  <div class="flex justify-between px-0.5 mt-1">
+                    <h3 class="mt-1 text-base font-bold text-gray-900">
+                      {{ pack.price }}
+                    </h3>
+                    <NuxtImg
+                      v-if="pack.operator_details"
+                      :src="pack.operator_details.icon"
+                      :alt="pack.operator_details.name"
+                      class="size-5"
+                    />
+                  </div>
                 </div>
                 <span
                   v-if="pack.popular"
-                  class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium"
+                  class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium absolute top-2 right-2"
                   >Popular</span
                 >
               </div>
@@ -166,18 +174,26 @@
             :key="index"
             class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
           >
-            <div class="p-2">
+            <div class="p-2 relative">
               <div class="flex justify-between items-start">
-                <div>
+                <div class="w-full">
                   <span
                     class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
                     {{ pack.type }}
                   </span>
-                  <h3 class="mt-1 text-base font-bold text-gray-900">
-                    {{ pack.price }}
-                  </h3>
+                  <div class="flex justify-between px-0.5 mt-1">
+                    <h3 class="mt-1 text-base font-bold text-gray-900">
+                      {{ pack.price }}
+                    </h3>
+                    <NuxtImg
+                      v-if="pack.operator_details"
+                      :src="pack.operator_details.icon"
+                      :alt="pack.operator_details.name"
+                      class="size-5"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -11,6 +11,7 @@ import random
 import string
 from django.utils import timezone
 from datetime import timedelta
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -124,6 +125,7 @@ class ClassifiedCategory(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   title = models.CharField(max_length=256)
   image = models.ImageField(upload_to='images/', blank=True, null=True)
+  is_featured = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
@@ -244,14 +246,31 @@ class MicroGigPost(models.Model):
         return self.microgigposttask_set.all().select_related('user').order_by('-created_at')
     
     def save(self, *args, **kwargs):
-        # Check if the gig is being stopped
+    # Check if the gig is being marked as stopped
         if self.stop_gig and not self.gig_status == 'completed':
-            if self.required_quantity > 0:
-                # Refund the unfulfilled portion
-                self.user.balance += self.balance
-                self.user.save()
-                self.balance = 0
-                self.gig_status = 'completed'
+            # Check for any pending tasks
+            pending_tasks_exist = MicroGigPostTask.objects.filter(
+                gig=self,
+                completed=False,
+                approved=False,
+                rejected=False
+            ).exists()
+            
+            if pending_tasks_exist:
+                # Prevent stopping the gig by resetting stop_gig flag
+                # self.stop_gig = False
+                # self.active_gig = True
+                # You could raise a ValidationError here instead, but that would require
+                # try/except blocks in your views
+                raise ValidationError("Cannot stop this gig because there are pending tasks that need to be reviewed.")
+            else:
+                # Only refund if no pending tasks and required quantity > 0
+                if self.required_quantity > 0:
+                    # Refund the unfulfilled portion
+                    self.user.balance += self.balance
+                    self.user.save()
+                    self.balance = 0
+                    self.gig_status = 'completed'
 
         # Check if the gig is complete
         if self.filled_quantity >= self.required_quantity:

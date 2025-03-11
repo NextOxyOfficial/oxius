@@ -54,6 +54,7 @@
             />
           </UButtonGroup>
         </form>
+
         <div
           class="border bg-white w-full max-w-lg mx-auto rounded-md p-2 space-y-3 mb-5 relative z-50"
           v-if="
@@ -91,7 +92,14 @@
                 class="capitalize p-2 hover:bg-green-50 flex gap-1 items-center"
               >
                 <NuxtImg
-                  :src="service?.image"
+                  v-if="service?.medias[0]?.image"
+                  :src="service?.medias[0]?.image"
+                  :title="service.title"
+                  class="size-4"
+                />
+                <NuxtImg
+                  v-else
+                  :src="service?.category_details?.image"
                   :title="service.title"
                   class="size-4"
                 />
@@ -100,13 +108,53 @@
             </li>
           </ul>
         </div>
-
         <div
           class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-4"
         >
           <UCard
             class="text-center border border-dashed border-green-500 lg:w-[150px]"
-            v-for="service in services?.results"
+            v-for="service in services?.results.filter(
+              (item) => item.is_featured
+            )"
+            :key="service.id"
+            :ui="{
+              body: {
+                padding: 'px-3 py-3 sm:p-2.5',
+              },
+              ring: '',
+              background: 'bg-green-50/70',
+              shadow: 'shadow-md',
+            }"
+          >
+            <ULink
+              :to="`/classified-categories/${service.id}`"
+              active-class="text-primary"
+              inactive-class="text-gray-500 dark:text-gray-400"
+            >
+              <NuxtImg
+                :src="service?.image"
+                :title="service.title"
+                class="size-9 mx-auto"
+              />
+              <h3 class="text-md mt-2">{{ service.title }}</h3>
+            </ULink>
+          </UCard>
+
+          <UCard
+            v-if="services && !services.count"
+            class="py-16 text-center w-full col-span-2 sm:col-span-3"
+          >
+            <p>No categories have been found!</p>
+          </UCard>
+        </div>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-4"
+        >
+          <UCard
+            class="text-center border border-dashed border-green-500 lg:w-[150px]"
+            v-for="service in services?.results.filter(
+              (item) => !item.is_featured
+            )"
             :key="service.id"
             :ui="{
               body: {
@@ -154,13 +202,13 @@
     <AdsScroll />
     <PublicSection id="micro-gigs">
       <UContainer>
-        <h2 class="text-2xl md:text-4xl mb-6 md:mb-12 text-center">
+        <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">
           {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
         </h2>
         <AccountBalance v-if="user" :user="user" :isUser="true" />
         <NuxtLink
           to="/mobile-recharge"
-          class="my-3 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+          class="mb-6 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
         >
           <div class="flex gap-2">
             <h2 class="text-base text-gray-900 sm:text-xl text-center">

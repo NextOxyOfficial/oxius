@@ -8,9 +8,18 @@ class OperatorSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'icon', 'bg_color', 'icon_color']
 
 class PackageSerializer(serializers.ModelSerializer):
+    operator = serializers.PrimaryKeyRelatedField(
+        queryset=Operator.objects.all(),
+        help_text="The ID of the selected operator"
+    )
+    
+    operator_details = OperatorSerializer(
+        source='operator',
+        read_only=True
+    )
     class Meta:
         model = Package
-        fields = ['id', 'operator', 'type', 'price', 'data', 'validity', 'calls', 'popular']
+        fields = '__all__'
 
 class RechargeSerializer(serializers.ModelSerializer):
     package = serializers.PrimaryKeyRelatedField(
