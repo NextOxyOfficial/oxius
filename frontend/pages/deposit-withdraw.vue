@@ -425,7 +425,14 @@
       >
         {{ $t("transaction_history") }}
       </h3>
-      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <div class="flex gap-2 justify-center my-4">
+        <UButton @click="user_transaction = 'sent'">Sent</UButton>
+        <UButton @click="user_transaction = 'received'">Received</UButton>
+      </div>
+      <div
+        v-if="user_transaction === 'sent'"
+        class="px-6 py-4 border-b border-gray-200 bg-gray-50"
+      >
         <div
           class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
@@ -452,7 +459,7 @@
           </div>
         </div>
       </div>
-      <div class="overflow-hidden">
+      <div v-if="user_transaction === 'sent'" class="overflow-hidden">
         <UTable :columns="columns" :rows="paginatedTransactions">
           <template #type-data="{ row }">
             <div class="flex items-center">
@@ -584,6 +591,7 @@
           </template>
         </UTable>
       </div>
+      <div v-else>Received</div>
       <!-- Pagination -->
       <div
         v-if="totalPages > 1"
@@ -650,19 +658,19 @@
                 </svg>
               </button>
 
-              <template v-for="page in displayedPages" :key="page">
-                <button
-                  @click="goToPage(page)"
-                  :class="[
-                    currentPage === page
-                      ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                  ]"
-                >
-                  {{ page }}
-                </button>
-              </template>
+              <button
+                v-for="(page, i) in displayedPages"
+                :key="i"
+                @click="goToPage(page)"
+                :class="[
+                  currentPage === page
+                    ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                  'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                ]"
+              >
+                {{ page }}
+              </button>
 
               <button
                 @click="goToPage(currentPage + 1)"
@@ -1166,6 +1174,10 @@ const isDepositLoading = ref(false);
 const isWithdrawLoading = ref(false);
 const selectedTransaction = ref(null);
 const showDetailsModal = ref(false);
+const user_transaction = ref("sent");
+
+const { data } = await get("/received-transfers/");
+console.log(data);
 
 const columns = [
   {

@@ -1385,3 +1385,17 @@ def set_new_password(request):
             {'detail': 'User not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
+
+class ReceivedTransfersView(generics.ListAPIView):
+    """View for seeing all transfers received by the current user"""
+    serializer_class = ReceivedTransferSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Return all transfers where the current user is the recipient"""
+        # Use Django ORM instead of raw SQL for better compatibility with DRF
+        return Balance.objects.filter(
+            to_user=self.request.user,
+            transaction_type__iexact='transfer',  # Case-insensitive match
+            completed=True
+        ).select_related('user').order_by('-updated_at')

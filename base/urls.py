@@ -82,4 +82,5 @@ urlpatterns = [
   path('api/auth/reset-password/', reset_password_request),
   path('api/auth/verify-reset-otp/', verify_reset_otp),
   path('api/auth/set-new-password/', set_new_password),
+  path('received-transfers/', ReceivedTransfersView.as_view(), name='received-transfers'),
 ]

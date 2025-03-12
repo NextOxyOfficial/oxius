@@ -273,10 +273,13 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         return data
 
 
-
-
-
-
+class ReceivedTransferSerializer(serializers.ModelSerializer):
+    sender_details = UserSerializer(source='user', read_only=True)
+    
+    class Meta:
+        model = Balance
+        fields = ['id', 'sender_details', 'amount', 'payable_amount', 
+                  'created_at', 'updated_at', 'payment_method', 'transaction_type']
 
 
 
