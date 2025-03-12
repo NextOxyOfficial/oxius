@@ -68,7 +68,6 @@ const { get } = useApi();
 const { formatDate } = useUtils();
 const ads = ref([]);
 const { data } = await get(`/classified-posts/`);
-console.log(data);
 
 ads.value = data;
 

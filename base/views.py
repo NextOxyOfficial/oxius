@@ -322,7 +322,7 @@ class ClassifiedCategoryPagination(PageNumberPagination):
     #     return self.page_size
 
 class GetClassifiedCategories(generics.ListCreateAPIView):
-    queryset = ClassifiedCategory.objects.all().order_by('title')
+    queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-created_at')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
     pagination_class = ClassifiedCategoryPagination
@@ -330,7 +330,7 @@ class GetClassifiedCategories(generics.ListCreateAPIView):
         """
         Optionally filter the queryset by title.
         """
-        queryset = super().get_queryset()
+        queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-created_at')
         title = self.request.query_params.get('title', None)
         if title:
             queryset = queryset.filter(title__icontains=title)

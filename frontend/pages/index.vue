@@ -480,6 +480,7 @@ const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
 services.value = res.data;
+console.log(res.data);
 const classifiedLatestPosts = ref([]);
 const res2 = await get("/classified-posts/");
 classifiedLatestPosts.value = res2.data;
@@ -550,8 +551,6 @@ async function getMicroGigsByAvailability(e) {
 }
 
 const selectCategory = async (category) => {
-  console.log(category);
-
   selectedCategory.value = category || null;
   try {
     const { data, error } = await get(
@@ -696,7 +695,6 @@ watch(
 
 const operators = ref([]);
 const operatorsRes = await get("/mobile-recharge/operators/");
-console.log(operatorsRes);
 
 operators.value = operatorsRes.data;
 </script>
