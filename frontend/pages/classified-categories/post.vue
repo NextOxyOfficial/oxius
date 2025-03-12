@@ -551,7 +551,7 @@ async function handlePostGig() {
   rest.service_status = "pending";
 
   const res = await (router.query.id
-    ? put(`/update-user-classified-post/${router.query.id}/`, rest)
+    ? put(`/update-user-classified-post/${router.query.id}/`, form.value)
     : post("/classified-categories-post/", submitValues.value));
   if (res.data) {
     navigateTo("/my-classified-services/");

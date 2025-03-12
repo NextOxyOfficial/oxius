@@ -322,7 +322,7 @@ class ClassifiedCategoryPagination(PageNumberPagination):
     #     return self.page_size
 
 class GetClassifiedCategories(generics.ListCreateAPIView):
-    queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-created_at')
+    queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-updated_at')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
     pagination_class = ClassifiedCategoryPagination
@@ -330,7 +330,7 @@ class GetClassifiedCategories(generics.ListCreateAPIView):
         """
         Optionally filter the queryset by title.
         """
-        queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-created_at')
+        queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-updated_at')
         title = self.request.query_params.get('title', None)
         if title:
             queryset = queryset.filter(title__icontains=title)
@@ -603,18 +603,39 @@ def classifiedCategoryPost(request, pk):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_classified_post(request, pk):
-    print("User:", request.user)
-    print("Is authenticated:", request.user.is_authenticated)
-    print("Is superuser:", request.user.is_superuser)
+    print(request.data, 'data')
     try:
         classified_post = get_object_or_404(ClassifiedCategoryPost, id=pk)
         
         # Check if the user is the owner or a superuser
         if request.user == classified_post.user or request.user.is_superuser:
-            serializer = ClassifiedPostSerializer(classified_post, data=request.data, partial=True)
+            # Get a mutable copy of request data
+            data = request.data.copy()
+            
+            # Handle media files separately
+            medias = data.pop('medias', None)
+            
+            # Update the post details
+            serializer = ClassifiedPostSerializer(classified_post, data=data, partial=True)
             if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                updated_post = serializer.save()
+                
+                # Process media files if present
+                if medias:
+                    # Option 1: Clear existing media and add new ones
+                    if data.get('replace_all_media', False):
+                        # Remove existing media
+                        updated_post.medias.clear()
+                    
+                    # Add new media files
+                    for file in medias:
+                        if isinstance(file, str) and file.startswith('data:'):  # Check if it's base64
+                            nm = ClassifiedCategoryPostMedia.objects.create(image=base64ToFile(file))
+                            updated_post.medias.add(nm)
+                
+                # Get the updated data with media included
+                updated_serializer = ClassifiedPostSerializer(updated_post)
+                return Response(updated_serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -622,6 +643,9 @@ def update_classified_post(request, pk):
     
     except ClassifiedCategoryPost.DoesNotExist:
         return Response({"error": "ClassifiedCategoryPost not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(f"Error updating classified post: {str(e)}")
+        return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Classified Post Delete
 @api_view(['DELETE'])
