@@ -1,5 +1,5 @@
 <template>
-  <UContainer v-if="displayedAds?.length">
+  <UContainer v-if="ads?.results?.length">
     <div class="ads-container">
       <div class="ads-header">
         <div class="ads-title">
