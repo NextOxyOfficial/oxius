@@ -64,12 +64,13 @@
 </template>
 
 <script setup>
-const { get } = useApi();
 const { formatDate } = useUtils();
-const ads = ref([]);
-const { data } = await get(`/classified-posts/`);
-
-ads.value = data;
+const { ads } = defineProps({
+  ads: {
+    type: Object,
+    required: true,
+  },
+});
 
 const carouselRef = ref(null);
 const carouselInnerRef = ref(null);
@@ -83,16 +84,16 @@ const activeDotIndex = ref(0);
 const animationSpeed = ref(0.5); // pixels per frame
 let animationId = null;
 const adsArray = computed(() => {
-  if (!ads.value?.results) return [];
+  if (!ads?.results) return [];
 
   // Check if the response has a results array (paginated response)
-  if (ads.value.results && Array.isArray(ads.value.results)) {
-    return ads.value?.results;
+  if (ads.results && Array.isArray(ads.results)) {
+    return ads?.results;
   }
 
   // If the response is directly an array
-  if (Array.isArray(ads.value.results)) {
-    return ads.value?.results;
+  if (Array.isArray(ads.results)) {
+    return ads?.results;
   }
 
   return [];
@@ -180,7 +181,7 @@ const animateScroll = () => {
 
   // Check if we need to reset the scroll position for infinite loop
   if (carouselInnerRef.value) {
-    const totalWidth = (cardWidth.value + 16) * ads.value.length;
+    const totalWidth = (cardWidth.value + 16) * ads.length;
 
     // When we've scrolled past the first set of items, reset to the beginning
     if (scrollPosition.value >= totalWidth) {
@@ -189,7 +190,7 @@ const animateScroll = () => {
 
     // Update active dot based on current position
     const newActiveDotIndex = Math.floor(
-      (scrollPosition.value % totalWidth) / (totalWidth / ads.value.length)
+      (scrollPosition.value % totalWidth) / (totalWidth / ads.length)
     );
     if (newActiveDotIndex !== activeDotIndex.value) {
       activeDotIndex.value = newActiveDotIndex;

@@ -199,7 +199,7 @@
       </UContainer>
     </PublicSection>
 
-    <AdsScroll />
+    <AdsScroll :ads="classifiedLatestPosts" />
     <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">
