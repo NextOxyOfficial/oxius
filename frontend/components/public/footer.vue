@@ -161,23 +161,23 @@
             icon: 'i-heroicons-home',
           },
           {
-            to: '/deposit-withdraw/',
+            to: '/deposit-withdraw',
             icon: 'i-token:cusd',
           },
           {
             // label: $t('faq'),
-            to: `/my-gigs/${user?.user?.id}/`,
+            to: `/micro-gigs`,
             icon: 'i-material-symbols:list-rounded',
           },
 
           {
             // label: $t('earn_money'),
-            to: '/inbox/',
+            to: '/inbox',
             icon: 'i-material-symbols:mark-email-unread-outline',
           },
           {
             icon: 'i-uil-mobile-vibrate',
-            to: '/mobile-recharge/',
+            to: '/mobile-recharge',
           },
         ]"
         :ui="{
