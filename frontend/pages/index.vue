@@ -480,7 +480,6 @@ const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
 services.value = res.data;
-console.log(res.data);
 const classifiedLatestPosts = ref([]);
 const res2 = await get("/classified-posts/");
 classifiedLatestPosts.value = res2.data;
