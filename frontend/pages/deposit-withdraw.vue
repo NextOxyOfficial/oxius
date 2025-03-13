@@ -437,7 +437,18 @@
           class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div class="flex max-sm:justify-between gap-2">
-            <select
+            <USelect
+              v-model="filters.type"
+              :options="[
+                { name: 'All Types', value: '' },
+                { name: 'Deposit', value: 'deposit' },
+                { name: 'Withdraw', value: 'withdraw' },
+                { name: 'Transfer', value: 'transfer' },
+              ]"
+              option-attribute="name"
+              value-attribute="value"
+            />
+            <!-- <select
               v-model="filters.type"
               class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm sm:text-base px-4"
             >
@@ -445,9 +456,19 @@
               <option value="Deposit">Deposit</option>
               <option value="Withdraw">Withdraw</option>
               <option value="Transfer">Transfer</option>
-            </select>
-
-            <select
+            </select> -->
+            <USelect
+              v-model="filters.status"
+              :options="[
+                { name: 'All Statuses', value: '' },
+                { name: 'Completed', value: 'completed' },
+                { name: 'Pending', value: 'pending' },
+                { name: 'Rejected', value: 'rejected' },
+              ]"
+              option-attribute="name"
+              value-attribute="value"
+            />
+            <!-- <select
               v-model="filters.status"
               class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm sm:text-base px-2"
             >
@@ -455,7 +476,7 @@
               <option value="completed">Completed</option>
               <option value="pending">Pending</option>
               <option value="rejected">Rejected</option>
-            </select>
+            </select> -->
           </div>
         </div>
       </div>
