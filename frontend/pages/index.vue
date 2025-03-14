@@ -71,7 +71,7 @@
 						>
 							<NuxtLink
 								class="p-2 border border-dashed border-green-400 flex gap-1 items-center rounded-md bg-green-50"
-								:to="`/classified-categories/${service.id}?business_type=${service.title}`"
+								:to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
 							>
 								<NuxtImg
 									:src="service?.image"
@@ -94,7 +94,7 @@
 							:key="service.id"
 						>
 							<NuxtLink
-								:to="`/classified-categories/details/${service.id}?business_type=${service.title}`"
+								:to="`/classified-categories/details/${service.id}?business_type=${service.business_type}`"
 								class="capitalize p-2 hover:bg-green-50 flex gap-1 items-center"
 							>
 								<NuxtImg
@@ -133,7 +133,7 @@
 						}"
 					>
 						<ULink
-							:to="`/classified-categories/${service.id}?business_type=${service.title}`"
+							:to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
 							active-class="text-primary"
 							inactive-class="text-gray-500 dark:text-gray-400"
 						>
@@ -172,7 +172,7 @@
 						}"
 					>
 						<ULink
-							:to="`/classified-categories/${service.id}?business_type=${service.title}`"
+							:to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
 							active-class="text-primary"
 							inactive-class="text-gray-500 dark:text-gray-400"
 						>

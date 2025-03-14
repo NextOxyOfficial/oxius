@@ -124,6 +124,7 @@ class ClassifiedCategory(models.Model):
   user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='classified_categories')
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   title = models.CharField(max_length=256)
+  business_type = models.CharField(max_length=256, default="shop")
   image = models.ImageField(upload_to='images/', blank=True, null=True)
   is_featured = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now_add=True)
