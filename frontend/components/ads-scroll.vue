@@ -30,7 +30,7 @@
       >
         <div
           ref="carouselInnerRef"
-          class="carousel-inner"
+          class="carousel-inner mb-1"
           :style="carouselStyle"
         >
           <div v-for="(ad, index) in displayedAds" :key="index" class="ad-card">
