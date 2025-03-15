@@ -208,6 +208,10 @@ class BalanceAdmin(admin.ModelAdmin):
     
     list_editable = ('bank_status', 'payment_method','completed','approved','rejected')
     
+    @admin.display(ordering="-created_at")
+    def created_at(self,obj):
+        return obj.created_at
+    
 admin.site.register(Balance, BalanceAdmin)
 
 

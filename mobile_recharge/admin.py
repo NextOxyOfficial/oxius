@@ -8,5 +8,6 @@ admin.site.register(Operator)
 admin.site.register(Package)
 
 class RechargeAdmin(admin.ModelAdmin):
-    list_display = ('user','phone_number','operator', 'package', 'amount', 'created_at')
+    list_display = ('user','phone_number','status','operator', 'package', 'amount', 'created_at')
+    list_filter=('user','phone_number','status','operator', 'package', 'amount', 'created_at')
 admin.site.register(Recharge, RechargeAdmin)
