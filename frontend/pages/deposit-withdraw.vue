@@ -547,6 +547,14 @@
               {{ row?.to_user_details?.name }}
             </div>
           </template>
+          <template #sender-data="{ row }">
+            <div
+              class="text-sm text-gray-500 capitalize"
+              v-if="row?.user_details"
+            >
+              {{ row?.user_details?.name }}
+            </div>
+          </template>
           <template #method-data="{ row }">
             <div class="text-sm text-gray-500 capitalize">
               {{ row?.payment_method }}
@@ -1206,13 +1214,14 @@ const columns = [
     label: "Type",
   },
   {
+    key: "sender",
+    label: "Sender",
+  },
+  {
     key: "recipient",
     label: "Recipient",
   },
-  {
-    key: "method",
-    label: "Method",
-  },
+
   {
     key: "time",
     label: "Time",

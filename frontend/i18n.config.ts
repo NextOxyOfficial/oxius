@@ -67,6 +67,12 @@ export default defineI18nConfig(() => ({
       search_packages: "Search Packages",
       mobile_recharge_transactions:
         "View your recent mobile recharge transactions",
+      support_our_mission: "Support our mission",
+      donate_today: "Every contribution makes a difference",
+      donate_now: "Donate Now",
+      donate_to_support: "Donate to Support AdsyClub",
+      donation_help_text:
+        "Your donation helps us maintain and improve our platform for everyone.",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -131,6 +137,12 @@ export default defineI18nConfig(() => ({
       search_packages: "প্যাকেজ খুঁজুন",
       mobile_recharge_transactions:
         "আপনার সাম্প্রতিক মোবাইল রিচার্জ লেনদেন দেখুন",
+      support_our_mission: "আমাদের মিশন সমর্থন করুন",
+      donate_today: "প্রতিটি অবদান পার্থক্য তৈরি করে",
+      donate_now: "এখনই দান করুন",
+      donate_to_support: "AdsyClub সমর্থন করতে দান করুন",
+      donation_help_text:
+        "আপনার দান আমাদের প্লাটফর্মটি সবার জন্য বজায় রাখতে এবং উন্নত করতে সাহায্য করে।",
     },
   },
 }));
