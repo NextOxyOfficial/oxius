@@ -1,7 +1,10 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h2 class="text-center text-4xl my-6">
+      <h2
+        v-if="categoryTitle"
+        class="text-center text-3xl sm:text-4xl my-3 sm:my-6"
+      >
         {{ categoryTitle }}
       </h2>
       <CommonGeoSelector />
@@ -31,7 +34,9 @@
           />
         </div>
       </div>
-      <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
+      <div
+        class="flex flex-col md:flex-row justify-between md:items-end gap-1.5 sm:gap-4"
+      >
         <UFormGroup class="md:w-1/4">
           <USelectMenu
             v-model="form.state"
@@ -103,7 +108,7 @@
             variant="solid"
             label="Search"
             @click="filterSearch"
-            class="sm:h-10 max-sm:!text-base"
+            class="sm:h-10 max-sm:!text-base w-24 justify-center"
             :ui="{
               padding: {
                 md: 'sm:py-2.5',
@@ -140,7 +145,7 @@
               padding: 'p-0',
             },
           }"
-          class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
+          class="service-card border even:border-t-0 even:border-b-0 bg-white rounded-md"
           v-for="(service, i) in search.filter(
             (service) => service.service_status.toLowerCase() === 'approved'
           )"
@@ -232,7 +237,7 @@
             </div>
           </NuxtLink>
         </UCard>
-        <UDivider label="" class="mt-5" />
+        <UDivider label="" class="mt-2 sm:mt-5" />
         <!-- <h3 class="text-xl font-semibold mt-6 text-green-900">
           Nearby location's ads
         </h3> -->
@@ -240,10 +245,10 @@
       <div v-if="isLoading">
         <CommonPreloader text="Searching for ads in your city..." />
       </div>
-      <UCard v-if="searchError" class="py-16 text-center mt-6">
+      <UCard v-if="searchError" class="py-4 sm:py-16 text-center mt-3 sm:mt-6">
         <p>No offers have been found!</p>
       </UCard>
-      <UDivider v-if="searchError" label="" class="mt-5" />
+      <UDivider v-if="searchError" label="" class="mt-3 sm:mt-5" />
       <!-- <h3
 				v-if="searchError"
 				class="text-xl font-semibold mt-6 text-green-900"
@@ -369,13 +374,13 @@
 			>
 				<p>No offers have been found!</p>
 			</UCard> -->
-      <h3 class="my-6 text-lg font-bold text-green-950">
+      <h3 class="mt-3 mb-2 sm:my-6 text-lg font-bold text-green-950">
         AdsyAI Bot
         <UIcon class="text-2xl" name="i-carbon:bot" />
       </h3>
       <UCard
         v-if="form.city"
-        class="text-center mt-6 border border-green-900/30 border-dashed"
+        class="text-center border border-green-900/30 border-dashed"
         :ui="{
           background: 'bg-slate-50 dark:bg-gray-900',
           ring: 'ring-0 ring-gray-200 dark:ring-gray-800',
