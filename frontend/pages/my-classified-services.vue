@@ -4,12 +4,12 @@
       <h2 class="text-center text-2xl md:text-4xl my-6">My Classified Posts</h2>
       <div class="mt-5">
         <UButton
-          class="px-8"
           size="lg"
           color="primary"
           variant="solid"
-          label="Post Ads"
+          label="+ Post Ads"
           to="/classified-categories/post/"
+          class="px-4 pulse-effect"
         />
       </div>
       <div class="services mt-4" v-if="services.length">
@@ -281,7 +281,30 @@ async function handleAction(id, action, val) {
 </script>
 
 <style scoped>
-/* .service-card:nth-child(odd) {
-  background-color: rgb(235, 232, 232);
-} */
+.pulse-effect {
+  position: relative;
+}
+
+.pulse-effect::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 0.375rem;
+  animation: buttonPulse 2s infinite;
+  box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+}
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+  }
+}
 </style>
