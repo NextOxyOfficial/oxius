@@ -51,6 +51,7 @@
         আপনার জন্য ইন্টারনেট থেকে নিচের এই তথ্য গুলো খুঁজে বের করতে সক্ষম হয়েছি
         :
       </div>
+      <UDivider label="" class="mb-2" />
       <div class="flex gap-4 py-2" v-for="(b, i) in result" :key="b.id">
         <div class="text-left">
           <h1 class="text-lg font-semibold">{{ i + 1 }}. {{ b.name }}</h1>
