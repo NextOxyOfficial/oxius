@@ -73,6 +73,8 @@ export default defineI18nConfig(() => ({
       donate_to_support: "Donate to Support AdsyClub",
       donation_help_text:
         "Your donation helps us maintain and improve our platform for everyone.",
+      relevant_content: "Choose your location to see relevant content",
+      set_location: "Set My Location",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -143,6 +145,8 @@ export default defineI18nConfig(() => ({
       donate_to_support: "AdsyClub সমর্থন করতে দান করুন",
       donation_help_text:
         "আপনার দান আমাদের প্লাটফর্মটি সবার জন্য বজায় রাখতে এবং উন্নত করতে সাহায্য করে।",
+      relevant_content: "প্রাসঙ্গিক কন্টেন্ট দেখতে আপনার অবস্থান বেছে নিন",
+      set_location: "লোকেশন সেট করুন",
     },
   },
 }));
