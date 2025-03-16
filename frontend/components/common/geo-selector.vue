@@ -4,96 +4,109 @@
       <div
         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       >
-        <div
-          class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-out scale-100"
-        >
-          <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+          <!-- Header -->
+          <div class="bg-primary-50 p-5 rounded-t-xl border-b border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-800">
+              <UIcon
+                name="i-heroicons-map-pin"
+                class="inline-block mr-2 text-primary-500"
+              />
               Select Your Location
             </h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Choose your location to see relevant content
+            </p>
+          </div>
 
+          <div class="p-5">
+            <!-- Simple Progress Indicator -->
+
+            <!-- Form Fields -->
             <div class="space-y-4">
-              <UFormGroup label="State">
+              <UFormGroup label="State" required>
                 <USelectMenu
                   v-model="form.state"
-                  color="white"
+                  color="primary"
                   size="md"
                   :options="regions"
-                  placeholder="State"
-                  :ui="{
-                    size: {
-                      md: 'text-base',
-                    },
-                  }"
+                  placeholder="Select your state"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
+                  class="location-select"
                 />
                 <p
                   v-if="showErrors && !form.state"
                   class="text-red-500 text-sm mt-1"
                 >
+                  <UIcon
+                    name="i-heroicons-exclamation-circle"
+                    class="inline-block w-4 h-4 mr-1"
+                  />
                   Please select a state
                 </p>
               </UFormGroup>
 
-              <UFormGroup label="City">
+              <UFormGroup label="City" required>
                 <USelectMenu
                   v-model="form.city"
-                  color="white"
+                  color="primary"
                   size="md"
                   :options="cities"
-                  placeholder="City"
-                  :ui="{
-                    size: {
-                      md: 'text-base',
-                    },
-                  }"
+                  placeholder="Select your city"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
+                  class="location-select"
+                  :disabled="!form.state"
                 />
                 <p
                   v-if="showErrors && !form.city"
                   class="text-red-500 text-sm mt-1"
                 >
+                  <UIcon
+                    name="i-heroicons-exclamation-circle"
+                    class="inline-block w-4 h-4 mr-1"
+                  />
                   Please select a city
                 </p>
               </UFormGroup>
 
-              <UFormGroup label="Area">
+              <UFormGroup label="Area/Upazila" required>
                 <USelectMenu
                   v-model="form.upazila"
-                  color="white"
+                  color="primary"
                   size="md"
                   :options="upazilas"
-                  placeholder="Thana"
-                  :ui="{
-                    size: {
-                      md: 'text-base',
-                    },
-                  }"
+                  placeholder="Select your area"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
+                  class="location-select"
+                  :disabled="!form.city"
                 />
                 <p
                   v-if="showErrors && !form.upazila"
                   class="text-red-500 text-sm mt-1"
                 >
+                  <UIcon
+                    name="i-heroicons-exclamation-circle"
+                    class="inline-block w-4 h-4 mr-1"
+                  />
                   Please select an area
                 </p>
               </UFormGroup>
             </div>
 
-            <div class="flex justify-center">
-              <UButton
-                class="mt-4"
-                size="md"
-                color="primary"
-                variant="solid"
-                label="Select Location"
-                @click="validateAndAddLocation"
-                :disabled="isSubmitDisabled"
-              />
-            </div>
+            <!-- Action Button -->
+            <UButton
+              class="mt-6 w-fit"
+              size="lg"
+              color="primary"
+              variant="solid"
+              label="Set My Location"
+              @click="validateAndAddLocation"
+              :disabled="isSubmitDisabled"
+              :loading="isLoading"
+            />
           </div>
         </div>
       </div>
@@ -106,16 +119,36 @@ const { get } = useApi();
 const isOpen = ref(false);
 const location = useCookie("location");
 const showErrors = ref(false);
+const isLoading = ref(false);
 
 if (!location.value) {
   isOpen.value = true;
 }
+
 const form = ref({
   country: "Bangladesh",
   state: "",
   city: "",
   upazila: "",
 });
+
+// Simple step tracking
+const getCurrentStep = () => {
+  if (!form.value.state) return 0;
+  if (!form.value.city) return 1;
+  if (!form.value.upazila) return 2;
+  return 3;
+};
+
+const getCurrentStepClass = (index) => {
+  if (index < getCurrentStep()) {
+    return "border-primary-500 bg-primary-500 text-white";
+  }
+  if (index === getCurrentStep()) {
+    return "border-primary-500 text-primary-500";
+  }
+  return "border-gray-200 text-gray-400";
+};
 
 // Computed property to check if all fields are filled
 const isSubmitDisabled = computed(() => {
@@ -140,8 +173,8 @@ watch(
         `/geo/cities/?region_name_eng=${newState}`
       );
       cities.value = cities_response.data;
-      form.value.city = ""; // Reset city when state changes
-      form.value.upazila = ""; // Reset upazila when state changes
+      form.value.city = "";
+      form.value.upazila = "";
     }
   }
 );
@@ -154,19 +187,49 @@ watch(
         `/geo/upazila/?city_name_eng=${newCity}`
       );
       upazilas.value = thana_response.data;
-      form.value.upazila = ""; // Reset upazila when city changes
+      form.value.upazila = "";
     }
   }
 );
 
-// New function to validate and add location
+// Function to validate and add location
 function validateAndAddLocation() {
-  showErrors.value = true; // Show validation errors
+  showErrors.value = true;
 
   if (!isSubmitDisabled.value) {
-    location.value = form.value;
-    isOpen.value = false;
-    window.location.reload();
+    isLoading.value = true;
+
+    // Short delay for better UX
+    setTimeout(() => {
+      location.value = form.value;
+      isOpen.value = false;
+      isLoading.value = false;
+      window.location.reload();
+    }, 500);
   }
 }
 </script>
+
+<style scoped>
+.location-select {
+  transition: all 0.2s ease;
+}
+
+.location-select:hover:not(:disabled) {
+  border-color: #4f46e5;
+}
+
+/* Simple animation for validation errors */
+p.text-red-500 {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+</style>
