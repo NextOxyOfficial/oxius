@@ -7,9 +7,7 @@
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-4" />
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <p
-          class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-bold"
-        >
+        <p class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-bold">
           <span class="inline-flex items-center"
             >{{ $t("available_balance") }}:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
@@ -17,9 +15,7 @@
           </span>
         </p>
       </div>
-      <div
-        class="mb-5 flex justify-center shadow-md bg-gray-100 max-w-fit mx-auto"
-      >
+      <div class="mb-5 flex justify-center shadow-md bg-gray-100 max-w-fit mx-auto">
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
           variant="outline"
@@ -41,9 +37,7 @@
             rounded: 'rounded-s-none rounded-e-none',
           }"
           @click="currentTab = 2"
-          ><UIcon name="i-ic:baseline-arrow-upward" />{{
-            $t("withdraw")
-          }}</UButton
+          ><UIcon name="i-ic:baseline-arrow-upward" />{{ $t("withdraw") }}</UButton
         >
         <UButton
           :color="`${currentTab == 3 ? 'green' : 'gray'}`"
@@ -73,15 +67,9 @@
               amount
             />
           </div>
-          <p v-if="depositErrors.amount" class="text-sm text-red-500">
-            Please enter an amount
-          </p>
+          <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
           <div class="mt-4">
-            <img
-              src="/static/frontend/images/payment.png"
-              class="w-60"
-              alt="Payment Method"
-            />
+            <img src="/static/frontend/images/payment.png" class="w-60" alt="Payment Method" />
           </div>
           <div class="my-5">
             <UFormGroup
@@ -111,9 +99,7 @@
             </UFormGroup>
           </div>
 
-          <p v-if="depositErrors.policy" class="text-sm text-red-500">
-            Please select this field
-          </p>
+          <p v-if="depositErrors.policy" class="text-sm text-red-500">Please select this field</p>
           <div class="my-2 space-x-3">
             <UButton
               v-if="
@@ -150,9 +136,7 @@
               </template>
             </URadioGroup>
           </div>
-          <p v-if="errors?.selected" class="text-sm text-red-500">
-            Please enter a payment method
-          </p>
+          <p v-if="errors?.selected" class="text-sm text-red-500">Please enter a payment method</p>
           <div class="mb-3">
             <UInput
               v-if="selected === 'nagad'"
@@ -214,9 +198,7 @@
                 <UIcon name="i-mdi:currency-bdt" class="text-base" />200</span
               >
             </p>
-            <p class="text-sm">
-              <span class="text-red-500">*</span> 2.95% Charges applicable
-            </p>
+            <p class="text-sm"><span class="text-red-500">*</span> 2.95% Charges applicable</p>
 
             <p v-if="errors?.insufficient" class="text-sm text-red-500">
               You do not have enough balance
@@ -249,9 +231,7 @@
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
 
-            <p v-if="errors?.policy" class="text-sm text-red-500">
-              Check this field
-            </p>
+            <p v-if="errors?.policy" class="text-sm text-red-500">Check this field</p>
           </div>
           <div class="my-2 space-x-3 mb-4">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -267,9 +247,7 @@
               "
               >{{ $t("withdraw") }}</UButton
             >
-            <UButton v-else size="sm" @click="isOpen = true">{{
-              $t("withdraw")
-            }}</UButton>
+            <UButton v-else size="sm" @click="isOpen = true">{{ $t("withdraw") }}</UButton>
           </div>
         </div>
         <div v-if="currentTab === 3" class="max-sm:w-full">
@@ -345,7 +323,7 @@
 
                   <qrcode-stream
                     @scanned="
-                      (res) => {
+                      res => {
                         scanQr = false;
                         transfer.contact = res;
                       }
@@ -370,9 +348,7 @@
               class="my-3"
               v-model="transfer.payable_amount"
             />
-            <p class="text-sm text-red-500" v-if="transferErrors.transfer">
-              *Insufficient Fund
-            </p>
+            <p class="text-sm text-red-500" v-if="transferErrors.transfer">*Insufficient Fund</p>
             <p class="text-sm text-red-500">
               {{ transferErrors.payable_amount }}
             </p>
@@ -419,23 +395,12 @@
         </div>
       </div>
 
-      <h3
-        class="text-center text-lg md:text-3xl font-semibold mt-8"
-        v-if="statements?.length"
-      >
+      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
         {{ $t("transaction_history") }}
       </h3>
-      <div class="flex gap-2 justify-center my-4">
-        <UButton @click="user_transaction = 'sent'">Sent</UButton>
-        <UButton @click="user_transaction = 'received'">Received</UButton>
-      </div>
-      <div
-        v-if="user_transaction === 'sent'"
-        class="px-6 py-4 border-b border-gray-200 bg-gray-50"
-      >
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
+
+      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="flex max-sm:justify-between gap-2">
             <USelect
               v-model="filters.type"
@@ -480,7 +445,7 @@
           </div>
         </div>
       </div>
-      <div v-if="user_transaction === 'sent'" class="overflow-hidden">
+      <div class="overflow-hidden">
         <UTable :columns="columns" :rows="paginatedTransactions">
           <template #type-data="{ row }">
             <div class="flex items-center">
@@ -534,24 +499,16 @@
                   <path d="M20 17H4" />
                 </svg>
               </span>
-              <span class="ml-2 text-sm text-gray-900 capitalize">{{
-                row.transaction_type
-              }}</span>
+              <span class="ml-2 text-sm text-gray-900 capitalize">{{ row.transaction_type }}</span>
             </div>
           </template>
           <template #recipient-data="{ row }">
-            <div
-              class="text-sm text-gray-500 capitalize"
-              v-if="row?.to_user_details"
-            >
+            <div class="text-sm text-gray-500 capitalize" v-if="row?.to_user_details">
               {{ row?.to_user_details?.name }}
             </div>
           </template>
           <template #sender-data="{ row }">
-            <div
-              class="text-sm text-gray-500 capitalize"
-              v-if="row?.user_details"
-            >
+            <div class="text-sm text-gray-500 capitalize" v-if="row?.user_details">
               {{ row?.user_details?.name }}
             </div>
           </template>
@@ -574,12 +531,7 @@
                 'text-blue-600': row.transaction_type === 'Transfer',
               }"
             >
-              {{
-                formatAmount(
-                  row.payable_amount,
-                  row.transaction_type.toLowerCase()
-                )
-              }}
+              {{ formatAmount(row.payable_amount, row.transaction_type.toLowerCase()) }}
             </div>
           </template>
           <template #status-data="{ row }">
@@ -591,10 +543,7 @@
                 'bg-red-100 text-red-800': row.bank_status === 'failed',
               }"
             >
-              {{
-                row.bank_status.charAt(0).toUpperCase() +
-                row.bank_status.slice(1)
-              }}
+              {{ row.bank_status.charAt(0).toUpperCase() + row.bank_status.slice(1) }}
             </span>
           </template>
           <template #action-data="{ row }">
@@ -620,15 +569,13 @@
           </template>
         </UTable>
       </div>
-      <div v-else>Received</div>
+
       <!-- Pagination -->
       <div
         v-if="totalPages > 1"
         class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between"
       >
-        <div
-          class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-        >
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p class="text-sm text-gray-700">
               Showing
@@ -799,9 +746,7 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-semibold text-gray-800 mb-4">
-                Confirm Transfer
-              </h2>
+              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
@@ -817,10 +762,7 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p
-                      class="text-sm text-gray-800 font-medium"
-                      v-if="transfer?.to_user"
-                    >
+                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -852,9 +794,7 @@
               </div>
 
               <!-- Final Amount -->
-              <div
-                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
-              >
+              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-500">Final amount</p>
                 <p class="text-gray-900 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -896,10 +836,7 @@
                 <h2 class="text-lg sm:text-2xl font-semibold text-green-700">
                   Transfer Successful
                 </h2>
-                <UIcon
-                  name="i-rivet-icons-check-circle-breakout"
-                  class="size-7 text-green-700"
-                />
+                <UIcon name="i-rivet-icons-check-circle-breakout" class="size-7 text-green-700" />
               </div>
 
               <!-- Transfer Details -->
@@ -941,9 +878,7 @@
               </div>
 
               <!-- Final Amount -->
-              <div
-                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
-              >
+              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-500">Final amount</p>
                 <p class="text-gray-900 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -997,21 +932,14 @@
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">
               <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
-                <h3
-                  class="text-lg leading-6 font-medium text-gray-900"
-                  id="modal-title"
-                >
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
                   Transaction Details
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
                     <div class="py-3 grid grid-cols-3 gap-4">
-                      <dt class="text-sm font-medium text-gray-500">
-                        Transaction ID
-                      </dt>
-                      <dd
-                        class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
-                      >
+                      <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
+                      <dd class="text-sm text-gray-900 mt-0 col-span-2 font-mono">
                         {{ selectedTransaction?.id }}
                       </dd>
                     </div>
@@ -1056,10 +984,7 @@
                             <path d="m5 12 7-7 7 7" />
                           </svg>
                         </span>
-                        <span
-                          v-else
-                          class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2"
-                        >
+                        <span v-else class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -1080,9 +1005,7 @@
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">
-                        Recipient
-                      </dt>
+                      <dt class="text-sm font-medium text-gray-500">Recipient</dt>
                       <dd
                         v-if="selectedTransaction?.to_user_details"
                         class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
@@ -1103,9 +1026,7 @@
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">
-                        Date & Time
-                      </dt>
+                      <dt class="text-sm font-medium text-gray-500">Date & Time</dt>
                       <dd class="text-sm text-gray-900 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
@@ -1115,14 +1036,9 @@
                       <dd
                         class="text-sm font-medium mt-0 col-span-2"
                         :class="{
-                          'text-green-600':
-                            selectedTransaction?.transaction_type === 'deposit',
-                          'text-red-600':
-                            selectedTransaction?.transaction_type ===
-                            'withdraw',
-                          'text-gray-900':
-                            selectedTransaction?.transaction_type ===
-                            'transfer',
+                          'text-green-600': selectedTransaction?.transaction_type === 'deposit',
+                          'text-red-600': selectedTransaction?.transaction_type === 'withdraw',
+                          'text-gray-900': selectedTransaction?.transaction_type === 'transfer',
                         }"
                       >
                         {{
@@ -1146,8 +1062,7 @@
                               selectedTransaction?.status === 'completed',
                             'bg-yellow-100 text-yellow-800':
                               selectedTransaction?.status === 'pending',
-                            'bg-red-100 text-red-800':
-                              selectedTransaction?.status === 'failed',
+                            'bg-red-100 text-red-800': selectedTransaction?.status === 'failed',
                           }"
                         >
                           {{ selectedTransaction?.bank_status }}
@@ -1185,7 +1100,6 @@ const showQr = ref(false);
 const showSuccess = ref(false);
 const isOpenTransfer = ref(false);
 const isOpen = ref(false);
-const isOpenDetails = ref(false);
 const toast = useToast();
 const { post, get } = useApi();
 const { user, jwtLogin } = useAuth();
@@ -1203,7 +1117,6 @@ const isDepositLoading = ref(false);
 const isWithdrawLoading = ref(false);
 const selectedTransaction = ref(null);
 const showDetailsModal = ref(false);
-const user_transaction = ref("sent");
 
 const { data } = await get("/received-transfers/");
 console.log(data);
@@ -1255,20 +1168,14 @@ const statements = ref([]);
 
 // Filter transactions based on selected filters
 const filteredTransactions = computed(() => {
-  return statements.value.filter((transaction) => {
+  return statements.value.filter(transaction => {
     // Type filter
-    if (
-      filters.value.type &&
-      transaction.transaction_type !== filters.value.type
-    ) {
+    if (filters.value.type && transaction.transaction_type !== filters.value.type) {
       return false;
     }
 
     // Status filter
-    if (
-      filters.value.status &&
-      transaction.bank_status !== filters.value.status
-    ) {
+    if (filters.value.status && transaction.bank_status !== filters.value.status) {
       return false;
     }
 
@@ -1282,7 +1189,7 @@ const filteredTransactions = computed(() => {
         transaction.bank_status?.toLowerCase() || "",
       ];
 
-      if (!searchableFields.some((field) => field.includes(searchTerm))) {
+      if (!searchableFields.some(field => field.includes(searchTerm))) {
         return false;
       }
     }
@@ -1292,15 +1199,10 @@ const filteredTransactions = computed(() => {
 });
 
 // Pagination
-const totalPages = computed(() =>
-  Math.ceil(filteredTransactions.value.length / itemsPerPage)
-);
+const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage));
 
 const paginatedTransactions = computed(() => {
-  return filteredTransactions.value.slice(
-    startIndex.value,
-    startIndex.value + itemsPerPage
-  );
+  return filteredTransactions.value.slice(startIndex.value, startIndex.value + itemsPerPage);
 });
 
 // Calculate displayed page numbers for pagination
@@ -1501,8 +1403,7 @@ const withdraw = async () => {
   try {
     isWithdrawLoading.value = true;
 
-    const totalAmount =
-      withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;
+    const totalAmount = withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;
 
     const res = await post(`/add-user-balance/`, {
       payment_method: selected.value,
