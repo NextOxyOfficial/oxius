@@ -12,10 +12,10 @@
                 name="i-heroicons-map-pin"
                 class="inline-block mr-2 text-primary-500"
               />
-              Select Your Location
+              {{ $t("select_location") }}
             </h2>
             <p class="text-sm text-gray-600 mt-1">
-              Choose your location to see relevant content
+              {{ $t("relevant_content") }}
             </p>
           </div>
 
@@ -98,14 +98,15 @@
 
             <!-- Action Button -->
             <UButton
-              class="mt-6 w-fit"
+              class="mt-6 w-40 mx-auto"
               size="lg"
               color="primary"
               variant="solid"
-              label="Set My Location"
+              :label="t('set_location')"
               @click="validateAndAddLocation"
               :disabled="isSubmitDisabled"
               :loading="isLoading"
+              block
             />
           </div>
         </div>
@@ -115,6 +116,7 @@
 </template>
 
 <script setup>
+const { t } = useI18n();
 const { get } = useApi();
 const isOpen = ref(false);
 const location = useCookie("location");
