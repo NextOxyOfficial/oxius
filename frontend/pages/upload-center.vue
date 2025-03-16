@@ -6,7 +6,7 @@
       <!-- Animated Header -->
       <div class="text-center mb-12">
         <h1
-          class="animate-fade-in-up text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
+          class="animate-fade-in-up text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
         >
           {{ $t("upload_center") }}
         </h1>
@@ -55,7 +55,7 @@
             </div>
           </div>
 
-          <div class="hidden md:block">
+          <div>
             <div
               v-if="user.user.kyc"
               class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full"

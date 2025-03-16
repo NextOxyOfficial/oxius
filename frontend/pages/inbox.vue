@@ -84,14 +84,14 @@
           label="Notifications"
           class="filter-btn"
         /> -->
-        <div class="ml-auto">
+        <!-- <div class="ml-auto">
           <UInput
             placeholder="Search messages..."
             icon="i-heroicons-magnifying-glass"
             size="md"
             class="max-w-xs search-input"
           />
-        </div>
+        </div> -->
       </div>
 
       <!-- Messages List -->
@@ -516,8 +516,8 @@ onMounted(() => {
 }
 
 .filter-btn.active {
-  background-color: rgba(79, 70, 229, 0.1);
-  color: #4f46e5;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #22c55e;
   font-weight: 500;
 }
 

@@ -348,9 +348,9 @@
           </NuxtLink>
         </UCard>
         <UDivider label="" class="mt-2 sm:mt-5" />
-        <!-- <h3 class="text-xl font-semibold mt-6 text-green-900">
+        <h3 class="text-xl font-semibold mt-6 text-green-900">
           Nearby location's ads
-        </h3> -->
+        </h3>
       </div>
       <div v-if="isLoading">
         <CommonPreloader text="Searching for ads in your city..." />
