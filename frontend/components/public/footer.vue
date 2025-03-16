@@ -142,7 +142,7 @@
         />
       </div>
       <UDivider label="" />
-      <p class="text-center py-6 dark:text-gray-200">
+      <p class="text-center py-6 dark:text-gray-200 text-sm text-slate-600">
         Developed With
         <UIcon name="i-solar:hearts-bold" class="text-red-500" />
         By Lyricz Softwares & Technology Limited ©

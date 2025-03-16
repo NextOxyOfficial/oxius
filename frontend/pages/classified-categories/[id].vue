@@ -532,7 +532,10 @@
         </UCard>
       </div>
       <UCard v-else class="py-16 text-center mt-6">
-        <p>No offers have been found!</p>
+        <p>
+          দুঃখিত, আপনার আশেপাশের উপজেলাতেও এই ক্যাটাগরিতে কোনো পোস্ট পড়েনি,
+          পার্শবর্তী জেলা সিলেক্ট করুন
+        </p>
       </UCard>
       <h3 class="mt-3 mb-2 sm:my-6 text-lg font-bold text-green-950">
         AdsyAI Bot

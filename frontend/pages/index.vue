@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-10">
+  <div class="sm:pb-10">
     <PublicSection id="classified-services">
       <UContainer
         :ui="{

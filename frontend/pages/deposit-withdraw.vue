@@ -1,13 +1,15 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-2xl md:text-4xl my-8">
+    <h1 class="text-center text-2xl md:text-4xl my-4">
       {{ $t("deposit_withdraw") }}
     </h1>
     <UContainer>
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <UDivider label="" class="mb-4" />
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <p class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-bold">
+        <p
+          class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-bold"
+        >
           <span class="inline-flex items-center"
             >{{ $t("available_balance") }}:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
@@ -15,7 +17,9 @@
           </span>
         </p>
       </div>
-      <div class="mb-5 flex justify-center shadow-md bg-gray-100 max-w-fit mx-auto">
+      <div
+        class="mb-5 flex justify-center shadow-md bg-gray-100 max-w-fit mx-auto"
+      >
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
           variant="outline"
@@ -37,7 +41,9 @@
             rounded: 'rounded-s-none rounded-e-none',
           }"
           @click="currentTab = 2"
-          ><UIcon name="i-ic:baseline-arrow-upward" />{{ $t("withdraw") }}</UButton
+          ><UIcon name="i-ic:baseline-arrow-upward" />{{
+            $t("withdraw")
+          }}</UButton
         >
         <UButton
           :color="`${currentTab == 3 ? 'green' : 'gray'}`"
@@ -56,50 +62,64 @@
       <div class="flex items-center">
         <div v-if="currentTab === 1" class="max-sm:w-full">
           <div class="space-y-2">
-            <UInput
-              placeholder="Enter Amount"
-              size="md"
-              :ui="{
-                padding: { md: 'px-3 py-2' },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-              v-model="amount"
-              amount
+            <!-- Modern Amount Input with Animation -->
+            <div
+              class="modern-input-container"
+              :class="{ 'has-value': amount?.toString().length > 0 }"
+            >
+              <!-- <UIcon
+                name="i-heroicons-banknotes"
+                class="input-icon text-primary-400"
+              /> -->
+              <UInput
+                icon="i-heroicons-banknotes"
+                placeholder=""
+                size="lg"
+                :ui="{
+                  base: 'relative w-full',
+                }"
+                class="text-green-800"
+                v-model="amount"
+                amount
+              />
+              <label class="floating-label">Enter Amount</label>
+              <!-- <div class="input-backdrop"></div>
+              <div class="input-currency">৳</div> -->
+            </div>
+          </div>
+          <p v-if="depositErrors.amount" class="text-sm text-red-500">
+            Please enter an amount
+          </p>
+          <div class="mt-4">
+            <img
+              src="/static/frontend/images/payment.png"
+              class="w-60"
+              alt="Payment Method"
             />
           </div>
-          <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
-          <div class="mt-4">
-            <img src="/static/frontend/images/payment.png" class="w-60" alt="Payment Method" />
-          </div>
           <div class="my-5">
-            <UFormGroup
-              class="flex flex-row-reverse gap-2 max-sm:justify-end"
-              :ui="{
-                label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
-                },
-              }"
-            >
-              <template #label>
+            <!-- Modern Terms & Conditions Checkbox -->
+            <div class="modern-checkbox-container">
+              <div class="checkbox-wrapper">
+                <UCheckbox
+                  name="check"
+                  v-model="policy"
+                  class="custom-checkbox"
+                />
+                <div class="checkbox-ripple"></div>
+              </div>
+              <label class="checkbox-label">
                 I accept
-                <ULink
-                  to="/terms/"
-                  active-class="text-primary"
-                  inactive-class="text-green-500 dark:text-green-400"
-                  >Terms & Condition</ULink
+                <ULink to="/terms/" class="terms-link">Terms & Condition</ULink
                 >,
-                <ULink
-                  to="/privacy/"
-                  active-class="text-primary"
-                  inactive-class="text-green-500 dark:text-green-400"
-                  >Privacy Policy</ULink
-                >.
-              </template>
-              <UCheckbox name="check" v-model="policy" />
-            </UFormGroup>
+                <ULink to="/privacy/" class="terms-link">Privacy Policy</ULink>.
+              </label>
+            </div>
           </div>
 
-          <p v-if="depositErrors.policy" class="text-sm text-red-500">Please select this field</p>
+          <p v-if="depositErrors.policy" class="text-sm text-red-500">
+            Please select this field
+          </p>
           <div class="my-2 space-x-3">
             <UButton
               v-if="
@@ -119,62 +139,67 @@
         </div>
         <div v-if="currentTab === 2" class="max-sm:w-full">
           <div class="my-3">
-            <URadioGroup
-              v-model="selected"
-              :options="options"
-              :ui="{}"
-              :ui-radio="{
-                wrapper: 'items-center',
-              }"
-              class="radio-center"
-            >
-              <template #label="{ option }">
-                <img
-                  :src="'/static/frontend/images/' + option.icon"
-                  class="size-10 object-contain inline-block"
-                />
-              </template>
-            </URadioGroup>
+            <!-- Modern Radio Group with Cards -->
+            <div class="payment-method-container">
+              <div class="method-options">
+                <div
+                  v-for="option in options"
+                  :key="option.value"
+                  class="method-option"
+                  :class="{ selected: selected === option.value }"
+                  @click="selected = option.value"
+                >
+                  <div class="method-radio">
+                    <div class="radio-dot"></div>
+                  </div>
+                  <div class="method-card">
+                    <img
+                      :src="'/static/frontend/images/' + option.icon"
+                      class="method-icon"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <p v-if="errors?.selected" class="text-sm text-red-500">Please enter a payment method</p>
+          <p v-if="errors?.selected" class="text-sm text-red-500">
+            Please enter a payment method
+          </p>
           <div class="mb-3">
-            <UInput
-              v-if="selected === 'nagad'"
-              placeholder="Enter Nagad Number"
-              size="md"
-              :ui="{
-                padding: { md: 'px-3 py-2' },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-              v-model="payment_number"
-            />
-
-            <UInput
-              v-if="selected === 'bkash'"
-              placeholder="Enter Bkash Number"
-              size="md"
-              :ui="{
-                padding: { md: 'px-3 py-2' },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-              v-model="payment_number"
-            />
-            <UInput
-              v-if="selected === 'rocket'"
-              placeholder="Enter Rocket Number"
-              size="md"
-              :ui="{
-                padding: { md: 'px-3 py-2' },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-              v-model="rocket"
-            />
+            <!-- Modern Phone Number Input -->
+            <div
+              class="modern-input-container"
+              :class="{ 'has-value': payment_number?.toString().length > 0 }"
+            >
+              <!-- <UIcon
+                name="i-heroicons-device-phone-mobile"
+                class="input-icon text-primary-400"
+              /> -->
+              <UInput
+                icon="i-heroicons-device-phone-mobile"
+                :placeholder="selected === 'nagad' ? '' : ''"
+                size="lg"
+                :ui="{
+                  base: 'relative w-full',
+                  input:
+                    'form-input pl-10 pr-4 py-3 rounded-xl border-0 bg-white bg-opacity-80 backdrop-blur-sm shadow-inner text-lg transition-all duration-300 focus:ring-2 focus:ring-primary-500/50 focus:shadow-glow',
+                }"
+                v-model="payment_number"
+              />
+              <label class="floating-label">{{
+                selected === "nagad"
+                  ? "Enter Nagad Number"
+                  : "Enter Bkash Number"
+              }}</label>
+              <!-- <div class="input-backdrop"></div> -->
+            </div>
             <p v-if="errors?.payment_number" class="text-sm text-red-500">
               Please enter a payment number
             </p>
           </div>
           <div class="space-y-2">
             <UInput
+              icon="i-heroicons-banknotes"
               placeholder="Enter Amount"
               size="md"
               :ui="{
@@ -198,40 +223,35 @@
                 <UIcon name="i-mdi:currency-bdt" class="text-base" />200</span
               >
             </p>
-            <p class="text-sm"><span class="text-red-500">*</span> 2.95% Charges applicable</p>
+            <p class="text-sm">
+              <span class="text-red-500">*</span> 2.95% Charges applicable
+            </p>
 
             <p v-if="errors?.insufficient" class="text-sm text-red-500">
               You do not have enough balance
             </p>
           </div>
           <div class="my-5">
-            <UFormGroup
-              class="flex flex-row-reverse gap-2 max-sm:justify-end"
-              :ui="{
-                label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
-                },
-              }"
-            >
-              <template #label>
+            <!-- Modern Terms & Conditions Checkbox -->
+            <div class="modern-checkbox-container">
+              <div class="checkbox-wrapper">
+                <UCheckbox
+                  name="check"
+                  v-model="policy"
+                  class="custom-checkbox"
+                />
+                <div class="checkbox-ripple"></div>
+              </div>
+              <label class="checkbox-label">
                 I accept
-                <ULink
-                  to="/terms/"
-                  active-class="text-primary"
-                  inactive-class="text-green-500 dark:text-green-400"
-                  >Terms & Condition</ULink
+                <ULink to="/terms/" class="terms-link">Terms & Condition</ULink
                 >,
-                <ULink
-                  to="/privacy/"
-                  active-class="text-primary"
-                  inactive-class="text-green-500 dark:text-green-400"
-                  >Privacy Policy</ULink
-                >.
-              </template>
-              <UCheckbox name="check" v-model="policy" />
-            </UFormGroup>
-
-            <p v-if="errors?.policy" class="text-sm text-red-500">Check this field</p>
+                <ULink to="/privacy/" class="terms-link">Privacy Policy</ULink>.
+              </label>
+            </div>
+            <p v-if="errors?.policy" class="text-sm text-red-500">
+              Check this field
+            </p>
           </div>
           <div class="my-2 space-x-3 mb-4">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -247,7 +267,9 @@
               "
               >{{ $t("withdraw") }}</UButton
             >
-            <UButton v-else size="sm" @click="isOpen = true">{{ $t("withdraw") }}</UButton>
+            <UButton v-else size="sm" @click="isOpen = true">{{
+              $t("withdraw")
+            }}</UButton>
           </div>
         </div>
         <div v-if="currentTab === 3" class="max-sm:w-full">
@@ -323,7 +345,7 @@
 
                   <qrcode-stream
                     @scanned="
-                      res => {
+                      (res) => {
                         scanQr = false;
                         transfer.contact = res;
                       }
@@ -333,6 +355,7 @@
               </UModal>
             </div>
             <UInput
+              icon="i-material-symbols-light-lists-rounded"
               type="text"
               size="md"
               color="white"
@@ -341,6 +364,7 @@
             />
             <p class="text-sm text-red-500">{{ transferErrors.contact }}</p>
             <UInput
+              icon="i-heroicons-banknotes"
               type="text"
               size="md"
               color="white"
@@ -348,7 +372,9 @@
               class="my-3"
               v-model="transfer.payable_amount"
             />
-            <p class="text-sm text-red-500" v-if="transferErrors.transfer">*Insufficient Fund</p>
+            <p class="text-sm text-red-500" v-if="transferErrors.transfer">
+              *Insufficient Fund
+            </p>
             <p class="text-sm text-red-500">
               {{ transferErrors.payable_amount }}
             </p>
@@ -395,12 +421,17 @@
         </div>
       </div>
 
-      <h3 class="text-center text-lg md:text-3xl font-semibold mt-8" v-if="statements?.length">
+      <h3
+        class="text-center text-lg md:text-3xl font-semibold mt-8"
+        v-if="statements?.length"
+      >
         {{ $t("transaction_history") }}
       </h3>
 
       <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
           <div class="flex max-sm:justify-between gap-2">
             <USelect
               v-model="filters.type"
@@ -499,16 +530,24 @@
                   <path d="M20 17H4" />
                 </svg>
               </span>
-              <span class="ml-2 text-sm text-gray-900 capitalize">{{ row.transaction_type }}</span>
+              <span class="ml-2 text-sm text-gray-900 capitalize">{{
+                row.transaction_type
+              }}</span>
             </div>
           </template>
           <template #recipient-data="{ row }">
-            <div class="text-sm text-gray-500 capitalize" v-if="row?.to_user_details">
+            <div
+              class="text-sm text-gray-500 capitalize"
+              v-if="row?.to_user_details"
+            >
               {{ row?.to_user_details?.name }}
             </div>
           </template>
           <template #sender-data="{ row }">
-            <div class="text-sm text-gray-500 capitalize" v-if="row?.user_details">
+            <div
+              class="text-sm text-gray-500 capitalize"
+              v-if="row?.user_details"
+            >
               {{ row?.user_details?.name }}
             </div>
           </template>
@@ -531,7 +570,12 @@
                 'text-blue-600': row.transaction_type === 'Transfer',
               }"
             >
-              {{ formatAmount(row.payable_amount, row.transaction_type.toLowerCase()) }}
+              {{
+                formatAmount(
+                  row.payable_amount,
+                  row.transaction_type.toLowerCase()
+                )
+              }}
             </div>
           </template>
           <template #status-data="{ row }">
@@ -543,7 +587,10 @@
                 'bg-red-100 text-red-800': row.bank_status === 'failed',
               }"
             >
-              {{ row.bank_status.charAt(0).toUpperCase() + row.bank_status.slice(1) }}
+              {{
+                row.bank_status.charAt(0).toUpperCase() +
+                row.bank_status.slice(1)
+              }}
             </span>
           </template>
           <template #action-data="{ row }">
@@ -575,7 +622,9 @@
         v-if="totalPages > 1"
         class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between"
       >
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div
+          class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
+        >
           <div>
             <p class="text-sm text-gray-700">
               Showing
@@ -746,7 +795,9 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
+              <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                Confirm Transfer
+              </h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
@@ -762,7 +813,10 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
+                    <p
+                      class="text-sm text-gray-800 font-medium"
+                      v-if="transfer?.to_user"
+                    >
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -794,7 +848,9 @@
               </div>
 
               <!-- Final Amount -->
-              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+              <div
+                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+              >
                 <p class="text-xs text-gray-500">Final amount</p>
                 <p class="text-gray-900 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -836,7 +892,10 @@
                 <h2 class="text-lg sm:text-2xl font-semibold text-green-700">
                   Transfer Successful
                 </h2>
-                <UIcon name="i-rivet-icons-check-circle-breakout" class="size-7 text-green-700" />
+                <UIcon
+                  name="i-rivet-icons-check-circle-breakout"
+                  class="size-7 text-green-700"
+                />
               </div>
 
               <!-- Transfer Details -->
@@ -878,7 +937,9 @@
               </div>
 
               <!-- Final Amount -->
-              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+              <div
+                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+              >
                 <p class="text-xs text-gray-500">Final amount</p>
                 <p class="text-gray-900 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -932,14 +993,21 @@
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">
               <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                <h3
+                  class="text-lg leading-6 font-medium text-gray-900"
+                  id="modal-title"
+                >
                   Transaction Details
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
                     <div class="py-3 grid grid-cols-3 gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
-                      <dd class="text-sm text-gray-900 mt-0 col-span-2 font-mono">
+                      <dt class="text-sm font-medium text-gray-500">
+                        Transaction ID
+                      </dt>
+                      <dd
+                        class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
+                      >
                         {{ selectedTransaction?.id }}
                       </dd>
                     </div>
@@ -984,7 +1052,10 @@
                             <path d="m5 12 7-7 7 7" />
                           </svg>
                         </span>
-                        <span v-else class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2">
+                        <span
+                          v-else
+                          class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -1005,7 +1076,9 @@
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Recipient</dt>
+                      <dt class="text-sm font-medium text-gray-500">
+                        Recipient
+                      </dt>
                       <dd
                         v-if="selectedTransaction?.to_user_details"
                         class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
@@ -1026,7 +1099,9 @@
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Date & Time</dt>
+                      <dt class="text-sm font-medium text-gray-500">
+                        Date & Time
+                      </dt>
                       <dd class="text-sm text-gray-900 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
@@ -1036,9 +1111,14 @@
                       <dd
                         class="text-sm font-medium mt-0 col-span-2"
                         :class="{
-                          'text-green-600': selectedTransaction?.transaction_type === 'deposit',
-                          'text-red-600': selectedTransaction?.transaction_type === 'withdraw',
-                          'text-gray-900': selectedTransaction?.transaction_type === 'transfer',
+                          'text-green-600':
+                            selectedTransaction?.transaction_type === 'deposit',
+                          'text-red-600':
+                            selectedTransaction?.transaction_type ===
+                            'withdraw',
+                          'text-gray-900':
+                            selectedTransaction?.transaction_type ===
+                            'transfer',
                         }"
                       >
                         {{
@@ -1062,7 +1142,8 @@
                               selectedTransaction?.status === 'completed',
                             'bg-yellow-100 text-yellow-800':
                               selectedTransaction?.status === 'pending',
-                            'bg-red-100 text-red-800': selectedTransaction?.status === 'failed',
+                            'bg-red-100 text-red-800':
+                              selectedTransaction?.status === 'failed',
                           }"
                         >
                           {{ selectedTransaction?.bank_status }}
@@ -1168,14 +1249,20 @@ const statements = ref([]);
 
 // Filter transactions based on selected filters
 const filteredTransactions = computed(() => {
-  return statements.value.filter(transaction => {
+  return statements.value.filter((transaction) => {
     // Type filter
-    if (filters.value.type && transaction.transaction_type !== filters.value.type) {
+    if (
+      filters.value.type &&
+      transaction.transaction_type !== filters.value.type
+    ) {
       return false;
     }
 
     // Status filter
-    if (filters.value.status && transaction.bank_status !== filters.value.status) {
+    if (
+      filters.value.status &&
+      transaction.bank_status !== filters.value.status
+    ) {
       return false;
     }
 
@@ -1189,7 +1276,7 @@ const filteredTransactions = computed(() => {
         transaction.bank_status?.toLowerCase() || "",
       ];
 
-      if (!searchableFields.some(field => field.includes(searchTerm))) {
+      if (!searchableFields.some((field) => field.includes(searchTerm))) {
         return false;
       }
     }
@@ -1199,10 +1286,15 @@ const filteredTransactions = computed(() => {
 });
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage));
+const totalPages = computed(() =>
+  Math.ceil(filteredTransactions.value.length / itemsPerPage)
+);
 
 const paginatedTransactions = computed(() => {
-  return filteredTransactions.value.slice(startIndex.value, startIndex.value + itemsPerPage);
+  return filteredTransactions.value.slice(
+    startIndex.value,
+    startIndex.value + itemsPerPage
+  );
 });
 
 // Calculate displayed page numbers for pagination
@@ -1403,7 +1495,8 @@ const withdraw = async () => {
   try {
     isWithdrawLoading.value = true;
 
-    const totalAmount = withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;
+    const totalAmount =
+      withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;
 
     const res = await post(`/add-user-balance/`, {
       payment_method: selected.value,
@@ -1536,6 +1629,276 @@ onMounted(() => {
   getTransactionHistory();
 });
 </script>
+
+<style scoped>
+/* Modern Input Fields */
+.modern-input-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.input-backdrop {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.9),
+    rgba(249, 250, 251, 0.9)
+  );
+  border-radius: 0.75rem;
+  z-index: -1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modern-input-container:focus-within .input-backdrop {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15),
+    0 5px 10px -5px rgba(59, 130, 246, 0.1),
+    inset 0 2px 4px rgba(255, 255, 255, 0.7);
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.modern-input-container:focus-within .input-icon {
+  color: var(--color-primary-600) !important;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.input-currency {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.modern-input-container:focus-within .input-currency,
+.modern-input-container.has-value .input-currency {
+  opacity: 1;
+}
+
+.floating-label {
+  position: absolute;
+  left: 2.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-gray-400);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 5;
+  font-size: 0.95rem;
+}
+
+.modern-input-container:focus-within .floating-label,
+.modern-input-container.has-value .floating-label {
+  top: 0;
+  transform: translateY(-50%) scale(0.85);
+  left: 0.75rem;
+  color: var(--color-primary-600);
+  background: linear-gradient(to right, white, rgba(255, 255, 255, 0.9));
+  padding: 0 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Focus shadow glow effect */
+.focus\:shadow-glow:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15),
+    0 2px 8px rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Modern Payment Method Radio Group */
+.payment-method-container {
+  margin-bottom: 1.5rem;
+}
+
+.method-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.method-options {
+  display: flex;
+  gap: 1rem;
+}
+
+.method-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  padding: 0.25rem;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 120px;
+}
+
+.method-radio {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-gray-300);
+  margin-right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.radio-dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: green;
+  transform: scale(0);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.method-option.selected .radio-dot {
+  transform: scale(1);
+}
+
+.method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  width: 100%;
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-gray-200);
+  transition: all 0.3s ease;
+  padding-left: 2.5rem;
+}
+
+.method-option:hover .method-card {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-gray-300);
+}
+
+.method-option.selected .method-card {
+  border-color: rgba(0, 255, 0, 0);
+  background-color: rgba(89, 230, 143, 0.301);
+  transform: translateY(-3px);
+}
+
+.method-icon {
+  height: 1.5rem;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.method-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-700);
+}
+
+/* Modern Checkbox */
+.modern-checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.checkbox-wrapper {
+  position: relative;
+  margin-right: 0.75rem;
+}
+
+.checkbox-ripple {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--color-primary-100) 0%,
+    transparent 70%
+  );
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.custom-checkbox:focus-within + .checkbox-ripple,
+.custom-checkbox:active + .checkbox-ripple {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.checkbox-label {
+  font-size: 0.95rem;
+  color: var(--color-gray-700);
+  user-select: none;
+  padding-top: 0.25rem;
+}
+
+.terms-link {
+  font-weight: 500;
+  position: relative;
+  display: inline-block;
+}
+
+.terms-link::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--color-primary-400);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: bottom right;
+}
+
+.terms-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* For better mobile appearance */
+@media (max-width: 640px) {
+  .method-options {
+    gap: 0.25rem;
+  }
+
+  .method-option {
+    width: 100%;
+  }
+}
+</style>
 
 <style>
 @keyframes fade-in {
