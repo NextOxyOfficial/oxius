@@ -1,5 +1,5 @@
 <template>
-  <div class="sm:pb-10">
+  <div class="pb-10">
     <PublicSection id="classified-services">
       <UContainer
         :ui="{
@@ -109,7 +109,7 @@
           </ul>
         </div>
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-4"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-2 mt-4"
         >
           <UCard
             class="text-center border border-dashed border-green-500 lg:w-[150px]"
@@ -122,8 +122,8 @@
                 padding: 'px-3 py-3 sm:p-2.5',
               },
               ring: '',
-              background: 'bg-green-50/70',
-              shadow: 'shadow-md',
+              background: 'bg-green-50',
+              shadow: 'shadow-lg',
             }"
           >
             <ULink
@@ -161,7 +161,7 @@
                 padding: 'px-3 py-3 sm:p-2.5',
               },
               ring: '',
-              background: 'bg-green-50/70',
+              background: 'bg-green-50',
               shadow: 'shadow-md',
             }"
           >
