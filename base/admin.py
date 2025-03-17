@@ -242,6 +242,7 @@ admin.site.register(TargetNetwork, TargetNetworkAdmin)
 class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'category',  'price','location','negotiable', 'country', 'state', 'city', 'active_service', 'service_status','created_at', 'updated_at')
     list_filter = ('service_status','negotiable','active_service')
+    search_fields = ('title',)
     
     @admin.display(ordering="-created_at")
     def created_at(self,obj):

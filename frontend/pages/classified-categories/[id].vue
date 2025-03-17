@@ -531,7 +531,10 @@
           </NuxtLink>
         </UCard>
       </div>
-      <UCard v-else class="py-16 text-center mt-6">
+      <UCard
+        v-else-if="!isNearByLoading && !nearby_services.length"
+        class="py-16 text-center mt-6"
+      >
         <p>
           দুঃখিত, আপনার আশেপাশের উপজেলাতেও এই ক্যাটাগরিতে কোনো পোস্ট পড়েনি,
           পার্শবর্তী জেলা সিলেক্ট করুন
@@ -566,6 +569,7 @@ const { get } = useApi();
 const location = useCookie("location");
 const { formatDate } = useUtils();
 const isLoading = ref(false);
+const isNearByLoading = ref(false);
 const searchLocationOption = ref(false);
 
 useHead({
@@ -683,7 +687,7 @@ const nearby_services = ref([]);
 async function fetchNearbyAds() {
   if (!location.value) return;
 
-  isLoading.value = true;
+  isNearByLoading.value = true;
 
   // First try: search in the same city, any upazila
   const citySearchRes = await get(
@@ -691,13 +695,14 @@ async function fetchNearbyAds() {
   );
 
   // If city search has results, use those
+  console.log("near by", citySearchRes.data);
   if (citySearchRes.data.length > 0) {
     nearby_services.value = citySearchRes.data.filter(
       (service) =>
         service.service_status.toLowerCase() === "approved" &&
         service.active_service
     );
-    isLoading.value = false;
+    isNearByLoading.value = false;
     return;
   }
 
@@ -712,7 +717,7 @@ async function fetchNearbyAds() {
       service.active_service
   );
 
-  isLoading.value = false;
+  isNearByLoading.value = false;
 }
 
 await fetchNearbyAds();
