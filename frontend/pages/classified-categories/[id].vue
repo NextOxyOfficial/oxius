@@ -531,7 +531,10 @@
           </NuxtLink>
         </UCard>
       </div>
-      <UCard v-else class="py-16 text-center mt-6">
+      <UCard
+        v-else-if="!isLoading && !nearby_services.length"
+        class="py-16 text-center mt-6"
+      >
         <p>
           দুঃখিত, আপনার আশেপাশের উপজেলাতেও এই ক্যাটাগরিতে কোনো পোস্ট পড়েনি,
           পার্শবর্তী জেলা সিলেক্ট করুন
@@ -691,6 +694,7 @@ async function fetchNearbyAds() {
   );
 
   // If city search has results, use those
+  console.log("near by", citySearchRes.data);
   if (citySearchRes.data.length > 0) {
     nearby_services.value = citySearchRes.data.filter(
       (service) =>

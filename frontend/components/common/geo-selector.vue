@@ -98,7 +98,7 @@
 
             <!-- Action Button -->
             <UButton
-              class="mt-6 w-40 mx-auto"
+              class="mt-6 w-48 mx-auto"
               size="lg"
               color="primary"
               variant="solid"
