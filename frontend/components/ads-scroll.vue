@@ -1,66 +1,143 @@
 <template>
-  <UContainer v-if="ads?.results?.length">
-    <div class="ads-container">
-      <div class="ads-header">
-        <div class="ads-title">
-          <UIcon
-            name="i-fluent-clock-20-regular"
-            class="clock-icon"
-            size="18"
-          />
-          <h2>সাম্প্রতিক পোষ্ট</h2>
-        </div>
-        <!-- <div class="pagination-dots" v-if="displayedAds?.results?.length > 0">
-          <span
-            v-for="(_, index) in Math.ceil(displayedAds?.results?.length / 2)"
-            :key="index"
-            :class="['dot', { active: index === activeDotIndex }]"
-          ></span>
-        </div> -->
-      </div>
-
+  <div
+    v-if="ads?.results?.length"
+    class="py-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800"
+  >
+    <UContainer>
       <div
-        ref="carouselRef"
-        class="ads-carousel"
-        @touchstart="handleTouchStart"
-        @touchmove="handleTouchMove"
-        @touchend="handleTouchEnd"
-        @mouseenter="pauseAutoScroll"
-        @mouseleave="resumeAutoScroll"
+        class="ads-container relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm"
       >
+        <!-- Header with accent line -->
         <div
-          ref="carouselInnerRef"
-          class="carousel-inner mb-1"
-          :style="carouselStyle"
+          class="px-3.5 py-3 border-b border-slate-100 dark:border-slate-700 relative overflow-hidden flex justify-between items-center"
         >
-          <div v-for="(ad, index) in displayedAds" :key="index" class="ad-card">
-            <div class="ad-image">
-              <NuxtImg :src="getImageSrc(ad)" :alt="ad.title" />
+          <div
+            class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500"
+          ></div>
+
+          <div class="flex items-center gap-2">
+            <div
+              class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-1 rounded"
+            >
+              <UIcon name="i-heroicons-clock" class="w-4 h-4" />
             </div>
-            <div class="ad-content">
-              <NuxtLink :to="`/classified-categories/details/${ad.id}`"
-                ><h3>{{ ad.title }}</h3></NuxtLink
+            <h2 class="text-sm font-semibold text-slate-800 dark:text-white">
+              সাম্প্রতিক পোষ্ট
+            </h2>
+          </div>
+
+          <!-- Navigation controls -->
+          <div class="flex items-center gap-2">
+            <button
+              @click="scrollLeft"
+              class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
+              aria-label="Scroll left"
+            >
+              <UIcon name="i-heroicons-chevron-left" class="w-3.5 h-3.5" />
+            </button>
+            <button
+              @click="scrollRight"
+              class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
+              aria-label="Scroll right"
+            >
+              <UIcon name="i-heroicons-chevron-right" class="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Carousel with continuous scrolling -->
+        <div
+          ref="carouselRef"
+          class="relative px-3 py-3.5 overflow-hidden"
+          @mouseenter="pauseAutoScroll"
+          @mouseleave="resumeAutoScroll"
+        >
+          <div
+            ref="carouselInnerRef"
+            class="flex gap-3 transition-transform duration-300 ease-out"
+            :style="{ transform: `translateX(${-scrollPosition}px)` }"
+            @touchstart="handleTouchStart"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd"
+          >
+            <div
+              v-for="(ad, index) in displayedAds"
+              :key="index"
+              class="ad-card flex-shrink-0 group"
+              :style="{ width: `${cardWidth}px` }"
+            >
+              <!-- Card with clean design -->
+              <div
+                class="h-full flex flex-col rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all"
               >
-              <div class="ad-location">{{ ad.upazila }}, {{ ad.city }}</div>
-              <div class="ad-footer">
-                <div class="ad-price">
-                  <span class="text-xl font-medium">৳</span>
-                  {{ formatPrice(ad.price) }}
-                </div>
-                <div class="ad-date">
-                  <UIcon
-                    name="i-uit-calender"
-                    class="w-3.5 h-3.5 text-gray-500"
+                <!-- Image container -->
+                <div class="relative h-36 overflow-hidden">
+                  <div
+                    class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  ></div>
+                  <NuxtImg
+                    :src="getImageSrc(ad)"
+                    :alt="ad.title"
+                    class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    loading="lazy"
                   />
-                  <span>{{ formatDate(ad.created_at) }}</span>
+                  <!-- Price tag -->
+                  <div
+                    class="absolute top-2 right-2 z-20 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full shadow-sm"
+                  >
+                    <span
+                      class="text-emerald-600 dark:text-emerald-400 font-medium text-xs flex items-center"
+                    >
+                      <span class="text-sm mr-0.5">৳</span
+                      >{{ formatPrice(ad.price) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Content area -->
+                <div class="flex flex-col flex-grow p-3">
+                  <NuxtLink
+                    :to="`/classified-categories/details/${ad.id}`"
+                    class="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
+                  >
+                    <h3
+                      class="font-medium text-slate-800 dark:text-slate-100 line-clamp-2 mb-1.5 leading-snug"
+                    >
+                      {{ ad.title }}
+                    </h3>
+                  </NuxtLink>
+
+                  <!-- Location with icon -->
+                  <div
+                    class="flex items-center text-slate-500 dark:text-slate-400 mb-1.5"
+                  >
+                    <UIcon
+                      name="i-heroicons-map-pin"
+                      class="w-3.5 h-3.5 mr-1 flex-shrink-0"
+                    />
+                    <span class="truncate text-xs"
+                      >{{ ad.upazila }}, {{ ad.city }}</span
+                    >
+                  </div>
+
+                  <!-- Date with icon -->
+                  <div
+                    class="mt-auto flex items-center text-slate-500 dark:text-slate-400"
+                  >
+                    <UIcon
+                      name="i-heroicons-calendar"
+                      class="w-3.5 h-3.5 mr-1 flex-shrink-0"
+                    />
+                    <span class="text-xs">{{ formatDate(ad.created_at) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </UContainer>
+    </UContainer>
+  </div>
 </template>
 
 <script setup>
@@ -72,38 +149,35 @@ const { ads } = defineProps({
   },
 });
 
+// Refs for carousel control
 const carouselRef = ref(null);
 const carouselInnerRef = ref(null);
-const cardWidth = ref(220);
+const cardWidth = ref(180); // Moderately sized cards
+const cardGap = 12; // Increased gap between cards
 const scrollPosition = ref(0);
+const totalWidth = ref(0);
+const viewportWidth = ref(0);
+
+// Touch interaction
 const isDragging = ref(false);
 const startX = ref(0);
 const startScrollPos = ref(0);
 const isPaused = ref(false);
-const activeDotIndex = ref(0);
-const animationSpeed = ref(0.5); // pixels per frame
-let animationId = null;
+
+// Animation control
+const animationSpeed = ref(0.8);
+const autoScrollInterval = ref(null);
+
+// Process ads data
 const adsArray = computed(() => {
   if (!ads?.results) return [];
-
-  // Check if the response has a results array (paginated response)
-  if (ads.results && Array.isArray(ads.results)) {
-    return ads?.results;
-  }
-
-  // If the response is directly an array
-  if (Array.isArray(ads.results)) {
-    return ads?.results;
-  }
-
-  return [];
+  return Array.isArray(ads.results) ? ads.results : [];
 });
 
-// For infinite scroll effect, duplicate the ads multiple times
+// Create enough duplicates to ensure continuous scrolling
 const displayedAds = computed(() => {
   if (adsArray.value.length === 0) return [];
-
-  // Create a circular array by duplicating the ads multiple times
+  // Create multiple duplicates of the array to ensure continuous scrolling
   return [
     ...adsArray.value,
     ...adsArray.value,
@@ -111,37 +185,42 @@ const displayedAds = computed(() => {
     ...adsArray.value,
   ];
 });
+
+// Get appropriate image source
 function getImageSrc(ad) {
-  // Check for media in nested objects
   if (ad.medias && ad.medias.length > 0 && ad.medias[0].image) {
     return ad.medias[0].image;
   }
 
-  // Direct image property
   if (ad.image) {
     return ad.image;
   }
 
-  // Fallback image
   return "https://placehold.co/300x200?text=No+Image";
 }
 
-// Computed style for the carousel
-const carouselStyle = computed(() => {
-  if (isDragging.value) {
-    return {
-      transform: `translateX(${-scrollPosition.value}px)`,
-      transition: "none",
-    };
-  }
+// Format price with commas
+const formatPrice = (price) => {
+  if (!price) return "0";
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
-  return {
-    transform: `translateX(${-scrollPosition.value}px)`,
-    transition: isPaused.value ? "transform 0.5s ease-out" : "none",
-  };
-});
+// Manual navigation controls
+const scrollLeft = () => {
+  const scrollAmount = viewportWidth.value * 0.5; // Scroll half the viewport
+  scrollPosition.value = Math.max(0, scrollPosition.value - scrollAmount);
+};
 
-// Touch handling
+const scrollRight = () => {
+  const scrollAmount = viewportWidth.value * 0.5; // Scroll half the viewport
+  const maxScroll = totalWidth.value - viewportWidth.value;
+  scrollPosition.value = Math.min(
+    maxScroll,
+    scrollPosition.value + scrollAmount
+  );
+};
+
+// Handle touch events
 const handleTouchStart = (e) => {
   isDragging.value = true;
   startX.value = e.touches[0].clientX;
@@ -151,256 +230,182 @@ const handleTouchStart = (e) => {
 
 const handleTouchMove = (e) => {
   if (!isDragging.value) return;
-
   const currentX = e.touches[0].clientX;
-  const diff = currentX - startX.value;
+  const diff = startX.value - currentX;
 
-  // Move in the opposite direction of the drag
-  scrollPosition.value = startScrollPos.value - diff;
+  // Calculate the new scroll position with resistance at edges
+  const newPosition = startScrollPos.value + diff;
+  const maxScroll = totalWidth.value - viewportWidth.value;
+
+  // Apply position with bounds and resistance
+  if (newPosition < 0) {
+    scrollPosition.value = newPosition * 0.3; // Resistance when pulling past left edge
+  } else if (newPosition > maxScroll) {
+    scrollPosition.value = maxScroll + (newPosition - maxScroll) * 0.3; // Resistance when pulling past right edge
+  } else {
+    scrollPosition.value = newPosition;
+  }
 };
 
-const handleTouchEnd = (e) => {
+const handleTouchEnd = () => {
   if (!isDragging.value) return;
-
   isDragging.value = false;
 
-  // Resume auto-scrolling after a delay
+  // Snap back to bounds if pulled past edges
+  const maxScroll = totalWidth.value - viewportWidth.value;
+  if (scrollPosition.value < 0) {
+    scrollPosition.value = 0;
+  } else if (scrollPosition.value > maxScroll) {
+    scrollPosition.value = maxScroll;
+  }
+
+  // Resume auto-scrolling after a short delay
   setTimeout(() => {
     resumeAutoScroll();
-  }, 1000);
+  }, 2000);
 };
 
-// Auto-scroll functionality
-const animateScroll = () => {
-  if (isPaused.value) {
-    animationId = requestAnimationFrame(animateScroll);
-    return;
-  }
-
-  scrollPosition.value += animationSpeed.value;
-
-  // Check if we need to reset the scroll position for infinite loop
-  if (carouselInnerRef.value) {
-    const totalWidth = (cardWidth.value + 16) * ads.length;
-
-    // When we've scrolled past the first set of items, reset to the beginning
-    if (scrollPosition.value >= totalWidth) {
-      scrollPosition.value = 0;
-    }
-
-    // Update active dot based on current position
-    const newActiveDotIndex = Math.floor(
-      (scrollPosition.value % totalWidth) / (totalWidth / ads.length)
-    );
-    if (newActiveDotIndex !== activeDotIndex.value) {
-      activeDotIndex.value = newActiveDotIndex;
-    }
-  }
-
-  animationId = requestAnimationFrame(animateScroll);
-};
-
+// Auto-scroll controls
 const pauseAutoScroll = () => {
   isPaused.value = true;
+  if (autoScrollInterval.value) {
+    clearInterval(autoScrollInterval.value);
+    autoScrollInterval.value = null;
+  }
 };
 
 const resumeAutoScroll = () => {
   isPaused.value = false;
+  startAutoScroll();
 };
 
-// Format price with commas
-const formatPrice = (price) => {
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+// New continuous scrolling function
+const startAutoScroll = () => {
+  if (autoScrollInterval.value) {
+    clearInterval(autoScrollInterval.value);
+  }
+
+  // Only auto-scroll if content exceeds viewport
+  if (totalWidth.value > viewportWidth.value) {
+    autoScrollInterval.value = setInterval(() => {
+      if (isPaused.value) return;
+
+      // Original array length (before duplication)
+      const originalLength = adsArray.value.length;
+      // Width of one set of the original array
+      const oneSetWidth =
+        originalLength * cardWidth.value + (originalLength - 1) * cardGap;
+
+      // Advance position
+      scrollPosition.value += animationSpeed.value;
+
+      // If we've scrolled past the first set and have enough duplicates
+      // silently reset to beginning of second set to create illusion of continuous scrolling
+      if (
+        scrollPosition.value > oneSetWidth &&
+        displayedAds.value.length > originalLength * 2
+      ) {
+        scrollPosition.value = 1; // Keep a slight offset to avoid visual jumps
+      }
+
+      // Safety check to ensure we don't scroll beyond the content
+      const maxScroll = totalWidth.value - viewportWidth.value;
+      if (scrollPosition.value > maxScroll) {
+        scrollPosition.value = maxScroll - 10; // Keep slightly before the end
+      }
+    }, 30); // Smooth scrolling interval
+  }
+};
+
+// Calculate dimensions and set up scrolling
+const initializeCarousel = () => {
+  if (
+    !carouselRef.value ||
+    !carouselInnerRef.value ||
+    !displayedAds.value.length
+  )
+    return;
+
+  viewportWidth.value = carouselRef.value.clientWidth;
+
+  // Adjust card width based on screen size - more reasonable sizes
+  if (window.innerWidth < 640) {
+    // Mobile: show 2 cards
+    cardWidth.value = viewportWidth.value * 0.45;
+    animationSpeed.value = 0.6;
+  } else if (window.innerWidth < 1024) {
+    // Tablet: show 3 cards
+    cardWidth.value = viewportWidth.value * 0.3;
+    animationSpeed.value = 0.8;
+  } else {
+    // Desktop: show 4-5 cards
+    cardWidth.value = viewportWidth.value * 0.21;
+    animationSpeed.value = 1;
+  }
+
+  // Calculate total width of all cards including gaps
+  totalWidth.value =
+    displayedAds.value.length * cardWidth.value +
+    (displayedAds.value.length - 1) * cardGap;
+
+  startAutoScroll();
 };
 
 // Lifecycle hooks
 onMounted(() => {
-  // Get the actual card width based on the container
-  if (carouselRef.value) {
-    const containerWidth = carouselRef.value.clientWidth;
-
-    // For mobile screens (width < 640px), show 1.5 cards
-    if (containerWidth < 640) {
-      cardWidth.value = containerWidth * 0.7 - 16; // 70% of container width minus margin
-      // Adjust animation speed based on screen size
-      animationSpeed.value = 0.8;
-    } else {
-      cardWidth.value = containerWidth / 2 - 16; // 2 cards per view
-      animationSpeed.value = 0.8;
-    }
-  }
-
-  // Start the continuous animation
-  animationId = requestAnimationFrame(animateScroll);
+  setTimeout(() => {
+    initializeCarousel();
+    window.addEventListener("resize", initializeCarousel);
+  }, 200); // Slight delay to ensure DOM is ready
 });
 
 onUnmounted(() => {
-  // Clean up animation frame on component unmount
-  if (animationId) {
-    cancelAnimationFrame(animationId);
+  if (autoScrollInterval.value) {
+    clearInterval(autoScrollInterval.value);
   }
-});
-
-// Watch for window resize to adjust card width
-window.addEventListener("resize", () => {
-  if (carouselRef.value) {
-    const containerWidth = carouselRef.value.clientWidth;
-
-    // For mobile screens (width < 640px), show 1.5 cards
-    if (containerWidth < 640) {
-      cardWidth.value = containerWidth * 0.7 - 16; // 70% of container width minus margin
-      animationSpeed.value = 0.3;
-    } else {
-      cardWidth.value = containerWidth / 2 - 16;
-      animationSpeed.value = 0.5;
-    }
-  }
+  window.removeEventListener("resize", initializeCarousel);
 });
 </script>
 
 <style scoped>
-.ads-container {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-}
-
-.ads-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.ads-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.clock-icon {
-  color: #666;
-}
-
-h2 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pagination-dots {
-  display: flex;
-  gap: 4px;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #ddd;
-  transition: background-color 0.3s ease;
-}
-
-.dot.active {
-  background-color: #ff6b00;
-}
-
-.ads-carousel {
-  position: relative;
-  overflow: hidden;
-  touch-action: pan-y;
-}
-
-.carousel-inner {
-  display: flex;
-  gap: 16px;
-  will-change: transform;
-}
-
+/* Ensure proper stacking context */
 .ad-card {
-  flex: 0 0 auto;
-  width: calc(50% - 8px);
-  min-width: 200px;
-  max-width: 300px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: white;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
-.ad-image {
-  width: 100%;
-  height: 120px;
-  overflow: hidden;
+/* Prevent text selection during swiping */
+.carousel-inner {
+  user-select: none;
 }
 
-.ad-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Ensure smooth performance */
+.ad-card img {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-.ad-content {
-  padding: 10px;
-}
-
-h3 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.ad-location {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.ad-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.ad-price {
-  font-weight: 700;
-  font-size: 14px;
-  color: #333;
-}
-
-.ad-date {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #888;
-}
-
+/* Reduced spacing for mobile */
 @media (max-width: 640px) {
-  .ad-card {
-    width: 70%;
+  .ad-card h3 {
+    font-size: 12px;
+    line-height: 1.4;
   }
 }
 
+/* Slightly larger for tablets */
 @media (min-width: 641px) and (max-width: 1024px) {
-  .ad-card {
-    width: calc(50% - 16px);
+  .ad-card h3 {
+    font-size: 13px;
+    line-height: 1.4;
   }
 }
 
+/* Desktop size */
 @media (min-width: 1025px) {
-  .ad-card {
-    width: calc(33.333% - 16px);
+  .ad-card h3 {
+    font-size: 14px;
+    line-height: 1.4;
   }
 }
 </style>

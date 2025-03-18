@@ -176,59 +176,174 @@
           </UButton>
 
           <div
-            class="absolute bg-slate-50 rounded-md py-3 px-2 top-10 right-3"
-            :class="openMenu ? '' : 'hidden'"
+            class="absolute right-3 top-11 w-64 overflow-hidden transition-all duration-300 origin-top-right"
+            :class="
+              openMenu
+                ? 'opacity-100 scale-100 translate-y-0'
+                : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
+            "
           >
-            <UVerticalNavigation
-              :links="[
-                {
-                  label: $t('profile'),
-                  icon: 'i-heroicons-user',
-                  to: '/my-account',
-                },
-                {
-                  label: $t('transaction'),
-                  to: '/deposit-withdraw',
-                  icon: 'i-heroicons-currency-dollar',
-                },
-                {
-                  label: $t('upload_center'),
-                  icon: 'material-symbols:drive-folder-upload-outline-sharp',
-                  to: '/upload-center',
-                },
-                {
-                  label: $t('mobile_recharge'),
-                  to: '/mobile-recharge',
-                  icon: 'i-uil-mobile-vibrate',
-                },
-                {
-                  label: $t('refer_friend'),
-                  to: '/refer-a-friend',
-                  icon: 'i-solar-users-group-rounded-broken',
-                },
-                {
-                  label: $t('settings'),
-                  icon: 'material-symbols:settings-outline',
-                  to: '/settings',
-                },
-                {
-                  label: $t('support'),
-                  icon: 'i-heroicons-question-mark-circle',
-                  to: '/contact-us',
-                },
+            <!-- Glass-morphism container -->
+            <div
+              class="backdrop-blur-md bg-white/90 dark:bg-slate-800/90 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
+            >
+              <!-- User info section -->
+              <div
+                class="p-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-b border-slate-200/70 dark:border-slate-700/70"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <!-- Profile avatar -->
+                    <div
+                      class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-800 dark:to-emerald-900 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-base font-semibold border-2 border-white dark:border-slate-700"
+                    >
+                      {{
+                        user?.user?.first_name
+                          ? user.user.first_name[0].toUpperCase()
+                          : "U"
+                      }}
+                    </div>
 
-                {
-                  label: $t('logout'),
-                  icon: 'bitcoin-icons:exit-filled',
-                  click: () => {
-                    logout();
-                  },
-                },
-              ]"
-              :ui="{
-                label: 'text-base',
-              }"
-            />
+                    <!-- Verification badge if KYC -->
+                    <div
+                      v-if="user?.user?.kyc"
+                      class="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-sm"
+                    >
+                      <UIcon
+                        name="mdi:check-decagram"
+                        class="w-4 h-4 text-blue-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="font-medium text-slate-800 dark:text-white truncate"
+                    >
+                      {{ user?.user?.first_name }} {{ user?.user?.last_name }}
+                    </p>
+                    <p
+                      class="text-xs text-slate-500 dark:text-slate-400 truncate"
+                    >
+                      {{ user?.user?.email }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Menu items with hover effects -->
+              <div class="py-1.5">
+                <!-- Main account actions -->
+                <div class="px-1.5 pb-1">
+                  <NuxtLink
+                    v-for="(link, index) in [
+                      {
+                        label: $t('transaction'),
+                        to: '/deposit-withdraw',
+                        icon: 'i-heroicons-currency-dollar',
+                        color: 'text-emerald-600 dark:text-emerald-400',
+                        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                      },
+                      {
+                        label: $t('upload_center'),
+                        icon: 'material-symbols:drive-folder-upload-outline-sharp',
+                        to: '/upload-center',
+                        color: 'text-blue-600 dark:text-blue-400',
+                        bg: 'bg-blue-50 dark:bg-blue-900/20',
+                      },
+                      {
+                        label: $t('mobile_recharge'),
+                        to: '/mobile-recharge',
+                        icon: 'i-uil-mobile-vibrate',
+                        color: 'text-orange-600 dark:text-orange-400',
+                        bg: 'bg-orange-50 dark:bg-orange-900/20',
+                      },
+                      {
+                        label: $t('refer_friend'),
+                        to: '/refer-a-friend',
+                        icon: 'i-solar-users-group-rounded-broken',
+                        color: 'text-purple-600 dark:text-purple-400',
+                        bg: 'bg-purple-50 dark:bg-purple-900/20',
+                      },
+                    ]"
+                    :key="index"
+                    :to="link.to"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg my-0.5 group transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    @click="openMenu = false"
+                  >
+                    <!-- Icon with colored background -->
+                    <div
+                      :class="`w-8 h-8 rounded-full ${link.bg} flex items-center justify-center ${link.color} transition-transform group-hover:scale-110`"
+                    >
+                      <UIcon :name="link.icon" class="w-4 h-4" />
+                    </div>
+
+                    <!-- Label with hover underline -->
+                    <span class="text-sm relative overflow-hidden">
+                      {{ link.label }}
+                      <span
+                        class="absolute bottom-0 left-0 w-full h-0.5 bg-current transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"
+                      ></span>
+                    </span>
+                  </NuxtLink>
+                </div>
+
+                <!-- Divider -->
+                <div
+                  class="h-px bg-slate-200 dark:bg-slate-700 my-1 mx-3"
+                ></div>
+
+                <!-- Settings and support -->
+                <div class="px-1.5 py-1">
+                  <NuxtLink
+                    v-for="(link, index) in [
+                      {
+                        label: $t('settings'),
+                        icon: 'material-symbols:settings-outline',
+                        to: '/settings',
+                      },
+                      {
+                        label: $t('support'),
+                        icon: 'i-heroicons-question-mark-circle',
+                        to: '/contact-us',
+                      },
+                    ]"
+                    :key="index"
+                    :to="link.to"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg my-0.5 group transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    @click="openMenu = false"
+                  >
+                    <UIcon
+                      :name="link.icon"
+                      class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                    />
+                    <span class="text-sm">{{ link.label }}</span>
+                  </NuxtLink>
+                </div>
+
+                <!-- Divider -->
+                <div
+                  class="h-px bg-slate-200 dark:bg-slate-700 my-1 mx-3"
+                ></div>
+
+                <!-- Logout button -->
+                <div class="px-1.5 pt-1">
+                  <button
+                    @click="
+                      logout();
+                      openMenu = false;
+                    "
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg w-full text-left group transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    <UIcon
+                      name="bitcoin-icons:exit-filled"
+                      class="w-5 h-5 transition-transform group-hover:-translate-x-0.5"
+                    />
+                    <span class="text-sm font-medium">{{ $t("logout") }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="ml-2" v-if="user && user.user">
             <UButton

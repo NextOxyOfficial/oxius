@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-10">
+  <div class="pb-2">
     <PublicSection id="classified-services">
       <UContainer
         :ui="{
@@ -23,36 +23,94 @@
         </div>
         <form
           @submit.prevent="handleSearch"
-          class="w-full sm:max-w-sm sm:mx-auto"
+          class="w-full max-w-xl mx-auto relative z-10"
         >
-          <UButtonGroup
-            label="Search Category"
-            class="my-1 md:my-8 justify-center flex !shadow-none"
-            orientation="horizontal"
-            size="md"
+          <!-- Decorative elements with reduced blur for better performance -->
+          <div
+            class="absolute -top-4 -left-8 w-20 h-20 bg-emerald-400/10 rounded-full blur-xl -z-10 opacity-70"
+          ></div>
+          <div
+            class="absolute -bottom-4 -right-8 w-24 h-24 bg-blue-400/10 rounded-full blur-xl -z-10 opacity-70"
+          ></div>
+
+          <!-- Search container with enhanced styling -->
+
+          <div
+            class="bg-white dark:bg-slate-800 rounded-2xl h-10 sm:h-14 shadow-sm border border-slate-200/70 dark:border-slate-700/50 overflow-hidden transition-all duration-300 hover:shadow-md group"
           >
-            <UInput
-              type="search"
-              color="white"
-              placeholder="খুঁজুন যা প্রয়োজন"
-              v-model="title"
-              class="w-full"
-            />
-            <UButton
-              icon="i-heroicons-magnifying-glass-solid"
-              color="gray"
-              type="submit"
-              :loading="isLoading"
-              size="md"
-              class="w-16"
-              :ui="{
-                padding: {
-                  md: 'px-3 py-2',
-                },
-              }"
-              block
-            />
-          </UButtonGroup>
+            <!-- Accent line animation - only shows on hover, not on focus -->
+            <div
+              class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+            ></div>
+
+            <div class="flex items-center">
+              <!-- Search icon with animation -->
+              <div class="pl-3 sm:pl-4">
+                <UIcon
+                  name="i-heroicons-magnifying-glass"
+                  class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors duration-300"
+                />
+              </div>
+
+              <!-- Input with typing animation - completely removed focus styles -->
+              <div class="relative flex-1">
+                <input
+                  ref="searchInput"
+                  type="search"
+                  v-model="title"
+                  class="w-full py-2.5 sm:py-3.5 px-2 sm:px-3 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-sm sm:text-base"
+                  :class="isLoading ? 'opacity-70' : 'opacity-100'"
+                  @focus="stopTyping"
+                  @blur="restartTypingIfEmpty"
+                  style="-webkit-appearance: none; appearance: none"
+                />
+
+                <!-- Animated placeholder with cursor - adjusted for smaller mobile size -->
+                <div
+                  v-if="!title && showPlaceholder"
+                  class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center"
+                >
+                  <span
+                    class="text-slate-400 dark:text-slate-500 text-sm sm:text-base"
+                  >
+                    <span>{{ displayedPlaceholder }}</span>
+                    <span
+                      class="inline-block w-0.5 h-4 sm:h-5 bg-emerald-500 dark:bg-emerald-400 ml-0.5 animate-blink"
+                      :class="{ 'opacity-0': !cursorVisible }"
+                    ></span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Enhanced search button - smaller on mobile -->
+              <button
+                type="submit"
+                text="Search"
+                class="relative overflow-hidden m-1 sm:m-1.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2"
+                :disabled="isLoading"
+              >
+                <!-- Button background animation -->
+                <span
+                  class="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+                ></span>
+
+                <!-- Button content -->
+                <span v-if="!isLoading" class="relative hidden sm:block"
+                  >খুঁজুন</span
+                >
+                <UIcon
+                  v-if="!isLoading"
+                  name="i-heroicons-magnifying-glass"
+                  class="w-4 h-4 sm:w-5 sm:h-5 relative"
+                />
+                <UIcon
+                  v-else
+                  name="i-heroicons-arrow-path"
+                  class="w-4 h-4 sm:w-5 sm:h-5 animate-spin relative"
+                />
+              </button>
+            </div>
+          </div>
         </form>
 
         <div
@@ -109,7 +167,7 @@
           </ul>
         </div>
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-4"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
         >
           <UCard
             class="text-center border border-dashed border-green-500 lg:w-[150px]"
@@ -122,7 +180,7 @@
                 padding: 'px-3 py-3 sm:p-2.5',
               },
               ring: '',
-              background: 'bg-green-100/60',
+              background: 'bg-green-50',
               shadow: 'shadow-lg',
             }"
           >
@@ -148,7 +206,7 @@
           </UCard>
         </div>
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-4"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
         >
           <UCard
             class="text-center border border-dashed border-green-500 lg:w-[150px]"
@@ -161,7 +219,7 @@
                 padding: 'px-3 py-3 sm:p-2.5',
               },
               ring: '',
-              background: 'bg-green-100/60',
+              background: 'bg-green-50',
               shadow: 'shadow-md',
             }"
           >
@@ -696,8 +754,100 @@ const operators = ref([]);
 const operatorsRes = await get("/mobile-recharge/operators/");
 
 operators.value = operatorsRes.data;
+
+// Existing code remains unchanged
+
+// Add these variables for the typing animation
+const searchInput = ref(null);
+const showPlaceholder = ref(true);
+const displayedPlaceholder = ref("");
+const cursorVisible = ref(true);
+const typingInterval = ref(null);
+const cursorInterval = ref(null);
+const currentIndex = ref(0);
+const placeholder = "খুঁজুন যা প্রয়োজন....";
+
+// Typing animation functions
+const typeNextChar = () => {
+  if (currentIndex.value < placeholder.length) {
+    displayedPlaceholder.value += placeholder[currentIndex.value];
+    currentIndex.value++;
+
+    // Variable typing speed for human-like effect
+    const nextSpeed = Math.floor(Math.random() * 130) + 70;
+
+    // Add slight pauses at certain points
+    if (placeholder[currentIndex.value - 1] === " ") {
+      typingInterval.value = setTimeout(typeNextChar, 300); // Longer pause after space
+    } else {
+      typingInterval.value = setTimeout(typeNextChar, nextSpeed);
+    }
+  } else {
+    // When typing completes, wait and then start over
+    setTimeout(resetTyping, 2000);
+  }
+};
+
+// Reset typing animation
+const resetTyping = () => {
+  displayedPlaceholder.value = "";
+  currentIndex.value = 0;
+  typingInterval.value = setTimeout(typeNextChar, 500);
+};
+
+// Stop typing animation when input receives focus
+const stopTyping = () => {
+  showPlaceholder.value = false;
+  clearTimeout(typingInterval.value);
+};
+
+// Restart typing animation if field is empty when blurred
+const restartTypingIfEmpty = () => {
+  if (!title.value) {
+    showPlaceholder.value = true;
+    resetTyping();
+  }
+};
+
+// Start cursor blinking
+const startCursorBlink = () => {
+  cursorInterval.value = setInterval(() => {
+    cursorVisible.value = !cursorVisible.value;
+  }, 530); // Blink interval
+};
+
+// Initialize animations on mount
+onMounted(() => {
+  // Start after a brief delay to ensure reactivity is set up
+  setTimeout(() => {
+    typeNextChar();
+    startCursorBlink();
+  }, 100);
+});
+
+// Clean up intervals when component is unmounted
+onBeforeUnmount(() => {
+  clearTimeout(typingInterval.value);
+  clearInterval(cursorInterval.value);
+});
 </script>
+
 <style>
+/* Add this to your existing styles */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s infinite;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.3s ease;
