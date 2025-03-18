@@ -1,452 +1,437 @@
 <template>
   <PublicSection>
-    <UContainer>
-      <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
-      <UDivider label="" class="mb-8" />
-      <form
-        action="#"
-        class="max-w-2xl mx-auto space-y-3 bg-white px-2 py-3 sm:px-8 sm:py-6 rounded-lg"
-        @submit.prevent="handlePostGig"
-      >
-        <UFormGroup
-          label="Category"
-          required
-          :error="!form.category && checkSubmit && 'You must select a category'"
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
-        >
-          <USelectMenu
-            v-model="form.category"
-            color="white"
-            size="md"
-            :options="categories"
-            placeholder="Target Category"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-              placeholder: 'text-gray-400 dark:text-gray-200',
-            }"
-            option-attribute="title"
-            value-attribute="id"
-          />
-        </UFormGroup>
-        <UFormGroup
-          label="Title"
-          required
-          :error="!form.title && checkSubmit && 'You must enter a title!'"
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
-        >
-          <UInput
-            type="text"
-            size="md"
-            color="white"
-            class="relative"
-            placeholder="Title"
-            v-model="form.title"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-            }"
+    <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+      <UContainer>
+        <!-- Enhanced Header -->
+        <div class="text-center mb-10">
+          <h1
+            class="text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
           >
-          </UInput>
-        </UFormGroup>
-        <div class="flex gap-4 items-center"></div>
+            Post A Classified Ad
+          </h1>
+          <p class="text-lg text-gray-600 max-w-lg mx-auto">
+            Create your listing and reach potential customers
+          </p>
+        </div>
 
-        <p class="text-sm font-semibold">
-          Instructions <span class="text-red-500">*</span>
-        </p>
-        <CommonEditor
-          v-if="router.query.id && form.instructions"
-          :content="form.instructions"
-          @updateContent="
-            (content) => {
-              form.instructions = content;
-            }
-          "
-          class="border border-slate-300 p-2 bg-white"
-        />
-        <CommonEditor
-          v-else
-          v-model="form.instructions"
-          @updateContent="updateContent"
-          class="border border-slate-300 p-2 bg-white"
-        />
-        <div class="grid md:grid-cols-2 gap-4">
-          <!-- <UFormGroup
-            label="Category"
-            required
-            :error="
-              !form.category && checkSubmit && 'You must select a category'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
+        <form
+          action="#"
+          class="bg-white rounded-2xl shadow-lg max-w-3xl mx-auto overflow-hidden border border-gray-100"
+          @submit.prevent="handlePostGig"
+        >
+          <!-- Primary Details Section -->
+          <div
+            class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <USelectMenu
-              v-model="form.category"
-              color="white"
-              size="md"
-              :options="categories"
-              placeholder="Target Category"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              option-attribute="title"
-              value-attribute="id"
-            />
-          </UFormGroup> -->
-          <UFormGroup
-            label="Price"
-            :error="
-              form.price <= 0 &&
-              !form.negotiable &&
-              checkSubmit &&
-              'Price must be greater than 0 or Negotiable'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <div class="flex gap-2 items-center">
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon
+                name="i-heroicons-document-text"
+                class="text-emerald-600"
+              />
+              Basic Details
+            </h2>
+
+            <UFormGroup
+              label="Category"
+              required
+              :error="
+                !form.category && checkSubmit && 'You must select a category'
+              "
+              class="mb-5"
+            >
+              <USelectMenu
+                v-model="form.category"
+                color="white"
+                size="md"
+                :options="categories"
+                placeholder="Select Category"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                option-attribute="title"
+                value-attribute="id"
+              />
+            </UFormGroup>
+
+            <UFormGroup
+              label="Title"
+              required
+              :error="!form.title && checkSubmit && 'You must enter a title!'"
+              class="mb-5"
+            >
               <UInput
-                icon="i-mdi:currency-bdt"
                 type="text"
                 size="md"
                 color="white"
-                :disabled="form.negotiable"
-                :ui="{
-                  size: {
-                    md: 'text-base',
-                  },
-                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-                }"
-                placeholder="2.0"
-                class="max-w-40"
-                v-model="form.price"
-              />
-              <UCheckbox
-                v-model="form.negotiable"
-                name="Negotiable"
-                label="Negotiable"
-                :ui="{
-                  label:
-                    'text-sm font-medium text-gray-700 dark:text-slate-700',
-                }"
-              />
-            </div>
-          </UFormGroup>
-        </div>
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                placeholder="Enter a descriptive title for your classified ad"
+                v-model="form.title"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-pencil-square" />
+                </template>
+              </UInput>
+            </UFormGroup>
 
-        <!-- <UFormGroup label="Upload Photo/Video">
-          <input
-            type="file"
-            name=""
-            id=""
-            @change="handleFileUpload($event, 'image')"
-          />
-        </UFormGroup> -->
-        <UFormGroup
-          label="Upload Photo/Video"
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
-        >
-        </UFormGroup>
-        <div class="flex flex-wrap gap-2 md:gap-5 mt-4">
-          <div
-            class="relative max-w-[200px] max-h-[200px] overflow-hidden"
-            v-for="(img, i) in form.medias"
-            :key="i"
-          >
-            <img
-              v-if="img.image"
-              :src="img.image"
-              :alt="`Uploaded file ${i}`"
-              class="object-cover"
-            />
-            <img
-              v-else
-              :src="img"
-              :alt="`Uploaded file ${i}`"
-              class="object-cover"
-            />
-            <div
-              class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-              @click="deleteUpload(i)"
-            >
-              <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
-            </div>
+            <UFormGroup label="Description" required class="mb-5">
+              <p class="text-sm text-gray-500 mb-3">
+                Provide detailed information about your listing
+              </p>
+              <div
+                class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
+              >
+                <CommonEditor
+                  v-if="router.query.id && form.instructions"
+                  :content="form.instructions"
+                  @updateContent="
+                    (content) => {
+                      form.instructions = content;
+                    }
+                  "
+                />
+                <CommonEditor
+                  v-else
+                  v-model="form.instructions"
+                  @updateContent="updateContent"
+                />
+              </div>
+            </UFormGroup>
           </div>
 
+          <!-- Pricing Section -->
           <div
-            class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <input
-              type="file"
-              name=""
-              id=""
-              class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
-              @change="handleFileUpload($event, 'image')"
-            />
-            <UIcon name="i-heroicons-plus-solid" size="66" />
-          </div>
-        </div>
-        <!-- <UFormGroup label="Upload Photo/Video">
-          <UInput
-            type="file"
-            size="md"
-            color="white"
-            :ui="{
-              color: {
-                white: {
-                  outline: 'ring-0',
-                },
-              },
-              size: {
-                md: 'text-base',
-              },
-            }"
-            placeholder="Budget Per Action"
-            class="max-w-72"
-          />
-        </UFormGroup> -->
-        <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup
-            label="State"
-            required
-            :error="!form.state && checkSubmit && 'You must select a state!'"
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <USelectMenu
-              v-model="form.state"
-              color="white"
-              size="md"
-              :options="regions"
-              placeholder="State"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              option-attribute="name_eng"
-              value-attribute="name_eng"
-            />
-          </UFormGroup>
-          <UFormGroup
-            label="City"
-            required
-            :error="!form.city && checkSubmit && 'You must select a city'"
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <USelectMenu
-              v-model="form.city"
-              color="white"
-              size="md"
-              :options="cities"
-              placeholder="City"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              option-attribute="name_eng"
-              value-attribute="name_eng"
-            />
-          </UFormGroup>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup
-            label="Thana"
-            required
-            :error="!form.upazila && checkSubmit && 'You must select a Thana'"
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <USelectMenu
-              v-model="form.upazila"
-              color="white"
-              size="md"
-              :options="upazilas"
-              placeholder="Thana"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              option-attribute="name_eng"
-              value-attribute="name_eng"
-            />
-          </UFormGroup>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-4"></div>
-        <div>
-          <UFormGroup
-            label="Address"
-            required
-            :error="
-              !form.location && checkSubmit && 'You must enter your address!'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <UTextarea
-              v-model="form.location"
-              color="white"
-              variant="outline"
-              class="w-full"
-              resize
-              placeholder="1216-Mirpur, Dhaka"
-              :ui="{
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-            />
-          </UFormGroup>
-        </div>
-
-        <UCheckbox
-          name="terms_privacy"
-          v-model="form.accepted_privacy"
-          :ui="{
-            label: 'text-sm font-medium text-gray-700 dark:text-slate-700',
-          }"
-        >
-          <template #label>
-            Accept
-            <NuxtLink to="/terms" class="text-green-500"
-              >Terms & Conditions</NuxtLink
-            >,
-            <NuxtLink to="/privacy" class="text-green-500"
-              >Privacy Policy</NuxtLink
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
-          </template>
-        </UCheckbox>
-        <p
-          v-if="!form.accepted_privacy && checkSubmit"
-          class="text-sm text-red-500"
-        >
-          You must accept our Terms Condition & Privacy Policy!
-        </p>
-        <div class="text-center">
-          <UButton
-            :loading="isLoading"
-            v-if="user.user.kyc"
-            class="px-8"
-            size="lg"
-            color="primary"
-            variant="solid"
-            label="Post"
-            type="submit"
-          />
-          <UButton
-            v-else
-            class="px-8"
-            size="lg"
-            color="primary"
-            variant="solid"
-            label="Post"
-            @click="isOpen = true"
-          />
-        </div>
-      </form>
-      <UModal v-model="isOpen">
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          <!-- <div 
-              className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity"
-              onClick={onClose}
-            /> -->
-          <div
-            className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
-          >
-            <div className="px-6 py-8">
-              <div className="flex flex-col items-center text-center">
-                <div
-                  className="rounded-full bg-red-100 p-3 mb-4 inline-flex items-center justify-center"
-                >
-                  <!-- <AlertCircle className="h-8 w-8 text-red-600" /> -->
-                  <UIcon
-                    name="i-line-md-alert-circle"
-                    class="h-8 w-8 text-red-600"
-                  />
-                </div>
+              <UIcon
+                name="i-heroicons-currency-dollar"
+                class="text-emerald-600"
+              />
+              Pricing
+            </h2>
 
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  KYC Unverified
-                </h2>
-
-                <p className="text-gray-600 mb-6">
-                  Please Upload your ID to get permission to post a service ad.
-                </p>
-
-                <!-- <button
-                  className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                  onClick="{handleUpload}"
-                >
-                  <Upload className="h-5 w-5 mr-2" />
-                  Upload NID
-                </button> -->
-                <UButton
+            <UFormGroup
+              label="Price"
+              :error="
+                form.price <= 0 &&
+                !form.negotiable &&
+                checkSubmit &&
+                'Price must be greater than 0 or Negotiable'
+              "
+              class="mb-5"
+            >
+              <div class="flex flex-wrap items-center gap-4">
+                <UInput
+                  type="text"
                   size="md"
-                  color="primary"
-                  variant="solid"
-                  to="/upload-center"
-                  label="Upload NID"
-                  block
+                  color="white"
+                  :disabled="form.negotiable"
+                  placeholder="e.g. 1000"
+                  class="w-40 sm:flex-grow-0 border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  v-model="form.price"
                 >
                   <template #leading>
-                    <UIcon
-                      name="i-material-symbols-upload-rounded"
-                      class="h-5 w-5"
-                    />
+                    <UIcon name="i-mdi:currency-bdt" />
                   </template>
-                </UButton>
+                </UInput>
+
+                <div class="flex items-center">
+                  <UCheckbox
+                    v-model="form.negotiable"
+                    name="Negotiable"
+                    label="Negotiable"
+                  />
+                </div>
+              </div>
+            </UFormGroup>
+          </div>
+
+          <!-- Media Upload Section -->
+          <div
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+          >
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon name="i-heroicons-photo" class="text-emerald-600" />
+              Media Gallery
+            </h2>
+            <p class="text-sm text-gray-500 mb-4">
+              Add photos to showcase your listing (up to 5 images)
+            </p>
+
+            <div class="flex flex-wrap gap-4 mt-4">
+              <!-- Uploaded images -->
+              <div
+                v-for="(img, i) in form.medias"
+                :key="i"
+                class="w-32 h-32 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
+              >
+                <img
+                  v-if="img.image"
+                  :src="img.image"
+                  :alt="`Uploaded file ${i}`"
+                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <img
+                  v-else
+                  :src="img"
+                  :alt="`Uploaded file ${i}`"
+                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all"
+                ></div>
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-md hover:bg-red-50 hover:scale-110 transition-all"
+                  @click="deleteUpload(i)"
+                  aria-label="Delete image"
+                >
+                  <UIcon name="i-heroicons-trash" />
+                </button>
+              </div>
+
+              <!-- Upload button -->
+              <div
+                class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
+                v-if="form.medias.length < 5"
+              >
+                <input
+                  type="file"
+                  ref="fileInput"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  @change="handleFileUpload"
+                  accept="image/*"
+                />
+                <div
+                  class="flex flex-col items-center gap-2 text-gray-500 text-sm text-center p-2 group-hover:text-emerald-600"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-up-tray"
+                    class="text-2xl text-emerald-500"
+                  />
+                  <span>Add Photo</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- </div> -->
-      </UModal>
-    </UContainer>
+            <!-- Upload status -->
+            <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
+              {{ uploadError }}
+            </p>
+            <p
+              v-if="isUploading"
+              class="mt-3 text-emerald-600 text-sm flex items-center"
+            >
+              <UIcon name="i-heroicons-arrow-path" class="animate-spin mr-1" />
+              Uploading image...
+            </p>
+          </div>
+
+          <!-- Location Section -->
+          <div
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+          >
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
+              Location
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <UFormGroup
+                label="State"
+                required
+                :error="
+                  !form.state && checkSubmit && 'You must select a state!'
+                "
+                class="mb-5"
+              >
+                <USelectMenu
+                  v-model="form.state"
+                  color="white"
+                  size="md"
+                  :options="regions"
+                  placeholder="Select State"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  option-attribute="name_eng"
+                  value-attribute="name_eng"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-map" />
+                  </template>
+                </USelectMenu>
+              </UFormGroup>
+
+              <UFormGroup
+                label="City"
+                required
+                :error="!form.city && checkSubmit && 'You must select a city'"
+                class="mb-5"
+              >
+                <USelectMenu
+                  v-model="form.city"
+                  color="white"
+                  size="md"
+                  :options="cities"
+                  placeholder="Select City"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  option-attribute="name_eng"
+                  value-attribute="name_eng"
+                  :disabled="!form.state"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-building-office-2" />
+                  </template>
+                </USelectMenu>
+              </UFormGroup>
+
+              <UFormGroup
+                label="Thana"
+                required
+                :error="
+                  !form.upazila && checkSubmit && 'You must select a Thana'
+                "
+                class="mb-5"
+              >
+                <USelectMenu
+                  v-model="form.upazila"
+                  color="white"
+                  size="md"
+                  :options="upazilas"
+                  placeholder="Select Thana"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  option-attribute="name_eng"
+                  value-attribute="name_eng"
+                  :disabled="!form.city"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-map-pin" />
+                  </template>
+                </USelectMenu>
+              </UFormGroup>
+            </div>
+
+            <UFormGroup
+              label="Detailed Address"
+              required
+              :error="
+                !form.location && checkSubmit && 'You must enter your address!'
+              "
+              class="mb-5"
+            >
+              <UTextarea
+                v-model="form.location"
+                color="white"
+                variant="outline"
+                class="w-full min-h-20 border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                resize
+                placeholder="Enter your complete address (e.g., 1216-Mirpur, Dhaka)"
+              />
+            </UFormGroup>
+          </div>
+
+          <!-- Terms Section -->
+          <div class="p-7 bg-gray-50">
+            <UCheckbox name="terms_privacy" v-model="form.accepted_privacy">
+              <template #label>
+                <span class="text-gray-600 text-sm">
+                  I agree to the
+                  <NuxtLink
+                    to="/terms"
+                    class="text-emerald-600 font-medium underline hover:text-emerald-700"
+                    >Terms & Conditions</NuxtLink
+                  >
+                  and
+                  <NuxtLink
+                    to="/privacy"
+                    class="text-emerald-600 font-medium underline hover:text-emerald-700"
+                    >Privacy Policy</NuxtLink
+                  >
+                </span>
+              </template>
+            </UCheckbox>
+
+            <p
+              v-if="!form.accepted_privacy && checkSubmit"
+              class="text-red-500 text-sm mt-2"
+            >
+              You must accept our Terms & Conditions and Privacy Policy
+            </p>
+
+            <div class="flex justify-center mt-6">
+              <UButton
+                v-if="user.user.kyc"
+                :loading="isLoading"
+                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                size="lg"
+                color="primary"
+                variant="solid"
+                type="submit"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-paper-airplane" />
+                </template>
+                Post Classified Ad
+              </UButton>
+
+              <UButton
+                v-else
+                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                size="lg"
+                color="primary"
+                variant="solid"
+                @click="isOpen = true"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-paper-airplane" />
+                </template>
+                Post Classified Ad
+              </UButton>
+            </div>
+          </div>
+        </form>
+
+        <!-- KYC Modal -->
+        <UModal v-model="isOpen">
+          <div class="p-8 flex flex-col items-center text-center">
+            <div
+              class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-5"
+            >
+              <UIcon
+                name="i-heroicons-shield-exclamation"
+                class="h-12 w-12 text-amber-500"
+              />
+            </div>
+
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">
+              KYC Verification Required
+            </h2>
+            <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
+              To ensure trust and safety in our marketplace, we require identity
+              verification before posting ads.
+            </p>
+
+            <UButton
+              size="lg"
+              color="primary"
+              variant="solid"
+              to="/upload-center"
+              class="min-w-48"
+            >
+              <template #leading>
+                <UIcon name="i-heroicons-identification" />
+              </template>
+              Complete Verification
+            </UButton>
+          </div>
+        </UModal>
+      </UContainer>
+    </div>
   </PublicSection>
 </template>
 
@@ -576,9 +561,12 @@ function handleFileUpload(event, field) {
   reader.readAsDataURL(files[0]);
 }
 
+// Replace with this improved version for better reactivity
 function deleteUpload(ind) {
   if (ind >= 0 && ind < form.value.medias.length) {
-    form.value.medias.splice(ind, 1);
+    // Create a new array without the deleted item to maintain reactivity
+    form.value.medias = form.value.medias.filter((_, i) => i !== ind);
+    uploadError.value = ""; // Clear any error messages
   }
 }
 
@@ -606,8 +594,8 @@ onMounted(() => {
 // geo filter
 
 const regions = ref([]);
-const cities = ref();
-const upazilas = ref();
+const cities = ref([]);
+const upazilas = ref([]);
 
 const regions_response = await get(
   `/geo/regions/?country_name_eng=${form.value.country}`
@@ -645,4 +633,6 @@ watch(
 // geo filter
 </script>
 
-<style scoped></style>
+<style scoped>
+/* All styling is now handled through Tailwind classes in the template */
+</style>

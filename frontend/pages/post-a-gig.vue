@@ -1,444 +1,472 @@
 <template>
   <PublicSection>
-    <UContainer>
-      <h1 class="text-center text-4xl my-8">{{ $t("post_gigs") }}</h1>
-      <UDivider label="" class="mb-8" />
-      <section
-        class="max-w-3xl mx-auto space-y-3 py-3 px-2 sm:px-8 rounded-xl sm:py-6 bg-white"
-      >
-        <UFormGroup
-          label="Category"
-          required
-          :error="
-            !form.category && checkSubmit && 'You must select a category!'
-          "
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
-        >
-          <USelectMenu
-            v-model="form.category"
-            color="white"
-            size="md"
-            :options="categories"
-            placeholder="Target Category"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-              placeholder: 'text-gray-400 dark:text-gray-200',
-            }"
-            option-attribute="title"
-            value-attribute="id"
-          />
-        </UFormGroup>
-        <UFormGroup
-          label="Title"
-          required
-          :error="!form.title && checkSubmit && 'You must enter a title!'"
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
-        >
-          <UInput
-            type="text"
-            size="md"
-            color="white"
-            class="relative"
-            placeholder="Title"
-            v-model="form.title"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-              // padding: { md: 'pl-[60px]' },
-              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-            }"
+    <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+      <UContainer>
+        <!-- Enhanced Header -->
+        <div class="text-center mb-10">
+          <h1
+            class="text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
           >
-            <!-- <span class="absolute left-2 top-2">I Need</span> -->
-          </UInput>
-        </UFormGroup>
-        <div class="flex gap-4 items-center">
-          <UFormGroup
-            label="Budget Per Action"
-            required
-            :error="
-              form.price <= 0 &&
-              checkSubmit &&
-              'You must enter budget per action!'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <UInput
-              icon="i-mdi:currency-bdt"
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-              placeholder="2.0"
-              class="max-w-40"
-              v-model="form.price"
-            />
-          </UFormGroup>
-          <UFormGroup
-            label="Required Quantity"
-            required
-            :error="
-              form.required_quantity <= 0 &&
-              checkSubmit &&
-              'You must enter required quantity!'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <UInput
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
-              }"
-              placeholder="10"
-              class="max-w-40"
-              v-model="form.required_quantity"
-            />
-          </UFormGroup>
-          <!-- <UFormGroup
-            label="*"
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <p>=</p>
-          </UFormGroup> -->
+            {{ $t("post_gigs") }}
+          </h1>
+          <p class="text-lg text-gray-600 max-w-lg mx-auto">
+            Create a new micro-gig and reach potential customers
+          </p>
         </div>
-        <div>
-          <UFormGroup
-            label="Total Cost (Service handling fee 10% included)"
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700 italic',
-              },
-            }"
-            required
-          >
-            <p class="inline-flex gap-0.5 items-center">
-              <UIcon name="i-mdi:currency-bdt" />{{
-                form.price * form.required_quantity +
-                (form.price * form.required_quantity * 10) / 100
-              }}
-            </p>
-          </UFormGroup>
-        </div>
-        <!-- <UFormGroup
-          label="Instructions"
-          required
-          :error="
-            !form.instructions && checkSubmit && 'You must enter instructions!'
-          "
-          :ui="{
-            label: {
-              base: 'block font-medium text-gray-700 dark:text-slate-700',
-            },
-          }"
+
+        <form
+          action="#"
+          class="bg-white rounded-2xl shadow-lg max-w-3xl mx-auto overflow-hidden border border-gray-100"
         >
-          <UTextarea
-            color="white"
-            variant="outline"
-            :ui="{
-              size: {
-                md: 'text-base',
-              },
-              placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-            }"
-            class="w-full"
-            resize
-            placeholder="Instructions"
-            v-model="form.instructions"
-          />
-        </UFormGroup> -->
-        <p class="text-sm font-semibold">
-          Instructions <span class="text-red-500">*</span>
-        </p>
-        <CommonEditor
-          v-model="form.instructions"
-          @updateContent="updateContent"
-          class="border border-slate-300 p-2 bg-white"
-        />
-        <div>
-          <UFormGroup label="URL">
-            <UInput
-              type="text"
-              size="md"
-              color="white"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
-              }"
-              placeholder="Task URL"
-              v-model="form.action_link"
-              class="sm:max-w-[50%]"
-            />
-          </UFormGroup>
-        </div>
-        <!-- medias  -->
-        <label for="" class="block mt-3 font-semibold text-slate-700"
-          >Upload Photo/Video</label
-        >
-        <div class="flex flex-wrap gap-5">
+          <!-- Primary Details Section -->
           <div
-            class="relative max-w-[200px] max-h-[200px]"
-            v-for="(img, i) in form.medias"
-            :key="i"
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <img
-              :src="img"
-              :alt="`Uploaded file ${i}`"
-              class="h-full object-cover"
-            />
-            <div
-              class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-              @click="deleteUpload(i)"
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
-              <UIcon name="i-heroicons-trash-solid" class="text-red-500" />
-            </div>
-          </div>
-          <div
-            class="w-full h-full border flex items-center justify-center max-w-[200px] max-h-[200px] relative"
-          >
-            <input
-              type="file"
-              name=""
-              id=""
-              class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
-              @change="handleFileUpload($event, 'image')"
-            />
-            <UIcon name="i-heroicons-plus-solid" size="66" />
-          </div>
-        </div>
-        <!-- <UFormGroup label="Upload Photo/Video">
-          <UInput
-            type="file"
-            size="md"
-            color="white"
-            :ui="{
-              color: {
-                white: {
-                  outline: 'ring-0',
-                },
-              },
-              size: {
-                md: 'text-base',
-              },
-            }"
-            placeholder="Budget Per Action"
-            class="max-w-72"
-          />
-        </UFormGroup> -->
-        <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup
-            label="Target Country"
-            required
-            :error="
-              !form.target_country &&
-              checkSubmit &&
-              'You must select a target country!'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <USelectMenu
-              v-model="form.target_country"
-              color="white"
-              size="md"
-              placeholder="Target Country"
-              :options="country"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              option-attribute="title"
-              value-attribute="title"
-            />
-          </UFormGroup>
-          <UFormGroup
-            label="Target Device"
-            required
-            :error="
-              !form.target_device &&
-              checkSubmit &&
-              'You must select a target device!'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <USelectMenu
-              v-model="form.target_device"
-              color="white"
-              size="md"
-              placeholder="Target Device"
-              multiple
-              :options="device"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              option-attribute="title"
-              value-attribute="id"
-            />
-          </UFormGroup>
-        </div>
-        <div class="grid md:grid-cols-2 gap-4">
-          <UFormGroup
-            label="Target Network"
-            required
-            :error="
-              !form.target_network &&
-              checkSubmit &&
-              'You must select a target network!'
-            "
-            :ui="{
-              label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
-              },
-            }"
-          >
-            <USelectMenu
-              v-model="form.target_network"
-              size="md"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-                placeholder: 'text-gray-400 dark:text-gray-200',
-              }"
-              :options="network"
-              multiple
-              placeholder="Target Network"
-              option-attribute="title"
-              value-attribute="id"
-            />
-          </UFormGroup>
-        </div>
-        <div v-if="showError">
-          <span class="text-sm text-red-500">{{ showError }}!</span>
-          <nuxt-link to="/deposit-withdraw/" class="text-blue-950 text-sm">
-            Click here to make a deposit</nuxt-link
-          >
-        </div>
-        <div class="text-center pb-6">
-          <UButton
-            :loading="isLoading"
-            v-if="user.user.kyc"
-            class="px-8 mt-8"
-            size="lg"
-            color="primary"
-            variant="solid"
-            label="Post"
-            type="submit"
-            @click="handlePostGig"
-          />
-          <UButton
-            v-else
-            class="px-8 mt-8"
-            size="lg"
-            color="primary"
-            variant="solid"
-            label="Post"
-            @click="isOpen = true"
-          />
-        </div>
-      </section>
-    </UContainer>
-    <UModal v-model="isOpen">
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <!-- <div 
-              className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity"
-              onClick={onClose}
-            /> -->
-        <div
-          className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
-        >
-          <div className="px-6 py-8">
-            <div className="flex flex-col items-center text-center">
-              <div
-                className="rounded-full bg-red-100 p-3 mb-4 inline-flex items-center justify-center"
-              >
-                <!-- <AlertCircle className="h-8 w-8 text-red-600" /> -->
-                <UIcon
-                  name="i-line-md-alert-circle"
-                  class="h-8 w-8 text-red-600"
-                />
-              </div>
+              <UIcon
+                name="i-heroicons-document-text"
+                class="text-emerald-600"
+              />
+              Basic Details
+            </h2>
 
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                KYC Unverified
-              </h2>
-
-              <p className="text-gray-600 mb-6">
-                Please Upload your ID to get permission to post a service ad.
-              </p>
-
-              <!-- <button
-                  className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                  onClick="{handleUpload}"
-                >
-                  <Upload className="h-5 w-5 mr-2" />
-                  Upload NID
-                </button> -->
-              <UButton
+            <UFormGroup
+              label="Category"
+              required
+              :error="
+                !form.category && checkSubmit && 'You must select a category!'
+              "
+              class="mb-5"
+            >
+              <USelectMenu
+                v-model="form.category"
+                color="white"
                 size="md"
-                color="primary"
-                variant="solid"
-                to="/upload-center"
-                label="Upload NID"
-                block
+                :options="categories"
+                placeholder="Target Category"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                option-attribute="title"
+                value-attribute="id"
+              />
+            </UFormGroup>
+
+            <UFormGroup
+              label="Title"
+              required
+              :error="!form.title && checkSubmit && 'You must enter a title!'"
+              class="mb-5"
+            >
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                placeholder="Title"
+                v-model="form.title"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
               >
                 <template #leading>
-                  <UIcon
-                    name="i-material-symbols-upload-rounded"
-                    class="h-5 w-5"
-                  />
+                  <UIcon name="i-heroicons-pencil-square" />
                 </template>
+              </UInput>
+            </UFormGroup>
+          </div>
+
+          <!-- Pricing Section -->
+          <div
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+          >
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon
+                name="i-heroicons-currency-dollar"
+                class="text-emerald-600"
+              />
+              Pricing & Quantity
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <UFormGroup
+                label="Budget Per Action"
+                required
+                :error="
+                  form.price <= 0 &&
+                  checkSubmit &&
+                  'You must enter budget per action!'
+                "
+                class="mb-5"
+              >
+                <UInput
+                  type="text"
+                  size="md"
+                  color="white"
+                  placeholder="2.0"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  v-model="form.price"
+                >
+                  <template #leading>
+                    <UIcon name="i-mdi:currency-bdt" />
+                  </template>
+                </UInput>
+              </UFormGroup>
+
+              <UFormGroup
+                label="Required Quantity"
+                required
+                :error="
+                  form.required_quantity <= 0 &&
+                  checkSubmit &&
+                  'You must enter required quantity!'
+                "
+                class="mb-5"
+              >
+                <UInput
+                  type="text"
+                  size="md"
+                  color="white"
+                  placeholder="10"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  v-model="form.required_quantity"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-calculator" />
+                  </template>
+                </UInput>
+              </UFormGroup>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2">
+              <UFormGroup
+                label="Total Cost (Service handling fee 10% included)"
+                class="mb-0"
+              >
+                <p
+                  class="text-lg font-semibold text-emerald-700 flex items-center gap-1"
+                >
+                  <UIcon name="i-mdi:currency-bdt" />
+                  {{
+                    form.price * form.required_quantity +
+                    (form.price * form.required_quantity * 10) / 100
+                  }}
+                </p>
+              </UFormGroup>
+            </div>
+          </div>
+
+          <!-- Instructions Section -->
+          <div
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+          >
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon
+                name="i-heroicons-clipboard-document-list"
+                class="text-emerald-600"
+              />
+              Instructions & Details
+            </h2>
+
+            <UFormGroup label="Task URL" class="mb-5">
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                placeholder="Task URL"
+                v-model="form.action_link"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-link" />
+                </template>
+              </UInput>
+            </UFormGroup>
+
+            <UFormGroup
+              label="Instructions"
+              required
+              :error="
+                !form.instructions &&
+                checkSubmit &&
+                'You must enter instructions!'
+              "
+              class="mb-5"
+            >
+              <p class="text-sm text-gray-500 mb-3">
+                Provide detailed instructions for completing this gig
+              </p>
+              <div
+                class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
+              >
+                <CommonEditor
+                  v-model="form.instructions"
+                  @updateContent="updateContent"
+                />
+              </div>
+            </UFormGroup>
+          </div>
+
+          <!-- Media Upload Section -->
+          <div
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+          >
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon name="i-heroicons-photo" class="text-emerald-600" />
+              Media Gallery
+            </h2>
+            <p class="text-sm text-gray-500 mb-4">
+              Add photos or videos to explain your task (optional)
+            </p>
+
+            <div class="flex flex-wrap gap-4 mt-4">
+              <!-- Uploaded images -->
+              <div
+                v-for="(img, i) in form.medias"
+                :key="i"
+                class="w-32 h-32 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
+              >
+                <img
+                  :src="img"
+                  :alt="`Uploaded file ${i}`"
+                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all"
+                ></div>
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-md hover:bg-red-50 hover:scale-110 transition-all"
+                  @click="deleteUpload(i)"
+                  aria-label="Delete image"
+                >
+                  <UIcon name="i-heroicons-trash" />
+                </button>
+              </div>
+
+              <!-- Upload button -->
+              <div
+                class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
+              >
+                <input
+                  type="file"
+                  ref="fileInput"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  @change="handleFileUpload"
+                  accept="image/*,video/*"
+                />
+                <div
+                  class="flex flex-col items-center gap-2 text-gray-500 text-sm text-center p-2 group-hover:text-emerald-600"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-up-tray"
+                    class="text-2xl text-emerald-500"
+                  />
+                  <span>Add Media</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload status -->
+            <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
+              {{ uploadError }}
+            </p>
+            <p
+              v-if="isUploading"
+              class="mt-3 text-emerald-600 text-sm flex items-center"
+            >
+              <UIcon name="i-heroicons-arrow-path" class="animate-spin mr-1" />
+              Uploading media...
+            </p>
+          </div>
+
+          <!-- Targeting Section -->
+          <div
+            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+          >
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon
+                name="i-heroicons-cursor-arrow-rays"
+                class="text-emerald-600"
+              />
+              Targeting Options
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <UFormGroup
+                label="Target Country"
+                required
+                :error="
+                  !form.target_country &&
+                  checkSubmit &&
+                  'You must select a target country!'
+                "
+                class="mb-5"
+              >
+                <USelectMenu
+                  v-model="form.target_country"
+                  color="white"
+                  size="md"
+                  placeholder="Target Country"
+                  :options="country"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  option-attribute="title"
+                  value-attribute="title"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-globe-alt" />
+                  </template>
+                </USelectMenu>
+              </UFormGroup>
+
+              <UFormGroup
+                label="Target Device"
+                required
+                :error="
+                  !form.target_device &&
+                  checkSubmit &&
+                  'You must select a target device!'
+                "
+                class="mb-5"
+              >
+                <USelectMenu
+                  v-model="form.target_device"
+                  color="white"
+                  size="md"
+                  placeholder="Target Device"
+                  multiple
+                  :options="device"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  option-attribute="title"
+                  value-attribute="id"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-device-phone-mobile" />
+                  </template>
+                </USelectMenu>
+              </UFormGroup>
+            </div>
+
+            <UFormGroup
+              label="Target Network"
+              required
+              :error="
+                !form.target_network &&
+                checkSubmit &&
+                'You must select a target network!'
+              "
+              class="mb-5"
+            >
+              <USelectMenu
+                v-model="form.target_network"
+                color="white"
+                size="md"
+                :options="network"
+                multiple
+                placeholder="Target Network"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                option-attribute="title"
+                value-attribute="id"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-signal" />
+                </template>
+              </USelectMenu>
+            </UFormGroup>
+          </div>
+
+          <!-- Submit Section -->
+          <div class="p-7 bg-gray-50">
+            <div
+              v-if="showError"
+              class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+            >
+              <p class="flex items-center gap-2">
+                <UIcon name="i-heroicons-exclamation-circle" />
+                <span>{{ showError }}!</span>
+              </p>
+              <NuxtLink
+                to="/deposit-withdraw/"
+                class="text-emerald-600 font-medium underline hover:text-emerald-700"
+              >
+                Click here to make a deposit
+              </NuxtLink>
+            </div>
+
+            <div class="flex justify-center">
+              <UButton
+                v-if="user.user.kyc"
+                :loading="isLoading"
+                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                size="lg"
+                color="primary"
+                variant="solid"
+                type="button"
+                @click="handlePostGig"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-paper-airplane" />
+                </template>
+                Post Gig
+              </UButton>
+
+              <UButton
+                v-else
+                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                size="lg"
+                color="primary"
+                variant="solid"
+                @click="isOpen = true"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-paper-airplane" />
+                </template>
+                Post Gig
               </UButton>
             </div>
           </div>
-        </div>
-      </div>
-    </UModal>
+        </form>
+
+        <!-- KYC Modal -->
+        <UModal v-model="isOpen">
+          <div class="p-8 flex flex-col items-center text-center">
+            <div
+              class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-5"
+            >
+              <UIcon
+                name="i-heroicons-shield-exclamation"
+                class="h-12 w-12 text-amber-500"
+              />
+            </div>
+
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">
+              KYC Verification Required
+            </h2>
+            <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
+              Please Upload your ID to get permission to post a service ad.
+            </p>
+
+            <UButton
+              size="lg"
+              color="primary"
+              variant="solid"
+              to="/upload-center"
+              class="min-w-48"
+            >
+              <template #leading>
+                <UIcon name="i-material-symbols-upload-rounded" />
+              </template>
+              Upload NID
+            </UButton>
+          </div>
+        </UModal>
+      </UContainer>
+    </div>
   </PublicSection>
 </template>
 
@@ -457,6 +485,9 @@ const country = ref([{ title: "Bangladesh" }]);
 const checkSubmit = ref(false);
 const showError = ref("");
 const isLoading = ref(false);
+const fileInput = ref(null);
+const isUploading = ref(false);
+const uploadError = ref("");
 
 const form = ref({
   price: null,
@@ -476,25 +507,52 @@ function updateContent(p) {
   form.value.instructions = p;
 }
 
-function handleFileUpload(event, field) {
+function handleFileUpload(event) {
   const files = Array.from(event.target.files);
+  if (!files.length) return;
+
+  const file = files[0];
+
+  // Validate file type
+  if (!file.type.match("image.*") && !file.type.match("video.*")) {
+    uploadError.value = "Please select an image or video file";
+    return;
+  }
+
+  // Validate file size (10MB max)
+  if (file.size > 10 * 1024 * 1024) {
+    uploadError.value = "File size should be less than 10MB";
+    return;
+  }
+
+  uploadError.value = "";
+  isUploading.value = true;
+
   const reader = new FileReader();
 
-  // Event listener for successful read
   reader.onload = () => {
     form.value.medias.push(reader.result);
+    isUploading.value = false;
+
+    // Reset the file input so the same file can be selected again
+    if (fileInput.value) {
+      fileInput.value.value = "";
+    }
   };
 
-  // Event listener for errors
-  reader.onerror = (error) => reject(error);
+  reader.onerror = (error) => {
+    console.error("Error reading file:", error);
+    uploadError.value = "Failed to read the file";
+    isUploading.value = false;
+  };
 
-  // Read the file as a data URL (Base64 string)
-  reader.readAsDataURL(files[0]);
+  reader.readAsDataURL(file);
 }
 
 function deleteUpload(ind) {
   if (ind >= 0 && ind < form.value.medias.length) {
-    form.value.medias.splice(ind, 1);
+    // Create a new array without the deleted item to maintain reactivity
+    form.value.medias = form.value.medias.filter((_, i) => i !== ind);
   }
 }
 
@@ -528,37 +586,37 @@ async function handlePostGig() {
   const submitValue = { ...form.value, total_cost, balance };
   console.log(submitValue);
 
-  const res = await post("/post-micro-gigs/", submitValue);
-  console.log(res);
+  try {
+    const res = await post("/post-micro-gigs/", submitValue);
+    console.log(res);
 
-  if (res.data) {
-    navigateTo("/");
-    toast.add({ title: "MicroGig Added" });
-  } else {
-    toast.add({ title: res.error.data.errors });
-    showError.value = res.error.data.errors;
+    if (res.data) {
+      navigateTo("/");
+      toast.add({ title: "MicroGig Added" });
+    } else {
+      toast.add({ title: res.error.data.errors });
+      showError.value = res.error.data.errors;
+    }
+  } catch (error) {
+    console.error("Error posting gig:", error);
+    toast.add({ title: "Error posting gig. Please try again." });
+  } finally {
+    isLoading.value = false;
   }
-  isLoading.value = false;
 }
 
 async function getMicroGigsCategory() {
   try {
-    const [
-      categoriesResponse,
-      devicesResponse,
-      networksResponse,
-      countriesResponse,
-    ] = await Promise.all([
-      get("/micro-gigs-categories/"),
-      get("/target-device/"),
-      get("/target-network/"),
-      // get("/target-country/"),
-    ]);
+    const [categoriesResponse, devicesResponse, networksResponse] =
+      await Promise.all([
+        get("/micro-gigs-categories/"),
+        get("/target-device/"),
+        get("/target-network/"),
+      ]);
 
     categories.value = categoriesResponse.data;
     device.value = devicesResponse.data;
     network.value = networksResponse.data;
-    // country.value = countriesResponse.data;
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }
@@ -569,4 +627,6 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+/* All styling is handled through Tailwind classes in the template */
+</style>

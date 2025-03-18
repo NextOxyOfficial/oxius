@@ -5,6 +5,25 @@
     </h1>
     <UContainer>
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
+      <NuxtLink
+        to="/mobile-recharge"
+        class="mb-6 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+      >
+        <div class="flex gap-2">
+          <h2 class="text-base text-gray-900 sm:text-xl text-center">
+            Mobile Recharge
+          </h2>
+          <div class="flex justify-center gap-2">
+            <NuxtImg
+              v-for="operator in operators"
+              :key="operator.id"
+              :src="operator.icon"
+              :title="operator.title"
+              class="size-6"
+            />
+          </div>
+        </div>
+      </NuxtLink>
       <UDivider label="" class="mb-4" />
       <div class="flex flex-col md:flex-row justify-between items-center">
         <p
@@ -1610,6 +1629,10 @@ async function handleTransfer() {
     isLoading.value = false;
   }
 }
+const operators = ref([]);
+const operatorsRes = await get("/mobile-recharge/operators/");
+
+operators.value = operatorsRes.data;
 
 function reset() {
   isOpenTransfer.value = false;
