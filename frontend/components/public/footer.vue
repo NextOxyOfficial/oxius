@@ -13,17 +13,17 @@
               to: '/',
             },
             {
-              label: $t('affiliates'),
-              to: '/',
+              label: $t('refer_friend'),
+              to: '/refer-a-friend',
             },
 
             {
               label: $t('about_us'),
-              to: '/about/',
+              to: '/about',
             },
             {
               label: $t('contact_us'),
-              to: '/contact-us/',
+              to: '/contact-us',
             },
           ]"
           :ui="{
@@ -47,17 +47,17 @@
               to: '/',
             },
             {
-              label: $t('affiliates'),
-              to: '/',
+              label: $t('refer_friend'),
+              to: '/refer-a-friend',
             },
 
             {
               label: $t('about_us'),
-              to: '/about/',
+              to: '/about',
             },
             {
               label: $t('contact_us'),
-              to: '/contact-us/',
+              to: '/contact-us',
             },
           ]"
           :ui="{
@@ -250,11 +250,11 @@ const links = [
 
       {
         label: t("about_us"),
-        to: "/about/",
+        to: "/about",
       },
       {
         label: t("contact_us"),
-        to: "/contact-us/",
+        to: "/contact-us",
       },
     ],
   },

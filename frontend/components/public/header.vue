@@ -184,7 +184,7 @@
                 {
                   label: $t('profile'),
                   icon: 'i-heroicons-user',
-                  to: '/my-account/',
+                  to: '/my-account',
                 },
                 {
                   label: $t('transaction'),
@@ -194,17 +194,27 @@
                 {
                   label: $t('upload_center'),
                   icon: 'material-symbols:drive-folder-upload-outline-sharp',
-                  to: '/upload-center/',
+                  to: '/upload-center',
+                },
+                {
+                  label: $t('mobile_recharge'),
+                  to: '/mobile-recharge',
+                  icon: 'i-uil-mobile-vibrate',
+                },
+                {
+                  label: $t('refer_friend'),
+                  to: '/refer-a-friend',
+                  icon: 'i-solar-users-group-rounded-broken',
                 },
                 {
                   label: $t('settings'),
                   icon: 'material-symbols:settings-outline',
-                  to: '/settings/',
+                  to: '/settings',
                 },
                 {
                   label: $t('support'),
                   icon: 'i-heroicons-question-mark-circle',
-                  to: '/contact-us/',
+                  to: '/contact-us',
                 },
 
                 {

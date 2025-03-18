@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="user" class="py-12 px-4 relative">
+    <div v-if="user?.user" class="py-12 px-4 relative">
       <!-- Subtle background effect -->
       <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
         <div
@@ -17,17 +17,13 @@
           <h1
             class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2"
           >
-            Refer A Friend
+            {{ $t("refer_friend") }}
           </h1>
           <div
             class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3 animate-width"
           ></div>
           <p class="text-xl text-gray-600 dark:text-gray-300">
-            Earn
-            <span class="text-primary-600 dark:text-primary-400 font-medium"
-              >5% commission</span
-            >
-            on every completion
+            {{ $t("refer") }}
           </p>
         </div>
 
@@ -36,37 +32,30 @@
           class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-md border border-gray-100 dark:border-gray-700 animate-fade-in-up"
         >
           <p class="text-center text-gray-600 dark:text-gray-400 mb-3">
-            Share this link with your friends to start earning rewards
+            {{ $t("refer_text") }}
           </p>
 
           <div class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-grow">
-              <UInput
-                v-model="referralLink"
-                readonly
-                class="pr-16 text-center sm:text-left focus:ring-primary-500"
-              >
-                <template #trailing>
-                  <UButton
-                    color="primary"
-                    class="absolute right-1 top-1 bottom-1 copy-btn"
-                    @click="copyToClipboard"
-                    :ui="{
-                      rounded: 'rounded-md',
-                      padding: 'px-2',
-                    }"
-                  >
-                    <UIcon
-                      v-if="!copied"
-                      name="i-heroicons-clipboard-document"
-                      class="mr-1"
-                    />
-                    <UIcon v-else name="i-heroicons-check" class="mr-1" />
-                    {{ copied ? "Copied" : "Copy" }}
-                  </UButton>
-                </template>
-              </UInput>
-            </div>
+            <UButtonGroup class="mx-auto">
+              <input
+                type="text"
+                class="text-xs py-1 px-0.5 w-60 sm:w-72"
+                :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
+              />
+              <UButton
+                size="xs"
+                color="primary"
+                icon="i-iconamoon-copy-light"
+                variant="solid"
+                class="py-1 px-1.5 ml-2"
+                @click="
+                  CopyToClip(
+                    `https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`
+                  )
+                "
+                label="Copy"
+              />
+            </UButtonGroup>
           </div>
 
           <!-- Simple Social Share Icons -->
@@ -74,7 +63,7 @@
             <UButton
               color="white"
               variant="ghost"
-              class="social-btn"
+              class="social-btn h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300"
               @click="shareOnSocial('facebook')"
             >
               <UIcon name="i-mdi:facebook" class="text-xl text-blue-600" />
@@ -83,7 +72,7 @@
             <UButton
               color="white"
               variant="ghost"
-              class="social-btn"
+              class="social-btn h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300"
               @click="shareOnSocial('twitter')"
             >
               <UIcon name="i-mdi:twitter" class="text-xl text-blue-400" />
@@ -92,7 +81,7 @@
             <UButton
               color="white"
               variant="ghost"
-              class="social-btn"
+              class="social-btn h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300"
               @click="shareOnSocial('whatsapp')"
             >
               <UIcon name="i-mdi:whatsapp" class="text-xl text-green-500" />
@@ -103,59 +92,83 @@
         <!-- The Two Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Total Referred Users Card -->
-          <div class="stat-card users-card">
-            <div class="stat-icon-wrapper">
+          <div
+            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 users-card"
+          >
+            <div
+              class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
+            >
               <UIcon
                 name="i-heroicons-users"
-                class="stat-icon text-primary-600 dark:text-primary-400"
+                class="text-2xl text-primary-600 dark:text-primary-400"
               />
             </div>
-            <div class="stat-content">
-              <h3 class="stat-label">Total Referred Users</h3>
-              <div class="stat-value">
-                <span class="counter-animate" data-value="87">87</span>
+            <div class="flex-1">
+              <h3
+                class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1"
+              >
+                Total Referred Users
+              </h3>
+              <div
+                class="text-3xl font-bold text-gray-900 dark:text-white flex items-center"
+              >
+                <span class="counter-animate" data-value="87">
+                  {{ user.user.refer_count }}
+                </span>
               </div>
-              <div class="stat-detail">
+              <!-- <div class="text-xs mt-1">
                 <span class="text-green-500 flex items-center">
                   <UIcon name="i-heroicons-arrow-trending-up" class="mr-1" />
                   12% this month
                 </span>
-              </div>
+              </div> -->
             </div>
           </div>
 
           <!-- Total Earnings Card -->
-          <div class="stat-card earnings-card">
-            <div class="stat-icon-wrapper">
+          <div
+            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 earnings-card"
+          >
+            <div
+              class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
+            >
               <UIcon
                 name="i-heroicons-banknotes"
-                class="stat-icon text-green-600 dark:text-green-400"
+                class="text-2xl text-green-600 dark:text-green-400"
               />
             </div>
-            <div class="stat-content">
-              <h3 class="stat-label">Total Earnings</h3>
-              <div class="stat-value">
-                <UIcon name="i-mdi:currency-bdt" class="currency-icon" />
-                <span class="counter-animate" data-value="2450">2,450</span>
+            <div class="flex-1">
+              <h3
+                class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1"
+              >
+                Total Earnings
+              </h3>
+              <div
+                class="text-3xl font-bold text-gray-900 dark:text-white flex items-center"
+              >
+                <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
+                <span class="counter-animate" data-value="2450">
+                  {{ user.user.commission_earned }}
+                </span>
               </div>
-              <div class="stat-detail">
+              <!-- <div class="text-xs mt-1">
                 <span class="text-green-500 flex items-center">
                   <UIcon name="i-heroicons-arrow-trending-up" class="mr-1" />
                   8% from last month
                 </span>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
 
         <!-- Replace both history sections with this single tabbed component -->
-        <div class="mt-12">
+        <!-- <div class="mt-12">
           <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up"
             style="animation-delay: 0.2s"
           >
-            <!-- Tab Navigation -->
-            <div class="tab-navigation relative">
+            
+            <div class="tab-navigation overflow-hidden relative">
               <div class="flex border-b border-gray-100 dark:border-gray-700">
                 <button
                   v-for="(tab, index) in tabs"
@@ -163,13 +176,16 @@
                   class="tab-button relative py-4 px-6 font-medium text-sm transition-all duration-300"
                   :class="
                     activeTab === index
-                      ? 'text-primary-600 dark:text-primary-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                      ? 'text-primary-600 dark:text-primary-400 border-b-2 border-green-500'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-white'
                   "
                   @click="setActiveTab(index)"
                 >
                   <div class="flex items-center">
-                    <UIcon :name="tab.icon" class="mr-2 tab-icon" />
+                    <UIcon
+                      :name="tab.icon"
+                      class="mr-2 transition-transform duration-300"
+                    />
                     {{ tab.name }}
                     <span
                       v-if="tab.count"
@@ -181,9 +197,13 @@
                 </button>
               </div>
 
-              <!-- Active Tab Indicator -->
+              
               <div
-                class="active-tab-indicator absolute bottom-0 h-0.5 bg-primary-500 dark:bg-primary-400 transition-all duration-300"
+                :class="
+                  activeTab === index
+                    ? `absolute bottom-0 h-0.5 bg-primary-500 dark:bg-primary-400 transition-all duration-300`
+                    : ''
+                "
                 :style="{
                   left: indicatorLeft + 'px',
                   width: indicatorWidth + 'px',
@@ -191,7 +211,7 @@
               ></div>
             </div>
 
-            <!-- Tab Actions -->
+            
             <div
               class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"
             >
@@ -241,9 +261,9 @@
               </div>
             </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content relative overflow-hidden">
-              <!-- Referred Users Tab -->
+            
+            <div class="min-h-[300px] relative overflow-hidden">
+              
               <div
                 class="tab-pane transition-all duration-500"
                 :class="
@@ -360,7 +380,7 @@
                 </div>
               </div>
 
-              <!-- Earnings Tab -->
+              
               <div
                 class="tab-pane transition-all duration-500"
                 :class="
@@ -495,7 +515,7 @@
               />
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -847,8 +867,7 @@ definePageMeta({
   layout: "dashboard",
 });
 
-const referralLink = ref("https://yourwebsite.com/register?ref=YOUR_USER_ID");
-const copied = ref(false);
+const { user } = useAuth();
 const filterPeriod = ref("All Time");
 const currentPage = ref(1);
 const searchUser = ref("");
@@ -926,19 +945,11 @@ const tabs = ref([
   },
 ]);
 
-// Copy referral link to clipboard
-function copyToClipboard() {
-  navigator.clipboard
-    .writeText(referralLink.value)
-    .then(() => {
-      copied.value = true;
-      setTimeout(() => {
-        copied.value = false;
-      }, 2000);
-    })
-    .catch((err) => {
-      console.error("Failed to copy: ", err);
-    });
+function CopyToClip(text) {
+  //Copy text to clipboard
+  console.log(text);
+  navigator.clipboard.writeText(text);
+  toast.add({ title: "Link copied" });
 }
 
 // Share on social media
@@ -949,17 +960,19 @@ function shareOnSocial(platform) {
   switch (platform) {
     case "facebook":
       url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        referralLink.value
+        `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`
       )}`;
       break;
     case "twitter":
       url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-        referralLink.value
+        `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`
       )}&text=${encodeURIComponent(text)}`;
       break;
     case "whatsapp":
       url = `https://wa.me/?text=${encodeURIComponent(
-        text + " " + referralLink.value
+        text +
+          " " +
+          `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`
       )}`;
       break;
   }
@@ -1163,45 +1176,11 @@ const faqItems = [
 
 /* Stats Cards */
 .stat-card {
-  @apply bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300;
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
-.stat-card:hover {
-  @apply shadow-lg transform -translate-y-1;
-}
-
 .stat-icon-wrapper {
-  @apply h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40;
   transition: all 0.3s ease;
-}
-
-.earnings-card .stat-icon-wrapper {
-  @apply bg-green-100 dark:bg-green-900/40;
-}
-
-.stat-icon {
-  @apply text-2xl;
-}
-
-.stat-content {
-  @apply flex-1;
-}
-
-.stat-label {
-  @apply text-sm text-gray-500 dark:text-gray-400 font-medium mb-1;
-}
-
-.stat-value {
-  @apply text-3xl font-bold text-gray-900 dark:text-white flex items-center;
-}
-
-.stat-detail {
-  @apply text-xs mt-1;
-}
-
-.currency-icon {
-  @apply mr-0.5;
 }
 
 /* Copy button */
@@ -1228,7 +1207,6 @@ const faqItems = [
 
 /* Social buttons */
 .social-btn {
-  @apply h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300;
   position: relative;
   overflow: hidden;
 }
@@ -1260,25 +1238,9 @@ const faqItems = [
 }
 
 /* Add these to your existing styles */
-.tab-navigation {
-  @apply overflow-hidden;
-}
-
-.tab-button {
-  @apply relative font-medium transition-all duration-300;
-  overflow: hidden;
-}
 
 .tab-button:hover .tab-icon {
   transform: translateY(-2px) scale(1.1);
-}
-
-.tab-icon {
-  @apply transition-transform duration-300;
-}
-
-.tab-content {
-  @apply min-h-[300px];
 }
 
 .table-row-animate {
