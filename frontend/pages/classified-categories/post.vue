@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h1 class="text-center text-4xl my-8">Post A Classified Ad</h1>
+      <h1 class="text-center text-4xl my-8">{{ $t("post_classified") }}</h1>
       <UDivider label="" class="mb-8" />
       <form
         action="#"
