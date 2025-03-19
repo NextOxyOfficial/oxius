@@ -361,7 +361,7 @@
 
           <!-- Modal Body -->
           <div class="p-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-6">
               <!-- Left: Product Image Gallery -->
               <div>
                 <div
@@ -516,38 +516,32 @@
                   </div>
 
                   <!-- Features List - Improved Responsive Layout -->
-                  <div
-                    class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg mb-4"
-                  >
-                    <div class="text-sm font-medium mb-2">Key Features:</div>
+                  <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
+                    <div class="text-sm font-medium mb-2">
+                      Shipping Information:
+                    </div>
                     <ul class="space-y-1.5 text-slate-600 dark:text-slate-300">
                       <li class="flex items-start gap-1.5 text-xs sm:text-sm">
                         <UIcon
                           name="i-heroicons-check-circle"
                           class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
                         />
-                        <span>Premium Quality</span>
+                        <span>Inside Dhaka ৳100</span>
                       </li>
                       <li class="flex items-start gap-1.5 text-xs sm:text-sm">
                         <UIcon
                           name="i-heroicons-check-circle"
                           class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
                         />
-                        <span>30-Day Money-Back Guarantee</span>
+                        <span>Outside Dhaka ৳150</span>
                       </li>
+
                       <li class="flex items-start gap-1.5 text-xs sm:text-sm">
                         <UIcon
                           name="i-heroicons-check-circle"
                           class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
                         />
-                        <span>Free Shipping Available</span>
-                      </li>
-                      <li class="flex items-start gap-1.5 text-xs sm:text-sm">
-                        <UIcon
-                          name="i-heroicons-check-circle"
-                          class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-                        />
-                        <span>24/7 Customer Support</span>
+                        <span>Delivery within 3-5 business days</span>
                       </li>
                     </ul>
                   </div>
@@ -555,24 +549,19 @@
               </div>
 
               <!-- Tabs - Improved Responsiveness -->
-              <div class="mt-6">
+              <div class="">
                 <UTabs
                   :items="[
-                    {
-                      label: 'Reviews',
-                      slot: 'reviews',
-                      icon: 'i-heroicons-chat-bubble-left-right',
-                      badge: selectedProduct.reviews.length,
-                    },
                     {
                       label: 'Details',
                       slot: 'details',
                       icon: 'i-heroicons-document-text',
                     },
                     {
-                      label: 'Shipping',
-                      slot: 'shipping',
-                      icon: 'i-heroicons-truck',
+                      label: 'Reviews',
+                      slot: 'reviews',
+                      icon: 'i-heroicons-chat-bubble-left-right',
+                      badge: selectedProduct.reviews.length,
                     },
                   ]"
                   :ui="{
@@ -765,7 +754,7 @@
                   </template>
 
                   <!-- Shipping Tab -->
-                  <template #shipping>
+                  <!-- <template #shipping>
                     <div class="text-slate-600 dark:text-slate-300">
                       <p class="mb-4">
                         We offer multiple shipping options to meet your needs:
@@ -831,7 +820,7 @@
                         </div>
                       </div>
                     </div>
-                  </template>
+                  </template> -->
                 </UTabs>
               </div>
             </div>
@@ -841,7 +830,7 @@
     </div>
 
     <!-- Features List - Improved Responsive Layout -->
-    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-lg mb-4">
+    <!-- <div class="bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-lg mb-4">
       <div class="text-sm sm:text-base font-medium mb-2">Key Features:</div>
       <ul class="space-y-1.5 sm:space-y-2 text-slate-600 dark:text-slate-300">
         <li class="flex items-start gap-1.5 text-xs sm:text-sm">
@@ -873,10 +862,10 @@
           <span>24/7 Customer Support</span>
         </li>
       </ul>
-    </div>
+    </div> -->
 
     <!-- Tabs - Improved Responsiveness -->
-    <UTabs
+    <!-- <UTabs
       :items="[
         {
           label: 'Reviews',
@@ -891,7 +880,7 @@
         { label: 'Shipping', slot: 'shipping', icon: 'i-heroicons-truck' },
       ]"
     >
-    </UTabs>
+    </UTabs> -->
   </UContainer>
 </template>
 

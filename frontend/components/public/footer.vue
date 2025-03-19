@@ -16,6 +16,7 @@
     <!-- Content with relative positioning to appear above the pattern -->
     <div class="relative">
       <UContainer>
+        <UDivider class="mb-6 w-60 mx-auto" />
         <!-- Logo at the top -->
         <div class="flex justify-center mb-4">
           <div class="flex flex-col items-center">

@@ -80,7 +80,7 @@
         <div class="bot-container mb-4">
           <div class="bot-icon">
             <UIcon
-              name="i-carbon:bot"
+              name="i-carbon-bot"
               class="text-5xl text-primary animate-pulse"
             />
           </div>
@@ -94,13 +94,13 @@
             আমি
             <span class="text-lg font-bold text-green-950">
               AdsyAI Bot
-              <UIcon class="text-2xl" name="i-carbon:bot" />
+              <UIcon class="text-2xl" name="i-carbon-bot" />
             </span>
             আপনার জন্য ইন্টারনেটে বিভিন্ন ওয়েবসাইট এ তথ্য খুঁজছি, একটু অপেক্ষা
             করুন
           </span>
-          <span class="dots-animation ml-1"></span>
         </div>
+        <span class="dots-animation ml-1"></span>
         <p class="text-sm text-gray-500 mt-2">
           Finding information in {{ upazila }}, {{ city }}, {{ state }}
         </p>

@@ -495,14 +495,14 @@
                 <UTextarea
                   color="white"
                   variant="outline"
-                  class="w-full min-h-32"
+                  class="w-full"
                   v-model="userProfile.about"
                   resize
                   placeholder="Please provide information about your self, profession and services so that public can read about you and find interest"
                 />
               </div>
 
-              <div class="flex justify-end pt-4">
+              <div class="flex justify-end">
                 <button
                   type="submit"
                   class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
@@ -536,7 +536,7 @@ const { user } = useAuth();
 const toast = useToast();
 
 // State Management
-const activeTab = ref("password");
+const activeTab = ref("profile");
 const userProfile = ref({});
 const errors = ref({});
 const isLoading = ref(false);
