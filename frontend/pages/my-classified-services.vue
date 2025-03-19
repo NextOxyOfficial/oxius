@@ -121,55 +121,132 @@
           </div>
 
           <!-- Services List with Staggered Animation -->
-          <div v-if="services.length" class="space-y-2.5">
-            <TransitionGroup name="service-list">
-              <UCard
+          <div v-if="services.length" class="space-y-4">
+            <TransitionGroup
+              name="service-list"
+              tag="div"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4"
+            >
+              <div
                 v-for="service in services"
                 :key="`classified-${service.id}`"
-                class="service-card bg-white dark:bg-slate-800 border-0 hover:shadow-md transition-all duration-200 overflow-hidden"
-                :ui="{
-                  body: { padding: 'p-0' },
-                  base: 'ring-1 ring-slate-200 dark:ring-slate-700',
-                  rounded: 'rounded-lg',
-                }"
+                class="service-card group relative bg-white dark:bg-slate-800/90 border border-slate-100 dark:border-slate-700/60 hover:border-primary-200 dark:hover:border-primary-800/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 backdrop-blur-sm overflow-hidden"
               >
-                <NuxtLink
-                  :to="`/classified-categories/details/${service.id}`"
-                  class="block"
+                <!-- Status indicator line -->
+                <div
+                  class="absolute top-0 left-0 w-full h-0.5 transition-all duration-500"
+                  :class="{
+                    'bg-gradient-to-r from-green-400 to-emerald-500':
+                      service.service_status === 'approved' &&
+                      service.active_service,
+                    'bg-gradient-to-r from-yellow-400 to-amber-500':
+                      service.service_status.toLowerCase() === 'pending' ||
+                      !service.active_service,
+                    'bg-gradient-to-r from-red-400 to-rose-500':
+                      service.service_status.toLowerCase() === 'rejected',
+                    'bg-gradient-to-r from-blue-400 to-indigo-500':
+                      service.service_status === 'completed',
+                  }"
+                ></div>
+
+                <!-- Animated glow effect on hover -->
+                <div
+                  class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                 >
                   <div
-                    class="flex flex-col sm:flex-row sm:items-center px-3 py-3"
-                  >
-                    <div
-                      class="flex flex-row gap-3 items-start text-sm sm:text-base"
-                    >
-                      <!-- Service Image -->
-                      <div
-                        class="service-image-container relative overflow-hidden rounded-md"
-                      >
+                    class="absolute inset-0 rounded-xl blur-xl -m-1 opacity-15"
+                    :class="{
+                      'bg-green-400':
+                        service.service_status === 'approved' &&
+                        service.active_service,
+                      'bg-amber-400':
+                        service.service_status.toLowerCase() === 'pending' ||
+                        !service.active_service,
+                      'bg-red-400':
+                        service.service_status.toLowerCase() === 'rejected',
+                      'bg-blue-400': service.service_status === 'completed',
+                    }"
+                  ></div>
+                </div>
+
+                <!-- Card Content -->
+                <NuxtLink
+                  :to="`/classified-categories/details/${service.id}`"
+                  class="block w-full h-full"
+                >
+                  <div class="p-4 md:p-5">
+                    <div class="flex gap-3 sm:gap-4">
+                      <!-- Service Image with Enhanced Design -->
+                      <div class="relative flex-shrink-0">
                         <div
-                          class="w-12 h-12 sm:w-14 sm:h-14 relative flex-shrink-0 bg-slate-100 dark:bg-slate-700/50 rounded-md overflow-hidden"
+                          class="service-image-wrapper relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shadow-md group-hover:shadow-lg transition-all duration-500"
                         >
-                          <NuxtImg
-                            v-if="service.medias[0]?.image"
-                            :src="service.medias[0].image"
-                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                          />
-                          <img
-                            v-else
-                            :src="service.category_details.image"
-                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                          />
+                          <!-- Status indicator dot with pulse animation -->
+                          <div
+                            class="absolute top-1 left-1 w-3 h-3 rounded-full z-10 shadow-sm border-2 border-white dark:border-slate-900"
+                            :class="{
+                              'bg-green-500 animate-status-pulse':
+                                service.service_status === 'approved' &&
+                                service.active_service,
+                              'bg-amber-500':
+                                service.service_status.toLowerCase() ===
+                                  'pending' || !service.active_service,
+                              'bg-red-500':
+                                service.service_status.toLowerCase() ===
+                                'rejected',
+                              'bg-blue-500':
+                                service.service_status === 'completed',
+                            }"
+                          ></div>
+
+                          <!-- Image with hover effect -->
+                          <div
+                            class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800"
+                          >
+                            <NuxtImg
+                              v-if="service.medias[0]?.image"
+                              :src="service.medias[0].image"
+                              class="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:rotate-1"
+                              loading="lazy"
+                            />
+                            <img
+                              v-else
+                              :src="service.category_details.image"
+                              class="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:rotate-1"
+                              loading="lazy"
+                            />
+                          </div>
+
+                          <!-- Overlay gradient -->
+                          <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                          ></div>
                         </div>
                       </div>
 
-                      <!-- Service Info -->
+                      <!-- Service Info with Enhanced Design -->
                       <div class="flex-1 min-w-0">
-                        <!-- Title with Status -->
-                        <div class="flex items-baseline flex-wrap gap-1.5 mb-1">
-                          <div class="flex items-center">
+                        <!-- Status Badge and Title -->
+                        <div class="mb-1.5 flex items-start gap-2">
+                          <div
+                            class="status-badge text-xs font-semibold px-2 py-1 rounded-md shadow-sm inline-flex items-center gap-1.5 transition-all duration-300"
+                            :class="{
+                              'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 dark:from-green-900/20 dark:to-emerald-900/20 dark:text-green-400 group-hover:shadow-green-200/40 dark:group-hover:shadow-green-900/20':
+                                service.service_status === 'approved' &&
+                                service.active_service,
+                              'bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 dark:from-yellow-900/20 dark:to-amber-900/20 dark:text-amber-400 group-hover:shadow-amber-200/40 dark:group-hover:shadow-amber-900/20':
+                                service.service_status.toLowerCase() ===
+                                  'pending' || !service.active_service,
+                              'bg-gradient-to-r from-red-50 to-rose-50 text-rose-700 dark:from-red-900/20 dark:to-rose-900/20 dark:text-rose-400 group-hover:shadow-rose-200/40 dark:group-hover:shadow-rose-900/20':
+                                service.service_status.toLowerCase() ===
+                                'rejected',
+                              'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-400 group-hover:shadow-blue-200/40 dark:group-hover:shadow-blue-900/20':
+                                service.service_status === 'completed',
+                              'group-hover:shadow-md group-hover:-translate-y-0.5': true,
+                            }"
+                          >
                             <span
-                              class="inline-block w-1.5 h-1.5 rounded-full mr-1 flex-shrink-0"
+                              class="w-1.5 h-1.5 rounded-full"
                               :class="{
                                 'bg-green-500 animate-pulse-dot':
                                   service.service_status === 'approved' &&
@@ -184,154 +261,177 @@
                                   service.service_status === 'completed',
                               }"
                             ></span>
-                            <span
-                              class="text-xs px-1.5 py-0.5 rounded-sm font-medium"
-                              :class="{
-                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400':
-                                  service.service_status === 'approved' &&
-                                  service.active_service,
-                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400':
-                                  service.service_status.toLowerCase() ===
-                                    'pending' || !service.active_service,
-                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400':
-                                  service.service_status.toLowerCase() ===
-                                  'rejected',
-                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':
-                                  service.service_status === 'completed',
-                              }"
-                            >
-                              {{
-                                service.service_status === "approved" &&
-                                service.active_service
-                                  ? "Live"
-                                  : service.service_status === "completed"
-                                  ? "Completed"
-                                  : service.service_status.toLowerCase() ===
-                                    "pending"
-                                  ? "Pending"
-                                  : service.service_status.toLowerCase() ===
-                                    "rejected"
-                                  ? "Rejected"
-                                  : "Paused"
-                              }}
-                            </span>
+                            {{
+                              service.service_status === "approved" &&
+                              service.active_service
+                                ? "Live"
+                                : service.service_status === "completed"
+                                ? "Completed"
+                                : service.service_status.toLowerCase() ===
+                                  "pending"
+                                ? "Pending"
+                                : service.service_status.toLowerCase() ===
+                                  "rejected"
+                                ? "Rejected"
+                                : "Paused"
+                            }}
                           </div>
+
                           <h3
-                            class="text-sm sm:text-base font-medium text-slate-800 dark:text-white truncate"
+                            class="text-sm sm:text-base font-medium text-slate-800 dark:text-white leading-tight line-clamp-1 sm:line-clamp-2 transition-colors group-hover:text-primary-700 dark:group-hover:text-primary-400"
                           >
                             {{ service?.title }}
                           </h3>
                         </div>
 
-                        <!-- Service Meta -->
+                        <!-- Price Display with Premium Style -->
                         <div
-                          class="flex flex-wrap items-center text-xs sm:text-xs gap-x-3 gap-y-1 text-slate-600 dark:text-slate-400"
+                          class="mb-2.5 inline-flex items-center px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 group-hover:border-primary-200 dark:group-hover:border-primary-800/40 transition-all duration-300"
                         >
-                          <span
-                            class="flex items-center gap-1"
-                            v-if="!service.negotiable"
-                          >
+                          <template v-if="!service.negotiable">
                             <UIcon
                               name="i-mdi:currency-bdt"
-                              class="text-slate-500"
+                              class="w-4 h-4 text-primary-500 mr-1.5"
                             />
-                            <span class="font-medium">{{ service.price }}</span>
-                          </span>
-                          <span class="flex items-center gap-1" v-else>
+                            <span
+                              class="font-semibold text-slate-800 dark:text-white"
+                              >{{ service.price }}</span
+                            >
+                          </template>
+                          <template v-else>
                             <UIcon
                               name="i-heroicons-currency-dollar"
-                              class="text-slate-500"
+                              class="w-4 h-4 text-primary-500 mr-1.5"
                             />
-                            <span>Negotiable</span>
-                          </span>
-
-                          <span class="flex items-center gap-1">
-                            <UIcon
-                              name="i-tabler:category"
-                              class="text-primary-500 w-3.5 h-3.5"
-                            />
-                            <span>{{ service?.category_details.title }}</span>
-                          </span>
-
-                          <span class="flex items-center gap-1">
-                            <UIcon
-                              name="i-heroicons-clock"
-                              class="text-slate-500 w-3.5 h-3.5"
-                            />
-                            <span>{{ formatDate(service?.created_at) }}</span>
-                          </span>
-
-                          <span class="flex items-center gap-1">
-                            <UIcon
-                              name="i-heroicons-map-pin"
-                              class="text-slate-500 w-3.5 h-3.5"
-                            />
-                            <span>{{ service?.location }}</span>
-                          </span>
+                            <span
+                              class="font-medium text-slate-800 dark:text-white"
+                              >Negotiable</span
+                            >
+                          </template>
                         </div>
-                      </div>
 
-                      <!-- Actions - Float Right -->
-                      <div
-                        class="flex sm:flex-col gap-1 sm:gap-2 mt-2 sm:mt-0 ml-auto"
-                        v-if="
-                          service.service_status.toLowerCase() !== 'rejected' ||
-                          service.service_status.toLowerCase() !== 'completed'
-                        "
-                      >
-                        <UButtonGroup size="xs" class="service-actions">
-                          <UButton
-                            color="primary"
-                            variant="soft"
-                            :icon="
-                              service.active_service
-                                ? 'i-heroicons-pause'
-                                : 'i-heroicons-play'
-                            "
-                            :loading="isLoading"
-                            v-if="
-                              service.active_service &&
-                              service.service_status !== 'completed'
-                            "
-                            @click.prevent.stop="
-                              handleAction(service.id, 'pause', false)
-                            "
-                          />
-                          <UButton
-                            color="green"
-                            variant="soft"
-                            icon="i-heroicons-play"
-                            :loading="isLoading"
-                            v-if="!service.active_service"
-                            @click.prevent.stop="
-                              handleAction(service.id, 'active', true)
-                            "
-                          />
+                        <!-- Service Meta Info with Improved Visuals -->
+                        <div class="service-meta space-y-1">
+                          <!-- Category -->
+                          <div
+                            class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"
+                          >
+                            <div
+                              class="w-5 h-5 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0"
+                            >
+                              <UIcon
+                                name="i-tabler:category"
+                                class="w-3 h-3 text-primary-500"
+                              />
+                            </div>
+                            <span class="truncate">{{
+                              service?.category_details.title
+                            }}</span>
+                          </div>
 
-                          <UButton
-                            color="primary"
-                            variant="soft"
-                            icon="i-heroicons-pencil"
-                            v-if="service.service_status !== 'completed'"
-                            @click.prevent.stop="
-                              navigateToEdit(service.id, $event)
-                            "
-                          />
+                          <!-- Date & Location Inline -->
+                          <div
+                            class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400"
+                          >
+                            <div class="flex items-center gap-1.5">
+                              <div
+                                class="w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center flex-shrink-0"
+                              >
+                                <UIcon
+                                  name="i-heroicons-clock"
+                                  class="w-3 h-3 text-slate-500"
+                                />
+                              </div>
+                              <span>{{ formatDate(service?.created_at) }}</span>
+                            </div>
 
-                          <UButton
-                            color="red"
-                            variant="soft"
-                            icon="i-heroicons-trash"
-                            :loading="isLoading"
-                            :disabled="service.service_status === 'completed'"
-                            @click.prevent.stop="handlePop(service.id)"
-                          />
-                        </UButtonGroup>
+                            <div class="flex items-center gap-1.5">
+                              <div
+                                class="w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center flex-shrink-0"
+                              >
+                                <UIcon
+                                  name="i-heroicons-map-pin"
+                                  class="w-3 h-3 text-slate-500"
+                                />
+                              </div>
+                              <span class="truncate max-w-[100px]">{{
+                                service?.location
+                              }}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </NuxtLink>
-              </UCard>
+
+                <!-- Actions Menu - Enhanced Position & Animation -->
+                <div
+                  v-if="
+                    service.service_status.toLowerCase() !== 'rejected' ||
+                    service.service_status.toLowerCase() !== 'completed'
+                  "
+                  class="actions-wrapper absolute right-3 -bottom-10 group-hover:bottom-3 transition-all duration-300 ease-in-out z-10"
+                >
+                  <div
+                    class="flex items-center gap-1 p-1 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg border border-slate-100 dark:border-slate-700"
+                  >
+                    <UButton
+                      v-if="
+                        service.active_service &&
+                        service.service_status !== 'completed'
+                      "
+                      color="primary"
+                      variant="soft"
+                      size="xs"
+                      :icon="
+                        service.active_service
+                          ? 'i-heroicons-pause'
+                          : 'i-heroicons-play'
+                      "
+                      :loading="isLoading"
+                      class="action-btn transition-transform hover:scale-105"
+                      @click.prevent.stop="
+                        handleAction(service.id, 'pause', false)
+                      "
+                    />
+
+                    <UButton
+                      v-if="!service.active_service"
+                      color="green"
+                      variant="soft"
+                      size="xs"
+                      icon="i-heroicons-play"
+                      :loading="isLoading"
+                      class="action-btn transition-transform hover:scale-105"
+                      @click.prevent.stop="
+                        handleAction(service.id, 'active', true)
+                      "
+                    />
+
+                    <UButton
+                      v-if="service.service_status !== 'completed'"
+                      color="primary"
+                      variant="soft"
+                      size="xs"
+                      icon="i-heroicons-pencil"
+                      class="action-btn transition-transform hover:scale-105"
+                      @click.prevent.stop="navigateToEdit(service.id, $event)"
+                    />
+
+                    <UButton
+                      color="red"
+                      variant="soft"
+                      size="xs"
+                      icon="i-heroicons-trash"
+                      :loading="isLoading"
+                      :disabled="service.service_status === 'completed'"
+                      class="action-btn transition-transform hover:scale-105"
+                      @click.prevent.stop="handlePop(service.id)"
+                    />
+                  </div>
+                </div>
+              </div>
             </TransitionGroup>
           </div>
 
@@ -1991,5 +2091,64 @@ function selectOption(value) {
 
 .sort-dropdown {
   perspective: 1000px;
+}
+
+/* Service Card Animation and Effects */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(52, 211, 153, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+  }
+}
+
+.animate-status-pulse {
+  animation: status-pulse 2s infinite;
+}
+
+/* Enhanced transition group animations */
+.service-list-move,
+.service-list-enter-active,
+.service-list-leave-active {
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.service-list-enter-from,
+.service-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.service-list-leave-active {
+  position: absolute;
+}
+
+.service-image-wrapper {
+  isolation: isolate;
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 </style>
