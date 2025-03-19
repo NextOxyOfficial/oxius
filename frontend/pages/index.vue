@@ -17,7 +17,7 @@
             icon="i-material-symbols-light-lists-rounded"
             color="primary"
             variant="solid"
-            :label="t('my_post')"
+            label="My Services"
             to="/my-classified-services/"
           />
         </div>
@@ -257,7 +257,8 @@
       </UContainer>
     </PublicSection>
 
-    <AdsScroll :ads="classifiedLatestPosts" />
+    <AdsScroll :ads="classifiedLatestPosts" sectionTitle="সাম্প্রতিক পোষ্ট" />
+    <CommonProductSlider />
     <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">

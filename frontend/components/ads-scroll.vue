@@ -22,7 +22,7 @@
               <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
             </div>
             <h2 class="text-sm font-semibold text-slate-800 dark:text-white">
-              সাম্প্রতিক পোষ্ট
+              {{ sectionTitle }}
             </h2>
           </div>
 
@@ -145,6 +145,10 @@ const { formatDate } = useUtils();
 const { ads } = defineProps({
   ads: {
     type: Object,
+    required: true,
+  },
+  sectionTitle: {
+    type: String,
     required: true,
   },
 });
