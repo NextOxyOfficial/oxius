@@ -38,7 +38,7 @@
             "
           >
             <span class="relative z-10 flex items-center justify-center gap-2">
-              <UIcon
+              <u-icon
                 name="i-heroicons-megaphone"
                 class="w-5 h-5 transition-transform"
                 :class="
@@ -65,7 +65,7 @@
             "
           >
             <span class="relative z-10 flex items-center justify-center gap-2">
-              <UIcon
+              <u-icon
                 name="i-heroicons-shopping-bag"
                 class="w-5 h-5 transition-transform"
                 :class="
@@ -131,6 +131,7 @@
                 v-for="service in services"
                 :key="`classified-${service.id}`"
                 class="service-card group relative bg-white dark:bg-slate-800/90 border border-slate-100 dark:border-slate-700/60 hover:border-primary-200 dark:hover:border-primary-800/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                @click="toggleMobileActionBar(service.id)"
               >
                 <!-- Status indicator line -->
                 <div
@@ -289,7 +290,7 @@
                           class="mb-2.5 inline-flex items-center px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 group-hover:border-primary-200 dark:group-hover:border-primary-800/40 transition-all duration-300"
                         >
                           <template v-if="!service.negotiable">
-                            <UIcon
+                            <u-icon
                               name="i-mdi:currency-bdt"
                               class="w-4 h-4 text-primary-500 mr-1.5"
                             />
@@ -365,16 +366,31 @@
                   </div>
                 </NuxtLink>
 
-                <!-- Actions Menu - Enhanced Position & Animation -->
+                <!-- Mobile swipe indicator (only visible on small screens) -->
+                <div
+                  class="md:hidden absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-1 opacity-60"
+                >
+                  <div
+                    class="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-500"
+                  ></div>
+                  <div
+                    class="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-500"
+                  ></div>
+                  <div
+                    class="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-500"
+                  ></div>
+                </div>
+
+                <!-- Actions Menu - Always visible on mobile, animated on desktop -->
                 <div
                   v-if="
                     service.service_status.toLowerCase() !== 'rejected' ||
                     service.service_status.toLowerCase() !== 'completed'
                   "
-                  class="actions-wrapper absolute right-3 -bottom-10 group-hover:bottom-3 transition-all duration-300 ease-in-out z-10"
+                  class="actions-wrapper absolute right-0 bottom-0 sm:right-3 sm:-bottom-10 sm:group-hover:bottom-3 transition-all duration-300 ease-in-out z-10"
                 >
                   <div
-                    class="flex items-center gap-1 p-1 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg border border-slate-100 dark:border-slate-700"
+                    class="flex items-center gap-1 p-1 rounded-tl-xl rounded-tr-none rounded-br-none rounded-bl-none sm:rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg border border-slate-100 dark:border-slate-700"
                   >
                     <UButton
                       v-if="
@@ -390,7 +406,7 @@
                           : 'i-heroicons-play'
                       "
                       :loading="isLoading"
-                      class="action-btn transition-transform hover:scale-105"
+                      class="action-btn transition-transform active:scale-95"
                       @click.prevent.stop="
                         handleAction(service.id, 'pause', false)
                       "
@@ -403,7 +419,7 @@
                       size="xs"
                       icon="i-heroicons-play"
                       :loading="isLoading"
-                      class="action-btn transition-transform hover:scale-105"
+                      class="action-btn transition-transform active:scale-95"
                       @click.prevent.stop="
                         handleAction(service.id, 'active', true)
                       "
@@ -415,7 +431,7 @@
                       variant="soft"
                       size="xs"
                       icon="i-heroicons-pencil"
-                      class="action-btn transition-transform hover:scale-105"
+                      class="action-btn transition-transform active:scale-95"
                       @click.prevent.stop="navigateToEdit(service.id, $event)"
                     />
 
@@ -426,9 +442,74 @@
                       icon="i-heroicons-trash"
                       :loading="isLoading"
                       :disabled="service.service_status === 'completed'"
-                      class="action-btn transition-transform hover:scale-105"
+                      class="action-btn transition-transform active:scale-95"
                       @click.prevent.stop="handlePop(service.id)"
                     />
+                  </div>
+                </div>
+
+                <!-- Add this right after the current actions-wrapper div -->
+                <div
+                  v-if="
+                    service.service_status.toLowerCase() !== 'rejected' ||
+                    service.service_status.toLowerCase() !== 'completed'
+                  "
+                  class="mobile-action-bar sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 shadow-lg border-t border-slate-200 dark:border-slate-800 z-50 transition-transform duration-300"
+                  :class="{
+                    'translate-y-full':
+                      !activeServiceId || activeServiceId !== service.id,
+                  }"
+                >
+                  <div
+                    class="container mx-auto flex items-center justify-between"
+                  >
+                    <div class="truncate mr-2">
+                      <div class="text-xs text-slate-500">Managing:</div>
+                      <div class="text-sm font-medium truncate">
+                        {{ service?.title }}
+                      </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                      <UButton
+                        v-if="
+                          service.active_service &&
+                          service.service_status !== 'completed'
+                        "
+                        color="primary"
+                        variant="solid"
+                        size="sm"
+                        :loading="isLoading"
+                        @click.prevent.stop="
+                          handleAction(service.id, 'pause', false)
+                        "
+                      >
+                        Pause
+                      </UButton>
+
+                      <UButton
+                        v-if="!service.active_service"
+                        color="green"
+                        variant="solid"
+                        size="sm"
+                        :loading="isLoading"
+                        @click.prevent.stop="
+                          handleAction(service.id, 'active', true)
+                        "
+                      >
+                        Activate
+                      </UButton>
+
+                      <UButton
+                        color="red"
+                        variant="solid"
+                        size="sm"
+                        :loading="isLoading"
+                        @click.prevent.stop="handlePop(service.id)"
+                      >
+                        Delete
+                      </UButton>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1051,147 +1132,145 @@
             :ui="{ width: 'sm:max-w-3xl' }"
           >
             <UCard v-if="selectedProduct" class="p-0 border-0">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
-                <!-- Product Image -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-0"></div>
+              <!-- Product Image -->
+              <div
+                class="relative aspect-square bg-slate-100 dark:bg-slate-800/80"
+              >
+                <img
+                  :src="selectedProduct.image"
+                  :alt="selectedProduct.name"
+                  class="w-full h-full object-cover"
+                />
                 <div
-                  class="relative aspect-square bg-slate-100 dark:bg-slate-800/80"
+                  v-if="selectedProduct.discount"
+                  class="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md"
                 >
-                  <img
-                    :src="selectedProduct.image"
-                    :alt="selectedProduct.name"
-                    class="w-full h-full object-cover"
-                  />
-                  <div
-                    v-if="selectedProduct.discount"
-                    class="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md"
-                  >
-                    -{{ selectedProduct.discount }}% OFF
-                  </div>
-                  <button
-                    class="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                    @click="isProductPreviewOpen = false"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
-                  </button>
+                  -{{ selectedProduct.discount }}% OFF
                 </div>
+                <button
+                  class="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  @click="isProductPreviewOpen = false"
+                >
+                  <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+                </button>
+              </div>
 
-                <!-- Product Details -->
-                <div class="p-5 flex flex-col h-full">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                      <UBadge
-                        :color="getStatusColor(selectedProduct.status)"
-                        size="sm"
-                      >
-                        {{ getStatusLabel(selectedProduct.status) }}
-                      </UBadge>
-                      <span
-                        class="text-sm text-slate-500 dark:text-slate-400"
-                        >{{ selectedProduct.category }}</span
-                      >
-                    </div>
-
-                    <h2
-                      class="text-xl font-medium text-slate-800 dark:text-white mb-2"
+              <!-- Product Details -->
+              <div class="p-5 flex flex-col h-full">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <UBadge
+                      :color="getStatusColor(selectedProduct.status)"
+                      size="sm"
                     >
-                      {{ selectedProduct.name }}
-                    </h2>
+                      {{ getStatusLabel(selectedProduct.status) }}
+                    </UBadge>
+                    <span class="text-sm text-slate-500 dark:text-slate-400">{{
+                      selectedProduct.category
+                    }}</span>
+                  </div>
 
-                    <!-- Rating -->
-                    <div class="flex items-center gap-2 mb-4">
-                      <div class="flex">
-                        <UIcon
-                          v-for="i in 5"
-                          :key="i"
-                          :name="
-                            i <= Math.round(selectedProduct.rating)
-                              ? 'i-heroicons-star-solid'
-                              : 'i-heroicons-star'
-                          "
-                          class="w-4 h-4"
-                          :class="
-                            i <= Math.round(selectedProduct.rating)
-                              ? 'text-amber-400'
-                              : 'text-slate-300 dark:text-slate-600'
-                          "
-                        />
-                      </div>
-                      <span class="text-sm text-slate-500 dark:text-slate-400"
-                        >({{ selectedProduct.reviews }} reviews)</span
+                  <h2
+                    class="text-xl font-medium text-slate-800 dark:text-white mb-2"
+                  >
+                    {{ selectedProduct.name }}
+                  </h2>
+
+                  <!-- Rating -->
+                  <div class="flex items-center gap-2 mb-4">
+                    <div class="flex">
+                      <UIcon
+                        v-for="i in 5"
+                        :key="i"
+                        :name="
+                          i <= Math.round(selectedProduct.rating)
+                            ? 'i-heroicons-star-solid'
+                            : 'i-heroicons-star'
+                        "
+                        class="w-4 h-4"
+                        :class="
+                          i <= Math.round(selectedProduct.rating)
+                            ? 'text-amber-400'
+                            : 'text-slate-300 dark:text-slate-600'
+                        "
+                      />
+                    </div>
+                    <span class="text-sm text-slate-500 dark:text-slate-400"
+                      >({{ selectedProduct.reviews }} reviews)</span
+                    >
+                  </div>
+
+                  <!-- Description -->
+                  <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                    {{ selectedProduct.description }}
+                  </p>
+
+                  <!-- Details List -->
+                  <div class="space-y-2 mb-6">
+                    <div class="flex items-center gap-2 text-sm">
+                      <UIcon
+                        name="i-heroicons-currency-bangladeshi"
+                        class="w-4 h-4 text-slate-500"
+                      />
+                      <span
+                        class="text-slate-700 dark:text-slate-300 font-medium"
+                        >Price:</span
                       >
+                      <div class="flex items-baseline gap-1.5">
+                        <span
+                          class="font-semibold text-slate-800 dark:text-white"
+                          >৳{{ selectedProduct.price }}</span
+                        >
+                        <span
+                          v-if="selectedProduct.oldPrice"
+                          class="text-xs text-slate-400 line-through"
+                          >৳{{ selectedProduct.oldPrice }}</span
+                        >
+                      </div>
                     </div>
 
-                    <!-- Description -->
-                    <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">
-                      {{ selectedProduct.description }}
-                    </p>
+                    <div class="flex items-center gap-2 text-sm mt-2">
+                      <UIcon
+                        name="i-heroicons-cube"
+                        class="w-4 h-4 text-slate-500"
+                      />
+                      <span
+                        class="text-slate-700 dark:text-slate-300 font-medium"
+                        >Stock:</span
+                      >
+                      <UBadge
+                        :color="
+                          selectedProduct.stock > 5
+                            ? 'green'
+                            : selectedProduct.stock > 0
+                            ? 'amber'
+                            : 'red'
+                        "
+                        variant="subtle"
+                      >
+                        {{
+                          selectedProduct.stock > 5
+                            ? "In Stock"
+                            : selectedProduct.stock > 0
+                            ? `Only ${selectedProduct.stock} left`
+                            : "Out of Stock"
+                        }}
+                      </UBadge>
+                    </div>
 
-                    <!-- Details List -->
-                    <div class="space-y-2 mb-6">
-                      <div class="flex items-center gap-2 text-sm">
-                        <UIcon
-                          name="i-heroicons-currency-bangladeshi"
-                          class="w-4 h-4 text-slate-500"
-                        />
-                        <span
-                          class="text-slate-700 dark:text-slate-300 font-medium"
-                          >Price:</span
-                        >
-                        <div class="flex items-baseline gap-1.5">
-                          <span
-                            class="font-semibold text-slate-800 dark:text-white"
-                            >৳{{ selectedProduct.price }}</span
-                          >
-                          <span
-                            v-if="selectedProduct.oldPrice"
-                            class="text-xs text-slate-400 line-through"
-                            >৳{{ selectedProduct.oldPrice }}</span
-                          >
-                        </div>
-                      </div>
-
-                      <div class="flex items-center gap-2 text-sm">
-                        <UIcon
-                          name="i-heroicons-cube"
-                          class="w-4 h-4 text-slate-500"
-                        />
-                        <span
-                          class="text-slate-700 dark:text-slate-300 font-medium"
-                          >Stock:</span
-                        >
-                        <UBadge
-                          :color="
-                            selectedProduct.stock > 5
-                              ? 'green'
-                              : selectedProduct.stock > 0
-                              ? 'amber'
-                              : 'red'
-                          "
-                          variant="subtle"
-                        >
-                          {{
-                            selectedProduct.stock > 5
-                              ? "In Stock"
-                              : selectedProduct.stock > 0
-                              ? `Only ${selectedProduct.stock} left`
-                              : "Out of Stock"
-                          }}
-                        </UBadge>
-                      </div>
-
-                      <div class="flex items-center gap-2 text-sm">
-                        <UIcon
-                          name="i-heroicons-calendar"
-                          class="w-4 h-4 text-slate-500"
-                        />
-                        <span
-                          class="text-slate-700 dark:text-slate-300 font-medium"
-                          >Listed:</span
-                        >
-                        <span class="text-slate-600 dark:text-slate-400">{{
-                          selectedProduct.listedDate
-                        }}</span>
-                      </div>
+                    <div class="flex items-center gap-2 text-sm mt-2">
+                      <UIcon
+                        name="i-heroicons-calendar"
+                        class="w-4 h-4 text-slate-500"
+                      />
+                      <span
+                        class="text-slate-700 dark:text-slate-300 font-medium"
+                        >Listed:</span
+                      >
+                      <span class="text-slate-600 dark:text-slate-400">{{
+                        selectedProduct.listedDate
+                      }}</span>
                     </div>
                   </div>
 
@@ -1824,6 +1903,15 @@ function selectOption(value) {
   productSort.value = value;
   isOpen.value = false;
 }
+
+// Add this for the mobile action bar
+const activeServiceId = ref(null);
+
+// Add this function
+function toggleMobileActionBar(serviceId) {
+  activeServiceId.value =
+    activeServiceId.value === serviceId ? null : serviceId;
+}
 </script>
 
 <style scoped>
@@ -2150,5 +2238,87 @@ function selectOption(value) {
 .action-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+/* Mobile service actions - always visible with touch-friendly design */
+@media (max-width: 640px) {
+  .action-btn {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0.5rem;
+    margin: 0.125rem;
+  }
+
+  .actions-wrapper {
+    opacity: 0.9;
+  }
+
+  /* Add touch feedback */
+  .action-btn:active {
+    transform: scale(0.92);
+  }
+}
+
+/* Remove any extra spacing in mobile view */
+@media (max-width: 768px) {
+  .service-card {
+    margin-bottom: 0.75rem;
+  }
+
+  .service-meta {
+    gap: 0.25rem;
+  }
+
+  /* More compact card padding on mobile */
+  .service-card .p-4 {
+    padding: 0.75rem;
+  }
+
+  /* Hide some less important metadata on very small screens */
+  @media (max-width: 380px) {
+    .service-meta > div:last-child {
+      display: none;
+    }
+  }
+}
+
+/* Improved accessibility feedback */
+.action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+/* Add to your style section */
+/* Touch ripple effect */
+.action-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.action-btn:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0) translate(-50%, -50%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20) translate(-50%, -50%);
+    opacity: 0;
+  }
 }
 </style>

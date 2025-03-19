@@ -116,7 +116,7 @@
               alt="Payment Method"
             />
           </div>
-          <div class="my-5">
+          <div class="mt-2">
             <!-- Modern Terms & Conditions Checkbox -->
             <div class="modern-checkbox-container">
               <div class="checkbox-wrapper">
@@ -425,7 +425,7 @@
             <p class="text-sm text-red-500" v-if="depositErrors.policy">
               *Please Accept Terms & Conditions, Privacy Policy
             </p>
-            <div class="mt-2">
+            <div class="mt-4">
               <UButton
                 :loading="isLoading"
                 size="md"
