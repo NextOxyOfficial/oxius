@@ -45,7 +45,7 @@
 
             <div class="flex items-center">
               <!-- Search icon with animation -->
-              <div class="pl-3 sm:pl-4">
+              <div class="pl-3 sm:pl-4 inline-flex items-center">
                 <UIcon
                   name="i-heroicons-magnifying-glass"
                   class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors duration-300"
