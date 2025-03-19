@@ -86,7 +86,7 @@
               <button
                 type="submit"
                 text="Search"
-                class="relative overflow-hidden m-1 sm:m-1.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2"
+                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 h-full -mt-[2px] sm:mt-0 mr-1.5"
                 :disabled="isLoading"
               >
                 <!-- Button background animation -->
@@ -766,7 +766,7 @@ const cursorVisible = ref(true);
 const typingInterval = ref(null);
 const cursorInterval = ref(null);
 const currentIndex = ref(0);
-const placeholder = "খুঁজুন যা প্রয়োজন....";
+const placeholder = "খুঁজে নিন যা প্রয়োজন....";
 
 // Typing animation functions
 const typeNextChar = () => {
