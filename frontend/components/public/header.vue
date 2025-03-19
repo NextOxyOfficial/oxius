@@ -235,6 +235,162 @@
               <div class="py-1.5">
                 <!-- Main account actions -->
                 <div class="px-1.5 pb-1">
+                  <!-- Professional Pro/Free Toggle -->
+                  <div class="px-1.5 py-2">
+                    <!-- Free User Version (shows when user is not Pro) -->
+                    <div
+                      v-if="!user?.user?.proExpiryDate"
+                      class="relative rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700"
+                    >
+                      <!-- Top Section: Current Plan -->
+                      <div
+                        class="bg-slate-50 dark:bg-slate-800/60 px-3 py-2 border-b border-slate-200 dark:border-slate-700"
+                      >
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-1.5">
+                            <UIcon
+                              name="i-heroicons-user"
+                              class="w-4 h-4 text-slate-500 dark:text-slate-400"
+                            />
+                            <span
+                              class="text-xs font-medium text-slate-600 dark:text-slate-300"
+                              >Current Plan</span
+                            >
+                          </div>
+                          <span
+                            class="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded font-medium"
+                            >Free</span
+                          >
+                        </div>
+                      </div>
+
+                      <!-- Bottom Section: Upgrade Action -->
+                      <div
+                        @click="upgradeToPro"
+                        class="p-3 cursor-pointer group"
+                      >
+                        <div class="flex items-center gap-3">
+                          <!-- Pro Badge Icon -->
+                          <div
+                            class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/30 flex items-center justify-center border border-indigo-200 dark:border-indigo-800/50 shadow-sm"
+                          >
+                            <UIcon
+                              name="i-heroicons-star"
+                              class="w-5 h-5 text-indigo-600 dark:text-indigo-400"
+                            />
+                          </div>
+
+                          <!-- Upgrade Text -->
+                          <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                              <h4
+                                class="font-medium text-slate-800 dark:text-white"
+                              >
+                                Upgrade to Pro
+                              </h4>
+                            </div>
+                            <p
+                              class="text-xs text-slate-600 dark:text-slate-400"
+                            >
+                              Get premium features, priority support & more
+                            </p>
+                          </div>
+
+                          <!-- Switch Toggle Design -->
+                          <div
+                            class="w-11 h-6 rounded-full bg-slate-200 dark:bg-slate-700 p-0.5 flex items-center cursor-pointer relative group-hover:bg-slate-300 dark:group-hover:bg-slate-600 transition-colors"
+                          >
+                            <div
+                              class="absolute left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transform group-hover:translate-x-1 transition-transform"
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Pro User Version (shows when user is Pro) -->
+                    <div
+                      v-else
+                      class="relative rounded-lg overflow-hidden border border-indigo-200 dark:border-indigo-800/40"
+                    >
+                      <!-- Top Section: Current Plan -->
+                      <div
+                        class="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 border-b border-indigo-100 dark:border-indigo-800/30"
+                      >
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-1.5">
+                            <UIcon
+                              name="i-heroicons-sparkles"
+                              class="w-4 h-4 text-indigo-600 dark:text-indigo-400"
+                            />
+                            <span
+                              class="text-xs font-medium text-indigo-700 dark:text-indigo-300"
+                              >Current Plan</span
+                            >
+                          </div>
+                          <span
+                            class="text-xs px-2 py-0.5 bg-indigo-200 dark:bg-indigo-800/50 text-indigo-700 dark:text-indigo-300 rounded font-medium"
+                            ><div class="flex items-center gap-1">
+                              <UIcon
+                                name="i-heroicons-shield-check"
+                                class="w-5 h-5 text-indigo-600 dark:text-indigo-400"
+                              />
+                              <span class="text-sm">Pro</span>
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Bottom Section: Pro Status -->
+                      <div
+                        @click="manageSubscription"
+                        class="p-3 cursor-pointer group"
+                      >
+                        <div class="flex items-center gap-3">
+                          <!-- Pro Badge Icon -->
+                          <div
+                            class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-600/20 dark:to-purple-600/20 flex items-center justify-center border border-indigo-200 dark:border-indigo-700/50 shadow-sm"
+                          >
+                            <UIcon
+                              name="i-heroicons-shield-check"
+                              class="w-5 h-5 text-indigo-600 dark:text-indigo-400"
+                            />
+                          </div>
+
+                          <!-- Pro Status Text -->
+                          <div class="flex-1">
+                            <h4
+                              class="font-medium text-slate-800 dark:text-white"
+                            >
+                              Pro Membership
+                            </h4>
+                            <p
+                              class="text-xs text-slate-600 dark:text-slate-400"
+                            >
+                              Valid until
+                              {{
+                                formatDate(
+                                  user?.user?.proExpiryDate ||
+                                    new Date(
+                                      Date.now() + 30 * 24 * 60 * 60 * 1000
+                                    )
+                                )
+                              }}
+                            </p>
+                          </div>
+
+                          <!-- Active Switch Toggle -->
+                          <div
+                            class="w-11 h-6 rounded-full bg-indigo-200 dark:bg-indigo-700/70 p-0.5 flex items-center justify-end cursor-pointer"
+                          >
+                            <div
+                              class="w-5 h-5 rounded-full bg-indigo-600 dark:bg-indigo-500 shadow-sm"
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <NuxtLink
                     v-for="(link, index) in [
                       {
@@ -411,7 +567,23 @@ async function getLogo() {
   const res = await get("/logo/");
   logo.value = res.data;
 }
+function upgradeToPro() {
+  openMenu.value = false;
+  router.push("/upgrade-to-pro");
+}
 
+function manageSubscription() {
+  openMenu.value = false;
+  router.push("/account/subscription");
+}
+
+function formatDate(date) {
+  return new Date(date).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 getLogo();
 
 defineShortcuts({

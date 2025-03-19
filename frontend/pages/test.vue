@@ -1,1376 +1,1752 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Mobile Header -->
-    <div
-      class="lg:hidden bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-30"
-    >
-      <div class="flex items-center justify-between p-4">
-        <div class="flex items-center">
-          <img src="" alt="Logo" class="h-8 w-8 mr-2" />
-          <h1 class="text-xl font-bold text-gray-800">Admin Panel</h1>
-        </div>
-        <button
-          @click="mobileMenuOpen = !mobileMenuOpen"
-          class="text-gray-500 hover:text-gray-700"
-        >
-          <menu-icon v-if="!mobileMenuOpen" class="h-6 w-6" />
-          <x-icon v-else class="h-6 w-6" />
-        </button>
-      </div>
-
-      <!-- Mobile Menu -->
-      <div
-        v-if="mobileMenuOpen"
-        class="fixed inset-0 bg-gray-800 bg-opacity-75 z-20"
-        @click="mobileMenuOpen = false"
-      ></div>
-      <div
-        v-if="mobileMenuOpen"
-        class="fixed top-16 left-0 right-0 bottom-0 bg-white z-20 overflow-y-auto"
-      >
-        <nav class="px-4 py-2">
-          <div
-            v-for="(item, index) in navigationItems"
-            :key="index"
-            class="py-2"
-          >
-            <button
-              @click="
-                activeSection = item.id;
-                mobileMenuOpen = false;
-              "
-              class="w-full flex items-center px-4 py-3 rounded-lg"
-              :class="
-                activeSection === item.id
-                  ? 'bg-primary text-white'
-                  : 'hover:bg-gray-100'
-              "
+  <UContainer>
+    <!-- Product Carousel Section -->
+    <div class="product-carousel-section mt-10">
+      <div class="section-header mb-6">
+        <div class="category-dropdown-container">
+          <div class="section-header">
+            <h2
+              class="text-2xl md:text-3xl font-medium flex items-center gap-2"
             >
-              <component :is="item.icon" class="h-5 w-5 mr-3" />
-              <span>{{ item.name }}</span>
-              <badge v-if="item.badge" class="ml-auto">{{ item.badge }}</badge>
-            </button>
-          </div>
-
-          <div class="mt-6 border-t border-gray-200 pt-4">
-            <div class="flex items-center px-4 py-3">
-              <avatar class="h-10 w-10 mr-3">
-                <avatar-image src="/placeholder.svg?height=40&width=40" />
-                <avatar-fallback>AD</avatar-fallback>
-              </avatar>
-              <div>
-                <p class="text-sm font-medium">Admin User</p>
-                <p class="text-xs text-gray-500">admin@example.com</p>
+              <div class="p-1.5 rounded bg-primary/10 text-primary">
+                <UIcon name="i-heroicons-squares-2x2" class="w-6 h-6"></UIcon>
               </div>
-            </div>
-            <button
-              class="mt-2 w-full flex items-center px-4 py-3 text-red-600 hover:bg-gray-100 rounded-lg"
-            >
-              <log-out-icon class="h-5 w-5 mr-3" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Desktop Sidebar -->
-    <div
-      class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r lg:border-gray-200 lg:bg-white lg:pt-5 lg:pb-4"
-    >
-      <div class="flex items-center flex-shrink-0 px-6">
-        <img src="" alt="Logo" class="h-8 w-8" />
-        <h1 class="ml-2 text-xl font-bold text-gray-800">Admin Panel</h1>
-      </div>
-      <div class="mt-6 h-0 flex-1 flex flex-col overflow-y-auto">
-        <nav class="px-3 mt-6">
-          <div
-            v-for="(item, index) in navigationItems"
-            :key="index"
-            class="mb-2"
-          >
-            <button
-              @click="activeSection = item.id"
-              class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md"
-              :class="
-                activeSection === item.id
-                  ? 'bg-primary text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              "
-            >
-              <component :is="item.icon" class="h-5 w-5 mr-3" />
-              <span>{{ item.name }}</span>
-              <badge v-if="item.badge" class="ml-auto">{{ item.badge }}</badge>
-            </button>
-          </div>
-        </nav>
-
-        <div class="mt-auto px-3 py-4 border-t border-gray-200">
-          <div class="flex items-center">
-            <avatar class="h-10 w-10 mr-3">
-              <avatar-image src="/placeholder.svg?height=40&width=40" />
-              <avatar-fallback>AD</avatar-fallback>
-            </avatar>
-            <div>
-              <p class="text-sm font-medium text-gray-700">Admin User</p>
-              <p class="text-xs text-gray-500">admin@example.com</p>
-            </div>
-          </div>
-          <button
-            class="mt-4 w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-gray-100"
-          >
-            <log-out-icon class="h-5 w-5 mr-3" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="lg:pl-64 flex flex-col flex-1">
-      <main class="flex-1 pb-8 pt-2 lg:pt-8">
-        <!-- Page header -->
-        <div class="mt-14 lg:mt-0 bg-white shadow">
-          <div class="px-4 sm:px-6 lg:px-8 py-6">
-            <h2 class="text-2xl font-bold text-gray-900">
-              {{ currentSection.name }}
+              Shop by Category
+              <UBadge
+                color="primary"
+                variant="subtle"
+                class="ml-2 text-xs font-medium"
+                >{{ totalProductCount }} Products</UBadge
+              >
             </h2>
-            <p class="mt-1 text-sm text-gray-500">
-              {{ currentSection.description }}
-            </p>
           </div>
-        </div>
 
-        <!-- Page content -->
-        <div class="mt-6 px-4 sm:px-6 lg:px-8">
-          <!-- Users Management -->
-          <div v-if="activeSection === 'users'" class="space-y-6">
+          <!-- Dropdown Trigger -->
+          <div class="relative z-40 mt-4 max-w-xl">
             <div
-              class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
+              class="dropdown-trigger"
+              :class="{ 'is-open': isOpen }"
+              @click="toggleDropdown"
             >
-              <div class="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="Search users..."
-                  class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              <div class="flex items-center gap-2">
+                <UIcon
+                  :name="selectedCategory?.icon || 'i-heroicons-squares-2x2'"
+                  class="w-5 h-5"
                 />
-                <button
-                  class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                <span class="font-medium">{{
+                  selectedCategory?.name || "All Categories"
+                }}</span>
+                <UBadge
+                  v-if="selectedCategory"
+                  size="xs"
+                  color="primary"
+                  class="ml-1"
                 >
-                  <search-icon class="h-5 w-5" />
-                </button>
+                  {{ selectedCategory.count }}
+                </UBadge>
               </div>
-              <button
-                class="mt-3 sm:mt-0 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center"
-              >
-                <plus-icon class="h-5 w-5 mr-1" />
-                Add User
-              </button>
+              <UIcon
+                name="i-heroicons-chevron-down"
+                class="w-5 h-5 transition-transform duration-300"
+                :class="{ 'rotate-180': isOpen }"
+              />
             </div>
 
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        User
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Email
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Status
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Role
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="(user, index) in users" :key="index">
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                          <div class="flex-shrink-0 h-10 w-10">
-                            <img
-                              class="h-10 w-10 rounded-full"
-                              :src="user.avatar"
-                              alt=""
-                            />
-                          </div>
-                          <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">
-                              {{ user.name }}
-                            </div>
-                            <div class="text-sm text-gray-500">
-                              Joined {{ user.joined }}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">
-                          {{ user.email }}
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="{
-                            'bg-green-100 text-green-800':
-                              user.status === 'Active',
-                            'bg-yellow-100 text-yellow-800':
-                              user.status === 'Pending',
-                            'bg-red-100 text-red-800':
-                              user.status === 'Suspended',
-                          }"
-                        >
-                          {{ user.status }}
-                        </span>
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                      >
-                        {{ user.role }}
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm font-medium"
-                      >
-                        <div class="flex space-x-2">
-                          <button class="text-primary hover:text-primary/80">
-                            <edit-icon class="h-5 w-5" />
-                          </button>
-                          <button
-                            v-if="user.status === 'Pending'"
-                            class="text-green-600 hover:text-green-800"
-                          >
-                            <check-icon class="h-5 w-5" />
-                          </button>
-                          <button
-                            v-if="user.status === 'Active'"
-                            class="text-red-600 hover:text-red-800"
-                          >
-                            <ban-icon class="h-5 w-5" />
-                          </button>
-                          <button
-                            v-if="user.status === 'Suspended'"
-                            class="text-green-600 hover:text-green-800"
-                          >
-                            <refresh-cw-icon class="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div
-                class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-              >
-                <div class="flex-1 flex justify-between sm:hidden">
-                  <button
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Next
-                  </button>
+            <!-- Dropdown Content -->
+            <transition
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="opacity-0 -translate-y-4"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition ease-in duration-150"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 -translate-y-4"
+            >
+              <div v-if="isOpen" class="dropdown-content">
+                <!-- Search Bar -->
+                <div class="search-container">
+                  <UIcon
+                    name="i-heroicons-magnifying-glass"
+                    class="search-icon"
+                  />
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search categories..."
+                    class="search-input"
+                    @click.stop
+                    ref="searchInput"
+                  />
+                  <UButton
+                    v-if="searchQuery"
+                    color="gray"
+                    variant="ghost"
+                    icon="i-heroicons-x-mark"
+                    size="xs"
+                    class="clear-button"
+                    @click.stop="searchQuery = ''"
+                  />
                 </div>
-                <div
-                  class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p class="text-sm text-gray-700">
-                      Showing <span class="font-medium">1</span> to
-                      <span class="font-medium">10</span> of
-                      <span class="font-medium">97</span> results
+
+                <!-- Categories List -->
+                <div class="categories-list-container">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <!-- All Categories Option -->
+                    <div
+                      class="category-item"
+                      :class="{ 'is-active': !selectedCategory }"
+                      @click.stop="selectCategory(null)"
+                    >
+                      <div class="flex items-center gap-2">
+                        <div class="icon-container">
+                          <UIcon
+                            name="i-heroicons-squares-2x2"
+                            class="category-icon"
+                          />
+                        </div>
+                        <div class="flex-1">
+                          <span class="font-medium">All Categories</span>
+                        </div>
+                        <UBadge color="primary" variant="subtle" size="xs">
+                          {{ totalProductCount }}
+                        </UBadge>
+                      </div>
+                    </div>
+
+                    <!-- Category Items -->
+                    <div
+                      v-for="category in filteredCategories"
+                      :key="category.id"
+                      class="category-item"
+                      :class="{
+                        'is-active': selectedCategory?.id === category.id,
+                      }"
+                      @click.stop="selectCategory(category)"
+                    >
+                      <div class="flex items-center gap-2">
+                        <div class="icon-container">
+                          <UIcon :name="category.icon" class="category-icon" />
+                        </div>
+                        <div class="flex-1">
+                          <span class="font-medium">{{ category.name }}</span>
+                        </div>
+                        <UBadge color="gray" size="xs">
+                          {{ category.count }}
+                        </UBadge>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div
+                    v-if="filteredCategories.length === 0"
+                    class="empty-state"
+                  >
+                    <UIcon
+                      name="i-heroicons-magnifying-glass"
+                      class="w-10 h-10 text-slate-300 dark:text-slate-600"
+                    />
+                    <p class="mt-2 text-slate-500 dark:text-slate-400">
+                      No categories match "{{ searchQuery }}"
                     </p>
                   </div>
-                  <div>
-                    <nav
-                      class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
+                </div>
+              </div>
+            </transition>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carousel Container -->
+      <div class="relative">
+        <!-- Navigation Arrows -->
+        <button
+          @click="prevSlide"
+          class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md hover:shadow-lg transition-all duration-200 group"
+          :class="{ 'opacity-50 cursor-not-allowed': currentSlide === 0 }"
+          :disabled="currentSlide === 0"
+        >
+          <UIcon
+            name="i-heroicons-chevron-left"
+            class="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors"
+          />
+        </button>
+
+        <button
+          @click="nextSlide"
+          class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md hover:shadow-lg transition-all duration-200 group"
+          :class="{
+            'opacity-50 cursor-not-allowed':
+              currentSlide === Math.ceil(products.length / itemsPerSlide) - 1,
+          }"
+          :disabled="
+            currentSlide === Math.ceil(products.length / itemsPerSlide) - 1
+          "
+        >
+          <UIcon
+            name="i-heroicons-chevron-right"
+            class="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors"
+          />
+        </button>
+
+        <!-- Carousel Track -->
+        <div class="overflow-hidden rounded-xl">
+          <div
+            class="flex transition-transform duration-500 ease-out"
+            :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
+          >
+            <div
+              v-for="i in Math.ceil(products.length / itemsPerSlide)"
+              :key="i"
+              class="flex-shrink-0 w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+            >
+              <div
+                v-for="product in getProductsForSlide(i - 1)"
+                :key="product.id"
+                class="product-card relative group"
+              >
+                <!-- Product Card Content -->
+                <div
+                  class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col"
+                >
+                  <!-- Single Product Image Section with All Features -->
+                  <div class="relative pt-[100%] overflow-hidden group">
+                    <!-- Product Badges -->
+                    <div
+                      class="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between"
+                    >
+                      <div v-if="product.discount" class="badge-discount">
+                        -{{ product.discount }}%
+                      </div>
+                      <div class="status-badge">
+                        <span>New</span>
+                      </div>
+                    </div>
+
+                    <!-- Product Image -->
+                    <img
+                      :src="product.image"
+                      :alt="product.name"
+                      class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+
+                    <!-- Hover Elements -->
+                    <div
+                      class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
                     >
                       <button
-                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        @click.prevent="openReviewModal(product)"
+                        class="quick-view-button"
                       >
-                        <chevron-left-icon class="h-5 w-5" />
+                        Quick View
                       </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    </div>
+                  </div>
+
+                  <!-- Product Details -->
+                  <div class="p-3 flex-grow flex flex-col">
+                    <!-- Category -->
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 mb-1"
+                    >
+                      {{ product.category }}
+                    </div>
+
+                    <!-- Title -->
+                    <h3
+                      class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 text-sm flex-grow"
+                    >
+                      {{ product.name }}
+                    </h3>
+
+                    <!-- Rating -->
+                    <div class="flex items-center gap-1 mb-1.5">
+                      <div class="flex">
+                        <UIcon
+                          v-for="n in 5"
+                          :key="n"
+                          :name="
+                            n <= Math.floor(product.rating)
+                              ? 'i-heroicons-star-solid'
+                              : 'i-heroicons-star'
+                          "
+                          class="w-3.5 h-3.5"
+                          :class="
+                            n <= Math.floor(product.rating)
+                              ? 'text-yellow-400'
+                              : 'text-gray-200'
+                          "
+                        />
+                      </div>
+                      <span class="text-xs text-slate-500 dark:text-slate-400"
+                        >({{ product.reviews.length }})</span
                       >
-                        1
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white"
+                    </div>
+
+                    <!-- Price -->
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="font-semibold text-slate-800 dark:text-white"
+                        >৳{{ product.price }}</span
                       >
-                        2
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      <span v-if="product.oldPrice"
+                        >({{ product.reviews.length }})</span
                       >
-                        3
-                      </button>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="font-semibold text-slate-800 dark:text-white"
+                        >৳{{ product.price }}</span
+                      >
                       <span
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                        v-if="product.oldPrice"
+                        class="text-xs text-slate-400 line-through"
+                        >৳{{ product.oldPrice }}</span
                       >
-                        ...
-                      </span>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        10
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        <chevron-right-icon class="h-5 w-5" />
-                      </button>
-                    </nav>
+                    </div>
+
+                    <!-- Buy Button -->
+                    <UButton
+                      size="md"
+                      color="primary"
+                      block
+                      @click="openReviewModal(product)"
+                    >
+                      Buy Now
+                    </UButton>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- KYC Management -->
-          <div v-if="activeSection === 'kyc'" class="space-y-6">
+        <!-- Dots Navigation -->
+        <div class="flex justify-center gap-2 mt-6">
+          <button
+            v-for="i in Math.ceil(products.length / itemsPerSlide)"
+            :key="i"
+            @click="goToSlide(i - 1)"
+            class="w-2 h-2 rounded-full transition-all duration-200"
+            :class="
+              currentSlide === i - 1
+                ? 'bg-primary w-6'
+                : 'bg-slate-300 dark:bg-slate-600'
+            "
+          ></button>
+        </div>
+      </div>
+
+      <!-- Product Review Modal -->
+      <UModal v-model="isModalOpen" :ui="{ width: 'w-full max-w-4xl' }">
+        <UCard v-if="selectedProduct" class="p-0">
+          <!-- Modal Header -->
+          <template #header>
             <div
-              class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
+              class="relative bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4 border-b border-slate-200 dark:border-slate-700"
             >
-              <div class="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="Search KYC requests..."
-                  class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              <div class="flex justify-between items-center">
+                <h3 class="text-xl font-medium text-slate-800 dark:text-white">
+                  {{ selectedProduct.name }}
+                </h3>
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  icon="i-heroicons-x-mark"
+                  class="hover:rotate-90 transition-transform duration-300"
+                  @click="isModalOpen = false"
                 />
-                <button
-                  class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                >
-                  <search-icon class="h-5 w-5" />
-                </button>
-              </div>
-              <div class="mt-3 sm:mt-0 flex space-x-2">
-                <button
-                  class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center"
-                >
-                  <filter-icon class="h-5 w-5 mr-1" />
-                  Filter
-                </button>
-                <button
-                  class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center"
-                >
-                  <download-icon class="h-5 w-5 mr-1" />
-                  Export
-                </button>
               </div>
             </div>
+          </template>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div
-                v-for="(kyc, index) in kycRequests"
-                :key="index"
-                class="bg-white shadow rounded-lg overflow-hidden"
-              >
-                <div class="p-4 border-b border-gray-200">
-                  <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">
-                      {{ kyc.name }}
-                    </h3>
-                    <span
-                      class="px-2 py-1 text-xs font-semibold rounded-full"
-                      :class="{
-                        'bg-yellow-100 text-yellow-800':
-                          kyc.status === 'Pending',
-                        'bg-green-100 text-green-800':
-                          kyc.status === 'Approved',
-                        'bg-red-100 text-red-800': kyc.status === 'Rejected',
-                      }"
-                    >
-                      {{ kyc.status }}
-                    </span>
+          <!-- Modal Body -->
+          <div class="p-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Left: Product Image Gallery -->
+              <div>
+                <div
+                  class="relative pt-[100%] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden"
+                >
+                  <img
+                    :src="selectedProduct.image"
+                    :alt="selectedProduct.name"
+                    class="absolute inset-0 w-full h-full object-contain"
+                    @load="imageLoaded = true"
+                  />
+
+                  <!-- Discount Badge -->
+                  <div
+                    v-if="selectedProduct.discount"
+                    class="absolute top-2 left-2 badge-discount"
+                  >
+                    -{{ selectedProduct.discount }}%
                   </div>
-                  <p class="text-sm text-gray-500 mt-1">ID: {{ kyc.id }}</p>
-                  <p class="text-sm text-gray-500">Submitted: {{ kyc.date }}</p>
                 </div>
-                <div class="p-4 space-y-4">
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <p class="text-xs text-gray-500">ID Front</p>
-                      <img
-                        :src="kyc.idFront"
-                        alt="ID Front"
-                        class="mt-1 h-24 w-full object-cover rounded-md"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-500">ID Back</p>
-                      <img
-                        :src="kyc.idBack"
-                        alt="ID Back"
-                        class="mt-1 h-24 w-full object-cover rounded-md"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <p class="text-xs text-gray-500">Selfie with ID</p>
+
+                <!-- Thumbnail Gallery -->
+                <div class="grid grid-cols-4 gap-2 mt-2">
+                  <div
+                    v-for="i in 4"
+                    :key="i"
+                    class="aspect-square relative bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden cursor-pointer hover:opacity-80 border-2"
+                    :class="i === 1 ? 'border-primary' : 'border-transparent'"
+                  >
                     <img
-                      :src="kyc.selfie"
-                      alt="Selfie"
-                      class="mt-1 h-32 w-full object-cover rounded-md"
+                      :src="selectedProduct.image"
+                      :alt="selectedProduct.name"
+                      class="absolute inset-0 w-full h-full object-cover"
                     />
                   </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <p class="text-xs text-gray-500">Document Type</p>
-                      <p class="text-sm font-medium">{{ kyc.documentType }}</p>
+                </div>
+              </div>
+
+              <!-- Right: Product Info -->
+              <div>
+                <div class="mb-4">
+                  <div class="text-sm text-slate-500 dark:text-slate-400 mb-1">
+                    {{ selectedProduct.category }}
+                  </div>
+                  <h2
+                    class="text-xl font-medium text-slate-800 dark:text-white mb-2"
+                  >
+                    {{ selectedProduct.name }}
+                  </h2>
+
+                  <!-- Rating -->
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="rating-stars">
+                      <div class="stars-background">
+                        <UIcon
+                          v-for="n in 5"
+                          :key="`bg-${n}`"
+                          name="i-heroicons-star"
+                          class="w-4 h-4 text-slate-200 dark:text-slate-700"
+                        />
+                      </div>
+                      <div
+                        class="stars-foreground"
+                        :style="{
+                          width: `${(selectedProduct.rating / 5) * 100}%`,
+                        }"
+                      >
+                        <UIcon
+                          v-for="n in 5"
+                          :key="`fg-${n}`"
+                          name="i-heroicons-star-solid"
+                          class="w-4 h-4 text-yellow-400"
+                        />
+                      </div>
                     </div>
+                    <span class="text-sm text-slate-500 dark:text-slate-400">
+                      {{ selectedProduct.rating }} ({{
+                        selectedProduct.reviews.length
+                      }}
+                      reviews)
+                    </span>
+                  </div>
+
+                  <!-- Price -->
+                  <div class="flex items-center gap-3 mb-4">
+                    <span
+                      class="text-2xl font-semibold text-slate-800 dark:text-white"
+                    >
+                      ৳{{ selectedProduct.price }}
+                    </span>
+                    <span
+                      v-if="selectedProduct.oldPrice"
+                      class="text-sm text-slate-400 line-through"
+                    >
+                      ৳{{ selectedProduct.oldPrice }}
+                    </span>
+                    <span v-if="selectedProduct.discount" class="savings-badge">
+                      Save ৳{{
+                        calculateSavings(
+                          selectedProduct.price,
+                          selectedProduct.oldPrice
+                        )
+                      }}
+                    </span>
+                  </div>
+
+                  <!-- Description -->
+                  <p
+                    class="text-sm text-slate-600 dark:text-slate-300 mb-4 description-text"
+                  >
+                    {{ selectedProduct.description }}
+                  </p>
+
+                  <!-- Add to Cart Area -->
+                  <div class="flex items-center gap-3 mb-6">
+                    <UInputNumber
+                      v-model="quantity"
+                      :min="1"
+                      :max="10"
+                      :ui="{ base: 'w-24' }"
+                      size="md"
+                    />
+
+                    <button
+                      class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary rounded-lg py-3 px-4 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
+                      @click="addToCart"
+                    >
+                      <!-- Hover overlay effect -->
+                      <div
+                        class="absolute inset-0 w-full h-full bg-white/10 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+                      ></div>
+
+                      <!-- Content container -->
+                      <div
+                        class="relative flex items-center justify-center gap-2"
+                      >
+                        <!-- Shopping cart icon -->
+                        <UIcon
+                          name="i-heroicons-shopping-cart"
+                          class="w-5 h-5 transition-transform group-hover:scale-110 duration-300"
+                        />
+
+                        <!-- Button text with animated dot -->
+                        <span class="text-base">
+                          Buy Now
+                          <span
+                            class="inline-block w-1.5 h-1.5 bg-white rounded-full ml-0.5 animate-pulse"
+                          ></span>
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+
+                  <!-- Features List - Improved Responsive Layout -->
+                  <div
+                    class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg mb-4"
+                  >
+                    <div class="text-sm font-medium mb-2">Key Features:</div>
+                    <ul class="space-y-1.5 text-slate-600 dark:text-slate-300">
+                      <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+                        <UIcon
+                          name="i-heroicons-check-circle"
+                          class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+                        />
+                        <span>Premium Quality</span>
+                      </li>
+                      <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+                        <UIcon
+                          name="i-heroicons-check-circle"
+                          class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+                        />
+                        <span>30-Day Money-Back Guarantee</span>
+                      </li>
+                      <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+                        <UIcon
+                          name="i-heroicons-check-circle"
+                          class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+                        />
+                        <span>Free Shipping Available</span>
+                      </li>
+                      <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+                        <UIcon
+                          name="i-heroicons-check-circle"
+                          class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+                        />
+                        <span>24/7 Customer Support</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tabs - Improved Responsiveness -->
+              <div class="mt-6">
+                <UTabs
+                  :items="[
+                    {
+                      label: 'Reviews',
+                      slot: 'reviews',
+                      icon: 'i-heroicons-chat-bubble-left-right',
+                      badge: selectedProduct.reviews.length,
+                    },
+                    {
+                      label: 'Details',
+                      slot: 'details',
+                      icon: 'i-heroicons-document-text',
+                    },
+                    {
+                      label: 'Shipping',
+                      slot: 'shipping',
+                      icon: 'i-heroicons-truck',
+                    },
+                  ]"
+                  :ui="{
+                    list: {
+                      background: 'bg-slate-100/50 dark:bg-slate-800/50',
+                      rounded: 'rounded-lg',
+                      padding: 'p-1',
+                    },
+                    container: {
+                      background: 'bg-white dark:bg-slate-800/30',
+                      rounded: 'rounded-lg',
+                      padding: 'p-4 mt-3',
+                    },
+                  }"
+                >
+                  <!-- Reviews Tab -->
+                  <template #reviews>
                     <div>
-                      <p class="text-xs text-gray-500">Document Number</p>
-                      <p class="text-sm font-medium">
-                        {{ kyc.documentNumber }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div class="px-4 py-3 bg-gray-50 flex justify-between">
-                  <button
-                    v-if="kyc.status === 'Pending'"
-                    class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    v-if="kyc.status === 'Pending'"
-                    class="px-3 py-1 bg-primary text-white text-sm rounded hover:bg-primary/90"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    v-if="kyc.status !== 'Pending'"
-                    class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex justify-center mt-6">
-              <nav
-                class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                aria-label="Pagination"
-              >
-                <button
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <chevron-left-icon class="h-5 w-5" />
-                </button>
-                <button
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white"
-                >
-                  1
-                </button>
-                <button
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  2
-                </button>
-                <button
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  3
-                </button>
-                <button
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <chevron-right-icon class="h-5 w-5" />
-                </button>
-              </nav>
-            </div>
-          </div>
-
-          <!-- Transactions Management -->
-          <div v-if="activeSection === 'transactions'" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                  <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <arrow-down-icon class="h-6 w-6" />
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">
-                      Total Deposits
-                    </p>
-                    <h3 class="text-xl font-bold text-gray-900">$24,780.00</h3>
-                    <p class="text-sm text-green-600">+12.5% from last month</p>
-                  </div>
-                </div>
-              </div>
-              <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                  <div class="p-3 rounded-full bg-red-100 text-red-600">
-                    <arrow-up-icon class="h-6 w-6" />
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">
-                      Total Withdrawals
-                    </p>
-                    <h3 class="text-xl font-bold text-gray-900">$18,230.00</h3>
-                    <p class="text-sm text-red-600">+8.2% from last month</p>
-                  </div>
-                </div>
-              </div>
-              <div class="bg-white shadow rounded-lg p-6">
-                <div class="flex items-center">
-                  <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <repeat-icon class="h-6 w-6" />
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">
-                      P2P Transfers
-                    </p>
-                    <h3 class="text-xl font-bold text-gray-900">$9,540.00</h3>
-                    <p class="text-sm text-blue-600">+5.8% from last month</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-              <div class="px-6 py-4 border-b border-gray-200">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <h3 class="text-lg font-medium text-gray-900">
-                    Recent Transactions
-                  </h3>
-                  <div class="mt-3 sm:mt-0 flex space-x-2">
-                    <select
-                      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    >
-                      <option>All Types</option>
-                      <option>Deposits</option>
-                      <option>Withdrawals</option>
-                      <option>P2P Transfers</option>
-                    </select>
-                    <select
-                      class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    >
-                      <option>All Status</option>
-                      <option>Pending</option>
-                      <option>Completed</option>
-                      <option>Rejected</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      <!-- Reviews Summary -->
+                      <div
+                        class="mb-4 p-3 bg-slate-50/70 dark:bg-slate-800/70 rounded-lg"
                       >
-                        Transaction ID
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        User
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Type
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Amount
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Status
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Date
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr
-                      v-for="(transaction, index) in transactions"
-                      :key="index"
-                    >
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                      >
-                        {{ transaction.id }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                          <div class="flex-shrink-0 h-8 w-8">
-                            <img
-                              class="h-8 w-8 rounded-full"
-                              :src="transaction.userAvatar"
-                              alt=""
-                            />
-                          </div>
-                          <div class="ml-3">
-                            <div class="text-sm font-medium text-gray-900">
-                              {{ transaction.userName }}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
+                        <div class="flex flex-col sm:flex-row gap-4">
                           <div
-                            class="p-1.5 rounded-full mr-2"
-                            :class="{
-                              'bg-green-100 text-green-600':
-                                transaction.type === 'Deposit',
-                              'bg-red-100 text-red-600':
-                                transaction.type === 'Withdrawal',
-                              'bg-blue-100 text-blue-600':
-                                transaction.type === 'P2P Transfer',
-                            }"
+                            class="flex flex-col items-center sm:border-r sm:border-slate-200 sm:dark:border-slate-700 sm:pr-6"
                           >
-                            <arrow-down-icon
-                              v-if="transaction.type === 'Deposit'"
-                              class="h-4 w-4"
-                            />
-                            <arrow-up-icon
-                              v-if="transaction.type === 'Withdrawal'"
-                              class="h-4 w-4"
-                            />
-                            <repeat-icon
-                              v-if="transaction.type === 'P2P Transfer'"
-                              class="h-4 w-4"
-                            />
+                            <div
+                              class="text-2xl font-bold text-slate-800 dark:text-white"
+                            >
+                              {{ selectedProduct.rating }}
+                            </div>
+                            <div class="flex text-yellow-400 my-1">
+                              <UIcon
+                                v-for="i in 5"
+                                :key="i"
+                                name="i-heroicons-star-solid"
+                                class="w-4 h-4"
+                              />
+                            </div>
+                            <div class="text-xs text-slate-500">
+                              {{ selectedProduct.reviews.length }} reviews
+                            </div>
                           </div>
-                          <span class="text-sm text-gray-900">{{
-                            transaction.type
-                          }}</span>
-                        </div>
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                      >
-                        {{ transaction.amount }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="{
-                            'bg-yellow-100 text-yellow-800':
-                              transaction.status === 'Pending',
-                            'bg-green-100 text-green-800':
-                              transaction.status === 'Completed',
-                            'bg-red-100 text-red-800':
-                              transaction.status === 'Rejected',
-                          }"
-                        >
-                          {{ transaction.status }}
-                        </span>
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                      >
-                        {{ transaction.date }}
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm font-medium"
-                      >
-                        <div class="flex space-x-2">
-                          <button class="text-primary hover:text-primary/80">
-                            <eye-icon class="h-5 w-5" />
-                          </button>
-                          <button
-                            v-if="transaction.status === 'Pending'"
-                            class="text-green-600 hover:text-green-800"
-                          >
-                            <check-icon class="h-5 w-5" />
-                          </button>
-                          <button
-                            v-if="transaction.status === 'Pending'"
-                            class="text-red-600 hover:text-red-800"
-                          >
-                            <x-icon class="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div
-                class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-              >
-                <div class="flex-1 flex justify-between sm:hidden">
-                  <button
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Next
-                  </button>
-                </div>
-                <div
-                  class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p class="text-sm text-gray-700">
-                      Showing <span class="font-medium">1</span> to
-                      <span class="font-medium">10</span> of
-                      <span class="font-medium">45</span> results
-                    </p>
-                  </div>
-                  <div>
-                    <nav
-                      class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
-                    >
-                      <button
-                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        <chevron-left-icon class="h-5 w-5" />
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white"
-                      >
-                        1
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        2
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        3
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        <chevron-right-icon class="h-5 w-5" />
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Support Tickets -->
-          <div v-if="activeSection === 'support'" class="space-y-6">
-            <div
-              class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div class="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="Search tickets..."
-                  class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-                <button
-                  class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                >
-                  <search-icon class="h-5 w-5" />
-                </button>
-              </div>
-              <div class="mt-3 sm:mt-0 flex space-x-2">
-                <select
-                  class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                >
-                  <option>All Priorities</option>
-                  <option>High</option>
-                  <option>Medium</option>
-                  <option>Low</option>
-                </select>
-                <select
-                  class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                >
-                  <option>All Status</option>
-                  <option>Open</option>
-                  <option>In Progress</option>
-                  <option>Resolved</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Ticket ID
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Subject
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        User
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Priority
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Status
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Created
-                      </th>
-                      <th
-                        scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="(ticket, index) in supportTickets" :key="index">
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                      >
-                        {{ ticket.id }}
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="text-sm text-gray-900">
-                          {{ ticket.subject }}
-                        </div>
-                        <div class="text-sm text-gray-500 truncate max-w-xs">
-                          {{ ticket.preview }}
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                          <div class="flex-shrink-0 h-8 w-8">
-                            <img
-                              class="h-8 w-8 rounded-full"
-                              :src="ticket.userAvatar"
-                              alt=""
-                            />
-                          </div>
-                          <div class="ml-3">
-                            <div class="text-sm font-medium text-gray-900">
-                              {{ ticket.userName }}
+                          <div class="flex-1 space-y-1.5">
+                            <div
+                              v-for="n in 5"
+                              :key="n"
+                              class="flex items-center"
+                            >
+                              <div class="text-xs w-5 text-right mr-2">
+                                {{ 6 - n }}
+                              </div>
+                              <UIcon
+                                name="i-heroicons-star"
+                                class="w-3.5 h-3.5 text-yellow-400 mr-1.5"
+                              />
+                              <div
+                                class="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
+                              >
+                                <div
+                                  class="h-full bg-yellow-400"
+                                  :style="{ width: `${Math.random() * 100}%` }"
+                                ></div>
+                              </div>
+                              <div class="text-xs w-5 text-right ml-2">
+                                {{
+                                  Math.floor(
+                                    Math.random() *
+                                      selectedProduct.reviews.length
+                                  )
+                                }}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="{
-                            'bg-red-100 text-red-800':
-                              ticket.priority === 'High',
-                            'bg-yellow-100 text-yellow-800':
-                              ticket.priority === 'Medium',
-                            'bg-blue-100 text-blue-800':
-                              ticket.priority === 'Low',
-                          }"
+                      </div>
+
+                      <!-- Reviews List -->
+                      <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <div
+                          v-for="(review, index) in selectedProduct.reviews"
+                          :key="index"
+                          class="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
                         >
-                          {{ ticket.priority }}
-                        </span>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="{
-                            'bg-green-100 text-green-800':
-                              ticket.status === 'Open',
-                            'bg-purple-100 text-purple-800':
-                              ticket.status === 'In Progress',
-                            'bg-gray-100 text-gray-800':
-                              ticket.status === 'Resolved',
-                          }"
-                        >
-                          {{ ticket.status }}
-                        </span>
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                      >
-                        {{ ticket.created }}
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm font-medium"
-                      >
-                        <div class="flex space-x-2">
-                          <button class="text-primary hover:text-primary/80">
-                            <message-square-icon class="h-5 w-5" />
-                          </button>
-                          <button class="text-gray-600 hover:text-gray-800">
-                            <user-icon class="h-5 w-5" />
-                          </button>
-                          <button
-                            v-if="ticket.status !== 'Resolved'"
-                            class="text-green-600 hover:text-green-800"
-                          >
-                            <check-circle-icon class="h-5 w-5" />
-                          </button>
+                          <div class="flex justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                              <div
+                                class="w-8 h-8 bg-primary/20 text-primary rounded-full flex items-center justify-center"
+                              >
+                                <span class="font-medium text-sm">{{
+                                  review.name.charAt(0)
+                                }}</span>
+                              </div>
+                              <div>
+                                <div
+                                  class="font-medium text-slate-800 dark:text-white"
+                                >
+                                  {{ review.name }}
+                                </div>
+                                <div class="text-xs text-slate-500">
+                                  {{ review.date }}
+                                </div>
+                              </div>
+                            </div>
+                            <div class="flex">
+                              <UIcon
+                                v-for="n in 5"
+                                :key="n"
+                                :name="
+                                  n <= review.rating
+                                    ? 'i-heroicons-star-solid'
+                                    : 'i-heroicons-star'
+                                "
+                                class="w-3.5 h-3.5"
+                                :class="
+                                  n <= review.rating
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-200'
+                                "
+                              />
+                            </div>
+                          </div>
+                          <p class="text-sm text-slate-600 dark:text-slate-300">
+                            {{ review.comment }}
+                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div
-                class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-              >
-                <div class="flex-1 flex justify-between sm:hidden">
-                  <button
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Next
-                  </button>
-                </div>
-                <div
-                  class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p class="text-sm text-gray-700">
-                      Showing <span class="font-medium">1</span> to
-                      <span class="font-medium">10</span> of
-                      <span class="font-medium">23</span> results
-                    </p>
-                  </div>
-                  <div>
-                    <nav
-                      class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Details Tab -->
+                  <template #details>
+                    <div
+                      class="prose prose-sm max-w-none text-slate-600 dark:text-slate-300"
                     >
-                      <button
-                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                      <p>{{ selectedProduct.description }}</p>
+                      <p class="mt-3">
+                        Experience the perfect blend of design and functionality
+                        with our {{ selectedProduct.name }}. Designed with the
+                        modern consumer in mind.
+                      </p>
+
+                      <h4
+                        class="text-base font-semibold mt-4 mb-2 text-slate-800 dark:text-white"
                       >
-                        <chevron-left-icon class="h-5 w-5" />
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white"
+                        Specifications
+                      </h4>
+                      <div
+                        class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2"
                       >
-                        1
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        <div
+                          class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700"
+                        >
+                          <span class="text-slate-500 dark:text-slate-400"
+                            >Brand:</span
+                          >
+                          <span class="font-medium">Premium Selection</span>
+                        </div>
+                        <div
+                          class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700"
+                        >
+                          <span class="text-slate-500 dark:text-slate-400"
+                            >Model:</span
+                          >
+                          <span class="font-medium"
+                            >X-{{
+                              1000 + Math.floor(Math.random() * 9000)
+                            }}</span
+                          >
+                        </div>
+                        <div
+                          class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700"
+                        >
+                          <span class="text-slate-500 dark:text-slate-400"
+                            >Dimensions:</span
+                          >
+                          <span class="font-medium">24 x 12 x 8 cm</span>
+                        </div>
+                        <div
+                          class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700"
+                        >
+                          <span class="text-slate-500 dark:text-slate-400"
+                            >Weight:</span
+                          >
+                          <span class="font-medium">1.2 kg</span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Shipping Tab -->
+                  <template #shipping>
+                    <div class="text-slate-600 dark:text-slate-300">
+                      <p class="mb-4">
+                        We offer multiple shipping options to meet your needs:
+                      </p>
+                      <ul class="space-y-3">
+                        <li class="flex items-start gap-2">
+                          <UIcon
+                            name="i-heroicons-truck"
+                            class="w-5 h-5 text-primary mt-0.5"
+                          />
+                          <div>
+                            <p
+                              class="font-medium text-slate-800 dark:text-white"
+                            >
+                              Standard Shipping
+                            </p>
+                            <p class="text-sm">
+                              Delivery within 3-5 business days
+                            </p>
+                          </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <UIcon
+                            name="i-heroicons-bolt"
+                            class="w-5 h-5 text-primary mt-0.5"
+                          />
+                          <div>
+                            <p
+                              class="font-medium text-slate-800 dark:text-white"
+                            >
+                              Express Shipping
+                            </p>
+                            <p class="text-sm">
+                              Delivery within 1-2 business days
+                            </p>
+                          </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                          <UIcon
+                            name="i-heroicons-map-pin"
+                            class="w-5 h-5 text-primary mt-0.5"
+                          />
+                          <div>
+                            <p
+                              class="font-medium text-slate-800 dark:text-white"
+                            >
+                              Local Pickup
+                            </p>
+                            <p class="text-sm">Available at select locations</p>
+                          </div>
+                        </li>
+                      </ul>
+
+                      <div
+                        class="mt-4 p-3 bg-slate-50 dark:bg-slate-800/70 rounded-lg"
                       >
-                        2
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        3
-                      </button>
-                      <button
-                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        <chevron-right-icon class="h-5 w-5" />
-                      </button>
-                    </nav>
-                  </div>
-                </div>
+                        <div class="flex items-center gap-2 text-sm">
+                          <UIcon
+                            name="i-heroicons-information-circle"
+                            class="w-5 h-5 text-primary"
+                          />
+                          <span>Free shipping on orders over ৳5,000</span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </UTabs>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </UCard>
+      </UModal>
     </div>
-  </div>
+
+    <!-- Features List - Improved Responsive Layout -->
+    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-lg mb-4">
+      <div class="text-sm sm:text-base font-medium mb-2">Key Features:</div>
+      <ul class="space-y-1.5 sm:space-y-2 text-slate-600 dark:text-slate-300">
+        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+          <UIcon
+            name="i-heroicons-check-circle"
+            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+          />
+          <span>Premium Quality</span>
+        </li>
+        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+          <UIcon
+            name="i-heroicons-check-circle"
+            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+          />
+          <span>30-Day Money-Back Guarantee</span>
+        </li>
+        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+          <UIcon
+            name="i-heroicons-check-circle"
+            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+          />
+          <span>Free Shipping Available</span>
+        </li>
+        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
+          <UIcon
+            name="i-heroicons-check-circle"
+            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+          />
+          <span>24/7 Customer Support</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Tabs - Improved Responsiveness -->
+    <UTabs
+      :items="[
+        {
+          label: 'Reviews',
+          slot: 'reviews',
+          icon: 'i-heroicons-chat-bubble-left-right',
+        },
+        {
+          label: 'Details',
+          slot: 'details',
+          icon: 'i-heroicons-document-text',
+        },
+        { label: 'Shipping', slot: 'shipping', icon: 'i-heroicons-truck' },
+      ]"
+    >
+    </UTabs>
+  </UContainer>
 </template>
 
 <script setup>
-// import { ref, computed } from "vue";
-// import {
-//   Menu as MenuIcon,
-//   Search as SearchIcon,
-//   Plus as PlusIcon,
-//   Edit as EditIcon,
-//   Check as CheckIcon,
-//   Ban as BanIcon,
-//   RefreshCw as RefreshCwIcon,
-//   ChevronLeft as ChevronLeftIcon,
-//   ChevronRight as ChevronRightIcon,
-//   Filter as FilterIcon,
-//   Download as DownloadIcon,
-//   ArrowDown as ArrowDownIcon,
-//   ArrowUp as ArrowUpIcon,
-//   Repeat as RepeatIcon,
-//   Eye as EyeIcon,
-//   LogOut as LogOutIcon,
-//   MessageSquare as MessageSquareIcon,
-//   User as UserIcon,
-//   CheckCircle as CheckCircleIcon,
-//   X as XIcon,
-// } from "lucide-vue-next";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 // State
-const mobileMenuOpen = ref(false);
-const activeSection = ref("users");
+const isOpen = ref(false);
+const searchQuery = ref("");
+const selectedCategory = ref(null);
+const searchInput = ref(null);
 
-// Navigation items
-const navigationItems = [
+const imageLoaded = ref(false);
+// Sample category data with random product counts
+const categories = [
   {
-    id: "users",
-    name: "Users Management",
-    icon: UserIcon,
-    description: "Manage user accounts and permissions",
-    badge: "12",
+    id: 1,
+    name: "Electronics",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-device-phone-mobile",
   },
   {
-    id: "recharge",
-    name: "Mobile Recharge",
-    icon: RepeatIcon,
-    description: "Manage mobile recharge transactions",
+    id: 2,
+    name: "Clothing & Fashion",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-shirt",
   },
   {
-    id: "gigs",
-    name: "Gigs",
-    icon: MenuIcon,
-    description: "Manage gig listings and providers",
+    id: 3,
+    name: "Home & Kitchen",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-home",
   },
   {
-    id: "kyc",
-    name: "KYC Verification",
-    icon: CheckCircleIcon,
-    description: "Verify user identities",
-    badge: "8",
+    id: 4,
+    name: "Beauty & Personal Care",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-sparkles",
   },
   {
-    id: "classified",
-    name: "Classified Posts",
-    icon: MessageSquareIcon,
-    description: "Manage classified advertisements",
+    id: 5,
+    name: "Books & Stationery",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-book-open",
   },
   {
-    id: "transactions",
-    name: "Financial Transactions",
-    icon: ArrowDownIcon,
-    description: "Manage deposits, withdrawals and transfers",
-    badge: "5",
+    id: 6,
+    name: "Sports & Outdoors",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-trophy",
   },
   {
-    id: "affiliates",
-    name: "Affiliates",
-    icon: UserIcon,
-    description: "Manage affiliate partners and commissions",
+    id: 7,
+    name: "Toys & Games",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-puzzle-piece",
   },
   {
-    id: "support",
-    name: "Support Tickets",
-    icon: MessageSquareIcon,
-    description: "Manage customer support requests",
-    badge: "3",
+    id: 8,
+    name: "Health & Wellness",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-heart",
+  },
+  {
+    id: 9,
+    name: "Automotive",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-truck",
+  },
+  {
+    id: 10,
+    name: "Jewelry & Watches",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-clock",
+  },
+  {
+    id: 11,
+    name: "Food & Grocery",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-shopping-bag",
+  },
+  {
+    id: 12,
+    name: "Baby & Kids",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-face-smile",
+  },
+  {
+    id: 13,
+    name: "Pet Supplies",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-bug-ant",
+  },
+  {
+    id: 14,
+    name: "Office Supplies",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-document",
+  },
+  {
+    id: 15,
+    name: "Musical Instruments",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-musical-note",
+  },
+  {
+    id: 16,
+    name: "Garden & Outdoor",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-sun",
+  },
+  {
+    id: 17,
+    name: "Furniture",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-cube",
+  },
+  {
+    id: 18,
+    name: "Computers & Accessories",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-computer-desktop",
+  },
+  {
+    id: 19,
+    name: "Arts & Crafts",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-paint-brush",
+  },
+  {
+    id: 20,
+    name: "Travel & Luggage",
+    count: Math.floor(Math.random() * 500) + 100,
+    icon: "i-heroicons-globe-alt",
   },
 ];
 
-// Computed current section
-const currentSection = computed(() => {
-  return (
-    navigationItems.find((item) => item.id === activeSection.value) ||
-    navigationItems[0]
+// Total product count
+const totalProductCount = computed(() => {
+  return categories.reduce((total, category) => total + category.count, 0);
+});
+
+// Filter categories based on search query
+const filteredCategories = computed(() => {
+  if (!searchQuery.value) return categories;
+
+  const query = searchQuery.value.toLowerCase();
+  return categories.filter((category) =>
+    category.name.toLowerCase().includes(query)
   );
 });
 
-// Sample data for users
-const users = [
+// Toggle dropdown
+const toggleDropdown = () => {
+  isOpen.value = !isOpen.value;
+
+  if (isOpen.value) {
+    // Focus search input when dropdown opens
+    setTimeout(() => {
+      searchInput.value?.focus();
+    }, 100);
+  } else {
+    // Clear search when dropdown closes
+    searchQuery.value = "";
+  }
+};
+
+// Select a category
+const selectCategory = (category) => {
+  selectedCategory.value = category;
+  isOpen.value = false;
+  searchQuery.value = "";
+
+  // In a real app, you would trigger a product filter here
+  console.log(
+    `Selected category: ${category ? category.name : "All Categories"}`
+  );
+};
+
+// Close dropdown when clicking outside
+const handleClickOutside = (event) => {
+  if (isOpen.value && !event.target.closest(".category-dropdown-container")) {
+    isOpen.value = false;
+    searchQuery.value = "";
+  }
+};
+
+// Keyboard navigation
+const handleKeyDown = (event) => {
+  if (event.key === "Escape" && isOpen.value) {
+    isOpen.value = false;
+    searchQuery.value = "";
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+  document.addEventListener("keydown", handleKeyDown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener("keydown", handleKeyDown);
+});
+// Product carousel and modal state
+const currentSlide = ref(0);
+const itemsPerSlide = ref(5);
+const isModalOpen = ref(false);
+const selectedProduct = ref(null);
+const quantity = ref(1);
+const userRating = ref(0);
+const reviewComment = ref("");
+
+// Sample products data with reviews
+const products = [
   {
-    name: "John Smith",
-    email: "john@example.com",
-    status: "Active",
-    role: "User",
-    joined: "Jan 10, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
+    id: 1,
+    name: "Wireless Noise-Cancelling Headphones",
+    price: "3,499",
+    oldPrice: "4,999",
+    discount: 30,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Headphones",
+    category: "Electronics",
+    rating: 4.8,
+    description:
+      "Experience premium sound quality with these wireless noise-cancelling headphones. Perfect for work, travel, and everyday use with up to 30 hours of battery life.",
+    reviews: [
+      {
+        name: "Asif Khan",
+        rating: 5,
+        date: "March 12, 2025",
+        comment:
+          "Amazing sound quality and the noise cancellation is perfect for my daily commute!",
+        avatar: "",
+      },
+      {
+        name: "Farah Ahmed",
+        rating: 4,
+        date: "March 5, 2025",
+        comment:
+          "Great battery life and comfortable to wear for hours. The app could use some improvements though.",
+        avatar: "",
+      },
+    ],
   },
   {
-    name: "Sarah Johnson",
-    email: "sarah@example.com",
-    status: "Active",
-    role: "Premium User",
-    joined: "Feb 15, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
+    id: 2,
+    name: "Smartphone With 108MP Camera",
+    price: "32,999",
+    oldPrice: "36,999",
+    discount: 10,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Smartphone",
+    category: "Electronics",
+    rating: 4.7,
+    description:
+      "Capture stunning photos with the 108MP camera system. Features a 6.7-inch display, 5G connectivity, and all-day battery life.",
+    reviews: [
+      {
+        name: "Rajib Hossain",
+        rating: 5,
+        date: "February 28, 2025",
+        comment:
+          "The camera on this phone is incredible! Battery life exceeds my expectations.",
+        avatar: "",
+      },
+    ],
   },
   {
-    name: "Michael Brown",
-    email: "michael@example.com",
-    status: "Pending",
-    role: "User",
-    joined: "Mar 22, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
+    id: 3,
+    name: "Men's Premium Cotton T-Shirt",
+    price: "999",
+    oldPrice: "1,499",
+    discount: 33,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=T-Shirt",
+    category: "Clothing & Fashion",
+    rating: 4.5,
+    description:
+      "Made from 100% premium cotton for maximum comfort and durability. Available in multiple colors and sizes.",
+    reviews: [
+      {
+        name: "Kamal Rahman",
+        rating: 5,
+        date: "March 15, 2025",
+        comment:
+          "The quality of this t-shirt is exceptional. Fits perfectly and feels great!",
+        avatar: "",
+      },
+      {
+        name: "Nazia Islam",
+        rating: 4,
+        date: "March 2, 2025",
+        comment:
+          "Nice fabric quality but runs slightly large. I recommend sizing down.",
+        avatar: "",
+      },
+    ],
   },
   {
-    name: "Emily Davis",
-    email: "emily@example.com",
-    status: "Active",
-    role: "Admin",
-    joined: "Dec 5, 2022",
-    avatar: "/placeholder.svg?height=40&width=40",
+    id: 4,
+    name: "Smart Fitness Tracker Watch",
+    price: "4,599",
+    oldPrice: "5,999",
+    discount: 23,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Watch",
+    category: "Wearables",
+    rating: 4.6,
+    description:
+      "Track your steps, heart rate, sleep quality and more with this advanced fitness tracker. Includes GPS and 15+ sport modes.",
+    reviews: [
+      {
+        name: "Tanvir Ahmed",
+        rating: 5,
+        date: "February 20, 2025",
+        comment:
+          "Accurate tracking and the battery lasts for days! Great value for money.",
+        avatar: "",
+      },
+    ],
   },
   {
-    name: "David Wilson",
-    email: "david@example.com",
-    status: "Suspended",
-    role: "User",
-    joined: "Apr 18, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
+    id: 5,
+    name: "Non-stick Cookware Set (10 Pieces)",
+    price: "5,999",
+    oldPrice: "8,999",
+    discount: 33,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Cookware",
+    category: "Home & Kitchen",
+    rating: 4.9,
+    description:
+      "Complete cookware set featuring non-stick coating and heat-resistant handles. Includes pots, pans, and cooking utensils.",
+    reviews: [
+      {
+        name: "Sabina Yasmin",
+        rating: 5,
+        date: "March 10, 2025",
+        comment:
+          "Everything you need in one set! The quality is excellent and they clean up so easily.",
+        avatar: "",
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: "Digital SLR Camera with 18-55mm Lens",
+    price: "42,999",
+    oldPrice: "49,999",
+    discount: 14,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Camera",
+    category: "Electronics",
+    rating: 4.7,
+    description:
+      "Perfect for beginners and enthusiasts alike. Features a 24.1MP sensor, optical viewfinder, and fast autofocus system.",
+    reviews: [
+      {
+        name: "Rakib Hasan",
+        rating: 4,
+        date: "February 25, 2025",
+        comment:
+          "Great camera for beginners! Easy to use with excellent image quality.",
+        avatar: "",
+      },
+    ],
+  },
+  {
+    id: 7,
+    name: "Organic Skincare Gift Set",
+    price: "2,899",
+    oldPrice: "3,499",
+    discount: 17,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Skincare",
+    category: "Beauty & Personal Care",
+    rating: 4.8,
+    description:
+      "All-natural and organic skincare products featuring cleanser, toner, moisturizer, and face mask. Perfect for all skin types.",
+    reviews: [
+      {
+        name: "Nusrat Jahan",
+        rating: 5,
+        date: "March 18, 2025",
+        comment:
+          "My skin feels amazing after using these products. Love that they're all organic!",
+        avatar: "",
+      },
+    ],
+  },
+  {
+    id: 8,
+    name: "Bluetooth Portable Speaker",
+    price: "2,499",
+    oldPrice: "2,999",
+    discount: 16,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Speaker",
+    category: "Electronics",
+    rating: 4.5,
+    description:
+      "Compact yet powerful speaker with 20W output and waterproof design. Perfect for outdoor adventures or home use.",
+    reviews: [
+      {
+        name: "Mehedi Hasan",
+        rating: 4,
+        date: "March 5, 2025",
+        comment:
+          "Great sound quality for its size. Battery life could be better though.",
+        avatar: "",
+      },
+    ],
+  },
+  {
+    id: 9,
+    name: "Stainless Steel Water Bottle",
+    price: "799",
+    oldPrice: "999",
+    discount: 20,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Bottle",
+    category: "Sports & Outdoors",
+    rating: 4.9,
+    description:
+      "Keeps drinks cold for 24 hours or hot for 12 hours. Durable, leak-proof design with eco-friendly materials.",
+    reviews: [
+      {
+        name: "Tamanna Akter",
+        rating: 5,
+        date: "March 15, 2025",
+        comment:
+          "Best water bottle I've ever had. Keeps my water cold all day long!",
+        avatar: "",
+      },
+    ],
+  },
+  {
+    id: 10,
+    name: "Professional Knife Set with Block",
+    price: "4,999",
+    oldPrice: "7,999",
+    discount: 37,
+    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Knives",
+    category: "Home & Kitchen",
+    rating: 4.7,
+    description:
+      "Complete 15-piece knife set with premium stainless steel blades. Includes chef's knife, bread knife, steak knives, and more.",
+    reviews: [
+      {
+        name: "Imran Hossain",
+        rating: 5,
+        date: "February 22, 2025",
+        comment:
+          "Very sharp knives and the block looks great on my counter. Worth every penny.",
+        avatar: "",
+      },
+    ],
   },
 ];
 
-// Sample data for KYC requests
-const kycRequests = [
-  {
-    id: "KYC-2023-001",
-    name: "John Smith",
-    status: "Pending",
-    date: "Aug 15, 2023",
-    documentType: "Passport",
-    documentNumber: "P12345678",
-    idFront: "/placeholder.svg?height=100&width=150",
-    idBack: "/placeholder.svg?height=100&width=150",
-    selfie: "/placeholder.svg?height=150&width=200",
-  },
-  {
-    id: "KYC-2023-002",
-    name: "Sarah Johnson",
-    status: "Approved",
-    date: "Aug 12, 2023",
-    documentType: "Driver License",
-    documentNumber: "DL987654321",
-    idFront: "/placeholder.svg?height=100&width=150",
-    idBack: "/placeholder.svg?height=100&width=150",
-    selfie: "/placeholder.svg?height=150&width=200",
-  },
-  {
-    id: "KYC-2023-003",
-    name: "Michael Brown",
-    status: "Rejected",
-    date: "Aug 10, 2023",
-    documentType: "National ID",
-    documentNumber: "ID123456789",
-    idFront: "/placeholder.svg?height=100&width=150",
-    idBack: "/placeholder.svg?height=100&width=150",
-    selfie: "/placeholder.svg?height=150&width=200",
-  },
-  {
-    id: "KYC-2023-004",
-    name: "Emily Davis",
-    status: "Pending",
-    date: "Aug 8, 2023",
-    documentType: "Passport",
-    documentNumber: "P87654321",
-    idFront: "/placeholder.svg?height=100&width=150",
-    idBack: "/placeholder.svg?height=100&width=150",
-    selfie: "/placeholder.svg?height=150&width=200",
-  },
-  {
-    id: "KYC-2023-005",
-    name: "David Wilson",
-    status: "Pending",
-    date: "Aug 5, 2023",
-    documentType: "Driver License",
-    documentNumber: "DL123987456",
-    idFront: "/placeholder.svg?height=100&width=150",
-    idBack: "/placeholder.svg?height=100&width=150",
-    selfie: "/placeholder.svg?height=150&width=200",
-  },
-];
+// Update responsive items per slide based on screen size
+onMounted(() => {
+  updateItemsPerSlide();
+  window.addEventListener("resize", updateItemsPerSlide);
+});
 
-// Sample data for transactions
-const transactions = [
-  {
-    id: "TRX-2023-001",
-    userName: "John Smith",
-    userAvatar: "",
-    type: "Deposit",
-    amount: "$500.00",
-    status: "Completed",
-    date: "Aug 15, 2023 14:30",
-  },
-  {
-    id: "TRX-2023-002",
-    userName: "Sarah Johnson",
-    userAvatar: "",
-    type: "Withdrawal",
-    amount: "$200.00",
-    status: "Pending",
-    date: "Aug 14, 2023 10:15",
-  },
-  {
-    id: "TRX-2023-003",
-    userName: "Michael Brown",
-    userAvatar: "",
-    type: "P2P Transfer",
-    amount: "$150.00",
-    status: "Completed",
-    date: "Aug 13, 2023 16:45",
-  },
-  {
-    id: "TRX-2023-004",
-    userName: "Emily Davis",
-    userAvatar: "",
-    type: "Deposit",
-    amount: "$1,000.00",
-    status: "Completed",
-    date: "Aug 12, 2023 09:20",
-  },
-  {
-    id: "TRX-2023-005",
-    userName: "David Wilson",
-    userAvatar: "",
-    type: "Withdrawal",
-    amount: "$350.00",
-    status: "Rejected",
-    date: "Aug 11, 2023 13:10",
-  },
-];
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateItemsPerSlide);
+});
 
-// Sample data for support tickets
-const supportTickets = [
-  {
-    id: "TICKET-001",
-    subject: "Unable to withdraw funds",
-    preview:
-      "I tried to withdraw my funds but the transaction keeps failing...",
-    userName: "John Smith",
-    userAvatar: "",
-    priority: "High",
-    status: "Open",
-    created: "Aug 15, 2023 14:30",
-  },
-  {
-    id: "TICKET-002",
-    subject: "KYC verification taking too long",
-    preview: "I submitted my KYC documents 5 days ago but still no update...",
-    userName: "Sarah Johnson",
-    userAvatar: "",
-    priority: "Medium",
-    status: "In Progress",
-    created: "Aug 14, 2023 10:15",
-  },
-  {
-    id: "TICKET-003",
-    subject: "Mobile recharge failed",
-    preview:
-      "I tried to recharge my mobile but the payment was deducted and no recharge...",
-    userName: "Michael Brown",
-    userAvatar: "",
-    priority: "High",
-    status: "Open",
-    created: "Aug 13, 2023 16:45",
-  },
-  {
-    id: "TICKET-004",
-    subject: "How to become an affiliate?",
-    preview:
-      "I would like to know the process to become an affiliate partner...",
-    userName: "Emily Davis",
-    userAvatar: "",
-    priority: "Low",
-    status: "Resolved",
-    created: "Aug 12, 2023 09:20",
-  },
-  {
-    id: "TICKET-005",
-    subject: "Classified post not showing up",
-    preview:
-      "I created a classified post but it is not showing up in the listings...",
-    userName: "David Wilson",
-    userAvatar: "",
-    priority: "Medium",
-    status: "In Progress",
-    created: "Aug 11, 2023 13:10",
-  },
-];
+function updateItemsPerSlide() {
+  if (window.innerWidth < 640) {
+    itemsPerSlide.value = 2;
+  } else if (window.innerWidth < 768) {
+    itemsPerSlide.value = 3;
+  } else if (window.innerWidth < 1024) {
+    itemsPerSlide.value = 4;
+  } else {
+    itemsPerSlide.value = 5;
+  }
+}
+
+// Carousel navigation
+function prevSlide() {
+  if (currentSlide.value > 0) {
+    currentSlide.value--;
+  }
+}
+
+function nextSlide() {
+  if (
+    currentSlide.value <
+    Math.ceil(products.length / itemsPerSlide.value) - 1
+  ) {
+    currentSlide.value++;
+  }
+}
+
+function goToSlide(index) {
+  currentSlide.value = index;
+}
+
+// Get products for current slide
+function getProductsForSlide(slideIndex) {
+  const start = slideIndex * itemsPerSlide.value;
+  const end = start + itemsPerSlide.value;
+  return products.slice(start, end);
+}
+
+// Modal and review functions
+function openReviewModal(product) {
+  selectedProduct.value = product;
+  isModalOpen.value = true;
+  quantity.value = 1;
+  userRating.value = 0;
+  reviewComment.value = "";
+}
+
+function submitReview() {
+  if (!userRating.value || !reviewComment.value.trim()) {
+    // You could add toast notification here
+    return;
+  }
+
+  // Add review to product
+  selectedProduct.value.reviews.unshift({
+    name: "You", // In a real app, this would be the user's name
+    rating: userRating.value,
+    date: "Just now",
+    comment: reviewComment.value.trim(),
+    avatar: "", // In a real app, this would be the user's avatar
+  });
+
+  // Reset form
+  userRating.value = 0;
+  reviewComment.value = "";
+}
+
+// Add these refs to your script setup section
+const activeImage = ref(null);
+const selectedThumb = ref(-1);
+const imageZoomed = ref(false);
+
+// Generate random thumbnail images from the main image
+// In a real app, you'd have actual additional product images
+const thumbnailImages = computed(() => {
+  return Array(4).fill(selectedProduct.value?.image || "");
+});
+
+// Calculate price savings
+function calculateSavings(currentPrice, oldPrice) {
+  // Remove commas and convert to numbers
+  const current = Number(currentPrice.replace(/,/g, ""));
+  const old = Number(oldPrice.replace(/,/g, ""));
+  return (old - current).toLocaleString();
+}
 </script>
 
 <style scoped>
-:root {
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+/* Dropdown styles */
+.dropdown-trigger {
+  @apply flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-all duration-200 select-none;
 }
 
-.bg-primary {
-  background-color: var(--primary);
+.dropdown-trigger.is-open {
+  @apply shadow-md ring-1 ring-primary/40 border-primary/30;
 }
 
-.hover\:bg-primary\/90:hover {
-  background-color: var(--primary-hover);
+.dropdown-content {
+  @apply absolute w-full mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden;
 }
 
-.text-primary {
-  color: var(--primary);
+.search-container {
+  @apply relative flex items-center p-3 border-b border-slate-200 dark:border-slate-700;
 }
 
-.hover\:text-primary\/80:hover {
-  color: var(--primary-hover);
+.search-icon {
+  @apply absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400;
 }
 
-.focus\:ring-primary:focus {
-  --tw-ring-color: var(--primary);
+.search-input {
+  @apply w-full py-2 pl-8 pr-8 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all;
+}
+
+.clear-button {
+  @apply absolute right-5 top-1/2 -translate-y-1/2;
+}
+
+.categories-list-container {
+  @apply max-h-[400px] overflow-y-auto p-2;
+}
+
+.category-item {
+  @apply p-2.5 rounded-md cursor-pointer transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-slate-700;
+}
+
+.category-item.is-active {
+  @apply bg-primary/10 text-primary;
+}
+
+.icon-container {
+  @apply flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700;
+}
+
+.category-icon {
+  @apply w-4 h-4;
+}
+
+.empty-state {
+  @apply py-8 flex flex-col items-center justify-center text-center;
+}
+
+/* Custom scrollbar */
+.categories-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categories-list-container::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-700 rounded-full;
+}
+
+.categories-list-container::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-600 rounded-full hover:bg-slate-400 dark:hover:bg-slate-500;
+}
+
+/* Product card styles */
+.badge-discount {
+  @apply px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-full;
+}
+
+.wishlist-button {
+  @apply w-8 h-8 flex items-center justify-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm rounded-full border border-slate-200/50 dark:border-slate-700/50 transition-all hover:scale-110;
+}
+
+.quick-view-button {
+  @apply px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-sm font-medium text-slate-800 dark:text-white rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transform transition-all hover:scale-105;
+}
+
+.review-item {
+  @apply p-3 border border-slate-100 dark:border-slate-700 rounded-lg mb-3;
+}
+
+/* New premium product image styles */
+.status-badge {
+  @apply absolute top-2 right-2 z-20 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm opacity-0 transform translate-x-3 transition-all duration-500;
+  animation: pulse-badge 2s infinite;
+}
+
+.group:hover .status-badge {
+  @apply opacity-100 translate-x-0;
+}
+
+@keyframes pulse-badge {
+  0%,
+  100% {
+    @apply shadow-sm;
+  }
+  50% {
+    @apply shadow-md;
+  }
+}
+
+/* Premium action buttons */
+.product-action-btn {
+  @apply flex items-center justify-center gap-1.5 py-2 px-3 bg-white dark:bg-slate-800 rounded-md shadow-sm backdrop-blur-md text-sm font-medium transition-all duration-300 transform;
+}
+
+.quick-view-btn {
+  @apply text-primary hover:bg-primary hover:text-white transform translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500;
+}
+
+.add-cart-btn {
+  @apply text-slate-800 dark:text-white hover:bg-slate-800 dark:hover:bg-white hover:text-white dark:hover:text-slate-800 transform translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100;
+}
+
+.btn-icon {
+  @apply flex-shrink-0;
+}
+
+.btn-text {
+  @apply relative overflow-hidden;
+}
+
+.btn-text:after {
+  @apply absolute left-0 bottom-0 w-0 h-0.5 bg-current opacity-0 transition-all duration-300;
+  content: "";
+}
+
+.product-action-btn:hover .btn-text:after {
+  @apply w-full opacity-100;
+}
+
+/* Feature badges */
+.feature-badge {
+  @apply flex items-center text-[0.65rem] py-0.5 px-1.5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-700 dark:text-slate-300 rounded-full shadow-sm border border-slate-200/50 dark:border-slate-700/50;
+}
+
+/* Enhanced Gallery Styles */
+.product-gallery {
+  @apply relative;
+}
+
+.gallery-main-image {
+  @apply border border-slate-200 dark:border-slate-700 shadow-sm;
+}
+
+.shimmer-effect {
+  @apply opacity-0;
+  animation: shimmer 2s infinite;
+  transform: skewX(-20deg);
+  width: 40%;
+  left: -100%;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    left: 200%;
+    opacity: 0;
+  }
+}
+
+.gallery-main-image:hover .shimmer-effect {
+  animation-play-state: running;
+}
+
+.corner-effect {
+  @apply absolute w-4 h-4 opacity-0 transition-opacity duration-300 border-2 border-primary;
+}
+
+.gallery-main-image:hover .corner-effect {
+  @apply opacity-100;
+}
+
+.top-left {
+  @apply top-2 left-2;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.top-right {
+  @apply top-2 right-2;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.bottom-left {
+  @apply bottom-2 left-2;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.bottom-right {
+  @apply bottom-2 right-2;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Thumbnails */
+.thumbnail-container {
+  @apply cursor-pointer transition-all duration-300 transform;
+}
+
+.thumbnail-container:hover {
+  @apply -translate-y-1;
+}
+
+.thumbnail-container div {
+  @apply border-2 border-transparent transition-colors duration-200;
+}
+
+.thumbnail-active div {
+  @apply border-primary shadow-md;
+}
+
+/* Zoom Indicator */
+.zoom-indicator {
+  @apply absolute bottom-3 right-3 bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 p-1.5 rounded-full opacity-0 transition-opacity duration-300;
+}
+
+.gallery-main-image:hover .zoom-indicator {
+  @apply opacity-80;
+}
+
+/* Discount Badge */
+.discount-badge {
+  @apply transition-all duration-300 origin-left;
+  animation: pulse-badge 2s infinite;
+}
+
+.badge-background {
+  @apply absolute -inset-1 bg-gradient-to-r from-red-500 to-pink-500 rounded-md blur-sm opacity-75;
+  animation: pulse-glow 2s infinite alternate;
+}
+
+.badge-text {
+  @apply relative block px-2 py-1 bg-red-500 text-white text-xs font-bold rounded leading-none;
+}
+
+@keyframes pulse-glow {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+/* Rating Stars */
+.rating-stars {
+  @apply relative inline-flex;
+}
+
+.stars-background {
+  @apply flex;
+}
+
+.stars-foreground {
+  @apply absolute top-0 left-0 flex overflow-hidden;
+}
+
+/* Savings Badge */
+.price-comparison {
+  @apply flex flex-col;
+}
+
+.savings-badge {
+  @apply text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded mt-0.5;
+  animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Description highlight effect */
+.description-text {
+  @apply relative leading-relaxed;
+}
+
+.description-text::after {
+  @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary/20 transition-all duration-1000;
+  content: "";
+}
+
+.description-text:hover::after {
+  @apply w-full;
 }
 </style>
