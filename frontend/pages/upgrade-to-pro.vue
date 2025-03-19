@@ -383,6 +383,7 @@
               <!-- Enhanced CTA Button -->
               <button
                 class="w-full py-3 bg-gradient-to-r from-sky-400 to-blue-400 hover:from-sky-500 hover:to-blue-500 text-white rounded-xl text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md relative overflow-hidden group-hover:scale-[1.02]"
+                @click="showModal"
               >
                 <span
                   class="relative z-10 flex items-center justify-center gap-2"
@@ -459,30 +460,901 @@
         </div>
       </div>
     </div>
+
+    <!-- Main subscription modal -->
+    <UModal
+      v-model="openModal"
+      :ui="{
+        width: 'sm:max-w-md',
+        overlay: {
+          background: 'bg-slate-900/30 backdrop-blur-sm',
+        },
+        container: 'transition-all duration-300 ease-out-cubic',
+      }"
+      transition="fade-scale"
+    >
+      <div class="modal-subscription overflow-hidden rounded-xl">
+        <!-- Animated Header -->
+        <div class="relative overflow-hidden">
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-sky-500/20 to-blue-500/20 animate-gradient"
+          ></div>
+          <div
+            class="relative px-6 py-5 bg-gradient-to-r from-sky-500 to-blue-500"
+          >
+            <!-- Animated particles -->
+            <div
+              class="absolute top-3 right-3 w-2 h-2 rounded-full bg-white/30 animate-ping-slow"
+            ></div>
+            <div
+              class="absolute top-10 right-12 w-1 h-1 rounded-full bg-white/20 animate-ping-slow"
+              style="animation-delay: 0.5s"
+            ></div>
+            <div
+              class="absolute bottom-5 left-10 w-1.5 h-1.5 rounded-full bg-white/20 animate-ping-slow"
+              style="animation-delay: 1s"
+            ></div>
+
+            <div class="flex items-center gap-3">
+              <div
+                class="bg-white/20 p-2.5 rounded-lg flex items-center justify-center backdrop-blur-sm"
+              >
+                <UIcon name="i-heroicons-star" class="text-white w-5 h-5" />
+              </div>
+              <div>
+                <h2 class="text-white font-semibold text-xl flex items-center">
+                  Upgrade to Pro
+                  <div class="ml-2 flex">
+                    <span class="animate-shimmer-star">✨</span>
+                  </div>
+                </h2>
+                <p class="text-sky-100 text-sm mt-0.5">
+                  Unlock premium features for your business
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-0">
+          <!-- Loading State -->
+          <div
+            v-if="isLoading"
+            class="flex flex-col items-center justify-center py-16 px-6"
+          >
+            <div class="relative">
+              <div
+                class="w-12 h-12 rounded-full border-2 border-sky-500/20"
+              ></div>
+              <div
+                class="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-sky-500 animate-spin"
+              ></div>
+            </div>
+            <p class="mt-4 text-slate-600 dark:text-slate-400">
+              Loading plan details...
+            </p>
+          </div>
+
+          <!-- Content -->
+          <div v-else class="px-6 py-5">
+            <!-- Plan Details -->
+            <div class="mb-6">
+              <h3 class="text-base font-medium mb-3 flex items-center">
+                <UIcon
+                  name="i-heroicons-document-text"
+                  class="mr-2 text-sky-500 w-4 h-4"
+                />
+                Plan Details
+              </h3>
+              <div
+                class="p-4 rounded-lg bg-gradient-to-r from-slate-50 to-sky-50 dark:from-slate-800/80 dark:to-sky-900/30 border border-slate-100 dark:border-slate-700/50 relative overflow-hidden group"
+              >
+                <!-- Shimmer effect on hover -->
+                <div
+                  class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 dark:via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer"
+                ></div>
+
+                <!-- Plan content -->
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-slate-600 dark:text-slate-300">Plan:</span>
+                  <span
+                    class="font-semibold bg-gradient-to-r from-sky-600 to-blue-600 dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent"
+                    >Pro Plan</span
+                  >
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-slate-600 dark:text-slate-300">Price:</span>
+                  <span class="font-semibold">৳2,900 / month</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600 dark:text-slate-300"
+                    >Duration:</span
+                  >
+                  <span class="font-semibold">30 days</span>
+                </div>
+
+                <!-- Benefits -->
+                <div
+                  class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/50"
+                >
+                  <div
+                    class="flex items-center gap-2 mb-2 text-xs text-slate-600 dark:text-slate-400"
+                  >
+                    <UIcon
+                      name="i-heroicons-check-circle"
+                      class="text-green-500 w-4 h-4"
+                    />
+                    <span>Unlimited products</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400"
+                  >
+                    <UIcon
+                      name="i-heroicons-check-circle"
+                      class="text-green-500 w-4 h-4"
+                    />
+                    <span>Priority support with 24/7 access</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Method Selection -->
+            <div class="mb-6">
+              <h3 class="text-base font-medium mb-3 flex items-center">
+                <UIcon
+                  name="i-heroicons-credit-card"
+                  class="mr-2 text-sky-500 w-4 h-4"
+                />
+                Payment Method
+              </h3>
+
+              <!-- Account Funds Option -->
+              <div class="payment-option-container mb-3">
+                <URadio
+                  v-model="paymentMethod"
+                  name="payment"
+                  value="account_funds"
+                  class="sr-only"
+                  id="account_funds"
+                />
+                <label
+                  for="account_funds"
+                  class="block p-4 border rounded-lg transition-all duration-200 cursor-pointer relative"
+                  :class="
+                    paymentMethod === 'account_funds'
+                      ? 'border-sky-500 dark:border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500/30'
+                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                  "
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 flex-shrink-0 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center"
+                      >
+                        <UIcon
+                          name="i-heroicons-wallet"
+                          class="w-5 h-5 text-sky-600 dark:text-sky-400"
+                        />
+                      </div>
+                      <div>
+                        <p class="font-medium">Account Funds</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                          Available balance: ৳3,500
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-center w-5 h-5 rounded-full border-2"
+                      :class="
+                        paymentMethod === 'account_funds'
+                          ? 'bg-sky-500 border-sky-500 flex items-center justify-center'
+                          : 'border-slate-300 dark:border-slate-600'
+                      "
+                    >
+                      <div
+                        v-if="paymentMethod === 'account_funds'"
+                        class="w-2 h-2 bg-white rounded-full animate-scale-in"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <!-- Instant badge -->
+                  <div class="absolute top-2 right-2">
+                    <span
+                      class="px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded"
+                      >Instant</span
+                    >
+                  </div>
+                </label>
+              </div>
+
+              <!-- Surjopay Option -->
+              <div class="payment-option-container">
+                <URadio
+                  v-model="paymentMethod"
+                  name="payment"
+                  value="surjopay"
+                  class="sr-only"
+                  id="surjopay"
+                />
+                <label
+                  for="surjopay"
+                  class="block p-4 border rounded-lg transition-all duration-200 cursor-pointer"
+                  :class="
+                    paymentMethod === 'surjopay'
+                      ? 'border-sky-500 dark:border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500/30'
+                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                  "
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 flex-shrink-0 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center"
+                      >
+                        <UIcon
+                          name="i-heroicons-credit-card"
+                          class="w-5 h-5 text-sky-600 dark:text-sky-400"
+                        />
+                      </div>
+                      <div>
+                        <p class="font-medium">SurjoPay Gateway</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                          Credit/Debit card, bKash, Nagad & more
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-center w-5 h-5 rounded-full border-2"
+                      :class="
+                        paymentMethod === 'surjopay'
+                          ? 'bg-sky-500 border-sky-500 flex items-center justify-center'
+                          : 'border-slate-300 dark:border-slate-600'
+                      "
+                    >
+                      <div
+                        v-if="paymentMethod === 'surjopay'"
+                        class="w-2 h-2 bg-white rounded-full animate-scale-in"
+                      ></div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-3">
+              <button
+                class="w-full py-3 font-medium relative overflow-hidden group"
+                :class="[
+                  isSubscribing
+                    ? 'cursor-not-allowed opacity-80'
+                    : 'cursor-pointer',
+                  'bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white rounded-xl transition-all duration-300',
+                ]"
+                @click="createSubscription"
+                :disabled="isSubscribing"
+              >
+                <span
+                  class="relative z-10 flex items-center justify-center gap-2"
+                >
+                  <span v-if="isSubscribing" class="flex items-center">
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-4 h-4 animate-spin mr-2"
+                    />
+                    Processing...
+                  </span>
+                  <span v-else>
+                    Confirm Upgrade
+                    <UIcon
+                      name="i-heroicons-arrow-right"
+                      class="w-4 h-4 transition-transform group-hover:translate-x-1"
+                    />
+                  </span>
+                </span>
+                <div
+                  class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-shimmer"
+                ></div>
+              </button>
+
+              <button
+                class="w-full py-3 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 font-medium"
+                @click="openModal = false"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </UModal>
+
+    <!-- Success Modal -->
+    <UModal
+      v-model="showSuccessModal"
+      :ui="{
+        width: 'sm:max-w-md',
+        overlay: {
+          background: 'bg-slate-900/40 backdrop-blur-sm',
+        },
+        container: 'transition-all duration-300 ease-out-cubic',
+      }"
+      transition="zoom-fade"
+    >
+      <div class="success-modal rounded-xl overflow-hidden">
+        <!-- Animated Success Header -->
+        <div class="relative overflow-hidden">
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-green-500/20 animate-gradient"
+          ></div>
+          <div
+            class="relative px-6 pt-8 pb-6 bg-gradient-to-r from-emerald-500 to-green-500 flex flex-col items-center"
+          >
+            <!-- Animated confetti -->
+            <div
+              class="absolute top-3 right-10 w-1.5 h-1.5 rounded-full bg-white/30 animate-ping-slow"
+            ></div>
+            <div
+              class="absolute bottom-10 left-8 w-1 h-1 rounded-full bg-white/20 animate-ping-slow"
+              style="animation-delay: 0.8s"
+            ></div>
+            <div
+              class="absolute top-12 left-10 w-1 h-1 rounded-full bg-white/20 animate-ping-slow"
+              style="animation-delay: 1.2s"
+            ></div>
+            <div
+              class="absolute bottom-4 right-12 w-2 h-2 rounded-full bg-white/20 animate-ping-slow"
+              style="animation-delay: 0.4s"
+            ></div>
+
+            <!-- Success icon with animations -->
+            <div class="relative mb-4">
+              <!-- Outer rings animation -->
+              <div
+                class="absolute inset-0 w-20 h-20 rounded-full border-4 border-white/20 animate-pulse-slow"
+              ></div>
+              <div
+                class="absolute inset-0 w-20 h-20 rounded-full border-4 border-white/10 animate-pulse-slower"
+                style="animation-delay: 0.5s"
+              ></div>
+
+              <!-- Icon container -->
+              <div
+                class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center z-10 relative"
+              >
+                <UIcon name="i-heroicons-check" class="w-10 h-10 text-white" />
+
+                <!-- Success rays -->
+                <div class="absolute inset-0 success-rays"></div>
+              </div>
+            </div>
+
+            <h2 class="text-white font-bold text-2xl mb-1">
+              Payment Successful!
+            </h2>
+            <div class="flex items-center gap-1">
+              <UIcon
+                name="i-heroicons-shield-check"
+                class="w-4 h-4 text-white/80"
+              />
+              <p class="text-green-50 text-sm">
+                Transaction processed securely
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Content -->
+        <div class="p-6 bg-white dark:bg-slate-800">
+          <div class="mb-6">
+            <div class="flex flex-col gap-4">
+              <!-- Success details card -->
+              <div
+                class="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700/50"
+              >
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-slate-500 dark:text-slate-400">Plan:</span>
+                  <span class="font-semibold text-slate-800 dark:text-white"
+                    >Pro Plan</span
+                  >
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-slate-500 dark:text-slate-400"
+                    >Amount:</span
+                  >
+                  <span class="font-semibold text-slate-800 dark:text-white"
+                    >৳2,900</span
+                  >
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-500 dark:text-slate-400"
+                    >Active until:</span
+                  >
+                  <span class="font-semibold text-slate-800 dark:text-white">{{
+                    new Date(
+                      Date.now() + 30 * 24 * 60 * 60 * 1000
+                    ).toLocaleDateString()
+                  }}</span>
+                </div>
+
+                <!-- Animated tick marks -->
+                <div
+                  class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-600/50"
+                >
+                  <div
+                    class="flex items-center gap-2 mb-2 animate-fade-in"
+                    style="animation-delay: 0.2s"
+                  >
+                    <div
+                      class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+                    >
+                      <UIcon
+                        name="i-heroicons-check"
+                        class="w-3 h-3 text-green-500"
+                      />
+                    </div>
+                    <span class="text-sm text-slate-600 dark:text-slate-300"
+                      >Unlimited products activated</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-2 animate-fade-in"
+                    style="animation-delay: 0.4s"
+                  >
+                    <div
+                      class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+                    >
+                      <UIcon
+                        name="i-heroicons-check"
+                        class="w-3 h-3 text-green-500"
+                      />
+                    </div>
+                    <span class="text-sm text-slate-600 dark:text-slate-300"
+                      >Priority support enabled</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Receipt ID -->
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-400"
+                  >Transaction ID:</span
+                >
+                <code
+                  class="bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 font-mono"
+                  >{{
+                    "TXN_" +
+                    Math.random().toString(36).substring(2, 10).toUpperCase()
+                  }}</code
+                >
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="w-full py-3.5 group relative rounded-xl font-medium overflow-hidden transform transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 dark:focus:ring-emerald-400/30 flex justify-center"
+            @click="goToDashboard"
+          >
+            <!-- Layered background with 3D effect -->
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-emerald-600 to-green-600 shadow-lg"
+            ></div>
+            <div
+              class="absolute inset-[1px] bg-gradient-to-r from-emerald-500 to-green-500 rounded-[10px]"
+            ></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-white/30 to-emerald-400/0 -translate-x-full group-hover:animate-shimmer-slow"
+            ></div>
+
+            <!-- Button content -->
+            <div
+              class="relative z-10 flex items-center justify-center gap-2 text-white"
+            >
+              <!-- Particle effects that appear on hover -->
+              <div
+                class="absolute -top-2 -left-2 w-1 h-1 rounded-full bg-white/80 opacity-0 group-hover:opacity-100 group-hover:animate-float-up-left transition-opacity"
+              ></div>
+              <div
+                class="absolute -top-1 left-1/4 w-1.5 h-1.5 rounded-full bg-white/60 opacity-0 group-hover:opacity-100 group-hover:animate-float-up-slow transition-opacity"
+                style="animation-delay: 0.2s"
+              ></div>
+              <div
+                class="absolute -top-1.5 right-1/3 w-1 h-1 rounded-full bg-white/70 opacity-0 group-hover:opacity-100 group-hover:animate-float-up transition-opacity"
+                style="animation-delay: 0.5s"
+              ></div>
+
+              <!-- Success check icon that appears on hover -->
+              <span
+                class="flex items-center justify-center absolute -left-6 opacity-0 group-hover:opacity-100 group-hover:left-3 transition-all duration-300"
+              >
+                <UIcon
+                  name="i-heroicons-check-circle"
+                  class="w-5 h-5 text-white"
+                />
+              </span>
+
+              <!-- Text with slide effect -->
+              <span
+                class="transform group-hover:translate-x-2 transition-transform duration-300"
+              >
+                Continue to Home
+              </span>
+
+              <!-- Animated arrow -->
+              <span
+                class="relative flex items-center transform group-hover:translate-x-1.5 transition-all duration-300"
+              >
+                <UIcon name="i-heroicons-arrow-right" class="w-5 h-5" />
+
+                <!-- Arrow trail effect -->
+                <span
+                  class="absolute inset-0 opacity-0 group-hover:opacity-70 group-hover:animate-ping-fast"
+                ></span>
+              </span>
+            </div>
+
+            <!-- Bottom highlight for 3D effect -->
+            <div
+              class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"
+            ></div>
+          </button>
+        </div>
+      </div>
+    </UModal>
+
+    <!-- Failure Modal -->
+    <UModal
+      v-model="showFailureModal"
+      :ui="{
+        width: 'sm:max-w-md',
+        overlay: {
+          background: 'bg-slate-900/40 backdrop-blur-sm',
+        },
+        container: 'transition-all duration-300 ease-out-cubic',
+      }"
+      transition="zoom-fade"
+    >
+      <div class="failure-modal rounded-xl overflow-hidden">
+        <!-- Animated Failure Header -->
+        <div class="relative overflow-hidden">
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 animate-gradient"
+          ></div>
+          <div
+            class="relative px-6 pt-8 pb-6 bg-gradient-to-r from-red-500 to-orange-500 flex flex-col items-center"
+          >
+            <!-- Animated particles -->
+            <div
+              class="absolute top-5 right-12 w-1.5 h-1.5 rounded-full bg-white/20 animate-ping-slow"
+            ></div>
+            <div
+              class="absolute bottom-8 left-10 w-1 h-1 rounded-full bg-white/20 animate-ping-slow"
+              style="animation-delay: 0.6s"
+            ></div>
+
+            <!-- Error icon with animations -->
+            <div class="relative mb-4">
+              <!-- Pulsing effect -->
+              <div
+                class="absolute inset-0 w-20 h-20 rounded-full border-4 border-white/20 animate-pulse-slow"
+              ></div>
+
+              <!-- Icon container -->
+              <div
+                class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center z-10 relative"
+              >
+                <UIcon
+                  name="i-heroicons-exclamation-triangle"
+                  class="w-10 h-10 text-white animate-subtle-bounce"
+                />
+              </div>
+            </div>
+
+            <h2 class="text-white font-bold text-2xl mb-1">Payment Failed</h2>
+            <p class="text-red-50 text-sm">We couldn't process your payment</p>
+          </div>
+        </div>
+
+        <!-- Failure Content -->
+        <div class="p-6 bg-white dark:bg-slate-800">
+          <div class="mb-6">
+            <!-- Error message card -->
+            <div
+              class="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 mb-4"
+            >
+              <div class="flex items-start gap-3">
+                <UIcon
+                  name="i-heroicons-information-circle"
+                  class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
+                />
+                <div>
+                  <p class="text-sm text-red-700 dark:text-red-300">
+                    {{
+                      errorMessage ||
+                      "We couldn't process your payment. Your account hasn't been charged."
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Suggested solutions -->
+            <div class="space-y-2 mb-5">
+              <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Suggested solutions:
+              </p>
+              <div
+                class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+              >
+                <UIcon
+                  name="i-heroicons-arrow-right"
+                  class="w-3 h-3 text-slate-400"
+                />
+                <span>Try a different payment method</span>
+              </div>
+              <div
+                class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+              >
+                <UIcon
+                  name="i-heroicons-arrow-right"
+                  class="w-3 h-3 text-slate-400"
+                />
+                <span>Check your account balance</span>
+              </div>
+              <div
+                class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+              >
+                <UIcon
+                  name="i-heroicons-arrow-right"
+                  class="w-3 h-3 text-slate-400"
+                />
+                <span>Contact customer support if the issue persists</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col gap-3">
+            <UButton
+              class="w-full"
+              :ui="{
+                rounded: 'rounded-xl',
+                padding: 'py-3',
+                variant: {
+                  solid:
+                    'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-sm',
+                },
+              }"
+              variant="solid"
+              @click="showFailureModal = false"
+            >
+              <span class="flex items-center justify-center gap-1">
+                <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                Try Again
+              </span>
+            </UButton>
+
+            <UButton
+              color="gray"
+              variant="soft"
+              class="rounded-xl py-2.5"
+              @click="handleFailureClose"
+            >
+              Cancel
+            </UButton>
+          </div>
+        </div>
+      </div>
+    </UModal>
   </UContainer>
 </template>
 
 <script setup>
-// Animation for shimmer effect
+// Import and initialize required composables
+const router = useRouter();
+const toast = useToast();
+const { $api } = useNuxtApp();
+
+// State variables
+const openModal = ref(false);
+const showSuccessModal = ref(false);
+const showFailureModal = ref(false);
+const isLoading = ref(false);
+const isSubscribing = ref(false);
+const paymentMethod = ref("account_funds");
+const autoRenew = ref(true);
+const errorMessage = ref("");
+const transactionId = ref("");
+
+// For future API implementation
+// const userSubscriptionDetails = ref({});
+
+/**
+ * Opens the subscription modal
+ */
+function showModal() {
+  openModal.value = true;
+  // Reset form state when opening modal
+  paymentMethod.value = "account_funds";
+  autoRenew.value = true;
+  isLoading.value = true;
+
+  // Simulate loading data
+  setTimeout(() => {
+    isLoading.value = false;
+  }, 800);
+
+  console.log("Modal opened");
+}
+
+/**
+ * Fetch user data including balance
+ */
+async function fetchUserData() {
+  try {
+    // In the future, replace this with actual API call:
+    // const { data } = await $api.get("/api/user/balance");
+    // const subscriptionData = await $api.get("/api/subscriptions/");
+    // userSubscriptionDetails.value = subscriptionData.data;
+
+    // Simulated data for now
+    const userBalance = 3500;
+    console.log("User balance:", userBalance);
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+}
+
+/**
+ * Process subscription creation based on selected payment method
+ */
+async function createSubscription() {
+  if (isSubscribing.value) return; // Prevent double submission
+
+  isSubscribing.value = true;
+
+  try {
+    if (paymentMethod.value === "account_funds") {
+      // Account funds path - process immediately
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Simulate successful payment
+      const response = {
+        success: true,
+        data: {
+          subscription_id: "sub_" + Math.random().toString(36).substring(2, 9),
+          status: "active",
+          start_date: new Date().toISOString(),
+          end_date: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toISOString(),
+        },
+      };
+
+      // Generate transaction ID for display in success modal
+      transactionId.value =
+        "TXN_" + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      // Show success modal
+      showSuccessModal.value = true;
+      openModal.value = false;
+    } else if (paymentMethod.value === "surjopay") {
+      // SurjoPay path - redirect to payment gateway
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // In production, this would be:
+      // const sessionResponse = await $api.post("/api/payment/create-session", {
+      //   plan_id: 1,
+      //   payment_method: paymentMethod.value,
+      //   auto_renew: autoRenew.value
+      // });
+      // window.location.href = sessionResponse.data.payment_url;
+
+      window.location.href = "/simulate-surjopay-redirect";
+      return;
+    }
+  } catch (error) {
+    console.error("Payment failed:", error);
+
+    // Show error message
+    errorMessage.value = error.message || "Payment processing failed";
+    showFailureModal.value = true;
+  } finally {
+    isSubscribing.value = false;
+  }
+}
+
+/**
+ * Navigate to dashboard after successful payment
+ */
+function goToDashboard() {
+  showSuccessModal.value = false;
+
+  // Show toast notification
+  toast.add({
+    title: "Subscription Active",
+    description: "Your account has been upgraded to Pro!",
+    icon: "i-heroicons-check-circle",
+    color: "green",
+  });
+
+  router.push("/");
+}
+
+/**
+ * Handle failure modal close
+ */
+function handleFailureClose() {
+  showFailureModal.value = false;
+  openModal.value = false;
+}
+
+// Fetch data when component mounts
+onMounted(() => {
+  fetchUserData();
+});
 </script>
 
-<style>
-/* Using Tailwind's built-in classes for animations */
-@keyframes shimmer {
+<style scoped>
+@keyframes shimmer-slow {
   100% {
     transform: translateX(100%);
   }
 }
 
-.animate-shimmer {
-  animation: shimmer 1.5s infinite;
+.animate-shimmer-slow {
+  animation: shimmer-slow 2s ease-in-out infinite;
 }
 
-@keyframes ping {
-  75%,
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+
+.animate-float-up {
+  animation: float-up 1.5s ease-out forwards;
+}
+
+.animate-float-up-slow {
+  animation: float-up 2s ease-out forwards;
+}
+
+.animate-float-up-left {
+  animation: float-up-left 1.8s ease-out forwards;
+}
+
+@keyframes float-up-left {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-15px, -20px);
+    opacity: 0;
+  }
+}
+
+@keyframes ping-fast {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70%,
   100% {
     transform: scale(2);
     opacity: 0;
   }
+}
+
+.animate-ping-fast {
+  animation: ping-fast 0.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 </style>

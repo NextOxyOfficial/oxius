@@ -295,7 +295,7 @@ const links = [
       },
       {
         label: t("affiliates"),
-        to: "/",
+        to: "/refer-a-friend",
       },
 
       {
