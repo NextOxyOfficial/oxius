@@ -528,6 +528,7 @@ class Faq(models.Model):
 #         return self.name
 
 class ProductCategory(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=256)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -535,13 +536,15 @@ class ProductCategory(models.Model):
         return self.name
 
 class ProductMedia(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     def __str__(self):
       return str(self.id)
 
 class Product(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=256)
-    image = models.ManyToManyField(ProductMedia, null=True, blank=True)
+    image = models.ManyToManyField(ProductMedia, blank=True)
     description = models.TextField( blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
     delivery_information = models.TextField(blank=True, null=True)

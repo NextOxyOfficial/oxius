@@ -121,12 +121,12 @@
                     <div
                       class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
                     >
-                      <button
-                        @click.prevent="openReviewModal(product)"
+                      <UButton
+                        :to="`/product-details/${product.id}`"
                         class="quick-view-button"
                       >
                         Quick View
-                      </button>
+                      </UButton>
                     </div>
                   </div>
 
@@ -765,8 +765,6 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-
 // State
 const isOpen = ref(false);
 const searchQuery = ref("");
