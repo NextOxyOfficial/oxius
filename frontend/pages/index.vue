@@ -119,6 +119,7 @@
             searchServices?.results?.length || classifiedPosts.results?.length
           "
         >
+          <h3 class="text-base">Categories</h3>
           <ul
             class="flex flex-wrap gap-1"
             v-if="searchServices?.results?.length"
@@ -143,6 +144,7 @@
               searchServices?.results?.length && classifiedPosts.results?.length
             "
           />
+          <h3 class="text-base">Ad Posts</h3>
           <ul v-if="classifiedPosts.results?.length">
             <li v-for="service of classifiedPosts.results" :key="service.id">
               <NuxtLink
@@ -202,7 +204,33 @@
             v-if="services && !services.count"
             class="py-16 text-center w-full col-span-2 sm:col-span-3"
           >
-            <p>No categories have been found!</p>
+            <!-- Decorative elements -->
+            <div
+              class="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full translate-x-16 -translate-y-16 opacity-70 blur-2xl"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-24 h-24 bg-amber-50 rounded-full -translate-x-12 translate-y-12 opacity-70 blur-2xl"
+            ></div>
+
+            <!-- Animated search illustration -->
+            <div class="mb-6 relative z-10">
+              <div class="search-animation mx-auto">
+                <UIcon
+                  name="i-heroicons-magnifying-glass"
+                  class="search-icon"
+                />
+                <div class="search-pulse"></div>
+                <div class="search-location">
+                  <UIcon name="i-heroicons-map-pin" class="location-pin" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Message -->
+
+            <p class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay">
+              দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
+            </p>
           </UCard>
         </div>
         <div
@@ -235,13 +263,6 @@
               />
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
-          </UCard>
-
-          <UCard
-            v-if="services && !services.count"
-            class="py-16 text-center w-full col-span-2 sm:col-span-3"
-          >
-            <p>No categories have been found!</p>
           </UCard>
         </div>
         <div class="text-center mt-8" v-if="services.next">
@@ -834,6 +855,110 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+/* Search animation */
+.search-animation {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.search-icon {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 20px;
+  left: 20px;
+  color: #4f46e5;
+  animation: floatIcon 3s ease-in-out infinite;
+  z-index: 2;
+}
+
+.search-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(79, 70, 229, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.search-location {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.location-pin {
+  width: 30px;
+  height: 30px;
+  color: #ef4444;
+  animation: bounce 2s ease infinite;
+  transform-origin: bottom center;
+}
+
+.pulse-effect {
+  position: relative;
+}
+
+.pulse-effect::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 0.375rem;
+  animation: buttonPulse 2s infinite;
+  box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+}
+
+@keyframes floatIcon {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+  }
+}
 /* Add this to your existing styles */
 @keyframes blink {
   0%,
