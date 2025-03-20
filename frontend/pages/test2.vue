@@ -99,7 +99,7 @@
                         id="productName"
                         v-model="form.name"
                         type="text"
-                        class="form-input pl-10"
+                        class="form-input"
                         placeholder="Enter product name"
                         required
                       />
@@ -137,13 +137,23 @@
                           width: 'w-full',
                           base: 'form-select pl-10',
                           input: 'text-slate-800 dark:text-white',
+                          padding: {
+                            md: 'py-3',
+                          },
                         }"
                         required
+                        size="md"
                       >
                         <template #leading>
                           <UIcon
                             name="i-heroicons-tag"
                             class="w-5 h-5 text-slate-400"
+                          />
+                        </template>
+                        <template #trailing>
+                          <UIcon
+                            name="i-i-heroicons-chevron-down-20-solid"
+                            class="w-5 h-5 text-primary-500"
                           />
                         </template>
                       </USelectMenu>
@@ -723,7 +733,7 @@ function resetForm() {
 }
 
 .form-input {
-  @apply w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 
+  @apply w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 
   placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200;
 }
 
