@@ -14,6 +14,7 @@ urlpatterns = [
     path('<int:pk>/activate/', SubscriptionActivateView.as_view(), name='subscription-activate'),
     path('<int:pk>/cancel/', SubscriptionCancelView.as_view(), name='subscription-cancel'),
     path('active/', ActiveSubscriptionView.as_view(), name='active-subscription'),
+    path('upgrade/', SubscriptionUpgradeView.as_view(), name='subscription-upgrade'),
     
     # Admin endpoints
     path('admin/all/', AdminSubscriptionListView.as_view(), name='admin-subscription-list'),
