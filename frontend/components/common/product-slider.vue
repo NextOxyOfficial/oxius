@@ -122,7 +122,7 @@
                       class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
                     >
                       <UButton
-                        :to="`/product-details/${product.id}`"
+                        @click="openReviewModal(product)"
                         class="quick-view-button"
                       >
                         Quick View
@@ -135,12 +135,13 @@
                     <!-- Category -->
 
                     <!-- Title -->
-                    <h3
-                      class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 text-sm flex-grow"
-                    >
-                      {{ product.name }}
-                    </h3>
-
+                    <NuxtLink :to="`/product-details/${product.id}`">
+                      <h3
+                        class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 text-sm flex-grow"
+                      >
+                        {{ product.name }}
+                      </h3>
+                    </NuxtLink>
                     <!-- Rating -->
                     <div class="flex items-center gap-1 mb-1.5">
                       <div class="flex">
