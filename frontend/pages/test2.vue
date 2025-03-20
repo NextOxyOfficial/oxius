@@ -430,7 +430,7 @@
                   </div>
 
                   <!-- Dimensions -->
-                  <div class="form-group">
+                  <!-- <div class="form-group">
                     <label for="productDimensions" class="form-label"
                       >Dimensions (L × W × H)</label
                     >
@@ -469,7 +469,7 @@
                     <div class="form-hint">
                       Product dimensions in centimeters
                     </div>
-                  </div>
+                  </div> -->
                 </div>
 
                 <!-- Delivery Options -->
@@ -483,7 +483,7 @@
                     id="shippingNotes"
                     v-model="form.shippingNotes"
                     rows="3"
-                    class="form-input"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200"
                     placeholder="Add any special shipping or handling instructions..."
                   ></textarea>
                   <div class="form-hint">
