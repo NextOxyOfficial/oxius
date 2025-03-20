@@ -310,4 +310,8 @@ class FaqAdmin(admin.ModelAdmin):
 admin.site.register(Faq, FaqAdmin)
 admin.site.register(ProductCategory)
 admin.site.register(ProductMedia)
-admin.site.register(Product)
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'sale_price','discount_price','created_at', 'updated_at')
+
+admin.site.register(Product, ProductAdmin)

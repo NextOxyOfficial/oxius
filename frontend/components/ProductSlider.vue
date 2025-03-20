@@ -325,7 +325,7 @@
 
                 <!-- Add to Cart Area -->
                 <div class="flex items-center gap-3 mb-6">
-                  <UInputNumber
+                  <UInput
                     v-model="quantity"
                     :min="1"
                     :max="10"
