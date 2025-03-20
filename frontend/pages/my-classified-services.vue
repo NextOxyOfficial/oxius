@@ -603,7 +603,7 @@
             <UButton
               size="md"
               color="primary"
-              to="/test2"
+              to="/add-product"
               class="order-btn group relative overflow-hidden px-5 py-2.5 rounded-xl border border-primary-600 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
             >
               <div
