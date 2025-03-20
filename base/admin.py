@@ -80,7 +80,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     
-    list_display = ('email','first_name','balance','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined')
+    list_display = ('email','first_name','balance','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity')
     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
     
     def get_fieldsets(self, request, obj=None):
@@ -124,7 +124,7 @@ class CustomUserAdmin(UserAdmin):
             'groups',
             'user_permissions',
             'last_login',
-            'date_joined'
+            'date_joined','is_pro', 'pro_validity'
         )})]
     
     def get_readonly_fields(self, request, obj=None):
@@ -315,3 +315,4 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'sale_price','discount_price','created_at', 'updated_at')
 
 admin.site.register(Product, ProductAdmin)
+admin.site.register(Subscription)
