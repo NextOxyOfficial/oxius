@@ -76,7 +76,7 @@
           <!-- Form Content -->
           <div class="p-6">
             <form
-              @submit.prevent="submitForm"
+              @submit.prevent="handleAddProduct"
               class="bg-white rounded-2xl shadow-lg max-w-3xl mx-auto overflow-hidden border border-gray-100"
             >
               <!-- Product Basic Info Section -->
@@ -138,7 +138,7 @@
                       :options="categories"
                       placeholder="Select Category"
                       class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
-                      option-attribute="title"
+                      option-attribute="name"
                       value-attribute="id"
                     />
                   </UFormGroup>
@@ -183,33 +183,19 @@
                   </div>
                 </UFormGroup>
 
-                <!-- Full Description -->
-                <!-- <div class="form-group">
-                  <label for="fullDescription" class="form-label"
-                    >Full Description <span class="text-red-500">*</span></label
+                <div class="mt-6">
+                  <label for="shippingNotes" class="form-label"
+                    >Short Description</label
                   >
-                  <div class="relative">
-                    <textarea
-                      id="fullDescription"
-                      v-model="form.fullDescription"
-                      rows="6"
-                      class="form-input !pt-3 !pl-10"
-                      placeholder="Detailed description of your product..."
-                      required
-                    ></textarea>
-                    <div
-                      class="absolute top-3 left-3 flex items-start pointer-events-none"
-                    >
-                      <UIcon
-                        name="i-heroicons-document"
-                        class="w-5 h-5 text-slate-400"
-                      />
-                    </div>
-                  </div>
-                  <div class="form-hint">
-                    Detailed product information, features, and specifications
-                  </div>
-                </div> -->
+                  <textarea
+                    id="shippingNotes"
+                    v-model="form.short_description"
+                    rows="3"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200"
+                    placeholder="Enter short description of your product"
+                  ></textarea>
+                  <div class="form-hint">Short description of your product</div>
+                </div>
               </div>
               <!-- Product Media Section - FIXED STRUCTURE -->
               <div class="form-section">
@@ -321,7 +307,7 @@
                     <div class="relative">
                       <input
                         id="regularPrice"
-                        v-model="form.regularPrice"
+                        v-model="form.sale_price"
                         type="number"
                         min="0"
                         step="0.01"
@@ -345,7 +331,7 @@
                     <div class="relative">
                       <input
                         id="salePrice"
-                        v-model="form.salePrice"
+                        v-model="form.discount_price"
                         type="number"
                         min="0"
                         step="0.01"
@@ -369,7 +355,7 @@
                     <div class="relative">
                       <input
                         id="stockQuantity"
-                        v-model="form.stock"
+                        v-model="form.quantity"
                         type="number"
                         min="0"
                         step="1"
@@ -431,51 +417,29 @@
                       Product weight for shipping calculation
                     </div>
                   </div>
-
-                  <!-- Dimensions -->
-                  <!-- <div class="form-group">
-                    <label for="productDimensions" class="form-label"
-                      >Dimensions (L × W × H)</label
-                    >
-                    <div class="grid grid-cols-3 gap-2">
-                      <div class="relative">
-                        <input
-                          v-model="form.length"
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          class="form-input"
-                          placeholder="Length"
-                        />
-                      </div>
-                      <div class="relative">
-                        <input
-                          v-model="form.width"
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          class="form-input"
-                          placeholder="Width"
-                        />
-                      </div>
-                      <div class="relative">
-                        <input
-                          v-model="form.height"
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          class="form-input"
-                          placeholder="Height"
-                        />
-                      </div>
-                    </div>
-                    <div class="form-hint">
-                      Product dimensions in centimeters
-                    </div>
-                  </div> -->
                 </div>
-
-                <!-- Delivery Options -->
+                <div class="form-group mt-3">
+                  <label for="regularPrice" class="form-label"
+                    >Delivery Fee <span class="text-red-500">*</span></label
+                  >
+                  <div class="relative">
+                    <input
+                      id="regularPrice"
+                      v-model="form.delivery_fee"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      class="form-input pl-10"
+                      placeholder="0.00"
+                      required
+                    />
+                    <div
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                      <span class="text-slate-500">৳</span>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- Shipping Notes -->
                 <div class="mt-6">
@@ -484,7 +448,7 @@
                   >
                   <textarea
                     id="shippingNotes"
-                    v-model="form.shippingNotes"
+                    v-model="form.delivery_information"
                     rows="3"
                     class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200"
                     placeholder="Add any special shipping or handling instructions..."
@@ -573,35 +537,27 @@ definePageMeta({
   layout: "dashboard",
 });
 
+const { get, post } = useApi();
 const router = useRoute();
+const toast = useToast();
 function updateContent(p) {
   form.value.description = p;
 }
+const categories = ref([]);
 // Form state
 const form = ref({
   name: "",
-  sku: "",
   category: "",
-  tags: [],
-  featuredImage: "",
+  description: "",
+  short_description: "",
+  delivery_information: "",
+  delivery_fee: null,
   images: [],
-  regularPrice: null,
-  salePrice: null,
-  stock: null,
-  shortDescription: "",
-  fullDescription: "",
-  status: "active",
-  isFeatured: false,
-  allowReviews: true,
-  trackInventory: true,
-  // New delivery fields
+  discount_price: null,
+  sale_price: null,
+  quantity: null,
+  short_description: "",
   weight: null,
-  length: null,
-  width: null,
-  height: null,
-  freeShipping: false,
-  expressDelivery: false,
-  shippingNotes: "",
 });
 
 // Loading state
@@ -609,14 +565,13 @@ const isSubmitting = ref(false);
 const isSuccessModalOpen = ref(false);
 const successMessage = ref("");
 
-// Sample data
-const categories = [
-  { label: "Electronics", value: "electronics" },
-  { label: "Clothing", value: "clothing" },
-  { label: "Home & Kitchen", value: "home-kitchen" },
-  { label: "Beauty", value: "beauty" },
-  { label: "Sports", value: "sports" },
-];
+async function getCategories() {
+  const { data } = await get("/product-categories/");
+  categories.value = data;
+  console.log(categories.value);
+}
+
+await getCategories();
 
 function handleFileUpload(event, field) {
   const files = Array.from(event.target.files);
@@ -624,7 +579,7 @@ function handleFileUpload(event, field) {
 
   // Event listener for successful read
   reader.onload = () => {
-    form.value.medias.push(reader.result);
+    form.value.images.push(reader.result);
   };
 
   // Event listener for errors
@@ -635,29 +590,49 @@ function handleFileUpload(event, field) {
 }
 
 function deleteUpload(ind) {
-  if (ind >= 0 && ind < form.value.medias.length) {
+  if (ind >= 0 && ind < form.value.imags.length) {
     // Create a new array without the deleted item to maintain reactivity
-    form.value.medias = form.value.medias.filter((_, i) => i !== ind);
+    form.value.images = form.value.images.filter((_, i) => i !== ind);
     uploadError.value = ""; // Clear any error messages
   }
 }
 
-function submitForm() {
-  isSubmitting.value = true;
+function validateForm() {
+  // Determine the base submit values based on conditions
+  const { negotiable, price, ...rest } = form.value;
+  submitValues.value = negotiable
+    ? { ...rest, negotiable }
+    : { ...rest, price };
 
-  // Simulate form submission with validation
-  setTimeout(() => {
-    isSubmitting.value = false;
-    // Show success notification and redirect
-    successMessage.value = "Product published successfully!";
-    isSuccessModalOpen.value = true;
+  // Validate each field in submitValues
+  for (const key in submitValues.value) {
+    const value = submitValues.value[key];
+    if (
+      (typeof value === "string" && !value.trim()) || // Check empty strings
+      (typeof value === "boolean" && !value) //|| // Check false booleans
+      //(Array.isArray(value) && value.length === 0) // Check empty arrays
+    ) {
+      return false; // Validation fails
+    }
+  }
 
-    // Simulate redirect after success
-    setTimeout(() => {
-      isSuccessModalOpen.value = false;
-      // In a real app, you might redirect here
-    }, 3000);
-  }, 1500);
+  return true; // Validation succeeds
+}
+
+async function handleAddProduct() {
+  //   if (!validateForm()) {
+  //     checkSubmit.value = true;
+  //     toast.add({ title: "Please fill in all required fields." });
+  //     return;
+  //   }
+
+  //   const { image, ...rest } = form.value;
+  console.log(form.value);
+
+  const res = await post("/products/", form.value);
+  if (res.data) {
+    toast.add({ title: "Product Added" });
+  }
 }
 
 function saveAsDraft() {
