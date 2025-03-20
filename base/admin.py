@@ -308,3 +308,6 @@ class FaqAdmin(admin.ModelAdmin):
     list_display = ('label', 'content', 'created_at', 'updated_at')
     
 admin.site.register(Faq, FaqAdmin)
+admin.site.register(ProductCategory)
+admin.site.register(ProductMedia)
+admin.site.register(Product)

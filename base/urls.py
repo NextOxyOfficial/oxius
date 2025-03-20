@@ -83,4 +83,13 @@ urlpatterns = [
   path('api/auth/verify-reset-otp/', verify_reset_otp),
   path('api/auth/set-new-password/', set_new_password),
   path('received-transfers/', ReceivedTransfersView.as_view(), name='received-transfers'),
+  #product 
+      # Product URLs
+  path('api/products/', ProductListCreateView.as_view(), name='product-list-create'),
+  path('api/products/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
+  path('api/products/featured/', FeaturedProductsListView.as_view(), name='featured-products'),
+  
+  # Product Category URLs
+  path('api/product-categories/', ProductCategoryListCreateView.as_view(), name='product-category-list-create'),
+  path('api/product-categories/<int:pk>/', ProductCategoryDetailView.as_view(), name='product-category-detail'),
 ]

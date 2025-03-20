@@ -283,6 +283,37 @@ class ReceivedTransferSerializer(serializers.ModelSerializer):
 
 
 
+from rest_framework import serializers
+from .models import Product, ProductCategory, ProductMedia
+
+class ProductMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductMedia
+        fields = '__all__'
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductCategory
+        fields = '__all__'
+
+class ProductSerializer(serializers.ModelSerializer):
+    category_details = ProductCategorySerializer(source='category', read_only=True)
+    image_details = ProductMediaSerializer(source='image', many=True, read_only=True)
+    
+    class Meta:
+        model = Product
+        fields =  '__all__'
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['regular_price'] = instance.sale_price
+        if instance.discount_price > 0:
+            representation['old_price'] = instance.sale_price
+            representation['price'] = instance.discount_price
+        else:
+            representation['price'] = instance.sale_price
+        return representation
+
 
 
 

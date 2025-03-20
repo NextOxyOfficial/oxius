@@ -1399,3 +1399,65 @@ class ReceivedTransfersView(generics.ListAPIView):
             transaction_type__iexact='transfer',  # Case-insensitive match
             completed=True
         ).select_related('user').order_by('-updated_at')
+    
+
+    #product 
+
+# Product List and Create
+class ProductListCreateView(generics.ListCreateAPIView):
+    queryset = Product.objects.all().order_by('-created_at')
+    serializer_class = ProductSerializer
+    
+    def create(self, request, *args, **kwargs):
+        # Extract image data from request
+        images_data = request.data.pop('images', None)
+        
+        # Create product using serializer
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product = serializer.save()
+        
+        # Process images if provided
+        if images_data:
+            # Handle both list of images and single image
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+                
+            for image_data in images_data:
+                # Handle base64 images
+                if isinstance(image_data, str) and image_data.startswith('data:image'):
+                    image_file = base64ToFile(image_data)
+                    product_media = ProductMedia.objects.create(image=image_file)
+                    product.image.add(product_media)
+                # Handle regular file uploads
+                elif hasattr(image_data, 'name'):
+                    product_media = ProductMedia.objects.create(image=image_data)
+                    product.image.add(product_media)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, 
+            status=status.HTTP_201_CREATED, 
+            headers=headers
+        )
+
+# Product Retrieve, Update, Delete
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+# Featured Products
+class FeaturedProductsListView(generics.ListAPIView):
+    queryset = Product.objects.filter(is_featured=True).order_by('-created_at')
+    serializer_class = ProductSerializer
+
+# Category List and Create
+class ProductCategoryListCreateView(generics.ListCreateAPIView):
+    queryset = ProductCategory.objects.all()
+    serializer_class = ProductCategorySerializer
+    search_fields = ['name']
+
+# Category Retrieve, Update, Delete
+class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ProductCategory.objects.all()
+    serializer_class = ProductCategorySerializer
