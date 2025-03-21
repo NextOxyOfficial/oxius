@@ -15,7 +15,7 @@
 
       <!-- Refined Tab System -->
       <div
-        class="custom-tabs relative mb-5 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-slate-800"
+        class="custom-tabs relative mb-5 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-slate-700"
       >
         <!-- Active Tab Indicator -->
         <div
@@ -130,7 +130,7 @@
               <div
                 v-for="service in services"
                 :key="`classified-${service.id}`"
-                class="service-card group relative bg-white dark:bg-slate-800/90 border border-slate-100 dark:border-slate-700/60 hover:border-primary-200 dark:hover:border-primary-800/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 backdrop-blur-sm overflow-hidden"
+                class="service-card group relative bg-white dark:bg-slate-700/90 border border-slate-100 dark:border-slate-700/60 hover:border-primary-200 dark:hover:border-primary-800/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 backdrop-blur-sm overflow-hidden"
                 @click="toggleMobileActionBar(service.id)"
               >
                 <!-- Status indicator line -->
@@ -202,7 +202,7 @@
 
                           <!-- Image with hover effect -->
                           <div
-                            class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800"
+                            class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-700"
                           >
                             <NuxtImg
                               v-if="service.medias[0]?.image"
@@ -230,7 +230,7 @@
                         <!-- Status Badge and Title -->
                         <div class="mb-1.5 flex items-start gap-2">
                           <div
-                            class="status-badge text-xs font-semibold px-2 py-1 rounded-md shadow-sm inline-flex items-center gap-1.5 transition-all duration-300"
+                            class="status-badge text-sm font-semibold px-2 py-1 rounded-md shadow-sm inline-flex items-center gap-1.5 transition-all duration-300"
                             :class="{
                               'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 dark:from-green-900/20 dark:to-emerald-900/20 dark:text-green-400 group-hover:shadow-green-200/40 dark:group-hover:shadow-green-900/20':
                                 service.service_status === 'approved' &&
@@ -279,7 +279,7 @@
                           </div>
 
                           <h3
-                            class="text-sm sm:text-base font-medium text-slate-800 dark:text-white leading-tight line-clamp-1 sm:line-clamp-2 transition-colors group-hover:text-primary-700 dark:group-hover:text-primary-400"
+                            class="text-sm sm:text-base font-medium text-slate-700 dark:text-white leading-tight line-clamp-1 sm:line-clamp-2 transition-colors group-hover:text-primary-700 dark:group-hover:text-primary-400"
                           >
                             {{ service?.title }}
                           </h3>
@@ -287,7 +287,7 @@
 
                         <!-- Price Display with Premium Style -->
                         <div
-                          class="mb-2.5 inline-flex items-center px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 group-hover:border-primary-200 dark:group-hover:border-primary-800/40 transition-all duration-300"
+                          class="mb-2.5 inline-flex items-center px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700/80 border border-slate-100 dark:border-slate-700/60 group-hover:border-primary-200 dark:group-hover:border-primary-800/40 transition-all duration-300"
                         >
                           <template v-if="!service.negotiable">
                             <u-icon
@@ -295,7 +295,7 @@
                               class="w-4 h-4 text-primary-500 mr-1.5"
                             />
                             <span
-                              class="font-semibold text-slate-800 dark:text-white"
+                              class="font-semibold text-slate-700 dark:text-white"
                               >{{ service.price }}</span
                             >
                           </template>
@@ -305,7 +305,7 @@
                               class="w-4 h-4 text-primary-500 mr-1.5"
                             />
                             <span
-                              class="font-medium text-slate-800 dark:text-white"
+                              class="font-medium text-slate-700 dark:text-white"
                               >Negotiable</span
                             >
                           </template>
@@ -315,7 +315,7 @@
                         <div class="service-meta space-y-1">
                           <!-- Category -->
                           <div
-                            class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"
+                            class="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400"
                           >
                             <div
                               class="w-5 h-5 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0"
@@ -332,11 +332,11 @@
 
                           <!-- Date & Location Inline -->
                           <div
-                            class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400"
+                            class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400"
                           >
                             <div class="flex items-center gap-1.5">
                               <div
-                                class="w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center flex-shrink-0"
+                                class="w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0"
                               >
                                 <UIcon
                                   name="i-heroicons-clock"
@@ -348,7 +348,7 @@
 
                             <div class="flex items-center gap-1.5">
                               <div
-                                class="w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center flex-shrink-0"
+                                class="w-5 h-5 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0"
                               >
                                 <UIcon
                                   name="i-heroicons-map-pin"
@@ -390,7 +390,7 @@
                   class="actions-wrapper absolute right-0 bottom-0 sm:right-3 sm:-bottom-10 sm:group-hover:bottom-3 transition-all duration-300 ease-in-out z-10"
                 >
                   <div
-                    class="flex items-center gap-1 p-1 rounded-tl-xl rounded-tr-none rounded-br-none rounded-bl-none sm:rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg border border-slate-100 dark:border-slate-700"
+                    class="flex items-center gap-1 p-1 rounded-tl-xl rounded-tr-none rounded-br-none rounded-bl-none sm:rounded-xl bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm shadow-lg border border-slate-100 dark:border-slate-700"
                   >
                     <UButton
                       v-if="
@@ -399,7 +399,7 @@
                       "
                       color="primary"
                       variant="soft"
-                      size="xs"
+                      size="sm"
                       :icon="
                         service.active_service
                           ? 'i-heroicons-pause'
@@ -416,7 +416,7 @@
                       v-if="!service.active_service"
                       color="green"
                       variant="soft"
-                      size="xs"
+                      size="sm"
                       icon="i-heroicons-play"
                       :loading="isLoading"
                       class="action-btn transition-transform active:scale-95"
@@ -429,7 +429,7 @@
                       v-if="service.service_status !== 'completed'"
                       color="primary"
                       variant="soft"
-                      size="xs"
+                      size="sm"
                       icon="i-heroicons-pencil"
                       class="action-btn transition-transform active:scale-95"
                       @click.prevent.stop="navigateToEdit(service.id, $event)"
@@ -438,7 +438,7 @@
                     <UButton
                       color="red"
                       variant="soft"
-                      size="xs"
+                      size="sm"
                       icon="i-heroicons-trash"
                       :loading="isLoading"
                       :disabled="service.service_status === 'completed'"
@@ -454,7 +454,7 @@
                     service.service_status.toLowerCase() !== 'rejected' ||
                     service.service_status.toLowerCase() !== 'completed'
                   "
-                  class="mobile-action-bar sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 shadow-lg border-t border-slate-200 dark:border-slate-800 z-50 transition-transform duration-300"
+                  class="mobile-action-bar sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 shadow-lg border-t border-slate-200 dark:border-slate-700 z-50 transition-transform duration-300"
                   :class="{
                     'translate-y-full':
                       !activeServiceId || activeServiceId !== service.id,
@@ -464,7 +464,7 @@
                     class="container mx-auto flex items-center justify-between"
                   >
                     <div class="truncate mr-2">
-                      <div class="text-xs text-slate-500">Managing:</div>
+                      <div class="text-sm text-slate-500">Managing:</div>
                       <div class="text-sm font-medium truncate">
                         {{ service?.title }}
                       </div>
@@ -519,7 +519,7 @@
           <!-- Polished Empty State -->
           <div
             v-else
-            class="empty-state flex flex-col items-center justify-center py-16 px-4 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-center"
+            class="empty-state flex flex-col items-center justify-center py-16 px-4 bg-slate-50/50 dark:bg-slate-700/20 rounded-lg text-center"
           >
             <div class="relative mb-4 w-20 h-20">
               <UIcon
@@ -566,7 +566,7 @@
           <!-- Debug information - For troubleshooting -->
           <div
             v-if="debug"
-            class="bg-yellow-50 border border-yellow-200 p-2 mb-3 rounded text-xs"
+            class="bg-yellow-50 border border-yellow-200 p-2 mb-3 rounded text-sm"
           >
             <p>
               Status:
@@ -600,6 +600,7 @@
                 >
               </span>
             </UButton>
+
             <UButton
               size="md"
               color="primary"
@@ -616,21 +617,16 @@
                   class="w-5 h-5 text-white/90 group-hover:scale-110 transition-transform"
                 />
                 <span class="text-white font-medium tracking-wide"
-                  >Add New Products</span
+                  >Add A Product</span
                 >
-                <UIcon
-                  name="i-heroicons-chevron-right"
-                  class="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform"
-                />
               </span>
             </UButton>
-
             <div class="sort-dropdown group relative justify-end">
               <!-- Dropdown Trigger Button -->
               <button
                 @click="isSortDropdownOpen = !isSortDropdownOpen"
                 type="button"
-                class="flex items-center gap-3 w-64 px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow transition-all duration-300 group-hover:border-primary-300 dark:group-hover:border-primary-700/70 overflow-hidden"
+                class="flex items-center gap-3 w-64 px-4 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow transition-all duration-300 group-hover:border-primary-300 dark:group-hover:border-primary-700/70 overflow-hidden"
               >
                 <!-- Shine effect animation -->
                 <div
@@ -655,11 +651,11 @@
 
                 <div class="flex flex-col items-start overflow-hidden">
                   <span
-                    class="text-xs text-slate-500 dark:text-slate-400 font-medium"
+                    class="text-sm text-slate-500 dark:text-slate-400 font-medium"
                     >Sort by</span
                   >
                   <span
-                    class="text-sm text-slate-800 dark:text-slate-200 font-medium truncate"
+                    class="text-sm text-slate-700 dark:text-slate-200 font-medium truncate"
                     >{{ productSortLabels[productSort] }}</span
                   >
                 </div>
@@ -685,7 +681,7 @@
               <!-- Dropdown Menu -->
               <div
                 v-show="isSortDropdownOpen"
-                class="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden z-50 transform origin-top transition-all duration-200"
+                class="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden z-50 transform origin-top transition-all duration-200"
                 :class="{
                   'opacity-100 scale-100': isSortDropdownOpen,
                   'opacity-0 scale-95 pointer-events-none': !isSortDropdownOpen,
@@ -728,12 +724,12 @@
                         :class="
                           productSort === option.value
                             ? 'text-primary-600 dark:text-primary-400'
-                            : 'text-slate-800 dark:text-slate-200'
+                            : 'text-slate-700 dark:text-slate-200'
                         "
                         >{{ option.label }}</span
                       >
                       <span
-                        class="text-xs text-slate-500 dark:text-slate-400"
+                        class="text-sm text-slate-500 dark:text-slate-400"
                         >{{ option.description }}</span
                       >
                     </div>
@@ -763,7 +759,7 @@
             <UButton
               v-for="filter in statusFilters"
               :key="filter.value"
-              size="xs"
+              size="sm"
               :color="
                 filter.value === productStatusFilter ? filter.color : 'gray'
               "
@@ -778,7 +774,7 @@
                   v-if="filter.value !== 'all'"
                   :color="filter.color"
                   variant="subtle"
-                  size="xs"
+                  size="sm"
                   class="ml-1"
                 >
                   {{ getFilteredCount(filter.value) }}
@@ -795,7 +791,7 @@
                 <div
                   v-for="product in filteredProducts"
                   :key="`product-${product.id}`"
-                  class="product-item relative group bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+                  class="product-item relative group bg-white dark:bg-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
                 >
                   <!-- Animated highlight effect on hover -->
                   <div
@@ -821,7 +817,7 @@
                   >
                     <!-- Product Image (Left) -->
                     <div
-                      class="relative w-full sm:w-36 h-28 sm:h-auto sm:aspect-square bg-slate-100 dark:bg-slate-800/80 flex-shrink-0"
+                      class="relative w-full sm:w-36 h-28 sm:h-auto sm:aspect-square bg-slate-100 dark:bg-slate-700/80 flex-shrink-0"
                     >
                       <img
                         :src="product.image"
@@ -834,7 +830,7 @@
                         <UBadge
                           :color="getStatusColor(product.status)"
                           variant="solid"
-                          size="xs"
+                          size="sm"
                           class="shadow-sm"
                         >
                           {{ getStatusLabel(product.status) }}
@@ -847,7 +843,7 @@
                         class="absolute bottom-2 left-2"
                       >
                         <div
-                          class="bg-red-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-sm"
+                          class="bg-red-500 text-white text-sm font-medium px-1.5 py-0.5 rounded-sm"
                         >
                           -{{ product.discount }}%
                         </div>
@@ -861,7 +857,7 @@
                         <div
                           class="bg-amber-500 text-white text-[10px] tracking-tight font-bold px-2 py-1 shadow-sm"
                         >
-                          BEST SELLER
+                          AdsyPro
                         </div>
                         <div
                           class="w-0 h-0 border-t-4 border-t-amber-500 border-r-4 border-r-transparent"
@@ -876,9 +872,7 @@
                         <div
                           class="flex flex-wrap justify-between items-start mb-1.5 gap-2"
                         >
-                          <h3
-                            class="font-medium text-slate-800 dark:text-white text-base"
-                          >
+                          <h3 class="font-semibold text-slate-700 text-lg">
                             {{ product.name }}
                           </h3>
 
@@ -901,7 +895,7 @@
                               />
                             </div>
                             <span
-                              class="text-xs text-slate-500 dark:text-slate-400"
+                              class="text-sm text-slate-500 dark:text-slate-400"
                               >({{ product.reviews }})</span
                             >
                           </div>
@@ -909,7 +903,7 @@
 
                         <!-- Category & Meta -->
                         <div
-                          class="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 text-xs text-slate-500 dark:text-slate-400"
+                          class="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 text-sm text-slate-500 dark:text-slate-400"
                         >
                           <div class="flex items-center gap-1">
                             <UIcon
@@ -933,7 +927,7 @@
                                   : 'red'
                               "
                               variant="subtle"
-                              size="xs"
+                              size="sm"
                             >
                               {{
                                 product.stock > 5
@@ -956,7 +950,7 @@
 
                         <!-- Description preview -->
                         <p
-                          class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-2"
+                          class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-2"
                         >
                           {{ product.description }}
                         </p>
@@ -969,12 +963,12 @@
                         <!-- Price -->
                         <div class="flex items-baseline gap-1">
                           <span
-                            class="text-base font-semibold text-slate-800 dark:text-white"
+                            class="text-base font-semibold text-slate-700 dark:text-white"
                             >৳{{ product.price }}</span
                           >
                           <span
                             v-if="product.oldPrice"
-                            class="text-xs text-slate-400 line-through"
+                            class="text-sm text-slate-400 line-through"
                             >৳{{ product.oldPrice }}</span
                           >
                         </div>
@@ -983,7 +977,7 @@
                         <div class="flex items-center gap-1.5">
                           <UTooltip text="View details">
                             <UButton
-                              size="xs"
+                              size="sm"
                               color="primary"
                               variant="soft"
                               icon="i-heroicons-eye"
@@ -994,7 +988,7 @@
 
                           <UTooltip text="Edit product">
                             <UButton
-                              size="xs"
+                              size="sm"
                               color="gray"
                               variant="soft"
                               icon="i-heroicons-pencil-square"
@@ -1005,7 +999,7 @@
 
                           <UTooltip text="Delete product">
                             <UButton
-                              size="xs"
+                              size="sm"
                               color="red"
                               variant="soft"
                               icon="i-heroicons-trash"
@@ -1015,7 +1009,7 @@
                           </UTooltip>
 
                           <UButton
-                            size="xs"
+                            size="sm"
                             :color="
                               product.status === 'active' ? 'red' : 'green'
                             "
@@ -1060,7 +1054,7 @@
             <!-- No matching results state (keep as is) -->
             <div
               v-else
-              class="empty-state flex flex-col items-center justify-center py-12 px-4 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-center"
+              class="empty-state flex flex-col items-center justify-center py-12 px-4 bg-slate-50/50 dark:bg-slate-700/20 rounded-lg text-center"
             >
               <UIcon
                 name="i-heroicons-magnifying-glass"
@@ -1090,7 +1084,7 @@
           <!-- No products state -->
           <div
             v-else
-            class="empty-state flex flex-col items-center justify-center py-16 px-4 bg-slate-50/50 dark:bg-slate-800/20 rounded-lg text-center"
+            class="empty-state flex flex-col items-center justify-center py-16 px-4 bg-slate-50/50 dark:bg-slate-700/20 rounded-lg text-center"
           >
             <div class="relative mb-4 w-20 h-20">
               <UIcon
@@ -1135,7 +1129,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-0"></div>
               <!-- Product Image -->
               <div
-                class="relative aspect-square bg-slate-100 dark:bg-slate-800/80"
+                class="relative aspect-square bg-slate-100 dark:bg-slate-700/80"
               >
                 <img
                   :src="selectedProduct.image"
@@ -1144,12 +1138,12 @@
                 />
                 <div
                   v-if="selectedProduct.discount"
-                  class="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md"
+                  class="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-sm font-medium rounded-md"
                 >
                   -{{ selectedProduct.discount }}% OFF
                 </div>
                 <button
-                  class="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  class="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-slate-700/90 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                   @click="isProductPreviewOpen = false"
                 >
                   <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
@@ -1172,7 +1166,7 @@
                   </div>
 
                   <h2
-                    class="text-xl font-medium text-slate-800 dark:text-white mb-2"
+                    class="text-xl font-medium text-slate-700 dark:text-white mb-2"
                   >
                     {{ selectedProduct.name }}
                   </h2>
@@ -1219,12 +1213,12 @@
                       >
                       <div class="flex items-baseline gap-1.5">
                         <span
-                          class="font-semibold text-slate-800 dark:text-white"
+                          class="font-semibold text-slate-700 dark:text-white"
                           >৳{{ selectedProduct.price }}</span
                         >
                         <span
                           v-if="selectedProduct.oldPrice"
-                          class="text-xs text-slate-400 line-through"
+                          class="text-sm text-slate-400 line-through"
                           >৳{{ selectedProduct.oldPrice }}</span
                         >
                       </div>
@@ -1327,14 +1321,14 @@
       >
         <UCard
           class="p-0 overflow-hidden border-0"
-          :ui="{ divide: 'divide-y divide-slate-100 dark:divide-slate-800' }"
+          :ui="{ divide: 'divide-y divide-slate-100 dark:divide-slate-700' }"
         >
           <div
             class="modal-header-animation flex items-center justify-center py-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10"
           >
             <div class="relative w-16 h-16 mx-auto">
               <div
-                class="absolute inset-0 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center"
+                class="absolute inset-0 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center"
               >
                 <UIcon
                   name="i-heroicons-exclamation-triangle"
@@ -1348,7 +1342,7 @@
           </div>
 
           <div class="p-5 text-center">
-            <h4 class="text-lg font-medium text-slate-800 dark:text-white mb-2">
+            <h4 class="text-lg font-medium text-slate-700 dark:text-white mb-2">
               Stop Post Permanently
             </h4>
             <p class="text-slate-600 dark:text-slate-400 text-sm mb-5">
