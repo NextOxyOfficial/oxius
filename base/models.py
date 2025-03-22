@@ -12,6 +12,7 @@ import string
 from django.utils import timezone
 from datetime import timedelta
 from django.core.exceptions import ValidationError
+from decimal import Decimal
 
 # Create your models here.
 
@@ -51,7 +52,9 @@ class User(AbstractUser):
   commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00)
   referral_code = models.CharField(max_length=10, unique=True, editable=False)
   nid_number = models.CharField(unique=True,null=True, blank=True,max_length=16)
-
+  #   subscription
+  is_pro = models.BooleanField(default=False)
+  pro_validity = models.DateTimeField(null=True, blank=True)
   def __str__(self):
       return self.email
   def save(self, *args, **kwargs):
@@ -66,6 +69,19 @@ class User(AbstractUser):
         raise ValueError("Balance can't be negative")
       super(User, self).save(*args, **kwargs)
 
+class Subscription(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='subscription')
+    created_at = models.DateTimeField(auto_now_add=True)
+    months = models.IntegerField(default=1)
+    total = models.DecimalField(max_digits=8, decimal_places=2, default=149.00)
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.user.is_pro = True
+            self.user.pro_validity = timezone.now() + timedelta(days=30 * int( self.months))
+            self.user.balance -=  Decimal(self.total)
+            self.user.save()
+        super(Subscription, self).save(*args, **kwargs)
+    
 class NID(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='nid')
     front = models.ImageField(upload_to='images/', blank=True, null=True)

@@ -162,7 +162,7 @@
                         />
                       </div>
                       <span class="text-xs text-slate-500 dark:text-slate-400"
-                        >({{ product.reviews.length }})</span
+                        >({{ product.reviews?.length }})</span
                       >
                     </div>
 
@@ -432,6 +432,7 @@
               <!-- Tabs - Improved Responsiveness -->
               <div class="">
                 <UTabs
+                  v-model="activeTab"
                   :items="[
                     {
                       label: 'Details',
@@ -461,6 +462,82 @@
                   <!-- Reviews Tab -->
                   <template #reviews>
                     <div>
+                      <!-- Write a Review Section -->
+                      <div
+                        class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg"
+                      >
+                        <h4
+                          class="font-medium text-slate-800 dark:text-white mb-3"
+                        >
+                          Write a Review
+                        </h4>
+                        <div class="space-y-4">
+                          <div>
+                            <label
+                              class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+                            >
+                              Your Name
+                            </label>
+                            <UInput
+                              v-model="reviewForm.name"
+                              placeholder="Enter your name"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+                            >
+                              Rating
+                            </label>
+                            <div class="flex gap-1">
+                              <UButton
+                                v-for="star in 5"
+                                :key="star"
+                                variant="ghost"
+                                color="gray"
+                                class="p-1"
+                                @click="reviewForm.rating = star"
+                              >
+                                <UIcon
+                                  :name="
+                                    star <= reviewForm.rating
+                                      ? 'i-heroicons-star-solid'
+                                      : 'i-heroicons-star'
+                                  "
+                                  class="w-6 h-6 transition-colors duration-200"
+                                  :class="
+                                    star <= reviewForm.rating
+                                      ? 'text-yellow-400'
+                                      : 'text-slate-300 dark:text-slate-600'
+                                  "
+                                />
+                              </UButton>
+                            </div>
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+                            >
+                              Review Comment
+                            </label>
+                            <UTextarea
+                              v-model="reviewForm.comment"
+                              placeholder="Share your thoughts about this product"
+                              :ui="{ rounded: 'rounded-lg' }"
+                              rows="3"
+                            />
+                          </div>
+                          <UButton
+                            color="primary"
+                            @click="submitReview"
+                            :disabled="!isReviewValid"
+                            block
+                          >
+                            Submit Review
+                          </UButton>
+                        </div>
+                      </div>
+
                       <!-- Reviews Summary -->
                       <div
                         class="mb-4 p-3 bg-slate-50/70 dark:bg-slate-800/70 rounded-lg"
@@ -633,76 +710,49 @@
                       </div>
                     </div>
                   </template>
-
-                  <!-- Shipping Tab -->
-                  <!-- <template #shipping>
-                    <div class="text-slate-600 dark:text-slate-300">
-                      <p class="mb-4">
-                        We offer multiple shipping options to meet your needs:
-                      </p>
-                      <ul class="space-y-3">
-                        <li class="flex items-start gap-2">
-                          <UIcon
-                            name="i-heroicons-truck"
-                            class="w-5 h-5 text-primary mt-0.5"
-                          />
-                          <div>
-                            <p
-                              class="font-medium text-slate-800 dark:text-white"
-                            >
-                              Standard Shipping
-                            </p>
-                            <p class="text-sm">
-                              Delivery within 3-5 business days
-                            </p>
-                          </div>
-                        </li>
-                        <li class="flex items-start gap-2">
-                          <UIcon
-                            name="i-heroicons-bolt"
-                            class="w-5 h-5 text-primary mt-0.5"
-                          />
-                          <div>
-                            <p
-                              class="font-medium text-slate-800 dark:text-white"
-                            >
-                              Express Shipping
-                            </p>
-                            <p class="text-sm">
-                              Delivery within 1-2 business days
-                            </p>
-                          </div>
-                        </li>
-                        <li class="flex items-start gap-2">
-                          <UIcon
-                            name="i-heroicons-map-pin"
-                            class="w-5 h-5 text-primary mt-0.5"
-                          />
-                          <div>
-                            <p
-                              class="font-medium text-slate-800 dark:text-white"
-                            >
-                              Local Pickup
-                            </p>
-                            <p class="text-sm">Available at select locations</p>
-                          </div>
-                        </li>
-                      </ul>
-
-                      <div
-                        class="mt-4 p-3 bg-slate-50 dark:bg-slate-800/70 rounded-lg"
-                      >
-                        <div class="flex items-center gap-2 text-sm">
-                          <UIcon
-                            name="i-heroicons-information-circle"
-                            class="w-5 h-5 text-primary"
-                          />
-                          <span>Free shipping on orders over ৳5,000</span>
-                        </div>
-                      </div>
-                    </div>
-                  </template> -->
                 </UTabs>
+              </div>
+            </div>
+          </div>
+        </UCard>
+      </UModal>
+
+      <!-- Checkout Modal -->
+      <UModal v-model="isCheckoutModalOpen" :ui="{ width: 'w-full max-w-4xl' }">
+        <UCard class="p-0">
+          <!-- Modal Header -->
+          <template #header>
+            <div
+              class="relative bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4 border-b border-slate-200 dark:border-slate-700"
+            >
+              <div class="flex justify-between items-center">
+                <h3 class="text-xl font-medium text-slate-800 dark:text-white">
+                  Checkout
+                </h3>
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  icon="i-heroicons-x-mark"
+                  class="hover:rotate-90 transition-transform duration-300"
+                  @click="isCheckoutModalOpen = false"
+                />
+              </div>
+            </div>
+          </template>
+
+          <!-- Checkout modal body - empty as requested -->
+          <div class="p-6">
+            <div
+              class="flex items-center justify-center h-60 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700"
+            >
+              <div class="text-center">
+                <UIcon
+                  name="i-heroicons-shopping-cart"
+                  class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3"
+                />
+                <p class="text-slate-500 dark:text-slate-400">
+                  Checkout form will be designed later
+                </p>
               </div>
             </div>
           </div>
@@ -972,6 +1022,7 @@ const selectedProduct = ref(null);
 const quantity = ref(1);
 const userRating = ref(0);
 const reviewComment = ref("");
+const isCheckoutModalOpen = ref(false);
 
 // Sample products data with reviews
 const products = [
@@ -1059,48 +1110,13 @@ const products = [
   },
   {
     id: 4,
-    name: "Smart Fitness Tracker Watch",
-    price: "4,599",
-    oldPrice: "5,999",
-    discount: 23,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Watch",
-    category: "Wearables",
-    rating: 4.6,
-    description:
-      "Track your steps, heart rate, sleep quality and more with this advanced fitness tracker. Includes GPS and 15+ sport modes.",
-    reviews: [
-      {
-        name: "Tanvir Ahmed",
-        rating: 5,
-        date: "February 20, 2025",
-        comment:
-          "Accurate tracking and the battery lasts for days! Great value for money.",
-        avatar: "",
-      },
-    ],
+    rating: 5,
+    date: "March 10, 2025",
+    comment:
+      "Everything you need in one set! The quality is excellent and they clean up so easily.",
+    avatar: "",
   },
-  {
-    id: 5,
-    name: "Non-stick Cookware Set (10 Pieces)",
-    price: "5,999",
-    oldPrice: "8,999",
-    discount: 33,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Cookware",
-    category: "Home & Kitchen",
-    rating: 4.9,
-    description:
-      "Complete cookware set featuring non-stick coating and heat-resistant handles. Includes pots, pans, and cooking utensils.",
-    reviews: [
-      {
-        name: "Sabina Yasmin",
-        rating: 5,
-        date: "March 10, 2025",
-        comment:
-          "Everything you need in one set! The quality is excellent and they clean up so easily.",
-        avatar: "",
-      },
-    ],
-  },
+
   {
     id: 6,
     name: "Digital SLR Camera with 18-55mm Lens",

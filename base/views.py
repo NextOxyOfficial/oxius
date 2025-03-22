@@ -27,6 +27,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate
 
 # Create your views here.
 
@@ -1360,6 +1361,23 @@ def verify_reset_otp(request):
             status=status.HTTP_404_NOT_FOUND
         )
 
+@api_view(['GET'])
+def subscribeToPro(request):
+    user = request.user
+    months = request.GET.get('months')
+    total = request.GET.get('total')
+
+    if not months or not total:
+        return Response(
+            {'error': 'Both months and total are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    nr = Subscription.objects.create(user=user, months=months, total=total)
+    resp = {
+        'message': 'Subscription successful',
+        'status': 'success'
+    }
+    return Response(resp, status=status.HTTP_200_OK)
 @api_view(['POST'])
 def set_new_password(request):
     method = request.data.get('method')

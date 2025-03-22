@@ -73,6 +73,8 @@ urlpatterns = [
   # path('district/<str:district_id>/police_stations/', get_police_stations, name='police_station'),
   # user's address
   path('change-password/', change_password, name='change-password'),
+  # subscription
+  path('subscribe/', subscribeToPro, name='subscribe'),
   # sms and otp 
   path('send-sms/', smsSend),
   path('send-otp/', sendOTP),
