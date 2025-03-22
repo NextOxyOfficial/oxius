@@ -690,31 +690,6 @@ async function handleSearch() {
   }
 }
 
-// watch(
-//   () => (title.value ? title.value.trim() : ""),
-//   async (newValue) => {
-//     if (!newValue) {
-//       isLoading.value = true;
-//       try {
-//         const res = await get("/classified-categories/");
-//         services.value = res.data;
-//         classifiedPosts.value = [];
-//       } catch (error) {
-//         console.error("Error fetching categories:", error);
-//         toast.add({
-//           title: "Failed to refresh categories",
-//           color: "red",
-//         });
-//       } finally {
-//         isLoading.value = false;
-//       }
-//     }
-//   },
-//   {
-//     debounce: 300,
-//     immediate: false,
-//   }
-// );
 // Replace the existing watch function with this:
 watch(
   () => title.value,

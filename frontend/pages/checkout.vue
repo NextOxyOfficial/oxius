@@ -1,1240 +1,975 @@
 <template>
-  <div class="py-6">
-    <UContainer class="max-w-4xl">
-      <div class="mb-4">
-        <h1
-          class="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2"
-        >
-          <UIcon name="i-heroicons-shopping-bag" class="w-6 h-6 text-primary" />
-          Checkout
-        </h1>
-        <p class="text-slate-500 dark:text-slate-400">
-          Complete your purchase securely
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Side: Checkout Form -->
-        <div class="lg:col-span-2 space-y-5">
-          <!-- Customer Information -->
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8"
+  >
+    <Transition
+      appear
+      enter-active-class="transition duration-500 ease-out"
+      enter-from-class="opacity-0 translate-y-5"
+      enter-to-class="opacity-100 translate-y-0"
+    >
+      <div
+        class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden"
+      >
+        <!-- Header -->
+        <div class="relative overflow-hidden">
           <div
-            class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-md transition-all duration-300"
+            class="absolute inset-0 bg-[url('/placeholder.svg?height=200&width=1000')] bg-cover bg-center opacity-20"
+          ></div>
+          <div
+            class="bg-gradient-to-r from-violet-600 to-indigo-600 p-8 relative z-10"
           >
-            <h2
-              class="text-lg font-medium text-slate-800 dark:text-white mb-3 flex items-center"
+            <Transition
+              appear
+              enter-active-class="transition duration-400 delay-200 ease-out"
+              enter-from-class="opacity-0 translate-y-3"
+              enter-to-class="opacity-100 translate-y-0"
             >
-              <UIcon
-                name="i-heroicons-user-circle"
-                class="mr-2 w-5 h-5 text-primary"
-              />
-              Your Information
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label
-                  class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-                >
-                  Full Name *
-                </label>
-                <UInput
-                  v-model="checkout.name"
-                  placeholder="Enter your full name"
-                  :ui="{ base: 'w-full', input: 'w-full' }"
-                />
+                <h1 class="text-3xl font-bold text-white">Checkout</h1>
+                <p class="text-purple-100 mt-2">
+                  Complete your purchase to experience premium quality
+                </p>
               </div>
+            </Transition>
 
-              <div>
-                <label
-                  class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+            <!-- Checkout Steps -->
+            <div class="flex items-center mt-6 text-sm text-white">
+              <div class="flex items-center">
+                <div
+                  class="bg-white bg-opacity-30 rounded-full h-6 w-6 flex items-center justify-center"
                 >
-                  Phone *
-                </label>
-                <UInput
-                  v-model="checkout.phone"
-                  placeholder="Enter your phone number"
-                  :ui="{ base: 'w-full', input: 'w-full' }"
-                />
+                  <ShoppingBag class="h-3 w-3 text-white" />
+                </div>
+                <span class="ml-2">Cart</span>
               </div>
-
-              <div class="md:col-span-2">
-                <label
-                  class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+              <div class="w-8 h-[2px] bg-white bg-opacity-30 mx-2"></div>
+              <div class="flex items-center">
+                <div
+                  class="bg-white rounded-full h-6 w-6 flex items-center justify-center"
                 >
-                  Delivery Address *
-                </label>
-                <UTextarea
-                  v-model="checkout.address"
-                  placeholder="Enter your full address"
-                  rows="2"
-                  :ui="{ base: 'w-full' }"
-                />
+                  <Check class="h-3 w-3 text-indigo-600" />
+                </div>
+                <span class="ml-2 font-medium">Checkout</span>
+              </div>
+              <div class="w-8 h-[2px] bg-white bg-opacity-30 mx-2"></div>
+              <div class="flex items-center opacity-60">
+                <div
+                  class="border-2 border-white border-opacity-30 rounded-full h-6 w-6 flex items-center justify-center"
+                >
+                  <span class="text-xs">3</span>
+                </div>
+                <span class="ml-2">Confirmation</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Delivery Options -->
-          <div
-            class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-md transition-all duration-300"
-          >
-            <h2
-              class="text-lg font-medium text-slate-800 dark:text-white mb-3 flex items-center"
-            >
-              <UIcon
-                name="i-heroicons-truck"
-                class="mr-2 w-5 h-5 text-primary"
-              />
-              Delivery Options
-            </h2>
-
-            <div class="space-y-2">
-              <label
-                class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                :class="
-                  checkout.deliveryOption === 'inside'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 dark:border-slate-700'
-                "
+        <!-- Main Form -->
+        <form @submit.prevent="processCheckout" class="p-8">
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+            <!-- Left Column: Customer Information -->
+            <div class="space-y-8">
+              <!-- Product Details -->
+              <Transition
+                appear
+                enter-active-class="transition duration-500 delay-300 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
               >
-                <input
-                  type="radio"
-                  v-model="checkout.deliveryOption"
-                  value="inside"
-                  class="mr-3 text-primary"
-                />
-                <div class="flex-1">
-                  <div
-                    class="font-medium text-slate-800 dark:text-white flex items-center"
+                <div>
+                  <h2
+                    class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center"
                   >
-                    Inside Dhaka
-                    <UBadge color="primary" variant="soft" class="ml-2"
-                      >৳100</UBadge
+                    <ShoppingBag class="mr-2 h-5 w-5 text-indigo-500" />
+                    Your Products
+                  </h2>
+
+                  <div class="space-y-4">
+                    <Transition-group
+                      appear
+                      enter-active-class="transition duration-500 ease-out"
+                      enter-from-class="opacity-0 translate-y-5"
+                      enter-to-class="opacity-100 translate-y-0"
+                      move-class="transition duration-500"
                     >
-                  </div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Delivery within 1-2 business days
+                      <div
+                        v-for="(product, index) in products"
+                        :key="product.id"
+                        class="flex items-center space-x-4 p-4 border border-gray-100 rounded-xl hover:border-indigo-100 hover:bg-indigo-50/30 transition-all duration-300 group"
+                        :style="{ transitionDelay: `${index * 100 + 400}ms` }"
+                      >
+                        <div class="relative overflow-hidden rounded-xl">
+                          <img
+                            :src="product.image || '/placeholder.svg'"
+                            :alt="product.name"
+                            class="w-20 h-20 object-cover rounded-xl shadow-sm transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <div
+                            class="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          ></div>
+                        </div>
+                        <div class="flex-1">
+                          <h3 class="font-medium text-gray-900">
+                            {{ product.name }}
+                          </h3>
+                          <p class="text-gray-500 text-sm">
+                            {{ product.description }}
+                          </p>
+                          <div class="flex items-center justify-between mt-2">
+                            <div class="text-indigo-600 font-semibold">
+                              ৳{{ product.price.toLocaleString() }}
+                            </div>
+                            <div
+                              class="flex items-center border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                            >
+                              <button
+                                type="button"
+                                @click="decreaseQuantity(index)"
+                                class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors duration-200 focus:outline-none"
+                                :disabled="product.quantity <= 1"
+                              >
+                                <Minus class="h-3 w-3" />
+                              </button>
+                              <span
+                                class="px-3 py-1 bg-white text-gray-800 min-w-[40px] text-center"
+                                >{{ product.quantity }}</span
+                              >
+                              <button
+                                type="button"
+                                @click="increaseQuantity(index)"
+                                class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors duration-200 focus:outline-none"
+                              >
+                                <Plus class="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Transition-group>
                   </div>
                 </div>
-              </label>
+              </Transition>
 
-              <label
-                class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                :class="
-                  checkout.deliveryOption === 'outside'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 dark:border-slate-700'
-                "
+              <!-- Customer Information -->
+              <Transition
+                appear
+                enter-active-class="transition duration-500 delay-500 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
               >
-                <input
-                  type="radio"
-                  v-model="checkout.deliveryOption"
-                  value="outside"
-                  class="mr-3 text-primary"
-                />
-                <div class="flex-1">
-                  <div
-                    class="font-medium text-slate-800 dark:text-white flex items-center"
+                <div>
+                  <h2
+                    class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-3 flex items-center"
                   >
-                    Outside Dhaka
-                    <UBadge color="primary" variant="soft" class="ml-2"
-                      >৳150</UBadge
-                    >
-                  </div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Delivery within 3-5 business days
-                  </div>
-                </div>
-              </label>
-
-              <label
-                v-if="hasFreeShipping"
-                class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                :class="
-                  checkout.deliveryOption === 'free'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 dark:border-slate-700'
-                "
-              >
-                <input
-                  type="radio"
-                  v-model="checkout.deliveryOption"
-                  value="free"
-                  class="mr-3 text-primary"
-                />
-                <div class="flex-1">
-                  <div
-                    class="font-medium text-slate-800 dark:text-white flex items-center"
-                  >
-                    Free Shipping
-                    <UBadge color="green" variant="soft" class="ml-2"
-                      >৳0</UBadge
-                    >
-                  </div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Free delivery for eligible orders
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <!-- Payment Method with Improved Insufficient Balance Warning -->
-          <div
-            class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-md transition-all duration-300 payment-section"
-            :class="{
-              'border-red-300 dark:border-red-700': showInsufficientFundsError,
-            }"
-          >
-            <h2
-              class="text-lg font-medium text-slate-800 dark:text-white mb-3 flex items-center"
-            >
-              <UIcon
-                name="i-heroicons-credit-card"
-                class="mr-2 w-5 h-5 text-primary"
-              />
-              Payment Method
-            </h2>
-
-            <div class="space-y-2">
-              <label
-                class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                :class="[
-                  checkout.paymentMethod === 'account'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 dark:border-slate-700',
-                  showInsufficientFundsError &&
-                  checkout.paymentMethod === 'account'
-                    ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10'
-                    : '',
-                ]"
-              >
-                <input
-                  type="radio"
-                  v-model="checkout.paymentMethod"
-                  value="account"
-                  class="mr-3 text-primary"
-                />
-                <div class="flex-1 relative">
-                  <div
-                    class="font-medium text-slate-800 dark:text-white flex items-center"
-                  >
-                    Account Funds
-                    <UBadge
-                      :color="showInsufficientFundsError ? 'red' : 'primary'"
-                      variant="soft"
-                      class="ml-2 balance-badge"
-                      :class="{
-                        'animate-pulse-subtle': showInsufficientFundsError,
-                      }"
-                    >
-                      ৳{{ formatPrice(userBalance) }}
-                    </UBadge>
-                  </div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Pay using your account balance
-                  </div>
-
-                  <!-- Insufficient funds warning - Inside the payment option -->
-                  <div
-                    v-if="
-                      showInsufficientFundsError &&
-                      checkout.paymentMethod === 'account'
-                    "
-                    class="mt-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-2 rounded border border-red-100 dark:border-red-800/20 warning-slide-in"
-                  >
-                    <div class="flex items-start">
-                      <UIcon
-                        name="i-heroicons-exclamation-triangle"
-                        class="w-4 h-4 mr-1.5 mt-0.5 text-red-500"
+                    <MapPin class="mr-2 h-5 w-5 text-indigo-500" />
+                    Customer Information
+                  </h2>
+                  <div class="mt-4 space-y-5">
+                    <div class="relative">
+                      <label
+                        for="name"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Full Name
+                      </label>
+                      <input
+                        id="name"
+                        v-model="form.name"
+                        type="text"
+                        required
+                        :class="[
+                          'block w-full px-4 py-1.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200',
+                          errors.name
+                            ? 'border-red-300 ring-1 ring-red-300'
+                            : 'border-gray-300',
+                        ]"
+                        placeholder="Enter your full name"
                       />
-                      <div>
-                        <p class="font-medium">
-                          Insufficient funds for this purchase
-                        </p>
-                        <p class="mt-0.5">
-                          You need
+                      <p v-if="errors.name" class="mt-1 text-sm text-red-600">
+                        {{ errors.name }}
+                      </p>
+                    </div>
+
+                    <div class="relative">
+                      <label
+                        for="phone"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Phone Number
+                      </label>
+                      <input
+                        id="phone"
+                        v-model="form.phone"
+                        type="tel"
+                        required
+                        :class="[
+                          'block w-full px-4 py-1.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200',
+                          errors.phone
+                            ? 'border-red-300 ring-1 ring-red-300'
+                            : 'border-gray-300',
+                        ]"
+                        placeholder="Enter your phone number"
+                      />
+                      <p v-if="errors.phone" class="mt-1 text-sm text-red-600">
+                        {{ errors.phone }}
+                      </p>
+                    </div>
+
+                    <div class="relative">
+                      <label
+                        for="address"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Full Address
+                      </label>
+                      <textarea
+                        id="address"
+                        v-model="form.address"
+                        rows="3"
+                        required
+                        :class="[
+                          'block w-full px-4 py-1.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200',
+                          errors.address
+                            ? 'border-red-300 ring-1 ring-red-300'
+                            : 'border-gray-300',
+                        ]"
+                        placeholder="Enter your complete delivery address"
+                      ></textarea>
+                      <p
+                        v-if="errors.address"
+                        class="mt-1 text-sm text-red-600"
+                      >
+                        {{ errors.address }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+
+            <!-- Right Column: Payment and Summary -->
+            <div class="space-y-8">
+              <Transition
+                appear
+                enter-active-class="transition duration-500 delay-400 ease-out"
+                enter-from-class="opacity-0 translate-x-5"
+                enter-to-class="opacity-100 translate-x-0"
+              >
+                <div
+                  :class="[
+                    'transition-all duration-300',
+                    isScrolled ? 'lg:sticky lg:top-4' : '',
+                  ]"
+                >
+                  <!-- Delivery Options -->
+                  <div
+                    class="mb-6 overflow-hidden rounded-xl border border-gray-200 shadow-sm"
+                  >
+                    <div
+                      class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
+                    >
+                      <h2
+                        class="text-lg font-semibold text-gray-900 flex items-center"
+                      >
+                        <Truck class="mr-2 h-5 w-5 text-indigo-500" />
+                        Delivery Options
+                      </h2>
+                    </div>
+                    <div class="p-4">
+                      <div class="mt-2 space-y-3">
+                        <div
+                          :class="[
+                            'relative flex p-4 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all duration-200',
+                            form.deliveryOption === 'inside'
+                              ? 'bg-indigo-50/50 border-indigo-300'
+                              : '',
+                          ]"
+                        >
+                          <div class="flex items-center h-5">
+                            <input
+                              id="inside-dhaka"
+                              v-model="form.deliveryOption"
+                              type="radio"
+                              value="inside"
+                              class="size-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                            />
+                          </div>
+                          <div class="ml-3 flex flex-col">
+                            <label
+                              for="inside-dhaka"
+                              class="font-medium text-gray-800"
+                              >Inside Dhaka</label
+                            >
+                            <span class="text-gray-500 text-sm"
+                              >Delivery within 24 hours</span
+                            >
+                            <span class="text-indigo-600 font-medium mt-1"
+                              >Delivery fee: ৳100</span
+                            >
+                          </div>
+                        </div>
+
+                        <div
+                          :class="[
+                            'relative flex p-4 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all duration-200',
+                            form.deliveryOption === 'outside'
+                              ? 'bg-indigo-50/50 border-indigo-300'
+                              : '',
+                          ]"
+                        >
+                          <div class="flex items-center h-5">
+                            <input
+                              id="outside-dhaka"
+                              v-model="form.deliveryOption"
+                              type="radio"
+                              value="outside"
+                              class="size-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                            />
+                          </div>
+                          <div class="ml-3 flex flex-col">
+                            <label
+                              for="outside-dhaka"
+                              class="font-medium text-gray-800"
+                              >Outside Dhaka</label
+                            >
+                            <span class="text-gray-500 text-sm"
+                              >Delivery within 3-5 days</span
+                            >
+                            <span class="text-indigo-600 font-medium mt-1"
+                              >Delivery fee: ৳150</span
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Payment Methods -->
+                  <div
+                    class="mb-6 overflow-hidden rounded-xl border border-gray-200 shadow-sm"
+                  >
+                    <div
+                      class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
+                    >
+                      <h2
+                        class="text-lg font-semibold text-gray-900 flex items-center"
+                      >
+                        <CreditCard class="mr-2 h-5 w-5 text-indigo-500" />
+                        Payment Method
+                      </h2>
+                    </div>
+                    <div class="p-4">
+                      <div class="mt-2 space-y-3">
+                        <div
+                          :class="[
+                            'relative flex p-4 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all duration-200',
+                            form.paymentMethod === 'account'
+                              ? 'bg-indigo-50/50 border-indigo-300'
+                              : '',
+                          ]"
+                        >
+                          <div class="flex items-center h-5">
+                            <input
+                              id="account-funds"
+                              v-model="form.paymentMethod"
+                              type="radio"
+                              value="account"
+                              class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                            />
+                          </div>
+                          <div class="ml-3 flex flex-col">
+                            <label
+                              for="account-funds"
+                              class="font-medium text-gray-800"
+                              >Account Funds</label
+                            >
+                            <div class="flex items-center mt-1">
+                              <span class="text-gray-500 text-sm mr-2"
+                                >Available balance:</span
+                              >
+                              <span class="text-indigo-600 font-medium"
+                                >৳{{ accountBalance.toLocaleString() }}</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          :class="[
+                            'relative flex p-4 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all duration-200',
+                            form.paymentMethod === 'cod'
+                              ? 'bg-indigo-50/50 border-indigo-300'
+                              : '',
+                          ]"
+                        >
+                          <div class="flex items-center h-5">
+                            <input
+                              id="cod"
+                              v-model="form.paymentMethod"
+                              type="radio"
+                              value="cod"
+                              class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                            />
+                          </div>
+                          <div class="ml-3 flex flex-col">
+                            <label for="cod" class="font-medium text-gray-800"
+                              >Cash on Delivery</label
+                            >
+                            <span class="text-gray-500 text-sm"
+                              >Pay when you receive your order</span
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Order Summary -->
+                  <div class="overflow-hidden rounded-xl border-0 shadow-lg">
+                    <div
+                      class="bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3"
+                    >
+                      <h2
+                        class="text-lg font-semibold text-white flex items-center"
+                      >
+                        <Wallet class="mr-2 h-5 w-5 text-white" />
+                        Order Summary
+                      </h2>
+                    </div>
+                    <div class="p-6 bg-gradient-to-b from-white to-slate-50">
+                      <div class="space-y-2 mb-4">
+                        <div class="flex justify-between py-2 text-gray-600">
+                          <span>Products ({{ totalItems }})</span>
                           <span class="font-medium"
-                            >৳{{ formatPrice(total - userBalance) }}</span
+                            >৳{{ subtotal.toLocaleString() }}</span
                           >
-                          more to complete this order
-                        </p>
+                        </div>
+                        <div class="flex justify-between py-2 text-gray-600">
+                          <span>Delivery Fee</span>
+                          <span class="font-medium"
+                            >৳{{ deliveryFee.toLocaleString() }}</span
+                          >
+                        </div>
+                      </div>
+
+                      <div
+                        class="flex justify-between py-3 border-t border-gray-200 mt-2 pt-2"
+                      >
+                        <span class="text-gray-800 font-medium">Total</span>
+                        <span class="text-xl font-bold text-indigo-600"
+                          >৳{{ total.toLocaleString() }}</span
+                        >
+                      </div>
+
+                      <!-- Submit Button -->
+                      <button
+                        type="submit"
+                        class="mt-6 w-full py-3 text-base font-medium text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-xl rounded-lg"
+                      >
+                        Complete Purchase
+                      </button>
+
+                      <p class="text-xs text-center text-gray-500 mt-4">
+                        By completing this purchase, you agree to our
+                        <a href="#" class="text-indigo-600 hover:underline"
+                          >Terms of Service</a
+                        >
+                        and
+                        <a href="#" class="text-indigo-600 hover:underline"
+                          >Privacy Policy</a
+                        >
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </form>
+      </div>
+    </Transition>
+
+    <!-- Insufficient Funds Warning Modal -->
+    <Transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showInsufficientFundsModal"
+        class="fixed inset-0 z-10 overflow-y-auto"
+        aria-labelledby="modal-title"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        >
+          <div
+            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+            aria-hidden="true"
+            @click="showInsufficientFundsModal = false"
+          ></div>
+          <span
+            class="hidden sm:inline-block sm:align-middle sm:h-screen"
+            aria-hidden="true"
+            >&#8203;</span
+          >
+          <Transition
+            enter-active-class="transition ease-out duration-300"
+            enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+            leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100 translate-y-0 sm:scale-100"
+            leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          >
+            <div
+              v-if="showInsufficientFundsModal"
+              class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+            >
+              <div
+                class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"
+              ></div>
+              <div class="bg-white px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                  <div
+                    class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-red-100 sm:mx-0 sm:h-12 sm:w-12"
+                  >
+                    <svg
+                      class="h-7 w-7 text-red-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3
+                      class="text-xl leading-6 font-semibold text-gray-900"
+                      id="modal-title"
+                    >
+                      Insufficient Funds
+                    </h3>
+                    <div class="mt-3">
+                      <p class="text-base text-gray-500">
+                        Your account balance (৳{{
+                          accountBalance.toLocaleString()
+                        }}) is not sufficient to complete this purchase (৳{{
+                          total.toLocaleString()
+                        }}).
+                      </p>
+                      <p class="mt-2 text-base text-gray-500">
+                        Please choose another payment method or add funds to
+                        your account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="bg-gray-50 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse"
+              >
+                <button
+                  type="button"
+                  class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                  @click="showInsufficientFundsModal = false"
+                >
+                  Add Funds
+                </button>
+                <button
+                  type="button"
+                  class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                  @click="switchToCOD"
+                >
+                  Switch to COD
+                </button>
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Success Modal -->
+    <Transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showSuccessModal"
+        class="fixed inset-0 z-10 overflow-y-auto"
+        aria-labelledby="modal-title"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        >
+          <div
+            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+            aria-hidden="true"
+          ></div>
+          <span
+            class="hidden sm:inline-block sm:align-middle sm:h-screen"
+            aria-hidden="true"
+            >&#8203;</span
+          >
+          <Transition
+            enter-active-class="transition ease-out duration-300"
+            enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+            leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100 translate-y-0 sm:scale-100"
+            leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          >
+            <div
+              v-if="showSuccessModal"
+              class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+            >
+              <div
+                class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-green-400 to-green-600"
+              ></div>
+              <div class="bg-white px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                  <div
+                    class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-green-100 sm:mx-0 sm:h-12 sm:w-12"
+                  >
+                    <svg
+                      class="h-7 w-7 text-green-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3
+                      class="text-xl leading-6 font-semibold text-gray-900"
+                      id="modal-title"
+                    >
+                      Order Successful!
+                    </h3>
+                    <div class="mt-3">
+                      <p class="text-base text-gray-500">
+                        Thank you for your purchase! Your order #{{
+                          orderNumber
+                        }}
+                        has been successfully placed.
+                      </p>
+                      <div
+                        class="mt-4 p-3 bg-green-50 rounded-lg border border-green-100"
+                      >
+                        <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-600">Order Total:</span>
+                          <span class="font-medium"
+                            >৳{{ total.toLocaleString() }}</span
+                          >
+                        </div>
+                        <div class="flex justify-between text-sm">
+                          <span class="text-gray-600">Estimated Delivery:</span>
+                          <span class="font-medium">{{
+                            estimatedDelivery
+                          }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </label>
-
-              <label
-                class="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                :class="
-                  checkout.paymentMethod === 'cod'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 dark:border-slate-700'
-                "
-              >
-                <input
-                  type="radio"
-                  v-model="checkout.paymentMethod"
-                  value="cod"
-                  class="mr-3 text-primary"
-                />
-                <div class="flex-1">
-                  <div class="font-medium text-slate-800 dark:text-white">
-                    Cash on Delivery
-                  </div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                    Pay when you receive your order
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Side: Order Summary -->
-        <div class="lg:col-span-1">
-          <div
-            class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-lg transition-all duration-300 sticky top-4"
-          >
-            <h2
-              class="text-lg font-medium text-slate-800 dark:text-white mb-3 flex items-center"
-            >
-              <UIcon
-                name="i-heroicons-shopping-cart"
-                class="mr-2 w-5 h-5 text-primary"
-              />
-              Order Summary
-            </h2>
-
-            <!-- Products -->
-            <div class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-1">
+              </div>
               <div
-                v-for="(item, index) in cartItems"
-                :key="index"
-                class="flex gap-3 pb-3 border-b border-slate-100 dark:border-slate-700"
+                class="bg-gray-50 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse"
               >
-                <div
-                  class="w-14 h-14 bg-slate-50 dark:bg-slate-700 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 dark:border-slate-600"
+                <button
+                  type="button"
+                  class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 text-base font-medium text-white hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto transition-all duration-200"
+                  @click="resetForm"
                 >
-                  <img
-                    :src="item.image"
-                    :alt="item.name"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3
-                        class="font-medium text-slate-800 dark:text-white text-sm"
-                      >
-                        {{ item.name }}
-                      </h3>
-                      <p class="text-sm text-slate-500 dark:text-slate-400">
-                        {{ item.category }}
-                      </p>
-                    </div>
-                    <div
-                      class="text-sm font-medium text-slate-800 dark:text-white hidden"
-                    >
-                      ৳{{ formatPrice(item.price * item.quantity) }}
-                    </div>
-                  </div>
-
-                  <div class="flex items-center mt-2">
-                    <div
-                      class="flex items-center border border-slate-200 dark:border-slate-600 rounded-md"
-                    >
-                      <button
-                        @click="decreaseQuantity(index)"
-                        class="w-6 h-6 flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700"
-                        :disabled="item.quantity <= 1"
-                      >
-                        <UIcon name="i-heroicons-minus-small" class="w-3 h-3" />
-                      </button>
-
-                      <span class="w-7 text-center text-sm">{{
-                        item.quantity
-                      }}</span>
-
-                      <button
-                        @click="increaseQuantity(index)"
-                        class="w-6 h-6 flex items-center justify-center text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700"
-                      >
-                        <UIcon name="i-heroicons-plus-small" class="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    <button
-                      @click="removeItem(index)"
-                      class="ml-2 text-red-500 hover:text-red-600 text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
+                  Continue Shopping
+                </button>
+                <button
+                  type="button"
+                  class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto transition-all duration-200"
+                  @click="resetForm"
+                >
+                  View Order
+                </button>
               </div>
             </div>
-
-            <!-- Price Summary -->
-            <div
-              class="space-y-2 py-3 border-b border-slate-200 dark:border-slate-700"
-            >
-              <div class="flex justify-between">
-                <span class="text-sm text-slate-600 dark:text-slate-400"
-                  >Price</span
-                >
-                <span class="font-medium text-sm text-slate-800 dark:text-white"
-                  >৳{{ formatPrice(subTotal) }}</span
-                >
-              </div>
-
-              <div class="flex justify-between">
-                <span class="text-sm text-slate-600 dark:text-slate-400"
-                  >Shipping</span
-                >
-                <span class="font-medium text-sm text-slate-800 dark:text-white"
-                  >৳{{ formatPrice(deliveryCharge) }}</span
-                >
-              </div>
-
-              <div v-if="discount > 0" class="flex justify-between">
-                <span class="text-sm text-slate-600 dark:text-slate-400"
-                  >Discount</span
-                >
-                <span class="font-medium text-sm text-green-600"
-                  >-৳{{ formatPrice(discount) }}</span
-                >
-              </div>
-            </div>
-
-            <!-- Total -->
-            <div class="flex justify-between py-3">
-              <span class="font-medium text-slate-800 dark:text-white"
-                >Total</span
-              >
-              <span class="font-bold text-lg text-slate-800 dark:text-white"
-                >৳{{ formatPrice(total) }}</span
-              >
-            </div>
-
-            <!-- Checkout Button -->
-            <div class="mt-4">
-              <button
-                class="relative w-full py-3 px-4 overflow-hidden group bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
-                :disabled="!isFormValid || processing"
-                @click="placeOrder"
-              >
-                <!-- Hover effect -->
-                <span
-                  class="absolute w-0 h-0 transition-all duration-300 rounded-full bg-white opacity-10 group-hover:w-full group-hover:h-full"
-                ></span>
-
-                <!-- Button content -->
-                <span v-if="processing" class="flex items-center">
-                  <svg
-                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Processing...
-                </span>
-                <span v-else class="flex items-center">
-                  <UIcon name="i-heroicons-check-circle" class="mr-2 w-5 h-5" />
-                  Complete Order
-                </span>
-              </button>
-
-              <p
-                class="text-sm text-center mt-3 text-slate-500 dark:text-slate-400"
-              >
-                By placing this order, you agree to our
-                <NuxtLink to="/terms" class="text-primary hover:underline"
-                  >Terms of Service</NuxtLink
-                >
-                and
-                <NuxtLink to="/privacy" class="text-primary hover:underline"
-                  >Privacy Policy</NuxtLink
-                >
-              </p>
-            </div>
-          </div>
+          </Transition>
         </div>
       </div>
-    </UContainer>
-
-    <!-- Success Modal -->
-    <UModal
-      v-model="showSuccessModal"
-      :ui="{ padding: 'p-0', background: 'bg-transparent' }"
-    >
-      <div
-        class="modal-container bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-2xl transform transition-all max-w-lg w-full mx-auto"
-      >
-        <!-- Success Animation Header -->
-        <div
-          class="relative bg-gradient-to-r from-primary/90 to-primary-600 h-32 overflow-hidden"
-        >
-          <!-- Animated particles/confetti -->
-          <div class="absolute inset-0">
-            <div
-              v-for="n in 20"
-              :key="n"
-              class="confetti-particle"
-              :style="{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                backgroundColor: ['#ffffff', '#ffd700', '#ffffff', '#e5e7eb'][
-                  Math.floor(Math.random() * 4)
-                ],
-              }"
-            ></div>
-          </div>
-
-          <!-- Checkmark -->
-          <div class="absolute mt-4 left-1/2 -translate-x-1/2 w-20 h-20">
-            <div
-              class="absolute w-20 h-20 rounded-full bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center"
-            >
-              <div class="success-checkmark">
-                <div class="check-icon">
-                  <span class="icon-line line-tip"></span>
-                  <span class="icon-line line-long"></span>
-                  <div class="icon-circle"></div>
-                  <div class="icon-fix"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Content -->
-        <div class="pt-16 pb-4 px-6">
-          <h3
-            class="text-xl font-bold text-center text-slate-800 dark:text-white mb-1"
-          >
-            Order Confirmed!
-          </h3>
-          <p class="text-slate-500 dark:text-slate-400 text-center mb-6">
-            Thank you for your purchase. We're processing your order now.
-          </p>
-
-          <!-- Order Details Card -->
-          <div
-            class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4 backdrop-blur-sm border border-slate-100 dark:border-slate-600/20 mb-5"
-          >
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <UIcon
-                    name="i-heroicons-shopping-bag"
-                    class="w-5 h-5 text-primary mr-2"
-                  />
-                  <span class="text-sm text-slate-500 dark:text-slate-400"
-                    >Order ID</span
-                  >
-                </div>
-                <span
-                  class="text-sm font-semibold text-slate-800 dark:text-white"
-                  >#{{ orderId }}</span
-                >
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <UIcon
-                    name="i-heroicons-currency-bangladeshi"
-                    class="w-5 h-5 text-primary mr-2"
-                  />
-                  <span class="text-sm text-slate-500 dark:text-slate-400"
-                    >Total Amount</span
-                  >
-                </div>
-                <span
-                  class="text-sm font-semibold text-slate-800 dark:text-white"
-                  >৳{{ formatPrice(total) }}</span
-                >
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <UIcon
-                    name="i-heroicons-credit-card"
-                    class="w-5 h-5 text-primary mr-2"
-                  />
-                  <span class="text-sm text-slate-500 dark:text-slate-400"
-                    >Payment</span
-                  >
-                </div>
-                <span
-                  class="text-sm font-semibold text-slate-800 dark:text-white"
-                >
-                  {{
-                    checkout.paymentMethod === "account"
-                      ? "Account Funds"
-                      : "Cash on Delivery"
-                  }}
-                </span>
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <UIcon
-                    name="i-heroicons-truck"
-                    class="w-5 h-5 text-primary mr-2"
-                  />
-                  <span class="text-sm text-slate-500 dark:text-slate-400"
-                    >Delivery</span
-                  >
-                </div>
-                <span
-                  class="text-sm font-semibold text-slate-800 dark:text-white"
-                >
-                  {{
-                    checkout.deliveryOption === "inside"
-                      ? "Inside Dhaka"
-                      : checkout.deliveryOption === "outside"
-                      ? "Outside Dhaka"
-                      : "Free Shipping"
-                  }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Status Timeline -->
-          <div class="relative mb-6 px-2">
-            <div
-              class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700"
-            ></div>
-
-            <div class="relative pl-8 pb-3">
-              <div
-                class="absolute left-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center"
-              >
-                <div class="w-3 h-3 rounded-full bg-primary pulse-circle"></div>
-              </div>
-              <div>
-                <p class="font-medium text-sm text-slate-800 dark:text-white">
-                  Order Received
-                </p>
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                  Just now
-                </p>
-              </div>
-            </div>
-
-            <div class="relative pl-8 pb-3">
-              <div
-                class="absolute left-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"
-              >
-                <div
-                  class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-500"
-                ></div>
-              </div>
-              <div>
-                <p
-                  class="font-medium text-sm text-slate-600 dark:text-slate-400"
-                >
-                  Processing Order
-                </p>
-                <p class="text-sm text-slate-500 dark:text-slate-500">
-                  Upcoming
-                </p>
-              </div>
-            </div>
-
-            <div class="relative pl-8">
-              <div
-                class="absolute left-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"
-              >
-                <div
-                  class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-500"
-                ></div>
-              </div>
-              <div>
-                <p
-                  class="font-medium text-sm text-slate-600 dark:text-slate-400"
-                >
-                  Delivery
-                </p>
-                <p class="text-sm text-slate-500 dark:text-slate-500">
-                  Upcoming
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Action Buttons -->
-        <div
-          class="bg-slate-50 dark:bg-slate-700/30 px-6 py-5 flex flex-col sm:flex-row gap-3 justify-center"
-        >
-          <button
-            to="/shop"
-            class="order-2 sm:order-1 py-2.5 px-4 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center justify-center"
-          >
-            Continue Shopping
-            <UIcon name="i-heroicons-arrow-right" class="ml-2 w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </UModal>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-// Add these variables to your script setup section
-const userBalance = ref(5000); // Account balance (matches the displayed value in the UI)
-const showInsufficientFundsError = ref(false);
-const route = useRoute();
-const router = useRouter();
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
+import {
+  ShoppingBag,
+  Check,
+  MapPin,
+  Truck,
+  CreditCard,
+  Wallet,
+  Minus,
+  Plus,
+} from "lucide-vue-next";
 
-// State management
-const checkout = ref({
-  name: "",
-  phone: "",
-  address: "",
-  deliveryOption: "inside",
-  paymentMethod: "cod",
-});
+// Mock account balance
+const accountBalance = ref(500); // Set to a value that can be tested for insufficient funds
+const orderNumber = ref(Math.floor(100000 + Math.random() * 900000)); // Random 6-digit order number
 
-const processing = ref(false);
-const showSuccessModal = ref(false);
-const orderId = ref("");
-
-// Sample cart items - would be retrieved from store in real implementation
-const cartItems = ref([
+// Products data
+const products = reactive([
   {
     id: 1,
-    name: "Premium Product",
-    category: "Electronics",
-    price: 2999,
-    oldPrice: 3499,
+    name: "Premium Wireless Headphones",
+    description: "Noise cancelling, 30-hour battery life",
+    price: 1200,
     quantity: 1,
-    image: "/img/product-1.jpg",
+    image: "/placeholder.svg?height=100&width=100",
+  },
+  {
+    id: 2,
+    name: "Smart Watch Series 5",
+    description: "Fitness tracking, heart rate monitor",
+    price: 800,
+    quantity: 1,
+    image: "/placeholder.svg?height=100&width=100",
   },
 ]);
 
-// If URL has product ID, add it to cart
-onMounted(() => {
-  const productId = route.query.productId;
-  const quantity = parseInt(route.query.quantity) || 1;
-
-  if (productId) {
-    // In a real app, you would fetch the product details here
-    // For now, we'll just use placeholder data if not already in cart
-    if (!cartItems.value.some((item) => item.id === parseInt(productId))) {
-      cartItems.value.push({
-        id: parseInt(productId),
-        name: route.query.name || "Product Item",
-        category: route.query.category || "General",
-        price: parseInt(route.query.price) || 1999,
-        oldPrice: parseInt(route.query.oldPrice) || 0,
-        quantity: quantity,
-        image: route.query.image || "/img/placeholder.jpg",
-      });
-    }
-  }
+// Form state
+const form = reactive({
+  name: "",
+  phone: "",
+  address: "",
+  deliveryOption: "inside", // 'inside' or 'outside'
+  paymentMethod: "account", // 'account' or 'cod'
 });
 
+// Error state
+const errors = reactive({
+  name: "",
+  phone: "",
+  address: "",
+});
+
+// Modal states
+const showInsufficientFundsModal = ref(false);
+const showSuccessModal = ref(false);
+const isScrolled = ref(false);
+
 // Computed properties
-const subTotal = computed(() => {
-  return cartItems.value.reduce(
-    (total, item) => total + item.price * item.quantity,
+const subtotal = computed(() => {
+  return products.reduce(
+    (total, product) => total + product.price * product.quantity,
     0
   );
 });
 
-const hasFreeShipping = computed(() => {
-  // Check if any products have free shipping option
-  return (
-    cartItems.value.some((item) => item.freeShipping) || subTotal.value > 5000
-  );
+const totalItems = computed(() => {
+  return products.reduce((total, product) => total + product.quantity, 0);
 });
 
-const deliveryCharge = computed(() => {
-  if (checkout.value.deliveryOption === "free" || subTotal.value > 5000)
-    return 0;
-  return checkout.value.deliveryOption === "inside" ? 100 : 150;
+const deliveryFee = computed(() =>
+  form.deliveryOption === "inside" ? 100 : 150
+);
+const total = computed(() => subtotal.value + deliveryFee.value);
+
+const estimatedDelivery = computed(() => {
+  const today = new Date();
+  const deliveryDays = form.deliveryOption === "inside" ? 1 : 5;
+  const deliveryDate = new Date(today);
+  deliveryDate.setDate(today.getDate() + deliveryDays);
+
+  return deliveryDate.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 });
 
-const discount = computed(() => {
-  // Calculate any discounts - example logic
-  return 0;
-});
-
-const total = computed(() => {
-  return subTotal.value + deliveryCharge.value - discount.value;
-});
-
-// Update the isFormValid computed property
-const isFormValid = computed(() => {
-  const hasValidInfo =
-    checkout.value.name && checkout.value.phone && checkout.value.address;
-  const hasValidPayment =
-    checkout.value.paymentMethod !== "account" ||
-    userBalance.value >= total.value;
-
-  // Show error when account payment is selected but balance is insufficient
-  showInsufficientFundsError.value =
-    checkout.value.paymentMethod === "account" &&
-    userBalance.value < total.value;
-
-  return hasValidInfo && hasValidPayment;
-});
 // Methods
-function formatPrice(price) {
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+const increaseQuantity = (index) => {
+  products[index].quantity++;
+};
 
-function increaseQuantity(index) {
-  if (cartItems.value[index].quantity < 10) {
-    cartItems.value[index].quantity++;
+const decreaseQuantity = (index) => {
+  if (products[index].quantity > 1) {
+    products[index].quantity--;
   }
-}
+};
 
-function decreaseQuantity(index) {
-  if (cartItems.value[index].quantity > 1) {
-    cartItems.value[index].quantity--;
-  }
-}
+const validateForm = () => {
+  let isValid = true;
 
-function removeItem(index) {
-  cartItems.value.splice(index, 1);
-  if (cartItems.value.length === 0) {
-    // Redirect to products page if cart becomes empty
-    router.push("/products");
-  }
-}
+  // Reset errors
+  errors.name = "";
+  errors.phone = "";
+  errors.address = "";
 
-try {
-  // In a real app, you would send order data to your API here
-  await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulating API call
-
-  // If using account funds, deduct the amount
-  if (checkout.value.paymentMethod === "account") {
-    userBalance.value -= total.value;
+  // Validate name
+  if (!form.name.trim()) {
+    errors.name = "Name is required";
+    isValid = false;
   }
 
-  // Generate a sample order ID
-  orderId.value = "BD" + Math.floor(100000 + Math.random() * 900000);
+  // Validate phone
+  if (!form.phone.trim()) {
+    errors.phone = "Phone number is required";
+    isValid = false;
+  } else if (!/^\d{10,11}$/.test(form.phone.replace(/\D/g, ""))) {
+    errors.phone = "Please enter a valid phone number";
+    isValid = false;
+  }
 
-  // Show success modal
-  showSuccessModal.value = true;
+  // Validate address
+  if (!form.address.trim()) {
+    errors.address = "Address is required";
+    isValid = false;
+  }
 
-  // Clear cart
-  // In a real app, you would clear the cart in your store
-} catch (error) {
-  // Handle error
-  console.error("Order placement failed:", error);
-  alert("There was an error processing your order. Please try again.");
-} finally {
-  processing.value = false;
-}
-// Fix and update the placeOrder function
-async function placeOrder() {
-  if (!isFormValid.value) {
-    // Handle insufficient funds error with visual feedback
-    if (showInsufficientFundsError.value) {
-      // Find the payment section and apply animation
-      const paymentSection = document.querySelector(".payment-section");
-      if (paymentSection) {
-        paymentSection.classList.add("error-shake");
-        setTimeout(() => {
-          paymentSection.classList.remove("error-shake");
-        }, 600);
+  return isValid;
+};
 
-        // Scroll to the payment section
-        paymentSection.scrollIntoView({ behavior: "smooth", block: "center" });
+const processCheckout = () => {
+  if (!validateForm()) return;
 
-        // Flash the balance badge for attention
-        const badge = document.querySelector(".balance-badge");
-        if (badge) {
-          badge.classList.add("flash-attention");
-          setTimeout(() => {
-            badge.classList.remove("flash-attention");
-          }, 1000);
-        }
-      }
-    }
+  // Check if account funds are sufficient when that payment method is selected
+  if (form.paymentMethod === "account" && accountBalance.value < total.value) {
+    showInsufficientFundsModal.value = true;
     return;
   }
 
-  processing.value = true;
+  // Process successful checkout
+  showSuccessModal.value = true;
+};
 
-  try {
-    // In a real app, you would send order data to your API here
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulating API call
+const switchToCOD = () => {
+  form.paymentMethod = "cod";
+  showInsufficientFundsModal.value = false;
+};
 
-    // If using account funds, deduct the amount
-    if (checkout.value.paymentMethod === "account") {
-      userBalance.value -= total.value;
-    }
+const resetForm = () => {
+  // Reset form
+  form.name = "";
+  form.phone = "";
+  form.address = "";
+  form.deliveryOption = "inside";
+  form.paymentMethod = "account";
 
-    // Generate a sample order ID
-    orderId.value = "BD" + Math.floor(100000 + Math.random() * 900000);
+  // Reset products
+  products.forEach((product) => {
+    product.quantity = 1;
+  });
 
-    // Show success modal
-    showSuccessModal.value = true;
+  // Generate new order number
+  orderNumber.value = Math.floor(100000 + Math.random() * 900000);
 
-    // Clear cart (In a real app, you would clear the cart in your store)
-    // cartItems.value = [];
-  } catch (error) {
-    // Handle error
-    console.error("Order placement failed:", error);
-    alert("There was an error processing your order. Please try again.");
-  } finally {
-    processing.value = false;
-  }
-}
-
-// Make sure the navigateToProducts function is correctly implemented
-function navigateToProducts() {
+  // Close modal
   showSuccessModal.value = false;
-  router.push("/products");
-}
+};
+
+// Handle scroll effect for sticky summary
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 100;
+};
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
 </script>
 
-<style scoped>
-.sticky {
-  position: sticky;
-  top: 2rem;
-}
-
-/* Add hover transition to sections */
-.hover\:shadow-md,
-.hover\:shadow-lg {
-  will-change: box-shadow;
-}
-
-/* Pulse animation for success icon */
-@keyframes success-pulse {
+<style>
+/* Add custom animations */
+@keyframes slide-up {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  }
-}
-
-.success-pulse {
-  animation: success-pulse 2s infinite;
-}
-
-/* Button hover effect */
-.checkout-btn-hover {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  transform: translate(-50%, -50%);
-  transition: width 0.5s, height 0.5s;
-}
-
-/* Scale effect for cards */
-.hover\:shadow-md,
-.hover\:shadow-lg {
-  transition: all 0.3s ease;
-}
-
-.hover\:shadow-md:hover,
-.hover\:shadow-lg:hover {
-  transform: translateY(-2px);
-}
-/* Confetti animation */
-.confetti-particle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  opacity: 0;
-  animation: confetti-fall 3s ease-in-out infinite;
-}
-
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(0) rotate(0deg);
     opacity: 0;
+    transform: translate3d(0, 40px, 0) scale(0.95);
   }
-  10% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100px) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-/* Checkmark animation */
-.success-checkmark {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto;
-  position: relative;
-  transform: scale(0.7);
-}
-
-.success-checkmark .check-icon {
-  width: 80px;
-  height: 80px;
-  position: relative;
-  border-radius: 50%;
-  box-sizing: content-box;
-  border: 4px solid #4caf50;
-}
-
-.success-checkmark .check-icon::before {
-  top: 3px;
-  left: -2px;
-  width: 30px;
-  transform-origin: 100% 50%;
-  border-radius: 100px 0 0 100px;
-}
-
-.success-checkmark .check-icon::after {
-  top: 0;
-  left: 30px;
-  width: 60px;
-  transform-origin: 0 50%;
-  border-radius: 0 100px 100px 0;
-}
-
-.success-checkmark .check-icon::before,
-.success-checkmark .check-icon::after {
-  content: "";
-  height: 100px;
-  position: absolute;
-  background: #ffffff;
-  transform: rotate(-45deg);
-}
-
-.success-checkmark .check-icon .icon-line {
-  height: 5px;
-  background-color: #4caf50;
-  display: block;
-  border-radius: 2px;
-  position: absolute;
-  z-index: 10;
-}
-
-.success-checkmark .check-icon .icon-line.line-tip {
-  top: 46px;
-  left: 14px;
-  width: 25px;
-  transform: rotate(45deg);
-  animation: icon-line-tip 0.75s;
-}
-
-.success-checkmark .check-icon .icon-line.line-long {
-  top: 38px;
-  right: 8px;
-  width: 47px;
-  transform: rotate(-45deg);
-  animation: icon-line-long 0.75s;
-}
-
-.success-checkmark .check-icon .icon-circle {
-  top: -4px;
-  left: -4px;
-  z-index: 10;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  position: absolute;
-  box-sizing: content-box;
-  border: 4px solid rgba(76, 175, 80, 0.5);
-}
-
-.success-checkmark .check-icon .icon-fix {
-  top: 8px;
-  width: 5px;
-  left: 26px;
-  z-index: 1;
-  height: 85px;
-  position: absolute;
-  transform: rotate(-45deg);
-  background-color: #ffffff;
-}
-
-@keyframes icon-line-tip {
-  0% {
-    width: 0;
-    left: 1px;
-    top: 19px;
-  }
-  54% {
-    width: 0;
-    left: 1px;
-    top: 19px;
-  }
-  70% {
-    width: 50px;
-    left: -8px;
-    top: 37px;
-  }
-  84% {
-    width: 17px;
-    left: 21px;
-    top: 48px;
-  }
-  100% {
-    width: 25px;
-    left: 14px;
-    top: 45px;
-  }
-}
-
-@keyframes icon-line-long {
-  0% {
-    width: 0;
-    right: 46px;
-    top: 54px;
-  }
-  65% {
-    width: 0;
-    right: 46px;
-    top: 54px;
-  }
-  84% {
-    width: 55px;
-    right: 0px;
-    top: 35px;
-  }
-  100% {
-    width: 47px;
-    right: 8px;
-    top: 38px;
-  }
-}
-
-/* Pulse animation for active status */
-.pulse-circle {
-  animation: pulse-animation 2s infinite;
-}
-
-@keyframes pulse-animation {
-  0% {
-    box-shadow: 0 0 0 0 rgba(var(--color-primary), 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(var(--color-primary), 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(var(--color-primary), 0);
-  }
-}
-
-/* Modal container transitions */
-.modal-container {
-  animation: modal-appear 0.3s ease-out forwards;
-}
-
-@keyframes modal-appear {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Add these new styles for the enhanced insufficient funds warning */
-.warning-slide-in {
-  animation: slide-in 0.3s ease-out forwards;
-  transform-origin: top;
-}
-
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.error-shake {
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  border-color: theme("colors.red.400") !important;
-  box-shadow: 0 0 0 1px theme("colors.red.400/30") !important;
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: translateX(-5px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    transform: translateX(5px);
-  }
-}
-
-.flash-attention {
-  animation: flash 0.5s ease alternate 2;
-}
-
-@keyframes flash {
-  from {
-    background-color: theme("colors.red.200");
-    color: theme("colors.red.900");
-  }
-  to {
-    background-color: theme("colors.red.500");
-    color: theme("colors.white");
-  }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-subtle {
-  0%,
   100% {
     opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
-/* Fix for the "Continue Shopping" button in the success modal */
-.bg-slate-50 button {
-  cursor: pointer;
+/* Add some custom styling for inputs */
+input,
+textarea,
+select {
+  @apply border rounded-lg px-4 py-3;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  @apply outline-none ring-2 ring-indigo-500 border-indigo-500;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* Improve focus styles for accessibility */
+button:focus,
+a:focus {
+  @apply outline-none ring-2 ring-offset-2 ring-indigo-500;
+}
+
+/* Premium card hover effects */
+.card-hover-effect {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 </style>

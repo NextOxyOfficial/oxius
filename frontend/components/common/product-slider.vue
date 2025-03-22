@@ -31,7 +31,7 @@
 
       <!-- View All Button -->
       <NuxtLink
-        to="/shop"
+        to="/eshop"
         class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-primary-50 hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all duration-300 shadow-sm hover:shadow text-sm font-medium text-slate-700 dark:text-slate-200"
       >
         <span>View All</span>
@@ -218,12 +218,12 @@
       </div>
 
       <!-- Product Review Modal -->
-      <UModal v-model="isModalOpen" :ui="{ width: 'w-full max-w-4xl' }">
+      <UModal v-model="isModalOpen">
         <UCard v-if="selectedProduct" class="p-0">
           <!-- Modal Header -->
           <template #header>
             <div
-              class="relative bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4 border-b border-slate-200 dark:border-slate-700"
+              class="relative bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4"
             >
               <div class="flex justify-between items-center">
                 <h3 class="text-xl font-medium text-slate-800 dark:text-white">
@@ -249,10 +249,10 @@
                   class="relative pt-[100%] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden"
                 >
                   <img
+                    v-if="selectedProduct.image"
                     :src="selectedProduct.image"
                     :alt="selectedProduct.name"
                     class="absolute inset-0 w-full h-full object-contain"
-                    @load="imageLoaded = true"
                   />
 
                   <!-- Discount Badge -->
@@ -265,7 +265,10 @@
                 </div>
 
                 <!-- Thumbnail Gallery -->
-                <div class="grid grid-cols-4 gap-2 mt-2">
+                <div
+                  class="grid grid-cols-4 gap-2 mt-2"
+                  v-if="selectedProduct.medias"
+                >
                   <div
                     v-for="i in 4"
                     :key="i"
@@ -320,7 +323,7 @@
                     </div>
                     <span class="text-sm text-slate-500 dark:text-slate-400">
                       {{ selectedProduct.rating }} ({{
-                        selectedProduct.reviews.length
+                        selectedProduct.reviews?.length || 0
                       }}
                       reviews)
                     </span>
@@ -431,37 +434,116 @@
 
               <!-- Tabs - Improved Responsiveness -->
               <div class="">
-                <UTabs
-                  v-model="activeTab"
-                  :items="[
-                    {
-                      label: 'Details',
-                      slot: 'details',
-                      icon: 'i-heroicons-document-text',
-                    },
-                    {
-                      label: 'Reviews',
-                      slot: 'reviews',
-                      icon: 'i-heroicons-chat-bubble-left-right',
-                      badge: selectedProduct.reviews.length,
-                    },
-                  ]"
-                  :ui="{
-                    list: {
-                      background: 'bg-slate-100/50 dark:bg-slate-800/50',
-                      rounded: 'rounded-lg',
-                      padding: 'p-1',
-                    },
-                    container: {
-                      background: 'bg-white dark:bg-slate-800/30',
-                      rounded: 'rounded-lg',
-                      padding: 'p-4 mt-3',
-                    },
-                  }"
-                >
+                <UTabs v-model="activeTab" :items="tabItems">
                   <!-- Reviews Tab -->
                   <template #reviews>
                     <div>
+                      <!-- Reviews Summary -->
+                      <div
+                        class="mb-4 p-3 bg-slate-50/70 dark:bg-slate-800/70 rounded-lg"
+                      >
+                        <div class="flex flex-col sm:flex-row gap-4">
+                          <div
+                            class="flex flex-col items-center sm:border-r sm:border-slate-200 sm:dark:border-slate-700 sm:pr-6"
+                          >
+                            <div
+                              class="text-2xl font-bold text-slate-800 dark:text-white"
+                            >
+                              {{ selectedProduct.rating }}
+                            </div>
+                            <div class="flex text-yellow-400 my-1">
+                              <UIcon
+                                v-for="i in 5"
+                                :key="i"
+                                name="i-heroicons-star-solid"
+                                class="w-4 h-4"
+                              />
+                            </div>
+                            <div class="text-xs text-slate-500">
+                              {{ selectedProduct.reviews?.length || 0 }} reviews
+                            </div>
+                          </div>
+
+                          <div class="flex-1 space-y-1.5">
+                            <div
+                              v-for="n in 5"
+                              :key="n"
+                              class="flex items-center"
+                            >
+                              <div class="text-xs w-5 text-right mr-2">
+                                {{ 6 - n }}
+                              </div>
+                              <UIcon
+                                name="i-heroicons-star"
+                                class="w-3.5 h-3.5 text-yellow-400 mr-1.5"
+                              />
+                              <div
+                                class="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
+                              >
+                                <div
+                                  class="h-full bg-yellow-400"
+                                  :style="{ width: getRatingPercentage(6 - n) }"
+                                ></div>
+                              </div>
+                              <div class="text-xs w-5 text-right ml-2">
+                                {{ getRatingCount(6 - n) }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Reviews List -->
+                      <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <div
+                          v-for="(review, index) in selectedProduct.reviews ||
+                          []"
+                          :key="index"
+                          class="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
+                        >
+                          <div class="flex justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                              <div
+                                class="w-8 h-8 bg-primary/20 text-primary rounded-full flex items-center justify-center"
+                              >
+                                <span class="font-medium text-sm">{{
+                                  review.name?.charAt(0) || "?"
+                                }}</span>
+                              </div>
+                              <div>
+                                <div
+                                  class="font-medium text-slate-800 dark:text-white"
+                                >
+                                  {{ review.name }}
+                                </div>
+                                <div class="text-xs text-slate-500">
+                                  {{ review.date }}
+                                </div>
+                              </div>
+                            </div>
+                            <div class="flex">
+                              <UIcon
+                                v-for="n in 5"
+                                :key="n"
+                                :name="
+                                  n <= review.rating
+                                    ? 'i-heroicons-star-solid'
+                                    : 'i-heroicons-star'
+                                "
+                                class="w-3.5 h-3.5"
+                                :class="
+                                  n <= review.rating
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-200'
+                                "
+                              />
+                            </div>
+                          </div>
+                          <p class="text-sm text-slate-600 dark:text-slate-300">
+                            {{ review.comment }}
+                          </p>
+                        </div>
+                      </div>
                       <!-- Write a Review Section -->
                       <div
                         class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg"
@@ -472,17 +554,6 @@
                           Write a Review
                         </h4>
                         <div class="space-y-4">
-                          <div>
-                            <label
-                              class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
-                            >
-                              Your Name
-                            </label>
-                            <UInput
-                              v-model="reviewForm.name"
-                              placeholder="Enter your name"
-                            />
-                          </div>
                           <div>
                             <label
                               class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
@@ -518,6 +589,17 @@
                             <label
                               class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
                             >
+                              Your Name
+                            </label>
+                            <UInput
+                              v-model="reviewForm.name"
+                              placeholder="Enter your name"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+                            >
                               Review Comment
                             </label>
                             <UTextarea
@@ -535,117 +617,6 @@
                           >
                             Submit Review
                           </UButton>
-                        </div>
-                      </div>
-
-                      <!-- Reviews Summary -->
-                      <div
-                        class="mb-4 p-3 bg-slate-50/70 dark:bg-slate-800/70 rounded-lg"
-                      >
-                        <div class="flex flex-col sm:flex-row gap-4">
-                          <div
-                            class="flex flex-col items-center sm:border-r sm:border-slate-200 sm:dark:border-slate-700 sm:pr-6"
-                          >
-                            <div
-                              class="text-2xl font-bold text-slate-800 dark:text-white"
-                            >
-                              {{ selectedProduct.rating }}
-                            </div>
-                            <div class="flex text-yellow-400 my-1">
-                              <UIcon
-                                v-for="i in 5"
-                                :key="i"
-                                name="i-heroicons-star-solid"
-                                class="w-4 h-4"
-                              />
-                            </div>
-                            <div class="text-xs text-slate-500">
-                              {{ selectedProduct.reviews.length }} reviews
-                            </div>
-                          </div>
-
-                          <div class="flex-1 space-y-1.5">
-                            <div
-                              v-for="n in 5"
-                              :key="n"
-                              class="flex items-center"
-                            >
-                              <div class="text-xs w-5 text-right mr-2">
-                                {{ 6 - n }}
-                              </div>
-                              <UIcon
-                                name="i-heroicons-star"
-                                class="w-3.5 h-3.5 text-yellow-400 mr-1.5"
-                              />
-                              <div
-                                class="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
-                              >
-                                <div
-                                  class="h-full bg-yellow-400"
-                                  :style="{ width: `${Math.random() * 100}%` }"
-                                ></div>
-                              </div>
-                              <div class="text-xs w-5 text-right ml-2">
-                                {{
-                                  Math.floor(
-                                    Math.random() *
-                                      selectedProduct.reviews.length
-                                  )
-                                }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Reviews List -->
-                      <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
-                        <div
-                          v-for="(review, index) in selectedProduct.reviews"
-                          :key="index"
-                          class="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
-                        >
-                          <div class="flex justify-between mb-2">
-                            <div class="flex items-center gap-2">
-                              <div
-                                class="w-8 h-8 bg-primary/20 text-primary rounded-full flex items-center justify-center"
-                              >
-                                <span class="font-medium text-sm">{{
-                                  review.name.charAt(0)
-                                }}</span>
-                              </div>
-                              <div>
-                                <div
-                                  class="font-medium text-slate-800 dark:text-white"
-                                >
-                                  {{ review.name }}
-                                </div>
-                                <div class="text-xs text-slate-500">
-                                  {{ review.date }}
-                                </div>
-                              </div>
-                            </div>
-                            <div class="flex">
-                              <UIcon
-                                v-for="n in 5"
-                                :key="n"
-                                :name="
-                                  n <= review.rating
-                                    ? 'i-heroicons-star-solid'
-                                    : 'i-heroicons-star'
-                                "
-                                class="w-3.5 h-3.5"
-                                :class="
-                                  n <= review.rating
-                                    ? 'text-yellow-400'
-                                    : 'text-gray-200'
-                                "
-                              />
-                            </div>
-                          </div>
-                          <p class="text-sm text-slate-600 dark:text-slate-300">
-                            {{ review.comment }}
-                          </p>
                         </div>
                       </div>
                     </div>
@@ -718,7 +689,7 @@
       </UModal>
 
       <!-- Checkout Modal -->
-      <UModal v-model="isCheckoutModalOpen" :ui="{ width: 'w-full max-w-4xl' }">
+      <UModal v-model="isCheckoutModalOpen">
         <UCard class="p-0">
           <!-- Modal Header -->
           <template #header>
@@ -759,261 +730,12 @@
         </UCard>
       </UModal>
     </div>
-
-    <!-- Features List - Improved Responsive Layout -->
-    <!-- <div class="bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-lg mb-4">
-      <div class="text-sm sm:text-base font-medium mb-2">Key Features:</div>
-      <ul class="space-y-1.5 sm:space-y-2 text-slate-600 dark:text-slate-300">
-        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
-          <UIcon
-            name="i-heroicons-check-circle"
-            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-          />
-          <span>Premium Quality</span>
-        </li>
-        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
-          <UIcon
-            name="i-heroicons-check-circle"
-            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-          />
-          <span>30-Day Money-Back Guarantee</span>
-        </li>
-        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
-          <UIcon
-            name="i-heroicons-check-circle"
-            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-          />
-          <span>Free Shipping Available</span>
-        </li>
-        <li class="flex items-start gap-1.5 text-xs sm:text-sm">
-          <UIcon
-            name="i-heroicons-check-circle"
-            class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-          />
-          <span>24/7 Customer Support</span>
-        </li>
-      </ul>
-    </div> -->
-
-    <!-- Tabs - Improved Responsiveness -->
-    <!-- <UTabs
-      :items="[
-        {
-          label: 'Reviews',
-          slot: 'reviews',
-          icon: 'i-heroicons-chat-bubble-left-right',
-        },
-        {
-          label: 'Details',
-          slot: 'details',
-          icon: 'i-heroicons-document-text',
-        },
-        { label: 'Shipping', slot: 'shipping', icon: 'i-heroicons-truck' },
-      ]"
-    >
-    </UTabs> -->
   </UContainer>
 </template>
 
 <script setup>
-// State
-const isOpen = ref(false);
-const searchQuery = ref("");
-const selectedCategory = ref(null);
-const searchInput = ref(null);
-
 const imageLoaded = ref(false);
-// Sample category data with random product counts
-const categories = [
-  {
-    id: 1,
-    name: "Electronics",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-device-phone-mobile",
-  },
-  {
-    id: 2,
-    name: "Clothing & Fashion",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-shirt",
-  },
-  {
-    id: 3,
-    name: "Home & Kitchen",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-home",
-  },
-  {
-    id: 4,
-    name: "Beauty & Personal Care",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-sparkles",
-  },
-  {
-    id: 5,
-    name: "Books & Stationery",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-book-open",
-  },
-  {
-    id: 6,
-    name: "Sports & Outdoors",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-trophy",
-  },
-  {
-    id: 7,
-    name: "Toys & Games",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-puzzle-piece",
-  },
-  {
-    id: 8,
-    name: "Health & Wellness",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-heart",
-  },
-  {
-    id: 9,
-    name: "Automotive",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-truck",
-  },
-  {
-    id: 10,
-    name: "Jewelry & Watches",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-clock",
-  },
-  {
-    id: 11,
-    name: "Food & Grocery",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-shopping-bag",
-  },
-  {
-    id: 12,
-    name: "Baby & Kids",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-face-smile",
-  },
-  {
-    id: 13,
-    name: "Pet Supplies",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-bug-ant",
-  },
-  {
-    id: 14,
-    name: "Office Supplies",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-document",
-  },
-  {
-    id: 15,
-    name: "Musical Instruments",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-musical-note",
-  },
-  {
-    id: 16,
-    name: "Garden & Outdoor",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-sun",
-  },
-  {
-    id: 17,
-    name: "Furniture",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-cube",
-  },
-  {
-    id: 18,
-    name: "Computers & Accessories",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-computer-desktop",
-  },
-  {
-    id: 19,
-    name: "Arts & Crafts",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-paint-brush",
-  },
-  {
-    id: 20,
-    name: "Travel & Luggage",
-    count: Math.floor(Math.random() * 500) + 100,
-    icon: "i-heroicons-globe-alt",
-  },
-];
 
-// Total product count
-const totalProductCount = computed(() => {
-  return categories.reduce((total, category) => total + category.count, 0);
-});
-
-// Filter categories based on search query
-const filteredCategories = computed(() => {
-  if (!searchQuery.value) return categories;
-
-  const query = searchQuery.value.toLowerCase();
-  return categories.filter((category) =>
-    category.name.toLowerCase().includes(query)
-  );
-});
-
-// Toggle dropdown
-const toggleDropdown = () => {
-  isOpen.value = !isOpen.value;
-
-  if (isOpen.value) {
-    // Focus search input when dropdown opens
-    setTimeout(() => {
-      searchInput.value?.focus();
-    }, 100);
-  } else {
-    // Clear search when dropdown closes
-    searchQuery.value = "";
-  }
-};
-
-// Select a category
-const selectCategory = (category) => {
-  selectedCategory.value = category;
-  isOpen.value = false;
-  searchQuery.value = "";
-
-  // In a real app, you would trigger a product filter here
-  console.log(
-    `Selected category: ${category ? category.name : "All Categories"}`
-  );
-};
-
-// Close dropdown when clicking outside
-const handleClickOutside = (event) => {
-  if (isOpen.value && !event.target.closest(".category-dropdown-container")) {
-    isOpen.value = false;
-    searchQuery.value = "";
-  }
-};
-
-// Keyboard navigation
-const handleKeyDown = (event) => {
-  if (event.key === "Escape" && isOpen.value) {
-    isOpen.value = false;
-    searchQuery.value = "";
-  }
-};
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
-  document.addEventListener("keydown", handleKeyDown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-  document.removeEventListener("keydown", handleKeyDown);
-});
 // Product carousel and modal state
 const currentSlide = ref(0);
 const itemsPerSlide = ref(5);
@@ -1052,177 +774,6 @@ const products = [
         date: "March 5, 2025",
         comment:
           "Great battery life and comfortable to wear for hours. The app could use some improvements though.",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Smartphone With 108MP Camera",
-    price: "32,999",
-    oldPrice: "36,999",
-    discount: 10,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Smartphone",
-    category: "Electronics",
-    rating: 4.7,
-    description:
-      "Capture stunning photos with the 108MP camera system. Features a 6.7-inch display, 5G connectivity, and all-day battery life.",
-    reviews: [
-      {
-        name: "Rajib Hossain",
-        rating: 5,
-        date: "February 28, 2025",
-        comment:
-          "The camera on this phone is incredible! Battery life exceeds my expectations.",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Men's Premium Cotton T-Shirt",
-    price: "999",
-    oldPrice: "1,499",
-    discount: 33,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=T-Shirt",
-    category: "Clothing & Fashion",
-    rating: 4.5,
-    description:
-      "Made from 100% premium cotton for maximum comfort and durability. Available in multiple colors and sizes.",
-    reviews: [
-      {
-        name: "Kamal Rahman",
-        rating: 5,
-        date: "March 15, 2025",
-        comment:
-          "The quality of this t-shirt is exceptional. Fits perfectly and feels great!",
-        avatar: "",
-      },
-      {
-        name: "Nazia Islam",
-        rating: 4,
-        date: "March 2, 2025",
-        comment:
-          "Nice fabric quality but runs slightly large. I recommend sizing down.",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 4,
-    rating: 5,
-    date: "March 10, 2025",
-    comment:
-      "Everything you need in one set! The quality is excellent and they clean up so easily.",
-    avatar: "",
-  },
-
-  {
-    id: 6,
-    name: "Digital SLR Camera with 18-55mm Lens",
-    price: "42,999",
-    oldPrice: "49,999",
-    discount: 14,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Camera",
-    category: "Electronics",
-    rating: 4.7,
-    description:
-      "Perfect for beginners and enthusiasts alike. Features a 24.1MP sensor, optical viewfinder, and fast autofocus system.",
-    reviews: [
-      {
-        name: "Rakib Hasan",
-        rating: 4,
-        date: "February 25, 2025",
-        comment:
-          "Great camera for beginners! Easy to use with excellent image quality.",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 7,
-    name: "Organic Skincare Gift Set",
-    price: "2,899",
-    oldPrice: "3,499",
-    discount: 17,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Skincare",
-    category: "Beauty & Personal Care",
-    rating: 4.8,
-    description:
-      "All-natural and organic skincare products featuring cleanser, toner, moisturizer, and face mask. Perfect for all skin types.",
-    reviews: [
-      {
-        name: "Nusrat Jahan",
-        rating: 5,
-        date: "March 18, 2025",
-        comment:
-          "My skin feels amazing after using these products. Love that they're all organic!",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 8,
-    name: "Bluetooth Portable Speaker",
-    price: "2,499",
-    oldPrice: "2,999",
-    discount: 16,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Speaker",
-    category: "Electronics",
-    rating: 4.5,
-    description:
-      "Compact yet powerful speaker with 20W output and waterproof design. Perfect for outdoor adventures or home use.",
-    reviews: [
-      {
-        name: "Mehedi Hasan",
-        rating: 4,
-        date: "March 5, 2025",
-        comment:
-          "Great sound quality for its size. Battery life could be better though.",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 9,
-    name: "Stainless Steel Water Bottle",
-    price: "799",
-    oldPrice: "999",
-    discount: 20,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Bottle",
-    category: "Sports & Outdoors",
-    rating: 4.9,
-    description:
-      "Keeps drinks cold for 24 hours or hot for 12 hours. Durable, leak-proof design with eco-friendly materials.",
-    reviews: [
-      {
-        name: "Tamanna Akter",
-        rating: 5,
-        date: "March 15, 2025",
-        comment:
-          "Best water bottle I've ever had. Keeps my water cold all day long!",
-        avatar: "",
-      },
-    ],
-  },
-  {
-    id: 10,
-    name: "Professional Knife Set with Block",
-    price: "4,999",
-    oldPrice: "7,999",
-    discount: 37,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Knives",
-    category: "Home & Kitchen",
-    rating: 4.7,
-    description:
-      "Complete 15-piece knife set with premium stainless steel blades. Includes chef's knife, bread knife, steak knives, and more.",
-    reviews: [
-      {
-        name: "Imran Hossain",
-        rating: 5,
-        date: "February 22, 2025",
-        comment:
-          "Very sharp knives and the block looks great on my counter. Worth every penny.",
         avatar: "",
       },
     ],
@@ -1282,41 +833,7 @@ function getProductsForSlide(slideIndex) {
 function openReviewModal(product) {
   selectedProduct.value = product;
   isModalOpen.value = true;
-  quantity.value = 1;
-  userRating.value = 0;
-  reviewComment.value = "";
 }
-
-function submitReview() {
-  if (!userRating.value || !reviewComment.value.trim()) {
-    // You could add toast notification here
-    return;
-  }
-
-  // Add review to product
-  selectedProduct.value.reviews.unshift({
-    name: "You", // In a real app, this would be the user's name
-    rating: userRating.value,
-    date: "Just now",
-    comment: reviewComment.value.trim(),
-    avatar: "", // In a real app, this would be the user's avatar
-  });
-
-  // Reset form
-  userRating.value = 0;
-  reviewComment.value = "";
-}
-
-// Add these refs to your script setup section
-const activeImage = ref(null);
-const selectedThumb = ref(-1);
-const imageZoomed = ref(false);
-
-// Generate random thumbnail images from the main image
-// In a real app, you'd have actual additional product images
-const thumbnailImages = computed(() => {
-  return Array(4).fill(selectedProduct.value?.image || "");
-});
 
 // Calculate price savings
 function calculateSavings(currentPrice, oldPrice) {
@@ -1324,6 +841,87 @@ function calculateSavings(currentPrice, oldPrice) {
   const current = Number(currentPrice.replace(/,/g, ""));
   const old = Number(oldPrice.replace(/,/g, ""));
   return (old - current).toLocaleString();
+}
+
+// Add these to your existing script section
+const activeTab = ref("details");
+const reviewForm = ref({
+  name: "",
+  rating: 0,
+  comment: "",
+});
+
+// Computed property for tabs configuration - prevents recursive updates
+const tabItems = computed(() => {
+  if (!selectedProduct.value) return [];
+
+  return [
+    {
+      label: "Details",
+      slot: "details",
+      icon: "i-heroicons-document-text",
+    },
+    {
+      label: "Reviews",
+      slot: "reviews",
+      icon: "i-heroicons-chat-bubble-left-right",
+      badge: selectedProduct.value.reviews?.length || 0,
+    },
+  ];
+});
+
+// Computed for review validity
+const isReviewValid = computed(() => {
+  return (
+    reviewForm.value.name &&
+    reviewForm.value.rating > 0 &&
+    reviewForm.value.comment.trim().length > 0
+  );
+});
+
+// Rating distribution functions
+function getRatingPercentage(rating) {
+  if (!selectedProduct.value || !selectedProduct.value.reviews) return "0%";
+
+  const total = selectedProduct.value.reviews.length || 1;
+  const count = selectedProduct.value.reviews.filter(
+    (r) => Math.round(r.rating) === rating
+  ).length;
+
+  return `${(count / total) * 100}%`;
+}
+
+function getRatingCount(rating) {
+  if (!selectedProduct.value || !selectedProduct.value.reviews) return 0;
+
+  return selectedProduct.value.reviews.filter(
+    (r) => Math.round(r.rating) === rating
+  ).length;
+}
+
+// Improved submit review function
+function submitReview() {
+  if (!isReviewValid.value) return;
+
+  // Add review to product
+  if (!selectedProduct.value.reviews) {
+    selectedProduct.value.reviews = [];
+  }
+
+  selectedProduct.value.reviews.unshift({
+    name: reviewForm.value.name,
+    rating: reviewForm.value.rating,
+    date: "Just now",
+    comment: reviewForm.value.comment.trim(),
+    avatar: "",
+  });
+
+  // Reset form
+  reviewForm.value = {
+    name: "",
+    rating: 0,
+    comment: "",
+  };
 }
 </script>
 
