@@ -36,7 +36,7 @@
           <!-- Search container with enhanced styling -->
 
           <div
-            class="bg-white dark:bg-slate-800 rounded-2xl h-10 sm:h-14 shadow-sm border border-slate-200/70 dark:border-slate-700/50 overflow-hidden transition-all duration-300 hover:shadow-md group"
+            class="bg-white dark:bg-slate-800 rounded-2xl h-10 sm:h-14 shadow-sm border border-slate-200/70 dark:border-slate-700/50 overflow-hidden transition-all duration-300 hover:shadow-md group max-sm:h-12"
           >
             <!-- Accent line animation - only shows on hover, not on focus -->
             <div
@@ -58,7 +58,7 @@
                   ref="searchInput"
                   type="search"
                   v-model="title"
-                  class="w-full py-2.5 sm:py-3.5 px-2 sm:px-3 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-sm sm:text-base"
+                  class="w-full py-2.5 sm:py-3.5 px-2 sm:px-3 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-base max-sm:h-12"
                   :class="isLoading ? 'opacity-70' : 'opacity-100'"
                   @focus="stopTyping"
                   @blur="restartTypingIfEmpty"
@@ -86,7 +86,7 @@
               <button
                 type="submit"
                 text="Search"
-                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 min-h-10 h-full -mt-[2px] sm:mt-0 mr-1.5"
+                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 h-full -mt-[2px] sm:mt-0 mr-1.5"
                 :disabled="isLoading"
               >
                 <!-- Button background animation -->

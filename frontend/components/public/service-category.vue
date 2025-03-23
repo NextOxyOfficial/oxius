@@ -1,40 +1,5 @@
 <template>
-  <div class="premium-background p-4 md:p-6 relative overflow-hidden">
-    <!-- Premium background effects -->
-    <div
-      class="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50 z-0"
-    ></div>
-
-    <!-- Animated background patterns (reduced number for performance) -->
-    <div class="absolute inset-0 z-0 opacity-30">
-      <!-- Floating circles -->
-      <div
-        v-for="n in 8"
-        :key="`circle-${n}`"
-        class="absolute rounded-full bg-gradient-to-br"
-        :class="
-          n % 2 === 0
-            ? 'from-green-200/20 to-emerald-200/20'
-            : 'from-emerald-200/20 to-green-200/20'
-        "
-        :style="{
-          width: `${20 + Math.random() * 60}px`,
-          height: `${20 + Math.random() * 60}px`,
-          top: `${Math.random() * 100}%`,
-          left: `${Math.random() * 100}%`,
-          animation: `float-bg ${
-            5 + Math.random() * 10
-          }s infinite ease-in-out ${Math.random() * 5}s`,
-          opacity: 0.1 + Math.random() * 0.3,
-        }"
-      ></div>
-
-      <!-- Light beam effect -->
-      <div
-        class="absolute -inset-[10%] bg-gradient-to-r from-transparent via-green-200/30 to-transparent animate-light-beam"
-      ></div>
-    </div>
-
+  <div class="premium-background p-4 md:p-6 relative">
     <!-- Content container -->
     <div class="relative z-10">
       <!-- Service categories grid -->
