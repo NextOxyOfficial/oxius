@@ -106,14 +106,14 @@
               </div>
               <input
                 id="storeName"
-                v-model="form.name"
+                v-model="form.store_name"
                 type="text"
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Enter your business name"
               />
             </div>
-            <p v-if="errors.name" class="mt-1 text-sm text-red-600">
-              {{ errors.name }}
+            <p v-if="errors.store_name" class="mt-1 text-sm text-red-600">
+              {{ errors.store_name }}
             </p>
           </div>
 
@@ -146,14 +146,14 @@
               </div>
               <input
                 id="storeUsername"
-                v-model="form.username"
+                v-model="form.store_username"
                 type="text"
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Enter your store username"
               />
             </div>
-            <p v-if="errors.username" class="mt-1 text-sm text-red-600">
-              {{ errors.username }}
+            <p v-if="errors.store_username" class="mt-1 text-sm text-red-600">
+              {{ errors.store_username }}
             </p>
 
             <!-- Store URL Preview -->
@@ -167,7 +167,7 @@
                 >
                 <span
                   class="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
-                  >{{ form.username || "your-store" }}</span
+                  >{{ form.store_username || "your-store" }}</span
                 >
               </div>
             </div>
@@ -176,7 +176,38 @@
           <!-- Submit Button -->
           <div class="mt-8">
             <button
+              v-if="user?.user?.kyc"
               type="submit"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isSubmitting"
+            >
+              <svg
+                v-if="isSubmitting"
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              {{ isSubmitting ? "Creating..." : "Create Store" }}
+            </button>
+            <button
+              v-else
+              @click="isOpen = true"
+              type="button"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="isSubmitting"
             >
@@ -260,8 +291,8 @@
                 </h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Your store "{{ form.name }}" has been created. You can now
-                    start adding products and customizing your store.
+                    Your store {{ form.store_name }}" has been created. You can
+                    now start adding products and customizing your store.
                   </p>
                 </div>
               </div>
@@ -288,24 +319,52 @@
         </div>
       </div>
     </div>
+    <UModal v-model="isOpen">
+      <div class="p-4">
+        <div class="flex items-center mb-4">
+          <div class="mr-3 bg-amber-100 rounded-full p-2">
+            <UIcon
+              name="i-heroicons-exclamation-triangle"
+              class="w-6 h-6 text-amber-600"
+            />
+          </div>
+          <h3 class="text-lg font-medium">KYC Verification Required</h3>
+        </div>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Before creating a store, you need to complete your KYC verification.
+          This helps us ensure platform security and comply with regulations.
+        </p>
+
+        <div class="flex justify-end gap-3 mt-4">
+          <UButton color="gray" variant="soft" @click="isOpen = false">
+            Cancel
+          </UButton>
+          <UButton to="/upload-center" color="primary" @click="goToKYC">
+            Complete KYC Verification
+          </UButton>
+        </div>
+      </div>
+    </UModal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-
+const { user, jwtLogin } = useAuth();
+const { put } = useApi();
+const isOpen = ref(false);
 // Form state
 const form = reactive({
-  name: "",
-  username: "",
+  store_name: "",
+  store_username: "",
 });
 
 // UI state
 const isSubmitting = ref(false);
 const isSuccessModalOpen = ref(false);
 const errors = reactive({
-  name: "",
-  username: "",
+  store_name: "",
+  store_username: "",
 });
 
 // Toast notification
@@ -341,39 +400,39 @@ function validateForm() {
   let isValid = true;
 
   // Reset errors
-  errors.name = "";
-  errors.username = "";
+  errors.store_name = "";
+  errors.store_username = "";
 
   // Validate name
-  if (!form.name.trim()) {
-    errors.name = "Store name is required";
+  if (!form.store_name.trim()) {
+    errors.store_name = "Store name is required";
     isValid = false;
   }
 
   // Validate username
-  if (!form.username.trim()) {
-    errors.username = "Store username is required";
+  if (!form.store_username.trim()) {
+    errors.store_username = "Store username is required";
     isValid = false;
   } else {
     // Check if username contains only allowed characters
     const usernameRegex = /^[a-z0-9-_]+$/;
-    if (!usernameRegex.test(form.username)) {
-      errors.username =
+    if (!usernameRegex.test(form.store_username)) {
+      errors.store_username =
         "Username can only contain lowercase letters, numbers, hyphens, and underscores";
       isValid = false;
     }
 
     // Check if username is at least 3 characters
-    else if (form.username.length < 3) {
-      errors.username = "Username must be at least 3 characters long";
+    else if (form.store_username.length < 3) {
+      errors.store_username = "Username must be at least 3 characters long";
       isValid = false;
     }
 
     // Check if username is available (mock check)
     else {
       const takenUsernames = ["mystore", "store", "admin", "test"];
-      if (takenUsernames.includes(form.username.toLowerCase())) {
-        errors.username = "This username is already taken";
+      if (takenUsernames.includes(form.store_username.toLowerCase())) {
+        errors.store_username = "This username is already taken";
         isValid = false;
       }
     }
@@ -383,6 +442,10 @@ function validateForm() {
 }
 
 async function handleCreateStore() {
+  if (!user.value?.user?.kyc) {
+    isOpen.value = true;
+    return;
+  }
   // Validate form
   if (!validateForm()) {
     showToast("error", "Validation Error", "Please fix the errors in the form");
@@ -393,14 +456,19 @@ async function handleCreateStore() {
 
   try {
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Show success toast
-    showToast(
-      "success",
-      "Store Created",
-      `Your store "${form.name}" has been created successfully!`
-    );
+    const res = await put(`/persons/update/${user.value?.user?.email}/`, form);
+    console.log(res);
+    if (res.data) {
+      // Show success toast
+      showToast(
+        "success",
+        "Store Created",
+        `Your store "${form.name}" has been created successfully!`
+      );
+      form.store_name = "";
+      form.store_username = "";
+      jwtLogin();
+    }
 
     // Show success modal
     isSuccessModalOpen.value = true;

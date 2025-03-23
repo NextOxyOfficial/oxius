@@ -1419,7 +1419,7 @@ class ReceivedTransfersView(generics.ListAPIView):
         ).select_related('user').order_by('-updated_at')
     
 
-    #product 
+#product 
 
 # Product List and Create
 class ProductListCreateView(generics.ListCreateAPIView):
@@ -1429,11 +1429,11 @@ class ProductListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         # Extract image data from request
         images_data = request.data.pop('images', None)
-        
+        owner = request.user
         # Create product using serializer
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        product = serializer.save()
+        product = serializer.save(owner=request.user)
         
         # Process images if provided
         if images_data:
@@ -1468,6 +1468,17 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
 class FeaturedProductsListView(generics.ListAPIView):
     queryset = Product.objects.filter(is_featured=True).order_by('-created_at')
     serializer_class = ProductSerializer
+
+class UserProductsListView(generics.ListAPIView):
+    """View for retrieving products owned by the current authenticated user"""
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Return only products owned by the current user"""
+        return Product.objects.filter(
+            owner=self.request.user
+        ).order_by('-created_at')
 
 # Category List and Create
 class ProductCategoryListCreateView(generics.ListCreateAPIView):

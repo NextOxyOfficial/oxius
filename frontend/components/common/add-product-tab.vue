@@ -61,7 +61,7 @@
                   />
                   <label
                     for="productName"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
                   >
                     Product Name <span class="text-red-500">*</span>
                   </label>
@@ -97,7 +97,7 @@
                     </template>
                   </USelectMenu>
                   <label
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
                   >
                     Category <span class="text-red-500">*</span>
                   </label>
@@ -131,7 +131,7 @@
                 <label class="form-label mb-3 flex items-center">
                   <span>Description <span class="text-red-500">*</span></span>
                   <div
-                    class="ml-2 text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full"
+                    class="ml-2 text-sm px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full"
                   >
                     Rich Text
                   </div>
@@ -158,13 +158,13 @@
                         form.description = content;
                       }
                     "
-                    class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all duration-300 group-focus-within:border-primary-400"
+                    class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all duration-300 group-focus-within:border-primary-400 text-left p-2"
                   />
                   <CommonEditor
                     v-else
                     v-model="form.description"
                     @updateContent="updateContent"
-                    class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all duration-300 group-focus-within:border-primary-400"
+                    class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all duration-300 group-focus-within:border-primary-400 text-left p-2"
                   />
                 </div>
               </div>
@@ -270,7 +270,7 @@
                     class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2"
                   >
                     <div class="flex justify-between items-center">
-                      <div class="text-xs text-white opacity-90">
+                      <div class="text-sm text-white opacity-90">
                         Image {{ i + 1 }}
                       </div>
                       <button
@@ -313,7 +313,7 @@
                         class="w-5 h-5 group-hover/upload:scale-110 transition-transform"
                       />
                     </div>
-                    <span class="text-xs font-medium">Add Photo</span>
+                    <span class="text-sm font-medium">Add Photo</span>
                   </div>
                 </div>
               </div>
@@ -381,7 +381,7 @@
                   />
                   <label
                     for="regularPrice"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
                   >
                     Regular Price <span class="text-red-500">*</span>
                   </label>
@@ -414,7 +414,7 @@
                   />
                   <label
                     for="salePrice"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
                   >
                     Discounted Price
                   </label>
@@ -440,7 +440,7 @@
                   />
                   <label
                     for="stockQuantity"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
                   >
                     Stock Quantity <span class="text-red-500">*</span>
                   </label>
@@ -483,7 +483,7 @@
                   />
                   <label
                     for="productWeight"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
                   >
                     Weight (kg)
                   </label>
@@ -513,14 +513,18 @@
               </h4>
 
               <div class="space-y-4">
-                <!-- Free Shipping Option -->
+                <!-- Free Shipping Option with Radio button -->
                 <div
-                  class="relative bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+                  class="relative bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300"
+                  :class="{
+                    'ring-2 ring-primary-500/30':
+                      form.deliveryMethod === 'free',
+                  }"
                 >
                   <label class="p-4 flex items-start cursor-pointer">
                     <div class="flex items-center h-5 mt-0.5">
                       <input
-                        type="checkbox"
+                        type="radio"
                         v-model="form.deliveryMethod"
                         value="free"
                         class="form-radio border-slate-400 dark:border-slate-600"
@@ -533,7 +537,7 @@
                       >
                         Free Delivery All Over Bangladesh
                         <span
-                          class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+                          class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
                         >
                           <UIcon
                             name="i-heroicons-sparkles"
@@ -542,63 +546,92 @@
                           FREE
                         </span>
                       </span>
+                      <p
+                        class="text-sm text-slate-500 dark:text-slate-400 mt-1"
+                      >
+                        Your customers won't pay any delivery charges
+                      </p>
                     </div>
                   </label>
                 </div>
 
-                <!-- Inside Dhaka Option -->
+                <!-- Standard Shipping Option with Radio button -->
                 <div
-                  v-if="form.deliveryMethod !== 'free'"
-                  class="relative bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center p-4"
-                  :class="form.deliveryMethod === 'free' ? 'opacity-60' : ''"
+                  class="relative bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300"
+                  :class="{
+                    'ring-2 ring-primary-500/30':
+                      form.deliveryMethod === 'standard',
+                  }"
                 >
-                  <input
-                    type="checkbox"
-                    v-model="form.deliveryMethod"
-                    value="free"
-                    class="form-radio border-slate-400 dark:border-slate-600"
-                    name="deliveryMethod"
-                  />
-                  <div class="ml-3">
-                    <div class="flex items-center mt-1 gap-2">
+                  <label class="px-4 pt-4 pb-2 flex items-start cursor-pointer">
+                    <div class="flex items-center h-5 mt-0.5">
+                      <input
+                        type="radio"
+                        v-model="form.deliveryMethod"
+                        value="standard"
+                        class="form-radio border-slate-400 dark:border-slate-600"
+                        name="deliveryMethod"
+                      />
+                    </div>
+                    <div class="ml-3">
                       <span
                         class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >Inside Dhaka</span
                       >
-                      <div class="relative w-32">
+                        Standard Shipping (Location Based)
+                      </span>
+                      <p
+                        class="text-sm text-slate-500 dark:text-slate-400 mt-1"
+                      >
+                        Set different rates for inside and outside Dhaka
+                      </p>
+                    </div>
+                  </label>
+
+                  <!-- Rate inputs (only shown when standard is selected) -->
+                  <div
+                    v-if="form.deliveryMethod === 'standard'"
+                    class="mt-2 pl-12 pr-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    <!-- Inside Dhaka Rate -->
+                    <div class="relative">
+                      <label
+                        class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5"
+                      >
+                        Inside Dhaka Rate
+                      </label>
+                      <div class="relative">
                         <span
                           class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 dark:text-slate-400"
                           >৳</span
                         >
                         <input
-                          v-model="form.insideDhakaFee"
+                          v-model="form.delivery_fee_inside_dhaka"
                           type="number"
                           min="0"
                           class="form-input pl-7 py-2 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
                           placeholder="100"
-                          :disabled="form.deliveryMethod === 'free'"
                         />
                       </div>
                     </div>
-                  </div>
-                  <div class="ml-3">
-                    <div class="flex items-center mt-1 gap-2">
-                      <span
-                        class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >Outside Dhaka</span
+
+                    <!-- Outside Dhaka Rate -->
+                    <div class="relative">
+                      <label
+                        class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5"
                       >
-                      <div class="relative w-32">
+                        Outside Dhaka Rate
+                      </label>
+                      <div class="relative">
                         <span
                           class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 dark:text-slate-400"
                           >৳</span
                         >
                         <input
-                          v-model="form.outsideDhakaFee"
+                          v-model="form.delivery_fee_outside_dhaka"
                           type="number"
                           min="0"
                           class="form-input pl-7 py-2 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
                           placeholder="150"
-                          :disabled="form.deliveryMethod === 'free'"
                         />
                       </div>
                     </div>
@@ -617,24 +650,11 @@
                 </p>
               </div>
             </div>
-
-            <!-- Delivery Notes with premium textarea -->
-            <div class="mt-6">
-              <div class="form-floating-group">
-                <p class="form-hint">
-                  <UIcon
-                    name="i-heroicons-light-bulb"
-                    class="w-3.5 h-3.5 mr-1"
-                  />
-                  Special instructions for shipping and handling
-                </p>
-              </div>
-            </div>
           </div>
 
           <!-- Form Actions -->
           <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60"
+            class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-2"
           >
             <!-- Left side buttons -->
             <div class="flex flex-wrap gap-4">
@@ -684,26 +704,20 @@ function updateContent(p) {
 }
 
 const categories = ref([]);
-// Form state with extended properties for premium features
+// Simplified form with only essential fields
 const form = ref({
   name: "",
   category: "",
   description: "",
   short_description: "",
-  delivery_information: "",
-  delivery_fee: null,
   images: [],
   discount_price: null,
   sale_price: null,
   quantity: null,
   weight: null,
-  // New delivery method properties
-  deliveryMethod: "", // 'free', 'inside_dhaka', or 'outside_dhaka'
-  insideDhakaFee: 100,
-  outsideDhakaFee: 150,
-  expressDelivery: false,
-  freeShippingAvailable: false,
-  freeShippingThreshold: 1000,
+  delivery_fee_free: 0,
+  delivery_fee_inside_dhaka: 0,
+  delivery_fee_outside_dhaka: 0,
 });
 
 // Loading state
@@ -713,26 +727,6 @@ const successMessage = ref("");
 const uploadError = ref("");
 const isUploading = ref(false);
 const checkSubmit = ref(false);
-
-// Premium feature - calculate platform fee (5%)
-function calculatePlatformFee() {
-  const price = Number(form.value.discount_price || form.value.sale_price || 0);
-  return (price * 0.05).toFixed(2);
-}
-
-// Premium feature - calculate estimated profit
-function calculateProfit() {
-  const price = Number(form.value.discount_price || form.value.sale_price || 0);
-  const platformFee = price * 0.05;
-  const deliveryFee = Number(form.value.delivery_fee || 0);
-  return (price - platformFee - deliveryFee).toFixed(2);
-}
-
-// View product after successful creation
-function viewProduct() {
-  isSuccessModalOpen.value = false;
-  // Navigate to product page
-}
 
 async function getCategories() {
   const { data } = await get("/product-categories/");
@@ -779,6 +773,7 @@ function deleteUpload(ind) {
   }
 }
 
+// Handle product submission with proper delivery fee processing
 async function handleAddProduct() {
   checkSubmit.value = true;
 
@@ -788,7 +783,7 @@ async function handleAddProduct() {
     !form.value.category ||
     !form.value.sale_price ||
     !form.value.quantity ||
-    !form.value.delivery_fee
+    !form.value.deliveryMethod
   ) {
     toast.add({
       title: "Missing Required Fields",
@@ -801,37 +796,38 @@ async function handleAddProduct() {
   isSubmitting.value = true;
 
   try {
-    const res = await post("/products/", form.value);
+    // Create API submission object from form data
+    const productData = { ...form.value };
+
+    // Clean up temporary form fields before submission
+    delete productData.deliveryMethod;
+
+    const res = await post("/products/", productData);
     if (res.data) {
+      toast.add({
+        title: "Success",
+        description: "Your product has been published successfully!",
+        color: "green",
+      });
       successMessage.value = "Your product has been published successfully!";
       isSuccessModalOpen.value = true;
 
       // Reset form after successful submission
       resetForm(false);
       checkSubmit.value = false;
+      currentStep.value = 1;
     }
   } catch (error) {
     toast.add({
       title: "Error",
-      description: "Failed to publish product. Please try again.",
+      description:
+        error?.message || "Failed to publish product. Please try again.",
       color: "red",
     });
+    console.error("Product submission error:", error);
   } finally {
     isSubmitting.value = false;
   }
-}
-
-function saveAsDraft() {
-  form.value.status = "draft";
-  isSubmitting.value = true;
-
-  // Simulate saving draft
-  setTimeout(() => {
-    isSubmitting.value = false;
-    // Show success notification
-    successMessage.value = "Your draft has been saved successfully!";
-    isSuccessModalOpen.value = true;
-  }, 800);
 }
 
 function resetForm(showConfirm = true) {
@@ -847,53 +843,17 @@ function resetForm(showConfirm = true) {
       category: "",
       description: "",
       short_description: "",
-      delivery_information: "",
-      delivery_fee: null,
       images: [],
       discount_price: null,
       sale_price: null,
       quantity: null,
       weight: null,
-      expressDelivery: false,
-      freeShippingAvailable: false,
-      freeShippingThreshold: 1000,
-      deliveryMethod: "",
-      insideDhakaFee: null,
-      outsideDhakaFee: null,
+      delivery_fee_free: 0,
+      delivery_fee_inside_dhaka: 0,
+      delivery_fee_outside_dhaka: 0,
     };
   }
 }
-watch(
-  () => form.value.deliveryMethod,
-  (newMethod) => {
-    if (newMethod === "free") {
-      form.value.delivery_fee = 0;
-    } else if (newMethod === "inside_dhaka") {
-      form.value.delivery_fee = form.value.insideDhakaFee;
-    } else if (newMethod === "outside_dhaka") {
-      form.value.delivery_fee = form.value.outsideDhakaFee;
-    }
-  }
-);
-
-// Also watch for changes in the fee values
-watch(
-  () => form.value.insideDhakaFee,
-  (newFee) => {
-    if (form.value.deliveryMethod === "inside_dhaka") {
-      form.value.delivery_fee = newFee;
-    }
-  }
-);
-
-watch(
-  () => form.value.outsideDhakaFee,
-  (newFee) => {
-    if (form.value.deliveryMethod === "outside_dhaka") {
-      form.value.delivery_fee = newFee;
-    }
-  }
-);
 </script>
 
 <style scoped>
@@ -940,8 +900,8 @@ watch(
 
 .floating-label {
   @apply absolute left-10 top-3.5 text-sm text-slate-500 dark:text-slate-400 transition-all duration-200 pointer-events-none
-         peer-focus:text-xs peer-focus:top-1.5 peer-focus:text-primary-600 dark:peer-focus:text-primary-400
-         peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:top-1.5;
+         peer-focus:text-sm peer-focus:top-1.5 peer-focus:text-primary-600 dark:peer-focus:text-primary-400
+         peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:top-1.5;
 }
 
 .floating-icon {
@@ -964,7 +924,7 @@ watch(
 }
 
 .premium-input-label {
-  @apply absolute left-10 top-1.5 text-xs text-slate-500 dark:text-slate-400;
+  @apply absolute left-10 top-1.5 text-sm text-slate-500 dark:text-slate-400;
 }
 
 /* Premium Textarea */
@@ -975,7 +935,7 @@ watch(
 }
 
 .floating-label-textarea {
-  @apply absolute left-4 top-1.5 text-xs text-slate-500 dark:text-slate-400;
+  @apply absolute left-4 top-1.5 text-sm text-slate-500 dark:text-slate-400;
 }
 
 /* Premium Select */
@@ -986,11 +946,11 @@ watch(
 
 /* Form Hints & Errors */
 .form-hint {
-  @apply mt-1.5 text-xs text-slate-500 dark:text-slate-400 flex items-center;
+  @apply mt-1.5 text-sm text-slate-500 dark:text-slate-400 flex items-center;
 }
 
 .form-error {
-  @apply mt-1.5 text-xs text-red-500 flex items-center;
+  @apply mt-1.5 text-sm text-red-500 flex items-center;
 }
 
 /* Premium Buttons */

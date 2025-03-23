@@ -2,638 +2,659 @@
   <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-8">
     <!-- Main Content -->
     <UContainer>
-      <CommonStoreCreateForm />
-      <!-- Premium Tabs -->
-      <div class="bg-white rounded-xl shadow-xl overflow-hidden">
-        <div class="flex border-b border-gray-100">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            @click="activeTab = tab.id"
-            class="relative flex-1 flex items-center justify-center py-5 px-4 text-sm font-medium transition-all duration-200 overflow-hidden"
-            :class="[
-              activeTab === tab.id
-                ? 'text-indigo-600 bg-gray-200'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50',
-            ]"
-          >
-            <div class="flex items-center space-x-2">
-              <component
-                :is="tab.icon"
-                :class="[
-                  'h-5 w-5 transition-transform duration-300',
-                  activeTab === tab.id
-                    ? 'text-indigo-600 scale-110'
-                    : 'text-gray-400',
-                ]"
-              />
-              <span>{{ tab.name }}</span>
-            </div>
-            <div
-              v-if="activeTab === tab.id"
-              class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-400 to-indigo-600 transform origin-left animate-grow"
-            ></div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Tab Content -->
-      <div
-        class="overflow-hidden transition-all duration-300"
-        :class="
-          activeTab === 'add-product' ? '' : 'bg-white shadow-xl rounded-xl'
-        "
-      >
-        <!-- My Orders Tab -->
-        <div v-if="activeTab === 'orders'" class="animate-fade-in">
-          <!-- Order Summary Cards -->
-          <div
-            class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
-          >
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">Total Orders</p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ orders.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center"
-                >
-                  <ShoppingBag class="h-6 w-6 text-indigo-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-indigo-600">
-                ৳{{ totalOrdersAmount }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">
-                    Pending Orders
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ pendingOrders.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-yellow-50 flex items-center justify-center"
-                >
-                  <Clock class="h-6 w-6 text-yellow-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-yellow-600">
-                ৳{{ pendingOrdersAmount }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">
-                    Processing Orders
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ processingOrders.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center"
-                >
-                  <Loader class="h-6 w-6 text-blue-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-blue-600">
-                ৳{{ processingOrdersAmount }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">
-                    Delivered Orders
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ deliveredOrders.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center"
-                >
-                  <CheckCircle class="h-6 w-6 text-green-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-green-600">
-                ৳{{ deliveredOrdersAmount }}
-              </p>
-            </div>
-          </div>
-
-          <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
-            <div
-              class="flex flex-col md:flex-row md:items-center md:justify-between"
+      <CommonStoreCreateForm
+        v-if="user?.user.is_pro && !user?.user.store_username"
+      />
+      <div v-else>
+        <!-- Premium Tabs -->
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-4">
+          <div class="flex border-b border-gray-100">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="activeTab = tab.id"
+              class="relative flex-1 flex items-center justify-center py-5 px-4 text-sm font-medium transition-all duration-200 overflow-hidden"
+              :class="[
+                activeTab === tab.id
+                  ? 'text-indigo-600 bg-gray-200'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50',
+              ]"
             >
               <div class="flex items-center space-x-2">
-                <ShoppingBag class="h-5 w-5 text-indigo-600" />
-                <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
-              </div>
-              <div class="mt-3 md:mt-0 flex items-center space-x-4">
-                <div class="relative">
-                  <select
-                    v-model="orderFilter"
-                    class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  >
-                    <option value="all">All Orders</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-                <div class="relative rounded-md shadow-sm">
-                  <input
-                    type="text"
-                    v-model="orderSearch"
-                    placeholder="Search orders..."
-                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md"
-                  />
-                  <div
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-                  >
-                    <Search class="h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Order ID
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Date
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Customer
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Total
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr
-                  v-for="order in paginatedOrders"
-                  :key="order.id"
-                  class="hover:bg-gray-50 transition-colors duration-150"
-                >
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-indigo-600">
-                      #{{ order.id }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      :class="getStatusClass(order.status)"
-                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    >
-                      {{ order.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ order.date }}</div>
-                    <div class="text-xs text-gray-500">
-                      {{ getRelativeTime(order.timestamp) }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">
-                      {{ order.customer }}
-                    </div>
-                    <div class="text-sm text-gray-500">{{ order.email }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      ৳{{ order.total }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-2">
-                      <button
-                        @click="viewOrderDetails(order)"
-                        class="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 flex items-center"
-                      >
-                        <Eye class="h-4 w-4 mr-1" />
-                        View
-                      </button>
-                      <button
-                        @click="printOrder(order)"
-                        class="text-gray-600 hover:text-gray-900 transition-colors duration-150 flex items-center"
-                      >
-                        <Printer class="h-4 w-4 mr-1" />
-                        Print
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="paginatedOrders.length === 0">
-                  <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                    <div class="flex flex-col items-center justify-center">
-                      <PackageX class="h-10 w-10 text-gray-300 mb-2" />
-                      No orders found matching your criteria
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div
-            class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-          >
-            <div
-              class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-            >
-              <div>
-                <p class="text-sm text-gray-700">
-                  Showing
-                  <span class="font-medium">{{ paginationStart }}</span> to
-                  <span class="font-medium">{{ paginationEnd }}</span> of
-                  <span class="font-medium">{{ filteredOrders.length }}</span>
-                  results
-                </p>
-              </div>
-              <div>
-                <nav
-                  class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
-                >
-                  <button
-                    @click="prevPage"
-                    :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span class="sr-only">Previous</span>
-                    <ChevronLeft class="h-5 w-5" />
-                  </button>
-
-                  <button
-                    v-for="page in displayedPages"
-                    :key="page"
-                    @click="goToPage(page)"
-                    :class="[
-                      currentPage === page
-                        ? 'bg-indigo-50 text-indigo-600 border-indigo-500'
-                        : 'bg-white text-gray-700 hover:bg-gray-50',
-                      'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium',
-                    ]"
-                  >
-                    {{ page }}
-                  </button>
-
-                  <button
-                    @click="nextPage"
-                    :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span class="sr-only">Next</span>
-                    <ChevronRight class="h-5 w-5" />
-                  </button>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- My Products Tab -->
-        <div v-if="activeTab === 'products'" class="animate-fade-in">
-          <!-- Product Summary Cards -->
-          <div
-            class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
-          >
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">
-                    Total Products
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ products.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center"
-                >
-                  <ShoppingCart class="h-6 w-6 text-indigo-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-indigo-600">
-                ৳{{ totalProductsValue }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">
-                    Active Products
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ activeProducts.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center"
-                >
-                  <CircleCheck class="h-6 w-6 text-green-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-green-600">
-                ৳{{ activeProductsValue }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">
-                    Inactive Products
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ inactiveProducts.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center"
-                >
-                  <CirclePause class="h-6 w-6 text-gray-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-gray-600">
-                ৳{{ inactiveProductsValue }}
-              </p>
-            </div>
-
-            <div
-              class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500">Out of Stock</p>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {{ outOfStockProducts.length }}
-                  </p>
-                </div>
-                <div
-                  class="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center"
-                >
-                  <CircleX class="h-6 w-6 text-red-500" />
-                </div>
-              </div>
-              <p class="mt-2 text-sm font-medium text-red-600">
-                ৳{{ outOfStockProductsValue }}
-              </p>
-            </div>
-          </div>
-
-          <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
-            <div
-              class="flex flex-col md:flex-row md:items-center md:justify-between"
-            >
-              <div class="flex items-center space-x-2">
-                <ShoppingCart class="h-5 w-5 text-indigo-600" />
-                <h2 class="text-xl font-semibold text-gray-800">My Products</h2>
-              </div>
-              <div class="mt-3 md:mt-0 flex items-center space-x-4">
-                <div class="relative">
-                  <select
-                    v-model="productFilter"
-                    class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  >
-                    <option value="all">All Products</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="out-of-stock">Out of Stock</option>
-                  </select>
-                </div>
-                <div class="relative rounded-md shadow-sm">
-                  <input
-                    type="text"
-                    v-model="productSearch"
-                    placeholder="Search products..."
-                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md"
-                  />
-                  <div
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-                  >
-                    <Search class="h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Products Grid -->
-          <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              v-for="product in paginatedProducts"
-              :key="product.id"
-              class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div class="relative">
-                <img
-                  :src="product.image"
-                  :alt="product.name"
-                  class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                <component
+                  :is="tab.icon"
+                  :class="[
+                    'h-5 w-5 transition-transform duration-300',
+                    activeTab === tab.id
+                      ? 'text-indigo-600 scale-110'
+                      : 'text-gray-400',
+                  ]"
                 />
-                <div class="absolute top-2 right-2">
-                  <span
-                    v-if="product.status === 'active'"
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                  >
-                    <CircleCheck class="h-3 w-3 mr-1" />
-                    Active
-                  </span>
-                  <span
-                    v-else-if="product.status === 'inactive'"
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                  >
-                    <CirclePause class="h-3 w-3 mr-1" />
-                    Inactive
-                  </span>
-                  <span
-                    v-else
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
-                  >
-                    <CircleX class="h-3 w-3 mr-1" />
-                    Out of Stock
-                  </span>
-                </div>
+                <span>{{ tab.name }}</span>
               </div>
-              <div class="p-4">
-                <h3 class="text-lg font-medium text-gray-900 mb-1 line-clamp-1">
-                  {{ product.name }}
-                </h3>
-                <p class="text-sm text-gray-500 mb-2 line-clamp-2">
-                  {{ product.description }}
-                </p>
-                <div class="flex justify-between items-center">
-                  <div class="text-lg font-bold text-indigo-600">
-                    ৳{{ product.price }}
+              <div
+                v-if="activeTab === tab.id"
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-400 to-indigo-600 transform origin-left animate-grow"
+              ></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div
+          class="overflow-hidden transition-all duration-300"
+          :class="
+            activeTab === 'add-product' ? '' : 'bg-white shadow-xl rounded-xl'
+          "
+        >
+          <!-- My Orders Tab -->
+          <div v-if="activeTab === 'orders'" class="animate-fade-in">
+            <!-- Order Summary Cards -->
+            <div
+              class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
+            >
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Total Orders
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ orders.length }}
+                    </p>
                   </div>
-                  <div class="text-sm text-gray-500 flex items-center">
-                    <Package class="h-4 w-4 mr-1 text-gray-400" />
-                    {{ product.stock }}
+                  <div
+                    class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center"
+                  >
+                    <ShoppingBag class="h-6 w-6 text-indigo-500" />
                   </div>
                 </div>
-                <div class="mt-4 grid grid-cols-3 gap-2">
-                  <button
-                    @click="editProduct(product)"
-                    class="btn-product-action bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                <p class="mt-2 text-sm font-medium text-indigo-600">
+                  ৳{{ totalOrdersAmount }}
+                </p>
+              </div>
+
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Pending Orders
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ pendingOrders.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-yellow-50 flex items-center justify-center"
                   >
-                    <Edit2 class="h-4 w-4 mr-1.5" />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    @click="toggleProductStatus(product)"
-                    class="btn-product-action bg-gray-50 text-gray-600 hover:bg-gray-600 hover:text-white"
+                    <Clock class="h-6 w-6 text-yellow-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-yellow-600">
+                  ৳{{ pendingOrdersAmount }}
+                </p>
+              </div>
+
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Processing Orders
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ processingOrders.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center"
                   >
-                    <component
-                      :is="product.status === 'active' ? 'EyeOff' : 'Eye'"
-                      class="h-4 w-4 mr-1.5"
+                    <Loader class="h-6 w-6 text-blue-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-blue-600">
+                  ৳{{ processingOrdersAmount }}
+                </p>
+              </div>
+
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Delivered Orders
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ deliveredOrders.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center"
+                  >
+                    <CheckCircle class="h-6 w-6 text-green-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-green-600">
+                  ৳{{ deliveredOrdersAmount }}
+                </p>
+              </div>
+            </div>
+
+            <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
+              <div
+                class="flex flex-col md:flex-row md:items-center md:justify-between"
+              >
+                <div class="flex items-center space-x-2">
+                  <ShoppingBag class="h-5 w-5 text-indigo-600" />
+                  <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
+                </div>
+                <div class="mt-3 md:mt-0 flex items-center space-x-4">
+                  <div class="relative">
+                    <select
+                      v-model="orderFilter"
+                      class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                      <option value="all">All Orders</option>
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div class="relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      v-model="orderSearch"
+                      placeholder="Search orders..."
+                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md"
                     />
-                    <span>{{
-                      product.status === "active" ? "Deactivate" : "Activate"
-                    }}</span>
-                  </button>
-                  <button
-                    @click="confirmDeleteProduct(product)"
-                    class="btn-product-action bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
-                  >
-                    <Trash2 class="h-4 w-4 mr-1.5" />
-                    <span>Delete</span>
-                  </button>
+                    <div
+                      class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+                    >
+                      <Search class="h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Order ID
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Date
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Customer
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Total
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr
+                    v-for="order in paginatedOrders"
+                    :key="order.id"
+                    class="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-indigo-600">
+                        #{{ order.id }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        :class="getStatusClass(order.status)"
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                      >
+                        {{ order.status }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">{{ order.date }}</div>
+                      <div class="text-xs text-gray-500">
+                        {{ getRelativeTime(order.timestamp) }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">
+                        {{ order.customer }}
+                      </div>
+                      <div class="text-sm text-gray-500">{{ order.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">
+                        ৳{{ order.total }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div class="flex space-x-2">
+                        <button
+                          @click="viewOrderDetails(order)"
+                          class="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 flex items-center"
+                        >
+                          <Eye class="h-4 w-4 mr-1" />
+                          View
+                        </button>
+                        <button
+                          @click="printOrder(order)"
+                          class="text-gray-600 hover:text-gray-900 transition-colors duration-150 flex items-center"
+                        >
+                          <Printer class="h-4 w-4 mr-1" />
+                          Print
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="paginatedOrders.length === 0">
+                    <td
+                      colspan="6"
+                      class="px-6 py-10 text-center text-gray-500"
+                    >
+                      <div class="flex flex-col items-center justify-center">
+                        <PackageX class="h-10 w-10 text-gray-300 mb-2" />
+                        No orders found matching your criteria
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
             <div
-              v-if="paginatedProducts.length === 0"
-              class="col-span-full py-10 text-center text-gray-500"
+              class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
             >
-              <div class="flex flex-col items-center justify-center">
-                <PackageX class="h-12 w-12 text-gray-300 mb-2" />
-                No products found matching your criteria
+              <div
+                class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p class="text-sm text-gray-700">
+                    Showing
+                    <span class="font-medium">{{ paginationStart }}</span> to
+                    <span class="font-medium">{{ paginationEnd }}</span> of
+                    <span class="font-medium">{{ filteredOrders.length }}</span>
+                    results
+                  </p>
+                </div>
+                <div>
+                  <nav
+                    class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
+                    <button
+                      @click="prevPage"
+                      :disabled="currentPage === 1"
+                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span class="sr-only">Previous</span>
+                      <ChevronLeft class="h-5 w-5" />
+                    </button>
+
+                    <button
+                      v-for="page in displayedPages"
+                      :key="page"
+                      @click="goToPage(page)"
+                      :class="[
+                        currentPage === page
+                          ? 'bg-indigo-50 text-indigo-600 border-indigo-500'
+                          : 'bg-white text-gray-700 hover:bg-gray-50',
+                        'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium',
+                      ]"
+                    >
+                      {{ page }}
+                    </button>
+
+                    <button
+                      @click="nextPage"
+                      :disabled="currentPage === totalPages"
+                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span class="sr-only">Next</span>
+                      <ChevronRight class="h-5 w-5" />
+                    </button>
+                  </nav>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Pagination -->
-          <div
-            class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-          >
+          <!-- My Products Tab -->
+          <div v-if="activeTab === 'products'" class="animate-fade-in">
+            <!-- Product Summary Cards -->
             <div
-              class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
+              class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
             >
-              <div>
-                <p class="text-sm text-gray-700">
-                  Showing
-                  <span class="font-medium">{{ productPaginationStart }}</span>
-                  to
-                  <span class="font-medium">{{ productPaginationEnd }}</span> of
-                  <span class="font-medium">{{ filteredProducts.length }}</span>
-                  results
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Total Products
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ products.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center"
+                  >
+                    <ShoppingCart class="h-6 w-6 text-indigo-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-indigo-600">
+                  ৳{{ totalProductsValue }}
                 </p>
               </div>
-              <div>
-                <nav
-                  class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
-                >
-                  <button
-                    @click="prevProductPage"
-                    :disabled="currentProductPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span class="sr-only">Previous</span>
-                    <ChevronLeft class="h-5 w-5" />
-                  </button>
 
-                  <button
-                    v-for="page in displayedProductPages"
-                    :key="page"
-                    @click="goToProductPage(page)"
-                    :class="[
-                      currentProductPage === page
-                        ? 'bg-indigo-50 text-indigo-600 border-indigo-500'
-                        : 'bg-white text-gray-700 hover:bg-gray-50',
-                      'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium',
-                    ]"
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Active Products
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ activeProducts.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center"
                   >
-                    {{ page }}
-                  </button>
+                    <CircleCheck class="h-6 w-6 text-green-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-green-600">
+                  ৳{{ activeProductsValue }}
+                </p>
+              </div>
 
-                  <button
-                    @click="nextProductPage"
-                    :disabled="currentProductPage === totalProductPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Inactive Products
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ inactiveProducts.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center"
                   >
-                    <span class="sr-only">Next</span>
-                    <ChevronRight class="h-5 w-5" />
-                  </button>
-                </nav>
+                    <CirclePause class="h-6 w-6 text-gray-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-gray-600">
+                  ৳{{ inactiveProductsValue }}
+                </p>
+              </div>
+
+              <div
+                class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">
+                      Out of Stock
+                    </p>
+                    <p class="text-2xl font-bold text-gray-900">
+                      {{ outOfStockProducts.length }}
+                    </p>
+                  </div>
+                  <div
+                    class="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center"
+                  >
+                    <CircleX class="h-6 w-6 text-red-500" />
+                  </div>
+                </div>
+                <p class="mt-2 text-sm font-medium text-red-600">
+                  ৳{{ outOfStockProductsValue }}
+                </p>
+              </div>
+            </div>
+
+            <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
+              <div
+                class="flex flex-col md:flex-row md:items-center md:justify-between"
+              >
+                <div class="flex items-center space-x-2">
+                  <ShoppingCart class="h-5 w-5 text-indigo-600" />
+                  <h2 class="text-xl font-semibold text-gray-800">
+                    My Products
+                  </h2>
+                </div>
+                <div class="mt-3 md:mt-0 flex items-center space-x-4">
+                  <div class="relative">
+                    <select
+                      v-model="productFilter"
+                      class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                      <option value="all">All Products</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                  </div>
+                  <div class="relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      v-model="productSearch"
+                      placeholder="Search products..."
+                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md"
+                    />
+                    <div
+                      class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+                    >
+                      <Search class="h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div
+              class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              <div
+                v-for="product in paginatedProducts"
+                :key="product.id"
+                class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div class="relative">
+                  <img
+                    :src="product.image"
+                    :alt="product.name"
+                    class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div class="absolute top-2 right-2">
+                    <span
+                      v-if="product.status === 'active'"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      <CircleCheck class="h-3 w-3 mr-1" />
+                      Active
+                    </span>
+                    <span
+                      v-else-if="product.status === 'inactive'"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      <CirclePause class="h-3 w-3 mr-1" />
+                      Inactive
+                    </span>
+                    <span
+                      v-else
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      <CircleX class="h-3 w-3 mr-1" />
+                      Out of Stock
+                    </span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3
+                    class="text-lg font-medium text-gray-900 mb-1 line-clamp-1"
+                  >
+                    {{ product.name }}
+                  </h3>
+                  <p class="text-sm text-gray-500 mb-2 line-clamp-2">
+                    {{ product.description }}
+                  </p>
+                  <div class="flex justify-between items-center">
+                    <div class="text-lg font-bold text-indigo-600">
+                      ৳{{ product.price }}
+                    </div>
+                    <div class="text-sm text-gray-500 flex items-center">
+                      <Package class="h-4 w-4 mr-1 text-gray-400" />
+                      {{ product.stock }}
+                    </div>
+                  </div>
+                  <div class="mt-4 grid grid-cols-3 gap-2">
+                    <button
+                      @click="editProduct(product)"
+                      class="btn-product-action bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                    >
+                      <Edit2 class="h-4 w-4 mr-1.5" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      @click="toggleProductStatus(product)"
+                      class="btn-product-action bg-gray-50 text-gray-600 hover:bg-gray-600 hover:text-white"
+                    >
+                      <component
+                        :is="product.status === 'active' ? 'EyeOff' : 'Eye'"
+                        class="h-4 w-4 mr-1.5"
+                      />
+                      <span>{{
+                        product.status === "active" ? "Deactivate" : "Activate"
+                      }}</span>
+                    </button>
+                    <button
+                      @click="confirmDeleteProduct(product)"
+                      class="btn-product-action bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                    >
+                      <Trash2 class="h-4 w-4 mr-1.5" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div
+                v-if="paginatedProducts.length === 0"
+                class="col-span-full py-10 text-center text-gray-500"
+              >
+                <div class="flex flex-col items-center justify-center">
+                  <PackageX class="h-12 w-12 text-gray-300 mb-2" />
+                  No products found matching your criteria
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div
+              class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+            >
+              <div
+                class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p class="text-sm text-gray-700">
+                    Showing
+                    <span class="font-medium">{{
+                      productPaginationStart
+                    }}</span>
+                    to
+                    <span class="font-medium">{{ productPaginationEnd }}</span>
+                    of
+                    <span class="font-medium">{{
+                      filteredProducts.length
+                    }}</span>
+                    results
+                  </p>
+                </div>
+                <div>
+                  <nav
+                    class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
+                    <button
+                      @click="prevProductPage"
+                      :disabled="currentProductPage === 1"
+                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span class="sr-only">Previous</span>
+                      <ChevronLeft class="h-5 w-5" />
+                    </button>
+
+                    <button
+                      v-for="page in displayedProductPages"
+                      :key="page"
+                      @click="goToProductPage(page)"
+                      :class="[
+                        currentProductPage === page
+                          ? 'bg-indigo-50 text-indigo-600 border-indigo-500'
+                          : 'bg-white text-gray-700 hover:bg-gray-50',
+                        'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium',
+                      ]"
+                    >
+                      {{ page }}
+                    </button>
+
+                    <button
+                      @click="nextProductPage"
+                      :disabled="currentProductPage === totalProductPages"
+                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span class="sr-only">Next</span>
+                      <ChevronRight class="h-5 w-5" />
+                    </button>
+                  </nav>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
         <!-- Add New Product Tab (Empty as requested) -->
         <div
           v-if="activeTab === 'add-product'"
@@ -1738,7 +1759,8 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, watch } from "vue";
+const { user } = useAuth();
+const { get } = useApi();
 import {
   ShoppingBag,
   ShoppingCart,
@@ -2026,89 +2048,15 @@ const orders = ref([
 ]);
 
 // Dummy data - Products
-const products = ref([
-  {
-    id: 1,
-    name: "Premium Wireless Headphones",
-    description: "Noise cancelling, 30-hour battery life",
-    price: 1200,
-    stock: 15,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Headphones",
-  },
-  {
-    id: 2,
-    name: "Smart Watch Series 5",
-    description: "Fitness tracking, heart rate monitor",
-    price: 800,
-    stock: 8,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Watch",
-  },
-  {
-    id: 3,
-    name: 'Laptop Pro 13"',
-    description: "Ultra-thin, powerful processor, 16GB RAM",
-    price: 2500,
-    stock: 5,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Laptop",
-  },
-  {
-    id: 4,
-    name: "Wireless Mouse",
-    description: "Ergonomic design, long battery life",
-    price: 150,
-    stock: 25,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Mouse",
-  },
-  {
-    id: 5,
-    name: "Smartphone X",
-    description: '6.5" display, 128GB storage, dual camera',
-    price: 1650,
-    stock: 0,
-    status: "out-of-stock",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Phone",
-  },
-  {
-    id: 6,
-    name: "Bluetooth Speaker",
-    description: "Waterproof, 24-hour playtime",
-    price: 350,
-    stock: 12,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Speaker",
-  },
-  {
-    id: 7,
-    name: 'Tablet Pro 10"',
-    description: "Retina display, 256GB storage",
-    price: 1200,
-    stock: 7,
-    status: "inactive",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Tablet",
-  },
-  {
-    id: 8,
-    name: "USB-C Cable",
-    description: "Fast charging, 2m length",
-    price: 50,
-    stock: 30,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Cable",
-  },
-  {
-    id: 9,
-    name: "Wireless Earbuds",
-    description: "Touch controls, noise isolation",
-    price: 450,
-    stock: 18,
-    status: "active",
-    image: "https://placeholder.pics/svg/300x300/DEDEDE/555555/Earbuds",
-  },
-]);
+const products = ref([]);
+
+async function getProducts() {
+  const res = await get("/my-products/");
+  products.value = res.data;
+  console.log(res);
+}
+
+await getProducts();
 
 // Order summary computed properties
 const pendingOrders = computed(() => {

@@ -44,8 +44,7 @@ class User(AbstractUser):
       ('user', 'User'),
       ('vendor', 'Vendor'), 
   ]
-  user_type = models.CharField(
-      max_length=20, choices=USER_TYPES, default='user')
+  user_type = models.CharField(max_length=20, choices=USER_TYPES, default='user')
   refer  = models.ForeignKey('self',on_delete=models.SET_NULL,null=True, blank=True) 
   refer_count = models.IntegerField(default=0)
   commission_earned = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
@@ -55,6 +54,12 @@ class User(AbstractUser):
   #   subscription
   is_pro = models.BooleanField(default=False)
   pro_validity = models.DateTimeField(null=True, blank=True)
+  store_name = models.CharField(max_length=30,blank=True, default="")
+  store_username = models.CharField(max_length=20,blank=True, default="")
+  store_description = models.TextField(null=True, blank=True, default="")
+  store_address = models.CharField(max_length=256,blank=True, default="")
+  store_logo = models.ImageField(upload_to='images/', blank=True, null=True)
+  store_banner = models.ImageField(upload_to='images/', blank=True, null=True)
   def __str__(self):
       return self.email
   def save(self, *args, **kwargs):
@@ -559,12 +564,15 @@ class ProductMedia(models.Model):
 
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='products')
     name = models.CharField(max_length=256)
     image = models.ManyToManyField(ProductMedia, blank=True)
     description = models.TextField( blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
     delivery_information = models.TextField(blank=True, null=True)
-    delivery_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    delivery_fee_free = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    delivery_fee_inside_dhaka = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    delivery_fee_outside_dhaka = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     category= models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True)
     discount_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
