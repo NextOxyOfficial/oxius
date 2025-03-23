@@ -168,72 +168,8 @@
             </li>
           </ul>
         </div>
-        <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
-        >
-          <UCard
-            class="text-center border border-dashed border-green-500 lg:w-[150px]"
-            v-for="service in services?.results.filter(
-              (item) => item.is_featured
-            )"
-            :key="service.id"
-            :ui="{
-              body: {
-                padding: 'px-3 py-3 sm:p-2.5',
-              },
-              ring: '',
-              background: 'bg-green-50',
-              shadow: 'shadow-lg',
-            }"
-          >
-            <ULink
-              :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
-              active-class="text-primary"
-              inactive-class="text-gray-500 dark:text-gray-400"
-            >
-              <NuxtImg
-                :src="service?.image"
-                :title="service.title"
-                class="size-9 mx-auto"
-              />
-              <h3 class="text-md mt-2">{{ service.title }}</h3>
-            </ULink>
-          </UCard>
-
-          <UCard
-            v-if="services && !services.count"
-            class="py-16 text-center w-full col-span-2 sm:col-span-3"
-          >
-            <!-- Decorative elements -->
-            <div
-              class="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full translate-x-16 -translate-y-16 opacity-70 blur-2xl"
-            ></div>
-            <div
-              class="absolute bottom-0 left-0 w-24 h-24 bg-amber-50 rounded-full -translate-x-12 translate-y-12 opacity-70 blur-2xl"
-            ></div>
-
-            <!-- Animated search illustration -->
-            <div class="mb-6 relative z-10">
-              <div class="search-animation mx-auto">
-                <UIcon
-                  name="i-heroicons-magnifying-glass"
-                  class="search-icon"
-                />
-                <div class="search-pulse"></div>
-                <div class="search-location">
-                  <UIcon name="i-heroicons-map-pin" class="location-pin" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Message -->
-
-            <p class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay">
-              দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
-            </p>
-          </UCard>
-        </div>
-        <div
+        <PublicServiceCategory :services="services" />
+        <!-- <div
           class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
         >
           <UCard
@@ -264,7 +200,7 @@
               <h3 class="text-md mt-2">{{ service.title }}</h3>
             </ULink>
           </UCard>
-        </div>
+        </div> -->
         <div class="text-center mt-8" v-if="services.next">
           <UButton
             size="md"

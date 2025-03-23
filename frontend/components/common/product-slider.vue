@@ -12,7 +12,7 @@
           <h2
             class="font-bold text-lg md:text-xl text-slate-800 dark:text-white relative z-10 group"
           >
-            <span class="relative inline-block">
+            <span class="relative inline-block text-lg">
               eShop
               <span
                 class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-400 group-hover:w-full transition-all duration-300"

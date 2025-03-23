@@ -1378,7 +1378,7 @@
 definePageMeta({
   layout: "dashboard",
 });
-
+const isSortDropdownOpen = ref(false);
 // Common state
 const isLoading = ref(false);
 const { get, put } = useApi();

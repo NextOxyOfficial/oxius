@@ -19,9 +19,9 @@
             <div
               class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-1.5 rounded-full inline-flex items-center"
             >
-              <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
+              <UIcon name="i-heroicons-clock" class="size-5" />
             </div>
-            <h2 class="text-sm font-semibold text-slate-800 dark:text-white">
+            <h2 class="font-semibold text-slate-800 dark:text-white text-lg">
               {{ sectionTitle }}
             </h2>
           </div>
