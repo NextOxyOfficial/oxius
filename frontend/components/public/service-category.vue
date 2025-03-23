@@ -1,183 +1,85 @@
 <template>
-  <div class="premium-background py-4 md:p-6 relative">
-    <!-- Content container -->
-    <div class="relative z-10">
-      <!-- Service categories grid -->
+  <div class="py-4 md:p-6">
+    <div
+      class="grid grid-cols-3 sm:grid-cols-4 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
+    >
       <div
-        class="grid grid-cols-3 sm:grid-cols-4 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
+        v-for="service in services?.results"
+        :key="service.id"
+        class="relative rounded-xl border-2 border-dashed border-green-500 transition-all duration-300 cursor-pointer lg:w-[180px]"
+        :class="{ 'border-green-600 shadow-md': hoveredId === service.id }"
+        @mouseenter="hoveredId = service.id"
+        @mouseleave="hoveredId = null"
+        @click="handleCardClick(service.id, service.business_type)"
       >
+        <!-- Simple background -->
+        <div class="absolute inset-0 bg-green-50"></div>
+
+        <!-- Loading Spinner (Added) -->
         <div
-          v-for="service in services?.results"
-          :key="service.id"
-          class="relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 cursor-pointer group backdrop-blur-[1px] lg:w-[180px]"
-          :class="{
-            'border-green-600 shadow-xl -translate-y-1':
-              hoveredId === service.id,
-            'scale-95': clickedId === service.id,
-          }"
-          @mouseenter="hoveredId = service.id"
-          @mouseleave="hoveredId = null"
-          @click="handleCardClick(service.id, service.business_type)"
+          v-if="clickedId === service.id"
+          class="absolute inset-0 bg-green-50/70 backdrop-blur-[1px] z-20 flex items-center justify-center"
         >
-          <!-- Premium background effects -->
           <div
-            class="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 transition-all duration-500"
+            class="w-8 h-8 border-3 border-green-500 border-t-transparent rounded-full animate-spin"
           ></div>
+        </div>
 
-          <!-- Premium hover gradient overlay -->
+        <ULink
+          :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
+          class="relative z-10 flex flex-col items-center justify-center p-3 sm:p-2.5"
+        >
+          <!-- Icon container with animations (preserved) -->
           <div
-            class="absolute inset-0 bg-gradient-to-br from-green-100/50 to-emerald-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          ></div>
+            class="mb-3 w-16 h-16 flex items-center justify-center rounded-full bg-white relative"
+            :class="[getContainerAnimation(service.id)]"
+          >
+            <!-- Service image with animations (preserved) -->
+            <NuxtImg
+              :src="service?.image"
+              :title="service.title"
+              class="size-9 z-10"
+              :class="getIconAnimation(service.id)"
+            />
+          </div>
 
-          <!-- Shimmer effect -->
+          <!-- Text with animations (preserved) -->
+          <h3
+            class="text-md font-medium text-center"
+            :class="[
+              getTextAnimation(service.id),
+              {
+                'text-green-800': hoveredId === service.id,
+                'text-gray-700': hoveredId !== service.id,
+              },
+            ]"
+          >
+            {{ service.title }}
+          </h3>
+
+          <!-- Simple bottom accent -->
           <div
-            class="absolute inset-0 opacity-0 group-hover:opacity-30 z-0 transition-opacity duration-500"
-            :style="{
-              background:
-                'linear-gradient(115deg, transparent 25%, rgba(76, 175, 80, 0.2) 45%, rgba(76, 175, 80, 0.3) 55%, transparent 70%)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 8s infinite linear',
+            class="absolute bottom-0 left-0 right-0 h-1.5 bg-green-400 transition-transform duration-300 origin-left"
+            :class="{
+              'scale-x-100': hoveredId === service.id,
+              'scale-x-0': hoveredId !== service.id,
             }"
           ></div>
+        </ULink>
+      </div>
 
-          <!-- Click spinner effect -->
-          <div
-            v-if="clickedId === service.id"
-            class="absolute inset-0 z-20 flex items-center justify-center bg-green-50/50 backdrop-blur-sm"
-          >
-            <div class="relative">
-              <div
-                class="w-12 h-12 border-3 border-green-200 border-t-green-500 rounded-full animate-spin"
-              ></div>
-              <div
-                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border-3 border-emerald-200 border-b-emerald-500 rounded-full animate-spin-reverse"
-              ></div>
-              <div
-                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full animate-pulse-fast"
-              ></div>
-            </div>
-          </div>
-
-          <ULink
-            :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
-            active-class="text-primary"
-            inactive-class="text-gray-500 dark:text-gray-400"
-            class="relative z-10 flex flex-col items-center justify-center p-3 sm:p-2.5"
-          >
-            <!-- Premium icon container with enhanced animations -->
-            <div
-              class="mb-3 w-16 h-16 flex items-center justify-center rounded-full transition-all duration-500 backdrop-blur-[1px] relative"
-              :class="[
-                getContainerAnimation(service.id),
-                { 'shadow-premium scale-110': hoveredId === service.id },
-              ]"
-              :style="{
-                background:
-                  hoveredId === service.id
-                    ? 'linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(236,253,245,1) 100%)'
-                    : 'linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(249,250,251,1) 100%)',
-              }"
-            >
-              <!-- Premium inner glow -->
-              <div
-                class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                :style="{
-                  boxShadow: 'inset 0 0 15px rgba(22, 163, 74, 0.2)',
-                  animation: 'pulse-glow 3s infinite ease-in-out',
-                }"
-              ></div>
-
-              <!-- Service image with enhanced animations -->
-              <NuxtImg
-                :src="service?.image"
-                :title="service.title"
-                class="size-9 transition-all duration-500 relative z-10"
-                :class="getIconAnimation(service.id)"
-              />
-            </div>
-
-            <!-- Premium text with enhanced animations -->
-            <div class="relative overflow-hidden">
-              <h3
-                class="text-md transition-all duration-500 font-medium text-center"
-                :class="[
-                  getTextAnimation(service.id),
-                  {
-                    'font-semibold text-green-800': hoveredId === service.id,
-                    'text-gray-700': hoveredId !== service.id,
-                  },
-                ]"
-              >
-                {{ service.title }}
-              </h3>
-
-              <!-- Text highlight effect -->
-              <span
-                v-if="hoveredId === service.id"
-                class="absolute inset-0 bg-gradient-to-r from-transparent via-green-100/30 to-transparent animate-text-shine"
-              ></span>
-            </div>
-
-            <!-- Premium bottom accent with enhanced animation -->
-            <div
-              class="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-400 to-emerald-400 transition-transform duration-500 origin-left"
-              :class="{
-                'scale-x-100': hoveredId === service.id,
-                'scale-x-0': hoveredId !== service.id,
-              }"
-            ></div>
-
-            <!-- Premium corner accent -->
-            <div
-              class="absolute bottom-0 right-0 w-0 h-0 transition-all duration-500 opacity-0 group-hover:opacity-100"
-              :style="{
-                borderStyle: 'solid',
-                borderWidth:
-                  hoveredId === service.id ? '0 0 12px 12px' : '0 0 8px 8px',
-                borderColor: 'transparent transparent #22c55e transparent',
-              }"
-            ></div>
-          </ULink>
-        </div>
-
-        <!-- Empty state with premium design -->
-        <div
-          v-if="services && !services.count"
-          class="col-span-3 w-full py-16 relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 backdrop-blur-[1px]"
-        >
-          <!-- Premium background effects -->
-          <div
-            class="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 transition-all duration-500"
-          ></div>
-
-          <!-- Animated search illustration with premium styling -->
-          <div class="mb-6 relative z-10">
-            <div class="search-animation mx-auto">
-              <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="search-icon text-green-500 animate-pulse-premium"
-              />
-              <div class="search-pulse bg-green-200/50"></div>
-              <div class="search-location">
-                <UIcon
-                  name="i-heroicons-map-pin"
-                  class="location-pin text-green-600 animate-bounce-premium"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Message with premium styling -->
-          <p
-            class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay relative text-center"
-          >
-            দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
-            <!-- Text highlight effect -->
-            <span
-              class="absolute inset-0 bg-gradient-to-r from-transparent via-green-100/30 to-transparent animate-text-shine"
-            ></span>
-          </p>
-        </div>
+      <!-- Simplified empty state -->
+      <div
+        v-if="services && !services.count"
+        class="col-span-3 w-full py-16 relative rounded-xl border-2 border-dashed border-green-500 bg-green-50 text-center"
+      >
+        <UIcon
+          name="i-heroicons-magnifying-glass"
+          class="mx-auto w-10 h-10 text-green-500 mb-4"
+        />
+        <p class="text-gray-600 max-w-md mx-auto">
+          দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
+        </p>
       </div>
     </div>
   </div>
@@ -198,7 +100,6 @@ const handleCardClick = (id, businessType) => {
   // Simulate loading process - will be replaced by actual navigation
   setTimeout(() => {
     clickedId.value = null;
-    // Navigation will happen through ULink
   }, 800);
 };
 
@@ -229,42 +130,25 @@ const textAnimations = [
   "animate-text-highlight",
 ];
 
-// Functions to get animations based on service ID
+// Functions to get animations based on service ID (preserved)
 const getContainerAnimation = (id) => {
-  // Ensure we have a valid number
   const safeId = typeof id === "number" ? id : parseInt(id) || 1;
-  // Use modulo to cycle through animations
   return containerAnimations[safeId % containerAnimations.length];
 };
 
-// Get icon animation with randomization
 const getIconAnimation = (id) => {
-  // Ensure we have a valid number
   const safeId = typeof id === "number" ? id : parseInt(id) || 1;
-  // Use a different formula to ensure variety
   return iconAnimations[(safeId * 7) % iconAnimations.length];
 };
 
-// Get text animation
 const getTextAnimation = (id) => {
-  // Ensure we have a valid number
   const safeId = typeof id === "number" ? id : parseInt(id) || 1;
-  // Use a different formula to ensure variety
   return textAnimations[(safeId * 3) % textAnimations.length];
 };
 </script>
 
 <style>
-/* Base animations */
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
+/* Preserved container animations */
 @keyframes float-up-down {
   0% {
     transform: translateY(0px);
@@ -324,16 +208,14 @@ const getTextAnimation = (id) => {
   }
 }
 
-/* Premium icon animations */
+/* Preserved icon animations */
 @keyframes pulse-premium {
   0%,
   100% {
     transform: scale(1);
-    filter: saturate(100%);
   }
   50% {
     transform: scale(1.15);
-    filter: saturate(120%) brightness(1.1);
   }
 }
 
@@ -387,16 +269,14 @@ const getTextAnimation = (id) => {
   100% {
     transform: scale(1);
     opacity: 1;
-    filter: brightness(1);
   }
   50% {
     transform: scale(1.06);
     opacity: 0.9;
-    filter: brightness(1.1);
   }
 }
 
-/* Premium text animations */
+/* Preserved text animations */
 @keyframes text-pulse {
   0%,
   100% {
@@ -461,95 +341,19 @@ const getTextAnimation = (id) => {
   }
 }
 
-@keyframes text-shine {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Background animations */
-@keyframes float-bg {
-  0%,
-  100% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-30px) translateX(20px);
-  }
-}
-
-@keyframes pulse-bg {
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scale(1.1) rotate(5deg);
-    opacity: 0.5;
-  }
-}
-
-@keyframes light-beam {
-  0% {
-    transform: translateX(-100%) skewX(-15deg);
-  }
-  100% {
-    transform: translateX(100%) skewX(-15deg);
-  }
-}
-
-/* Spinner animations */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spin-reverse {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(-360deg);
-  }
-}
-
-@keyframes pulse-fast {
-  0%,
-  100% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
 /* Animation classes */
 .animate-float-up-down {
   animation: float-up-down 3s ease-in-out infinite;
 }
-
 .animate-float-left-right {
   animation: float-left-right 3s ease-in-out infinite;
 }
-
 .animate-pulse-grow {
   animation: pulse-grow 2.5s ease-in-out infinite;
 }
-
 .animate-bounce-subtle {
   animation: bounce-subtle 2.8s ease-in-out infinite;
 }
-
 .animate-wiggle {
   animation: wiggle 3.5s ease-in-out infinite;
 }
@@ -557,19 +361,15 @@ const getTextAnimation = (id) => {
 .animate-pulse-premium {
   animation: pulse-premium 1.5s ease-in-out infinite;
 }
-
 .animate-bounce-premium {
   animation: bounce-premium 1.8s ease infinite;
 }
-
 .animate-shake-premium {
   animation: shake-premium 2s ease-in-out infinite;
 }
-
 .animate-float-3d {
   animation: float-3d 2.2s ease-in-out infinite;
 }
-
 .animate-breathe-premium {
   animation: breathe-premium 2s ease-in-out infinite;
 }
@@ -577,127 +377,16 @@ const getTextAnimation = (id) => {
 .animate-text-pulse {
   animation: text-pulse 2.2s ease-in-out infinite;
 }
-
 .animate-text-wave {
   animation: text-wave 2.7s ease-in-out infinite;
 }
-
 .animate-text-glow {
   animation: text-glow 2.5s ease-in-out infinite;
 }
-
 .animate-text-float {
   animation: text-float 3s ease-in-out infinite;
 }
-
 .animate-text-highlight {
   animation: text-highlight 3.5s ease-in-out infinite;
-}
-
-.animate-text-shine {
-  animation: text-shine 2s linear infinite;
-}
-
-.animate-light-beam {
-  animation: light-beam 8s infinite linear;
-}
-
-.animate-spin {
-  animation: spin 1.5s linear infinite;
-}
-
-.animate-spin-reverse {
-  animation: spin-reverse 1.2s linear infinite;
-}
-
-.animate-pulse-fast {
-  animation: pulse-fast 0.8s ease-in-out infinite;
-}
-
-/* Premium shadow */
-.shadow-premium {
-  box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.3),
-    0 8px 10px -6px rgba(22, 163, 74, 0.2);
-}
-
-/* Premium background */
-.premium-background {
-  position: relative;
-  background-color: #f9fafb;
-  overflow: hidden;
-}
-
-/* Search animation styles */
-.search-animation {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.search-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.5rem;
-  z-index: 2;
-}
-
-.search-pulse {
-  position: absolute;
-
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  animation: search-pulse 2s infinite ease-in-out;
-  z-index: 1;
-}
-
-.search-location {
-  position: absolute;
-  top: 20%;
-  right: 10%;
-  animation: location-bounce 1.5s infinite ease-in-out;
-}
-
-.location-pin {
-  font-size: 1.5rem;
-}
-
-@keyframes search-pulse {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0.8;
-  }
-}
-
-@keyframes location-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.fade-in-up-delay {
-  animation: fade-in-up 1s ease-out 0.5s both;
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 </style>
