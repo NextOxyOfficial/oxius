@@ -67,7 +67,7 @@
               <div class="icon-plus-container">
                 <UIcon
                   name="i-heroicons-plus-circle"
-                  class="text-xl text-emerald-600 animate-pulse-icon"
+                  class="text-2xl text-emerald-600 animate-pulse-icon"
                 />
               </div>
 
