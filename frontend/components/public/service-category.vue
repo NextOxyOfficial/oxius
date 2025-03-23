@@ -44,7 +44,7 @@
         <div
           v-for="service in services?.results"
           :key="service.id"
-          class="relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 cursor-pointer group backdrop-blur-[1px] lg:w-[150px]"
+          class="relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 cursor-pointer group backdrop-blur-[1px] lg:w-[180px]"
           :class="{
             'border-green-600 shadow-xl -translate-y-1':
               hoveredId === service.id,

@@ -316,7 +316,7 @@ def get_user_with_identifier(request, identifier):
         raise NotFound({"error": f"No person found with email or phone: {identifier}"})
 
 class ClassifiedCategoryPagination(PageNumberPagination):
-    page_size = 14
+    page_size = 12
     # def get_page_size(self, request):
     #     if request.query_params.get(self.page_query_param) in [None, '', '1']:
     #         return 14
