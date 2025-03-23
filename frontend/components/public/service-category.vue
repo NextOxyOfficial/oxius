@@ -15,14 +15,54 @@
         <!-- Simple background -->
         <div class="absolute inset-0 bg-green-50"></div>
 
-        <!-- Loading Spinner (Added) -->
+        <!-- Loading Spinner (Redesigned) -->
         <div
           v-if="clickedId === service.id"
-          class="absolute inset-0 bg-green-50/70 backdrop-blur-[1px] z-20 flex items-center justify-center"
+          class="absolute inset-0 bg-green-50/80 backdrop-blur-sm z-20 flex items-center justify-center overflow-hidden"
         >
-          <div
-            class="w-8 h-8 border-3 border-green-500 border-t-transparent rounded-full animate-spin"
-          ></div>
+          <!-- SVG Spinner -->
+          <div class="relative">
+            <!-- Outer Ring -->
+            <svg class="w-12 h-12 animate-spin-slow" viewBox="0 0 50 50">
+              <circle
+                class="stroke-green-500"
+                cx="25"
+                cy="25"
+                r="20"
+                fill="none"
+                stroke-width="4"
+                stroke-dasharray="60, 100"
+              />
+            </svg>
+
+            <!-- Inner Ring -->
+            <svg
+              class="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin-reverse"
+              viewBox="0 0 50 50"
+            >
+              <circle
+                class="stroke-green-600"
+                cx="25"
+                cy="25"
+                r="15"
+                fill="none"
+                stroke-width="3"
+                stroke-dasharray="40, 80"
+              />
+            </svg>
+
+            <!-- Center Dot -->
+            <div
+              class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-green-600 rounded-full animate-pulse"
+            ></div>
+          </div>
+
+          <!-- Optional Loading Text -->
+          <span
+            class="absolute bottom-4 text-sm font-medium text-green-800 animate-pulse"
+          >
+            লোড হচ্ছে...
+          </span>
         </div>
 
         <ULink
@@ -71,14 +111,30 @@
       <!-- Simplified empty state -->
       <div
         v-if="services && !services.count"
-        class="col-span-3 w-full py-16 relative rounded-xl border-2 border-dashed border-green-500 bg-green-50 text-center"
+        class="col-span-3 w-full py-12 relative rounded-xl border-2 border-dashed border-green-500 bg-green-50 text-center overflow-hidden"
       >
-        <UIcon
-          name="i-heroicons-magnifying-glass"
-          class="mx-auto w-10 h-10 text-green-500 mb-4"
-        />
-        <p class="text-gray-600 max-w-md mx-auto">
+        <!-- Animated Background Pattern (subtle) -->
+        <div class="absolute inset-0 opacity-10 bg-grid-pattern"></div>
+
+        <!-- Icon Container with Both Animated Icons -->
+        <div class="relative flex flex-col items-center justify-center mb-2">
+          <!-- Magnifying Glass with Search Animation -->
+          <div class="animate-search-motion mb-1">
+            <UIcon
+              name="i-heroicons-magnifying-glass"
+              class="w-12 h-12 text-green-600"
+            />
+          </div>
+        </div>
+
+        <!-- Message -->
+        <p class="text-gray-700 font-medium max-w-md mx-auto">
           দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
+        </p>
+
+        <!-- Optional Helper Text -->
+        <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
+          অন্য ক্যাটাগরি দেখুন অথবা আবার চেষ্টা করুন
         </p>
       </div>
     </div>
@@ -388,5 +444,82 @@ const getTextAnimation = (id) => {
 }
 .animate-text-highlight {
   animation: text-highlight 3.5s ease-in-out infinite;
+}
+
+/* Magnifying Glass Search Animation */
+@keyframes search-motion {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateX(-8px) rotate(-15deg) scale(1.05);
+  }
+  50% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateX(8px) rotate(15deg) scale(1.05);
+  }
+}
+
+.animate-search-motion {
+  animation: search-motion 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Optional: Background Pattern */
+.bg-grid-pattern {
+  background-image: linear-gradient(
+      0deg,
+      transparent 24%,
+      rgba(0, 0, 0, 0.05) 25%,
+      rgba(0, 0, 0, 0.05) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(0, 0, 0, 0.05) 75%,
+      rgba(0, 0, 0, 0.05) 76%,
+      transparent 77%,
+      transparent
+    ),
+    linear-gradient(
+      90deg,
+      transparent 24%,
+      rgba(0, 0, 0, 0.05) 25%,
+      rgba(0, 0, 0, 0.05) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(0, 0, 0, 0.05) 75%,
+      rgba(0, 0, 0, 0.05) 76%,
+      transparent 77%,
+      transparent
+    );
+  background-size: 50px 50px;
+}
+/* Modern Spinner Animations */
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 1.5s linear infinite;
 }
 </style>

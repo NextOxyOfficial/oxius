@@ -199,14 +199,29 @@
         <PublicServiceCategory :services="services" />
 
         <div class="text-center mt-8" v-if="services.next">
-          <UButton
-            size="md"
-            color="primary"
-            variant="outline"
-            label="Load More"
+          <button
             @click="loadMore(services.next)"
-            v-if="services && services.results && services.next"
-          />
+            class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
+            <!-- Background hover effect -->
+            <span
+              class="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            ></span>
+
+            <!-- Button content -->
+            <span class="relative z-10 text-base">আরও দেখুন</span>
+            <UIcon
+              name="i-heroicons-arrow-down"
+              class="relative z-10 w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300"
+            />
+
+            <!-- Loading spinner (shown when loading) -->
+            <UIcon
+              v-if="isLoadingMore"
+              name="i-heroicons-arrow-path"
+              class="absolute z-10 w-5 h-5 animate-spin"
+            />
+          </button>
         </div>
       </UContainer>
     </PublicSection>
@@ -576,18 +591,30 @@ const selectCategory = async (category) => {
   }
 };
 
+const isLoadingMore = ref(false);
+
 const loadMore = async (url) => {
-  const getRecentNext = async (url) => {
-    const res = await $fetch(`${url}`);
-    services.value.next = res.next;
-    services.value.results = [...services.value.results, ...res.results];
-    // recents.value.next = data?.value?.next;
-  };
-  url = url.split("/api/");
-  url = baseURL + "/" + url[1];
-  // getRecentsNext(url);
-  // url = url.replace("http://", "https://");
-  getRecentNext(url);
+  isLoadingMore.value = true;
+
+  try {
+    const getRecentNext = async (url) => {
+      const res = await $fetch(`${url}`);
+      services.value.next = res.next;
+      services.value.results = [...services.value.results, ...res.results];
+    };
+
+    url = url.split("/api/");
+    url = baseURL + "/" + url[1];
+    await getRecentNext(url);
+  } catch (error) {
+    console.error("Error loading more items:", error);
+    toast.add({
+      title: "Failed to load more items",
+      color: "red",
+    });
+  } finally {
+    isLoadingMore.value = false;
+  }
 };
 
 async function handleSearch() {
