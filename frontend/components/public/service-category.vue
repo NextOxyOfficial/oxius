@@ -261,8 +261,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 const props = defineProps({
   services: Object,
 });
@@ -276,9 +274,7 @@ const currentPage = ref(1);
 const displayedServices = computed(() => {
   if (!props.services?.results) return [];
 
-  const featuredServices = props.services.results.filter(
-    (item) => item.is_featured
-  );
+  const featuredServices = props.services.results;
   return featuredServices.slice(0, itemsPerPage.value * currentPage.value);
 });
 
@@ -286,9 +282,7 @@ const displayedServices = computed(() => {
 const hasMoreServices = computed(() => {
   if (!props.services?.results) return false;
 
-  const featuredServices = props.services.results.filter(
-    (item) => item.is_featured
-  );
+  const featuredServices = props.services.results;
   return featuredServices.length > itemsPerPage.value * currentPage.value;
 });
 
