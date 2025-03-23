@@ -158,7 +158,7 @@
                   <div class="relative">
                     <select
                       v-model="orderFilter"
-                      class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                     >
                       <option value="all">All Orders</option>
                       <option value="pending">Pending</option>
@@ -173,7 +173,7 @@
                       type="text"
                       v-model="orderSearch"
                       placeholder="Search orders..."
-                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md"
+                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md"
                     />
                     <div
                       class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
@@ -468,7 +468,7 @@
                   <div class="relative">
                     <select
                       v-model="productFilter"
-                      class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                     >
                       <option value="all">All Products</option>
                       <option value="active">Active</option>
@@ -481,7 +481,7 @@
                       type="text"
                       v-model="productSearch"
                       placeholder="Search products..."
-                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md"
+                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md"
                     />
                     <div
                       class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
