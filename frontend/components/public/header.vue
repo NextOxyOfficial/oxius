@@ -549,7 +549,7 @@
                         },
                       },
                       {
-                        label: 'eShop',
+                        label: 'ই-শপ ম্যানেজার',
                         to: '/shop-manager/',
                         icon: 'i-heroicons-shopping-bag',
                         color: 'text-blue-600 dark:text-blue-400',

@@ -286,13 +286,15 @@
                               : '',
                           ]"
                         >
-                          <div class="flex items-center h-5">
+                          <div
+                            class="flex items-center h-5 rounded-full overflow-hidden"
+                          >
                             <input
                               id="inside-dhaka"
                               v-model="form.deliveryOption"
                               type="radio"
                               value="inside"
-                              class="size-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                              class="size-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                             />
                           </div>
                           <div class="ml-3 flex flex-col">
@@ -318,13 +320,15 @@
                               : '',
                           ]"
                         >
-                          <div class="flex items-center h-5">
+                          <div
+                            class="flex items-center h-5 rounded-full overflow-hidden"
+                          >
                             <input
                               id="outside-dhaka"
                               v-model="form.deliveryOption"
                               type="radio"
                               value="outside"
-                              class="size-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                              class="size-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                             />
                           </div>
                           <div class="ml-3 flex flex-col">
@@ -369,7 +373,9 @@
                               : '',
                           ]"
                         >
-                          <div class="flex items-center h-5">
+                          <div
+                            class="flex items-center h-5 rounded-full overflow-hidden"
+                          >
                             <input
                               id="account-funds"
                               v-model="form.paymentMethod"
@@ -403,7 +409,9 @@
                               : '',
                           ]"
                         >
-                          <div class="flex items-center h-5">
+                          <div
+                            class="flex items-center h-5 rounded-full overflow-hidden"
+                          >
                             <input
                               id="cod"
                               v-model="form.paymentMethod"
