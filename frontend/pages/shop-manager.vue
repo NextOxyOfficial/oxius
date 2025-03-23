@@ -538,9 +538,10 @@
                   >
                     {{ product.name }}
                   </h3>
-                  <p class="text-sm text-gray-500 mb-2 line-clamp-2">
-                    {{ product.description }}
-                  </p>
+                  <div
+                    v-html="product.description"
+                    class="text-sm text-gray-500 mb-2 line-clamp-2"
+                  ></div>
                   <div class="flex justify-between items-center">
                     <div class="text-lg font-bold text-indigo-600">
                       ৳{{ product.price }}
@@ -2105,28 +2106,28 @@ const outOfStockProducts = computed(() => {
 
 const totalProductsValue = computed(() => {
   return products.value.reduce(
-    (total, product) => total + product.price * product.stock,
+    (total, product) => total + product.sale_price * product.quantity,
     0
   );
 });
 
 const activeProductsValue = computed(() => {
   return activeProducts.value.reduce(
-    (total, product) => total + product.price * product.stock,
+    (total, product) => total + product.sale_price * product.quantity,
     0
   );
 });
 
 const inactiveProductsValue = computed(() => {
   return inactiveProducts.value.reduce(
-    (total, product) => total + product.price * product.stock,
+    (total, product) => total + product.sale_price * product.quantity,
     0
   );
 });
 
 const outOfStockProductsValue = computed(() => {
   return outOfStockProducts.value.reduce(
-    (total, product) => total + product.price * product.stock,
+    (total, product) => total + product.sale_price * product.quantity,
     0
   );
 });
