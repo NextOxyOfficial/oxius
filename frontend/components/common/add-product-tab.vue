@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-10 px-4"
+    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-10 px-2"
   >
     <!-- Decorative background elements -->
     <div class="absolute top-0 left-0 w-full h-64 overflow-hidden">
@@ -31,7 +31,7 @@
         class="relative bg-white dark:bg-slate-800 overflow-hidden border border-slate-200/50 dark:border-slate-700/30 shadow-xl dark:shadow-slate-900/30 rounded-2xl"
       >
         <!-- Form Sections Container -->
-        <div class="px-6 sm:px-10 py-8">
+        <div class="py-8">
           <!-- Product Basic Info Section -->
           <div
             class="form-section transition-all duration-500"
@@ -115,7 +115,7 @@
 
           <!-- Product Details Section -->
           <div
-            class="form-section mt-12 transition-all duration-500"
+            class="form-section sm:mt-12 transition-all duration-500"
             :class="{ 'shadow-lg': currentStep === 1 }"
           >
             <div class="section-header">
@@ -197,7 +197,7 @@
 
           <!-- Product Media Section -->
           <div
-            class="form-section mt-12 transition-all duration-500"
+            class="form-section sm:mt-12 transition-all duration-500"
             :class="{ 'shadow-lg': currentStep === 2 }"
           >
             <div class="section-header">
@@ -345,7 +345,7 @@
 
           <!-- Product Pricing Section -->
           <div
-            class="form-section mt-12 transition-all duration-500"
+            class="form-section sm:mt-12 transition-all duration-500"
             :class="{ 'shadow-lg': currentStep === 3 }"
           >
             <div class="section-header">
@@ -458,7 +458,7 @@
 
           <!-- Delivery Information Section -->
           <div
-            class="form-section mt-12 transition-all duration-500"
+            class="form-section sm:mt-12 transition-all duration-500"
             :class="{ 'shadow-lg': currentStep === 4 }"
           >
             <div class="section-header">
@@ -634,7 +634,7 @@
 
           <!-- Form Actions -->
           <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60"
+            class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60"
           >
             <!-- Left side buttons -->
             <div class="flex flex-wrap gap-4">
@@ -904,7 +904,7 @@ watch(
 
 /* Section Styling */
 .form-section {
-  @apply px-6 py-5 rounded-xl relative transition-all duration-300;
+  @apply px-2 py-5 rounded-xl relative transition-all duration-300;
 }
 
 .section-header {

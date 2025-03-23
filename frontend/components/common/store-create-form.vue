@@ -1,5 +1,5 @@
 <template>
-  <div class="py-10 px-4 sm:px-6 lg:px-8">
+  <div class="py-10">
     <!-- Toast Notification -->
     <div v-if="toast.show" class="fixed top-4 right-4 z-50 max-w-md">
       <div
@@ -109,7 +109,7 @@
                 v-model="form.name"
                 type="text"
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Enter your store name"
+                placeholder="Enter your business name"
               />
             </div>
             <p v-if="errors.name" class="mt-1 text-sm text-red-600">
@@ -161,12 +161,12 @@
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
                 Your store URL will be:
               </p>
-              <div class="flex items-center">
-                <span class="text-sm text-gray-600 dark:text-gray-300 font-mono"
+              <div class="flex items-center break-words">
+                <span class="text-sm text-gray-600 dark:text-gray-300"
                   >https://adsyclub.com/eshop/</span
                 >
                 <span
-                  class="text-sm text-indigo-600 dark:text-indigo-400 font-mono font-medium"
+                  class="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
                   >{{ form.username || "your-store" }}</span
                 >
               </div>

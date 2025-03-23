@@ -11,7 +11,7 @@
           <h2 class="text-2xl md:text-4xl max-sm:text-center">
             {{ $t("classified_service") }}
           </h2>
-          <UButton
+          <!-- <UButton
             v-if="user?.user"
             size="md"
             icon="i-material-symbols-light-lists-rounded"
@@ -19,7 +19,35 @@
             variant="solid"
             label="My Services"
             to="/my-classified-services/"
-          />
+          /> -->
+          <UButton
+            v-if="user?.user"
+            to="/my-classified-services/"
+            class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-dashed border-green-600 max-sm:!text-sm mr-2"
+            :ui="{
+              size: {
+                sm: 'text-sm',
+              },
+              padding: {
+                sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
+              },
+              icon: {
+                size: {
+                  sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
+                },
+              },
+            }"
+          >
+            <!-- Button Content with Icon -->
+            <div class="relative z-10 flex items-center">
+              <UIcon name="i-heroicons-plus-circle" class="mr-2 text-lg" />
+              <span class="text-base">Post Free Ads</span>
+              <!-- <UIcon
+                name="i-heroicons-arrow-right"
+                class="ml-2 text-lg transform group-hover:translate-x-1 transition-transform duration-300"
+              /> -->
+            </div>
+          </UButton>
         </div>
         <form
           @submit.prevent="handleSearch"

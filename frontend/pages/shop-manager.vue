@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8"
-  >
+  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-8">
     <!-- Main Content -->
     <UContainer>
       <CommonStoreCreateForm />
@@ -639,7 +637,7 @@
         <!-- Add New Product Tab (Empty as requested) -->
         <div
           v-if="activeTab === 'add-product'"
-          class="p-6 text-center text-gray-500"
+          class="text-center text-gray-500"
         >
           <CommonAddProductTab />
         </div>
