@@ -1,5 +1,5 @@
 <template>
-  <div class="premium-background p-4 md:p-6 relative">
+  <div class="premium-background py-4 md:p-6 relative">
     <!-- Content container -->
     <div class="relative z-10">
       <!-- Service categories grid -->
@@ -143,20 +143,11 @@
         <!-- Empty state with premium design -->
         <div
           v-if="services && !services.count"
-          class="col-span-2 sm:col-span-3 w-full py-16 relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 backdrop-blur-[1px]"
+          class="col-span-3 w-full py-16 relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 backdrop-blur-[1px]"
         >
           <!-- Premium background effects -->
           <div
             class="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 transition-all duration-500"
-          ></div>
-
-          <!-- Decorative elements with premium styling -->
-          <div
-            class="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full translate-x-16 -translate-y-16 opacity-70 blur-2xl animate-pulse-bg"
-          ></div>
-          <div
-            class="absolute bottom-0 left-0 w-24 h-24 bg-amber-100 rounded-full -translate-x-12 translate-y-12 opacity-70 blur-2xl animate-pulse-bg"
-            style="animation-delay: 1s"
           ></div>
 
           <!-- Animated search illustration with premium styling -->
@@ -178,7 +169,7 @@
 
           <!-- Message with premium styling -->
           <p
-            class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay relative"
+            class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay relative text-center"
           >
             দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
             <!-- Text highlight effect -->

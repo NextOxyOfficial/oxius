@@ -119,7 +119,7 @@
             searchServices?.results?.length || classifiedPosts.results?.length
           "
         >
-          <h3 class="text-base">Categories</h3>
+          <h3 class="text-lg font-semibold">Categories</h3>
           <ul
             class="flex flex-wrap gap-1"
             v-if="searchServices?.results?.length"
@@ -144,7 +144,7 @@
               searchServices?.results?.length && classifiedPosts.results?.length
             "
           />
-          <h3 class="text-base">Ad Posts</h3>
+          <h3 class="text-lg font-semibold">Ad Posts</h3>
           <ul v-if="classifiedPosts.results?.length">
             <li v-for="service of classifiedPosts.results" :key="service.id">
               <NuxtLink
