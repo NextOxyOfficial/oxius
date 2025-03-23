@@ -185,6 +185,7 @@
 
     <AdsScroll :ads="classifiedLatestPosts" sectionTitle="সাম্প্রতিক পোষ্ট" />
     <CommonProductSlider />
+    <UDivider class="mt-4 sm:mt-16 mx-auto max-w-[80%]" />
     <PublicSection id="micro-gigs">
       <UContainer>
         <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">

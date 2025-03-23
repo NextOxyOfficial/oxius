@@ -552,10 +552,10 @@
                 >
                   <!-- Monthly Option -->
                   <button
-                    @click="Months = 1"
+                    @click="months = 1"
                     class="relative px-6 py-2.5 rounded-lg transition-all duration-300 min-w-[120px] overflow-hidden"
                     :class="
-                      Months === 1
+                      months === 1
                         ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-md'
                         : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
                     "
@@ -567,17 +567,17 @@
 
                     <!-- Shimmer effect when selected -->
                     <div
-                      v-if="Months === 1"
+                      v-if="months === 1"
                       class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full animate-shimmer"
                     ></div>
                   </button>
 
                   <!-- Yearly Option -->
                   <button
-                    @click="Months = 12"
+                    @click="months = 12"
                     class="relative px-6 py-2.5 rounded-lg transition-all duration-300 min-w-[120px] group"
                     :class="
-                      Months === 12
+                      months === 12
                         ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-md'
                         : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
                     "
@@ -586,7 +586,7 @@
                     <span
                       class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm transform transition-all duration-300 scale-90"
                       :class="
-                        Months === 12 ? 'opacity-100' : 'opacity-0 scale-75'
+                        months === 12 ? 'opacity-100' : 'opacity-0 scale-75'
                       "
                     >
                       SAVE 16%
@@ -599,7 +599,7 @@
 
                     <!-- Shimmer effect when selected -->
                     <div
-                      v-if="Months === 12"
+                      v-if="months === 12"
                       class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full animate-shimmer"
                     ></div>
                   </button>
@@ -623,20 +623,20 @@
                 </div>
                 <div class="flex justify-between items-center mb-3">
                   <span class="text-slate-600 dark:text-slate-300">Price:</span>
-                  <span class="font-semibold" v-if="Months === 1">
+                  <span class="font-semibold" v-if="months === 1">
                     <span class="font-semibold text-lg">৳</span>
-                    {{ Months * price }} / Month
+                    {{ months * price }} / Month
                   </span>
                   <span class="font-semibold" v-else>
                     <span class="font-semibold text-lg">৳</span>
-                    {{ Months * price - yearly_discount }} / Year
+                    {{ months * price - yearly_discount }} / Year
                   </span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600 dark:text-slate-300"
                     >Duration:</span
                   >
-                  <span class="font-semibold">{{ Months * 30 }} Days</span>
+                  <span class="font-semibold">{{ months * 30 }} Days</span>
                 </div>
               </div>
             </div>
@@ -682,7 +682,10 @@
                       <div>
                         <p class="font-medium">Account Funds</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
-                          Available balance: ৳{{ userBalance }}
+                          Available balance:
+                          <span class="font-semibold"
+                            >৳{{ user?.user?.balance }}</span
+                          >
                         </p>
                       </div>
                     </div>
@@ -857,7 +860,7 @@
                   >
                   <span class="font-semibold text-slate-800 dark:text-white"
                     >৳{{
-                      Months === 1 ? price : Months * price - yearly_discount
+                      months === 1 ? price : months * price - yearly_discount
                     }}</span
                   >
                 </div>
@@ -867,7 +870,7 @@
                   >
                   <span class="font-semibold text-slate-800 dark:text-white">{{
                     new Date(
-                      Date.now() + Months * 30 * 24 * 60 * 60 * 1000
+                      Date.now() + months * 30 * 24 * 60 * 60 * 1000
                     ).toLocaleDateString()
                   }}</span>
                 </div>
@@ -1123,7 +1126,7 @@ const autoRenew = ref(true);
 const errorMessage = ref("");
 const transactionId = ref("");
 const price = ref(149);
-const Months = ref(1);
+const months = ref(1);
 const yearly_discount = ref(289);
 const userBalance = ref(3500);
 
@@ -1131,9 +1134,9 @@ const userBalance = ref(3500);
 const canSubscribe = computed(() => {
   if (paymentMethod.value === "account_funds") {
     const totalCost =
-      Months.value === 1
+      months.value === 1
         ? price.value
-        : Months.value * price.value - yearly_discount.value;
+        : months.value * price.value - yearly_discount.value;
     return userBalance.value >= totalCost;
   }
   return true; // Credit card can always subscribe
@@ -1178,31 +1181,29 @@ async function createSubscription() {
 
   try {
     // Calculate total based on subscription period
-    let total = Months.value * price.value;
-    if (Months.value === 12) {
-      total -= yearly_discount.value;
-    }
 
     if (paymentMethod.value === "account_funds") {
-      // In a real app, this would call an API endpoint
-      // const result = await get(`/subscribe/?Months=${Months.value}&total=${total}`);
-
-      // For demo purposes, simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Update user balance
-      userBalance.value -= total;
-
-      // Generate transaction ID for display in success modal
-      transactionId.value =
-        "TXN_" + Math.random().toString(36).substring(2, 10).toUpperCase();
-
-      // Show success modal
-      showSuccessModal.value = true;
-      openModal.value = false;
-    } else if (paymentMethod.value === "credit_card") {
-      // In a real app, this would handle credit card processing
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Account funds path - process immediately
+      let total = months.value * price.value;
+      if (months.value === 12) {
+        total -= yearly_discount.value;
+      }
+      const result = await get(
+        `/subscribe/?months=${months.value}&total=${total}`
+      );
+      console.log(result);
+      // Simulate successful payment
+      const response = {
+        success: true,
+        data: {
+          subscription_id: "sub_" + Math.random().toString(36).substring(2, 9),
+          status: "active",
+          start_date: new Date().toISOString(),
+          end_date: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toISOString(),
+        },
+      };
 
       // Generate transaction ID for display in success modal
       transactionId.value =
