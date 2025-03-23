@@ -86,7 +86,7 @@
               <button
                 type="submit"
                 text="Search"
-                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 h-full -mt-[2px] sm:mt-0 mr-1.5"
+                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 min-h-10 h-full -mt-[2px] sm:mt-0 mr-1.5"
                 :disabled="isLoading"
               >
                 <!-- Button background animation -->
@@ -169,38 +169,7 @@
           </ul>
         </div>
         <PublicServiceCategory :services="services" />
-        <!-- <div
-          class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
-        >
-          <UCard
-            class="text-center border border-dashed border-green-500 lg:w-[150px]"
-            v-for="service in services?.results.filter(
-              (item) => !item.is_featured
-            )"
-            :key="service.id"
-            :ui="{
-              body: {
-                padding: 'px-3 py-3 sm:p-2.5',
-              },
-              ring: '',
-              background: 'bg-green-50',
-              shadow: 'shadow-md',
-            }"
-          >
-            <ULink
-              :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
-              active-class="text-primary"
-              inactive-class="text-gray-500 dark:text-gray-400"
-            >
-              <NuxtImg
-                :src="service?.image"
-                :title="service.title"
-                class="size-9 mx-auto"
-              />
-              <h3 class="text-md mt-2">{{ service.title }}</h3>
-            </ULink>
-          </UCard>
-        </div> -->
+
         <div class="text-center mt-8" v-if="services.next">
           <UButton
             size="md"

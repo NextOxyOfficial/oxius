@@ -39,10 +39,10 @@
     <div class="relative z-10">
       <!-- Service categories grid -->
       <div
-        class="grid grid-cols-2 sm:grid-cols-3 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
+        class="grid grid-cols-3 sm:grid-cols-4 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
       >
         <div
-          v-for="service in displayedServices"
+          v-for="service in services?.results"
           :key="service.id"
           class="relative overflow-hidden rounded-xl border-2 border-dashed border-green-500 transition-all duration-500 cursor-pointer group backdrop-blur-[1px] lg:w-[150px]"
           :class="{
@@ -223,39 +223,6 @@
           </p>
         </div>
       </div>
-
-      <!-- See More Button -->
-      <div v-if="hasMoreServices" class="flex justify-center mt-8">
-        <button
-          @click="showMoreServices"
-          class="group relative px-6 py-3 overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <!-- Button background effects -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          ></div>
-
-          <!-- Shimmer effect -->
-          <div
-            class="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300"
-            :style="{
-              background:
-                'linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.5) 55%, transparent 70%)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 3s infinite linear',
-            }"
-          ></div>
-
-          <!-- Button text -->
-          <span class="relative z-10 flex items-center">
-            <span>আরও দেখুন</span>
-            <UIcon
-              name="i-heroicons-chevron-down"
-              class="ml-2 group-hover:animate-bounce-subtle"
-            />
-          </span>
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -267,29 +234,6 @@ const props = defineProps({
 
 const hoveredId = ref(null);
 const clickedId = ref(null);
-const itemsPerPage = ref(12);
-const currentPage = ref(1);
-
-// Computed property for displayed services
-const displayedServices = computed(() => {
-  if (!props.services?.results) return [];
-
-  const featuredServices = props.services.results;
-  return featuredServices.slice(0, itemsPerPage.value * currentPage.value);
-});
-
-// Check if there are more services to show
-const hasMoreServices = computed(() => {
-  if (!props.services?.results) return false;
-
-  const featuredServices = props.services.results;
-  return featuredServices.length > itemsPerPage.value * currentPage.value;
-});
-
-// Function to show more services
-const showMoreServices = () => {
-  currentPage.value++;
-};
 
 // Handle card click with spinner effect
 const handleCardClick = (id, businessType) => {
