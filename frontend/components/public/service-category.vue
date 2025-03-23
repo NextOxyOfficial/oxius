@@ -1,5 +1,5 @@
 <template>
-  <div class="py-4 md:p-6">
+  <div class="py-2 md:p-6">
     <div
       class="grid grid-cols-3 sm:grid-cols-4 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
     >
@@ -89,8 +89,8 @@
             :class="[
               getTextAnimation(service.id),
               {
-                'text-green-800': hoveredId === service.id,
-                'text-gray-700': hoveredId !== service.id,
+                'text-green-700': hoveredId === service.id,
+                'text-slate-600': hoveredId !== service.id,
               },
             ]"
           >

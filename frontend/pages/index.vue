@@ -7,7 +7,7 @@
         }"
         class="relative"
       >
-        <div class="flex items-center justify-between mb-6 md:mb-8">
+        <div class="flex items-center justify-between mb-10 md:mb-8">
           <h2 class="text-2xl md:text-4xl max-sm:text-center">
             {{ $t("classified_service") }}
           </h2>
@@ -29,7 +29,7 @@
                 sm: 'text-sm',
               },
               padding: {
-                sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
+                sm: 'px-3 py-2 md:px-3.5 md:py-2.5',
               },
               icon: {
                 size: {
@@ -38,14 +38,27 @@
               },
             }"
           >
+            <!-- Ripple Effect Background -->
+            <span class="absolute inset-0 overflow-hidden">
+              <span
+                class="absolute inset-0 scale-0 rounded-full bg-emerald-200/70 group-hover:animate-ripple"
+              ></span>
+            </span>
+
             <!-- Button Content with Icon -->
-            <div class="relative z-10 flex items-center">
-              <UIcon name="i-heroicons-plus-circle" class="mr-2 text-lg" />
-              <span class="text-base">Post Free Ads</span>
-              <!-- <UIcon
-                name="i-heroicons-arrow-right"
-                class="ml-2 text-lg transform group-hover:translate-x-1 transition-transform duration-300"
-              /> -->
+            <div
+              class="relative z-10 flex items-center justify-center space-x-2"
+            >
+              <!-- Icon Container -->
+              <div class="icon-plus-container">
+                <UIcon
+                  name="i-heroicons-plus-circle"
+                  class="text-xl text-emerald-600 animate-pulse-icon"
+                />
+              </div>
+
+              <!-- Text -->
+              <span class="text-base font-medium">Post Free Ads</span>
             </div>
           </UButton>
         </div>
@@ -198,7 +211,7 @@
         </div>
         <PublicServiceCategory :services="services" />
 
-        <div class="text-center mt-8" v-if="services.next">
+        <div class="text-center mt-4" v-if="services.next">
           <button
             @click="loadMore(services.next)"
             class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
@@ -209,17 +222,17 @@
             ></span>
 
             <!-- Button content -->
-            <span class="relative z-10 text-base">আরও দেখুন</span>
+            <span class="relative z-10 text-md">আরও দেখুন</span>
             <UIcon
               name="i-heroicons-arrow-down"
-              class="relative z-10 w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300"
+              class="relative z-10 size-4 group-hover:translate-y-0.5 transition-transform duration-300"
             />
 
             <!-- Loading spinner (shown when loading) -->
             <UIcon
               v-if="isLoadingMore"
               name="i-heroicons-arrow-path"
-              class="absolute z-10 w-5 h-5 animate-spin"
+              class="absolute z-10 size-4 animate-spin"
             />
           </button>
         </div>
@@ -919,5 +932,74 @@ onBeforeUnmount(() => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(6);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce-gentle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  25% {
+    transform: translateY(-3px) rotate(10deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0);
+  }
+  75% {
+    transform: translateY(-2px) rotate(-5deg);
+  }
+}
+
+.animate-ripple {
+  animation: ripple 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.scale-102 {
+  --tw-scale-x: 1.02;
+  --tw-scale-y: 1.02;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+/* Improved Icon Animation */
+@keyframes pulse-icon {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.9;
+  }
+  75% {
+    transform: scale(0.95) rotate(-5deg);
+    opacity: 0.95;
+  }
+}
+
+.animate-pulse-icon {
+  animation: pulse-icon 2s ease-in-out infinite !important;
+  display: inline-block !important;
+}
+
+.icon-plus-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
