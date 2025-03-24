@@ -7,75 +7,7 @@
         }"
         class="relative"
       >
-        <div class="flex items-center justify-between mb-6 md:mb-8">
-          <div>
-            <div class="py-4 text-start relative">
-              <h1
-                class="text-2xl md:text-4xl ml-3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
-              >
-                {{ $t("classified_service") }}
-              </h1>
-              <!-- Header underline -->
-              <div
-                class="h-1 ml-2 w-32 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
-              ></div>
-
-              <!-- Floating particles around header - FIXED -->
-              <div
-                v-for="n in 5"
-                :key="`header-particle-${n}`"
-                class="absolute w-1.5 h-1.5 rounded-full bg-emerald-400/50 service-particle"
-                :style="{
-                  top: `${50 + (Math.random() * 30 - 15)}%`,
-                  left: `${50 + (Math.random() * 60 - 30)}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${3 + Math.random() * 2}s`,
-                }"
-              ></div>
-            </div>
-          </div>
-
-          <UButton
-            to="/my-classified-services/"
-            class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-dashed border-green-600 max-sm:!text-sm mr-2"
-            :ui="{
-              size: {
-                sm: 'text-sm',
-              },
-              padding: {
-                sm: 'px-3 py-2 md:px-3.5 md:py-2.5',
-              },
-              icon: {
-                size: {
-                  sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
-                },
-              },
-            }"
-          >
-            <!-- Ripple Effect Background -->
-            <span class="absolute inset-0 overflow-hidden">
-              <span
-                class="absolute inset-0 scale-0 rounded-full bg-emerald-200/70 group-hover:animate-ripple"
-              ></span>
-            </span>
-
-            <!-- Button Content with Icon -->
-            <div
-              class="relative z-10 flex items-center justify-center space-x-2"
-            >
-              <!-- Icon Container -->
-              <div class="icon-plus-container">
-                <UIcon
-                  name="i-heroicons-plus-circle"
-                  class="text-2xl text-emerald-600 animate-pulse-icon"
-                />
-              </div>
-
-              <!-- Text -->
-              <span class="text-base font-medium">Post Free Ads</span>
-            </div>
-          </UButton>
-        </div>
+        <PublicTitle />
         <form
           @submit.prevent="handleSearch"
           class="w-full max-w-xl mx-auto relative z-10"
@@ -817,7 +749,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style>
+<style scoped>
 /* Search animation */
 .search-animation {
   position: relative;

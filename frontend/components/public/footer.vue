@@ -46,7 +46,7 @@
                 to: '/',
               },
               {
-                label: 'মোবাইল রিচার্জ',
+                label: $t('mobile_recharge'),
                 to: '/mobile-recharge',
               },
               {
@@ -55,11 +55,11 @@
               },
               {
                 label: $t('about_us'),
-                to: '/about/',
+                to: '/about',
               },
               {
                 label: $t('contact_us'),
-                to: '/contact-us/',
+                to: '/contact-us',
               },
             ]"
             :ui="{
@@ -84,15 +84,15 @@
               },
               {
                 label: $t('affiliates'),
-                to: '/',
+                to: '/refer-a-friend',
               },
               {
                 label: $t('about_us'),
-                to: '/about/',
+                to: '/about',
               },
               {
                 label: $t('contact_us'),
-                to: '/contact-us/',
+                to: '/contact-us',
               },
             ]"
             :ui="{
