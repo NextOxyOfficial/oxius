@@ -97,13 +97,13 @@
                 <div class="relative pt-[100%] overflow-hidden group">
                   <!-- Discount Badge -->
                   <div
-                    v-if="product.discount_price"
+                    v-if="product.regular_price"
                     class="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-full"
                   >
                     -{{
                       calculateDiscount(
                         product.sale_price,
-                        product.discount_price
+                        product.regular_price
                       )
                     }}%
                   </div>
@@ -172,10 +172,10 @@
                         ৳{{ product.sale_price }}
                       </span>
                       <span
-                        v-if="product.discount_price"
+                        v-if="product.regular_price"
                         class="text-xs text-slate-400 line-through"
                       >
-                        ৳{{ product.discount_price }}
+                        ৳{{ product.regular_price }}
                       </span>
                     </div>
                     <UButton

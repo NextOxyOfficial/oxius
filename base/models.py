@@ -575,6 +575,7 @@ class Product(models.Model):
     delivery_fee_outside_dhaka = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     category= models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True)
     discount_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    regular_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     quantity = models.IntegerField(default=0)
     is_featured = models.BooleanField(default=False)

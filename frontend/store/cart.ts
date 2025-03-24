@@ -21,12 +21,8 @@ export const useStoreCart = defineStore("cart", {
 
   actions: {
     addProduct(product: Product, count: number) {
-      const isInList = this.products.find((p) => p.id === product.id);
-      if (isInList) {
-        return;
-      } else {
-        this.products.push({ ...product, count });
-      }
+      this.products = [];
+      this.products.push({ ...product, count });
     },
     removeProduct(productId: string) {
       this.products = this.products.filter(
@@ -42,8 +38,6 @@ export const useStoreCart = defineStore("cart", {
         };
         this.products.splice(index, 1, updatedProduct);
       }
-      this.totalPrice;
-      this.totalDiscountPrice;
     },
     decreaseCartItem(id: string) {
       const index = this.products.findIndex((p) => p.id === id);
@@ -72,12 +66,10 @@ interface Product {
   description?: string;
   short_description?: string;
   image: string;
-  price: number;
   rating?: number;
   quantity?: number;
   count: number;
-  product_price: number;
-  discount_price: number;
+  regular_price: number;
   sale_price: number;
   weight: number;
   delivery_information: string;

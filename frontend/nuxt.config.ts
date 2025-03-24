@@ -17,6 +17,10 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
   ],
 
+  pinia: {
+    storesDirs: ["./store/**"],
+  },
+
   tiptap: {
     prefix: "Tiptap", //prefix for Tiptap imports, composables not included
   },

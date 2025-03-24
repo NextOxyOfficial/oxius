@@ -2,7 +2,6 @@
   <PublicSection>
     <UContainer class="sm:!max-w-2xl">
       <UCard v-if="currentProduct" class="p-0">
-        <!-- Modal Header -->
         <template #header>
           <div
             class="relative bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4"
@@ -15,22 +14,19 @@
           </div>
         </template>
 
-        <!-- Modal Body -->
         <div class="p-5">
           <div class="grid grid-cols-1 gap-6">
-            <!-- Left: Product Image Gallery -->
             <div>
               <div
                 class="relative pt-[100%] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden"
               >
                 <img
-                  v-if="currentProduct.image"
-                  :src="currentProduct.image"
+                  v-if="currentProduct.image_details"
+                  :src="currentProduct.image_details[0].image"
                   :alt="currentProduct.name"
                   class="absolute inset-0 w-full h-full object-contain"
                 />
 
-                <!-- Discount Badge -->
                 <div
                   v-if="currentProduct.discount"
                   class="absolute top-2 left-2 badge-discount"
@@ -39,20 +35,19 @@
                 </div>
               </div>
 
-              <!-- Thumbnail Gallery -->
               <div
                 class="grid grid-cols-4 gap-2 mt-2"
-                v-if="currentProduct.medias"
+                v-if="currentProduct.image_details"
               >
                 <div
-                  v-for="i in 4"
-                  :key="i"
+                  v-for="img in currentProduct.image_details"
+                  :key="img.id"
                   class="aspect-square relative bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden cursor-pointer hover:opacity-80 border-2"
                   :class="i === 1 ? 'border-primary' : 'border-transparent'"
                 >
                   <img
-                    :src="currentProduct.image"
-                    :alt="currentProduct.name"
+                    :src="img.image"
+                    :alt="img.name"
                     class="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
@@ -109,36 +104,38 @@
                   <span
                     class="text-2xl font-semibold text-slate-800 dark:text-white"
                   >
-                    ৳{{ currentProduct.price }}
+                    ৳{{ currentProduct.sale_price }}
                   </span>
                   <span
-                    v-if="currentProduct.oldPrice"
+                    v-if="currentProduct.regular_price"
                     class="text-sm text-slate-400 line-through"
                   >
-                    ৳{{ currentProduct.oldPrice }}
+                    ৳{{ currentProduct.regular_price }}
                   </span>
-                  <span v-if="currentProduct.discount" class="savings-badge">
+                  <span
+                    v-if="currentProduct.regular_price"
+                    class="savings-badge"
+                  >
                     Save ৳{{
                       calculateSavings(
-                        currentProduct.price,
-                        currentProduct.oldPrice
+                        currentProduct.sale_price,
+                        currentProduct.regular_price
                       )
                     }}
                   </span>
                 </div>
 
                 <!-- Description -->
-                <p
+                <div
                   class="text-sm text-slate-600 dark:text-slate-300 mb-4 description-text"
-                >
-                  {{ currentProduct.description }}
-                </p>
+                  v-html="currentProduct.description"
+                ></div>
 
                 <!-- Add to Cart Area -->
                 <div class="flex items-center gap-3 mb-6">
                   <button
                     class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary rounded-lg py-3 px-4 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 max-w-fit sm:px-20 mx-auto"
-                    @click="addToCart"
+                    @click="addToCart(currentProduct, 1)"
                   >
                     <!-- Hover overlay effect -->
                     <div
@@ -393,7 +390,7 @@
                   <div
                     class="prose prose-sm max-w-none text-slate-600 dark:text-slate-300"
                   >
-                    <p>{{ currentProduct.description }}</p>
+                    <div v-html="currentProduct.description"></div>
                     <p class="mt-3">
                       Experience the perfect blend of design and functionality
                       with our {{ currentProduct.name }}. Designed with the
@@ -460,59 +457,45 @@
 <script setup>
 const { get } = useApi();
 const route = useRoute();
-const currentProduct = ref({
-  id: 1,
-  name: "Wireless Noise-Cancelling Headphones",
-  price: "3,499",
-  oldPrice: "4,999",
-  discount: 30,
-  image: "https://placehold.co/300x300/f1f5f9/64748b?text=Headphones",
-  category: "Electronics",
-  rating: 4.8,
-  description:
-    "Experience premium sound quality with these wireless noise-cancelling headphones. Perfect for work, travel, and everyday use with up to 30 hours of battery life.",
-  reviews: [
-    {
-      name: "Asif Khan",
-      rating: 5,
-      date: "March 12, 2025",
-      comment:
-        "Amazing sound quality and the noise cancellation is perfect for my daily commute!",
-      avatar: "",
-    },
-    {
-      name: "Farah Ahmed",
-      rating: 4,
-      date: "March 5, 2025",
-      comment:
-        "Great battery life and comfortable to wear for hours. The app could use some improvements though.",
-      avatar: "",
-    },
-  ],
-});
+const cart = useStoreCart();
 
-const quantity = ref(1);
-const isModalOpen = ref(false);
-
-// const { data } = get(`/products/${route.params.id}/`);
-// console.log(data);
-// currentProduct.value = data;
-
-function calculateSavings(currentPrice, oldPrice) {
-  // Remove commas and convert to numbers
-  const current = Number(currentPrice.replace(/,/g, ""));
-  const old = Number(oldPrice.replace(/,/g, ""));
-  return (old - current).toLocaleString();
+function addToCart(product, quantity) {
+  cart.addProduct(product, quantity);
+  navigateTo("/checkout/");
 }
 
-function addToCart() {
-  // In a real app, this would add the product to a cart
-  console.log(
-    "Adding to cart:",
-    currentProduct.value.name,
-    "Quantity:",
-    quantity.value
-  );
+const currentProduct = ref({});
+
+async function getProduct() {
+  try {
+    const { data } = await get(`/products/${route.params.id}/`);
+    console.log({ data });
+    currentProduct.value = data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+await getProduct();
+
+// Update this function to use sale_price and regular_price parameter names
+function calculateSavings(sale_price, regular_price) {
+  // Safety check in case prices are undefined
+  if (!sale_price || !regular_price) return 0;
+
+  // Handle both string and number inputs
+  const current =
+    typeof sale_price === "string"
+      ? Number(sale_price.replace(/,/g, ""))
+      : Number(sale_price);
+
+  const regular =
+    typeof regular_price === "string"
+      ? Number(regular_price.replace(/,/g, ""))
+      : Number(regular_price);
+
+  // Calculate and format savings
+  return (regular - current).toLocaleString();
 }
 
 // Add these to your existing script section

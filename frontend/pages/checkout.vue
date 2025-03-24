@@ -101,7 +101,11 @@
                       >
                         <div class="relative overflow-hidden rounded-xl">
                           <img
-                            :src="product.image || '/placeholder.svg'"
+                            v-if="product.image_details"
+                            :src="
+                              product.image_details[0].image ||
+                              '/placeholder.svg'
+                            "
                             :alt="product.name"
                             class="w-20 h-20 object-cover rounded-xl shadow-sm transition-transform duration-300 group-hover:scale-105"
                           />
@@ -113,9 +117,10 @@
                           <h3 class="font-medium text-gray-900">
                             {{ product.name }}
                           </h3>
-                          <p class="text-gray-500 text-sm">
-                            {{ product.description }}
-                          </p>
+                          <div
+                            v-html="product.description"
+                            class="text-gray-500 text-sm"
+                          ></div>
                           <div class="flex items-center justify-between mt-2">
                             <div class="text-indigo-600 font-semibold">
                               ৳{{ product.price.toLocaleString() }}
@@ -127,13 +132,13 @@
                                 type="button"
                                 @click="decreaseQuantity(index)"
                                 class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors duration-200 focus:outline-none"
-                                :disabled="product.quantity <= 1"
+                                :disabled="product.count <= 1"
                               >
                                 <Minus class="h-3 w-3" />
                               </button>
                               <span
                                 class="px-3 py-1 bg-white text-gray-800 min-w-[40px] text-center"
-                                >{{ product.quantity }}</span
+                                >{{ product.count }}</span
                               >
                               <button
                                 type="button"
@@ -306,8 +311,11 @@
                             <span class="text-gray-500 text-sm"
                               >Delivery within 24 hours</span
                             >
+
                             <span class="text-indigo-600 font-medium mt-1"
-                              >Delivery fee: ৳100</span
+                              >Delivery fee: ৳{{
+                                products[0].delivery_fee_inside_dhaka
+                              }}</span
                             >
                           </div>
                         </div>
@@ -341,7 +349,9 @@
                               >Delivery within 3-5 days</span
                             >
                             <span class="text-indigo-600 font-medium mt-1"
-                              >Delivery fee: ৳150</span
+                              >Delivery fee: ৳{{
+                                products[0].delivery_fee_outside_dhaka
+                              }}</span
                             >
                           </div>
                         </div>
@@ -366,6 +376,7 @@
                     <div class="p-4">
                       <div class="mt-2 space-y-3">
                         <div
+                          v-if="user?.user"
                           :class="[
                             'relative flex p-4 rounded-lg border border-gray-200 hover:border-indigo-200 transition-all duration-200',
                             form.paymentMethod === 'account'
@@ -384,6 +395,7 @@
                               class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                             />
                           </div>
+
                           <div class="ml-3 flex flex-col">
                             <label
                               for="account-funds"
@@ -394,8 +406,11 @@
                               <span class="text-gray-500 text-sm mr-2"
                                 >Available balance:</span
                               >
+
                               <span class="text-indigo-600 font-medium"
-                                >৳{{ accountBalance.toLocaleString() }}</span
+                                >৳{{
+                                  user?.user.balance.toLocaleString()
+                                }}</span
                               >
                             </div>
                           </div>
@@ -735,49 +750,34 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import {
   ShoppingBag,
   Check,
-  MapPin,
   Truck,
-  CreditCard,
   Wallet,
-  Minus,
+  MapPin,
+  CreditCard,
   Plus,
+  Minus,
 } from "lucide-vue-next";
+const { user } = useAuth();
+
+// Get cart store
+const cart = useStoreCart();
+// Initialize products with the cart data
+const products = ref(cart.products || []);
 
 // Mock account balance
-const accountBalance = ref(500); // Set to a value that can be tested for insufficient funds
-const orderNumber = ref(Math.floor(100000 + Math.random() * 900000)); // Random 6-digit order number
-
-// Products data
-const products = reactive([
-  {
-    id: 1,
-    name: "Premium Wireless Headphones",
-    description: "Noise cancelling, 30-hour battery life",
-    price: 1200,
-    quantity: 1,
-    image: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 2,
-    name: "Smart Watch Series 5",
-    description: "Fitness tracking, heart rate monitor",
-    price: 800,
-    quantity: 1,
-    image: "/placeholder.svg?height=100&width=100",
-  },
-]);
+const accountBalance = ref(500);
+const orderNumber = ref(Math.floor(100000 + Math.random() * 900000));
 
 // Form state
 const form = reactive({
   name: "",
   phone: "",
   address: "",
-  deliveryOption: "inside", // 'inside' or 'outside'
-  paymentMethod: "account", // 'account' or 'cod'
+  deliveryOption: "inside",
+  paymentMethod: "account",
 });
 
 // Error state
@@ -792,22 +792,59 @@ const showInsufficientFundsModal = ref(false);
 const showSuccessModal = ref(false);
 const isScrolled = ref(false);
 
-// Computed properties
+// Fixed computed properties to use count instead of quantity
 const subtotal = computed(() => {
-  return products.reduce(
-    (total, product) => total + product.price * product.quantity,
+  return products.value.reduce(
+    (total, product) => total + product.price * product.count,
     0
   );
 });
 
 const totalItems = computed(() => {
-  return products.reduce((total, product) => total + product.quantity, 0);
+  return products.value.reduce((total, product) => total + product.count, 0);
 });
 
-const deliveryFee = computed(() =>
-  form.deliveryOption === "inside" ? 100 : 150
-);
+// Modified: Use product delivery fees instead of hardcoded values
+const deliveryFee = computed(() => {
+  // Safety check in case products array is empty
+  if (!products.value.length || !products.value[0]) return 0;
+
+  return form.deliveryOption === "inside"
+    ? products.value[0].delivery_fee_inside_dhaka || 100
+    : products.value[0].delivery_fee_outside_dhaka || 150;
+});
+
+// Total still uses the updated deliveryFee computed property
 const total = computed(() => subtotal.value + deliveryFee.value);
+
+// New property to track the selected delivery fee for database
+const selectedDeliveryFeeType = computed(() => form.deliveryOption);
+
+// New function to prepare order data for database
+const prepareOrderData = () => {
+  return {
+    products: products.value.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      count: product.count,
+    })),
+    customer: {
+      name: form.name,
+      phone: form.phone,
+      address: form.address,
+    },
+    delivery: {
+      type: form.deliveryOption,
+      fee: deliveryFee.value,
+    },
+    payment: {
+      method: form.paymentMethod,
+      total: total.value,
+    },
+    orderNumber: orderNumber.value,
+  };
+};
 
 const estimatedDelivery = computed(() => {
   const today = new Date();
@@ -823,14 +860,14 @@ const estimatedDelivery = computed(() => {
   });
 });
 
-// Methods
+// Fixed methods to use count instead of quantity
 const increaseQuantity = (index) => {
-  products[index].quantity++;
+  products.value[index].count++;
 };
 
 const decreaseQuantity = (index) => {
-  if (products[index].quantity > 1) {
-    products[index].quantity--;
+  if (products.value[index].count > 1) {
+    products.value[index].count--;
   }
 };
 
@@ -866,6 +903,7 @@ const validateForm = () => {
   return isValid;
 };
 
+// Modified process checkout to include our order data
 const processCheckout = () => {
   if (!validateForm()) return;
 
@@ -874,6 +912,13 @@ const processCheckout = () => {
     showInsufficientFundsModal.value = true;
     return;
   }
+
+  // Prepare order data for database
+  const orderData = prepareOrderData();
+  console.log("Order data to send:", orderData);
+
+  // Here you would normally send the order data to your backend API
+  // Example: await $fetch('/api/orders', { method: 'POST', body: orderData });
 
   // Process successful checkout
   showSuccessModal.value = true;
@@ -893,8 +938,8 @@ const resetForm = () => {
   form.paymentMethod = "account";
 
   // Reset products
-  products.forEach((product) => {
-    product.quantity = 1;
+  products.value.forEach((product) => {
+    product.count = 1;
   });
 
   // Generate new order number
@@ -902,6 +947,12 @@ const resetForm = () => {
 
   // Close modal
   showSuccessModal.value = false;
+
+  // Clear cart
+  cart.clearCart();
+
+  // Navigate to home
+  navigateTo("/");
 };
 
 // Handle scroll effect for sticky summary
@@ -911,6 +962,18 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+
+  // Update products if cart changes
+  if (!products.value.length && cart.products.length) {
+    products.value = [...cart.products];
+  }
+
+  // Ensure all products have a count property
+  products.value.forEach((product) => {
+    if (!product.count) {
+      product.count = 1;
+    }
+  });
 });
 
 onUnmounted(() => {

@@ -304,15 +304,15 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields =  '__all__'
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['regular_price'] = instance.sale_price
-        if instance.discount_price > 0:
-            representation['old_price'] = instance.sale_price
-            representation['price'] = instance.discount_price
-        else:
-            representation['price'] = instance.sale_price
-        return representation
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['regular_price'] = instance.sale_price
+    #     if instance.discount_price > 0:
+    #         representation['old_price'] = instance.sale_price
+    #         representation['price'] = instance.discount_price
+    #     else:
+    #         representation['price'] = instance.sale_price
+    #     return representation
 
 
 
