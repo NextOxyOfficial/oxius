@@ -272,7 +272,7 @@
                         class="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-6"
                       >
                         <div
-                          class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-full p-1.5"
+                          class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-full px-2 py-0.5"
                         >
                           <UIcon
                             name="i-heroicons-check"
@@ -412,7 +412,7 @@
                       <!-- Upgrade Text with micro-interactions -->
                       <div class="flex-1">
                         <h4
-                          class="font-medium text-slate-800 dark:text-white flex items-center"
+                          class="font-medium text-slate-800 dark:text-white text-sm flex items-center"
                         >
                           Upgrade to Pro
                           <span

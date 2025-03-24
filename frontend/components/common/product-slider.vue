@@ -10,7 +10,7 @@
         </div>
         <h2 class="font-bold text-lg md:text-xl text-slate-800 dark:text-white">
           <span class="relative inline-block">
-            eShop
+            {{ $t("eshop") }}
             <span
               class="absolute -bottom-0.5 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-primary-400"
             ></span>
@@ -22,7 +22,7 @@
         to="/eshop"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-primary-50 hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium"
       >
-        <span>View All</span>
+        <span>{{ $t("view_all") }}</span>
         <UIcon name="i-heroicons-arrow-right" class="w-3.5 h-3.5" />
       </NuxtLink>
     </div>

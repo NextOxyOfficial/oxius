@@ -278,7 +278,7 @@
                         sm: 'text-sm',
                       },
                       padding: {
-                        sm: 'px-3 py-1.5 md:px-3.5 md:py-1.5',
+                        sm: 'px-1 py-1.5 md:px-3.5 md:py-1.5',
                       },
                       icon: {
                         size: {
@@ -315,7 +315,7 @@
                   <USelectMenu
                     color="emerald"
                     size="md"
-                    class="w-40"
+                    class="w-28 md:w-40"
                     :options="microGigsFilter"
                     v-model="microGigsStatus"
                     @change="getMicroGigsByAvailability($event)"
