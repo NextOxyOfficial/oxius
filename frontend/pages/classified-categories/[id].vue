@@ -14,7 +14,7 @@
             to="/"
             active-class="text-primary"
             inactive-class="text-gray-500 dark:text-gray-400"
-            >Home</ULink
+            >{{ $t("home") }}</ULink
           >
           <span v-if="services?.length">></span> {{ categoryTitle }}
         </p>
@@ -132,7 +132,7 @@
               :loading="isLoading"
               color="primary"
               variant="solid"
-              label="Search"
+              :label="t('search')"
               @click="filterSearch"
               class="sm:h-10 max-sm:!text-base w-24 justify-center"
               :ui="{
@@ -233,7 +233,7 @@
           <UButton
             color="primary"
             variant="outline"
-            label="Post an Ad"
+            :label="t('post_classified')"
             icon="i-heroicons-plus"
             to="/classified-categories/post/"
             class="pulse-effect"
@@ -404,14 +404,14 @@
             <UButton
               color="gray"
               variant="ghost"
-              label="Change location"
+              :label="t('change_location')"
               icon="i-heroicons-map"
               @click="clearLocation"
             />
             <UButton
               color="primary"
               variant="outline"
-              label="Post an Ad"
+              :label="t('post_classified')"
               icon="i-heroicons-plus"
               to="/classified-categories/post/"
               class="pulse-effect"
@@ -421,7 +421,7 @@
       </TransitionGroup>
       <UDivider v-if="searchError" label="" class="mt-3 sm:mt-5" />
       <h3 v-if="searchError" class="text-xl font-semibold mt-6 text-green-900">
-        Nearby location's ads
+        {{ $t("nearby_location") }}
       </h3>
 
       <div class="services mt-3" v-if="nearby_services?.length">
@@ -567,6 +567,7 @@
 </template>
 
 <script setup>
+const { t } = useI18n();
 const { get } = useApi();
 const location = useCookie("location");
 const { formatDate } = useUtils();

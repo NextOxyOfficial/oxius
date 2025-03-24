@@ -536,7 +536,7 @@
                   <NuxtLink
                     v-for="(link, index) in [
                       {
-                        label: 'বিজ্ঞাপন',
+                        label: t('ad'),
                         to: '/my-classified-services/',
                         icon: 'i-heroicons-megaphone',
                         color: 'text-emerald-600 dark:text-emerald-400',
@@ -549,7 +549,7 @@
                         },
                       },
                       {
-                        label: 'ই-শপ ম্যানেজার',
+                        label: t('eshop_manager'),
                         to: '/shop-manager/',
                         icon: 'i-heroicons-shopping-bag',
                         color: 'text-blue-600 dark:text-blue-400',
@@ -673,7 +673,7 @@
                         class="w-4 h-4 text-slate-500 dark:text-slate-400"
                       />
                     </div>
-                    <span class="text-sm">Settings</span>
+                    <span class="text-sm">{{ $t("settings") }}</span>
                   </NuxtLink>
 
                   <!-- Support Link -->
@@ -690,7 +690,7 @@
                         class="w-4 h-4 text-slate-500 dark:text-slate-400"
                       />
                     </div>
-                    <span class="text-sm">Support</span>
+                    <span class="text-sm">{{ $t("support") }}</span>
                   </NuxtLink>
                 </div>
 
