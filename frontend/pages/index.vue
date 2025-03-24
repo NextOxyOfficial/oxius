@@ -136,7 +136,12 @@
               searchServices?.results?.length && classifiedPosts.results?.length
             "
           />
-          <h3 class="text-lg font-semibold">Ad Posts</h3>
+          <h3
+            v-if="classifiedPosts.results?.length"
+            class="text-lg font-semibold"
+          >
+            Ad Posts
+          </h3>
           <ul v-if="classifiedPosts.results?.length">
             <li v-for="service of classifiedPosts.results" :key="service.id">
               <NuxtLink
@@ -264,17 +269,67 @@
                 <p class="px-2 font-semibold pb-3.5">
                   {{ $t("available_gigs") }}
                 </p>
-                <USelectMenu
-                  color="white"
-                  size="sm"
-                  class="w-40"
-                  :options="microGigsFilter"
-                  v-model="microGigsStatus"
-                  @change="getMicroGigsByAvailability($event)"
-                  placeholder="Filter"
-                  value-attribute="value"
-                  option-attribute="title"
-                />
+                <div class="flex items-center gap-1">
+                  <UButton
+                    to="/post-a-gig"
+                    class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-green-600 max-sm:!text-sm mr-2"
+                    :ui="{
+                      size: {
+                        sm: 'text-sm',
+                      },
+                      padding: {
+                        sm: 'px-3 py-1.5 md:px-3.5 md:py-1.5',
+                      },
+                      icon: {
+                        size: {
+                          sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
+                        },
+                      },
+                    }"
+                  >
+                    <!-- Ripple Effect Background -->
+                    <span class="absolute inset-0 overflow-hidden">
+                      <span
+                        class="absolute inset-0 scale-0 rounded-full bg-emerald-200/70 group-hover:animate-ripple"
+                      ></span>
+                    </span>
+
+                    <!-- Button Content with Icon -->
+                    <div
+                      class="relative z-10 flex items-center justify-center space-x-2"
+                    >
+                      <!-- Icon Container -->
+                      <div class="icon-plus-container">
+                        <UIcon
+                          name="i-heroicons-plus-circle"
+                          class="text-2xl text-emerald-600 animate-pulse-icon"
+                        />
+                      </div>
+
+                      <!-- Text -->
+                      <span class="text-xs font-medium">{{
+                        $t("post_gigs")
+                      }}</span>
+                    </div>
+                  </UButton>
+                  <USelectMenu
+                    color="emerald"
+                    size="md"
+                    class="w-40"
+                    :options="microGigsFilter"
+                    v-model="microGigsStatus"
+                    @change="getMicroGigsByAvailability($event)"
+                    placeholder="Filter"
+                    value-attribute="value"
+                    option-attribute="title"
+                    variant="outline"
+                    :ui="{
+                      option: {
+                        color: 'text-emerald-600',
+                      },
+                    }"
+                  />
+                </div>
               </div>
 
               <UCard

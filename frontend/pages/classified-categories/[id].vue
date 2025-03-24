@@ -229,14 +229,16 @@
       </div>
 
       <div class="mt-5 hidden sm:block">
-        <UButton
-          color="primary"
-          variant="solid"
-          label="Post an Ad"
-          icon="i-heroicons-plus"
-          to="/classified-categories/post/"
-          class="pulse-effect"
-        />
+        <div>
+          <UButton
+            color="primary"
+            variant="outline"
+            label="Post an Ad"
+            icon="i-heroicons-plus"
+            to="/classified-categories/post/"
+            class="pulse-effect"
+          />
+        </div>
       </div>
       <div class="search mt-4" v-if="search.length">
         <UCard
@@ -408,7 +410,7 @@
             />
             <UButton
               color="primary"
-              variant="solid"
+              variant="outline"
               label="Post an Ad"
               icon="i-heroicons-plus"
               to="/classified-categories/post/"

@@ -111,7 +111,7 @@
       <!-- Simplified empty state -->
       <div
         v-if="services && !services.count"
-        class="col-span-3 w-full py-12 relative rounded-xl border-2 border-dashed border-green-500 bg-green-50 text-center overflow-hidden"
+        class="col-span-3 w-full py-12 px-2 relative rounded-xl border-2 border-dashed border-green-500 bg-green-50 text-center overflow-hidden"
       >
         <!-- Animated Background Pattern (subtle) -->
         <div class="absolute inset-0 opacity-10 bg-grid-pattern"></div>
