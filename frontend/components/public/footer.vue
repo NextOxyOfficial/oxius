@@ -50,7 +50,7 @@
                 to: '/mobile-recharge',
               },
               {
-                label: $t('affiliates'),
+                label: $t('refer_program'),
                 to: '/refer-a-friend',
               },
               {

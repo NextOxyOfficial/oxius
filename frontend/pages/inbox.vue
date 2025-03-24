@@ -1,10 +1,12 @@
 <template>
   <PublicSection>
-    <UContainer class="py-8">
+    <UContainer class="py-0 sm:py-8">
       <!-- Header with 3D layered effect -->
       <!-- Header with premium glass effect design -->
       <!-- Header with clean, modern design -->
-      <div class="inbox-header relative overflow-hidden rounded-xl mb-8">
+      <div
+        class="inbox-header relative overflow-hidden rounded-xl mb-3 sm:mb-8"
+      >
         <!-- Simple gradient background -->
         <div
           class="absolute inset-0 bg-gradient-to-br from-gray-50 to-primary-50"
@@ -37,10 +39,10 @@
               <!-- Clean typography -->
               <div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
-                  Message Center
+                  {{ $t("message_center") }}
                 </h1>
                 <p class="text-gray-500 text-sm mt-1">
-                  All your notifications in one place
+                  {{ $t("message_center_text") }}
                 </p>
               </div>
             </div>
@@ -66,7 +68,7 @@
         <UButton
           variant="soft"
           color="primary"
-          label="All Messages"
+          :label="t('all_messages')"
           icon="i-heroicons-inbox"
           class="filter-btn active"
         />
@@ -74,7 +76,7 @@
           variant="soft"
           color="gray"
           icon="i-heroicons-envelope"
-          label="Unread"
+          :label="t('unread')"
           class="filter-btn"
         />
         <!-- <UButton
@@ -217,10 +219,9 @@
               <UIcon name="i-heroicons-inbox" class="text-5xl text-white" />
             </div>
           </div>
-          <h3 class="empty-title">Your inbox is empty</h3>
+          <h3 class="empty-title">{{ $t("inbox_empty") }}</h3>
           <p class="empty-description">
-            You don't have any messages yet. System notifications and important
-            updates will appear here.
+            {{ $t("inbox_empty_message") }}
           </p>
         </div>
       </transition>
@@ -242,6 +243,7 @@
 
 <script setup>
 // Script remains largely the same as your current implementation
+const { t } = useI18n();
 const { user } = useAuth();
 const messages = ref([]);
 const { get } = useApi();

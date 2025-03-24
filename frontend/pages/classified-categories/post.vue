@@ -7,10 +7,10 @@
           <h1
             class="text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
           >
-            Post A Classified Ad
+            {{ $t("post_classified") }}
           </h1>
           <p class="text-lg text-gray-600 max-w-lg mx-auto">
-            Create your listing and reach potential customers
+            {{ $t("post_classified_text") }}
           </p>
         </div>
 
@@ -30,7 +30,7 @@
                 name="i-heroicons-document-text"
                 class="text-emerald-600"
               />
-              Basic Details
+              {{ $t("basic_details") }}
             </h2>
 
             <UFormGroup
@@ -109,7 +109,7 @@
                 name="i-heroicons-currency-dollar"
                 class="text-emerald-600"
               />
-              Pricing
+              {{ $t("pricing") }}
             </h2>
 
             <UFormGroup
@@ -156,7 +156,7 @@
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-photo" class="text-emerald-600" />
-              Media Gallery
+              {{ $t("media_gallary") }}
             </h2>
             <p class="text-sm text-gray-500 mb-4">
               Add photos to showcase your listing (up to 5 images)
@@ -239,7 +239,7 @@
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
-              Location
+              {{ $t("location") }}
             </h2>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -376,7 +376,7 @@
                 <template #leading>
                   <UIcon name="i-heroicons-paper-airplane" />
                 </template>
-                Post Classified Ad
+                {{ $t("post_classified_ad") }}
               </UButton>
 
               <UButton

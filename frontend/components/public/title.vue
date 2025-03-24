@@ -62,7 +62,7 @@
         </div>
 
         <!-- Text -->
-        <span class="text-base font-medium">Post Free Ads</span>
+        <span class="text-xs font-medium">{{ $t("post_free_ad") }}</span>
       </div>
     </UButton>
   </div>

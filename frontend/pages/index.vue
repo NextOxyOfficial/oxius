@@ -82,9 +82,9 @@
                 ></span>
 
                 <!-- Button content -->
-                <span v-if="!isLoading" class="relative hidden sm:block"
-                  >খুঁজুন</span
-                >
+                <span v-if="!isLoading" class="relative hidden sm:block">{{
+                  $t("search")
+                }}</span>
                 <UIcon
                   v-if="!isLoading"
                   name="i-heroicons-magnifying-glass"
@@ -106,7 +106,12 @@
             searchServices?.results?.length || classifiedPosts.results?.length
           "
         >
-          <h3 class="text-lg font-semibold">Categories</h3>
+          <h3
+            v-if="searchServices?.results?.length"
+            class="text-lg font-semibold"
+          >
+            Categories
+          </h3>
           <ul
             class="flex flex-wrap gap-1"
             v-if="searchServices?.results?.length"
@@ -168,7 +173,7 @@
             ></span>
 
             <!-- Button content -->
-            <span class="relative z-10 text-md">আরও দেখুন</span>
+            <span class="relative z-10 text-md">{{ $t("see_more") }}</span>
             <UIcon
               name="i-heroicons-arrow-down"
               class="relative z-10 size-4 group-hover:translate-y-0.5 transition-transform duration-300"
@@ -185,7 +190,7 @@
       </UContainer>
     </PublicSection>
 
-    <AdsScroll :ads="classifiedLatestPosts" sectionTitle="সাম্প্রতিক পোষ্ট" />
+    <AdsScroll :ads="classifiedLatestPosts" :sectionTitle="t('recent_post')" />
     <CommonProductSlider />
     <UDivider class="my-4 sm:mt-16 mx-auto max-w-[80%]" />
     <PublicSection id="micro-gigs">
@@ -200,7 +205,7 @@
         >
           <div class="flex gap-2">
             <h2 class="text-base text-gray-900 sm:text-xl text-center">
-              Mobile Recharge
+              {{ $t("mobile_recharge") }}
             </h2>
             <div class="flex justify-center gap-2">
               <NuxtImg
@@ -682,7 +687,7 @@ const cursorVisible = ref(true);
 const typingInterval = ref(null);
 const cursorInterval = ref(null);
 const currentIndex = ref(0);
-const placeholder = "খুঁজে নিন যা প্রয়োজন....";
+const placeholder = t("search_placeholder");
 
 // Typing animation functions
 const typeNextChar = () => {

@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     "nuxt-tiptap-editor",
     "nuxt-aos",
     "@nuxtjs/google-fonts",
+    "@pinia/nuxt",
   ],
 
   tiptap: {

@@ -129,12 +129,12 @@
 
         <!-- Message -->
         <p class="text-gray-700 font-medium max-w-md mx-auto">
-          দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি
+          {{ $t("category_search_text") }}
         </p>
 
         <!-- Optional Helper Text -->
         <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
-          অন্য ক্যাটাগরি দেখুন অথবা আবার চেষ্টা করুন
+          {{ $t("category_search_text2") }}
         </p>
       </div>
     </div>
