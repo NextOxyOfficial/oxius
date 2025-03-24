@@ -265,7 +265,7 @@
             <div
               class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md min-h-40"
             >
-              <div class="flex justify-between">
+              <div class="flex justify-between mb-3">
                 <p class="px-2 font-semibold pb-3.5">
                   {{ $t("available_gigs") }}
                 </p>
@@ -356,17 +356,6 @@
                 >
                   <div class="flex gap-4">
                     <div>
-                      <!-- <NuxtImg
-                        v-if="gig.medias[0]?.image && errorIndex.includes(i)"
-                        :src="
-                          errorIndex.includes(i)
-                            ? gig.category_details?.image
-                            : gig.medias[0]?.image
-                        "
-                        class="size-14 rounded-full"
-                        @error="handleImageError(i)"
-                      /> -->
-
                       <NuxtImg
                         v-if="!errorIndex.includes(i)"
                         :src="gig.category_details?.image"

@@ -107,17 +107,6 @@
               >
                 <div class="flex gap-4">
                   <div>
-                    <!-- <NuxtImg
-                        v-if="gig.medias[0]?.image && errorIndex.includes(i)"
-                        :src="
-                          errorIndex.includes(i)
-                            ? gig.category_details?.image
-                            : gig.medias[0]?.image
-                        "
-                        class="size-14 rounded-full"
-                        @error="handleImageError(i)"
-                      /> -->
-
                     <NuxtImg
                       v-if="!errorIndex.includes(i)"
                       :src="gig.category_details?.image"
