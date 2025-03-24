@@ -386,23 +386,10 @@
                 @click="showModal"
               >
                 <span
-                  class="relative z-10 flex items-center justify-center gap-2"
+                  class="relative z-10 flex items-center justify-center gap-2 text-"
                 >
-                  Upgrade Now
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4 transform transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
+                  <span v-if="user?.user.is_pro">Already Upgraded!</span>
+                  <span v-else>Upgrade Now!</span>
                 </span>
                 <div
                   class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-shimmer"
@@ -1132,21 +1119,55 @@ const userBalance = ref(3500);
 
 // Computed properties
 const canSubscribe = computed(() => {
+  if (!user.value?.user) return false;
+
   if (paymentMethod.value === "account_funds") {
     const totalCost =
       months.value === 1
         ? price.value
         : months.value * price.value - yearly_discount.value;
-    return userBalance.value >= totalCost;
+    return user.value.user.balance >= totalCost;
   }
   return true; // Credit card can always subscribe
 });
 
 /**
- * Opens the subscription modal
+ * Opens the subscription modal with authentication check
  */
 function showModal() {
+  // First check if user is authenticated
+  if (!user.value?.user) {
+    // User is not logged in, show toast and redirect to login
+    toast.add({
+      title: "Authentication Required",
+      description: "Please log in or register to upgrade to Pro",
+      icon: "i-heroicons-lock-closed",
+      color: "amber",
+      timeout: 5000,
+    });
+
+    // Redirect to login after a short delay
+    setTimeout(() => {
+      redirectToAuth();
+    }, 1000);
+    return;
+  }
+
+  // If user is already Pro, inform them
+  if (user.value.user.is_pro) {
+    toast.add({
+      title: "Already a Pro Member",
+      description: "You're already enjoying all Pro features and benefits!",
+      icon: "i-heroicons-check-badge",
+      color: "emerald",
+      timeout: 5000,
+    });
+    return;
+  }
+
+  // User is authenticated but not Pro, show the upgrade modal
   openModal.value = true;
+
   // Reset form state when opening modal
   paymentMethod.value = "account_funds";
   autoRenew.value = true;
@@ -1158,30 +1179,68 @@ function showModal() {
   }, 800);
 }
 
-async function fetchUserData() {
-  try {
-    // In a real app, this would fetch from an API
-    userBalance.value = 3500;
-    console.log("User balance:", userBalance.value);
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    toast.add({
-      title: "Error",
-      description: "Failed to load user data",
-      icon: "i-heroicons-exclamation-circle",
-      color: "red",
-    });
-  }
+/**
+ * Redirect user to authentication page
+ */
+function redirectToAuth() {
+  // Save current page as redirect destination after login
+  router.push("/auth/login?redirect=/upgrade-to-pro");
+
+  toast.add({
+    title: "Redirecting to Login",
+    description: "You'll be able to upgrade to Pro after logging in",
+    icon: "i-heroicons-arrow-right-circle",
+    color: "blue",
+    timeout: 3000,
+  });
 }
 
 async function createSubscription() {
-  if (isSubscribing.value || !canSubscribe.value) return;
+  // Additional authentication check before submitting
+  if (!user.value?.user) {
+    toast.add({
+      title: "Authentication Required",
+      description: "Please log in to upgrade your account",
+      icon: "i-heroicons-exclamation-triangle",
+      color: "amber",
+    });
+    redirectToAuth();
+    return;
+  }
+
+  if (isSubscribing.value || !canSubscribe.value) {
+    // If user doesn't have enough balance, offer to add funds
+    if (
+      paymentMethod.value === "account_funds" &&
+      user.value?.user &&
+      user.value.user.balance <
+        (months.value === 1
+          ? price.value
+          : months.value * price.value - yearly_discount.value)
+    ) {
+      toast.add({
+        title: "Insufficient Funds",
+        description: "Please add funds to your account to continue",
+        icon: "i-heroicons-currency-dollar",
+        color: "orange",
+        timeout: 5000,
+      });
+
+      // Ask if they want to add funds
+      openModal.value = false;
+      setTimeout(() => {
+        if (confirm("Would you like to add funds to your account?")) {
+          router.push("/account/add-funds");
+        }
+      }, 500);
+    }
+    return;
+  }
 
   isSubscribing.value = true;
 
   try {
     // Calculate total based on subscription period
-
     if (paymentMethod.value === "account_funds") {
       // Account funds path - process immediately
       let total = months.value * price.value;
@@ -1208,6 +1267,12 @@ async function createSubscription() {
       // Generate transaction ID for display in success modal
       transactionId.value =
         "TXN_" + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      // Update user state to reflect Pro status
+      if (user.value?.user) {
+        user.value.user.is_pro = true;
+        user.value.user.balance -= total;
+      }
 
       // Show success modal
       showSuccessModal.value = true;
@@ -1249,11 +1314,6 @@ function handleFailureClose() {
   showFailureModal.value = false;
   openModal.value = false;
 }
-
-// Fetch data when component mounts
-onMounted(() => {
-  fetchUserData();
-});
 </script>
 
 <style scoped>
