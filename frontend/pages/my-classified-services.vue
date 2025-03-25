@@ -403,16 +403,7 @@
       </UCard>
 
       <!-- Enhanced Premium Modal -->
-      <UModal
-        v-model="isOpen"
-        :ui="{
-          container: 'flex min-h-full items-center justify-center text-center',
-          overlay: 'fixed inset-0 bg-gray-900/50 backdrop-blur-sm',
-          base: 'relative text-left bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden',
-          padding: 'p-0',
-          width: 'w-full max-w-md',
-        }"
-      >
+      <UModal v-model="isOpen">
         <div
           class="bg-gradient-to-b from-emerald-600 to-emerald-700 p-6 text-white"
         >
@@ -513,8 +504,11 @@ function handlePageChange(page) {
 }
 
 function handlePop(id) {
-  isOpen.value = true;
   currentId.value = id;
+
+  nextTick(() => {
+    isOpen.value = true;
+  });
 }
 
 async function fetchServices() {
