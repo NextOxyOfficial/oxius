@@ -95,4 +95,14 @@ urlpatterns = [
   # Product Category URLs
   path('product-categories/', ProductCategoryListCreateView.as_view(), name='product-category-list-create'),
   path('product-categories/<int:pk>/', ProductCategoryDetailView.as_view(), name='product-category-detail'),
+  path('orders/', OrderListCreate.as_view(), name='order-list-create'),
+  path('orders/<uuid:id>/', OrderDetail.as_view(), name='order-detail'),
+  path('orders/search/', OrderSearch.as_view(), name='order-search'),
+  path('users/<uuid:user_id>/orders/', UserOrdersList.as_view(), name='user-orders'),
+  path('orders/create-with-items/', OrderWithItemsCreate.as_view(), name='create-order-with-items'),
+  
+  # OrderItem endpoints
+  path('order-items/<uuid:id>/', OrderItemDetail.as_view(), name='order-item-detail'),
+  path('order-items/search/', OrderItemSearch.as_view(), name='order-item-search'),
+  path('orders/<uuid:order_id>/items/', OrderItemsByOrder.as_view(), name='order-items-by-order'),
 ]

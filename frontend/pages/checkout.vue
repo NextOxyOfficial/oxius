@@ -123,7 +123,7 @@
                           ></div>
                           <div class="flex items-center justify-between mt-2">
                             <div class="text-indigo-600 font-semibold">
-                              ৳{{ product.price.toLocaleString() }}
+                              ৳{{ product.sale_price }}
                             </div>
                             <div
                               class="flex items-center border border-gray-200 rounded-lg overflow-hidden shadow-sm"
@@ -269,6 +269,7 @@
                 >
                   <!-- Delivery Options -->
                   <div
+                    v-if="products?.length && !products[0].is_free_delivery"
                     class="mb-6 overflow-hidden rounded-xl border border-gray-200 shadow-sm"
                   >
                     <div
@@ -408,9 +409,7 @@
                               >
 
                               <span class="text-indigo-600 font-medium"
-                                >৳{{
-                                  user?.user.balance.toLocaleString()
-                                }}</span
+                                >৳{{ user?.user.balance }}</span
                               >
                             </div>
                           </div>
@@ -464,15 +463,11 @@
                       <div class="space-y-2 mb-4">
                         <div class="flex justify-between py-2 text-gray-600">
                           <span>Products ({{ totalItems }})</span>
-                          <span class="font-medium"
-                            >৳{{ subtotal.toLocaleString() }}</span
-                          >
+                          <span class="font-medium">৳{{ subtotal }}</span>
                         </div>
                         <div class="flex justify-between py-2 text-gray-600">
                           <span>Delivery Fee</span>
-                          <span class="font-medium"
-                            >৳{{ deliveryFee.toLocaleString() }}</span
-                          >
+                          <span class="font-medium">৳{{ deliveryFee }}</span>
                         </div>
                       </div>
 
@@ -481,7 +476,7 @@
                       >
                         <span class="text-gray-800 font-medium">Total</span>
                         <span class="text-xl font-bold text-indigo-600"
-                          >৳{{ total.toLocaleString() }}</span
+                          >৳{{ total }}</span
                         >
                       </div>
 
@@ -587,11 +582,8 @@
                     </h3>
                     <div class="mt-3">
                       <p class="text-base text-gray-500">
-                        Your account balance (৳{{
-                          accountBalance.toLocaleString()
-                        }}) is not sufficient to complete this purchase (৳{{
-                          total.toLocaleString()
-                        }}).
+                        Your account balance (৳{{ accountBalance }}) is not
+                        sufficient to complete this purchase (৳{{ total }}).
                       </p>
                       <p class="mt-2 text-base text-gray-500">
                         Please choose another payment method or add funds to
@@ -708,9 +700,7 @@
                       >
                         <div class="flex justify-between text-sm mb-1">
                           <span class="text-gray-600">Order Total:</span>
-                          <span class="font-medium"
-                            >৳{{ total.toLocaleString() }}</span
-                          >
+                          <span class="font-medium">৳{{ total }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                           <span class="text-gray-600">Estimated Delivery:</span>
@@ -761,6 +751,7 @@ import {
   Minus,
 } from "lucide-vue-next";
 const { user } = useAuth();
+const { post } = useApi();
 
 // Get cart store
 const cart = useStoreCart();
@@ -792,59 +783,45 @@ const showInsufficientFundsModal = ref(false);
 const showSuccessModal = ref(false);
 const isScrolled = ref(false);
 
-// Fixed computed properties to use count instead of quantity
+// Fix subtotal calculation to properly handle string values
 const subtotal = computed(() => {
-  return products.value.reduce(
-    (total, product) => total + product.price * product.count,
-    0
-  );
+  return products.value.reduce((total, product) => {
+    // Convert sale_price to number in case it's a string
+    const price =
+      typeof product.sale_price === "string"
+        ? parseFloat(product.sale_price)
+        : product.sale_price;
+
+    return total + price * product.count;
+  }, 0);
 });
 
 const totalItems = computed(() => {
   return products.value.reduce((total, product) => total + product.count, 0);
 });
 
-// Modified: Use product delivery fees instead of hardcoded values
 const deliveryFee = computed(() => {
   // Safety check in case products array is empty
   if (!products.value.length || !products.value[0]) return 0;
 
-  return form.deliveryOption === "inside"
-    ? products.value[0].delivery_fee_inside_dhaka || 100
-    : products.value[0].delivery_fee_outside_dhaka || 150;
+  // If the product has free delivery, return 0 regardless of delivery option
+  if (products.value[0].is_free_delivery) return 0;
+
+  const fee =
+    form.deliveryOption === "inside"
+      ? products.value[0].delivery_fee_inside_dhaka || 100
+      : products.value[0].delivery_fee_outside_dhaka || 150;
+
+  // Ensure fee is a number
+  return typeof fee === "string" ? parseFloat(fee) : fee;
 });
 
-// Total still uses the updated deliveryFee computed property
-const total = computed(() => subtotal.value + deliveryFee.value);
-
-// New property to track the selected delivery fee for database
-const selectedDeliveryFeeType = computed(() => form.deliveryOption);
-
-// New function to prepare order data for database
-const prepareOrderData = () => {
-  return {
-    products: products.value.map((product) => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      count: product.count,
-    })),
-    customer: {
-      name: form.name,
-      phone: form.phone,
-      address: form.address,
-    },
-    delivery: {
-      type: form.deliveryOption,
-      fee: deliveryFee.value,
-    },
-    payment: {
-      method: form.paymentMethod,
-      total: total.value,
-    },
-    orderNumber: orderNumber.value,
-  };
-};
+// Proper total calculation with explicit number conversion
+const total = computed(() => {
+  const subTotal = Number(subtotal.value);
+  const delivery = Number(deliveryFee.value);
+  return subTotal + delivery;
+});
 
 const estimatedDelivery = computed(() => {
   const today = new Date();
@@ -903,8 +880,8 @@ const validateForm = () => {
   return isValid;
 };
 
-// Modified process checkout to include our order data
-const processCheckout = () => {
+// Modified process checkout to send data to API
+const processCheckout = async () => {
   if (!validateForm()) return;
 
   // Check if account funds are sufficient when that payment method is selected
@@ -913,15 +890,55 @@ const processCheckout = () => {
     return;
   }
 
-  // Prepare order data for database
-  const orderData = prepareOrderData();
-  console.log("Order data to send:", orderData);
+  try {
+    // Format data according to API requirements
+    const orderPayload = {
+      order: {
+        user: user.value?.user?.id || null, // Add user ID if available
+        name: form.name,
+        address: form.address,
+        phone: form.phone,
+        total: total.value,
+        order_status: "pending",
+        delivery_fee: deliveryFee.value,
+        payment_method:
+          form.paymentMethod === "account" ? "balance" : "cash_on_delivery",
+      },
+      items: products.value.map((product) => ({
+        product: product.id,
+        quantity: product.count,
+        price: product.sale_price,
+      })),
+    };
 
-  // Here you would normally send the order data to your backend API
-  // Example: await $fetch('/api/orders', { method: 'POST', body: orderData });
+    // Log the payload for debugging
+    console.log("Order payload:", orderPayload);
 
-  // Process successful checkout
-  showSuccessModal.value = true;
+    // Send data to API
+    const response = await post("/orders/create-with-items/", orderPayload);
+    console.log("API response:", response);
+
+    if (response.data) {
+      // Show success modal
+      orderNumber.value =
+        response?.id || Math.floor(100000 + Math.random() * 900000);
+      showSuccessModal.value = true;
+
+      // If using account balance, update user balance
+      if (form.paymentMethod === "account" && user.value?.user) {
+        user.value.user.balance -= total.value;
+      }
+    }
+  } catch (error) {
+    console.error("Error creating order:", error);
+    // Show error notification
+    toast.add({
+      title: "Order Failed",
+      description: error.message || "There was an error processing your order",
+      color: "red",
+      timeout: 5000,
+    });
+  }
 };
 
 const switchToCOD = () => {

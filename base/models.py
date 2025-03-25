@@ -570,6 +570,7 @@ class Product(models.Model):
     description = models.TextField( blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
     delivery_information = models.TextField(blank=True, null=True)
+    is_free_delivery = models.BooleanField(default=False)
     delivery_fee_free = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     delivery_fee_inside_dhaka = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     delivery_fee_outside_dhaka = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
@@ -583,3 +584,42 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
+    
+class OrderItem(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='items')  # Added this field
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    quantity = models.IntegerField(default=0)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.order.user}'s Order: {self.product.name if self.product else 'Unknown Product'}"
+
+class Order(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='orders')
+    name= models.CharField(max_length=256,blank=True, default="")
+    address= models.CharField(max_length=256,blank=True, default="")
+    phone= models.CharField(max_length=256,blank=True, default="")
+    total = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    delivery_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    ORDER_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+    order_status = models.CharField(max_length=256, choices=ORDER_STATUS_CHOICES, default='pending')
+    PAYMENT_METHOD_CHOICES = [
+        ('balance', 'Account Balance'),
+        ('cash_on_delivery', 'Cash on Delivery'),
+    ]
+    payment_method = models.CharField(max_length=256,blank=True, choices=PAYMENT_METHOD_CHOICES, default="cash_on_delivery")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.user}'s Order: {self.total}"

@@ -715,6 +715,7 @@ const form = ref({
   sale_price: null,
   quantity: null,
   weight: null,
+  is_free_delivery: false,
   delivery_fee_free: 0,
   delivery_fee_inside_dhaka: 0,
   delivery_fee_outside_dhaka: 0,
@@ -799,10 +800,22 @@ async function handleAddProduct() {
     // Create API submission object from form data
     const productData = { ...form.value };
 
+    // Set is_free_delivery based on delivery method selection
+    if (form.value.deliveryMethod === "free") {
+      productData.is_free_delivery = true;
+      productData.delivery_fee_inside_dhaka = 0;
+      productData.delivery_fee_outside_dhaka = 0;
+    } else {
+      productData.is_free_delivery = false;
+      // Keep the user-entered delivery fee values
+    }
+
     // Clean up temporary form fields before submission
     delete productData.deliveryMethod;
 
+    console.log("Sending product data:", productData);
     const res = await post("/products/", productData);
+
     if (res.data) {
       toast.add({
         title: "Success",
