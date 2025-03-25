@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     prefix: "Tiptap", //prefix for Tiptap imports, composables not included
   },
   i18n: {
-    vueI18n: "./i18n.config.ts",
+    vueI18n: "~/i18n.config.ts",
   },
   googleFonts: {
     families: {
