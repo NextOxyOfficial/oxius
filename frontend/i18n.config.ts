@@ -114,6 +114,7 @@ export default defineI18nConfig(() => ({
       free: "Free",
       upgrade_pro: "Upgrade to Pro",
       pro_member: "Pro Membership",
+      packeges: "Packeges",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -227,6 +228,7 @@ export default defineI18nConfig(() => ({
       upgrade_pro: "প্রো প্যাকেজ নিই",
       upgrade_pro_text: "প্রিমিয়াম ফিচার, অগ্রাধিকার সুবিধাসহ আরও ফিচার পান",
       pro_member: "প্রো মেম্বার",
+      packeges: "প্যাকেজ",
     },
   },
 }));

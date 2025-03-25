@@ -490,12 +490,16 @@
 
                       <p class="text-xs text-center text-gray-500 mt-4">
                         By completing this purchase, you agree to our
-                        <a href="#" class="text-indigo-600 hover:underline"
-                          >Terms of Service</a
+                        <NuxtLink
+                          href="/terms"
+                          class="text-indigo-600 hover:underline"
+                          >Terms of Service</NuxtLink
                         >
                         and
-                        <a href="#" class="text-indigo-600 hover:underline"
-                          >Privacy Policy</a
+                        <NuxtLink
+                          href="/privacy"
+                          class="text-indigo-600 hover:underline"
+                          >Privacy Policy</NuxtLink
                         >
                       </p>
                     </div>
@@ -582,7 +586,7 @@
                     </h3>
                     <div class="mt-3">
                       <p class="text-base text-gray-500">
-                        Your account balance (৳{{ accountBalance }}) is not
+                        Your account balance (৳{{ user?.user.balance }}) is not
                         sufficient to complete this purchase (৳{{ total }}).
                       </p>
                       <p class="mt-2 text-base text-gray-500">
@@ -599,7 +603,11 @@
                 <button
                   type="button"
                   class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
-                  @click="showInsufficientFundsModal = false"
+                  @click="
+                    (showInsufficientFundsModal = false)(
+                      navigateTo('/deposit-withdraw')
+                    )
+                  "
                 >
                   Add Funds
                 </button>
@@ -608,7 +616,7 @@
                   class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
                   @click="switchToCOD"
                 >
-                  Switch to COD
+                  Switch to Cash On Delivery
                 </button>
               </div>
             </div>
@@ -718,17 +726,11 @@
               >
                 <button
                   type="button"
+                  to="/"
                   class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 text-base font-medium text-white hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto transition-all duration-200"
                   @click="resetForm"
                 >
                   Continue Shopping
-                </button>
-                <button
-                  type="button"
-                  class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto transition-all duration-200"
-                  @click="resetForm"
-                >
-                  View Order
                 </button>
               </div>
             </div>
@@ -998,7 +1000,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 /* Add custom animations */
 @keyframes slide-up {
   0% {
@@ -1047,7 +1049,7 @@ select:focus {
 /* Improve focus styles for accessibility */
 button:focus,
 a:focus {
-  @apply outline-none ring-2 ring-offset-2 ring-indigo-500;
+  @apply outline-none;
 }
 
 /* Premium card hover effects */

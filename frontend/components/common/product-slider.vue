@@ -133,12 +133,20 @@
                   <!-- Product Title -->
                   <NuxtLink :to="`/product-details/${product.id}`">
                     <h3
-                      class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 flex-grow text-base"
+                      class="font-medium text-slate-800 dark:text-white mb-1 line-clamp-2 flex-grow text-base"
                     >
                       {{ product.name }}
                     </h3>
                   </NuxtLink>
-
+                  <NuxtLink
+                    :to="`https://adsyclub.com/eshop/${product?.owner_details?.store_username}`"
+                    class="text-blue-400 text-sm mb-1.5 inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    <UIcon name="i-heroicons-shopping-bag" class="w-3 h-3" />
+                    <span>
+                      {{ product?.owner_details?.store_name }}
+                    </span>
+                  </NuxtLink>
                   <!-- Rating -->
                   <div class="flex items-center gap-1 mb-1.5">
                     <div class="flex">
@@ -389,6 +397,7 @@ const itemsPerSlide = ref(5);
 const isModalOpen = ref(false);
 const selectedProduct = ref(null);
 const quantity = ref(1);
+const cart = useStoreCart();
 
 // Debug settings
 const debugMode = ref(false); // Set to true to enable debugging
@@ -527,7 +536,7 @@ function openProductModal(product) {
 
 // Cart functionality
 function addToCart(product, qty = 1) {
-  isModalOpen.value = false;
+  cart.addProduct(product, qty);
   navigateTo("/checkout/");
 }
 

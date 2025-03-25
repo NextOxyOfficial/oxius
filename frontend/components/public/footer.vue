@@ -50,6 +50,10 @@
                 to: '/mobile-recharge',
               },
               {
+                label: $t('packeges'),
+                to: '/upgrade-to-pro',
+              },
+              {
                 label: $t('refer_program'),
                 to: '/refer-a-friend',
               },
@@ -81,6 +85,10 @@
               {
                 label: $t('earn_money'),
                 to: '/',
+              },
+              {
+                label: $t('packeges'),
+                to: '/upgrade-to-pro',
               },
               {
                 label: $t('refer_program'),
