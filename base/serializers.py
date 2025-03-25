@@ -299,6 +299,7 @@ class ProductCategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category_details = ProductCategorySerializer(source='category', read_only=True)
     image_details = ProductMediaSerializer(source='image', many=True, read_only=True)
+    owner_details = UserSerializer(source='owner', read_only=True)
     
     class Meta:
         model = Product

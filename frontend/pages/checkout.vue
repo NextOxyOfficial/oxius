@@ -490,12 +490,16 @@
 
                       <p class="text-xs text-center text-gray-500 mt-4">
                         By completing this purchase, you agree to our
-                        <a href="#" class="text-indigo-600 hover:underline"
-                          >Terms of Service</a
+                        <NuxtLink
+                          href="/terms"
+                          class="text-indigo-600 hover:underline"
+                          >Terms of Service</NuxtLink
                         >
                         and
-                        <a href="#" class="text-indigo-600 hover:underline"
-                          >Privacy Policy</a
+                        <NuxtLink
+                          href="/privacy"
+                          class="text-indigo-600 hover:underline"
+                          >Privacy Policy</NuxtLink
                         >
                       </p>
                     </div>
@@ -998,7 +1002,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 /* Add custom animations */
 @keyframes slide-up {
   0% {
@@ -1047,7 +1051,7 @@ select:focus {
 /* Improve focus styles for accessibility */
 button:focus,
 a:focus {
-  @apply outline-none ring-2 ring-offset-2 ring-indigo-500;
+  @apply outline-none;
 }
 
 /* Premium card hover effects */
