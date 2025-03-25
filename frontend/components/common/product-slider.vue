@@ -133,7 +133,7 @@
                   <!-- Product Title -->
                   <NuxtLink :to="`/product-details/${product.id}`">
                     <h3
-                      class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 text-sm flex-grow"
+                      class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 flex-grow text-base"
                     >
                       {{ product.name }}
                     </h3>

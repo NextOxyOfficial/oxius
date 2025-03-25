@@ -13,11 +13,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.exceptions import NotFound
 import base64
-from io import BytesIO
+
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from uuid import UUID
+
 from decimal import Decimal
 from rest_framework.pagination import PageNumberPagination
 from random import shuffle
@@ -28,6 +28,7 @@ from django.core.mail import send_mail
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
 
 # Create your views here.
 
@@ -347,7 +348,12 @@ class GetClassifiedCategories(generics.ListCreateAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+class ClassifiedCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete a specific classified category"""
+    queryset = ClassifiedCategory.objects.all()
+    serializer_class = ClassifiedServicesSerializer
+    permission_classes = [AllowAny]  # For reading; you might want IsAdminUser for writing
+    
 class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')
     serializer_class = ClassifiedServicesSerializer
@@ -1260,7 +1266,7 @@ def verifyOTP(request):
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from django.contrib.auth.hashers import check_password
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):

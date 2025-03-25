@@ -66,7 +66,7 @@
         </div>
 
         <ULink
-          :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
+          :to="`/classified-categories/${service.id}/`"
           class="relative z-10 flex flex-col items-center justify-center p-3 sm:p-2.5"
         >
           <!-- Icon container with animations (preserved) -->
