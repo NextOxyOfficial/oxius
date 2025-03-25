@@ -83,7 +83,7 @@
                 to: '/',
               },
               {
-                label: $t('affiliates'),
+                label: $t('refer_program'),
                 to: '/refer-a-friend',
               },
               {
@@ -185,7 +185,7 @@
         <UDivider label="" class="opacity-60" />
 
         <p
-          class="text-center py-6 text-sm text-slate-600 dark:text-gray-200 flex items-center justify-center gap-1 flex-wrap"
+          class="text-center text-sm text-slate-600 dark:text-gray-200 flex items-center justify-center gap-1 flex-wrap pt-6 pb-20 sm:pb-6"
         >
           <span>Developed With</span>
           <span class="inline-flex items-center">

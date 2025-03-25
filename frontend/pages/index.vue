@@ -265,7 +265,7 @@
             <div
               class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md min-h-40"
             >
-              <div class="flex justify-between mb-3">
+              <div class="flex justify-between mb-2">
                 <p class="px-2 font-semibold pb-3.5">
                   {{ $t("available_gigs") }}
                 </p>

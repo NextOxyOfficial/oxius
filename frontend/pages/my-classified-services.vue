@@ -88,7 +88,7 @@
           >
             <!-- Status Badge -->
             <div
-              class="absolute top-4 right-4 z-20 px-3 py-1 rounded-full text-xs font-semibold shadow-sm"
+              class="absolute top-5 right-5 z-20 px-3 py-1 rounded-full text-xs font-semibold shadow-sm"
               :class="{
                 'bg-emerald-100 text-emerald-700':
                   service.service_status === 'approved' &&
@@ -133,6 +133,21 @@
                 >
               </div>
             </div>
+            <div
+              class="absolute top-12 right-5 z-20 rounded-full text-xs font-semibold shadow-sm"
+            >
+              <div class="">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-800"
+                >
+                  <span v-if="!service.negotiable">
+                    <UIcon name="i-mdi:currency-bdt" class="mr-1" />
+                    {{ service.price }}
+                  </span>
+                  <span v-else>Negotiable</span>
+                </span>
+              </div>
+            </div>
 
             <!-- Card Content -->
             <NuxtLink :to="`/classified-categories/details/${service.id}`">
@@ -140,7 +155,7 @@
                 <!-- Image Section - Decreased Size -->
                 <div class="md:w-[120px] mb-4 md:mb-0 md:mr-6 flex-shrink-0">
                   <div
-                    class="w-full h-24 md:h-24 rounded-lg overflow-hidden bg-slate-100 shadow-sm"
+                    class="w-full h-48 md:h-24 rounded-lg overflow-hidden bg-slate-100 shadow-sm"
                   >
                     <NuxtImg
                       v-if="service.medias && service.medias[0]?.image"
@@ -166,7 +181,7 @@
                   </h3>
 
                   <!-- Price Badge -->
-                  <div class="mb-3">
+                  <!-- <div class="mb-3">
                     <span
                       class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800"
                     >
@@ -176,7 +191,7 @@
                       </span>
                       <span v-else>Negotiable</span>
                     </span>
-                  </div>
+                  </div> -->
 
                   <!-- Details Section -->
                   <div
@@ -207,7 +222,7 @@
 
             <!-- Action Buttons with Icons and Effects -->
             <div
-              class="flex justify-end p-4 bg-slate-50 border-t border-slate-100"
+              class="flex justify-center md:justify-end p-4 bg-slate-50 border-t border-slate-100"
             >
               <div class="flex gap-2 items-center max-md:justify-center">
                 <UButton

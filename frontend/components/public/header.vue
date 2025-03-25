@@ -303,7 +303,7 @@
                             name="i-heroicons-sparkles"
                             class="w-3 h-3 mr-0.5 text-yellow-200"
                           />
-                          PRO
+                          {{ $t("pro") }}
                         </span>
                       </div>
                     </div>
@@ -327,7 +327,7 @@
                           <div
                             class="text-xs text-slate-500 dark:text-slate-400"
                           >
-                            Balance
+                            {{ $t("balance") }}
                           </div>
                           <div
                             class="font-semibold text-slate-800 dark:text-white"
@@ -342,7 +342,7 @@
                         to="/deposit-withdraw"
                         class="bg-gradient-to-r from-emerald-500 to-green-600 border-0 opacity-90 hover:opacity-100"
                       >
-                        Add Funds
+                        {{ $t("add_funds") }}
                       </UButton>
                     </div>
                   </div>
@@ -376,13 +376,13 @@
                         />
                         <span
                           class="text-xs font-medium text-slate-600 dark:text-slate-300"
-                          >Current Plan</span
+                          >{{ $t("current_plan") }}</span
                         >
                       </div>
                       <span
                         class="text-2xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-medium"
                       >
-                        Free
+                        {{ $t("free") }}
                       </span>
                     </div>
                   </div>
@@ -397,7 +397,7 @@
                       class="absolute inset-0 bg-gradient-to-r from-indigo-50/0 via-indigo-50 to-indigo-50/0 dark:from-indigo-900/0 dark:via-indigo-900/20 dark:to-indigo-900/0 opacity-0 group-hover:opacity-100 -translate-x-full group-hover:translate-x-0 transition-all duration-700"
                     ></div>
 
-                    <div class="flex items-center gap-3 relative z-10">
+                    <div class="flex items-center gap-2 relative z-10">
                       <!-- Pro Badge Icon with 3D effect -->
                       <div
                         class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/40 flex items-center justify-center shadow-sm border border-indigo-200/80 dark:border-indigo-800/30 transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
@@ -414,7 +414,7 @@
                         <h4
                           class="font-medium text-slate-800 dark:text-white text-sm flex items-center"
                         >
-                          Upgrade to Pro
+                          {{ $t("upgrade_pro") }}
                           <span
                             class="ml-1.5 inline-flex items-center justify-center w-4 h-4 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full text-[8px] text-white font-bold transform group-hover:scale-110 transition-transform"
                           >
@@ -424,7 +424,7 @@
                         <p
                           class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-[180px]"
                         >
-                          Get premium features, priority support & more
+                          {{ $t("upgrade_pro_text") }}
                         </p>
                       </div>
 

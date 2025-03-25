@@ -2,6 +2,7 @@
   <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-8">
     <!-- Main Content -->
     <UContainer>
+      <PublicEshopTitle />
       <div v-if="!user?.user?.is_pro" class="my-12">
         <div
           class="transition-all duration-700"
@@ -56,7 +57,7 @@
                   </div>
                   <span
                     class="text-sm font-medium uppercase tracking-wider text-blue-100"
-                    >Premium Access</span
+                    >{{ $t("premium_access") }}</span
                   >
                 </div>
               </div>
@@ -65,11 +66,10 @@
               <div class="relative p-8 md:w-3/5">
                 <div class="mb-6">
                   <h3 class="mb-3 text-2xl font-bold tracking-tight">
-                    Premium Access Required
+                    {{ $t("premium_access_required") }}
                   </h3>
                   <p class="text-muted-foreground">
-                    To access this exclusive content, you need to upgrade to our
-                    Professional Package.
+                    {{ $t("premium_access_text") }}
                   </p>
                 </div>
 
@@ -77,7 +77,7 @@
                   href="/upgrade-to-pro"
                   class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-purple-700 px-4 py-3 text-white transition-all hover:shadow-lg hover:shadow-blue-500/25"
                 >
-                  <span>Upgrade to Premium</span>
+                  <span>{{ $t("premium_upgrade") }}</span>
                   <span
                     class="inline-block transition-transform duration-300 group-hover:translate-x-1"
                     >→</span
