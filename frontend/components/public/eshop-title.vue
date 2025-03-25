@@ -1,15 +1,16 @@
 <template>
-  <div class="flex items-center justify-between mb-6 md:mb-8">
-    <div>
+  <div class="flex items-center justify-between mb-2">
+    <div class="inline-flex items-center">
+      <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-emerald-600" />
       <div class="py-4 text-start relative">
         <h1
-          class="text-2xl md:text-4xl ml-2 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
+          class="text-2xl md:text-2xl ml-2 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
         >
           {{ $t("eshop_manager") }}
         </h1>
         <!-- Header underline -->
         <div
-          class="h-1 ml-2 w-60 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
+          class="h-1 ml-2 w-44 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
         ></div>
 
         <!-- Floating particles around header - FIXED -->

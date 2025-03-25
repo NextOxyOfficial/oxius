@@ -462,7 +462,7 @@
                         />
                         <span
                           class="text-xs font-medium text-indigo-700 dark:text-indigo-300"
-                          >Premium Access</span
+                          >{{ $t("premium_access") }}</span
                         >
                       </div>
                       <span
@@ -473,7 +473,7 @@
                             name="i-heroicons-shield-check"
                             class="size-4 text-white"
                           />
-                          <span>Pro</span>
+                          <span>{{ $t("pro") }}</span>
                         </div>
                       </span>
                     </div>
@@ -508,7 +508,7 @@
                       <!-- Pro Status Text -->
                       <div class="flex-1">
                         <h4 class="font-medium text-slate-800 dark:text-white">
-                          Pro Membership
+                          {{ $t("pro_member") }}
                         </h4>
                         <p
                           class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 flex items-center"

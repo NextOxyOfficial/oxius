@@ -113,6 +113,7 @@ export default defineI18nConfig(() => ({
       current_plan: "Current Plan",
       free: "Free",
       upgrade_pro: "Upgrade to Pro",
+      pro_member: "Pro Membership",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -216,15 +217,16 @@ export default defineI18nConfig(() => ({
       relevant_content: "প্রাসঙ্গিক কন্টেন্ট দেখতে আপনার অবস্থান বেছে নিন",
       set_location: "লোকেশন সেট করুন",
       premium_access: "প্রিমিয়াম অ্যাক্সেস",
-      premium_access_required: "প্রিমিয়াম অ্যাক্সেস লাগবে",
+      premium_access_required: "প্রিমিয়াম অ্যাক্সেস আবশ্যক",
       premium_access_text:
-        "এই পেজের কন্টেন্ট দেখতে হলে আপনাকে প্রিমিয়াম অ্যাক্সেস নিতে হবে। ",
+        "ই-শপ ম্যানেজার শুধুমাত্র প্রো সাবস্ক্রাইবারদের জন্য। ফিচার টি দেখতে বা ব্যবহার করতে আপনার প্যাকেজ আপগ্রেড করুন। ",
       premium_upgrade: "প্রিমিয়াম আপগ্রেড করি",
       pro: "প্রো",
       current_plan: "বর্তমান প্ল্যান",
       free: "ফ্রি",
       upgrade_pro: "প্রো প্যাকেজ নিই",
       upgrade_pro_text: "প্রিমিয়াম ফিচার, অগ্রাধিকার সুবিধাসহ আরও ফিচার পান",
+      pro_member: "প্রো মেম্বার",
     },
   },
 }));

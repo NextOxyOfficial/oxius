@@ -65,7 +65,9 @@
               <!-- Right content section -->
               <div class="relative p-8 md:w-3/5">
                 <div class="mb-6">
-                  <h3 class="mb-3 text-2xl font-bold tracking-tight">
+                  <h3
+                    class="mb-3 text-2xl font-bold tracking-tight text-slate-700"
+                  >
                     {{ $t("premium_access_required") }}
                   </h3>
                   <p class="text-muted-foreground">
@@ -97,6 +99,206 @@
         />
         <div v-else>
           <!-- Premium Tabs -->
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 w-full mb-3 overflow-hidden transform hover:scale-[1.01]"
+            style="max-height: 300px"
+          >
+            <!-- Compact Header with Shimmer Effect -->
+            <div
+              class="bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3 flex items-center relative overflow-hidden"
+            >
+              <!-- Shimmer Effect -->
+              <div
+                class="absolute inset-0 opacity-20"
+                :style="{
+                  background:
+                    'linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.7) 55%, transparent 70%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 3s infinite linear',
+                }"
+              ></div>
+
+              <UIcon
+                name="i-heroicons-shopping-bag"
+                class="h-5 w-5 text-white mr-2 relative z-10"
+              />
+              <h3 class="text-base font-semibold text-white relative z-10">
+                My Store Details
+              </h3>
+
+              <!-- Edit Button -->
+              <button
+                @click="isEditing = !isEditing"
+                class="ml-auto inline-flex items-center px-3 py-1.5 bg-white/20 rounded text-xs font-medium text-white hover:bg-white/30 focus:outline-none transition-colors duration-300 relative z-10"
+              >
+                <UIcon
+                  :name="
+                    isEditing
+                      ? 'i-heroicons-check'
+                      : 'i-heroicons-pencil-square'
+                  "
+                  class="h-3.5 w-3.5 mr-1.5"
+                />
+                {{ isEditing ? "Save" : "Edit" }}
+              </button>
+            </div>
+
+            <!-- Content Grid with More Height -->
+            <div class="p-4 grid grid-cols-2 gap-4">
+              <!-- Shop Name -->
+              <div class="flex items-start group">
+                <div class="flex-shrink-0 mt-1">
+                  <div
+                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
+                  >
+                    <UIcon
+                      name="i-heroicons-building-storefront"
+                      class="h-4 w-4 text-emerald-600"
+                    />
+                  </div>
+                </div>
+                <div class="ml-3 overflow-hidden flex-1">
+                  <p class="text-xs font-medium text-gray-500 mb-1">
+                    Shop Name
+                  </p>
+                  <input
+                    v-if="isEditing"
+                    v-model="editedUser.store_name"
+                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:border-emerald-500 focus:outline-none py-1"
+                  />
+                  <p v-else class="text-sm font-semibold text-gray-800">
+                    {{ user.user.store_name || "Not set" }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Store URL (Non-editable) -->
+              <div class="flex items-start group">
+                <div class="flex-shrink-0 mt-1">
+                  <div
+                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
+                  >
+                    <UIcon
+                      name="i-heroicons-link"
+                      class="h-4 w-4 text-emerald-600"
+                    />
+                  </div>
+                </div>
+                <div class="ml-3 overflow-hidden flex-1">
+                  <p class="text-xs font-medium text-gray-500 mb-1">
+                    Store URL
+                  </p>
+                  <div class="flex items-center">
+                    <div class="flex items-center bg-gray-50 rounded px-2 py-1">
+                      <p class="text-xs text-gray-500">adsyclub.com/eshop/</p>
+                      <p class="text-sm font-semibold text-emerald-600">
+                        {{ user.user.store_username || "Not set" }}
+                      </p>
+                      <button
+                        v-if="user.user.store_username"
+                        @click="
+                          copyToClipboard(
+                            `https://adsyclub.com/eshop/${user.user.store_username}`
+                          )
+                        "
+                        class="ml-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                        :class="{ 'text-emerald-600': copied }"
+                      >
+                        <UIcon
+                          :name="
+                            copied
+                              ? 'i-heroicons-check'
+                              : 'i-heroicons-clipboard'
+                          "
+                          class="h-3.5 w-3.5"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1 italic">
+                    URL cannot be changed
+                  </p>
+                </div>
+              </div>
+
+              <!-- Shop Address -->
+              <div class="flex items-start group">
+                <div class="flex-shrink-0 mt-1">
+                  <div
+                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
+                  >
+                    <UIcon
+                      name="i-heroicons-map-pin"
+                      class="h-4 w-4 text-emerald-600"
+                    />
+                  </div>
+                </div>
+                <div class="ml-3 overflow-hidden flex-1">
+                  <p class="text-xs font-medium text-gray-500 mb-1">
+                    Shop Address
+                  </p>
+                  <input
+                    v-if="isEditing"
+                    v-model="editedUser.store_address"
+                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:border-emerald-500 focus:outline-none py-1"
+                  />
+                  <p v-else class="text-sm font-semibold text-gray-800">
+                    {{ user.user.store_address || "Not set" }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Shop Description -->
+              <div class="flex items-start group">
+                <div class="flex-shrink-0 mt-1">
+                  <div
+                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
+                  >
+                    <UIcon
+                      name="i-heroicons-document-text"
+                      class="h-4 w-4 text-emerald-600"
+                    />
+                  </div>
+                </div>
+                <div class="ml-3 overflow-hidden flex-1">
+                  <p class="text-xs font-medium text-gray-500 mb-1">
+                    Description
+                  </p>
+                  <textarea
+                    v-if="isEditing"
+                    v-model="editedUser.store_description"
+                    rows="2"
+                    class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:border-emerald-500 focus:outline-none py-1 px-2 resize-none"
+                  ></textarea>
+                  <p v-else class="text-sm text-gray-800 line-clamp-2">
+                    {{
+                      user.user.store_description || "No description available"
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div
+              class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center"
+            >
+              <div class="flex items-center">
+                <div
+                  class="h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"
+                ></div>
+                <span class="text-xs text-gray-600">Store Active</span>
+              </div>
+              <div class="ml-auto text-xs text-gray-500">
+                Last updated: {{ formatDate(new Date()) }}
+              </div>
+            </div>
+
+            <!-- Pulse Effect at Bottom -->
+            <div
+              class="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 bg-[length:200%_100%] animate-gradient-x"
+            ></div>
+          </div>
           <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-4">
             <div class="flex border-b border-gray-100">
               <button
@@ -1865,6 +2067,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "dashboard",
+});
 const { user } = useAuth();
 const { get } = useApi();
 import {
@@ -3122,6 +3327,46 @@ onMounted(() => {
     currentProductPage.value = 1;
   });
 });
+
+const isEditing = ref(false);
+const editedUser = reactive({
+  store_name: user.value.user.store_name || "",
+  store_username: user.value.user.store_username || "",
+  store_address: user.value.user.store_address || "",
+  store_description: user.value.user.store_description || "",
+});
+
+// Copy to clipboard functionality
+const copied = ref(false);
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 2000);
+  });
+}
+
+// Format date
+function formatDate(date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+// Emit events for parent component
+const emit = defineEmits(["update"]);
+
+// Watch for editing state changes
+watch(isEditing, (newValue, oldValue) => {
+  if (oldValue === true && newValue === false) {
+    // User clicked Save (switched from editing to viewing)
+    emit("update", editedUser);
+  }
+});
 </script>
 
 <style>
@@ -3261,5 +3506,30 @@ onMounted(() => {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes gradient-x {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
 }
 </style>
