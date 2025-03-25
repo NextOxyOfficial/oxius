@@ -550,7 +550,9 @@
                 </svg>
               </span>
               <span class="ml-2 text-sm text-gray-900 capitalize">{{
-                row.transaction_type
+                row.transaction_type === "order_payment"
+                  ? "Product Purchase"
+                  : row.transaction_type
               }}</span>
             </div>
           </template>
@@ -1091,7 +1093,12 @@
                             <path d="M20 17H4" />
                           </svg>
                         </span>
-                        {{ selectedTransaction?.transaction_type }}
+                        {{
+                          selectedTransaction?.transaction_type ===
+                          "order_payment"
+                            ? "Product Purchase"
+                            : selectedTransaction?.transaction_type
+                        }}
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
