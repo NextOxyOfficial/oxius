@@ -314,6 +314,37 @@ class ProductSerializer(serializers.ModelSerializer):
     #         representation['price'] = instance.sale_price
     #     return representation
 
+class ProductMinSerializer(serializers.ModelSerializer):
+    """Minimal product information for order items"""
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'sale_price', 'image']
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_details = ProductMinSerializer(source='product', read_only=True)
+    
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'order', 'product', 'product_details', 'quantity', 'price', 'created_at']
+        
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be greater than 0")
+        return value
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    
+    class Meta:
+        model = Order
+        fields = '__all__'
+        
+    def validate_total(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Total amount cannot be negative")
+        return value
 
 
 

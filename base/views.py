@@ -1490,3 +1490,139 @@ class ProductCategoryListCreateView(generics.ListCreateAPIView):
 class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
+
+
+# ORDER VIEWS
+class OrderListCreate(generics.ListCreateAPIView):
+    """List all orders or create a new order"""
+    queryset = Order.objects.all().order_by('-created_at')
+    serializer_class = OrderSerializer
+    search_fields = ['id', 'user__email', 'phone']
+
+class OrderDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete an order"""
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    lookup_field = 'id'
+
+class OrderSearch(generics.ListAPIView):
+    """Search for an order by ID"""
+    serializer_class = OrderSerializer
+    
+    def get_queryset(self):
+        order_id = self.request.query_params.get('id')
+        if order_id:
+            return Order.objects.filter(id=order_id)
+        return Order.objects.none()
+
+class UserOrdersList(generics.ListAPIView):
+    """List all orders for a specific user"""
+    serializer_class = OrderSerializer
+    
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        return Order.objects.filter(user__id=user_id).order_by('-created_at')
+
+# ORDER ITEM VIEWS
+class OrderItemListCreate(generics.ListCreateAPIView):
+    """List all order items or create a new order item"""
+    queryset = OrderItem.objects.all().order_by('-created_at')
+    serializer_class = OrderItemSerializer
+    search_fields = ['id', 'product__name']
+    
+
+class OrderItemDetail(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete an order item"""
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+    lookup_field = 'id'
+
+class OrderItemSearch(generics.ListAPIView):
+    """Search for an order item by ID"""
+    serializer_class = OrderItemSerializer
+    
+    def get_queryset(self):
+        item_id = self.request.query_params.get('id')
+        if item_id:
+            return OrderItem.objects.filter(id=item_id)
+        return OrderItem.objects.none()
+
+class OrderItemsByOrder(generics.ListAPIView):
+    """List all items for a specific order"""
+    serializer_class = OrderItemSerializer
+    
+    def get_queryset(self):
+        order_id = self.kwargs.get('order_id')
+        return OrderItem.objects.filter(order__id=order_id)
+
+# COMPLEX OPERATIONS
+class OrderWithItemsCreate(generics.CreateAPIView):
+    """Create an order with multiple items in a single request"""
+    serializer_class = OrderSerializer
+    
+    def create(self, request, *args, **kwargs):
+        # Extract order and items data
+        order_data = request.data.get('order', {})
+        items_data = request.data.get('items', [])
+        
+        # Set user if not provided in the request
+        if 'user' not in order_data:
+            order_data['user'] = request.user.id
+            
+        # Validate payment method
+        payment_method = order_data.get('payment_method', '')
+        total_amount = Decimal(order_data.get('total', 0))
+        
+        # If using account balance, check if user has sufficient funds
+        if payment_method == 'balance':
+            user = request.user
+            if user.balance < total_amount:
+                return Response(
+                    {"detail": "Insufficient balance to complete this order."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Create order first
+        order_serializer = OrderSerializer(data=order_data)
+        if order_serializer.is_valid():
+            order = order_serializer.save()
+            
+            # Then create order items
+            for item_data in items_data:
+                item_data['order'] = str(order.id)
+                item_serializer = OrderItemSerializer(data=item_data)
+                if item_serializer.is_valid():
+                    item_serializer.save()
+                else:
+                    # If any item fails validation, delete the order and return error
+                    order.delete()
+                    return Response(
+                        {"detail": "Invalid item data", "errors": item_serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # Deduct balance if payment method is 'balance'
+            if payment_method == 'balance':
+                user = request.user
+                user.balance -= total_amount
+                user.save()
+                
+                # Create a balance transaction record if you're tracking transactions
+                Balance.objects.create(
+                    user=user,
+                    amount=-total_amount,
+                    transaction_type='order_payment',
+                    # description=f"Payment for order #{order.id}",
+                    completed=True
+                )
+            
+            # Return the complete order with items
+            return Response(
+                OrderSerializer(order).data,
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(
+            order_serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
