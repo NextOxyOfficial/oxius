@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-2 md:py-4">
     <!-- Main Content -->
     <UContainer>
       <PublicEshopTitle />
-      <div v-if="!user?.user?.is_pro" class="my-12">
+      <div v-if="!user?.user?.is_pro" class="my-8">
         <div
           class="transition-all duration-700"
           :class="
@@ -343,7 +343,7 @@
             <div v-if="activeTab === 'orders'" class="animate-fade-in">
               <!-- Order Summary Cards -->
               <div
-                class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
+                class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2 bg-gray-50 border-b border-gray-200"
               >
                 <div
                   class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
@@ -661,7 +661,7 @@
             <div v-if="activeTab === 'products'" class="animate-fade-in">
               <!-- Product Summary Cards -->
               <div
-                class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
+                class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2 bg-gray-50 border-b border-gray-200"
               >
                 <div
                   class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
