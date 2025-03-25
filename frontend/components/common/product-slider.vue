@@ -142,7 +142,10 @@
                     :to="`https://adsyclub.com/eshop/${product?.owner_details?.store_username}`"
                     class="text-blue-400 text-sm mb-1.5 inline-flex items-center gap-1 cursor-pointer"
                   >
-                    <UIcon name="i-heroicons-shopping-bag" class="w-3 h-3" />
+                    <UIcon
+                      name="i-heroicons-shopping-bag"
+                      class="size-4 mb-1"
+                    />
                     <span>
                       {{ product?.owner_details?.store_name }}
                     </span>
