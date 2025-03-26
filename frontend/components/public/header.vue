@@ -246,112 +246,16 @@
               ></div>
 
               <!-- User Profile Section -->
-              <div class="p-5 relative overflow-hidden">
+              <div class="p-2 relative overflow-hidden">
                 <!-- Background pattern -->
                 <div
                   class="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-700/30 opacity-20"
                 ></div>
-
-                <div class="relative z-10">
-                  <div class="flex items-center gap-4">
-                    <!-- Enhanced Avatar -->
-                    <div class="relative group">
-                      <div
-                        class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-50 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/60 border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center text-xl font-bold text-primary-600 dark:text-primary-400 transform transition-all duration-300 group-hover:rotate-3 group-hover:scale-105"
-                      >
-                        {{
-                          user?.user?.first_name
-                            ? user.user.first_name[0].toUpperCase()
-                            : "U"
-                        }}
-                      </div>
-
-                      <!-- KYC Badge with animation -->
-                      <div
-                        v-if="user?.user?.kyc"
-                        class="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-6"
-                      >
-                        <div
-                          class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-full px-2 py-0.5"
-                        >
-                          <UIcon
-                            name="i-heroicons-check"
-                            class="w-3 h-3 text-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- User Info with improved typography -->
-                    <div class="flex-1 min-w-0">
-                      <h3
-                        class="font-semibold text-base text-slate-800 dark:text-white truncate"
-                      >
-                        {{ user?.user?.first_name }} {{ user?.user?.last_name }}
-                      </h3>
-                      <div class="flex items-center mt-0.5">
-                        <p
-                          class="text-xs text-slate-500 dark:text-slate-400 truncate"
-                        >
-                          {{ user?.user?.email }}
-                        </p>
-                        <span
-                          v-if="user?.user?.is_pro"
-                          class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-indigo-500 to-blue-500 text-white"
-                        >
-                          <UIcon
-                            name="i-heroicons-sparkles"
-                            class="w-3 h-3 mr-0.5 text-yellow-200"
-                          />
-                          {{ $t("pro") }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Account Balance Indicator (New feature) -->
-                  <div
-                    class="mt-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/60 rounded-lg p-3 border border-slate-200/80 dark:border-slate-700/80 group hover:shadow-md transition-all duration-300"
-                  >
-                    <div class="flex justify-between items-center">
-                      <div class="flex items-center gap-2">
-                        <div
-                          class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"
-                        >
-                          <UIcon
-                            name="i-heroicons-banknotes"
-                            class="w-4 h-4 text-emerald-600 dark:text-emerald-400"
-                          />
-                        </div>
-                        <div>
-                          <div
-                            class="text-xs text-slate-500 dark:text-slate-400"
-                          >
-                            {{ $t("balance") }}
-                          </div>
-                          <div
-                            class="font-semibold text-slate-800 dark:text-white"
-                          >
-                            ৳{{ user?.user?.balance || "0.00" }}
-                          </div>
-                        </div>
-                      </div>
-                      <UButton
-                        size="xs"
-                        color="primary"
-                        to="/deposit-withdraw"
-                        class="bg-gradient-to-r from-emerald-500 to-green-600 border-0 opacity-90 hover:opacity-100"
-                      >
-                        {{ $t("add_funds") }}
-                      </UButton>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <!-- Membership Section -->
               <div
-                class="px-4 pb-3"
+                class="px-2 pb-3"
                 :class="user?.user?.is_pro ? 'pointer-events-none' : ''"
               >
                 <!-- Free User Version -->
