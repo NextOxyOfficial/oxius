@@ -2,10 +2,10 @@
   <PublicSection>
     <UContainer>
       <h2
-        v-if="categoryTitle"
-        class="text-center text-3xl sm:text-4xl my-3 sm:my-6"
+        class="text-center text-3xl sm:text-4xl my-3 sm:my-6 max-sm:hidden"
+        v-if="categoryDetails?.title"
       >
-        {{ categoryTitle }}
+        {{ categoryDetails?.title }}
       </h2>
       <CommonGeoSelector />
       <div>
@@ -16,7 +16,8 @@
             inactive-class="text-gray-500 dark:text-gray-400"
             >{{ $t("home") }}</ULink
           >
-          <span v-if="services?.length">></span> {{ categoryTitle }}
+          <span v-if="categoryDetails?.title">&#8658;</span>
+          {{ categoryDetails?.title }}
         </p>
       </div>
       <div class="flex items-center mb-3">
@@ -559,7 +560,7 @@
           :state="form.state"
           :city="form.city"
           :upazila="form.upazila"
-          :business_type="router.query.business_type"
+          :business_type="categoryDetails?.business_type"
         />
       </UCard>
     </UContainer>
@@ -567,6 +568,10 @@
 </template>
 
 <script setup>
+useHead({
+  title:
+    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+});
 const { t } = useI18n();
 const { get } = useApi();
 const location = useCookie("location");
@@ -574,12 +579,7 @@ const { formatDate } = useUtils();
 const isLoading = ref(false);
 const isNearByLoading = ref(false);
 const searchLocationOption = ref(false);
-
-useHead({
-  title:
-    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
-});
-
+const router = useRoute();
 const form = ref({
   country: "Bangladesh",
   state: location.value?.state || "",
@@ -588,13 +588,25 @@ const form = ref({
   title: "",
   category: "",
 });
-console.log(location.value);
 
 const categoryTitle = ref("");
 const services = ref([]);
 const search = ref([]);
 const searchError = ref(false);
-const router = useRoute();
+
+const categoryDetails = ref({});
+async function getCategoryDetails() {
+  try {
+    const { data } = await get(
+      `/details/classified-categories/${router.params.id}/`
+    );
+
+    categoryDetails.value = data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+await getCategoryDetails();
 
 // geo filter
 
