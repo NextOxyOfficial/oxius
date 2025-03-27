@@ -143,8 +143,8 @@
                     class="text-blue-400 text-sm mb-1.5 inline-flex items-center gap-1 cursor-pointer"
                   >
                     <UIcon
-                      name="i-heroicons-shopping-bag"
-                      class="size-4 mb-1"
+                      name="i-material-symbols-storefront-outline-rounded"
+                      class="size-4"
                     />
                     <span>
                       {{ product?.owner_details?.store_name }}
@@ -259,138 +259,22 @@
     </div>
 
     <!-- Product Quick View Modal -->
-    <UModal v-model="isModalOpen" :ui="{ width: 'w-full max-w-4xl' }">
-      <UCard v-if="selectedProduct" class="p-0">
-        <template #header>
-          <div
-            class="px-5 py-4 border-b border-slate-200 dark:border-slate-700"
-          >
-            <div class="flex justify-between items-center">
-              <h3 class="text-xl font-medium text-slate-800 dark:text-white">
-                {{ selectedProduct.name }}
-              </h3>
-              <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark"
-                @click="isModalOpen = false"
-              />
-            </div>
-          </div>
-        </template>
-
-        <div class="p-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Product Image -->
-            <div
-              class="relative rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800"
-            >
-              <img
-                :src="getProductImage(selectedProduct)"
-                :alt="selectedProduct.name"
-                class="w-full aspect-square object-contain"
-              />
-            </div>
-
-            <!-- Product Details -->
-            <div>
-              <h2
-                class="text-xl font-medium text-slate-800 dark:text-white mb-2"
-              >
-                {{ selectedProduct.name }}
-              </h2>
-
-              <!-- Price -->
-              <div class="flex items-center gap-3 mb-4">
-                <span
-                  class="text-2xl font-semibold text-slate-800 dark:text-white"
-                >
-                  ৳{{ selectedProduct.sale_price }}
-                </span>
-                <span
-                  v-if="selectedProduct.discount_price"
-                  class="text-sm text-slate-400 line-through"
-                >
-                  ৳{{ selectedProduct.discount_price }}
-                </span>
-              </div>
-
-              <!-- Description -->
-              <p class="text-sm text-slate-600 dark:text-slate-300 mb-6">
-                {{
-                  selectedProduct.description ||
-                  selectedProduct.short_description ||
-                  "No description available"
-                }}
-              </p>
-
-              <!-- Quantity -->
-              <div class="mb-4">
-                <div class="text-sm font-medium mb-2">Quantity:</div>
-                <div class="flex items-center">
-                  <UButton
-                    size="sm"
-                    color="gray"
-                    @click="quantity > 1 ? quantity-- : null"
-                    >-</UButton
-                  >
-                  <input
-                    v-model="quantity"
-                    type="number"
-                    min="1"
-                    class="w-16 mx-2 p-2 text-center border rounded-md"
-                  />
-                  <UButton size="sm" color="gray" @click="quantity++"
-                    >+</UButton
-                  >
-                </div>
-              </div>
-
-              <!-- Buy Button -->
-              <UButton
-                class="w-full mb-4"
-                color="primary"
-                size="lg"
-                @click="addToCart(selectedProduct, quantity)"
-              >
-                <UIcon name="i-heroicons-shopping-cart" class="mr-2" />
-                Add to Cart
-              </UButton>
-
-              <!-- Shipping Info -->
-              <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
-                <div class="text-sm font-medium mb-2">
-                  Shipping Information:
-                </div>
-                <ul
-                  class="space-y-1.5 text-sm text-slate-600 dark:text-slate-300"
-                >
-                  <li class="flex items-start gap-1.5">
-                    <UIcon
-                      name="i-heroicons-check-circle"
-                      class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-                    />
-                    <span>
-                      {{
-                        selectedProduct.delivery_fee
-                          ? `Delivery Fee: ৳${selectedProduct.delivery_fee}`
-                          : "Free Delivery"
-                      }}
-                    </span>
-                  </li>
-                  <li class="flex items-start gap-1.5">
-                    <UIcon
-                      name="i-heroicons-check-circle"
-                      class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
-                    />
-                    <span>Delivery within 3-5 business days</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </UCard>
+    <UModal
+      v-model="isModalOpen"
+      :ui="{
+        inner: 'fixed inset-0 overflow-y-auto rounded-md',
+        base: 'relative text-left rtl:text-right flex flex-col -top-12 sm:top-8 rounded-md',
+        fullscreen: 'w-full max-w-xl h-[480px] sm:h-[600px]',
+      }"
+      fullscreen
+    >
+      <div class="w-full h-full overflow-hidden overflow-y-scroll">
+        <CommonProductDetailsCard
+          :current-product="selectedProduct"
+          :modal="true"
+          @close-modal="closeProductModal"
+        />
+      </div>
     </UModal>
   </UContainer>
 </template>
@@ -545,6 +429,10 @@ function openProductModal(product) {
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
+}
+
+function closeProductModal() {
+  isModalOpen.value = false;
 }
 
 // Cart functionality
