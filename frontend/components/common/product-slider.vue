@@ -501,12 +501,15 @@ function getProductsForSlide(slideIndex) {
 function getProductImage(product) {
   if (!product) return "/placeholder-image.jpg";
 
-  if (product.image) {
-    if (Array.isArray(product.image) && product.image.length > 0) {
-      return product.image[0].image || "/placeholder-image.jpg";
+  if (product.image_details) {
+    if (
+      Array.isArray(product.image_details) &&
+      product.image_details.length > 0
+    ) {
+      return product.image_details[0].image || "/placeholder-image.jpg";
     }
-    if (typeof product.image === "string") {
-      return product.image;
+    if (typeof product.image_details === "string") {
+      return product.image_details;
     }
   }
 

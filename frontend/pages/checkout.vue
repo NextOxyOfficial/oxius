@@ -766,9 +766,6 @@
 </template>
 
 <script setup>
-definePageMeta({
-  layout: "dashboard",
-});
 import {
   ShoppingBag,
   Check,
