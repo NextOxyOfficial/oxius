@@ -98,31 +98,24 @@
           v-if="user?.user.is_pro && !user?.user.store_username"
         />
         <div v-else>
-          <!-- Premium Tabs -->
+          <!-- store details -->
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 w-full mb-3 overflow-hidden transform hover:scale-[1.01]"
-            style="max-height: 300px"
           >
             <!-- Compact Header with Shimmer Effect -->
             <div
               class="bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3 flex items-center relative overflow-hidden"
             >
               <!-- Shimmer Effect -->
-              <div
-                class="absolute inset-0 opacity-20"
-                :style="{
-                  background:
-                    'linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.7) 55%, transparent 70%)',
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 3s infinite linear',
-                }"
-              ></div>
+              <div class="absolute inset-0 opacity-20 shimmer-animation"></div>
 
               <UIcon
                 name="i-heroicons-shopping-bag"
                 class="h-5 w-5 text-white mr-2 relative z-10"
               />
-              <h3 class="text-base font-semibold text-white relative z-10">
+              <h3
+                class="text-base font-semibold text-white relative z-10 truncate"
+              >
                 My Store Details
               </h3>
 
@@ -144,7 +137,7 @@
             </div>
 
             <!-- Content Grid with More Height -->
-            <div class="p-4 grid grid-cols-2 gap-4">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Shop Name -->
               <div class="flex items-start group">
                 <div class="flex-shrink-0 mt-1">
@@ -166,7 +159,10 @@
                     v-model="editedUser.store_name"
                     class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:border-emerald-500 focus:outline-none py-1"
                   />
-                  <p v-else class="text-sm font-semibold text-gray-800">
+                  <p
+                    v-else
+                    class="text-sm font-semibold text-gray-800 truncate"
+                  >
                     {{ user.user.store_name || "Not set" }}
                   </p>
                 </div>
@@ -188,10 +184,16 @@
                   <p class="text-xs font-medium text-gray-500 mb-1">
                     Store URL
                   </p>
-                  <div class="flex items-center">
-                    <div class="flex items-center bg-gray-50 rounded px-2 py-1">
-                      <p class="text-xs text-gray-500">adsyclub.com/eshop/</p>
-                      <p class="text-sm font-semibold text-emerald-600">
+                  <div class="flex items-center flex-wrap">
+                    <div
+                      class="flex items-center bg-gray-50 rounded px-2 py-1 max-w-full overflow-hidden"
+                    >
+                      <p class="text-xs text-gray-500 whitespace-nowrap">
+                        adsyclub.com/eshop/
+                      </p>
+                      <p
+                        class="text-sm font-semibold text-emerald-600 truncate"
+                      >
                         {{ user.user.store_username || "Not set" }}
                       </p>
                       <button
@@ -201,7 +203,7 @@
                             `https://adsyclub.com/eshop/${user.user.store_username}`
                           )
                         "
-                        class="ml-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                        class="ml-1.5 text-gray-400 hover:text-emerald-600 transition-colors flex-shrink-0"
                         :class="{ 'text-emerald-600': copied }"
                       >
                         <UIcon
@@ -242,7 +244,10 @@
                     v-model="editedUser.store_address"
                     class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:border-emerald-500 focus:outline-none py-1"
                   />
-                  <p v-else class="text-sm font-semibold text-gray-800">
+                  <p
+                    v-else
+                    class="text-sm font-semibold text-gray-800 truncate"
+                  >
                     {{ user.user.store_address || "Not set" }}
                   </p>
                 </div>
@@ -281,7 +286,7 @@
 
             <!-- Status Indicator -->
             <div
-              class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center"
+              class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center"
             >
               <div class="flex items-center">
                 <div
@@ -289,7 +294,7 @@
                 ></div>
                 <span class="text-xs text-gray-600">Store Active</span>
               </div>
-              <div class="ml-auto text-xs text-gray-500">
+              <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-500">
                 Last updated: {{ formatDate(new Date()) }}
               </div>
             </div>
@@ -299,6 +304,7 @@
               class="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 bg-[length:200%_100%] animate-gradient-x"
             ></div>
           </div>
+          <!-- Premium Tabs -->
           <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-4">
             <div class="flex border-b border-gray-100">
               <button
@@ -976,7 +982,7 @@
     <!-- Order Details Modal -->
     <div
       v-if="showOrderDetailsModal"
-      class="fixed inset-0 z-10 overflow-y-auto"
+      class="fixed inset-0 top-14 z-10 overflow-y-auto md:top-0"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
@@ -1451,13 +1457,11 @@
               </div>
             </div>
           </div>
-          <div
-            class="bg-gray-50 px-6 py-4 flex flex-wrap justify-end space-x-3"
-          >
+          <div class="bg-gray-50 px-6 py-4 flex flex-wrap justify-end gap-3">
             <button
               v-if="editOrderItems"
               @click="saveOrderItemChanges"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200 mb-2 sm:mb-0"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200"
               :disabled="isProcessing"
             >
               <span v-if="!isProcessing" class="flex items-center">
@@ -1475,7 +1479,7 @@
                 selectedOrder?.status !== 'cancelled' &&
                 selectedOrder?.status !== 'delivered'
               "
-              class="inline-flex justify-center items-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm transition-all duration-200 mb-2 sm:mb-0"
+              class="inline-flex justify-center items-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm transition-all duration-200"
               :disabled="isProcessing"
             >
               <XCircle class="h-4 w-4 mr-1.5" />

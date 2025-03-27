@@ -1,10 +1,10 @@
 <template>
   <div
-    class="py-3 z-[99999999] bg-slate-100/80 shadow-sm md:shadow-md rounded-2xl mx-2 mt-2 dark:bg-black max-w-[1280px] md:mx-auto"
+    class="py-3 z-[99999999] bg-slate-100/80 shadow-sm md:shadow-md rounded-2xl mx-2 dark:bg-black max-w-[1280px] md:mx-auto"
     :class="
       isScrolled
         ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-none'
-        : 'sticky top-2'
+        : 'sticky'
     "
   >
     <UContainer>

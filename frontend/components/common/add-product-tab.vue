@@ -47,9 +47,9 @@
               <h3 class="section-title">Basic Information</h3>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div class="grid grid-cols-1 gap-6 mt-6">
               <!-- Product Name -->
-              <div class="form-floating-group col-span-2">
+              <div class="form-floating-group">
                 <div class="relative">
                   <input
                     id="productName"
