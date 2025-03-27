@@ -192,12 +192,18 @@
                     <UButton
                       size="sm"
                       color="primary"
-                      icon="i-heroicons-shopping-cart"
+                      :icon="
+                        !loadingStates[product.id]
+                          ? 'i-heroicons-shopping-cart'
+                          : ''
+                      "
                       :trailing="false"
                       class="rounded-full"
                       @click="addToCart(product)"
+                      :loading="loadingStates[product.id]"
+                      :disabled="loadingStates[product.id]"
                     >
-                      Buy
+                      {{ !loadingStates[product.id] ? "Buy" : "" }}
                     </UButton>
                   </div>
                 </div>
@@ -401,6 +407,7 @@ const isModalOpen = ref(false);
 const selectedProduct = ref(null);
 const quantity = ref(1);
 const cart = useStoreCart();
+const loadingStates = ref({});
 
 // Debug settings
 const debugMode = ref(false); // Set to true to enable debugging
@@ -542,8 +549,30 @@ function openProductModal(product) {
 
 // Cart functionality
 function addToCart(product, qty = 1) {
-  cart.addProduct(product, qty);
-  navigateTo("/checkout/");
+  // Set loading state for this specific product
+  loadingStates.value[product.id] = true;
+
+  try {
+    // Simulate network delay (remove in production)
+    setTimeout(() => {
+      cart.addProduct(product, qty);
+      navigateTo("/checkout/");
+
+      // Clear loading state if navigation fails
+      loadingStates.value[product.id] = false;
+    }, 800); // Simulate network latency
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    const toast = useToast();
+    toast.add({
+      title: "Network Error",
+      description: "Please check your internet connection and try again.",
+      color: "red",
+    });
+
+    // Clear loading state on error
+    loadingStates.value[product.id] = false;
+  }
 }
 
 // Lifecycle hooks
