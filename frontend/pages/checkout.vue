@@ -82,7 +82,7 @@
           </div>
 
           <!-- Main Form -->
-          <form @submit.prevent="processCheckout" class="p-8">
+          <form @submit.prevent="processCheckout" class="p-3 sm:p-8">
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
               <!-- Left Column: Customer Information -->
               <div class="space-y-8">

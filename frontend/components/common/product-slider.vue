@@ -176,7 +176,7 @@
 
                   <!-- Price -->
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-col gap-1">
                       <span
                         class="font-semibold text-slate-800 dark:text-white"
                       >
