@@ -119,7 +119,7 @@ export default defineI18nConfig(() => ({
     bn: {
       welcome: "স্বাগতম",
       home: "হোম",
-      ad: "বিজ্ঞাপন",
+      ad: "ফ্রি বিজ্ঞাপন ",
       eshop: "ই-শপ",
       eshop_manager: "ই-শপ ম্যানেজার",
       classified_service: "আমার সেবা",
