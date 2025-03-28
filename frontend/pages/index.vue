@@ -309,7 +309,7 @@
                     name="i-heroicons-squares-2x2"
                     class="text-emerald-500 size-5"
                   />
-                  <h3 class="font-semibold text-lg">Categories</h3>
+                  <h3 class="font-semibold text-md">Categories</h3>
                 </div>
 
                 <div
@@ -372,7 +372,7 @@
                     name="i-heroicons-briefcase"
                     class="text-emerald-500 size-5"
                   />
-                  <p class="font-semibold text-lg">
+                  <p class="font-semibold text-md">
                     {{ $t("available_gigs") }}
                   </p>
                 </div>
