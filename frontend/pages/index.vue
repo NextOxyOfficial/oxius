@@ -262,7 +262,7 @@
         <!-- Mobile recharge link with premium styling -->
         <NuxtLink
           to="/mobile-recharge"
-          class="mb-8 bg-white dark:bg-slate-800 shadow-md hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-300 hover:scale-105 group"
+          class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-md hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-300 hover:scale-105 group"
         >
           <div class="flex items-center gap-3">
             <UIcon
@@ -444,7 +444,7 @@
                 <div
                   v-for="(gig, i) in microGigs"
                   :key="i"
-                  class="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
+                  class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-md hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
                 >
                   <div
                     class="flex flex-col sm:flex-row sm:items-center w-full p-4"
