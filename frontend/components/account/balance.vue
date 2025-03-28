@@ -68,11 +68,11 @@
                 {{ $t("balance") }}
               </p>
               <h3
-                class="text-xl font-bold text-emerald-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                class="text-2xl font-bold text-emerald-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
               >
                 <UIcon
                   name="i-mdi:currency-bdt"
-                  class="text-xl text-emerald-600 dark:text-emerald-400"
+                  class="text-2xl text-emerald-600 dark:text-emerald-400"
                 />
                 <span class="balance-value">{{ user?.user.balance }}</span>
               </h3>
@@ -101,11 +101,11 @@
                   {{ $t("pending_task") }}
                 </p>
                 <h3
-                  class="text-xl font-bold text-amber-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                  class="text-2xl font-bold text-amber-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
                 >
                   <UIcon
                     name="i-mdi:currency-bdt"
-                    class="text-xl text-amber-600 dark:text-amber-400"
+                    class="text-2xl text-amber-600 dark:text-amber-400"
                   />
                   <span class="pending-value">{{
                     user?.user.pending_balance
