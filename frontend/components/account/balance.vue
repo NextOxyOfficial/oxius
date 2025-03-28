@@ -8,7 +8,7 @@
         padding: 'p-0',
       },
       ring: '',
-      base: 'bg-gradient-to-br from-emerald-100/60 to-teal-50   border border-dashed border-emerald-400/70',
+      base: 'bg-gradient-to-br from-emerald-100/70 to-teal-100/60   border border-dashed border-emerald-400/70',
     }"
   >
     <!-- Decorative elements -->
@@ -111,7 +111,7 @@
             </div>
 
             <UButton
-              size="sm"
+              size="md"
               color="amber"
               variant="ghost"
               icon="i-mdi-eye-outline"
@@ -244,7 +244,7 @@
 
         <!-- Referral stats -->
         <div
-          class="flex gap-6 justify-center items-center bg-white/80 dark:bg-slate-800/80 rounded-xl p-3 shadow-sm"
+          class="flex gap-6 justify-center items-center bg-white/80 rounded-xl p-3 shadow-xs"
         >
           <div class="flex flex-col items-center">
             <p class="text-sm text-slate-500 dark:text-slate-400">
