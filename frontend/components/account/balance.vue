@@ -8,7 +8,7 @@
         padding: 'p-0',
       },
       ring: '',
-      base: 'bg-gradient-to-br from-emerald-100/70 to-teal-100/60   border border-dashed border-emerald-400/70',
+      base: 'bg-gradient-to-br from-green-100 to-teal-100/60   border border-dashed border-emerald-400/70',
     }"
   >
     <!-- Decorative elements -->
