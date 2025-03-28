@@ -20,7 +20,7 @@
 
       <NuxtLink
         to="/eshop"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-primary-50 hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 md:hover:bg-gradient-to-r md:hover:from-primary-50 md:hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium"
       >
         <span>{{ $t("view_all") }}</span>
         <UIcon name="i-heroicons-arrow-right" class="w-3.5 h-3.5" />
@@ -49,7 +49,7 @@
       <!-- Navigation Arrows -->
       <button
         @click="prevSlide"
-        class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+        class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md md:hover:shadow-lg transition-all duration-200"
         :class="{ 'opacity-50 cursor-not-allowed': currentSlide === 0 }"
         :disabled="currentSlide === 0"
       >
@@ -61,7 +61,7 @@
 
       <button
         @click="nextSlide"
-        class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+        class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md md:hover:shadow-lg transition-all duration-200"
         :class="{
           'opacity-50 cursor-not-allowed': currentSlide === maxSlides - 1,
         }"
@@ -91,7 +91,7 @@
             >
               <!-- Product Card Content -->
               <div
-                class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col"
+                class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm md:hover:shadow-md transition-all duration-300 h-full flex flex-col"
               >
                 <!-- Product Image Section -->
                 <div class="relative pt-[100%] overflow-hidden group">
@@ -112,12 +112,12 @@
                   <img
                     :src="getProductImage(product)"
                     :alt="product.name"
-                    class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                    class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out md:group-hover:scale-105"
                   />
 
                   <!-- Quick View Button -->
                   <div
-                    class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    class="absolute inset-0 bg-black/0 md:group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 md:group-hover:opacity-100"
                   >
                     <UButton
                       @click="openProductModal(product)"

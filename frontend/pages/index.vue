@@ -7,73 +7,83 @@
         }"
         class="relative"
       >
+        <!-- Premium decorative elements -->
+        <div
+          class="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl -z-10"
+        ></div>
+        <div
+          class="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tl from-blue-500/10 to-transparent rounded-full blur-3xl -z-10"
+        ></div>
+
         <PublicTitle />
+
+        <!-- Enhanced search form with premium styling -->
         <form
           @submit.prevent="handleSearch"
-          class="w-full max-w-xl mx-auto relative z-10"
+          class="w-full max-w-xl mx-auto relative z-10 transition-all duration-500 hover:scale-[1.01]"
         >
           <!-- Decorative elements with reduced blur for better performance -->
           <div
-            class="absolute -top-4 -left-8 w-20 h-20 bg-emerald-400/10 rounded-full blur-xl -z-10 opacity-70"
+            class="absolute -top-6 -left-10 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl -z-10 opacity-70 animate-pulse"
           ></div>
           <div
-            class="absolute -bottom-4 -right-8 w-24 h-24 bg-blue-400/10 rounded-full blur-xl -z-10 opacity-70"
+            class="absolute -bottom-6 -right-10 w-28 h-28 bg-blue-400/10 rounded-full blur-xl -z-10 opacity-70 animate-pulse"
+            style="animation-delay: 1s"
           ></div>
 
-          <!-- Search container with enhanced styling -->
-
+          <!-- Premium search container with glass effect -->
           <div
-            class="bg-white dark:bg-slate-800 rounded-2xl h-10 sm:h-14 shadow-sm border border-slate-200/70 dark:border-slate-700/50 overflow-hidden transition-all duration-300 hover:shadow-md group max-sm:h-12"
+            class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl h-12 sm:h-16 shadow-lg border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-xl group"
           >
-            <!-- Accent line animation - only shows on hover, not on focus -->
+            <!-- Accent line animation -->
             <div
               class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
             ></div>
 
-            <div class="flex items-center">
+            <div class="flex items-center h-full">
               <!-- Search icon with animation -->
-              <div class="pl-3 sm:pl-4 inline-flex items-center">
+              <div class="pl-4 sm:pl-5 inline-flex items-center">
                 <UIcon
                   name="i-heroicons-magnifying-glass"
-                  class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors duration-300"
+                  class="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors duration-300"
                 />
               </div>
 
-              <!-- Input with typing animation - completely removed focus styles -->
-              <div class="relative flex-1">
+              <!-- Input with typing animation -->
+              <div class="relative flex-1 h-full">
                 <input
                   ref="searchInput"
                   type="search"
                   v-model="title"
-                  class="w-full py-2.5 sm:py-3.5 px-2 sm:px-3 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-base max-sm:h-12"
+                  class="w-full h-full py-3 sm:py-4 px-3 sm:px-4 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-base sm:text-lg"
                   :class="isLoading ? 'opacity-70' : 'opacity-100'"
                   @focus="stopTyping"
                   @blur="restartTypingIfEmpty"
                   style="-webkit-appearance: none; appearance: none"
                 />
 
-                <!-- Animated placeholder with cursor - adjusted for smaller mobile size -->
+                <!-- Animated placeholder with cursor -->
                 <div
                   v-if="!title && showPlaceholder"
-                  class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center"
+                  class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none flex items-center"
                 >
                   <span
-                    class="text-slate-400 dark:text-slate-500 text-sm sm:text-base"
+                    class="text-slate-400 dark:text-slate-500 text-base sm:text-lg"
                   >
                     <span>{{ displayedPlaceholder }}</span>
                     <span
-                      class="inline-block w-0.5 h-4 sm:h-5 bg-emerald-500 dark:bg-emerald-400 ml-0.5 animate-cursor-blink"
+                      class="inline-block w-0.5 h-5 sm:h-6 bg-emerald-500 dark:bg-emerald-400 ml-0.5 animate-cursor-blink"
                       :class="{ 'opacity-0': !cursorVisible }"
                     ></span>
                   </span>
                 </div>
               </div>
 
-              <!-- Enhanced search button - smaller on mobile -->
+              <!-- Enhanced search button -->
               <button
                 type="submit"
                 text="Search"
-                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 h-full -mt-[2px] sm:mt-0 mr-1.5"
+                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-md hover:shadow-lg"
                 :disabled="isLoading"
               >
                 <!-- Button background animation -->
@@ -100,34 +110,40 @@
           </div>
         </form>
 
+        <!-- Search results with premium styling -->
         <div
-          class="border bg-white w-full max-w-lg mx-auto rounded-md p-2 space-y-3 mb-5 relative z-50"
           v-if="
             searchServices?.results?.length || classifiedPosts.results?.length
           "
+          class="border bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm w-full max-w-lg mx-auto rounded-xl p-4 space-y-4 my-6 relative z-50 shadow-lg transition-all duration-300"
         >
           <h3
             v-if="searchServices?.results?.length"
-            class="text-lg font-semibold"
+            class="text-lg font-semibold flex items-center gap-2"
           >
+            <UIcon name="i-heroicons-tag" class="text-emerald-500" />
             Categories
           </h3>
           <ul
-            class="flex flex-wrap gap-1"
+            class="flex flex-wrap gap-2"
             v-if="searchServices?.results?.length"
           >
-            <li v-for="service in searchServices?.results" :key="service.id">
+            <li
+              v-for="service in searchServices?.results"
+              :key="service.id"
+              class="transition-transform duration-300 hover:scale-105"
+            >
               <NuxtLink
-                class="p-2 border border-dashed border-green-400 flex gap-1 items-center rounded-md bg-green-50"
+                class="p-2.5 border border-emerald-200 hover:border-emerald-400 flex gap-2 items-center rounded-lg bg-emerald-50/80 hover:bg-emerald-50 shadow-sm hover:shadow transition-all duration-300"
                 :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
               >
                 <NuxtImg
                   :src="service?.image"
                   :title="service.title"
-                  class="size-4"
+                  class="size-5 object-contain"
                 />
-                <span class="truncate">{{ service.title }}</span></NuxtLink
-              >
+                <span class="truncate font-medium">{{ service.title }}</span>
+              </NuxtLink>
             </li>
           </ul>
           <UDivider
@@ -135,42 +151,56 @@
             v-if="
               searchServices?.results?.length && classifiedPosts.results?.length
             "
+            class="my-3"
           />
           <h3
             v-if="classifiedPosts.results?.length"
-            class="text-lg font-semibold"
+            class="text-lg font-semibold flex items-center gap-2"
           >
+            <UIcon name="i-heroicons-newspaper" class="text-blue-500" />
             Ad Posts
           </h3>
-          <ul v-if="classifiedPosts.results?.length">
-            <li v-for="service of classifiedPosts.results" :key="service.id">
+          <ul v-if="classifiedPosts.results?.length" class="space-y-1.5">
+            <li
+              v-for="service of classifiedPosts.results"
+              :key="service.id"
+              class="transition-all duration-300 hover:translate-x-1"
+            >
               <NuxtLink
                 :to="`/classified-categories/details/${service.id}?business_type=${service.business_type}`"
-                class="capitalize p-2 hover:bg-green-50 flex gap-1 items-center"
+                class="capitalize p-2.5 hover:bg-blue-50/80 flex gap-2 items-center rounded-lg transition-colors duration-300"
               >
-                <NuxtImg
-                  v-if="service?.medias[0]?.image"
-                  :src="service?.medias[0]?.image"
-                  :title="service.title"
-                  class="size-4"
-                />
-                <NuxtImg
-                  v-else
-                  :src="service?.category_details?.image"
-                  :title="service.title"
-                  class="size-4"
-                />
-                <span class="truncate">{{ service.title }}</span>
+                <div
+                  class="flex-shrink-0 size-8 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden"
+                >
+                  <NuxtImg
+                    v-if="service?.medias[0]?.image"
+                    :src="service?.medias[0]?.image"
+                    :title="service.title"
+                    class="size-8 object-cover"
+                  />
+                  <NuxtImg
+                    v-else
+                    :src="service?.category_details?.image"
+                    :title="service.title"
+                    class="size-6 object-contain"
+                  />
+                </div>
+                <span class="truncate font-medium">{{ service.title }}</span>
               </NuxtLink>
             </li>
           </ul>
         </div>
+
+        <!-- Service categories with premium styling -->
         <PublicServiceCategory :services="services" />
 
-        <div class="text-center mt-4" v-if="services.next">
+        <!-- Premium load more button -->
+        <div class="text-center mt-8" v-if="services.next">
           <button
             @click="loadMore(services.next)"
-            class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+            class="group relative inline-flex items-center justify-center gap-2 px-7 py-3.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            :disabled="isLoadingMore"
           >
             <!-- Background hover effect -->
             <span
@@ -178,8 +208,11 @@
             ></span>
 
             <!-- Button content -->
-            <span class="relative z-10 text-md">{{ $t("see_more") }}</span>
+            <span class="relative z-10 text-md font-semibold">{{
+              $t("see_more")
+            }}</span>
             <UIcon
+              v-if="!isLoadingMore"
               name="i-heroicons-arrow-down"
               class="relative z-10 size-4 group-hover:translate-y-0.5 transition-transform duration-300"
             />
@@ -188,28 +221,57 @@
             <UIcon
               v-if="isLoadingMore"
               name="i-heroicons-arrow-path"
-              class="absolute z-10 size-4 animate-spin"
+              class="relative z-10 size-4 animate-spin"
             />
           </button>
         </div>
       </UContainer>
     </PublicSection>
 
+    <!-- Ads scroll section with premium styling -->
     <AdsScroll :ads="classifiedLatestPosts" :sectionTitle="t('recent_post')" />
     <CommonProductSlider />
-    <UDivider class="my-4 sm:mt-16 mx-auto max-w-[80%]" />
-    <PublicSection id="micro-gigs">
+
+    <!-- Premium divider -->
+    <div class="my-8 sm:my-16 mx-auto max-w-[80%] relative">
+      <UDivider />
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 px-4 py-1"
+      >
+        <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- Micro gigs section with premium styling -->
+    <PublicSection
+      id="micro-gigs"
+      class="bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/90 py-8"
+    >
       <UContainer>
-        <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">
-          {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
+        <h2
+          class="text-2xl md:text-4xl mb-8 text-center font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+        >
+          {{ $t("micro_gigs") }}
+          <span class="text-slate-700 dark:text-slate-300"
+            >({{ $t("quick_earn") }})</span
+          >
         </h2>
-        <AccountBalance v-if="user" :user="user" :isUser="true" />
+
+        <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-8" />
+
+        <!-- Mobile recharge link with premium styling -->
         <NuxtLink
           to="/mobile-recharge"
-          class="mb-6 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+          class="mb-8 bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-300 hover:scale-105 group"
         >
-          <div class="flex gap-2">
-            <h2 class="text-base text-gray-900 sm:text-xl text-center">
+          <div class="flex items-center gap-3">
+            <UIcon
+              name="i-heroicons-device-phone-mobile"
+              class="text-emerald-500 size-6"
+            />
+            <h2
+              class="text-base text-gray-900 dark:text-gray-100 sm:text-xl font-medium"
+            >
               {{ $t("mobile_recharge") }}
             </h2>
             <div class="flex justify-center gap-2">
@@ -218,71 +280,118 @@
                 :key="operator.id"
                 :src="operator.icon"
                 :title="operator.title"
-                class="size-6"
+                class="size-6 transition-transform duration-300 group-hover:scale-110"
+                :style="`transition-delay: ${operator.id * 50}ms`"
               />
             </div>
           </div>
         </NuxtLink>
+
+        <!-- Micro gigs card with premium styling -->
         <UCard
           :ui="{
             body: { padding: 'p-0' },
             header: { padding: 'p-0' },
-            rounded: 'rounded-md overflow-hidden',
+            rounded: 'rounded-xl overflow-hidden',
             ring: 'max-sm:ring-0',
-            shadow: '',
+            shadow: 'shadow-xl',
           }"
+          class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200/70 dark:border-slate-700/50"
         >
           <div class="flex flex-col md:flex-row w-full">
+            <!-- Categories sidebar with premium styling -->
             <div
-              class="w-full md:w-60 bg-slate-50/70 border-dashed border max-sm:rounded-lg max-sm:overflow-hidden"
+              class="w-full md:w-64 bg-slate-50/90 dark:bg-slate-800/90 border-r border-slate-200 dark:border-slate-700 max-sm:rounded-lg max-sm:overflow-hidden"
             >
-              <ul class="py-2 text-center">
-                <li>
-                  <p
-                    class="px-2 font-semibold pb-2 text-left"
-                    @click.prevent="selectedCategory = null"
-                  >
+              <div class="py-4 px-2">
+                <div class="flex items-center gap-2 px-3 mb-3">
+                  <UIcon
+                    name="i-heroicons-squares-2x2"
+                    class="text-emerald-500 size-5"
+                  />
+                  <h3 class="font-semibold text-lg">Categories</h3>
+                </div>
+
+                <div
+                  class="px-2 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 cursor-pointer transition-colors duration-300 hover:from-emerald-100 hover:to-blue-100 dark:hover:from-emerald-900/30 dark:hover:to-blue-900/30"
+                  @click.prevent="selectedCategory = null"
+                >
+                  <p class="px-2 font-medium flex items-center gap-2">
+                    <UIcon
+                      name="i-heroicons-home"
+                      class="size-4 text-emerald-500"
+                    />
                     {{ $t("all_category") }}
                   </p>
-                  <UDivider label="" class="mb-2 px-4" />
-                </li>
+                </div>
 
-                <li v-for="category in categoryArray" :key="category?.id">
-                  <UButton
-                    :ui="{
-                      rounded: '',
-                    }"
-                    size="md"
-                    variant="ghost"
-                    color="white"
-                    class="w-full text-base px-4 py-0 font-normal text-blue-950 capitalize"
-                    @click.prevent="selectCategory(category)"
-                    >{{ category.category }} ({{ category.active }})
-                  </UButton>
-                </li>
-              </ul>
+                <UDivider label="" class="my-3" />
+
+                <div
+                  class="max-h-[400px] overflow-y-auto pr-1 space-y-1 scrollbar-thin"
+                >
+                  <div
+                    v-for="category in categoryArray"
+                    :key="category?.id"
+                    class="rounded-lg transition-colors duration-300 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    :class="
+                      selectedCategory?.id === category.id
+                        ? 'bg-slate-100 dark:bg-slate-700/50'
+                        : ''
+                    "
+                  >
+                    <button
+                      class="w-full text-left px-4 py-2.5 flex items-center justify-between group"
+                      @click.prevent="selectCategory(category)"
+                    >
+                      <span
+                        class="text-base font-medium text-slate-800 dark:text-slate-200 capitalize truncate"
+                      >
+                        {{ category.category }}
+                      </span>
+                      <span
+                        class="text-sm font-medium px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/30 transition-colors duration-300"
+                      >
+                        {{ category.active }}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- Gigs content with premium styling -->
             <div
-              class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md min-h-40"
+              class="flex-1 max-sm:border max-sm:mt-4 max-sm:rounded-xl min-h-[500px] flex flex-col"
             >
-              <div class="flex justify-between mb-2">
-                <p class="px-2 font-semibold pb-3.5">
-                  {{ $t("available_gigs") }}
-                </p>
-                <div class="flex items-center gap-1">
+              <div
+                class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700"
+              >
+                <div class="flex items-center gap-2">
+                  <UIcon
+                    name="i-heroicons-briefcase"
+                    class="text-emerald-500 size-5"
+                  />
+                  <p class="font-semibold text-lg">
+                    {{ $t("available_gigs") }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <!-- Post gig button with premium styling -->
                   <UButton
                     to="/post-a-gig"
-                    class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-green-600 max-sm:!text-sm mr-2"
+                    class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-emerald-200 hover:border-emerald-300"
                     :ui="{
                       size: {
                         sm: 'text-sm',
                       },
                       padding: {
-                        sm: 'px-1 py-1.5 md:px-3.5 md:py-1.5',
+                        sm: 'px-3 py-2 md:px-4 md:py-2',
                       },
                       icon: {
                         size: {
-                          sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
+                          sm: 'w-4 h-4 md:w-4 md:h-4',
                         },
                       },
                     }"
@@ -290,7 +399,7 @@
                     <!-- Ripple Effect Background -->
                     <span class="absolute inset-0 overflow-hidden">
                       <span
-                        class="absolute inset-0 scale-0 rounded-full bg-emerald-200/70 group-hover:animate-ripple"
+                        class="absolute inset-0 scale-0 rounded-full bg-emerald-100 group-hover:animate-ripple"
                       ></span>
                     </span>
 
@@ -298,24 +407,19 @@
                     <div
                       class="relative z-10 flex items-center justify-center space-x-2"
                     >
-                      <!-- Icon Container -->
-                      <div class="icon-plus-container">
-                        <UIcon
-                          name="i-heroicons-plus-circle"
-                          class="text-2xl text-emerald-600 animate-pulse-icon"
-                        />
-                      </div>
-
-                      <!-- Text -->
-                      <span class="text-xs font-medium">{{
-                        $t("post_gigs")
-                      }}</span>
+                      <UIcon
+                        name="i-heroicons-plus-circle"
+                        class="text-emerald-600"
+                      />
+                      <span class="font-medium">{{ $t("post_gigs") }}</span>
                     </div>
                   </UButton>
+
+                  <!-- Filter dropdown with premium styling -->
                   <USelectMenu
                     color="emerald"
                     size="md"
-                    class="w-28 md:w-40"
+                    class="w-32 md:w-40"
                     :options="microGigsFilter"
                     v-model="microGigsStatus"
                     @change="getMicroGigsByAvailability($event)"
@@ -327,172 +431,242 @@
                       option: {
                         color: 'text-emerald-600',
                       },
+                      base: 'shadow-md hover:shadow-lg transition-shadow duration-300',
                     }"
                   />
                 </div>
               </div>
 
-              <UCard
-                v-for="(gig, i) in microGigs"
-                :key="i"
-                :ui="{
-                  rounded: '',
-                  body: {
-                    padding: 'p-0 sm:p-0 flex-1 w-full',
-                  },
-                  header: {
-                    padding: 'p-0',
-                  },
-                  footer: {
-                    padding: 'p-0',
-                  },
-                  ring: 'max-sm:ring-1',
-                }"
-                class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
+              <!-- Gigs list with premium styling -->
+              <div
+                class="flex-1 p-4 space-y-3 overflow-y-auto max-h-[600px] scrollbar-thin"
               >
                 <div
-                  class="flex flex-col sm:flex-row sm:justify-between"
-                  v-if="gig.user"
+                  v-for="(gig, i) in microGigs"
+                  :key="i"
+                  class="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200 dark:hover:border-emerald-700/50"
                 >
-                  <div class="flex gap-4">
-                    <div>
-                      <NuxtImg
-                        v-if="!errorIndex.includes(i)"
-                        :src="gig.category_details?.image"
-                        class="w-12 rounded-full object-contain"
-                        @error="handleImageError(i)"
-                      />
-                      <img
-                        v-else
-                        src="/static/frontend/images/no-image.jpg"
-                        alt="No Image"
-                        class="w-12 rounded-full"
-                      />
-                    </div>
-                    <div class="flex-1">
-                      <h3
-                        class="text-[15px] leading-tight font-semibold mb-1.5 capitalize"
-                      >
-                        {{ gig.title }}
-                      </h3>
-                      <div class="flex gap-0.5 gap-x-4 md:gap-4 flex-wrap">
-                        <div class="flex gap-1 items-center">
-                          <UIcon name="i-heroicons-bell-solid" />
-                          <p class="text-sm">
-                            <span class="">{{ gig.filled_quantity }}</span> /
-                            <span class="text-green-600">{{
-                              gig.required_quantity
-                            }}</span>
-                          </p>
+                  <div
+                    class="flex flex-col sm:flex-row sm:items-center w-full p-4"
+                    v-if="gig.user"
+                  >
+                    <div
+                      class="flex flex-col sm:flex-row sm:justify-between w-full"
+                    >
+                      <div class="flex gap-4">
+                        <!-- Gig image with premium styling -->
+                        <div class="flex-shrink-0">
+                          <div
+                            class="size-14 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden shadow-md flex items-center justify-center"
+                          >
+                            <NuxtImg
+                              v-if="!errorIndex.includes(i)"
+                              :src="gig.category_details?.image"
+                              class="w-10 h-10 object-contain"
+                              @error="handleImageError(i)"
+                            />
+                            <img
+                              v-else
+                              src="/static/frontend/images/no-image.jpg"
+                              alt="No Image"
+                              class="w-10 h-10 object-contain"
+                            />
+                          </div>
                         </div>
-                        <p class="text-sm">
-                          {{ formatDate(gig.created_at) }}
-                        </p>
+
+                        <!-- Gig details with premium styling -->
+                        <div class="flex-1">
+                          <h3
+                            class="text-base sm:text-lg leading-tight font-semibold mb-2 capitalize group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300"
+                          >
+                            {{ gig.title }}
+                          </h3>
+                          <div class="flex gap-1 gap-x-4 md:gap-4 flex-wrap">
+                            <div
+                              class="flex gap-1.5 items-center px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700"
+                            >
+                              <UIcon
+                                name="i-heroicons-bell-solid"
+                                class="text-emerald-500 size-4"
+                              />
+                              <p class="text-sm font-medium">
+                                <span class="">{{ gig.filled_quantity }}</span>
+                                /
+                                <span
+                                  class="text-emerald-600 dark:text-emerald-400"
+                                  >{{ gig.required_quantity }}</span
+                                >
+                              </p>
+                            </div>
+                            <div
+                              class="flex gap-1.5 items-center px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700"
+                            >
+                              <UIcon
+                                name="i-heroicons-calendar"
+                                class="text-blue-500 size-4"
+                              />
+                              <p class="text-sm font-medium">
+                                {{ formatDate(gig.created_at) }}
+                              </p>
+                            </div>
+                            <div
+                              class="flex gap-1.5 items-center px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700"
+                            >
+                              <UIcon
+                                name="i-heroicons-user"
+                                class="text-purple-500 size-4"
+                              />
+                              <p class="text-sm font-medium">
+                                <span class="text-slate-600 dark:text-slate-300"
+                                  >By:</span
+                                >
+                                <span
+                                  class="text-emerald-600 dark:text-emerald-400"
+                                  >{{ gig.user.name.slice(0, 6) }}***</span
+                                >
+                              </p>
+                            </div>
+                            <p
+                              class="font-bold text-base text-emerald-700 dark:text-emerald-400 inline-flex items-center max-sm:ml-auto sm:hidden px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
+                            >
+                              <UIcon
+                                name="i-mdi:currency-bdt"
+                                class="text-base mr-1"
+                              />{{ gig.price }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Gig actions with premium styling -->
+                      <div
+                        class="hidden sm:flex gap-4 items-center justify-end md:justify-between max-sm:mt-3 flex-shrink-0"
+                      >
                         <p
-                          class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
+                          class="font-bold text-lg text-emerald-700 dark:text-emerald-400 sm:inline-flex items-center hidden px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
                         >
                           <UIcon
                             name="i-mdi:currency-bdt"
-                            class="text-base"
+                            class="text-lg mr-1"
                           />{{ gig.price }}
                         </p>
-                        <div class="flex gap-1 items-center text-sm">
-                          Posted By:
-                          <p class="text-sm">
-                            <span class="text-green-600"
-                              >{{ gig.user.name.slice(0, 6) }}***</span
-                            >
-                          </p>
-                        </div>
+
                         <UButton
                           v-if="user?.user && user?.user?.id !== gig.user.id"
                           :disabled="user?.user?.id === gig.user.id"
-                          size="sm"
-                          class="ml-auto sm:hidden w-[70px] justify-center"
-                          color="primary"
-                          variant="outline"
+                          size="md"
+                          color="emerald"
+                          variant="solid"
+                          class="w-24 justify-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                           :to="`/order/${gig.id}/`"
                         >
+                          <UIcon
+                            name="i-heroicons-currency-dollar"
+                            class="mr-1"
+                          />
                           Earn
                         </UButton>
                         <UButton
                           v-if="user?.user?.id === gig.user.id"
                           :disabled="user?.user?.id === gig.user.id"
-                          size="sm"
-                          class="ml-auto sm:hidden w-[70px] justify-center"
-                          color="primary"
+                          size="md"
+                          color="slate"
                           variant="outline"
+                          class="w-24 justify-center"
                         >
                           Ineligible
                         </UButton>
                         <UButton
                           v-if="!user?.user"
-                          size="sm"
-                          class="ml-auto sm:hidden w-[70px] justify-center"
-                          color="primary"
-                          variant="outline"
+                          size="md"
+                          color="emerald"
+                          variant="solid"
                           :to="`/auth/login/`"
+                          class="w-24 justify-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                         >
+                          <UIcon
+                            name="i-heroicons-currency-dollar"
+                            class="mr-1"
+                          />
+                          Earn
+                        </UButton>
+                      </div>
+
+                      <!-- Mobile actions -->
+                      <div class="flex justify-end mt-3 sm:hidden">
+                        <UButton
+                          v-if="user?.user && user?.user?.id !== gig.user.id"
+                          :disabled="user?.user?.id === gig.user.id"
+                          size="md"
+                          color="emerald"
+                          variant="solid"
+                          class="w-24 justify-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                          :to="`/order/${gig.id}/`"
+                        >
+                          <UIcon
+                            name="i-heroicons-currency-dollar"
+                            class="mr-1"
+                          />
+                          Earn
+                        </UButton>
+                        <UButton
+                          v-if="user?.user?.id === gig.user.id"
+                          :disabled="user?.user?.id === gig.user.id"
+                          size="md"
+                          color="slate"
+                          variant="outline"
+                          class="w-24 justify-center"
+                        >
+                          Ineligible
+                        </UButton>
+                        <UButton
+                          v-if="!user?.user"
+                          size="md"
+                          color="emerald"
+                          variant="solid"
+                          :to="`/auth/login/`"
+                          class="w-24 justify-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                        >
+                          <UIcon
+                            name="i-heroicons-currency-dollar"
+                            class="mr-1"
+                          />
                           Earn
                         </UButton>
                       </div>
                     </div>
                   </div>
-                  <div
-                    class="hidden sm:flex gap-16 items-center justify-end md:justify-between max-sm:mt-2"
-                  >
-                    <p
-                      class="font-bold text-base text-green-900 sm:inline-flex items-center hidden"
-                    >
-                      <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
-                        gig.price
-                      }}
-                    </p>
-
-                    <UButton
-                      v-if="user?.user && user?.user?.id !== gig.user.id"
-                      :disabled="user?.user?.id === gig.user.id"
-                      size="sm"
-                      color="primary"
-                      variant="outline"
-                      class="w-[70px] justify-center"
-                      :to="`/order/${gig.id}/`"
-                    >
-                      Earn
-                    </UButton>
-                    <UButton
-                      v-if="user?.user?.id === gig.user.id"
-                      :disabled="user?.user?.id === gig.user.id"
-                      size="sm"
-                      color="primary"
-                      variant="outline"
-                      class="w-[70px] justify-center"
-                    >
-                      Ineligible
-                    </UButton>
-                    <UButton
-                      v-if="!user?.user"
-                      size="sm"
-                      color="primary"
-                      variant="outline"
-                      :to="`/auth/login/`"
-                      class="w-[70px] justify-center"
-                    >
-                      Earn
-                    </UButton>
-                  </div>
                 </div>
-              </UCard>
+
+                <!-- Empty state -->
+                <div
+                  v-if="microGigs.length === 0"
+                  class="flex flex-col items-center justify-center py-12"
+                >
+                  <UIcon
+                    name="i-heroicons-briefcase"
+                    class="size-16 text-slate-300 dark:text-slate-600 mb-4"
+                  />
+                  <p class="text-lg text-slate-500 dark:text-slate-400">
+                    No gigs available in this category
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </UCard>
       </UContainer>
     </PublicSection>
+
+    <!-- Modal with premium styling -->
     <UModal
       v-model="isOpen"
       prevent-close
       :ui="{
         width: 'w-full sm:max-w-4xl',
+        container:
+          'bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700',
+        overlay: 'backdrop-blur-sm',
       }"
     >
       <GigsViewer @close="isOpen = false" :gid="previewGid" />
@@ -513,6 +687,7 @@ const categoryArray = ref([]);
 const selectedCategory = ref(null);
 const title = ref(null);
 const isLoading = ref(false);
+const previewGid = ref(null);
 const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
@@ -714,14 +889,10 @@ watch(
   }
 );
 
-// You can now remove the handleSearch function and update the template:
-
 const operators = ref([]);
 const operatorsRes = await get("/mobile-recharge/operators/");
 
 operators.value = operatorsRes.data;
-
-// Existing code remains unchanged
 
 // Add these variables for the typing animation
 const searchInput = ref(null);
@@ -799,347 +970,38 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Search animation */
-.search-animation {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto;
-}
-
-.search-icon {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  top: 20px;
-  left: 20px;
-  color: #4f46e5;
-  animation: floatIcon 3s ease-in-out infinite;
-  z-index: 2;
-}
-
-.search-pulse {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: rgba(79, 70, 229, 0.1);
-  animation: pulse 2s infinite;
-}
-
-.search-location {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-}
-
-.location-pin {
-  width: 30px;
-  height: 30px;
-  color: #ef4444;
-  animation: bounce 2s ease infinite;
-  transform-origin: bottom center;
-}
-
-.pulse-effect {
-  position: relative;
-}
-
-.pulse-effect::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0.375rem;
-  animation: buttonPulse 2s infinite;
-  box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
-}
-
-@keyframes floatIcon {
+/* Premium animations and effects */
+@keyframes cursor-blink {
   0%,
   100% {
-    transform: translateY(0);
+    opacity: 1;
   }
   50% {
-    transform: translateY(-10px);
+    opacity: 0;
   }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s infinite;
+  will-change: opacity;
 }
 
 @keyframes pulse {
-  0% {
-    transform: scale(0.8);
+  0%,
+  100% {
     opacity: 0.7;
-  }
-  50% {
     transform: scale(1);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-}
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes buttonPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
-  }
-}
-/* Add this to your existing styles */
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-.animate-blink {
-  animation: blink 1s infinite;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-@keyframes ripple {
-  0% {
-    transform: scale(0);
     opacity: 0.5;
-  }
-  100% {
-    transform: scale(6);
-    opacity: 0;
+    transform: scale(1.05);
   }
 }
 
-@keyframes bounce-gentle {
-  0%,
-  100% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(-20px) translateX(10px);
-    opacity: 1;
-  }
+.animate-pulse {
+  animation: pulse 4s ease-in-out infinite;
 }
 
-.animate-ripple {
-  animation: ripple 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-bounce-gentle {
-  animation: bounce-gentle 2s ease-in-out infinite;
-}
-
-.scale-102 {
-  --tw-scale-x: 1.02;
-  --tw-scale-y: 1.02;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
-    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
-    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-/* Improved Icon Animation */
-@keyframes pulse-icon {
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  25% {
-    transform: scale(1.1) rotate(5deg);
-    opacity: 0.9;
-  }
-  75% {
-    transform: scale(0.95) rotate(-5deg);
-    opacity: 0.95;
-  }
-}
-
-.animate-pulse-icon {
-  animation: pulse-icon 2s ease-in-out infinite !important;
-  display: inline-block !important;
-}
-
-.icon-plus-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Fix for animation conflicts - Namespaced Animations */
-@keyframes service-float-particle {
-  0%,
-  100% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(-20px) translateX(10px);
-    opacity: 1;
-  }
-}
-
-@keyframes search-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes search-pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-}
-
-/* Optimized animations with hardware acceleration */
-.service-particle {
-  will-change: transform, opacity;
-  animation: service-float-particle 3s ease-in-out infinite;
-  animation-fill-mode: both;
-  animation-play-state: running;
-}
-
-.search-icon {
-  will-change: transform;
-  animation: search-float 3s ease-in-out infinite;
-  animation-play-state: running;
-  z-index: 2;
-}
-
-.search-pulse {
-  will-change: transform, opacity;
-  animation: search-pulse 2s infinite;
-  animation-play-state: running;
-}
-
-/* Improved cursor blink with better performance */
-@keyframes cursor-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-.animate-cursor-blink {
-  animation: cursor-blink 1s infinite;
-  animation-fill-mode: both;
-  will-change: opacity;
-}
-
-/* ===== NAMESPACED PARTICLE ANIMATIONS ===== */
-@keyframes service-float-particle {
-  0%,
-  100% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(-20px) translateX(10px);
-    opacity: 1;
-  }
-}
-
-.service-particle {
-  will-change: transform, opacity;
-  animation-name: service-float-particle !important;
-  animation-duration: 3s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-fill-mode: both;
-  /* Prevent animation from being overridden */
-  animation-play-state: running !important;
-  position: absolute;
-  z-index: 1;
-}
-
-/* ===== SEARCH ANIMATION COMPONENTS ===== */
-@keyframes search-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes search-pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-}
-
-/* ===== CURSOR ANIMATION ===== */
-@keyframes cursor-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-.animate-cursor-blink {
-  animation: cursor-blink 1s infinite;
-  animation-fill-mode: both;
-  will-change: opacity;
-}
-
-/* ===== BUTTON ANIMATIONS ===== */
 @keyframes ripple {
   0% {
     transform: scale(0);
@@ -1155,30 +1017,31 @@ onBeforeUnmount(() => {
   animation: ripple 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* ===== ICON ANIMATION ===== */
-@keyframes pulse-icon {
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  25% {
-    transform: scale(1.1) rotate(5deg);
-    opacity: 0.9;
-  }
-  75% {
-    transform: scale(0.95) rotate(-5deg);
-    opacity: 0.95;
-  }
+/* Scrollbar styling */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
 
-.animate-pulse-icon {
-  animation: pulse-icon 2s ease-in-out infinite !important;
-  display: inline-block !important;
-  transform-origin: center;
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-/* Keep existing utility animations */
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 20px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+
+/* Transitions */
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.3s ease;
@@ -1190,5 +1053,9 @@ onBeforeUnmount(() => {
   transform: translateY(10px);
 }
 
-/* Other existing styles can remain */
+/* Glass effect */
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
 </style>

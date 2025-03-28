@@ -1,7 +1,7 @@
 <template>
   <UContainer>
     <div
-      class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border h-44 flex flex-col gap-3 items-center justify-center my-10"
+      class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border h-44 flex flex-col gap-3 items-center justify-center my-8"
       v-if="cart.products.length === 0"
     >
       <p>You have no products in the cart. Start adding some.</p>
@@ -15,7 +15,7 @@
     </div>
 
     <div
-      class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8"
+      class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-2 lg:px-8"
       v-else
     >
       <Transition
