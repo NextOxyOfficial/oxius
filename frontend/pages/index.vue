@@ -481,7 +481,9 @@
                           >
                             {{ gig.title }}
                           </h3>
-                          <div class="flex gap-1 gap-x-4 md:gap-4 flex-wrap">
+                          <div
+                            class="flex gap-1 gap-x-4 md:gap-4 flex-wrap rounded-full"
+                          >
                             <div
                               class="flex gap-1.5 items-center px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700"
                             >
