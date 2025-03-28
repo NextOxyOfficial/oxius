@@ -8,15 +8,15 @@
         padding: 'p-0',
       },
       ring: '',
-      base: 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200/70 dark:border-emerald-800/30',
+      base: 'bg-gradient-to-br from-emerald-100/60 to-teal-50   border border-dashed border-emerald-400/70',
     }"
   >
     <!-- Decorative elements -->
     <div
-      class="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl -z-10"
+      class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/30 rounded-full blur-2xl -z-10"
     ></div>
     <div
-      class="absolute bottom-0 left-0 w-40 h-40 bg-teal-400/10 rounded-full blur-2xl -z-10"
+      class="absolute bottom-0 left-0 w-40 h-40 bg-teal-300/10 rounded-full blur-2xl -z-10"
     ></div>
 
     <!-- Header with balance info -->
@@ -50,7 +50,7 @@
       <div class="flex flex-col md:flex-row justify-between gap-4 sm:gap-6">
         <!-- Main balance -->
         <div
-          class="balance-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadow-md transition-all duration-300 border border-emerald-100 dark:border-emerald-900/30"
+          class="balance-container group bg-white rounded-xl p-4 shadow-md hover:shadow-md transition-all duration-300 border border-emerald-300"
         >
           <div class="flex items-center gap-3">
             <div
@@ -62,17 +62,15 @@
               />
             </div>
             <div>
-              <p
-                class="text-sm text-emerald-700 dark:text-emerald-300 font-medium"
-              >
+              <p class="text-sm text-emerald-700 font-medium">
                 {{ $t("balance") }}
               </p>
               <h3
-                class="text-2xl font-bold text-emerald-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                class="text-2xl font-bold text-emerald-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
               >
                 <UIcon
                   name="i-mdi:currency-bdt"
-                  class="text-2xl text-emerald-600 dark:text-emerald-400"
+                  class="text-2xl text-emerald-600"
                 />
                 <span class="balance-value">{{ user?.user.balance }}</span>
               </h3>
@@ -82,12 +80,12 @@
 
         <!-- Pending tasks -->
         <div
-          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadmd-lg transition-all duration-300 border border-amber-100 dark:border-amber-900/30"
+          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadmd-lg transition-all duration-300 border border-amber-200"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-md"
+                class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-md"
               >
                 <UIcon
                   name="i-ic:outline-watch-later"
@@ -95,17 +93,15 @@
                 />
               </div>
               <div>
-                <p
-                  class="text-sm text-amber-700 dark:text-amber-300 font-medium"
-                >
+                <p class="text-sm text-amber-700 font-medium">
                   {{ $t("pending_task") }}
                 </p>
                 <h3
-                  class="text-2xl font-bold text-amber-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                  class="text-2xl font-bold text-amber-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
                 >
                   <UIcon
                     name="i-mdi:currency-bdt"
-                    class="text-2xl text-amber-600 dark:text-amber-400"
+                    class="text-2xl text-amber-600"
                   />
                   <span class="pending-value">{{
                     user?.user.pending_balance
@@ -142,7 +138,7 @@
           variant="soft"
           :label="t('deposit_withdraw')"
           to="/deposit-withdraw/"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -154,7 +150,7 @@
           variant="soft"
           :label="t('inbox')"
           to="/inbox/"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -166,7 +162,7 @@
           variant="soft"
           :label="t('my_gigs')"
           :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-violet-500/10 to-violet-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-violet-500/10 to-violet-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -178,7 +174,7 @@
           variant="soft"
           :label="t('post_gigs')"
           to="/post-a-gig"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-slate-500/10 to-slate-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-slate-500/10 to-slate-500/5"
           :ui="{
             base: 'font-medium',
           }"

@@ -409,7 +409,7 @@
                     >
                       <UIcon
                         name="i-heroicons-plus-circle"
-                        class="text-emerald-600"
+                        class="text-emerald-500"
                       />
                       <span class="font-medium">{{ $t("post_gigs") }}</span>
                     </div>
@@ -444,7 +444,7 @@
                 <div
                   v-for="(gig, i) in microGigs"
                   :key="i"
-                  class="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200 dark:hover:border-emerald-700/50"
+                  class="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
                 >
                   <div
                     class="flex flex-col sm:flex-row sm:items-center w-full p-4"
