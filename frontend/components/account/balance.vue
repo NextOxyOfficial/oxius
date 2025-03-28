@@ -1,7 +1,7 @@
 <template>
   <UCard
     v-if="user?.user"
-    class="md:max-w-4xl mx-auto mb-4 sm:mb-8 overflow-hidden transition-all duration-500 hover:shadow-xl"
+    class="md:max-w-4xl mx-auto mb-4 sm:mb-8 overflow-hidden transition-all duration-500 hover:shadow-sm"
     :ui="{
       rounded: 'rounded-2xl',
       body: {
@@ -50,7 +50,7 @@
       <div class="flex flex-col md:flex-row justify-between gap-4 sm:gap-6">
         <!-- Main balance -->
         <div
-          class="balance-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border border-emerald-100 dark:border-emerald-900/30"
+          class="balance-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadow-md transition-all duration-300 border border-emerald-100 dark:border-emerald-900/30"
         >
           <div class="flex items-center gap-3">
             <div
@@ -68,11 +68,11 @@
                 {{ $t("balance") }}
               </p>
               <h3
-                class="text-2xl font-bold text-emerald-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                class="text-xl font-bold text-emerald-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
               >
                 <UIcon
                   name="i-mdi:currency-bdt"
-                  class="text-2xl text-emerald-600 dark:text-emerald-400"
+                  class="text-xl text-emerald-600 dark:text-emerald-400"
                 />
                 <span class="balance-value">{{ user?.user.balance }}</span>
               </h3>
@@ -82,7 +82,7 @@
 
         <!-- Pending tasks -->
         <div
-          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border border-amber-100 dark:border-amber-900/30"
+          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadmd-lg transition-all duration-300 border border-amber-100 dark:border-amber-900/30"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -101,11 +101,11 @@
                   {{ $t("pending_task") }}
                 </p>
                 <h3
-                  class="text-2xl font-bold text-amber-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                  class="text-xl font-bold text-amber-900 dark:text-white flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
                 >
                   <UIcon
                     name="i-mdi:currency-bdt"
-                    class="text-2xl text-amber-600 dark:text-amber-400"
+                    class="text-xl text-amber-600 dark:text-amber-400"
                   />
                   <span class="pending-value">{{
                     user?.user.pending_balance
