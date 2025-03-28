@@ -1,7 +1,7 @@
 <template>
   <UCard
     v-if="user?.user"
-    class="md:w-[700px] mx-auto mb-4 sm:mb-8 overflow-hidden transition-all duration-500 hover:shadow-xl"
+    class="md:max-w-4xl mx-auto mb-4 sm:mb-8 overflow-hidden transition-all duration-500 hover:shadow-xl"
     :ui="{
       rounded: 'rounded-2xl',
       body: {

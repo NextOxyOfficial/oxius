@@ -457,7 +457,7 @@
                         <!-- Gig image with premium styling -->
                         <div class="flex-shrink-0">
                           <div
-                            class="size-14 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden shadow-md flex items-center justify-center"
+                            class="size-14 bg-slate-100 dark:bg-slate-700 overflow-hidden shadow-md flex items-center justify-center rounded-full gap-1"
                           >
                             <NuxtImg
                               v-if="!errorIndex.includes(i)"
