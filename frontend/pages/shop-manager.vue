@@ -1233,13 +1233,13 @@
                   <ShoppingCart class="h-4 w-4 mr-1 text-indigo-500" />
                   Order Items
                 </div>
-                <button
+                <!-- <button
                   @click="editOrderItems = !editOrderItems"
                   class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
                 >
                   <Edit2 class="h-3 w-3 mr-1" />
                   {{ editOrderItems ? "Cancel" : "Edit Items" }}
-                </button>
+                </button> -->
               </h4>
 
               <!-- Desktop view for order items -->
@@ -1478,9 +1478,10 @@
               </div>
               <div class="flex justify-between items-center mb-2">
                 <span class="text-gray-600">Delivery Fee</span>
+
                 <div v-if="!editOrderItems">
                   <span class="font-medium"
-                    >৳{{ selectedOrder?.deliveryFee }}</span
+                    >৳{{ selectedOrder?.deliveryFee || 0 }}</span
                   >
                 </div>
                 <div v-else class="flex items-center">
@@ -2654,7 +2655,7 @@ const calculateSubtotal = () => {
 };
 
 const calculateTotal = () => {
-  return calculateSubtotal() + editingDeliveryFee.value;
+  return calculateSubtotal() + (editingDeliveryFee.value || 0);
 };
 
 const incrementQuantity = (index) => {
@@ -2703,54 +2704,14 @@ const addItemToOrder = () => {
 };
 
 const saveOrderItemChanges = async () => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (selectedOrder.value) {
-      // Calculate new subtotal and total
-      const subtotal = calculateSubtotal();
-      const total = calculateTotal();
-
-      // Update order
-      selectedOrder.value.items = JSON.parse(
-        JSON.stringify(editingOrderItems.value)
-      );
-      selectedOrder.value.subtotal = subtotal;
-      selectedOrder.value.deliveryFee = editingDeliveryFee.value;
-      selectedOrder.value.total = total;
-
-      // Update the order in the orders array
-      const index = orders.value.findIndex(
-        (o) => o.id === selectedOrder.value.id
-      );
-      if (index !== -1) {
-        orders.value[index] = { ...selectedOrder.value };
-      }
-
-      // Show success toast
-      showToast(
-        "success",
-        "Order Updated",
-        "Order items have been successfully updated."
-      );
-
-      // Exit edit mode
-      editOrderItems.value = false;
-    }
-  } catch (error) {
-    showToast(
-      "error",
-      "Update Failed",
-      "There was an error updating the order items."
-    );
-  } finally {
-    isProcessing.value = false;
-  }
+  console.log(
+    "Order items:",
+    editingOrderItems.value[0].id,
+    editingOrderItems.value[0].quantity
+  );
+  console.log("Delivery fee:", editingDeliveryFee.value);
+  console.log("Subtotal:", calculateSubtotal());
+  console.log("Total:", calculateTotal());
 };
 
 const updateOrderStatus = async (id) => {
