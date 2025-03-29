@@ -4,11 +4,11 @@
       v-if="logo?.image"
       :src="logo?.image"
       alt="Logo"
-      class="h-6 md:h-8"
+      class="h-6 md:h-8 object-contain"
     />
     <img
       v-else
-      class="h-7 md:h-8"
+      class="h-7 md:h-8 object-contain"
       src="/static/frontend/images/logo.png"
       alt="Logo"
     />

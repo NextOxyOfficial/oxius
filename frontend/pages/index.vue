@@ -365,7 +365,7 @@
               class="flex-1 max-sm:border max-sm:mt-4 max-sm:rounded-xl min-h-[500px] flex flex-col"
             >
               <div
-                class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700"
+                class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md"
               >
                 <div class="flex items-center gap-2">
                   <UIcon
@@ -439,15 +439,15 @@
 
               <!-- Gigs list with premium styling -->
               <div
-                class="flex-1 p-4 space-y-3 overflow-y-auto max-h-[600px] scrollbar-thin"
+                class="flex-1 p-4 space-y-1.5 overflow-y-auto max-h-[600px] scrollbar-thin"
               >
                 <div
                   v-for="(gig, i) in microGigs"
                   :key="i"
-                  class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-md hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
+                  class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
                 >
                   <div
-                    class="flex flex-col sm:flex-row sm:items-center w-full p-4"
+                    class="flex flex-col sm:flex-row sm:items-center w-full px-4 py-2"
                     v-if="gig.user"
                   >
                     <div

@@ -28,6 +28,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+const { jwtLogin } = useAuth();
 const { get, post } = useApi();
 const props = defineProps({ something: Number }); // const emit = defineEmits(['emitChange', 'anotherEmit']);
 const router = useRoute();
@@ -61,6 +62,7 @@ async function addBalance() {
   console.log(res);
   if (res.data) {
     toast.add({ title: "Payment successfully!" });
+    await jwtLogin();
   } else {
     toast.add({ title: res.error.data.error });
     showError.value = true;
