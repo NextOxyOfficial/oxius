@@ -349,7 +349,23 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 
-
+class SellerOrderSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    customer_details = UserSerializer(source='user', read_only=True)
+    
+    class Meta:
+        model = Order
+        fields = '__all__'
+    
+    def get_items(self, obj):
+        # Get only the items with products owned by the current user
+        user = self.context['request'].user
+        user_product_ids = Product.objects.filter(owner=user).values_list('id', flat=True)
+        
+        # Filter order items by these products
+        items = obj.items.filter(product_id__in=user_product_ids)
+        return OrderItemSerializer(items, many=True).data
 
 
 

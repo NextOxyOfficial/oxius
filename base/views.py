@@ -1632,3 +1632,22 @@ class OrderWithItemsCreate(generics.CreateAPIView):
             order_serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    
+class SellerOrdersView(generics.ListAPIView):
+    """View for retrieving orders containing products owned by the authenticated user"""
+    serializer_class = SellerOrderSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """
+        Return orders that contain at least one product owned by the current user
+        """
+        # Get IDs of products owned by the current user
+        user_product_ids = Product.objects.filter(owner=self.request.user).values_list('id', flat=True)
+        
+        # Find order items that contain these products
+        order_ids = OrderItem.objects.filter(product_id__in=user_product_ids).values_list('order_id', flat=True).distinct()
+        
+        # Return the corresponding orders
+        return Order.objects.filter(id__in=order_ids).order_by('-created_at')

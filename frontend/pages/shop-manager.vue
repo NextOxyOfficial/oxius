@@ -349,11 +349,21 @@
             <div v-if="activeTab === 'orders'" class="animate-fade-in">
               <!-- Order Summary Cards -->
               <div
-                class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2 bg-gray-50 border-b border-gray-200"
+                class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
               >
+                <!-- Total Orders Card -->
                 <div
-                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100 relative overflow-hidden"
                 >
+                  <div
+                    v-if="isOrdersLoading"
+                    class="absolute inset-0 bg-white/70 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="h-6 w-6 animate-spin text-gray-400"
+                    />
+                  </div>
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-sm font-medium text-gray-500">
@@ -366,17 +376,30 @@
                     <div
                       class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center"
                     >
-                      <ShoppingBag class="h-6 w-6 text-indigo-500" />
+                      <UIcon
+                        name="i-heroicons-shopping-bag"
+                        class="h-6 w-6 text-indigo-500"
+                      />
                     </div>
                   </div>
                   <p class="mt-2 text-sm font-medium text-indigo-600">
-                    ৳{{ totalOrdersAmount }}
+                    ৳{{ formatAmount(totalOrdersAmount) }}
                   </p>
                 </div>
 
+                <!-- Pending Orders Card -->
                 <div
-                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100 relative overflow-hidden"
                 >
+                  <div
+                    v-if="isOrdersLoading"
+                    class="absolute inset-0 bg-white/70 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="h-6 w-6 animate-spin text-gray-400"
+                    />
+                  </div>
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-sm font-medium text-gray-500">
@@ -389,17 +412,30 @@
                     <div
                       class="h-12 w-12 rounded-full bg-yellow-50 flex items-center justify-center"
                     >
-                      <Clock class="h-6 w-6 text-yellow-500" />
+                      <UIcon
+                        name="i-heroicons-clock"
+                        class="h-6 w-6 text-yellow-500"
+                      />
                     </div>
                   </div>
                   <p class="mt-2 text-sm font-medium text-yellow-600">
-                    ৳{{ pendingOrdersAmount }}
+                    ৳{{ formatAmount(pendingOrdersAmount) }}
                   </p>
                 </div>
 
+                <!-- Processing Orders Card -->
                 <div
-                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100 relative overflow-hidden"
                 >
+                  <div
+                    v-if="isOrdersLoading"
+                    class="absolute inset-0 bg-white/70 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="h-6 w-6 animate-spin text-gray-400"
+                    />
+                  </div>
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-sm font-medium text-gray-500">
@@ -412,17 +448,30 @@
                     <div
                       class="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center"
                     >
-                      <Loader class="h-6 w-6 text-blue-500" />
+                      <UIcon
+                        name="i-heroicons-cog-6-tooth"
+                        class="h-6 w-6 text-blue-500"
+                      />
                     </div>
                   </div>
                   <p class="mt-2 text-sm font-medium text-blue-600">
-                    ৳{{ processingOrdersAmount }}
+                    ৳{{ formatAmount(processingOrdersAmount) }}
                   </p>
                 </div>
 
+                <!-- Delivered Orders Card -->
                 <div
-                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+                  class="bg-white rounded-lg shadow-sm p-4 border border-gray-100 relative overflow-hidden"
                 >
+                  <div
+                    v-if="isOrdersLoading"
+                    class="absolute inset-0 bg-white/70 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="h-6 w-6 animate-spin text-gray-400"
+                    />
+                  </div>
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-sm font-medium text-gray-500">
@@ -435,11 +484,14 @@
                     <div
                       class="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center"
                     >
-                      <CheckCircle class="h-6 w-6 text-green-500" />
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-6 w-6 text-green-500"
+                      />
                     </div>
                   </div>
                   <p class="mt-2 text-sm font-medium text-green-600">
-                    ৳{{ deliveredOrdersAmount }}
+                    ৳{{ formatAmount(deliveredOrdersAmount) }}
                   </p>
                 </div>
               </div>
@@ -529,34 +581,32 @@
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
                     <tr
-                      v-for="order in paginatedOrders"
+                      v-for="(order, i) in orders"
                       :key="order.id"
                       class="hover:bg-gray-50 transition-colors duration-150"
                     >
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-indigo-600">
-                          #{{ order.id }}
+                          #{{ i + 1 }}
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span
                           :class="getStatusClass(order.status)"
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize"
                         >
-                          {{ order.status }}
+                          {{ order.order_status }}
                         </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">
-                          {{ order.date }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ getRelativeTime(order.timestamp) }}
+                          {{ formatDate(order.created_at) }}
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">
-                          {{ order.customer }}
+                          {{ order.customer_details.first_name }}
+                          {{ order.customer_details.last_name }}
                         </div>
                         <div class="text-sm text-gray-500">
                           {{ order.email }}
@@ -806,13 +856,14 @@
                 class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
                 <div
-                  v-for="product in paginatedProducts"
+                  v-for="product in products"
                   :key="product.id"
                   class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div class="relative">
                     <img
-                      :src="product.image"
+                      v-if="product?.image_details?.length"
+                      :src="product.image_details[0].image"
                       :alt="product.name"
                       class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -852,41 +903,95 @@
                     ></div>
                     <div class="flex justify-between items-center">
                       <div class="text-lg font-bold text-indigo-600">
-                        ৳{{ product.price }}
+                        ৳{{ product.sale_price }}
                       </div>
                       <div class="text-sm text-gray-500 flex items-center">
                         <Package class="h-4 w-4 mr-1 text-gray-400" />
                         {{ product.stock }}
                       </div>
                     </div>
-                    <div class="mt-4 grid grid-cols-3 gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                      <!-- Edit Button -->
                       <button
                         @click="editProduct(product)"
-                        class="btn-product-action bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                        class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border border-indigo-100 dark:border-indigo-800/30 text-indigo-600 dark:text-indigo-400 hover:shadow-md transition-all duration-300"
                       >
-                        <Edit2 class="h-4 w-4 mr-1.5" />
-                        <span>Edit</span>
+                        <!-- Hover effect overlay -->
+                        <div
+                          class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        ></div>
+
+                        <!-- Icon and text -->
+                        <Edit2
+                          class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
+                        />
+                        <span
+                          class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
+                          >Edit</span
+                        >
+
+                        <!-- Subtle glow effect on hover -->
+                        <div
+                          class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-indigo-400/20 blur-sm"
+                        ></div>
                       </button>
+
+                      <!-- Activate/Deactivate Button -->
                       <button
                         @click="toggleProductStatus(product)"
-                        class="btn-product-action bg-gray-50 text-gray-600 hover:bg-gray-600 hover:text-white"
+                        class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/30 border border-slate-200 dark:border-slate-800/30 text-slate-600 dark:text-slate-400 hover:shadow-md transition-all duration-300"
                       >
+                        <!-- Hover effect overlay -->
+                        <div
+                          class="absolute inset-0 bg-gradient-to-r from-slate-600 to-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        ></div>
+
+                        <!-- Dynamic icon based on product status -->
                         <component
                           :is="product.status === 'active' ? 'EyeOff' : 'Eye'"
-                          class="h-4 w-4 mr-1.5"
+                          class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
                         />
-                        <span>{{
-                          product.status === "active"
-                            ? "Deactivate"
-                            : "Activate"
-                        }}</span>
+
+                        <!-- Dynamic text based on product status -->
+                        <span
+                          class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300 whitespace-nowrap"
+                        >
+                          {{
+                            product.status === "active"
+                              ? "Deactivate"
+                              : "Activate"
+                          }}
+                        </span>
+
+                        <!-- Subtle glow effect on hover -->
+                        <div
+                          class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-slate-400/20 blur-sm"
+                        ></div>
                       </button>
+
+                      <!-- Delete Button -->
                       <button
                         @click="confirmDeleteProduct(product)"
-                        class="btn-product-action bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                        class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 hover:shadow-md transition-all duration-300"
                       >
-                        <Trash2 class="h-4 w-4 mr-1.5" />
-                        <span>Delete</span>
+                        <!-- Hover effect overlay -->
+                        <div
+                          class="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        ></div>
+
+                        <!-- Icon and text -->
+                        <Trash2
+                          class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
+                        />
+                        <span
+                          class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
+                          >Delete</span
+                        >
+
+                        <!-- Subtle glow effect on hover -->
+                        <div
+                          class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-red-400/20 blur-sm"
+                        ></div>
                       </button>
                     </div>
                   </div>
@@ -898,71 +1003,6 @@
                   <div class="flex flex-col items-center justify-center">
                     <PackageX class="h-12 w-12 text-gray-300 mb-2" />
                     No products found matching your criteria
-                  </div>
-                </div>
-              </div>
-
-              <!-- Pagination -->
-              <div
-                class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-              >
-                <div
-                  class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p class="text-sm text-gray-700">
-                      Showing
-                      <span class="font-medium">{{
-                        productPaginationStart
-                      }}</span>
-                      to
-                      <span class="font-medium">{{
-                        productPaginationEnd
-                      }}</span>
-                      of
-                      <span class="font-medium">{{
-                        filteredProducts.length
-                      }}</span>
-                      results
-                    </p>
-                  </div>
-                  <div>
-                    <nav
-                      class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
-                    >
-                      <button
-                        @click="prevProductPage"
-                        :disabled="currentProductPage === 1"
-                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span class="sr-only">Previous</span>
-                        <ChevronLeft class="h-5 w-5" />
-                      </button>
-
-                      <button
-                        v-for="page in displayedProductPages"
-                        :key="page"
-                        @click="goToProductPage(page)"
-                        :class="[
-                          currentProductPage === page
-                            ? 'bg-indigo-50 text-indigo-600 border-indigo-500'
-                            : 'bg-white text-gray-700 hover:bg-gray-50',
-                          'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium',
-                        ]"
-                      >
-                        {{ page }}
-                      </button>
-
-                      <button
-                        @click="nextProductPage"
-                        :disabled="currentProductPage === totalProductPages"
-                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span class="sr-only">Next</span>
-                        <ChevronRight class="h-5 w-5" />
-                      </button>
-                    </nav>
                   </div>
                 </div>
               </div>
@@ -1252,8 +1292,13 @@
                         <div class="flex items-center">
                           <div class="flex-shrink-0 h-10 w-10">
                             <img
+                              v-if="
+                                item?.product_details?.image_details?.length
+                              "
                               class="h-10 w-10 rounded-md object-cover"
-                              :src="item.image"
+                              :src="
+                                item?.product_details?.image_details[0].image
+                              "
                               alt=""
                             />
                           </div>
@@ -1326,7 +1371,7 @@
                         </button>
                       </td>
                     </tr>
-                    <tr v-if="editOrderItems">
+                    <!-- <tr v-if="editOrderItems">
                       <td colspan="5" class="px-6 py-4">
                         <button
                           @click="showAddItemModal = true"
@@ -1336,7 +1381,7 @@
                           Add Item
                         </button>
                       </td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -1490,7 +1535,7 @@
               </span>
             </button>
             <button
-              @click="updateOrderStatus"
+              @click="updateOrderStatus(selectedOrder.id)"
               class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
               :disabled="isProcessing"
             >
@@ -2075,7 +2120,8 @@ definePageMeta({
   layout: "dashboard",
 });
 const { user } = useAuth();
-const { get } = useApi();
+const { get, patch } = useApi();
+const { formatDate } = useUtils();
 import {
   ShoppingBag,
   ShoppingCart,
@@ -2212,181 +2258,89 @@ onMounted(() => {
 });
 
 // Dummy data - Orders with timestamps
-const orders = ref([
-  {
-    id: "10001",
-    date: "Mar 14, 2023",
-    timestamp: new Date("2023-03-14T10:30:00").getTime(),
-    customer: "John Smith",
-    email: "john.smith@example.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Main St, Anytown, CA 12345",
-    total: 1350,
-    subtotal: 1250,
-    deliveryFee: 100,
-    status: "delivered",
-    paymentMethod: "Credit Card",
-    paymentStatus: "Paid",
-    items: [
-      {
-        name: "Premium Wireless Headphones",
-        price: 1200,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Headphones",
-      },
-      {
-        name: "USB-C Cable",
-        price: 50,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Cable",
-      },
-    ],
-  },
-  {
-    id: "10002",
-    date: "Mar 15, 2023",
-    timestamp: new Date("2023-03-15T14:45:00").getTime(),
-    customer: "Sarah Johnson",
-    email: "sarah.j@example.com",
-    phone: "+1 (555) 987-6543",
-    address: "456 Oak Ave, Somewhere, NY 54321",
-    total: 950,
-    subtotal: 800,
-    deliveryFee: 150,
-    status: "shipped",
-    paymentMethod: "Cash on Delivery",
-    paymentStatus: "Pending",
-    items: [
-      {
-        name: "Smart Watch Series 5",
-        price: 800,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Watch",
-      },
-    ],
-  },
-  {
-    id: "10003",
-    date: "Mar 16, 2023",
-    timestamp: new Date("2023-03-16T09:15:00").getTime(),
-    customer: "Michael Brown",
-    email: "michael.b@example.com",
-    phone: "+1 (555) 456-7890",
-    address: "789 Pine St, Nowhere, TX 67890",
-    total: 2650,
-    subtotal: 2500,
-    deliveryFee: 150,
-    status: "processing",
-    paymentMethod: "PayPal",
-    paymentStatus: "Paid",
-    items: [
-      {
-        name: 'Laptop Pro 13"',
-        price: 2500,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Laptop",
-      },
-    ],
-  },
-  {
-    id: "10004",
-    date: "Mar 17, 2023",
-    timestamp: new Date("2023-03-17T16:20:00").getTime(),
-    customer: "Emily Davis",
-    email: "emily.d@example.com",
-    phone: "+1 (555) 234-5678",
-    address: "321 Elm St, Anyplace, FL 13579",
-    total: 350,
-    subtotal: 250,
-    deliveryFee: 100,
-    status: "pending",
-    paymentMethod: "Account Funds",
-    paymentStatus: "Paid",
-    items: [
-      {
-        name: "Wireless Mouse",
-        price: 150,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Mouse",
-      },
-      {
-        name: "Mouse Pad",
-        price: 50,
-        quantity: 2,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Pad",
-      },
-    ],
-  },
-  {
-    id: "10005",
-    date: "Mar 18, 2023",
-    timestamp: new Date("2023-03-18T11:30:00").getTime(),
-    customer: "David Wilson",
-    email: "david.w@example.com",
-    phone: "+1 (555) 876-5432",
-    address: "654 Maple Ave, Somewhere, WA 97531",
-    total: 1750,
-    subtotal: 1650,
-    deliveryFee: 100,
-    status: "cancelled",
-    paymentMethod: "Bank Transfer",
-    paymentStatus: "Refunded",
-    items: [
-      {
-        name: "Smartphone X",
-        price: 1650,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Phone",
-      },
-    ],
-  },
-  {
-    id: "10006",
-    date: "Mar 19, 2023",
-    timestamp: new Date("2023-03-19T13:45:00").getTime(),
-    customer: "Jennifer Lee",
-    email: "jennifer.l@example.com",
-    phone: "+1 (555) 345-6789",
-    address: "987 Cedar St, Elsewhere, IL 24680",
-    total: 550,
-    subtotal: 450,
-    deliveryFee: 100,
-    status: "pending",
-    paymentMethod: "Account Funds",
-    paymentStatus: "Paid",
-    items: [
-      {
-        name: "Bluetooth Earbuds",
-        price: 450,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Earbuds",
-      },
-    ],
-  },
-  {
-    id: "10007",
-    date: "Mar 20, 2023",
-    timestamp: new Date("2023-03-20T10:15:00").getTime(),
-    customer: "Robert Taylor",
-    email: "robert.t@example.com",
-    phone: "+1 (555) 567-8901",
-    address: "246 Birch St, Anystate, GA 13579",
-    total: 1850,
-    subtotal: 1750,
-    deliveryFee: 100,
-    status: "processing",
-    paymentMethod: "Credit Card",
-    paymentStatus: "Paid",
-    items: [
-      {
-        name: "Gaming Console",
-        price: 1750,
-        quantity: 1,
-        image: "https://placeholder.pics/svg/100x100/DEDEDE/555555/Console",
-      },
-    ],
-  },
-]);
+const orders = ref([]);
+const isOrdersLoading = ref(false);
+
+async function getOrders() {
+  isOrdersLoading.value = true;
+  try {
+    const res = await get("/seller-orders/");
+    // Process the data to ensure IDs are strings
+    orders.value = res.data.map((order) => ({
+      ...order,
+      id: Array.isArray(order.id) ? order.id[0] : order.id,
+    }));
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    showToast("error", "Failed to load orders", "Please try again later");
+  } finally {
+    isOrdersLoading.value = false;
+  }
+}
+
+// Helper function to format currency amounts
+function formatAmount(amount) {
+  if (amount === undefined || amount === null) return "0.00";
+  return parseFloat(amount).toFixed(2);
+}
+
+// Updated computed properties to handle API field structure
+const pendingOrders = computed(() => {
+  return orders.value.filter((order) => order.order_status === "pending");
+});
+
+const processingOrders = computed(() => {
+  return orders.value.filter((order) => order.order_status === "processing");
+});
+
+const deliveredOrders = computed(() => {
+  return orders.value.filter((order) => order.order_status === "delivered");
+});
+
+const totalOrdersAmount = computed(() => {
+  return orders.value.reduce((total, order) => {
+    const orderTotal = parseFloat(order.total || 0);
+    return total + orderTotal;
+  }, 0);
+});
+
+const pendingOrdersAmount = computed(() => {
+  return pendingOrders.value.reduce((total, order) => {
+    const orderTotal = parseFloat(order.total || 0);
+    return total + orderTotal;
+  }, 0);
+});
+
+const processingOrdersAmount = computed(() => {
+  return processingOrders.value.reduce((total, order) => {
+    const orderTotal = parseFloat(order.total || 0);
+    return total + orderTotal;
+  }, 0);
+});
+
+const deliveredOrdersAmount = computed(() => {
+  return deliveredOrders.value.reduce((total, order) => {
+    const orderTotal = parseFloat(order.total || 0);
+    return total + orderTotal;
+  }, 0);
+});
+
+// Add polling for real-time updates (optional)
+let orderUpdateInterval;
+await getOrders();
+onMounted(() => {
+  // Initial fetch
+
+  // Set up polling interval (every 2 minutes)
+  orderUpdateInterval = setInterval(() => {
+    getOrders();
+  }, 120000);
+});
+
+onBeforeUnmount(() => {
+  // Clear interval when component is destroyed
+  if (orderUpdateInterval) clearInterval(orderUpdateInterval);
+});
 
 // Dummy data - Products
 const products = ref([]);
@@ -2394,42 +2348,9 @@ const products = ref([]);
 async function getProducts() {
   const res = await get("/my-products/");
   products.value = res.data;
-  console.log(res);
 }
 
 await getProducts();
-
-// Order summary computed properties
-const pendingOrders = computed(() => {
-  return orders.value.filter((order) => order.status === "pending");
-});
-
-const processingOrders = computed(() => {
-  return orders.value.filter((order) => order.status === "processing");
-});
-
-const deliveredOrders = computed(() => {
-  return orders.value.filter((order) => order.status === "delivered");
-});
-
-const totalOrdersAmount = computed(() => {
-  return orders.value.reduce((total, order) => total + order.total, 0);
-});
-
-const pendingOrdersAmount = computed(() => {
-  return pendingOrders.value.reduce((total, order) => total + order.total, 0);
-});
-
-const processingOrdersAmount = computed(() => {
-  return processingOrders.value.reduce(
-    (total, order) => total + order.total,
-    0
-  );
-});
-
-const deliveredOrdersAmount = computed(() => {
-  return deliveredOrders.value.reduce((total, order) => total + order.total, 0);
-});
 
 // Product summary computed properties
 const activeProducts = computed(() => {
@@ -2596,70 +2517,6 @@ const paginatedProducts = computed(() => {
   const start = (currentProductPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return filteredProducts.value.slice(start, end);
-});
-
-const productPaginationStart = computed(() => {
-  return filteredProducts.value.length === 0
-    ? 0
-    : (currentProductPage.value - 1) * itemsPerPage + 1;
-});
-
-const productPaginationEnd = computed(() => {
-  return Math.min(
-    currentProductPage.value * itemsPerPage,
-    filteredProducts.value.length
-  );
-});
-
-const displayedProductPages = computed(() => {
-  const pages = [];
-  const maxPagesToShow = 5;
-
-  if (totalProductPages.value <= maxPagesToShow) {
-    // Show all pages if there are fewer than maxPagesToShow
-    for (let i = 1; i <= totalProductPages.value; i++) {
-      pages.push(i);
-    }
-  } else {
-    // Always show first page
-    pages.push(1);
-
-    // Calculate start and end of page range
-    let startPage = Math.max(2, currentProductPage.value - 1);
-    let endPage = Math.min(
-      totalProductPages.value - 1,
-      currentProductPage.value + 1
-    );
-
-    // Adjust if we're at the beginning or end
-    if (currentProductPage.value <= 2) {
-      endPage = 4;
-    } else if (currentProductPage.value >= totalProductPages.value - 1) {
-      startPage = totalProductPages.value - 3;
-    }
-
-    // Add ellipsis if needed
-    if (startPage > 2) {
-      pages.push("...");
-    }
-
-    // Add middle pages
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    // Add ellipsis if needed
-    if (endPage < totalProductPages.value - 1) {
-      pages.push("...");
-    }
-
-    // Always show last page
-    if (totalProductPages.value > 1) {
-      pages.push(totalProductPages.value);
-    }
-  }
-
-  return pages;
 });
 
 // Methods
@@ -2896,39 +2753,25 @@ const saveOrderItemChanges = async () => {
   }
 };
 
-const updateOrderStatus = async () => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
+const updateOrderStatus = async (id) => {
+  console.log(editingOrderItems.value);
   try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Update the order status
-    if (selectedOrder.value) {
-      const oldStatus = selectedOrder.value.status;
-      selectedOrder.value.status = editingOrderStatus.value;
-
-      // Update the order in the orders array
-      const index = orders.value.findIndex(
-        (o) => o.id === selectedOrder.value.id
-      );
-      if (index !== -1) {
-        orders.value[index] = { ...selectedOrder.value };
-      }
-
+    const res = await patch(`/orders/${id}/`, {
+      order_status: editingOrderStatus.value,
+    });
+    if (res.data) {
       // Show success toast
       showToast(
         "success",
-        "Status Updated",
-        `Order #${selectedOrder.value.id} status changed from ${oldStatus} to ${editingOrderStatus.value}.`
+        "Order Status Updated",
+        `Order #${id} status has been updated to ${editingOrderStatus.value}.`
       );
-    }
 
-    // Close the modal
-    showOrderDetailsModal.value = false;
+      // Close modal
+      showOrderDetailsModal.value = false;
+    }
   } catch (error) {
+    console.error("Error updating order status:", error);
     showToast(
       "error",
       "Update Failed",
@@ -2936,6 +2779,7 @@ const updateOrderStatus = async () => {
     );
   } finally {
     isProcessing.value = false;
+    await getOrders();
   }
 };
 
@@ -3278,24 +3122,6 @@ const prevPage = () => {
   }
 };
 
-const goToProductPage = (page) => {
-  if (typeof page === "number") {
-    currentProductPage.value = page;
-  }
-};
-
-const nextProductPage = () => {
-  if (currentProductPage.value < totalProductPages.value) {
-    currentProductPage.value++;
-  }
-};
-
-const prevProductPage = () => {
-  if (currentProductPage.value > 1) {
-    currentProductPage.value--;
-  }
-};
-
 // Toast methods
 const showToast = (type, title, message) => {
   const id = toastId++;
@@ -3352,15 +3178,6 @@ function copyToClipboard(text) {
   });
 }
 
-// Format date
-function formatDate(date) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
-
 // Emit events for parent component
 const emit = defineEmits(["update"]);
 
@@ -3372,51 +3189,8 @@ watch(isEditing, (newValue, oldValue) => {
   }
 });
 </script>
-
-<style>
-/* Custom animations */
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-up {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 40px, 0) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes grow {
-  0% {
-    transform: scaleX(0);
-  }
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-grow {
-  animation: grow 0.3s ease-out forwards;
-}
-
-/* Toast animations */
+<style setup>
+/* Only essential styles */
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
@@ -3428,112 +3202,5 @@ watch(isEditing, (newValue, oldValue) => {
 .toast-leave-to {
   transform: translateX(100%);
   opacity: 0;
-}
-
-/* Product action buttons */
-.btn-product-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn-product-action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c5c5c5;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
-}
-
-/* Line clamp utilities */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Add the spin-slow animation */
-@keyframes spin-slow {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 8s linear infinite;
-}
-
-/* Add pulse animation if not provided by Tailwind */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-@keyframes gradient-x {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-gradient-x {
-  animation: gradient-x 3s ease infinite;
 }
 </style>

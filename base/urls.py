@@ -101,6 +101,7 @@ urlpatterns = [
   path('orders/search/', OrderSearch.as_view(), name='order-search'),
   path('users/<uuid:user_id>/orders/', UserOrdersList.as_view(), name='user-orders'),
   path('orders/create-with-items/', OrderWithItemsCreate.as_view(), name='create-order-with-items'),
+  path('seller-orders/', SellerOrdersView.as_view(), name='seller-orders'),
   
   # OrderItem endpoints
   path('order-items/<uuid:id>/', OrderItemDetail.as_view(), name='order-item-detail'),
