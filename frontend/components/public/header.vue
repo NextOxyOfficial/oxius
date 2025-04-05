@@ -8,7 +8,7 @@
     "
   >
     <!-- Subscription Warnings - Always visible regardless of scroll state -->
-    <div class="subscription-warnings relative z-10">
+    <div class="subscription-warnings relative px-4">
       <!-- Pre-expiration Warning (Closable) -->
       <transition name="fade">
         <div
