@@ -115,6 +115,15 @@ export default defineI18nConfig(() => ({
       upgrade_pro: "Upgrade to Pro",
       pro_member: "Pro Membership",
       packeges: "Packeges",
+      subscription_expiring_soon: "Your Premium Subscription Expires Soon",
+      subscription_renewal_message:
+        "Maintain uninterrupted access to premium features by renewing your subscription.",
+      renew_now: "Renew Now",
+      day_left: "day left",
+      days_left: "days left",
+      subscription_expired: "Your Premium Subscription Has Expired",
+      subscription_expired_message:
+        "You've lost access to premium features. Renew now to continue enjoying premium benefits.",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -229,6 +238,14 @@ export default defineI18nConfig(() => ({
       upgrade_pro_text: "প্রিমিয়াম ফিচার, অগ্রাধিকার সুবিধাসহ আরও ফিচার পান",
       pro_member: "প্রো মেম্বার",
       packeges: "প্যাকেজ",
+      subscription_expiring_soon: "Your Premium Subscription Expires Soon",
+      subscription_renewal_message:
+        "Maintain uninterrupted access to premium features by renewing your subscription.",
+      renew_now: "Renew Now",
+      day_left: "day left",
+      days_left: "days left",
+      subscription_expired: "Your Premium Subscription Has Expired",
+      subscription_expired_message: "zczxc",
     },
   },
 }));
