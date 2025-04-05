@@ -426,7 +426,7 @@
               {{ filteredProducts.length }} items
             </UBadge>
           </div>
-          <div class="hidden md:flex items-center space-x-2">
+          <!-- <div class="hidden md:flex items-center space-x-2">
             <span class="text-sm text-slate-500">View:</span>
             <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
               <button
@@ -452,7 +452,7 @@
                 <UIcon name="i-heroicons-bars-3" class="w-4 h-4" />
               </button>
             </div>
-          </div>
+          </div> -->
         </div>
       </UContainer>
     </div>
