@@ -123,28 +123,28 @@
               {{ $t("download_app") }}
             </h4>
             <ul class="flex gap-2 flex-1 max-md:justify-center">
-              <li class="w-[90px] md:w-[117px]">
+              <li class="w-[100px] md:w-[117px]">
                 <nuxt-link
                   to="/coming-soon/"
                   class="transition-transform hover:scale-105 duration-300 block"
                 >
                   <img
                     src="/static/frontend/images/apple.png"
-                    class="mx-auto w-[90px] md:w-[117px] shadow-sm rounded-lg"
+                    class="mx-auto w-full shadow-sm rounded-lg"
                     quality="100"
                     format="webp"
                     alt="App"
                   />
                 </nuxt-link>
               </li>
-              <li class="w-[90px] md:w-[119px]">
+              <li class="w-[100px] md:w-[119px]">
                 <nuxt-link
                   to="/coming-soon/"
                   class="transition-transform hover:scale-105 duration-300 block"
                 >
                   <img
                     src="/static/frontend/images/google.png"
-                    class="mx-auto w-[90px] md:w-[119px] shadow-sm rounded-lg"
+                    class="mx-auto w-full shadow-sm rounded-lg"
                     quality="100"
                     format="webp"
                     alt="App"
