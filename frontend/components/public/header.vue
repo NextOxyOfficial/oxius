@@ -7,6 +7,174 @@
         : 'sticky'
     "
   >
+    <!-- Subscription Warnings - Always visible regardless of scroll state -->
+    <div class="subscription-warnings relative z-10">
+      <!-- Pre-expiration Warning (Closable) -->
+      <transition name="fade">
+        <div
+          v-if="!shouldShowWarning && !warningDismissed"
+          class="mx-auto my-2 px-4 relative overflow-hidden rounded-lg border border-amber-300/70 dark:border-amber-600/50 group transition-all duration-300 hover:shadow-lg"
+        >
+          <!-- Premium glass background -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-amber-50/90 via-amber-50/80 to-amber-100/90 dark:from-amber-900/30 dark:via-amber-800/20 dark:to-amber-900/30 backdrop-blur-md"
+          ></div>
+
+          <!-- Premium effects -->
+          <div
+            class="absolute -left-20 -top-20 w-40 h-40 bg-amber-200/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+          <div
+            class="absolute -right-20 -bottom-20 w-40 h-40 bg-amber-300/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+
+          <!-- Shimmering line -->
+          <div
+            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-shimmer"
+          ></div>
+          <div
+            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-shimmer"
+          ></div>
+
+          <div
+            class="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between"
+          >
+            <!-- Left side with icon and text -->
+            <div class="flex items-center gap-2 sm:gap-3">
+              <!-- Premium icon with pulse effect -->
+              <div class="relative hidden xs:block">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-800 dark:to-amber-700 border border-amber-300/50 dark:border-amber-600/30 flex items-center justify-center shadow-inner"
+                >
+                  <UIcon
+                    name="i-heroicons-clock"
+                    class="w-5 h-5 text-amber-600 dark:text-amber-400"
+                  />
+                </div>
+                <div
+                  class="absolute -inset-1.5 bg-amber-300/20 blur-md rounded-full animate-pulse-slow opacity-50"
+                ></div>
+              </div>
+
+              <!-- Alert content - simplified to just the title -->
+
+              <div class="inline-flex items-center gap-1">
+                <UIcon
+                  name="i-icon-park-outline-caution"
+                  class="size-5 text-amber-800"
+                />
+                <h3 class="text-xs sm:text-sm font-medium text-amber-800">
+                  {{ $t("subscription_expiring") }}
+                  <span class="inline-block ml-1 font-semibold">
+                    {{ daysRemaining }}
+                    {{ daysRemaining === 1 ? $t("day") : $t("days") }}
+                  </span>
+                </h3>
+              </div>
+            </div>
+
+            <!-- Right side with actions -->
+            <div class="flex items-center gap-2">
+              <UButton
+                @click="dismissWarning"
+                size="2xs"
+                variant="ghost"
+                color="gray"
+                icon="i-heroicons-x-mark"
+                class="!p-1 hover:rotate-90 transition-transform"
+                aria-label="Dismiss"
+              />
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Post-expiration Alert (Not Closable) -->
+      <transition name="fade">
+        <div
+          v-if="isExpired"
+          class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 group transition-all duration-300 shadow-sm hover:shadow-lg"
+        >
+          <!-- Premium glass background with subtle animation -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-red-50/90 via-red-100/80 to-red-50/90 dark:from-red-900/30 dark:via-red-800/20 dark:to-red-900/30 backdrop-blur-md"
+          ></div>
+
+          <!-- Premium effects -->
+          <div
+            class="absolute -left-20 -top-20 w-40 h-40 bg-red-200/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+          <div
+            class="absolute -right-20 -bottom-20 w-40 h-40 bg-red-300/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+
+          <!-- Pulsing border effect -->
+          <div
+            class="absolute inset-0 rounded-lg border-2 border-red-400/20 dark:border-red-600/20 scale-[0.98] animate-pulse-slow"
+          ></div>
+
+          <!-- Shimmering lines -->
+          <div
+            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-shimmer"
+          ></div>
+          <div
+            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-shimmer"
+          ></div>
+
+          <div
+            class="relative z-10 p-3 sm:p-3.5 flex items-center justify-between"
+          >
+            <!-- Left side with icon and text -->
+            <div class="flex items-center gap-2 sm:gap-3">
+              <!-- Premium alert icon with effect -->
+              <div class="relative hidden xs:block">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner"
+                >
+                  <UIcon
+                    name="i-heroicons-exclamation-triangle"
+                    class="w-5 h-5 text-red-600 dark:text-red-400"
+                  />
+                </div>
+                <div
+                  class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"
+                ></div>
+              </div>
+
+              <!-- Simplified alert content - just the title -->
+              <h3
+                class="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300"
+              >
+                {{ $t("subscription_expired") }}
+              </h3>
+            </div>
+
+            <!-- Premium renewal button -->
+            <UButton
+              @click="renewSubscription"
+              size="2xs"
+              color="red"
+              variant="solid"
+              class="!py-1 !px-2.5 group hover:bg-red-600 transition-colors duration-300 relative overflow-hidden"
+            >
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-red-400/0 via-white/10 to-red-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
+              ></div>
+              <span
+                class="text-2xs sm:text-xs whitespace-nowrap flex items-center gap-1 relative z-10"
+              >
+                {{ $t("renew_now") }}
+                <UIcon
+                  name="i-heroicons-arrow-right"
+                  class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
+                />
+              </span>
+            </UButton>
+          </div>
+        </div>
+      </transition>
+    </div>
+
     <UContainer>
       <!-- <PublicDonation /> -->
       <USlideover
@@ -640,7 +808,76 @@ const open = ref(true);
 const logo = ref({});
 const isOpen = ref(false);
 const showQr = ref(false);
+// Subscription alert state
+const warningDismissed = ref(false);
 
+// Calculate days remaining before subscription expiration
+const daysRemaining = computed(() => {
+  if (!user.value?.user?.pro_validity) return 0;
+
+  const today = new Date();
+  const expiryDate = new Date(user.value.user.pro_validity);
+  const diffTime = expiryDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays > 0 ? Math.min(diffDays, 7) : 0;
+});
+
+// Should show warning only if user is pro and has 1-7 days left
+const shouldShowWarning = computed(() => {
+  if (!user.value?.user?.is_pro) return false;
+
+  const today = new Date();
+  const expiryDate = new Date(user.value?.user?.pro_validity || null);
+  const diffTime = expiryDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays > 0 && diffDays <= 7;
+});
+
+// Check if subscription is expired
+const isExpired = computed(() => {
+  if (!user.value?.user?.is_pro || !user.value?.user?.pro_validity)
+    return false;
+
+  const today = new Date();
+  const expiryDate = new Date(user.value.user.pro_validity);
+
+  return today > expiryDate;
+});
+
+// Dismiss the warning for the current session
+function dismissWarning() {
+  warningDismissed.value = true;
+  // Store in localStorage to remember dismissal
+  localStorage.setItem("subscription_warning_dismissed", "true");
+  localStorage.setItem(
+    "subscription_warning_dismissed_date",
+    new Date().toDateString()
+  );
+}
+
+// Open the subscription renewal page
+function renewSubscription() {
+  openMenu.value = false; // Close any open menu
+  router.push("/account/subscription");
+}
+
+// Check localStorage on mount to see if warning was dismissed
+onMounted(() => {
+  const storedDismissalDate = localStorage.getItem(
+    "subscription_warning_dismissed_date"
+  );
+  if (storedDismissalDate) {
+    // Only consider it dismissed if the stored date is from today
+    const today = new Date().toDateString();
+    warningDismissed.value = storedDismissalDate === today;
+  } else {
+    warningDismissed.value = false;
+  }
+
+  // Rest of your existing onMounted code...
+});
 const colorMode = useColorMode();
 colorMode.preference = "light";
 onMounted(() => {
@@ -715,6 +952,20 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
   document.removeEventListener("click", handleClickOutside);
 });
+
+// Example logic for subscription warnings
+onMounted(() => {
+  const subscriptionEndDate = new Date(user?.user?.pro_validity);
+  const currentDate = new Date();
+  const timeDifference = subscriptionEndDate - currentDate;
+  daysRemaining.value = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+  if (daysRemaining.value <= 7 && daysRemaining.value > 0) {
+    shouldShowWarning.value = true;
+  } else if (daysRemaining.value <= 0) {
+    isExpired.value = true;
+  }
+});
 </script>
 
 <style scoped>
@@ -731,6 +982,54 @@ onUnmounted(() => {
   }
   to {
     transform: translateY(0);
+  }
+}
+.text-2xs {
+  font-size: 0.65rem;
+  line-height: 1rem;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* For extra small screens */
+@media (max-width: 385px) {
+  .xs\:block {
+    display: block;
+  }
+}
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 </style>
