@@ -26,7 +26,7 @@
       </div>
 
       <NuxtLink
-        to="/eshop"
+        to="/shop-manager"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 md:hover:bg-gradient-to-r md:hover:from-primary-50 md:hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium group"
       >
         <span>Sell On eShop</span>

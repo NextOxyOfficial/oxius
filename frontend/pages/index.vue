@@ -365,7 +365,7 @@
               class="flex-1 max-sm:border max-sm:mt-4 max-sm:rounded-xl min-h-[500px] flex flex-col"
             >
               <div
-                class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md"
+                class="flex justify-between items-center p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md"
               >
                 <div class="flex items-center gap-2">
                   <UIcon
