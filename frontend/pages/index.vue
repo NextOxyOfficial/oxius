@@ -249,7 +249,7 @@
     >
       <UContainer>
         <h2
-          class="text-xl md:text-4xl mb-8 text-center font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+          class="text-2xl md:text-4xl mb-4 md:mb-8 text-center font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
         >
           {{ $t("micro_gigs") }}
           <span class="text-slate-700 dark:text-slate-300"

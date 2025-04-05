@@ -369,14 +369,14 @@
                   </div>
                   <input
                     id="regularPrice"
-                    v-model="form.sale_price"
+                    v-model="form.regular_price"
                     type="number"
                     min="0"
                     step="0.01"
                     class="form-input py-3 pl-8 px-4 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
                     placeholder="0.00"
                     :class="{
-                      'border-red-500': !form.sale_price && checkSubmit,
+                      'border-red-500': !form.regular_price && checkSubmit,
                     }"
                   />
                   <label
@@ -386,7 +386,7 @@
                     Regular Price <span class="text-red-500">*</span>
                   </label>
                 </div>
-                <p v-if="!form.sale_price && checkSubmit" class="form-error">
+                <p v-if="!form.regular_price && checkSubmit" class="form-error">
                   <UIcon
                     name="i-heroicons-exclamation-circle"
                     class="w-3.5 h-3.5 mr-1"
@@ -405,7 +405,7 @@
                   </div>
                   <input
                     id="salePrice"
-                    v-model="form.discount_price"
+                    v-model="form.sale_price"
                     type="number"
                     min="0"
                     step="0.01"
@@ -782,7 +782,7 @@ async function handleAddProduct() {
   if (
     !form.value.name ||
     !form.value.category ||
-    !form.value.sale_price ||
+    !form.value.regular_price ||
     !form.value.quantity ||
     !form.value.deliveryMethod
   ) {
