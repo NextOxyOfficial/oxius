@@ -166,18 +166,18 @@
       <div class="text-center mt-5 mb-2">
         <NuxtLink
           to="/eshop"
-          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group"
+          class="group relative inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-sm transition-all duration-300 transform hover:scale-105"
         >
           <!-- Premium shine effect -->
-          <div
-            class="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/30 dark:via-white/10 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-all duration-1000"
-          ></div>
-          <span class="font-medium text-slate-800 dark:text-white">{{
+          <span
+            class="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          ></span>
+          <span class="relative z-10 font-semibold">{{
             $t("all_product")
           }}</span>
           <UIcon
             name="i-heroicons-arrow-long-right"
-            class="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform"
+            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
           />
         </NuxtLink>
       </div>

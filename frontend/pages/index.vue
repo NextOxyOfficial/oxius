@@ -196,10 +196,10 @@
         <PublicServiceCategory :services="services" />
 
         <!-- Premium load more button -->
-        <div class="text-center mt-8" v-if="services.next">
+        <div class="text-center mt-4" v-if="services.next">
           <button
             @click="loadMore(services.next)"
-            class="group relative inline-flex items-center justify-center gap-2 px-7 py-3.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+            class="group relative inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-sm transition-all duration-300 transform hover:scale-105"
             :disabled="isLoadingMore"
           >
             <!-- Background hover effect -->
@@ -208,7 +208,7 @@
             ></span>
 
             <!-- Button content -->
-            <span class="relative z-10 text-md font-semibold">{{
+            <span class="relative z-10 font-semibold">{{
               $t("see_more")
             }}</span>
             <UIcon
