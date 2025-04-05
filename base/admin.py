@@ -312,9 +312,13 @@ admin.site.register(ProductCategory)
 admin.site.register(ProductMedia)
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'sale_price','regular_price','created_at', 'updated_at')
+    list_display = ('name', 'category','owner__store_name', 'sale_price','regular_price','created_at', 'updated_at')
 
 admin.site.register(Product, ProductAdmin)
-admin.site.register(Subscription)
+
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display=('user', 'months', 'total')
+
+admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(OrderItem)
 admin.site.register(Order)

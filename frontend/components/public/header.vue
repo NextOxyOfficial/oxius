@@ -363,6 +363,9 @@
             variant="outline"
             @click="openMenu = !openMenu"
             :ui="{
+              gap: {
+                sm: 'gap-x-1 md:gap-x-1.5',
+              },
               size: {
                 sm: 'text-sm',
               },

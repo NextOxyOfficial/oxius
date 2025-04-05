@@ -592,8 +592,8 @@
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span
-                          :class="getStatusClass(order.status)"
                           class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize"
+                          :class="getStatusClass(order.status)"
                         >
                           {{ order.order_status }}
                         </span>
