@@ -8,6 +8,237 @@
     "
   >
     <UContainer>
+      <div>
+        <!-- Pre-expiration Warning (Closable, shown 7 days before expiration) -->
+        <transition name="fade">
+          <div
+            v-if="shouldShowWarning && !warningDismissed"
+            class="mx-auto my-2 md:my-4 relative overflow-hidden rounded-lg md:rounded-xl border border-amber-300 dark:border-amber-800 group transition-all duration-300 hover:shadow-lg"
+          >
+            <!-- Enhanced glassmorphism background -->
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-amber-50/90 via-amber-50/80 to-amber-100/90 dark:from-amber-900/40 dark:via-amber-800/30 dark:to-amber-900/40 backdrop-blur-md"
+            ></div>
+
+            <!-- Premium pattern overlay -->
+            <div
+              class="absolute inset-0 bg-[url('/img/patterns/dots.svg')] bg-repeat opacity-[0.03] group-hover:opacity-[0.05] transition-opacity"
+            ></div>
+
+            <!-- Enhanced light effects -->
+            <div
+              class="absolute -top-24 -left-24 w-48 h-48 bg-gradient-to-br from-amber-200/30 to-yellow-300/20 dark:from-amber-500/20 dark:to-yellow-500/10 rounded-full blur-xl group-hover:scale-110 transition-transform duration-700"
+            ></div>
+            <div
+              class="absolute -bottom-24 -right-24 w-48 h-48 bg-gradient-to-tl from-amber-300/20 to-yellow-200/20 dark:from-amber-500/10 dark:to-yellow-500/10 rounded-full blur-xl group-hover:scale-110 transition-transform duration-700"
+            ></div>
+
+            <div
+              class="relative z-10 p-2.5 sm:p-4 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4"
+            >
+              <!-- Enhanced warning icon with pulse effect (shown on all screen sizes) -->
+              <div class="relative mb-1 sm:mb-0">
+                <div
+                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 dark:from-amber-900 dark:via-amber-800 dark:to-amber-700 border border-amber-300 dark:border-amber-600/70 flex items-center justify-center shadow-inner group-hover:shadow-amber-300/30 dark:group-hover:shadow-amber-700/30 transition-shadow duration-300"
+                >
+                  <UIcon
+                    name="i-heroicons-clock"
+                    class="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform"
+                  />
+                </div>
+                <div
+                  class="absolute -inset-1 bg-amber-400/30 blur-md rounded-full animate-pulse-slow opacity-70 group-hover:opacity-90"
+                ></div>
+              </div>
+
+              <!-- Enhanced alert content -->
+              <div class="flex-1 text-center sm:text-left">
+                <h3
+                  class="text-xs sm:text-sm font-semibold text-amber-800 dark:text-amber-300 flex flex-wrap items-center justify-center sm:justify-start gap-1 sm:gap-1.5"
+                >
+                  <UIcon
+                    name="i-heroicons-sparkles"
+                    class="w-3 h-3 sm:w-4 sm:h-4 animate-pulse-subtle"
+                  />
+                  <span class="whitespace-normal">{{
+                    $t("subscription_expiring_soon")
+                  }}</span>
+                  <span
+                    class="ml-0 sm:ml-1 mt-1 sm:mt-0 text-2xs sm:text-xs px-1.5 sm:px-2 py-0.5 bg-gradient-to-r from-amber-200/90 to-amber-300/90 dark:from-amber-700/90 dark:to-amber-600/90 text-amber-800 dark:text-amber-100 rounded-full font-medium backdrop-blur-sm shadow-sm"
+                  >
+                    {{ daysRemaining }}
+                    {{ daysRemaining === 1 ? $t("day_left") : $t("days_left") }}
+                  </span>
+                </h3>
+                <p
+                  class="text-2xs sm:text-xs text-amber-700 dark:text-amber-400 mt-1 max-w-md px-2 sm:px-0"
+                >
+                  {{ $t("subscription_renewal_message") }}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                <!-- Mobile renewal button -->
+                <UButton
+                  @click="renewSubscription"
+                  color="amber"
+                  size="xs"
+                  variant="soft"
+                  class="sm:hidden"
+                >
+                  {{ $t("renew_now") }}
+                </UButton>
+
+                <!-- Dismiss button with enhanced hover effect -->
+                <UButton
+                  @click="dismissWarning"
+                  color="amber"
+                  variant="ghost"
+                  size="xs"
+                  icon="i-heroicons-x-mark"
+                  class="!p-1.5 hover:bg-amber-200/50 dark:hover:bg-amber-800/50 hover:rotate-90 transition-all duration-300"
+                  aria-label="Dismiss"
+                />
+              </div>
+            </div>
+
+            <!-- Hidden desktop renewal link -->
+            <div class="hidden sm:block relative z-10 pb-2 text-center">
+              <button
+                @click="renewSubscription"
+                class="text-xs font-medium text-amber-700 dark:text-amber-300 hover:text-amber-600 dark:hover:text-amber-200 underline underline-offset-2 decoration-amber-400/50 dark:decoration-amber-500/50 transition-colors"
+              >
+                {{ $t("renew_now") }} →
+              </button>
+            </div>
+
+            <!-- Enhanced bottom border animation -->
+            <div
+              class="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 w-full transform-gpu animate-shimmer"
+            ></div>
+          </div>
+        </transition>
+
+        <!-- Post-expiration Alert (Not Closable) -->
+        <transition name="fade">
+          <div
+            v-if="isExpired"
+            class="mx-auto my-2 md:my-4 relative overflow-hidden rounded-lg md:rounded-xl border border-red-400 dark:border-red-700 group transition-all duration-300 shadow-lg sm:shadow-xl"
+          >
+            <!-- Enhanced glassmorphism background -->
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-red-50/90 via-red-50/80 to-red-100/90 dark:from-red-900/40 dark:via-red-800/40 dark:to-red-900/40 backdrop-blur-md"
+            ></div>
+
+            <!-- Premium pattern overlay -->
+            <div
+              class="absolute inset-0 bg-[url('/img/patterns/circuit.svg')] bg-center opacity-[0.04] group-hover:opacity-[0.06] transition-opacity"
+            ></div>
+
+            <!-- Enhanced light effects -->
+            <div
+              class="absolute -top-32 -right-32 w-80 h-80 bg-gradient-to-br from-red-200/30 to-orange-300/20 dark:from-red-500/20 dark:to-orange-500/10 rounded-full blur-xl transform-gpu animate-pulse-slow"
+            ></div>
+            <div
+              class="absolute -bottom-32 -left-32 w-80 h-80 bg-gradient-to-tl from-red-300/20 to-rose-200/20 dark:from-red-600/10 dark:to-rose-500/10 rounded-full blur-xl transform-gpu animate-pulse-slow animation-delay-1000"
+            ></div>
+
+            <!-- Animated shimmer effect -->
+            <div
+              class="absolute inset-y-0 -inset-x-1/2 w-full bg-gradient-to-r from-transparent via-red-200/20 dark:via-red-400/10 to-transparent skew-x-12 transform-gpu animate-shine"
+            ></div>
+
+            <div
+              class="relative z-10 p-3 sm:p-5 flex flex-col items-center gap-3 sm:gap-4"
+            >
+              <!-- Enhanced warning icon with alert effect -->
+              <div class="relative">
+                <div
+                  class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-red-50 via-red-100 to-red-200 dark:from-red-900 dark:via-red-800 dark:to-red-700 border border-red-300 dark:border-red-600/70 flex items-center justify-center shadow-inner shadow-red-300/30 dark:shadow-red-900/30"
+                >
+                  <UIcon
+                    name="i-heroicons-exclamation-triangle"
+                    class="w-7 h-7 sm:w-8 sm:h-8 text-red-600 dark:text-red-400 animate-pulse-subtle"
+                  />
+                </div>
+                <div
+                  class="absolute -inset-2 bg-red-400/30 blur-md rounded-full animate-pulse opacity-70 group-hover:opacity-90"
+                ></div>
+
+                <!-- Extra warning circles -->
+                <div
+                  class="absolute inset-0 rounded-full border-2 border-dashed border-red-400/30 dark:border-red-600/30 animate-spin-slow"
+                ></div>
+                <div
+                  class="absolute inset-0 rounded-full border-4 border-dashed border-red-400/10 dark:border-red-600/10 animate-spin-slow-reverse"
+                ></div>
+              </div>
+
+              <!-- Enhanced alert content -->
+              <div class="flex-1 text-center w-full max-w-md">
+                <h3
+                  class="text-sm sm:text-base font-bold text-red-800 dark:text-red-300 flex items-center justify-center gap-1.5 mb-1"
+                >
+                  <UIcon
+                    name="i-heroicons-no-symbol"
+                    class="w-4 h-4 sm:w-5 sm:h-5 animate-pulse"
+                  />
+                  {{ $t("subscription_expired") }}
+                </h3>
+                <p
+                  class="text-xs sm:text-sm text-red-700 dark:text-red-400 px-2 sm:px-0"
+                >
+                  {{ $t("subscription_expired_message") }}
+                </p>
+              </div>
+
+              <!-- Enhanced renewal button with premium effect -->
+              <div class="mt-1 sm:mt-2 w-full sm:max-w-[200px]">
+                <div class="relative group/btn">
+                  <!-- Improved button glow effect -->
+                  <div
+                    class="absolute -inset-0.5 bg-gradient-to-r from-red-500 via-orange-500 to-red-500 rounded-lg blur opacity-60 group-hover/btn:opacity-100 transition duration-500 group-hover/btn:duration-200 animate-gradient-x"
+                  ></div>
+
+                  <UButton
+                    @click="renewSubscription"
+                    class="relative w-full bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white border-0 shadow-lg group-hover/btn:shadow-xl transition-all duration-300 group-hover/btn:scale-[1.03]"
+                    size="sm"
+                    block
+                  >
+                    <template #leading>
+                      <UIcon
+                        name="i-heroicons-shield-check"
+                        class="w-4 h-4 sm:w-5 sm:h-5 mr-1 group-hover/btn:scale-110 transition-transform"
+                      />
+                    </template>
+                    <span class="relative inline-block text-xs sm:text-sm">
+                      {{ $t("renew_now") }}
+                      <span
+                        class="absolute bottom-0 left-0 w-full h-0.5 bg-white/40 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-300"
+                      ></span>
+                    </span>
+                  </UButton>
+                </div>
+              </div>
+            </div>
+
+            <!-- Enhanced bottom border animation -->
+            <div
+              class="absolute bottom-0 left-0 h-0.5 sm:h-1 bg-gradient-to-r from-red-400 via-orange-500 to-red-400 w-full transform-gpu animate-shimmer"
+            ></div>
+
+            <!-- Corner accent (hidden on small screens) -->
+            <div
+              class="absolute top-0 right-0 w-16 h-16 overflow-hidden hidden sm:block"
+            >
+              <div
+                class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 rotate-45 bg-gradient-to-br from-red-400 to-red-600 w-4 h-16 blur-sm"
+              ></div>
+            </div>
+          </div>
+        </transition>
+      </div>
       <!-- <PublicDonation /> -->
       <USlideover
         v-model="isOpen"
@@ -647,6 +878,72 @@ onMounted(() => {
   localStorage.setItem("nuxt-color-mode", "light");
 });
 
+import { ref, computed } from "vue";
+
+// Props to receive subscription data from parent component
+const props = defineProps({
+  expirationDate: {
+    type: [Date, String],
+    required: true,
+  },
+  isExpired: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+// Emit events to parent component
+const emit = defineEmits(["renew"]);
+
+// State
+const warningDismissed = ref(false);
+const showWarning = ref(true);
+
+// Computed properties
+const daysRemaining = computed(() => {
+  if (!user.value?.user?.pro_validity) return 0;
+
+  const today = new Date();
+  const expiryDate = new Date(user.value.user.pro_validity);
+
+  // Calculate days difference
+  const diffTime = expiryDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Only return positive days and cap at 7 for display purposes
+  return diffDays > 0 ? Math.min(diffDays, 7) : 0;
+});
+
+const shouldShowWarning = computed(() => {
+  if (!user.value?.user?.pro_validity) return false;
+
+  const today = new Date();
+  const expiryDate = new Date(user.value.user.pro_validity);
+  const diffTime = expiryDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Only show warning in the last 7 days before expiration
+  return diffDays > 0 && diffDays <= 27;
+});
+
+// Methods
+const dismissWarning = () => {
+  warningDismissed.value = true;
+  // You might want to store this in localStorage to persist across page refreshes
+  localStorage.setItem("subscription_warning_dismissed", "true");
+};
+
+const renewSubscription = () => {
+  emit("renew");
+};
+
+// Check if warning was previously dismissed (on component mount)
+if (typeof window !== "undefined") {
+  const dismissed = localStorage.getItem("subscription_warning_dismissed");
+  if (dismissed === "true") {
+    warningDismissed.value = true;
+  }
+}
 async function getLogo() {
   const res = await get("/logo/");
   logo.value = res.data;
@@ -732,5 +1029,129 @@ onUnmounted(() => {
   to {
     transform: translateY(0);
   }
+}
+/* Custom animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite linear;
+  background-size: 200% 100%;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite ease-in-out;
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s infinite ease-in-out;
+}
+
+/* Transition effects */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>
+
+<style>
+/* Add this to your global CSS if not already present */
+.bg-grid-amber-500\/\[0\.03\] {
+  background-image: linear-gradient(
+      to right,
+      rgba(245, 158, 11, 0.03) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(245, 158, 11, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+@keyframes shine {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-shine {
+  animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-spin-slow-reverse {
+  animation: spin-slow 18s linear infinite reverse;
+}
+
+@keyframes gradient-x {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+  background-size: 200% 200%;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+.text-2xs {
+  font-size: 0.65rem;
+  line-height: 1rem;
 }
 </style>
