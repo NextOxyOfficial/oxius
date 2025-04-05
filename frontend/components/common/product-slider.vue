@@ -29,7 +29,7 @@
         to="/shop-manager"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 md:hover:bg-gradient-to-r md:hover:from-primary-50 md:hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium group"
       >
-        <span>Sell On eShop</span>
+        <span>{{ $t("sell_on_eshop") }}</span>
         <UIcon
           name="i-heroicons-arrow-right"
           class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
@@ -172,9 +172,9 @@
           <div
             class="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/30 dark:via-white/10 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-all duration-1000"
           ></div>
-          <span class="font-medium text-slate-800 dark:text-white"
-            >All Products</span
-          >
+          <span class="font-medium text-slate-800 dark:text-white">{{
+            $t("all_product")
+          }}</span>
           <UIcon
             name="i-heroicons-arrow-long-right"
             class="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform"

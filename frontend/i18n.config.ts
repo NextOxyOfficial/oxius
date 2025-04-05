@@ -115,6 +115,8 @@ export default defineI18nConfig(() => ({
       upgrade_pro: "Upgrade to Pro",
       pro_member: "Pro Membership",
       packeges: "Packeges",
+      all_product: "All Products",
+      sell_on_eshop: "Sell On eShop",
       subscription_expiring: "Your Pro subscription expires in",
       subscription_expired: "Your Pro subscription has expired",
       renew: "Renew",
@@ -235,6 +237,8 @@ export default defineI18nConfig(() => ({
       upgrade_pro_text: "প্রিমিয়াম ফিচার, অগ্রাধিকার সুবিধাসহ আরও ফিচার পান",
       pro_member: "প্রো মেম্বার",
       packeges: "প্যাকেজ",
+      all_product: "সকল প্রডাক্ট",
+      sell_on_eshop: "সেল করতে চান?",
       // Simplified translations
 
       subscription_expiring: "Your Pro subscription expires in",
