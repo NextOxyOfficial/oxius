@@ -157,7 +157,7 @@
                   <input
                     v-if="isEditing"
                     v-model="editedUser.store_name"
-                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:border-emerald-500 focus:outline-none py-1"
+                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
                   />
                   <p
                     v-else
@@ -242,7 +242,7 @@
                   <input
                     v-if="isEditing"
                     v-model="editedUser.store_address"
-                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:border-emerald-500 focus:outline-none py-1"
+                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
                   />
                   <p
                     v-else
@@ -273,7 +273,7 @@
                     v-if="isEditing"
                     v-model="editedUser.store_description"
                     rows="2"
-                    class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:border-emerald-500 focus:outline-none py-1 px-2 resize-none"
+                    class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
                   ></textarea>
                   <p v-else class="text-sm text-gray-800 line-clamp-2">
                     {{
@@ -349,7 +349,7 @@
             <div v-if="activeTab === 'orders'" class="animate-fade-in">
               <!-- Order Summary Cards -->
               <div
-                class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200"
+                class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2 bg-gray-50 border-b border-gray-200"
               >
                 <!-- Total Orders Card -->
                 <div
@@ -510,7 +510,7 @@
                     <div class="relative">
                       <select
                         v-model="orderFilter"
-                        class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none sm:text-sm rounded-md"
                       >
                         <option value="all">All Orders</option>
                         <option value="pending">Pending</option>
@@ -525,7 +525,7 @@
                         type="text"
                         v-model="orderSearch"
                         placeholder="Search orders..."
-                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md"
+                        class="block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md focus:outline-none"
                       />
                       <div
                         class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
@@ -593,7 +593,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span
                           class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize"
-                          :class="getStatusClass(order.status)"
+                          :class="getStatusClass(order.order_status)"
                         >
                           {{ order.order_status }}
                         </span>
@@ -826,7 +826,7 @@
                     <div class="relative">
                       <select
                         v-model="productFilter"
-                        class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none sm:text-sm rounded-md"
                       >
                         <option value="all">All Products</option>
                         <option value="active">Active</option>
@@ -839,7 +839,7 @@
                         type="text"
                         v-model="productSearch"
                         placeholder="Search products..."
-                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md"
+                        class="block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md focus:outline-none"
                       />
                       <div
                         class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
@@ -853,7 +853,7 @@
 
               <!-- Products Grid -->
               <div
-                class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                class="p-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3"
               >
                 <div
                   v-for="product in products"
@@ -1085,13 +1085,11 @@
                   <div class="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p class="text-gray-500">Date</p>
-                      <p class="font-medium">{{ selectedOrder?.date }}</p>
+                      <p class="font-medium">
+                        {{ selectedOrder?.created_at.split("T")[0] }}
+                      </p>
                       <p class="text-xs text-gray-500">
-                        {{
-                          selectedOrder
-                            ? getRelativeTime(selectedOrder.timestamp)
-                            : ""
-                        }}
+                        {{ formatDate(selectedOrder?.created_at) }}
                       </p>
                     </div>
                     <div>
@@ -1099,7 +1097,7 @@
                       <div class="flex items-center mt-1">
                         <select
                           v-model="editingOrderStatus"
-                          class="block w-full pl-2 pr-8 py-1 text-sm border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
+                          class="block w-full pl-2 pr-8 py-1 text-sm border-gray-300 focus:outline-none rounded-md"
                         >
                           <option value="pending">Pending</option>
                           <option value="processing">Processing</option>
@@ -1171,7 +1169,7 @@
                       <input
                         type="text"
                         v-model="editingCustomer.customer"
-                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       />
                     </div>
                     <div>
@@ -1182,7 +1180,7 @@
                       <input
                         type="email"
                         v-model="editingCustomer.email"
-                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       />
                     </div>
                     <div>
@@ -1193,7 +1191,7 @@
                       <input
                         type="tel"
                         v-model="editingCustomer.phone"
-                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       />
                     </div>
                     <div>
@@ -1204,13 +1202,13 @@
                       <textarea
                         v-model="editingCustomer.address"
                         rows="2"
-                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       ></textarea>
                     </div>
                     <div class="flex justify-end">
                       <button
                         @click="saveCustomerChanges"
-                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
                         :disabled="isProcessing"
                       >
                         <span v-if="!isProcessing">Save Changes</span>
@@ -1233,13 +1231,13 @@
                   <ShoppingCart class="h-4 w-4 mr-1 text-indigo-500" />
                   Order Items
                 </div>
-                <!-- <button
+                <button
                   @click="editOrderItems = !editOrderItems"
                   class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
                 >
                   <Edit2 class="h-3 w-3 mr-1" />
                   {{ editOrderItems ? "Cancel" : "Edit Items" }}
-                </button> -->
+                </button>
               </h4>
 
               <!-- Desktop view for order items -->
@@ -1322,7 +1320,7 @@
                           v-model.number="item.price"
                           min="0"
                           step="0.01"
-                          class="block w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          class="block w-24 border-gray-300 rounded-md shadow-sm focus:outline-none sm:text-sm px-2 py-1"
                         />
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
@@ -1344,7 +1342,7 @@
                             type="number"
                             v-model.number="item.quantity"
                             min="1"
-                            class="mx-1 block w-16 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center"
+                            class="mx-1 block w-16 border-gray-300 rounded-md shadow-sm sm:text-sm text-center focus:outline-none px-2 py-1"
                           />
                           <button
                             @click="incrementQuantity(index)"
@@ -1371,17 +1369,17 @@
                         </button>
                       </td>
                     </tr>
-                    <!-- <tr v-if="editOrderItems">
+                    <tr v-if="editOrderItems">
                       <td colspan="5" class="px-6 py-4">
                         <button
                           @click="showAddItemModal = true"
-                          class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                         >
                           <Plus class="h-3 w-3 mr-1.5" />
                           Add Item
                         </button>
                       </td>
-                    </tr> -->
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -1413,7 +1411,7 @@
                             v-model.number="item.price"
                             min="0"
                             step="0.01"
-                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                           />
                         </div>
                         <div>
@@ -1433,7 +1431,7 @@
                               type="number"
                               v-model.number="item.quantity"
                               min="1"
-                              class="mx-1 block w-12 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center"
+                              class="mx-1 block w-12 border-gray-300 rounded-md shadow-sm sm:text-sm text-center focus:outline-none px-2 py-1"
                             />
                             <button
                               @click="incrementQuantity(index)"
@@ -1463,7 +1461,7 @@
                 <button
                   v-if="editOrderItems"
                   @click="showAddItemModal = true"
-                  class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                 >
                   <Plus class="h-3 w-3 mr-1.5" />
                   Add Item
@@ -1489,7 +1487,7 @@
                     type="number"
                     v-model.number="editingDeliveryFee"
                     min="0"
-                    class="block w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="block w-24 border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                   />
                 </div>
               </div>
@@ -1507,7 +1505,7 @@
             <button
               v-if="editOrderItems"
               @click="saveOrderItemChanges"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:text-sm transition-all duration-200"
               :disabled="isProcessing"
             >
               <span v-if="!isProcessing" class="flex items-center">
@@ -1525,7 +1523,7 @@
                 selectedOrder?.status !== 'cancelled' &&
                 selectedOrder?.status !== 'delivered'
               "
-              class="inline-flex justify-center items-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm transition-all duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-700 hover:bg-red-50 focus:outline-none sm:text-sm transition-all duration-200"
               :disabled="isProcessing"
             >
               <XCircle class="h-4 w-4 mr-1.5" />
@@ -1537,7 +1535,7 @@
             </button>
             <button
               @click="updateOrderStatus(selectedOrder.id)"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
               :disabled="isProcessing"
             >
               <span v-if="!isProcessing" class="flex items-center">
@@ -1551,7 +1549,7 @@
             </button>
             <button
               @click="showOrderDetailsModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Close
@@ -1615,7 +1613,7 @@
               <select
                 id="product-select"
                 v-model="selectedProductToAdd"
-                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
               >
                 <option value="">Select a product</option>
                 <option
@@ -1683,7 +1681,7 @@
                   v-model.number="newItemQuantity"
                   min="1"
                   :max="selectedProductToAdd.stock"
-                  class="mx-2 block w-20 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center"
+                  class="mx-2 block w-20 border-gray-300 rounded-md shadow-sm sm:text-sm text-center focus:outline-none px-2 py-1"
                 />
                 <button
                   @click="
@@ -1702,7 +1700,7 @@
           <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
             <button
               @click="addItemToOrder"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:text-sm transition-all duration-200"
               :disabled="!selectedProductToAdd || newItemQuantity < 1"
             >
               <Plus class="h-4 w-4 mr-1.5" />
@@ -1710,7 +1708,7 @@
             </button>
             <button
               @click="showAddItemModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel
@@ -1777,7 +1775,7 @@
                     type="text"
                     id="product-name"
                     v-model="editingProduct.name"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                     required
                   />
                 </div>
@@ -1791,7 +1789,7 @@
                     id="product-description"
                     v-model="editingProduct.description"
                     rows="3"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
                   ></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -1807,7 +1805,7 @@
                       v-model.number="editingProduct.price"
                       min="0"
                       step="0.01"
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       required
                     />
                   </div>
@@ -1822,7 +1820,7 @@
                       id="product-stock"
                       v-model.number="editingProduct.stock"
                       min="0"
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       required
                     />
                   </div>
@@ -1836,7 +1834,7 @@
                   <select
                     id="product-status"
                     v-model="editingProduct.status"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -1853,7 +1851,7 @@
                     type="text"
                     id="product-image"
                     v-model="editingProduct.image"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                   />
                   <div class="mt-2">
                     <img
@@ -1869,7 +1867,7 @@
           <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
             <button
               @click="saveProductChanges"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
               :disabled="isProcessing"
             >
               <span v-if="!isProcessing" class="flex items-center">
@@ -1883,7 +1881,7 @@
             </button>
             <button
               @click="showEditProductModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel
@@ -1947,7 +1945,7 @@
           <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
             <button
               @click="deleteProduct"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
               :disabled="isProcessing"
             >
               <span v-if="!isProcessing" class="flex items-center">
@@ -1961,7 +1959,7 @@
             </button>
             <button
               @click="showDeleteConfirmModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel
@@ -2042,7 +2040,7 @@
           <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
             <button
               @click="confirmCancelOrder"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
               :disabled="isProcessing"
             >
               <span v-if="!isProcessing" class="flex items-center">
@@ -2056,7 +2054,7 @@
             </button>
             <button
               @click="showCancelOrderModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Go Back
@@ -2523,15 +2521,15 @@ const paginatedProducts = computed(() => {
 // Methods
 const getStatusClass = (status) => {
   switch (status) {
-    case "Pending":
+    case "pending":
       return "bg-yellow-100 text-yellow-800";
-    case "Processing":
+    case "processing":
       return "bg-blue-100 text-blue-800";
-    case "Shipped":
+    case "shipped":
       return "bg-purple-100 text-purple-800";
-    case "Delivered":
+    case "delivered":
       return "bg-green-100 text-green-800";
-    case "Cancelled":
+    case "cancelled":
       return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
@@ -2585,7 +2583,7 @@ const getRelativeTime = (timestamp) => {
 
 const viewOrderDetails = (order) => {
   selectedOrder.value = order;
-  editingOrderStatus.value = order.status;
+  editingOrderStatus.value = order.order_status;
   editCustomerInfo.value = false;
   editOrderItems.value = false;
 
