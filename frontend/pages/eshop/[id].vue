@@ -307,8 +307,7 @@
               <span
                 class="px-4 py-3 text-sm cursor-pointer bg-white hover:bg-slate-50 shadow-md hover:shadow-lg transition-all duration-200 border border-slate-100 rounded-xl group"
                 :class="{
-                  'bg-slate-800 text-white hover:bg-slate-700':
-                    selectedCategory === null,
+                  'bg-slate-800 text-slate-500 ': selectedCategory === null,
                 }"
                 @click="selectedCategory = null"
                 style="
@@ -329,7 +328,7 @@
                 :key="category.id"
                 class="px-4 py-3 text-sm cursor-pointer bg-white hover:bg-slate-50 shadow-md hover:shadow-lg transition-all duration-200 border border-slate-100 rounded-xl group"
                 :class="{
-                  'bg-slate-800 text-white hover:bg-slate-700':
+                  'bg-slate-800 text-slate-500 ':
                     selectedCategory === category.id,
                 }"
                 @click="selectedCategory = category.id"
