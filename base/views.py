@@ -1485,6 +1485,20 @@ class UserProductsListView(generics.ListAPIView):
         return Product.objects.filter(
             owner=self.request.user
         ).order_by('-created_at')
+    
+class StoreProductsListView(generics.ListAPIView):
+    """View for retrieving products by a store's name"""
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        """Return products owned by the user with the specified store_username"""
+        store_username = self.kwargs.get('store_username')
+        try:
+            store_owner = User.objects.get(store_username=store_username)
+            return Product.objects.filter(owner=store_owner).order_by('-created_at')
+        except User.DoesNotExist:
+            return Product.objects.none()
 
 # Category List and Create
 class ProductCategoryListCreateView(generics.ListCreateAPIView):

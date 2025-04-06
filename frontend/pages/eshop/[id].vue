@@ -281,8 +281,11 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Categories Section with Animation -->
+        <!-- Categories & Products Section -->
+        <div class="mb-16 mt-8">
+          <!-- Category Tabs -->
           <div
             ref="categoriesRef"
             :class="`flex flex-col items-center mt-16 transition-all duration-500 transform ${
@@ -299,36 +302,166 @@
                 ></span>
               </span>
             </h2>
+
             <div class="flex flex-wrap justify-center gap-3 max-w-3xl">
               <span
-                v-for="(category, index) in categories"
-                :key="index"
                 class="px-4 py-3 text-sm cursor-pointer bg-white hover:bg-slate-50 shadow-md hover:shadow-lg transition-all duration-200 border border-slate-100 rounded-xl group"
-                :style="{
-                  animationDelay: `${index * 50}ms`,
-                  animation: 'fadeInUp 0.3s ease-out forwards',
-                  opacity: 0,
-                  transform: 'translateY(20px)',
+                :class="{
+                  'bg-slate-800 text-white hover:bg-slate-700':
+                    selectedCategory === null,
                 }"
+                @click="selectedCategory = null"
+                style="
+                  animation: fadeInUp 0.3s ease-out forwards;
+                  animation-delay: 0ms;
+                "
+              >
+                <span class="relative z-10">All Products</span>
+                <span
+                  class="ml-2 px-2 py-0.5 text-xs bg-slate-100 group-hover:bg-slate-200 rounded-full transition-colors duration-200 text-slate-500"
+                >
+                  {{ products.length }}
+                </span>
+              </span>
+
+              <span
+                v-for="category in uniqueCategories"
+                :key="category.id"
+                class="px-4 py-3 text-sm cursor-pointer bg-white hover:bg-slate-50 shadow-md hover:shadow-lg transition-all duration-200 border border-slate-100 rounded-xl group"
+                :class="{
+                  'bg-slate-800 text-white hover:bg-slate-700':
+                    selectedCategory === category.id,
+                }"
+                @click="selectedCategory = category.id"
+                style="animation: fadeInUp 0.3s ease-out forwards"
+                :style="{ animationDelay: `${50}ms` }"
               >
                 <span class="relative z-10">{{ category.name }}</span>
                 <span
                   class="ml-2 px-2 py-0.5 text-xs bg-slate-100 group-hover:bg-slate-200 rounded-full transition-colors duration-200 text-slate-500"
                 >
-                  {{ category.count }}
+                  {{ getProductCountByCategory(category.id) }}
                 </span>
               </span>
             </div>
           </div>
-        </div>
 
-        <!-- Product section placeholder - removed as requested -->
-        <div class="flex justify-center my-16">
-          <div class="text-center max-w-lg">
-            <h2 class="text-2xl font-semibold mb-2">Your Products</h2>
-            <p class="text-slate-500 mb-6">
-              Your product components will be displayed here
-            </p>
+          <!-- Products Display Section -->
+          <div
+            class="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          >
+            <div
+              v-for="product in filteredProducts"
+              :key="product.id"
+              class="bg-white border border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group animate-fade-in"
+            >
+              <!-- Product Image -->
+              <div class="relative h-48 overflow-hidden bg-slate-100">
+                <img
+                  v-if="
+                    product.image_details && product.image_details.length > 0
+                  "
+                  :src="product.image_details[0].image"
+                  :alt="product.name"
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                />
+                <div
+                  v-else
+                  class="w-full h-full flex items-center justify-center"
+                >
+                  <ImageIcon class="w-10 h-10 text-slate-300" />
+                </div>
+
+                <!-- Sale Badge -->
+                <div
+                  v-if="product.sale_price"
+                  class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium"
+                >
+                  Sale
+                </div>
+              </div>
+
+              <!-- Product Details -->
+              <div class="p-4">
+                <h3 class="font-medium text-slate-900 mb-1 truncate">
+                  {{ product.name }}
+                </h3>
+
+                <!-- Category Badge -->
+                <div class="mb-2">
+                  <span
+                    class="inline-block bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-600"
+                  >
+                    {{ getCategoryName(product.category) }}
+                  </span>
+                </div>
+
+                <!-- Price -->
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="font-bold text-slate-900">
+                    ৳{{ product.sale_price || product.regular_price }}
+                  </span>
+                  <span
+                    v-if="product.sale_price"
+                    class="text-sm text-slate-500 line-through"
+                  >
+                    ৳{{ product.regular_price }}
+                  </span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                  <button
+                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  >
+                    Add to Cart
+                  </button>
+                  <button
+                    class="w-10 h-10 flex items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors duration-200"
+                  >
+                    <Heart class="w-4 h-4" />
+                  </button>
+                </div>
+
+                <!-- Delivery Info -->
+                <div
+                  class="mt-3 flex items-center justify-between text-xs text-slate-500"
+                >
+                  <span
+                    v-if="product.is_free_delivery"
+                    class="flex items-center"
+                  >
+                    <Truck class="w-3.5 h-3.5 mr-1" />
+                    Free Delivery
+                  </span>
+                  <span v-else class="flex items-center">
+                    <Truck class="w-3.5 h-3.5 mr-1" />
+                    Paid Shipping
+                  </span>
+
+                  <span>Stock: {{ product.quantity }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div
+              v-if="filteredProducts.length === 0"
+              class="col-span-full flex flex-col items-center justify-center py-12 text-center"
+            >
+              <div
+                class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4"
+              >
+                <PackageX class="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 class="font-medium text-slate-800 text-lg mb-1">
+                No Products Found
+              </h3>
+              <p class="text-slate-500 max-w-sm">
+                There are no products available in this category. Try selecting
+                a different category.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -579,6 +712,9 @@
 </template>
 
 <script setup>
+const { get } = useApi();
+const router = useRoute();
+const products = ref([]);
 import {
   Search,
   MapPin,
@@ -588,7 +724,61 @@ import {
   X,
   Camera,
   ImageIcon,
+  Heart,
+  Truck,
+  PackageX,
 } from "lucide-vue-next";
+
+async function getMyProducts() {
+  try {
+    const response = await get(`/store/${router.params.id}/products/`);
+    products.value = response.data;
+    console.log("Products loaded:", products.value.length);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    products.value = [];
+  }
+}
+
+// State for category filtering
+const selectedCategory = ref(null);
+
+// Get unique categories from products
+const uniqueCategories = computed(() => {
+  if (!products.value || products.value.length === 0) return [];
+
+  const categories = [];
+  const map = new Map();
+
+  products.value.forEach((product) => {
+    if (product.category_details && !map.has(product.category_details.id)) {
+      map.set(product.category_details.id, true);
+      categories.push(product.category_details);
+    }
+  });
+
+  return categories;
+});
+
+// Filter products by selected category
+const filteredProducts = computed(() => {
+  if (!selectedCategory.value) return products.value;
+  return products.value.filter(
+    (product) => product.category === selectedCategory.value
+  );
+});
+
+// Helper function to get product count by category
+function getProductCountByCategory(categoryId) {
+  return products.value.filter((product) => product.category === categoryId)
+    .length;
+}
+
+// Helper function to get category name
+function getCategoryName(categoryId) {
+  const category = uniqueCategories.value.find((cat) => cat.id === categoryId);
+  return category ? category.name : "Uncategorized";
+}
 
 // Sample categories for the vendor with product counts
 const categories = [
@@ -676,20 +866,20 @@ const categoriesRef = ref(null);
 const detailsRef = ref(null);
 const ctaRef = ref(null);
 
+await getMyProducts();
 // Handle scroll effects
-onMounted(() => {
+onMounted(async () => {
+  // If there's only one category, auto-select it
+  if (uniqueCategories.value.length === 1) {
+    selectedCategory.value = uniqueCategories.value[0].id;
+  }
+
   const handleScroll = () => {
     if (window.scrollY > 50) {
       scrolled.value = true;
     } else {
       scrolled.value = false;
     }
-
-    // Parallax effect for banner
-    // if (bannerRef.value) {
-    //   const scrollPosition = window.scrollY;
-    //   bannerRef.value.style.transform = `translateY(${scrollPosition * 0.4}px)`;
-    // }
 
     // Check if sections are visible
     const isVisible = (element) => {
@@ -704,10 +894,8 @@ onMounted(() => {
   };
 
   window.addEventListener("scroll", handleScroll);
-  // Trigger once to initialize
   handleScroll();
 
-  // Cleanup
   onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll);
   });
