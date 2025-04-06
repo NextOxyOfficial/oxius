@@ -119,7 +119,7 @@
                             <img
                               v-if="product.image_details"
                               :src="
-                                product.image_details[0].image ||
+                                product?.image_details[0]?.image ||
                                 '/placeholder.svg'
                               "
                               :alt="product.name"
