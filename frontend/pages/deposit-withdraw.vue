@@ -39,47 +39,53 @@
       <div
         class="mb-5 flex justify-center shadow-md bg-gray-100 max-w-fit mx-auto"
       >
-        <UButton
-          :color="`${currentTab == 1 ? 'green' : 'gray'}`"
-          variant="outline"
-          size="md"
-          :ui="{
-            rounded: 'rounded-e-none',
-          }"
-          @click="currentTab = 1"
-        >
-          <UIcon name="i-ic:baseline-arrow-downward" />
-          {{ $t("diposit") }}</UButton
-        >
-        <UButton
-          :loading="isWithdrawLoading"
-          :color="`${currentTab == 2 ? 'green' : 'gray'}`"
-          variant="outline"
-          size="md"
-          :ui="{
-            rounded: 'rounded-s-none rounded-e-none',
-          }"
-          @click="currentTab = 2"
-          ><UIcon name="i-ic:baseline-arrow-upward" />{{
-            $t("withdraw")
-          }}</UButton
-        >
-        <UButton
-          :color="`${currentTab == 3 ? 'green' : 'gray'}`"
-          variant="outline"
-          size="md"
-          :ui="{
-            rounded: 'rounded-s-none',
-          }"
-          @click="currentTab = 3"
-        >
-          <UIcon name="i-tabler:arrow-right" />
-          {{ $t("transfer") }}</UButton
-        >
+        <a href="#1">
+          <UButton
+            :color="`${currentTab == 1 ? 'green' : 'gray'}`"
+            variant="outline"
+            size="md"
+            :ui="{
+              rounded: 'rounded-e-none',
+            }"
+            @click="currentTab = 1"
+          >
+            <UIcon name="i-ic:baseline-arrow-downward" />
+            {{ $t("diposit") }}</UButton
+          >
+        </a>
+        <a href="#2">
+          <UButton
+            :loading="isWithdrawLoading"
+            :color="`${currentTab == 2 ? 'green' : 'gray'}`"
+            variant="outline"
+            size="md"
+            :ui="{
+              rounded: 'rounded-s-none rounded-e-none',
+            }"
+            @click="currentTab = 2"
+            ><UIcon name="i-ic:baseline-arrow-upward" />{{
+              $t("withdraw")
+            }}</UButton
+          >
+        </a>
+        <a href="#3">
+          <UButton
+            :color="`${currentTab == 3 ? 'green' : 'gray'}`"
+            variant="outline"
+            size="md"
+            :ui="{
+              rounded: 'rounded-s-none',
+            }"
+            @click="currentTab = 3"
+          >
+            <UIcon name="i-tabler:arrow-right" />
+            {{ $t("transfer") }}</UButton
+          >
+        </a>
       </div>
 
       <div class="flex items-center">
-        <div v-if="currentTab === 1" class="max-sm:w-full">
+        <div id="1" v-if="currentTab === 1" class="max-sm:w-full">
           <div class="space-y-2">
             <!-- Modern Amount Input with Animation -->
             <div
@@ -118,7 +124,7 @@
           </div>
           <div class="mt-2">
             <!-- Modern Terms & Conditions Checkbox -->
-            <div class="modern-checkbox-container">
+            <div class="modern-checkbox-container flex items-center">
               <div class="checkbox-wrapper">
                 <UCheckbox
                   name="check"
@@ -156,7 +162,7 @@
             <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
           </div>
         </div>
-        <div v-if="currentTab === 2" class="max-sm:w-full">
+        <div id="2" v-if="currentTab === 2" class="max-sm:w-full">
           <div class="my-3">
             <!-- Modern Radio Group with Cards -->
             <div class="payment-method-container">
@@ -252,7 +258,7 @@
           </div>
           <div class="my-5">
             <!-- Modern Terms & Conditions Checkbox -->
-            <div class="modern-checkbox-container">
+            <div class="modern-checkbox-container flex items-center">
               <div class="checkbox-wrapper">
                 <UCheckbox
                   name="check"
@@ -291,7 +297,7 @@
             }}</UButton>
           </div>
         </div>
-        <div v-if="currentTab === 3" class="max-sm:w-full">
+        <div id="3" v-if="currentTab === 3" class="max-sm:w-full">
           <div class="my-4">
             <UButton
               icon="i-ic:twotone-qr-code-scanner"
@@ -1852,8 +1858,6 @@ onMounted(() => {
 
 /* Modern Checkbox */
 .modern-checkbox-container {
-  display: flex;
-  align-items: flex-start;
   margin: 1.5rem 0;
   position: relative;
 }
@@ -1891,7 +1895,6 @@ onMounted(() => {
   font-size: 0.95rem;
   color: var(--color-gray-700);
   user-select: none;
-  padding-top: 0.25rem;
 }
 
 .terms-link {
