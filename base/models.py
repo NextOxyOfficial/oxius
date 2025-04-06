@@ -579,7 +579,7 @@ class Product(models.Model):
     sale_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     quantity = models.IntegerField(default=0)
     is_featured = models.BooleanField(default=False)
-    weight = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    weight = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
