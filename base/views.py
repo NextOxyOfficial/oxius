@@ -1607,12 +1607,37 @@ class OrderWithItemsCreate(generics.CreateAPIView):
         if order_serializer.is_valid():
             order = order_serializer.save()
             
+            # Track payments to sellers by product owner
+            seller_payments = {}
+            
             # Then create order items
             for item_data in items_data:
                 item_data['order'] = str(order.id)
                 item_serializer = OrderItemSerializer(data=item_data)
                 if item_serializer.is_valid():
-                    item_serializer.save()
+                    order_item = item_serializer.save()
+                    
+                    # Get the product and calculate the seller payment
+                    product = Product.objects.get(id=item_data['product'])
+                    item_price = Decimal(str(product.sale_price if product.sale_price else product.regular_price))
+                    item_quantity = int(item_data.get('quantity', 1))
+                    item_total = item_price * item_quantity
+                    
+                    # Add delivery fee if applicable
+                    delivery_fee = Decimal('0.00')
+                    if not product.is_free_delivery:
+                        if order_data.get('delivery_location') == 'inside_dhaka':
+                            delivery_fee = Decimal(str(product.delivery_fee_inside_dhaka))
+                        else:
+                            delivery_fee = Decimal(str(product.delivery_fee_outside_dhaka))
+                    
+                    # Track payment due to this seller
+                    seller_id = str(product.owner.id)
+                    if seller_id not in seller_payments:
+                        seller_payments[seller_id] = Decimal('0.00')
+                    
+                    # Add the product price and delivery fee to the seller's payment
+                    seller_payments[seller_id] += item_total + delivery_fee
                 else:
                     # If any item fails validation, delete the order and return error
                     order.delete()
@@ -1627,14 +1652,35 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                 user.balance -= total_amount
                 user.save()
                 
-                # Create a balance transaction record if you're tracking transactions
+                # Create a balance transaction record for the buyer
                 Balance.objects.create(
                     user=user,
                     amount=-total_amount,
                     transaction_type='order_payment',
-                    # description=f"Payment for order #{order.id}",
                     completed=True
                 )
+                
+                # Credit each seller with their portion of the payment
+                for seller_id, amount in seller_payments.items():
+                    try:
+                        seller = User.objects.get(id=seller_id)
+                        
+                        # Add payment to seller's balance
+                        seller.balance += amount
+                        seller.save()
+                        
+                        # Create transaction record for the seller
+                        Balance.objects.create(
+                            user=seller,
+                            amount=amount,
+                            transaction_type='order_received',
+                            description=f"Payment for order #{order.id}",
+                            completed=True,
+                            from_user=user  # Track who made the payment
+                        )
+                    except User.DoesNotExist:
+                        # Log this error but don't fail the order
+                        print(f"Failed to credit seller {seller_id} for order {order.id}")
             
             # Return the complete order with items
             return Response(
