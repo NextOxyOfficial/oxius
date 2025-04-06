@@ -195,7 +195,7 @@
           }"
         >
           <template #header>
-            <div class="w-full flex justify-end">
+            <div class="w-full flex justify-end pt-12 pb-2">
               <UButton
                 color="gray"
                 variant="ghost"
@@ -206,7 +206,6 @@
             </div>
           </template>
         </UCard>
-        <PublicLogo :logo="logo" class="text-center mx-auto mb-4" />
         <UVerticalNavigation
           :links="[
             {

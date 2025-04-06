@@ -229,7 +229,12 @@
     </PublicSection>
 
     <!-- Ads scroll section with premium styling -->
-    <AdsScroll :ads="classifiedLatestPosts" :sectionTitle="t('recent_post')" />
+    <div class="my-8 sm:my-16">
+      <AdsScroll
+        :ads="classifiedLatestPosts"
+        :sectionTitle="t('recent_post')"
+      />
+    </div>
     <CommonProductSlider />
 
     <!-- Premium divider -->

@@ -123,7 +123,7 @@
               {{ $t("download_app") }}
             </h4>
             <ul class="flex gap-2 flex-1 max-md:justify-center">
-              <li class="w-[100px] md:w-[117px]">
+              <li class="w-[117px]">
                 <nuxt-link
                   to="/coming-soon/"
                   class="transition-transform hover:scale-105 duration-300 block"
@@ -137,7 +137,7 @@
                   />
                 </nuxt-link>
               </li>
-              <li class="w-[100px] md:w-[119px]">
+              <li class="w-[119px]">
                 <nuxt-link
                   to="/coming-soon/"
                   class="transition-transform hover:scale-105 duration-300 block"
