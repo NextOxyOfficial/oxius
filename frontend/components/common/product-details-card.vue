@@ -212,7 +212,7 @@
                       <div
                         class="text-2xl font-bold text-slate-800 dark:text-white"
                       >
-                        {{ currentProduct.rating }}
+                        {{ currentProduct?.rating }}
                       </div>
                       <div class="flex text-yellow-400 my-1">
                         <UIcon
@@ -223,7 +223,7 @@
                         />
                       </div>
                       <div class="text-xs text-slate-500">
-                        {{ currentProduct.reviews?.length || 0 }} reviews
+                        {{ currentProduct?.reviews?.length || 0 }} reviews
                       </div>
                     </div>
 
@@ -255,7 +255,7 @@
                 <!-- Reviews List -->
                 <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
                   <div
-                    v-for="(review, index) in currentProduct.reviews || []"
+                    v-for="(review, index) in currentProduct?.reviews || []"
                     :key="index"
                     class="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
                   >
