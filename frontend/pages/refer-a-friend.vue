@@ -11,7 +11,7 @@
         ></div>
       </div>
 
-      <div class="container mx-auto max-w-3xl">
+      <div class="container mx-auto max-w-4xl">
         <!-- Centered Header -->
         <div class="text-center mb-12 animate-fade-in">
           <h1
@@ -116,12 +116,6 @@
                   {{ user.user.refer_count }}
                 </span>
               </div>
-              <!-- <div class="text-xs mt-1">
-                <span class="text-green-500 flex items-center">
-                  <UIcon name="i-heroicons-arrow-trending-up" class="mr-1" />
-                  12% this month
-                </span>
-              </div> -->
             </div>
           </div>
 
@@ -151,23 +145,22 @@
                   {{ user.user.commission_earned }}
                 </span>
               </div>
-              <!-- <div class="text-xs mt-1">
+              <div class="text-xs mt-1">
                 <span class="text-green-500 flex items-center">
                   <UIcon name="i-heroicons-arrow-trending-up" class="mr-1" />
                   8% from last month
                 </span>
-              </div> -->
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Replace both history sections with this single tabbed component -->
-        <!-- <div class="mt-12">
+        <div class="mt-12">
           <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up"
             style="animation-delay: 0.2s"
           >
-            
             <div class="tab-navigation overflow-hidden relative">
               <div class="flex border-b border-gray-100 dark:border-gray-700">
                 <button
@@ -197,7 +190,6 @@
                 </button>
               </div>
 
-              
               <div
                 :class="
                   activeTab === index
@@ -211,7 +203,6 @@
               ></div>
             </div>
 
-            
             <div
               class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"
             >
@@ -261,9 +252,7 @@
               </div>
             </div>
 
-            
             <div class="min-h-[300px] relative overflow-hidden">
-              
               <div
                 class="tab-pane transition-all duration-500"
                 :class="
@@ -380,7 +369,6 @@
                 </div>
               </div>
 
-              
               <div
                 class="tab-pane transition-all duration-500"
                 :class="
@@ -515,7 +503,7 @@
               />
             </div>
           </div>
-        </div> -->
+        </div>
       </div>
     </div>
 
