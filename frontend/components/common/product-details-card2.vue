@@ -677,10 +677,10 @@
 
     <!-- Sticky Buy Now Button (Centered) -->
     <div
-      class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-lg transform transition-transform"
+      class="fixed bottom-32 left-12 right-12 z-50 dark:bg-slate-800 dark:border-slate-700 shadow-lg transform transition-transform"
       :class="{ 'translate-y-full': hideSticky, 'translate-y-0': !hideSticky }"
     >
-      <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-center">
+      <div class="max-w-md mx-auto flex items-center justify-center">
         <button
           @click="addToCart(currentProduct, 1)"
           class="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-lg font-medium shadow flex items-center justify-center gap-2"
