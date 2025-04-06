@@ -4,7 +4,7 @@
   >
     <!-- Premium Header Section -->
     <div
-      class="relative overflow-hidden bg-gradient-to-r from-slate-900/5 to-primary-500/5 dark:from-slate-800/30 dark:to-primary-900/30 z-50"
+      class="relative bg-gradient-to-r from-slate-900/5 to-primary-500/5 dark:from-slate-800/30 dark:to-primary-900/30 z-50"
     >
       <!-- Background Elements -->
       <div class="absolute inset-0 z-0">
@@ -38,7 +38,7 @@
         >
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Search Bar -->
-            <div class="relative">
+            <div class="relative md:col-span-2">
               <div
                 class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
               >
@@ -120,7 +120,7 @@
                       <input
                         v-model="searchQuery"
                         type="text"
-                        class="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg"
+                        class="w-full focus:outline-none pl-10 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg"
                         placeholder="Search categories..."
                         @click.stop
                         ref="searchInput"
@@ -198,222 +198,11 @@
               </transition>
             </div>
 
-            <!-- Filter and Sort Options -->
-            <div class="flex space-x-2">
-              <!-- Sort Dropdown -->
-              <UDropdown
-                :items="sortOptions"
-                @select="updateSortOption"
-                class="flex-1"
-              >
-                <UButton block color="gray" variant="soft" class="h-full">
-                  <template #leading>
-                    <UIcon
-                      name="i-heroicons-adjustments-horizontal"
-                      class="w-5 h-5"
-                    />
-                  </template>
-                  <span class="truncate">{{ sortOption }}</span>
-                </UButton>
-              </UDropdown>
-
-              <!-- Advanced Filters Button -->
-              <UButton
-                color="gray"
-                variant="soft"
-                @click="showAdvancedFilters = !showAdvancedFilters"
-                :class="
-                  hasActiveFilters
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                    : ''
-                "
-              >
-                <template #leading>
-                  <UIcon name="i-heroicons-funnel" class="w-5 h-5" />
-                </template>
-                <UBadge
-                  v-if="hasActiveFilters"
-                  color="primary"
-                  variant="solid"
-                  size="xs"
-                  class="ml-1.5"
-                >
-                  {{ getActiveFiltersCount() }}
-                </UBadge>
-              </UButton>
-            </div>
+            <!-- age -->
           </div>
 
           <!-- Advanced Filters Panel (Expandable) -->
-          <transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="transform -translate-y-4 opacity-0"
-            enter-to-class="transform translate-y-0 opacity-100"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="transform translate-y-0 opacity-100"
-            leave-to-class="transform -translate-y-4 opacity-0"
-          >
-            <div
-              v-if="showAdvancedFilters"
-              class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700"
-            >
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Price Range -->
-                <div>
-                  <label
-                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >Price Range</label
-                  >
-                  <URangeSlider
-                    v-model="priceRange"
-                    :min="0"
-                    :max="10000"
-                    :step="100"
-                  />
-                  <div class="mt-2 flex justify-between text-sm text-slate-500">
-                    <span>৳{{ priceRange[0].toLocaleString() }}</span>
-                    <span>৳{{ priceRange[1].toLocaleString() }}</span>
-                  </div>
-                </div>
-
-                <!-- Rating Filter -->
-                <div>
-                  <label
-                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >Minimum Rating</label
-                  >
-                  <div class="flex space-x-2">
-                    <button
-                      v-for="rating in [0, 3, 3.5, 4, 4.5]"
-                      :key="rating"
-                      @click="minRating = rating"
-                      class="px-3 py-1.5 rounded border text-sm transition-colors"
-                      :class="
-                        minRating === rating
-                          ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-500'
-                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                      "
-                    >
-                      <span v-if="rating === 0">Any</span>
-                      <div v-else class="flex items-center">
-                        {{ rating }}+
-                        <UIcon
-                          name="i-heroicons-star"
-                          class="ml-1 w-3.5 h-3.5 text-amber-500"
-                        />
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Availability -->
-                <div>
-                  <label
-                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >Availability</label
-                  >
-                  <UToggle v-model="inStockOnly" size="md">
-                    <div class="flex items-center">
-                      <UIcon
-                        :name="
-                          inStockOnly
-                            ? 'i-heroicons-check-circle'
-                            : 'i-heroicons-x-circle'
-                        "
-                        class="w-5 h-5 mr-2"
-                        :class="
-                          inStockOnly ? 'text-green-500' : 'text-slate-400'
-                        "
-                      />
-                      <span>Show in-stock items only</span>
-                    </div>
-                  </UToggle>
-                </div>
-              </div>
-
-              <!-- Active Filters -->
-              <div class="mt-4 flex flex-wrap gap-2" v-if="hasActiveFilters">
-                <!-- Category Tag -->
-                <UBadge
-                  v-if="selectedCategory"
-                  color="primary"
-                  variant="soft"
-                  class="flex items-center gap-1 pl-2 pr-1 py-1"
-                >
-                  <UIcon :name="selectedCategory.icon" class="w-3.5 h-3.5" />
-                  <span>{{ selectedCategory.name }}</span>
-                  <button
-                    @click="selectCategory(null)"
-                    class="ml-1 p-0.5 hover:bg-primary-100 dark:hover:bg-primary-800/50 rounded-full"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
-                  </button>
-                </UBadge>
-
-                <!-- Price Range -->
-                <UBadge
-                  v-if="priceRange[0] > 0 || priceRange[1] < 10000"
-                  color="indigo"
-                  variant="soft"
-                  class="flex items-center gap-1 pl-2 pr-1 py-1"
-                >
-                  <UIcon name="i-heroicons-banknotes" class="w-3.5 h-3.5" />
-                  <span>৳{{ priceRange[0] }}-৳{{ priceRange[1] }}</span>
-                  <button
-                    @click="resetPriceRange"
-                    class="ml-1 p-0.5 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-full"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
-                  </button>
-                </UBadge>
-
-                <!-- Rating -->
-                <UBadge
-                  v-if="minRating > 0"
-                  color="amber"
-                  variant="soft"
-                  class="flex items-center gap-1 pl-2 pr-1 py-1"
-                >
-                  <UIcon name="i-heroicons-star" class="w-3.5 h-3.5" />
-                  <span>{{ minRating }}+ stars</span>
-                  <button
-                    @click="minRating = 0"
-                    class="ml-1 p-0.5 hover:bg-amber-100 dark:hover:bg-amber-800/50 rounded-full"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
-                  </button>
-                </UBadge>
-
-                <!-- In Stock -->
-                <UBadge
-                  v-if="inStockOnly"
-                  color="green"
-                  variant="soft"
-                  class="flex items-center gap-1 pl-2 pr-1 py-1"
-                >
-                  <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5" />
-                  <span>In Stock</span>
-                  <button
-                    @click="inStockOnly = false"
-                    class="ml-1 p-0.5 hover:bg-green-100 dark:hover:bg-green-800/50 rounded-full"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
-                  </button>
-                </UBadge>
-
-                <!-- Reset All -->
-                <UButton
-                  color="gray"
-                  variant="soft"
-                  size="xs"
-                  class="ml-auto"
-                  @click="resetAllFilters"
-                >
-                  Reset All
-                </UButton>
-              </div>
-            </div>
-          </transition>
+          <!-- pore -->
         </div>
 
         <!-- Results Header -->
@@ -677,6 +466,8 @@ import {
   watch,
 } from "vue";
 
+const { get } = useApi();
+
 // Category filtering
 const isOpen = ref(false);
 const searchQuery = ref("");
@@ -875,6 +666,11 @@ const initialProducts = ref([
     inStock: false,
   },
 ]);
+
+// async function fetchAllProducts() {
+//   const { data } = await get("/products/");
+//   initialProducts.value = data;
+// }
 
 // Infinity scroll implementation
 const currentPage = ref(0);
