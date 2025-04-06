@@ -333,7 +333,7 @@
 
     <!-- Customer Reviews Section -->
     <section class="pb-2 pt-10 w-full customer-reviews-section">
-      <div class="w-full px-6">
+      <div class="w-full px-3">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
           Customer Reviews
         </h2>
@@ -492,7 +492,7 @@
 
         <!-- Write a Review Section (Updated) -->
         <div
-          class="mt-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 max-w-3xl mx-auto"
+          class="mt-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2 max-w-3xl mx-auto"
         >
           <h3 class="text-xl font-semibold mb-4 text-center">
             Share Your Experience
@@ -588,7 +588,7 @@
 
     <!-- FAQ Section -->
     <section class="py-2 w-full">
-      <div class="w-full px-6 max-w-4xl mx-auto">
+      <div class="w-full px-3 max-w-4xl mx-auto">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
           Frequently Asked Questions
         </h2>
@@ -677,7 +677,7 @@
 
     <!-- Sticky Buy Now Button (Centered) -->
     <div
-      class="fixed bottom-32 left-12 right-12 z-50 dark:bg-slate-800 dark:border-slate-700 shadow-lg transform transition-transform"
+      class="fixed bottom-32 left-12 right-12 z-50 shadow-lg transform transition-transform"
       :class="{ 'translate-y-full': hideSticky, 'translate-y-0': !hideSticky }"
     >
       <div class="max-w-md mx-auto flex items-center justify-center">
