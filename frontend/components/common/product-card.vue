@@ -45,7 +45,7 @@
           </h3>
         </NuxtLink>
         <NuxtLink
-          :to="`https://adsyclub.com/eshop/${product?.owner_details?.store_username}`"
+          :to="`/eshop/${product?.owner_details?.store_username}`"
           class="text-blue-400 text-sm mb-1.5 inline-flex items-center gap-1 cursor-pointer"
         >
           <UIcon
