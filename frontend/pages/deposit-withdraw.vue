@@ -555,11 +555,24 @@
                   <path d="M20 17H4" />
                 </svg>
               </span>
-              <span class="ml-2 text-sm text-gray-900 capitalize">{{
-                row.transaction_type === "order_payment"
-                  ? "Product Purchase"
-                  : row.transaction_type
-              }}</span>
+              <span
+                class="ml-2 text-sm text-gray-900 capitalize"
+                v-if="row.transaction_type === 'order_payment'"
+                >{{
+                  row.transaction_type === "order_payment"
+                    ? "Product Purchase"
+                    : row.transaction_type
+                }}</span
+              >
+              <span
+                class="ml-2 text-sm text-gray-900 capitalize"
+                v-if="row.transaction_type === 'order_received'"
+                >{{
+                  row.transaction_type === "order_received"
+                    ? "Order Received"
+                    : row.transaction_type
+                }}</span
+              >
             </div>
           </template>
           <template #recipient-data="{ row }">
@@ -567,7 +580,8 @@
               class="text-sm text-gray-500 capitalize"
               v-if="row?.to_user_details"
             >
-              {{ row?.to_user_details?.name }}
+              {{ row.to_user_details.first_name }}
+              {{ row.to_user_details.last_name }}
             </div>
           </template>
           <template #sender-data="{ row }">
@@ -575,7 +589,8 @@
               class="text-sm text-gray-500 capitalize"
               v-if="row?.user_details"
             >
-              {{ row?.user_details?.name }}
+              {{ row.user_details.first_name }}
+              {{ row.user_details.last_name }}
             </div>
           </template>
           <template #method-data="{ row }">
@@ -597,12 +612,7 @@
                 'text-blue-600': row.transaction_type === 'Transfer',
               }"
             >
-              {{
-                formatAmount(
-                  row.payable_amount,
-                  row.transaction_type.toLowerCase()
-                )
-              }}
+              {{ formatAmount(row.amount, row.transaction_type.toLowerCase()) }}
             </div>
           </template>
           <template #status-data="{ row }">

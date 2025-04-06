@@ -1657,7 +1657,8 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                     user=user,
                     amount=-total_amount,
                     transaction_type='order_payment',
-                    completed=True
+                    completed=True,
+                    bank_status='completed',
                 )
                 
                 # Credit each seller with their portion of the payment
@@ -1671,12 +1672,12 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         
                         # Create transaction record for the seller
                         Balance.objects.create(
-                            user=seller,
+                            to_user=seller,
                             amount=amount,
                             transaction_type='order_received',
-                            description=f"Payment for order #{order.id}",
                             completed=True,
-                            from_user=user  # Track who made the payment
+                            bank_status='completed',
+                            user=user  # Track who made the payment
                         )
                     except User.DoesNotExist:
                         # Log this error but don't fail the order
