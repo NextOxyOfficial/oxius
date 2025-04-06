@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <UContainer class="sm:!max-w-2xl">
+    <UContainer>
       <CommonProductDetailsCard2 :currentProduct="currentProduct" />
     </UContainer>
   </PublicSection>

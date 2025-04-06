@@ -1,10 +1,11 @@
+<!-- filepath: c:\Users\NextOxy\Desktop\office\oxy-us\frontend\components\common\product-details-card2.vue -->
 <template>
-  <div class="product-sales-funnel">
+  <div class="product-sales-funnel w-full">
     <!-- Hero Section -->
     <section
-      class="hero-section bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl overflow-hidden"
+      class="hero-section bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl overflow-hidden w-full"
     >
-      <div class="container mx-auto px-6 py-12 md:py-20">
+      <div class="px-6 py-2 md:py-20 w-full">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <!-- Product Image -->
           <div class="relative order-2 md:order-1">
@@ -56,7 +57,7 @@
                 />
               </div>
               <span class="text-sm text-white/70 ml-2">
-                {{ currentProduct.reviews?.length || 125 }} verified reviews
+                {{ reviewCount }} verified reviews
               </span>
             </div>
             <p class="text-lg text-white/80 mb-6">
@@ -125,48 +126,67 @@
     </section>
 
     <!-- Countdown Timer Section -->
-    <section
-      class="py-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg my-6 text-center"
-    >
-      <p class="text-amber-800 dark:text-amber-400 font-medium mb-2">
-        Limited Time Offer
-      </p>
-      <div class="flex justify-center gap-4">
-        <div class="flex flex-col items-center">
-          <div
-            class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
-          >
-            12
+    <section class="w-full my-6">
+      <div class="py-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-center">
+        <p class="text-amber-800 dark:text-amber-400 font-medium mb-2">
+          Limited Time Offer
+        </p>
+        <div class="flex justify-center gap-4">
+          <div class="flex flex-col items-center">
+            <div
+              class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
+            >
+              12
+            </div>
+            <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
+              >Hours</span
+            >
           </div>
-          <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
-            >Hours</span
-          >
+          <div class="flex flex-col items-center">
+            <div
+              class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
+            >
+              45
+            </div>
+            <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
+              >Minutes</span
+            >
+          </div>
+          <div class="flex flex-col items-center">
+            <div
+              class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
+            >
+              22
+            </div>
+            <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
+              >Seconds</span
+            >
+          </div>
         </div>
-        <div class="flex flex-col items-center">
+      </div>
+    </section>
+
+    <!-- Description Section -->
+    <section class="w-full my-6">
+      <div class="bg-slate-50 dark:bg-slate-800/20 rounded-lg p-6">
+        <div class="prose prose-slate dark:prose-invert max-w-none">
           <div
-            class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
-          >
-            45
-          </div>
-          <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
-            >Minutes</span
-          >
-        </div>
-        <div class="flex flex-col items-center">
-          <div
-            class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
-          >
-            22
-          </div>
-          <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
-            >Seconds</span
-          >
+            v-if="currentProduct.description"
+            v-html="currentProduct.description"
+          ></div>
+          <p v-else>
+            This premium product offers exceptional performance and reliability.
+            Built with high-quality materials and expert craftsmanship, it's
+            designed to exceed your expectations. The ergonomic design ensures
+            comfortable use while the durable construction guarantees
+            long-lasting performance.
+          </p>
         </div>
       </div>
     </section>
 
     <!-- Key Benefits Section -->
-    <section class="py-12">
+    <section class="py-2 w-full">
       <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">
         Why Choose
         <span class="text-primary-600 dark:text-primary-400">{{
@@ -229,259 +249,102 @@
       </div>
     </section>
 
-    <!-- Product Features Section -->
-    <section class="py-12 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
-      <div class="container mx-auto px-6">
+    <!-- Shipping Information Section -->
+    <section
+      class="pt-10 pb-2 bg-slate-50 dark:bg-slate-800/30 rounded-xl w-full"
+    >
+      <div class="w-full px-6">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
-          Product Details & Specifications
+          Shipping Information
         </h2>
-        <p
-          class="text-center text-slate-600 dark:text-slate-300 mb-12 max-w-2xl mx-auto"
-        >
-          Experience the perfect blend of design and functionality with our
-          {{ currentProduct.name }}. Designed with the modern consumer in mind.
+        <p class="text-center text-slate-600 dark:text-slate-300 mb-6">
+          Fast and reliable delivery options for {{ currentProduct.name }}
         </p>
 
-        <!-- Product Tabs -->
-        <UTabs
-          v-model="activeTab"
-          :items="[
-            {
-              label: 'Features',
-              slot: 'features',
-              icon: 'i-heroicons-list-bullet',
-            },
-            {
-              label: 'Specifications',
-              slot: 'specs',
-              icon: 'i-heroicons-document-text',
-            },
-            { label: 'Shipping', slot: 'shipping', icon: 'i-heroicons-truck' },
-          ]"
-          class="mb-8"
-        >
-          <template #features>
-            <div class="py-6 max-w-3xl mx-auto">
-              <div
-                v-html="
-                  currentProduct.description ||
-                  '<p>This premium product offers exceptional performance and reliability. Built with high-quality materials and expert craftsmanship, it\'s designed to exceed your expectations.</p>'
-                "
-              ></div>
-
-              <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="feature-item">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-5 h-5 text-green-500"
-                  />
-                  <span>Premium Materials</span>
-                </div>
-                <div class="feature-item">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-5 h-5 text-green-500"
-                  />
-                  <span>Ergonomic Design</span>
-                </div>
-                <div class="feature-item">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-5 h-5 text-green-500"
-                  />
-                  <span>Long-lasting Performance</span>
-                </div>
-                <div class="feature-item">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-5 h-5 text-green-500"
-                  />
-                  <span>Energy Efficient</span>
-                </div>
-                <div class="feature-item">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-5 h-5 text-green-500"
-                  />
-                  <span>Easy to Use</span>
-                </div>
-                <div class="feature-item">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-5 h-5 text-green-500"
-                  />
-                  <span>Modern Aesthetic</span>
-                </div>
-              </div>
+        <div class="py-6 max-w-3xl mx-auto">
+          <div
+            class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-900"
+          >
+            <div class="flex items-start">
+              <UIcon
+                name="i-heroicons-information-circle"
+                class="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-2 flex-shrink-0"
+              />
+              <p class="text-green-800 dark:text-green-300 text-sm">
+                <strong>Free shipping available!</strong> Orders over ৳5,000
+                qualify for free delivery nationwide.
+              </p>
             </div>
-          </template>
+          </div>
 
-          <template #specs>
-            <div class="py-6 max-w-3xl mx-auto">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400">Brand:</span>
-                  <span class="font-medium">Premium Selection</span>
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400">Model:</span>
-                  <span class="font-medium"
-                    >X-{{ 1000 + Math.floor(Math.random() * 9000) }}</span
-                  >
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400"
-                    >Dimensions:</span
-                  >
-                  <span class="font-medium">24 x 12 x 8 cm</span>
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400"
-                    >Weight:</span
-                  >
-                  <span class="font-medium"
-                    >{{ currentProduct.weight || "1.2" }} kg</span
-                  >
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400"
-                    >Material:</span
-                  >
-                  <span class="font-medium">Premium Composite</span>
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400">Color:</span>
-                  <span class="font-medium">Classic Black</span>
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400"
-                    >Warranty:</span
-                  >
-                  <span class="font-medium">1 Year</span>
-                </div>
-                <div
-                  class="flex justify-between py-3 border-b border-slate-100 dark:border-slate-700"
-                >
-                  <span class="text-slate-500 dark:text-slate-400"
-                    >In Stock:</span
-                  >
-                  <span class="font-medium"
-                    >{{ currentProduct.quantity || "Limited" }} units</span
-                  >
-                </div>
-              </div>
-            </div>
-          </template>
-
-          <template #shipping>
-            <div class="py-6 max-w-3xl mx-auto">
-              <div
-                class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-900"
-              >
-                <div class="flex items-start">
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
                   <UIcon
-                    name="i-heroicons-information-circle"
-                    class="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-2 flex-shrink-0"
+                    name="i-heroicons-truck"
+                    class="w-5 h-5 text-slate-600 dark:text-slate-300 mr-2"
                   />
-                  <p class="text-green-800 dark:text-green-300 text-sm">
-                    <strong>Free shipping available!</strong> Orders over ৳5,000
-                    qualify for free delivery nationwide.
-                  </p>
+                  <h4 class="font-medium">Inside Dhaka</h4>
+                </div>
+                <div class="font-semibold">
+                  ৳{{ currentProduct.delivery_fee_inside_dhaka || "100" }}
                 </div>
               </div>
-
-              <div class="space-y-4">
-                <div
-                  class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <UIcon
-                        name="i-heroicons-truck"
-                        class="w-5 h-5 text-slate-600 dark:text-slate-300 mr-2"
-                      />
-                      <h4 class="font-medium">Inside Dhaka</h4>
-                    </div>
-                    <div class="font-semibold">
-                      ৳{{ currentProduct.delivery_fee_inside_dhaka || "100" }}
-                    </div>
-                  </div>
-                  <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Estimated delivery: 2-3 business days
-                  </p>
-                </div>
-
-                <div
-                  class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <UIcon
-                        name="i-heroicons-truck"
-                        class="w-5 h-5 text-slate-600 dark:text-slate-300 mr-2"
-                      />
-                      <h4 class="font-medium">Outside Dhaka</h4>
-                    </div>
-                    <div class="font-semibold">
-                      ৳{{ currentProduct.delivery_fee_outside_dhaka || "150" }}
-                    </div>
-                  </div>
-                  <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Estimated delivery: 3-5 business days
-                  </p>
-                </div>
-
-                <div
-                  class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm"
-                >
-                  <div class="flex items-center">
-                    <UIcon
-                      name="i-heroicons-gift"
-                      class="w-5 h-5 text-slate-600 dark:text-slate-300 mr-2"
-                    />
-                    <h4 class="font-medium">Premium Packaging</h4>
-                  </div>
-                  <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    All products are securely packed to ensure safe delivery
-                  </p>
-                </div>
-              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Estimated delivery: 2-3 business days
+              </p>
             </div>
-          </template>
-        </UTabs>
+
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <UIcon
+                    name="i-heroicons-truck"
+                    class="w-5 h-5 text-slate-600 dark:text-slate-300 mr-2"
+                  />
+                  <h4 class="font-medium">Outside Dhaka</h4>
+                </div>
+                <div class="font-semibold">
+                  ৳{{ currentProduct.delivery_fee_outside_dhaka || "150" }}
+                </div>
+              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Estimated delivery: 3-5 business days
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+              <div class="flex items-center">
+                <UIcon
+                  name="i-heroicons-gift"
+                  class="w-5 h-5 text-slate-600 dark:text-slate-300 mr-2"
+                />
+                <h4 class="font-medium">Premium Packaging</h4>
+              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                All products are securely packed to ensure safe delivery
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Customer Reviews Section -->
-    <section class="py-12">
-      <div class="container mx-auto px-6">
+    <section class="pb-2 pt-10 w-full customer-reviews-section">
+      <div class="w-full px-6">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
           Customer Reviews
         </h2>
-        <p
-          class="text-center text-slate-600 dark:text-slate-300 mb-12 max-w-2xl mx-auto"
-        >
+        <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
           Join thousands of satisfied customers who have experienced the
           difference
         </p>
 
         <!-- Reviews Summary -->
         <div
-          class="max-w-4xl mx-auto mb-10 bg-white dark:bg-slate-800/80 rounded-xl shadow-md p-6"
+          class="mb-10 bg-white dark:bg-slate-800/80 rounded-xl shadow-md p-6 max-w-4xl mx-auto"
         >
           <div class="flex flex-col md:flex-row gap-6 md:items-center">
             <div
@@ -490,7 +353,7 @@
               <div
                 class="text-5xl font-bold text-slate-800 dark:text-white mb-2"
               >
-                {{ currentProduct?.rating || "4.9" }}
+                {{ averageRating }}
               </div>
               <div class="flex justify-center text-amber-400 my-1">
                 <UIcon
@@ -501,7 +364,7 @@
                 />
               </div>
               <div class="text-sm text-slate-500 dark:text-slate-400">
-                Based on {{ currentProduct?.reviews?.length || "125" }} reviews
+                Based on {{ reviewCount }} reviews
               </div>
             </div>
 
@@ -523,319 +386,217 @@
                   ></div>
                 </div>
                 <div class="text-sm w-10 text-left ml-3">
-                  {{
-                    getRatingCount(6 - n) ||
-                    (6 - n === 5
-                      ? "98"
-                      : 6 - n === 4
-                      ? "22"
-                      : 6 - n === 3
-                      ? "4"
-                      : "1")
-                  }}
+                  {{ getRatingCount(6 - n) }}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Featured Reviews -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Featured Reviews with Pagination -->
+        <div class="max-w-6xl mx-auto mb-10">
+          <!-- Reviews grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              v-for="(review, index) in displayedReviews"
+              :key="index"
+              class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 transition-transform hover:translate-y-[-5px]"
+            >
+              <div class="flex text-amber-400 mb-3">
+                <UIcon
+                  v-for="star in 5"
+                  :key="star"
+                  :name="
+                    star <= review.rating
+                      ? 'i-heroicons-star-solid'
+                      : 'i-heroicons-star'
+                  "
+                  class="w-5 h-5"
+                  :class="
+                    star <= review.rating ? 'text-amber-400' : 'text-gray-200'
+                  "
+                />
+              </div>
+              <p class="text-slate-600 dark:text-slate-300 mb-4">
+                "{{ review.comment }}"
+              </p>
+              <div class="flex items-center">
+                <div
+                  class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium"
+                >
+                  {{ review.name?.charAt(0) || "U" }}
+                </div>
+                <div>
+                  <div class="font-medium text-slate-900 dark:text-white">
+                    {{ review.name }}
+                  </div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400">
+                    {{ review.date || "Verified Purchase" }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination controls -->
           <div
-            v-for="(review, index) in displayedReviews"
-            :key="index"
-            class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 transition-transform hover:translate-y-[-5px]"
+            class="flex justify-center items-center mt-8 gap-2"
+            v-if="totalReviewPages > 1"
           >
-            <div class="flex text-amber-400 mb-3">
-              <UIcon
-                v-for="star in 5"
-                :key="star"
-                :name="
-                  star <= review.rating
-                    ? 'i-heroicons-star-solid'
-                    : 'i-heroicons-star'
-                "
-                class="w-5 h-5"
-                :class="
-                  star <= review.rating ? 'text-amber-400' : 'text-gray-200'
-                "
-              />
-            </div>
-            <p class="text-slate-600 dark:text-slate-300 mb-4">
-              "{{ review.comment }}"
-            </p>
-            <div class="flex items-center">
-              <div
-                class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium"
+            <!-- Previous button -->
+            <UButton
+              icon="i-heroicons-chevron-left"
+              color="gray"
+              variant="ghost"
+              :disabled="currentReviewPage === 1"
+              @click="previousReviewPage"
+              size="sm"
+              class="rounded-full"
+            />
+
+            <!-- Page numbers -->
+            <div class="flex gap-1">
+              <UButton
+                v-for="page in paginationRange"
+                :key="page"
+                :variant="currentReviewPage === page ? 'solid' : 'ghost'"
+                :color="currentReviewPage === page ? 'primary' : 'gray'"
+                size="sm"
+                class="w-8 h-8"
+                @click="goToReviewPage(page)"
+                v-if="page !== '...'"
               >
-                {{ review.name?.charAt(0) || "U" }}
-              </div>
-              <div>
-                <div class="font-medium text-slate-900 dark:text-white">
-                  {{ review.name }}
-                </div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
-                  {{ review.date || "Verified Purchase" }}
-                </div>
+                {{ page }}
+              </UButton>
+              <!-- Ellipsis -->
+              <div
+                v-if="paginationRange.includes('...')"
+                class="w-8 h-8 flex items-center justify-center text-slate-500"
+              >
+                ...
               </div>
             </div>
+
+            <!-- Next button -->
+            <UButton
+              icon="i-heroicons-chevron-right"
+              color="gray"
+              variant="ghost"
+              :disabled="currentReviewPage === totalReviewPages"
+              @click="nextReviewPage"
+              size="sm"
+              class="rounded-full"
+            />
           </div>
         </div>
 
-        <!-- Write a Review Section -->
+        <!-- Write a Review Section (Updated) -->
         <div
-          class="max-w-2xl mx-auto mt-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6"
+          class="mt-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 max-w-3xl mx-auto"
         >
           <h3 class="text-xl font-semibold mb-4 text-center">
             Share Your Experience
           </h3>
-          <div class="space-y-4">
-            <div>
-              <label
-                class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
-              >
-                Your Rating
-              </label>
-              <div class="flex gap-1">
-                <UButton
-                  v-for="star in 5"
-                  :key="star"
-                  variant="ghost"
-                  color="gray"
-                  class="p-1"
-                  @click="reviewForm.rating = star"
+
+          <!-- Conditionally show review form or login message -->
+          <div v-if="isLoggedIn">
+            <div class="space-y-4">
+              <div>
+                <label
+                  class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
                 >
-                  <UIcon
-                    :name="
-                      star <= reviewForm.rating
-                        ? 'i-heroicons-star-solid'
-                        : 'i-heroicons-star'
-                    "
-                    class="w-6 h-6 transition-colors duration-200"
-                    :class="
-                      star <= reviewForm.rating
-                        ? 'text-amber-400'
-                        : 'text-slate-300 dark:text-slate-600'
-                    "
-                  />
-                </UButton>
+                  Your Rating
+                </label>
+                <div class="flex gap-1">
+                  <UButton
+                    v-for="star in 5"
+                    :key="star"
+                    variant="ghost"
+                    color="gray"
+                    class="p-1"
+                    @click="reviewForm.rating = star"
+                  >
+                    <UIcon
+                      :name="
+                        star <= reviewForm.rating
+                          ? 'i-heroicons-star-solid'
+                          : 'i-heroicons-star'
+                      "
+                      class="w-6 h-6 transition-colors duration-200"
+                      :class="
+                        star <= reviewForm.rating
+                          ? 'text-amber-400'
+                          : 'text-slate-300 dark:text-slate-600'
+                      "
+                    />
+                  </UButton>
+                </div>
               </div>
-            </div>
-            <div>
-              <label
-                class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+              <div>
+                <label
+                  class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+                >
+                  Your Name
+                </label>
+                <UInput
+                  v-model="reviewForm.name"
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
+                >
+                  Your Review
+                </label>
+                <UTextarea
+                  v-model="reviewForm.comment"
+                  placeholder="Share your experience with this product..."
+                  rows="3"
+                />
+              </div>
+              <UButton
+                color="primary"
+                @click="submitReview"
+                :disabled="!isReviewValid"
+                block
               >
-                Your Name
-              </label>
-              <UInput v-model="reviewForm.name" placeholder="Enter your name" />
+                Submit Review
+              </UButton>
             </div>
-            <div>
-              <label
-                class="block text-sm mb-1 text-slate-600 dark:text-slate-300"
-              >
-                Your Review
-              </label>
-              <UTextarea
-                v-model="reviewForm.comment"
-                placeholder="Share your experience with this product..."
-                rows="3"
-              />
-            </div>
-            <UButton
-              color="primary"
-              @click="submitReview"
-              :disabled="!isReviewValid"
-              block
-            >
-              Submit Review
-            </UButton>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Comparison Table Section -->
-    <section
-      class="py-12 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800/80 rounded-xl"
-    >
-      <div class="container mx-auto px-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
-          Why Choose Our Product?
-        </h2>
-        <p
-          class="text-center text-slate-600 dark:text-slate-300 mb-12 max-w-2xl mx-auto"
-        >
-          See how our product compares to the competition
-        </p>
-
-        <div class="max-w-4xl mx-auto overflow-x-auto">
-          <table class="w-full border-collapse">
-            <thead>
-              <tr>
-                <th
-                  class="py-4 px-6 bg-white dark:bg-slate-800 text-left sticky left-0 z-10"
-                ></th>
-                <th
-                  class="py-4 px-6 bg-primary-100 dark:bg-primary-900/30 text-center relative"
-                >
-                  <div
-                    class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary-500 text-white text-xs px-3 py-1 rounded-full"
-                  >
-                    BEST CHOICE
-                  </div>
-                  <span
-                    class="text-primary-700 dark:text-primary-300 font-bold"
-                    >{{ currentProduct.name }}</span
-                  >
-                </th>
-                <th
-                  class="py-4 px-6 bg-slate-100 dark:bg-slate-800/80 text-center"
-                >
-                  <span class="text-slate-500">Competitor A</span>
-                </th>
-                <th
-                  class="py-4 px-6 bg-slate-100 dark:bg-slate-800/80 text-center"
-                >
-                  <span class="text-slate-500">Competitor B</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td
-                  class="py-4 px-6 bg-white dark:bg-slate-800 font-medium sticky left-0 z-10"
-                >
-                  Quality
-                </td>
-                <td
-                  class="py-4 px-6 bg-primary-50 dark:bg-primary-900/10 text-center"
-                >
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-6 h-6 text-green-500 mx-auto"
-                  />
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  <UIcon
-                    name="i-heroicons-x-circle"
-                    class="w-6 h-6 text-red-500 mx-auto"
-                  />
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-6 h-6 text-green-500 mx-auto"
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td
-                  class="py-4 px-6 bg-white dark:bg-slate-800 font-medium sticky left-0 z-10"
-                >
-                  Price
-                </td>
-                <td
-                  class="py-4 px-6 bg-primary-50 dark:bg-primary-900/10 text-center font-bold"
-                >
-                  ৳{{
-                    currentProduct.sale_price || currentProduct.regular_price
-                  }}
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  ৳{{
-                    (currentProduct.sale_price ||
-                      currentProduct.regular_price) * 1.4
-                  }}
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  ৳{{
-                    (currentProduct.sale_price ||
-                      currentProduct.regular_price) * 1.2
-                  }}
-                </td>
-              </tr>
-              <tr>
-                <td
-                  class="py-4 px-6 bg-white dark:bg-slate-800 font-medium sticky left-0 z-10"
-                >
-                  Warranty
-                </td>
-                <td
-                  class="py-4 px-6 bg-primary-50 dark:bg-primary-900/10 text-center"
-                >
-                  1 Year
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  6 Months
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  None
-                </td>
-              </tr>
-              <tr>
-                <td
-                  class="py-4 px-6 bg-white dark:bg-slate-800 font-medium sticky left-0 z-10"
-                >
-                  Delivery
-                </td>
-                <td
-                  class="py-4 px-6 bg-primary-50 dark:bg-primary-900/10 text-center"
-                >
-                  2-3 Days
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  5-7 Days
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  3-5 Days
-                </td>
-              </tr>
-              <tr>
-                <td
-                  class="py-4 px-6 bg-white dark:bg-slate-800 font-medium sticky left-0 z-10"
-                >
-                  Customer Support
-                </td>
-                <td
-                  class="py-4 px-6 bg-primary-50 dark:bg-primary-900/10 text-center"
-                >
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-6 h-6 text-green-500 mx-auto"
-                  />
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  <UIcon
-                    name="i-heroicons-x-circle"
-                    class="w-6 h-6 text-red-500 mx-auto"
-                  />
-                </td>
-                <td class="py-4 px-6 bg-white dark:bg-slate-800/60 text-center">
-                  <UIcon
-                    name="i-heroicons-x-circle"
-                    class="w-6 h-6 text-red-500 mx-auto"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-else class="text-center p-6">
+            <UIcon
+              name="i-heroicons-lock-closed"
+              class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4"
+            />
+            <h4 class="text-lg font-medium mb-2">Please Log In to Review</h4>
+            <p class="text-slate-600 dark:text-slate-400 mb-4">
+              You need to be logged in to share your experience with this
+              product.
+            </p>
+            <div class="flex justify-center">
+              <UButton to="/login" color="primary">
+                Log in to continue
+              </UButton>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- FAQ Section -->
-    <section class="py-12">
-      <div class="container mx-auto px-6">
+    <section class="py-2 w-full">
+      <div class="w-full px-6 max-w-4xl mx-auto">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
           Frequently Asked Questions
         </h2>
-        <p
-          class="text-center text-slate-600 dark:text-slate-300 mb-12 max-w-2xl mx-auto"
-        >
+        <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
           Everything you need to know about our product
         </p>
 
-        <div class="max-w-3xl mx-auto">
+        <div>
           <UAccordion :items="faqs" />
         </div>
       </div>
@@ -843,13 +604,13 @@
 
     <!-- Final CTA Section -->
     <section
-      class="py-12 bg-gradient-to-br from-primary-600 to-primary-800 text-white rounded-xl my-6"
+      class="py-2 bg-gradient-to-br from-primary-600 to-primary-800 text-white rounded-xl my-6 w-full"
     >
-      <div class="container mx-auto px-6 text-center">
+      <div class="px-6 py-8 text-center w-full">
         <h2 class="text-3xl md:text-4xl font-bold mb-6">
           Ready to Experience the Difference?
         </h2>
-        <p class="text-white/80 mb-8 max-w-2xl mx-auto text-lg">
+        <p class="text-white/80 mb-8 text-lg max-w-3xl mx-auto">
           Join thousands of satisfied customers who have already transformed
           their experience with {{ currentProduct.name }}.
         </p>
@@ -913,6 +674,28 @@
         </div>
       </div>
     </section>
+
+    <!-- Sticky Buy Now Button (Centered) -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-lg transform transition-transform"
+      :class="{ 'translate-y-full': hideSticky, 'translate-y-0': !hideSticky }"
+    >
+      <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-center">
+        <button
+          @click="addToCart(currentProduct, 1)"
+          class="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-lg font-medium shadow flex items-center justify-center gap-2"
+        >
+          <div class="flex items-center gap-2">
+            <UIcon name="i-heroicons-shopping-cart" class="w-5 h-5" />
+            <span
+              >Buy Now - ৳{{
+                currentProduct.sale_price || currentProduct.regular_price
+              }}</span
+            >
+          </div>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -929,6 +712,16 @@ function closeModal() {
 }
 
 const cart = useStoreCart();
+const user = useState("user"); // Access user state
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!user.value);
+
+// Determine if user can submit a review
+const canSubmitReview = computed(() => {
+  return isLoggedIn.value;
+});
+
 function addToCart(product, quantity) {
   cart.addProduct(product, quantity);
   navigateTo("/checkout/");
@@ -951,10 +744,8 @@ function calculateDiscountPercentage(regular, sale) {
 
 // Calculate savings
 function calculateSavings(sale_price, regular_price) {
-  // Safety check in case prices are undefined
   if (!sale_price || !regular_price) return 0;
 
-  // Handle both string and number inputs
   const current =
     typeof sale_price === "string"
       ? Number(sale_price.replace(/,/g, ""))
@@ -965,16 +756,28 @@ function calculateSavings(sale_price, regular_price) {
       ? Number(regular_price.replace(/,/g, ""))
       : Number(regular_price);
 
-  // Calculate and format savings
   return (regular - current).toLocaleString();
 }
 
-// Add these to your existing script section
-const activeTab = ref("features");
 const reviewForm = ref({
   name: "",
   rating: 0,
   comment: "",
+});
+
+// Review calculations
+const reviewCount = computed(() => {
+  return currentProduct?.reviews?.length || 125;
+});
+
+const averageRating = computed(() => {
+  if (!currentProduct?.reviews?.length) return "4.9";
+
+  const sum = currentProduct.reviews.reduce(
+    (total, review) => total + review.rating,
+    0
+  );
+  return (sum / currentProduct.reviews.length).toFixed(1);
 });
 
 // Computed for review validity
@@ -988,28 +791,167 @@ const isReviewValid = computed(() => {
 
 // Rating distribution functions
 function getRatingPercentage(rating) {
-  if (!currentProduct || !currentProduct.reviews) return "0%";
+  if (!currentProduct?.reviews?.length) {
+    // Default distribution if no reviews
+    if (rating === 5) return "78%";
+    if (rating === 4) return "18%";
+    if (rating === 3) return "3%";
+    return "1%";
+  }
 
-  const total = currentProduct.reviews.length || 1;
-  const count =
-    currentProduct.reviews?.filter((r) => Math.round(r.rating) === rating)
-      .length || 0;
+  const total = currentProduct.reviews.length;
+  const count = currentProduct.reviews.filter(
+    (r) => Math.round(r.rating) === rating
+  ).length;
 
   return `${(count / total) * 100}%`;
 }
 
 function getRatingCount(rating) {
-  if (!currentProduct || !currentProduct.reviews) return 0;
+  if (!currentProduct?.reviews?.length) {
+    // Default counts if no reviews
+    if (rating === 5) return "98";
+    if (rating === 4) return "22";
+    if (rating === 3) return "4";
+    return "1";
+  }
 
-  return (
-    currentProduct.reviews?.filter((r) => Math.round(r.rating) === rating)
-      .length || 0
-  );
+  return currentProduct.reviews.filter((r) => Math.round(r.rating) === rating)
+    .length;
 }
 
-// Improved submit review function
+// Reviews pagination
+const reviewsPerPage = 3;
+const currentReviewPage = ref(1);
+
+// Modified to support pagination
+const displayedReviews = computed(() => {
+  // Get all available reviews (actual or sample)
+  const allReviews =
+    currentProduct?.reviews?.length > 0
+      ? currentProduct.reviews
+      : [
+          {
+            name: "Ahmed Khan",
+            rating: 5,
+            date: "2 weeks ago",
+            comment:
+              "This product exceeded my expectations! The quality is outstanding and it arrived quickly. Would definitely recommend to anyone looking for a premium solution.",
+          },
+          {
+            name: "Priya Sharma",
+            rating: 5,
+            date: "1 month ago",
+            comment:
+              "I've tried many similar products but this one stands out. The attention to detail is impressive and the performance is consistently reliable.",
+          },
+          {
+            name: "Mohammad Ali",
+            rating: 4,
+            date: "3 weeks ago",
+            comment:
+              "Great product overall. Shipping was fast and the quality is as advertised. Only giving 4 stars because the instructions could be clearer.",
+          },
+          {
+            name: "Sarah Johnson",
+            rating: 5,
+            date: "2 months ago",
+            comment:
+              "Absolutely love this! It's made such a difference in my daily routine. The design is beautiful and functionality is perfect.",
+          },
+          {
+            name: "Rahul Patel",
+            rating: 5,
+            date: "3 months ago",
+            comment:
+              "Best purchase I've made this year! The product is durable, well-designed and performs exactly as described. Customer service was also excellent.",
+          },
+          {
+            name: "Lisa Wong",
+            rating: 4,
+            date: "1 month ago",
+            comment:
+              "Very satisfied with my purchase. The product is high quality and the delivery was quick. Would buy from this store again.",
+          },
+        ];
+
+  // Calculate the start and end index for the current page
+  const startIndex = (currentReviewPage.value - 1) * reviewsPerPage;
+  const endIndex = startIndex + reviewsPerPage;
+
+  // Return the reviews for the current page
+  return allReviews.slice(startIndex, endIndex);
+});
+
+// Calculate total number of pages
+const totalReviewPages = computed(() => {
+  const totalReviews = currentProduct?.reviews?.length || 6; // Use 6 if no reviews
+  return Math.ceil(totalReviews / reviewsPerPage);
+});
+
+// Generate pagination range with ellipsis for many pages
+const paginationRange = computed(() => {
+  if (totalReviewPages.value <= 5) {
+    return Array.from({ length: totalReviewPages.value }, (_, i) => i + 1);
+  }
+
+  if (currentReviewPage.value <= 3) {
+    return [1, 2, 3, 4, "...", totalReviewPages.value];
+  }
+
+  if (currentReviewPage.value >= totalReviewPages.value - 2) {
+    return [
+      1,
+      "...",
+      totalReviewPages.value - 3,
+      totalReviewPages.value - 2,
+      totalReviewPages.value - 1,
+      totalReviewPages.value,
+    ];
+  }
+
+  return [
+    1,
+    "...",
+    currentReviewPage.value - 1,
+    currentReviewPage.value,
+    currentReviewPage.value + 1,
+    "...",
+    totalReviewPages.value,
+  ];
+});
+
+// Navigation functions
+function goToReviewPage(page) {
+  currentReviewPage.value = page;
+}
+
+function previousReviewPage() {
+  if (currentReviewPage.value > 1) {
+    currentReviewPage.value--;
+  }
+}
+
+function nextReviewPage() {
+  if (currentReviewPage.value < totalReviewPages.value) {
+    currentReviewPage.value++;
+  }
+}
+
+// Auto-scroll to reviews when page changes
+watch(currentReviewPage, () => {
+  // Optional: Smooth scroll to the reviews section on page change
+  const reviewsSection = document.querySelector(".customer-reviews-section");
+  if (reviewsSection) {
+    setTimeout(() => {
+      reviewsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }
+});
+
+// Submit review function
 function submitReview() {
-  if (!isReviewValid.value) return;
+  if (!isReviewValid.value || !isLoggedIn.value) return;
 
   // Add review to product
   if (!currentProduct.reviews) {
@@ -1017,11 +959,12 @@ function submitReview() {
   }
 
   currentProduct.reviews.unshift({
-    name: reviewForm.value.name,
+    name: reviewForm.value.name || user.value?.name || "Anonymous",
     rating: reviewForm.value.rating,
     date: "Just now",
     comment: reviewForm.value.comment.trim(),
-    avatar: "",
+    avatar: user.value?.avatar || "",
+    verified: false, // Changed from hasPurchased.value
   });
 
   // Reset form
@@ -1030,60 +973,10 @@ function submitReview() {
     rating: 0,
     comment: "",
   };
+
+  // Reset to first page to show the newly added review
+  currentReviewPage.value = 1;
 }
-
-// Sample reviews when none exist
-const displayedReviews = computed(() => {
-  if (currentProduct?.reviews?.length > 0) {
-    return currentProduct.reviews.slice(0, 6);
-  }
-
-  // Sample reviews when none exist
-  return [
-    {
-      name: "Ahmed Khan",
-      rating: 5,
-      date: "2 weeks ago",
-      comment:
-        "This product exceeded my expectations! The quality is outstanding and it arrived quickly. Would definitely recommend to anyone looking for a premium solution.",
-    },
-    {
-      name: "Priya Sharma",
-      rating: 5,
-      date: "1 month ago",
-      comment:
-        "I've tried many similar products but this one stands out. The attention to detail is impressive and the performance is consistently reliable.",
-    },
-    {
-      name: "Mohammad Ali",
-      rating: 4,
-      date: "3 weeks ago",
-      comment:
-        "Great product overall. Shipping was fast and the quality is as advertised. Only giving 4 stars because the instructions could be clearer.",
-    },
-    {
-      name: "Sarah Johnson",
-      rating: 5,
-      date: "2 months ago",
-      comment:
-        "Absolutely love this! It's made such a difference in my daily routine. The design is beautiful and functionality is perfect.",
-    },
-    {
-      name: "Rahul Patel",
-      rating: 5,
-      date: "3 months ago",
-      comment:
-        "Best purchase I've made this year! The product is durable, well-designed and performs exactly as described. Customer service was also excellent.",
-    },
-    {
-      name: "Lisa Wong",
-      rating: 4,
-      date: "1 month ago",
-      comment:
-        "Very satisfied with my purchase. The product is high quality and the delivery was quick. Would buy from this store again.",
-    },
-  ];
-});
 
 // FAQ items
 const faqs = [
@@ -1099,7 +992,6 @@ const faqs = [
       "We accept all major credit cards, mobile banking, bKash, Nagad, and bank transfers. All payments are processed securely.",
     icon: "i-heroicons-credit-card",
   },
-
   {
     label: "How long does delivery take?",
     content:
@@ -1113,12 +1005,46 @@ const faqs = [
     icon: "i-heroicons-building-storefront",
   },
 ];
+
+// Sticky button visibility control
+const lastScrollPosition = ref(0);
+const hideSticky = ref(true);
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
+
+function handleScroll() {
+  // Show sticky button when user has scrolled a bit (200px)
+  if (window.scrollY > 200) {
+    hideSticky.value = false;
+
+    // Hide when scrolling up at the very top
+    if (window.scrollY < lastScrollPosition.value && window.scrollY < 50) {
+      hideSticky.value = true;
+    }
+
+    // Hide when reaching the bottom of the page (near the CTA)
+    const bottomPosition =
+      document.documentElement.scrollHeight - window.innerHeight - 300;
+    if (window.scrollY > bottomPosition) {
+      hideSticky.value = true;
+    }
+  } else {
+    hideSticky.value = true;
+  }
+
+  lastScrollPosition.value = window.scrollY;
+}
 </script>
 
 <style scoped>
 .product-sales-funnel {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%; /* Make it full width */
 }
 
 .benefit-card {
@@ -1131,39 +1057,5 @@ const faqs = [
 
 .feature-item {
   @apply flex items-center gap-2 bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm;
-}
-
-.stars-background,
-.stars-foreground {
-  @apply flex;
-}
-
-.rating-stars {
-  @apply relative inline-flex;
-}
-
-.stars-foreground {
-  @apply absolute top-0 left-0 overflow-hidden;
-}
-
-/* Add some subtle animations */
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 8px rgba(79, 70, 229, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(79, 70, 229, 0.8);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 </style>
