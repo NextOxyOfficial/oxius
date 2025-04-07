@@ -215,7 +215,7 @@
       :ui="{
         inner: 'fixed inset-0 overflow-y-auto rounded-md',
         base: 'relative text-left rtl:text-right flex flex-col -top-12 sm:top-8 rounded-md',
-        fullscreen: 'w-full max-w-3xl h-[600px] sm:h-[750px]',
+        fullscreen: 'w-full max-w-3xl mt-32 sm:mt-12 mb-10 sm:h-[750px]',
       }"
       fullscreen
     >

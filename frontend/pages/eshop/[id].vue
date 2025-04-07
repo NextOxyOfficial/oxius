@@ -446,16 +446,13 @@
                 Ready to explore our products?
               </h2>
               <p class="text-slate-300">
-                Join thousands of satisfied customers today.
+                Follow us and join thousands of satisfied customers today.
               </p>
             </div>
             <p
               class="rounded-full bg-white text-slate-900 hover:bg-slate-100 px-4 py-2 h-auto text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform group w-64"
             >
-              Thanks for visiting our shop
-              <ChevronRight
-                class="ml-2 h-5 w-5 inline-block group-hover:translate-x-1 transition-transform duration-200"
-              />
+              Thanks for visiting our store
             </p>
           </div>
         </div>
