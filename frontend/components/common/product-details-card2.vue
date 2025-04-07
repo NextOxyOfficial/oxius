@@ -636,7 +636,7 @@
 
     <!-- Sticky Buy Now Button (Centered) -->
     <div
-      class="fixed bottom-32 left-12 right-12 z-50 shadow-lg transform transition-transform"
+      class="fixed bottom-24 left-12 right-12 z-50 transform transition-transform"
       :class="{ 'translate-y-full': hideSticky, 'translate-y-0': !hideSticky }"
     >
       <div class="max-w-md mx-auto flex items-center justify-center">
