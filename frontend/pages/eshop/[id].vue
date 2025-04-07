@@ -804,17 +804,6 @@ function getCategoryName(categoryId) {
   return category ? category.name : "Uncategorized";
 }
 
-// Sample categories for the vendor with product counts
-const categories = [
-  { name: "Electronics", count: 42 },
-  { name: "Computers", count: 38 },
-  { name: "Accessories", count: 56 },
-  { name: "Smart Home", count: 27 },
-  { name: "Audio", count: 31 },
-  { name: "Wearables", count: 19 },
-  { name: "Gaming", count: 24 },
-];
-
 // Sample reviews
 const reviews = [
   {
@@ -892,8 +881,8 @@ const ctaRef = ref(null);
 
 await getMyProducts();
 // Handle scroll effects
+await getStoreDetails();
 onMounted(async () => {
-  await getStoreDetails();
   // If there's only one category, auto-select it
   if (uniqueCategories.value.length === 1) {
     selectedCategory.value = uniqueCategories.value[0].id;
@@ -936,56 +925,77 @@ const openProductReviews = (productId) => {
 async function handleBannerUpload(e) {
   const files = Array.from(e.target.files);
   const file = files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      console.log(reader.result);
-      bannerImage.value = reader.result;
-      showBannerUpload.value = false;
-    };
-    reader.onerror = (error) => {
-      console.log("file read", error);
-    };
-    reader.readAsDataURL(file);
-  }
+  if (!file) return;
 
-  // const file = e.target.files?.[0];
-  // if (!file) return;
-
-  // bannerImage.value = file;
-
-  // const formData = new FormData();
-  // formData.append("store_banner", file);
-  console.log("banner image", bannerImage.value);
   try {
-    const res = await patch(`/store/${router.params.id}/`, {
-      store_banner: bannerImage.value,
+    // Create loading state if needed
+    const isLoading = ref(true);
+
+    // Convert file to base64 using a promise
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
     });
-    console.log(res.data);
+
+    // Set the local state
+    bannerImage.value = base64;
+
+    // Now make the API call with the base64 data
+    const response = await patch(`/store/${router.params.id}/`, {
+      store_banner: base64,
+    });
+
+    console.log("Banner updated successfully:", response.data);
+
+    // Show success message to user
+    // You might want to add toast notification here
+
+    // Hide the upload modal
+    showBannerUpload.value = false;
   } catch (error) {
-    console.log(error);
+    console.error("Error uploading banner:", error);
+    // Show error message to user
+    // You might want to add toast notification here
+  } finally {
+    // Refresh store details to show the updated image
+    await getStoreDetails();
   }
 }
 
 async function handleLogoUpload(e) {
-  const file = e.target.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        logoImage.value = reader.result;
-        showLogoUpload.value = false;
-      }
-    };
-    reader.readAsDataURL(file);
-  }
+  const files = Array.from(e.target.files);
+  const file = files[0];
+  if (!file) return;
+
   try {
-    const res = await patch(`/store/${router.params.id}/`, {
-      store_logo: logoImage.value,
+    // Convert file to base64 using a promise
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
     });
-    console.log(res.data);
+
+    // Set the local state
+    logoImage.value = base64;
+
+    // Now make the API call with the base64 data
+    const response = await patch(`/store/${router.params.id}/`, {
+      store_logo: base64,
+    });
+
+    console.log("Logo updated successfully:", response.data);
+
+    // Hide the upload modal
+    showLogoUpload.value = false;
   } catch (error) {
-    console.log(error);
+    console.error("Error uploading logo:", error);
+    // You might want to add an error toast notification here
+  } finally {
+    // Refresh store details to show the updated image
+    await getStoreDetails();
   }
 }
 </script>

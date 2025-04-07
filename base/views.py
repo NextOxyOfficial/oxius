@@ -1495,7 +1495,39 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        # Check if the user is authenticated and is the store owner
+        if not request.user.is_authenticated or request.user != instance:
+            return Response(
+                {"error": "You don't have permission to update this store"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        # Handle base64 image data
+        data = request.data.copy()
+        print(data)
+        # Process store_logo if provided as base64
+        if 'store_logo' in data and isinstance(data['store_logo'], str) and data['store_logo'].startswith('data:image'):
+            try:
+                data['store_logo'] = base64ToFile(data['store_logo'])
+            except Exception as e:
+                return Response(
+                    {'error': f'Failed to process store logo: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        # Process store_banner if provided as base64
+        if 'store_banner' in data and isinstance(data['store_banner'], str) and data['store_banner'].startswith('data:image'):
+            try:
+                data['store_banner'] = base64ToFile(data['store_banner'])
+            except Exception as e:
+                return Response(
+                    {'error': f'Failed to process store banner: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        # Validate and save the data
+        serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
