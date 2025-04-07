@@ -25,24 +25,25 @@
     <div class="p-5">
       <div class="grid grid-cols-1 gap-6">
         <div>
-          <div
-            class="relative pt-[100%] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden"
-          >
-            <img
-              v-if="currentProduct.image_details"
-              :src="currentProduct.image_details[0].image"
-              :alt="currentProduct.name"
-              class="absolute inset-0 w-full h-full object-contain"
-            />
-
+          <div class="flex justify-center">
             <div
-              v-if="currentProduct.discount"
-              class="absolute top-2 left-2 badge-discount"
+              class="relative w-[400px] h-[400px] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden"
             >
-              -{{ currentProduct.discount }}%
+              <img
+                v-if="currentProduct.image_details"
+                :src="currentProduct.image_details[0].image"
+                :alt="currentProduct.name"
+                class="absolute inset-0 w-full h-full object-contain"
+              />
+
+              <div
+                v-if="currentProduct.discount"
+                class="absolute top-2 left-2 badge-discount"
+              >
+                -{{ currentProduct.discount }}%
+              </div>
             </div>
           </div>
-
           <div
             class="grid grid-cols-4 gap-2 mt-2"
             v-if="currentProduct.image_details"
@@ -50,7 +51,7 @@
             <div
               v-for="img in currentProduct.image_details"
               :key="img.id"
-              class="aspect-square relative bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden cursor-pointer hover:opacity-80 border-2"
+              class="aspect-square h-auto sm:h-28 w-auto sm:w-28 relative bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden cursor-pointer hover:opacity-80 border-2"
               :class="i === 1 ? 'border-primary' : 'border-transparent'"
             >
               <img
@@ -68,14 +69,14 @@
             <div class="text-sm text-slate-500 dark:text-slate-400 mb-1">
               {{ currentProduct?.category_details.name }}
             </div>
-            <h2 class="text-xl font-medium text-slate-800 dark:text-white mb-2">
-              {{ currentProduct.name }}
-            </h2>
 
             <!-- Rating -->
             <div class="flex items-center gap-2 mb-3">
               <div class="rating-stars">
-                <div class="stars-background">
+                <div
+                  v-if="!currentProduct.reviews?.length"
+                  class="stars-background"
+                >
                   <UIcon
                     v-for="n in 5"
                     :key="`bg-${n}`"
@@ -88,6 +89,7 @@
                   :style="{
                     width: `${(currentProduct.rating / 5) * 100}%`,
                   }"
+                  v-else
                 >
                   <UIcon
                     v-for="n in 5"
@@ -201,6 +203,22 @@
           class="text-sm text-slate-600 dark:text-slate-300 mb-4 description-text"
           v-html="currentProduct.description"
         ></div>
+
+        <div class="flex justify-center mt-3">
+          <UButton
+            :to="`/product-details/${currentProduct.id}`"
+            label="See More Details"
+            variant="outline"
+            size="lg"
+            icon="i-material-symbols-light-arrow-right-alt-rounded"
+            :ui="{
+              size: {
+                lg: 'text-base',
+              },
+            }"
+            trailing
+          />
+        </div>
       </div>
     </div>
   </UCard>
