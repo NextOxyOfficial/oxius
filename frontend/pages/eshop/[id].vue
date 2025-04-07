@@ -1,5 +1,6 @@
 <template>
   <UContainer>
+    {{ storeDetails }}
     <div
       class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50"
     >
@@ -15,8 +16,8 @@
           <div
             class="absolute inset-0 bg-cover bg-center"
             :style="{
-              backgroundImage: bannerImage
-                ? `url(${bannerImage})`
+              backgroundImage: storeDetails?.store_banner
+                ? `url(${storeDetails?.store_banner})`
                 : 'url(\'/placeholder.svg?height=800&width=1600\')',
             }"
           ></div>
@@ -25,13 +26,18 @@
           ></div>
 
           <!-- Banner upload button -->
-          <div class="absolute top-4 right-4 z-20">
+          <div
+            v-if="user?.user?.store_username === storeDetails?.store_username"
+            class="absolute top-4 right-4 z-20"
+          >
             <button
               class="rounded-full bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 hover:text-white px-3 py-1.5 text-sm font-medium inline-flex items-center"
               @click="showBannerUpload = true"
             >
               <Camera class="w-4 h-4 mr-2" />
-              {{ bannerImage ? "Change Banner" : "Upload Banner" }}
+              {{
+                storeDetails?.store_banner ? "Change Banner" : "Upload Banner"
+              }}
             </button>
           </div>
 
@@ -93,7 +99,6 @@
                   <input
                     type="file"
                     class="hidden"
-                    accept="image/*"
                     @change="handleBannerUpload"
                   />
                 </label>
@@ -136,19 +141,22 @@
                 <div
                   class="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl"
                 >
-                  <span v-if="!logoImage">TP</span>
+                  <span v-if="!storeDetails?.store_logo">Logo</span>
                 </div>
                 <div
                   class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                   :style="{
-                    backgroundImage: logoImage
-                      ? `url(${logoImage})`
+                    backgroundImage: storeDetails?.store_logo
+                      ? `url(${storeDetails?.store_logo})`
                       : 'url(\'/placeholder.svg?height=200&width=200\')',
                   }"
                 ></div>
 
                 <!-- Logo upload button -->
                 <div
+                  v-if="
+                    user?.user?.store_username === storeDetails?.store_username
+                  "
                   class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 cursor-pointer"
                   @click="showLogoUpload = true"
                 >
@@ -156,7 +164,9 @@
                     class="flex flex-col items-center justify-center text-white text-xs"
                   >
                     <ImageIcon class="w-6 h-6 mb-1" />
-                    <span>{{ logoImage ? "Change Logo" : "Upload Logo" }}</span>
+                    <span>{{
+                      storeDetails?.store_logo ? "Change Logo" : "Upload Logo"
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -164,18 +174,20 @@
                 <h1
                   class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700"
                 >
-                  TechVendor Pro
+                  {{ storeDetails?.store_name }}
                 </h1>
                 <p class="text-slate-600 mt-1">
-                  Premium technology solutions since 2010
+                  {{ storeDetails?.store_description }}
                 </p>
                 <div
                   class="flex flex-wrap gap-2 mt-4 justify-center md:justify-start"
                 >
                   <span
                     class="px-3 py-1 bg-white shadow-sm hover:shadow transition-shadow duration-300 rounded-full text-sm flex items-center"
+                    v-if="storeDetails?.store_address"
                   >
-                    <MapPin class="w-3 h-3 mr-1" /> New York, USA
+                    <MapPin class="w-3 h-3 mr-1" />
+                    {{ storeDetails?.store_address }}
                   </span>
                   <span
                     class="px-3 py-1 bg-white shadow-sm hover:shadow transition-shadow duration-300 rounded-full text-sm flex items-center"
@@ -204,11 +216,11 @@
                 </div>
               </div>
               <div class="flex gap-2">
-                <button
+                <!-- <button
                   class="rounded-full bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform text-white px-4 py-2 font-medium"
                 >
                   Contact
-                </button>
+                </button> -->
                 <button
                   class="rounded-full border border-slate-300 hover:bg-slate-100 transition-all duration-300 hover:scale-105 transform px-4 py-2 font-medium"
                 >
@@ -711,9 +723,12 @@
 </template>
 
 <script setup>
-const { get } = useApi();
+const { get, patch } = useApi();
 const router = useRoute();
 const products = ref([]);
+const storeDetails = ref({});
+const { user } = useAuth();
+
 import {
   Search,
   MapPin,
@@ -736,6 +751,16 @@ async function getMyProducts() {
   } catch (error) {
     console.error("Error fetching products:", error);
     products.value = [];
+  }
+}
+
+async function getStoreDetails() {
+  try {
+    const { data } = await get(`/store/${router.params.id}/`);
+    storeDetails.value = data;
+    console.log(storeDetails.value);
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -868,6 +893,7 @@ const ctaRef = ref(null);
 await getMyProducts();
 // Handle scroll effects
 onMounted(async () => {
+  await getStoreDetails();
   // If there's only one category, auto-select it
   if (uniqueCategories.value.length === 1) {
     selectedCategory.value = uniqueCategories.value[0].id;
@@ -907,21 +933,41 @@ const openProductReviews = (productId) => {
 };
 
 // Handle file uploads
-const handleBannerUpload = (e) => {
-  const file = e.target.files?.[0];
+async function handleBannerUpload(e) {
+  const files = Array.from(e.target.files);
+  const file = files[0];
   if (file) {
     const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        bannerImage.value = reader.result;
-        showBannerUpload.value = false;
-      }
+    reader.onload = () => {
+      console.log(reader.result);
+      bannerImage.value = reader.result;
+      showBannerUpload.value = false;
+    };
+    reader.onerror = (error) => {
+      console.log("file read", error);
     };
     reader.readAsDataURL(file);
   }
-};
 
-const handleLogoUpload = (e) => {
+  // const file = e.target.files?.[0];
+  // if (!file) return;
+
+  // bannerImage.value = file;
+
+  // const formData = new FormData();
+  // formData.append("store_banner", file);
+  console.log("banner image", bannerImage.value);
+  try {
+    const res = await patch(`/store/${router.params.id}/`, {
+      store_banner: bannerImage.value,
+    });
+    console.log(res.data);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function handleLogoUpload(e) {
   const file = e.target.files?.[0];
   if (file) {
     const reader = new FileReader();
@@ -933,7 +979,15 @@ const handleLogoUpload = (e) => {
     };
     reader.readAsDataURL(file);
   }
-};
+  try {
+    const res = await patch(`/store/${router.params.id}/`, {
+      store_logo: logoImage.value,
+    });
+    console.log(res.data);
+  } catch (error) {
+    console.log(error);
+  }
+}
 </script>
 
 <style>
