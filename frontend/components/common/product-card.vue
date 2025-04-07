@@ -39,13 +39,16 @@
         <!-- Product Title -->
         <NuxtLink :to="`/product-details/${product.id}`">
           <h3
-            class="font-medium text-slate-800 dark:text-white mb-1 line-clamp-2 flex-grow text-base"
+            class="font-medium text-green-950 dark:text-white mb-1 line-clamp-2 flex-grow text-base"
           >
             {{ product.name }}
           </h3>
         </NuxtLink>
         <NuxtLink
-          :to="`/eshop/${product?.owner_details?.store_username}`"
+          :to="`/eshop/${
+            product?.owner_details?.store_username ||
+            product?.owner?.store_username
+          }`"
           class="text-blue-400 text-sm mb-1.5 inline-flex items-center gap-1 cursor-pointer"
         >
           <UIcon
@@ -53,11 +56,13 @@
             class="size-4"
           />
           <span>
-            {{ product?.owner_details?.store_name }}
+            {{
+              product?.owner_details?.store_name || product?.owner?.store_name
+            }}
           </span>
         </NuxtLink>
         <!-- Rating -->
-        <div class="flex items-center gap-1 mb-1.5">
+        <!-- <div class="flex items-center gap-1 mb-1.5">
           <div class="flex">
             <UIcon
               v-for="n in 5"
@@ -78,7 +83,7 @@
           <span class="text-xs text-slate-500 dark:text-slate-400">
             ({{ product.reviews?.length || 0 }})
           </span>
-        </div>
+        </div> -->
 
         <!-- Price -->
         <div class="flex items-center justify-between">

@@ -36,7 +36,7 @@
         <div
           class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm mb-6 relative z-20"
         >
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4">
             <!-- Search Bar -->
             <div class="relative md:col-span-2">
               <div
@@ -223,7 +223,7 @@
       <!-- Product Grid with Infinity Scroll - KEEPING THE SAME DESIGN -->
       <div
         :class="{
-          'grid gap-4': true,
+          'grid gap-2 sm:gap-4': true,
           'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5':
             viewMode === 'grid',
           'grid-cols-1': viewMode === 'list',
@@ -360,13 +360,13 @@ async function getAllProducts() {
     const res = await get("/all-products/");
     console.log("API response:", res);
 
-    // Process products to match our frontend structure
+    // Process products but keep original price field names
     initialProducts.value = res.data.map((product) => ({
       id: product.id,
       name: product.name,
       description: product.description || product.short_description || "",
-      price: product.sale_price || product.regular_price, // Use sale price if available
-      oldPrice: product.sale_price ? product.regular_price : null, // Only show oldPrice if there's a sale
+      sale_price: product.sale_price, // Keep original field name
+      regular_price: product.regular_price, // Keep original field name
       image: product.image_details?.[0]?.image || "/placeholder.svg",
       category: product.category_details?.name || "Uncategorized",
       categoryId: product.category,
@@ -403,11 +403,11 @@ async function getAllProducts() {
 }
 await getAllProducts();
 // Helper to calculate discount percentage
-function calculateDiscount(regularPrice, salePrice) {
-  if (!salePrice || !regularPrice) return null;
+function calculateDiscount(regular_price, sale_price) {
+  if (!sale_price || !regular_price) return null;
 
-  const regular = parseFloat(regularPrice);
-  const sale = parseFloat(salePrice);
+  const regular = parseFloat(regular_price);
+  const sale = parseFloat(sale_price);
 
   if (sale >= regular) return null;
 
@@ -646,9 +646,9 @@ const filteredProducts = computed(() => {
     );
   }
 
-  // Price range filter
+  // Price range filter - update to use sale_price (or regular_price if sale_price not available)
   filtered = filtered.filter((p) => {
-    const price = parseFloat(p.price);
+    const price = parseFloat(p.sale_price || p.regular_price);
     return price >= priceRange.value[0] && price <= priceRange.value[1];
   });
 
@@ -673,18 +673,16 @@ function sortProductsArray(products) {
   switch (sortOption.value) {
     case "Price: Low to High":
       products.sort((a, b) => {
-        return (
-          parseFloat(a.price.replace(/,/g, "")) -
-          parseFloat(b.price.replace(/,/g, ""))
-        );
+        const priceA = parseFloat(a.sale_price || a.regular_price);
+        const priceB = parseFloat(b.sale_price || b.regular_price);
+        return priceA - priceB;
       });
       break;
     case "Price: High to Low":
       products.sort((a, b) => {
-        return (
-          parseFloat(b.price.replace(/,/g, "")) -
-          parseFloat(a.price.replace(/,/g, ""))
-        );
+        const priceA = parseFloat(a.sale_price || a.regular_price);
+        const priceB = parseFloat(b.sale_price || b.regular_price);
+        return priceB - priceA;
       });
       break;
     case "Best Rated":
@@ -695,7 +693,8 @@ function sortProductsArray(products) {
       break;
     // Newest First is default
     default:
-      // Already sorted by default
+      // Sort by created_at date
+      products.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       break;
   }
 }

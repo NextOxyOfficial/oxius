@@ -4,10 +4,10 @@
       class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50"
     >
       <!-- Banner Section with Parallax Effect -->
-      <div class="relative w-full h-[60vh]">
+      <div class="relative w-full max-sm:mt-6 h-[300px] sm:h-[60vh]">
         <div
           ref="bannerRef"
-          class="absolute inset-0 w-full h-[60%] transition-transform duration-300"
+          class="absolute inset-0 w-full h-[60%] transition-transform duration-300 max-sm:hidden"
         >
           <div
             class="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-800/80 mix-blend-multiply"
@@ -118,10 +118,10 @@
 
         <!-- Vendor Info Card at Bottom of Banner -->
         <div
-          class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 md:-translate-y-2/3 w-[90%] max-w-4xl z-10"
+          class="absolute max-sm:top-0 sm:bottom-0 left-1/2 -translate-x-1/2 sm:translate-y-1/2 md:-translate-y-2/3 w-[90%] max-w-4xl z-10"
         >
           <div
-            class="border-none shadow-2xl bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden animate-fade-in-up relative"
+            class="border-none shadow-lg sm:shadow-2xl bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden animate-fade-in-up relative"
           >
             <div
               class="absolute inset-0 bg-gradient-to-r from-slate-100/50 to-white/50 opacity-80"
@@ -211,9 +211,9 @@
       </div>
 
       <!-- Main Content -->
-      <div class="container mx-auto px-4 pt-48 md:pt-0 mt-0 md:-mt-16 pb-16">
+      <div class="container mx-auto sm:pt-48 md:pt-0 mt-0 md:-mt-8">
         <!-- Enhanced Search Section - No Dropdown -->
-        <div class="mb-16 mt-8">
+        <div class="mb-7 sm:mb-16 mt-8">
           <div
             :class="`relative max-w-2xl mx-auto transition-all duration-300 ease-out ${
               searchFocused ? 'scale-105' : 'scale-100'
@@ -274,25 +274,16 @@
         </div>
 
         <!-- Categories & Products Section -->
-        <div class="mb-16 mt-8">
+        <div class="mb-16 sm:mt-8">
           <!-- Category Tabs -->
           <div
             ref="categoriesRef"
-            :class="`flex flex-col items-center mt-16 transition-all duration-500 transform ${
+            :class="`flex flex-col items-center sm:mt-16 transition-all duration-500 transform ${
               visibleSections.categories
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-10'
             }`"
           >
-            <h2 class="text-xl font-semibold mb-6 text-center relative">
-              <span class="relative inline-block">
-                Browse Categories
-                <span
-                  class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-transparent rounded-full"
-                ></span>
-              </span>
-            </h2>
-
             <div class="flex flex-wrap justify-center gap-3 max-w-3xl">
               <span
                 class="px-4 py-3 text-sm cursor-pointer bg-white hover:bg-slate-50 shadow-md hover:shadow-lg transition-all duration-200 border border-slate-100 rounded-xl group"
@@ -337,7 +328,7 @@
 
           <!-- Products Display Section -->
           <div
-            class="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            class="mt-6 sm:mt-12 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6"
           >
             <CommonProductCard
               v-for="product in filteredProducts"
@@ -458,14 +449,14 @@
                 Join thousands of satisfied customers today.
               </p>
             </div>
-            <button
+            <p
               class="rounded-full bg-white text-slate-900 hover:bg-slate-100 px-4 py-2 h-auto text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform group w-64"
             >
-              Browse All Products
+              Thanks for visiting our shop
               <ChevronRight
                 class="ml-2 h-5 w-5 inline-block group-hover:translate-x-1 transition-transform duration-200"
               />
-            </button>
+            </p>
           </div>
         </div>
       </div>
