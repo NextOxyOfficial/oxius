@@ -125,47 +125,6 @@
       </div>
     </section>
 
-    <!-- Countdown Timer Section -->
-    <section class="w-full my-6">
-      <div class="py-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-center">
-        <p class="text-amber-800 dark:text-amber-400 font-medium mb-2">
-          Limited Time Offer
-        </p>
-        <div class="flex justify-center gap-4">
-          <div class="flex flex-col items-center">
-            <div
-              class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
-            >
-              12
-            </div>
-            <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
-              >Hours</span
-            >
-          </div>
-          <div class="flex flex-col items-center">
-            <div
-              class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
-            >
-              45
-            </div>
-            <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
-              >Minutes</span
-            >
-          </div>
-          <div class="flex flex-col items-center">
-            <div
-              class="bg-white dark:bg-slate-800 w-12 h-12 rounded shadow-md flex items-center justify-center text-xl font-bold"
-            >
-              22
-            </div>
-            <span class="text-xs mt-1 text-amber-700 dark:text-amber-500"
-              >Seconds</span
-            >
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Description Section -->
     <section class="w-full my-6">
       <div class="bg-slate-50 dark:bg-slate-800/20 rounded-lg p-6">

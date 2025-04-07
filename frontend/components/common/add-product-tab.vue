@@ -651,7 +651,19 @@
               </div>
             </div>
           </div>
-
+          <UCard class="mx-2">
+            <UCheckbox
+              name="notifications"
+              v-model="advanceEditMode"
+              label="Advance Edit Mode"
+              class="mb-2"
+            />
+            <CommonAdvanceProductEditor
+              :currentProduct="form"
+              v-if="advanceEditMode"
+              @update:content="handleEditorUpdate"
+            />
+          </UCard>
           <!-- Form Actions -->
           <div
             class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-2"
@@ -703,6 +715,27 @@ function updateContent(p) {
   form.value.description = p;
 }
 
+// Function to handle updates from the advanced editor
+function handleEditorUpdate(editorData) {
+  console.log("Received editor data in parent component:", editorData);
+
+  // Store the editor data in the form
+  if (editorData) {
+    form.value.editorData = editorData;
+
+    // Add this additional log to confirm data is properly stored
+    console.log("Updated form with editor data:", editorData);
+
+    // Show confirmation toast
+    toast.add({
+      title: "Editor Content Updated",
+      description: "Advanced editor changes have been saved to the product",
+      color: "green",
+      timeout: 3000,
+    });
+  }
+}
+
 const categories = ref([]);
 // Simplified form with only essential fields
 const form = ref({
@@ -728,6 +761,7 @@ const successMessage = ref("");
 const uploadError = ref("");
 const isUploading = ref(false);
 const checkSubmit = ref(false);
+const advanceEditMode = ref(false);
 
 async function getCategories() {
   const { data } = await get("/product-categories/");
