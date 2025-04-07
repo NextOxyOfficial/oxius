@@ -88,6 +88,7 @@ urlpatterns = [
   path('received-transfers/', ReceivedTransfersView.as_view(), name='received-transfers'),
   #product 
       # Product URLs
+  path('all-products/', AllProductsListView.as_view(), name='all-products'),
   path('my-products/', UserProductsListView.as_view(), name='user-products'),
   path('store/<str:store_username>/', StoreDetailsView.as_view(), name='store-details'),
   path('store/<str:store_username>/products/', StoreProductsListView.as_view(), name='store-products'),

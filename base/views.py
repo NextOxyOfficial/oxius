@@ -1485,6 +1485,37 @@ class UserProductsListView(generics.ListAPIView):
         return Product.objects.filter(
             owner=self.request.user
         ).order_by('-created_at')
+
+class AllProductsListView(generics.ListAPIView):
+    """View for retrieving all products - accessible to anyone"""
+    queryset = Product.objects.all().order_by('-created_at')
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        """Return all available products with optional filtering"""
+        queryset = Product.objects.all().order_by('-created_at')
+        
+        # Add optional filtering by category
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category=category)
+            
+        # Add optional search by name
+        name = self.request.query_params.get('name', None)
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+            
+        # Add optional filtering by price range
+        min_price = self.request.query_params.get('min_price', None)
+        max_price = self.request.query_params.get('max_price', None)
+        
+        if min_price:
+            queryset = queryset.filter(sale_price__gte=min_price) if min_price else queryset
+        if max_price:
+            queryset = queryset.filter(sale_price__lte=max_price) if max_price else queryset
+            
+        return queryset
  
 class StoreDetailsView(generics.RetrieveUpdateAPIView):
     queryset=User.objects.all()
@@ -1505,7 +1536,7 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
             
         # Handle base64 image data
         data = request.data.copy()
-        print(data)
+        
         # Process store_logo if provided as base64
         if 'store_logo' in data and isinstance(data['store_logo'], str) and data['store_logo'].startswith('data:image'):
             try:

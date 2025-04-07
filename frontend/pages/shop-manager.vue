@@ -163,7 +163,7 @@
                     v-else
                     class="text-sm font-semibold text-gray-800 truncate"
                   >
-                    {{ user.user.store_name || "Not set" }}
+                    {{ storeDetails.store_name || "Not set" }}
                   </p>
                 </div>
               </div>
@@ -188,19 +188,24 @@
                     <div
                       class="flex items-center bg-gray-50 rounded px-2 py-1 max-w-full overflow-hidden"
                     >
-                      <p class="text-xs text-gray-500 whitespace-nowrap">
-                        adsyclub.com/eshop/
-                      </p>
-                      <p
-                        class="text-sm font-semibold text-emerald-600 truncate"
+                      <NuxtLink
+                        class="flex items-center"
+                        :to="`/eshop/${storeDetails.store_username}`"
                       >
-                        {{ user.user.store_username || "Not set" }}
-                      </p>
+                        <p class="text-xs text-gray-500 whitespace-nowrap">
+                          https://adsyclub.com/eshop/
+                        </p>
+                        <p
+                          class="text-sm font-semibold text-emerald-600 truncate"
+                        >
+                          {{ storeDetails.store_username || "Not set" }}
+                        </p>
+                      </NuxtLink>
                       <button
-                        v-if="user.user.store_username"
+                        v-if="storeDetails.store_username"
                         @click="
                           copyToClipboard(
-                            `https://adsyclub.com/eshop/${user.user.store_username}`
+                            `https://adsyclub.com/eshop/${storeDetails.store_username}`
                           )
                         "
                         class="ml-1.5 text-gray-400 hover:text-emerald-600 transition-colors flex-shrink-0"
@@ -248,7 +253,7 @@
                     v-else
                     class="text-sm font-semibold text-gray-800 truncate"
                   >
-                    {{ user.user.store_address || "Not set" }}
+                    {{ storeDetails?.store_address || "Not set" }}
                   </p>
                 </div>
               </div>
@@ -277,7 +282,8 @@
                   ></textarea>
                   <p v-else class="text-sm text-gray-800 line-clamp-2">
                     {{
-                      user.user.store_description || "No description available"
+                      storeDetails?.store_description ||
+                      "No description available"
                     }}
                   </p>
                 </div>
@@ -2345,11 +2351,25 @@ onBeforeUnmount(() => {
 const products = ref([]);
 
 async function getProducts() {
-  const res = await get("/my-products/");
-  products.value = res.data;
+  try {
+    const res = await get("/my-products/");
+    if (res && res.data) {
+      products.value = res.data;
+      console.log(`Loaded ${products.value.length} products`);
+    } else {
+      console.warn("No product data received");
+      products.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    toast.add({
+      title: "Error loading products",
+      description: "Could not load your products. Please try again later.",
+      color: "red",
+    });
+    products.value = []; // Ensure it's at least an empty array
+  }
 }
-
-await getProducts();
 
 // Product summary computed properties
 const activeProducts = computed(() => {
@@ -3145,6 +3165,59 @@ watch(isEditing, (newValue, oldValue) => {
   if (oldValue === true && newValue === false) {
     // User clicked Save (switched from editing to viewing)
     emit("update", editedUser);
+  }
+});
+
+const storeDetails = ref({
+  store_name: "",
+  store_username: "",
+  store_address: "",
+  store_description: "",
+  store_logo: "",
+  store_banner: "",
+});
+const toast = useToast();
+const isLoading = ref(false);
+
+async function getStoreDetails() {
+  isLoading.value = true;
+  try {
+    // Check if user and store_username exist
+    if (!user.value?.user?.store_username) {
+      console.warn("No store username available");
+      return;
+    }
+
+    const { data } = await get(`/store/${user.value.user.store_username}/`);
+    if (data) {
+      // Ensure we only update if we get valid data
+      storeDetails.value = data;
+      console.log("Store details loaded successfully");
+
+      // Also update the edited user object for consistency
+      editedUser.store_name = data.store_name || "";
+      editedUser.store_address = data.store_address || "";
+      editedUser.store_description = data.store_description || "";
+    }
+  } catch (error) {
+    console.error("Error fetching store details:", error);
+    toast.add({
+      title: "Error loading store",
+      description: "Could not load store details. Please try again later.",
+      color: "red",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Safe initialization - use Promise.allSettled to handle potential failures
+onMounted(async () => {
+  try {
+    await Promise.allSettled([getStoreDetails(), getProducts(), getOrders()]);
+    console.log("All data loading attempts completed");
+  } catch (error) {
+    console.error("Error during initialization:", error);
   }
 });
 </script>

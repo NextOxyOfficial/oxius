@@ -80,7 +80,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     
-    list_display = ('email','first_name','balance','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity', 'store_name','store_username','store_logo','store_banner')
+    list_display = ('email','first_name','balance','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity', 'store_name','store_username','store_logo','store_banner','store_address','store_description')
     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
     
     def get_fieldsets(self, request, obj=None):
@@ -124,7 +124,8 @@ class CustomUserAdmin(UserAdmin):
             'groups',
             'user_permissions',
             'last_login',
-            'date_joined','is_pro', 'pro_validity','store_name','store_username','store_logo','store_banner'
+            'date_joined','is_pro', 'pro_validity','store_name','store_username','store_logo','store_banner',
+            'store_address','store_description'
         )})]
     
     def get_readonly_fields(self, request, obj=None):

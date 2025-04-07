@@ -215,33 +215,6 @@
               {{ filteredProducts.length }} items
             </UBadge>
           </div>
-          <!-- <div class="hidden md:flex items-center space-x-2">
-            <span class="text-sm text-slate-500">View:</span>
-            <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-              <button
-                @click="viewMode = 'grid'"
-                class="p-1 rounded transition"
-                :class="
-                  viewMode === 'grid'
-                    ? 'bg-white dark:bg-slate-700 shadow-sm'
-                    : 'text-slate-500'
-                "
-              >
-                <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
-              </button>
-              <button
-                @click="viewMode = 'list'"
-                class="p-1 rounded transition"
-                :class="
-                  viewMode === 'list'
-                    ? 'bg-white dark:bg-slate-700 shadow-sm'
-                    : 'text-slate-500'
-                "
-              >
-                <UIcon name="i-heroicons-bars-3" class="w-4 h-4" />
-              </button>
-            </div>
-          </div> -->
         </div>
       </UContainer>
     </div>
@@ -262,109 +235,9 @@
           :key="product.id"
           class="product-card relative group"
           :style="{ animationDelay: `${index * 50}ms` }"
-          :class="{ 'animate-fade-up': isNewlyLoaded(index) }"
+          :class="isNewlyLoaded(index) ? 'animate-fade-up' : ''"
         >
-          <!-- Product Card Content -->
-          <div
-            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col"
-          >
-            <!-- Single Product Image Section with All Features -->
-            <div class="relative pt-[100%] overflow-hidden group">
-              <!-- Product Badges -->
-              <div
-                class="absolute top-0 left-0 right-0 z-10 p-2 flex justify-between"
-              >
-                <div
-                  v-if="product.discount"
-                  class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-full"
-                >
-                  -{{ product.discount }}%
-                </div>
-                <div
-                  class="absolute top-2 right-2 z-20 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-sm"
-                >
-                  <span>Sold {{ Math.floor(Math.random() * 20) + 1 }}</span>
-                </div>
-              </div>
-
-              <!-- Product Image -->
-              <img
-                :src="product.image"
-                :alt="product.name"
-                class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-
-              <!-- Hover Elements -->
-              <div
-                class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
-              >
-                <button
-                  @click.prevent="openReviewModal(product)"
-                  class="px-3 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-sm font-medium text-slate-800 dark:text-white rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm transform transition-all hover:scale-105"
-                >
-                  Quick View
-                </button>
-              </div>
-            </div>
-
-            <!-- Product Details -->
-            <div class="p-3 flex-grow flex flex-col">
-              <!-- Title -->
-              <h3
-                class="font-medium text-slate-800 dark:text-white mb-1.5 line-clamp-2 text-sm flex-grow"
-              >
-                {{ product.name }}
-              </h3>
-
-              <!-- Rating -->
-              <div class="flex items-center gap-1 mb-1.5">
-                <div class="flex">
-                  <UIcon
-                    v-for="n in 5"
-                    :key="n"
-                    :name="
-                      n <= Math.floor(product.rating)
-                        ? 'i-heroicons-star-solid'
-                        : 'i-heroicons-star'
-                    "
-                    class="w-3.5 h-3.5"
-                    :class="
-                      n <= Math.floor(product.rating)
-                        ? 'text-yellow-400'
-                        : 'text-gray-200'
-                    "
-                  />
-                </div>
-                <span class="text-xs text-slate-500 dark:text-slate-400"
-                  >({{ product.reviews.length }})</span
-                >
-              </div>
-
-              <!-- Price -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="font-semibold text-slate-800 dark:text-white"
-                    >৳{{ product.price }}</span
-                  >
-                  <span
-                    v-if="product.oldPrice"
-                    class="text-xs text-slate-400 line-through"
-                    >৳{{ product.oldPrice }}</span
-                  >
-                </div>
-                <UButton
-                  size="sm"
-                  color="primary"
-                  icon="i-material-symbols-light-garden-cart-outline"
-                  @click="openReviewModal(product)"
-                  :trailing="false"
-                  class="rounded-full"
-                >
-                  Buy
-                </UButton>
-              </div>
-            </div>
-          </div>
+          <CommonProductCard :product="product" />
         </div>
       </div>
 
@@ -467,6 +340,234 @@ import {
 } from "vue";
 
 const { get } = useApi();
+const initialProducts = ref([]);
+const isLoading = ref(true);
+const toast = useToast();
+
+// Add missing variables for pagination and animation
+const currentPage = ref(1);
+const lastLoadedIndex = ref(-1); // Track last loaded index for animation
+const productsPerPage = ref(15);
+const hasMoreProducts = ref(true);
+const loadMoreTrigger = ref(null);
+const currentProduct = ref(null);
+const isModalOpen = ref(false);
+
+// Load all products from API
+async function getAllProducts() {
+  try {
+    isLoading.value = true;
+    const res = await get("/all-products/");
+    console.log("API response:", res);
+
+    // Process products to match our frontend structure
+    initialProducts.value = res.data.map((product) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description || product.short_description || "",
+      price: product.sale_price || product.regular_price, // Use sale price if available
+      oldPrice: product.sale_price ? product.regular_price : null, // Only show oldPrice if there's a sale
+      image: product.image_details?.[0]?.image || "/placeholder.svg",
+      category: product.category_details?.name || "Uncategorized",
+      categoryId: product.category,
+      inStock: product.quantity > 0,
+      quantity: product.quantity,
+      rating: 5, // Default rating since we don't have it from API
+      reviews: [], // Empty reviews array as placeholder
+      discount: calculateDiscount(product.regular_price, product.sale_price),
+      is_free_delivery: product.is_free_delivery,
+      weight: product.weight,
+      owner: product.owner_details,
+      created_at: product.created_at,
+    }));
+
+    console.log("Processed products:", initialProducts.value);
+
+    // Update lastLoadedIndex after initial products load
+    lastLoadedIndex.value = initialProducts.value.length - 1;
+
+    // Set hasMoreProducts based on whether we received all products
+    hasMoreProducts.value = res.data.length >= productsPerPage.value;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    toast.add({
+      title: "Error loading products",
+      description: "Could not load products. Please try again later.",
+      color: "red",
+      timeout: 3000,
+    });
+    initialProducts.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+}
+await getAllProducts();
+// Helper to calculate discount percentage
+function calculateDiscount(regularPrice, salePrice) {
+  if (!salePrice || !regularPrice) return null;
+
+  const regular = parseFloat(regularPrice);
+  const sale = parseFloat(salePrice);
+
+  if (sale >= regular) return null;
+
+  const discount = Math.round((1 - sale / regular) * 100);
+  return discount > 0 ? discount : null;
+}
+
+// Pagination for display with proper tracking
+const displayedProducts = computed(() => {
+  // Get filtered products based on current page
+  const products = filteredProducts.value;
+  const endIndex = currentPage.value * productsPerPage.value;
+
+  // Update last loaded index for animation
+  if (endIndex > lastLoadedIndex.value) {
+    lastLoadedIndex.value = Math.min(endIndex - 1, products.length - 1);
+  }
+
+  return products.slice(0, endIndex);
+});
+
+// Check if a product was just loaded (for animation)
+const isNewlyLoaded = (index) => {
+  // This function now safely uses lastLoadedIndex
+  const previousLastLoaded = lastLoadedIndex.value - productsPerPage.value;
+  return index > previousLastLoaded;
+};
+
+// Track total product count for "All Categories" display
+const totalProductCount = computed(() => {
+  return initialProducts.value.length;
+});
+
+// Load more products (infinite scroll implementation)
+const loadMoreProducts = () => {
+  if (isLoading.value || !hasMoreProducts.value) return;
+
+  const previousCount = displayedProducts.value.length;
+  currentPage.value++;
+
+  // Check if we've loaded all filtered products
+  nextTick(() => {
+    if (displayedProducts.value.length === filteredProducts.value.length) {
+      hasMoreProducts.value = false;
+    }
+
+    // If no new products were loaded despite increasing page, we're at the end
+    if (displayedProducts.value.length === previousCount) {
+      hasMoreProducts.value = false;
+    }
+  });
+};
+
+// Setup intersection observer for infinite scroll
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (
+        entries[0].isIntersecting &&
+        !isLoading.value &&
+        hasMoreProducts.value
+      ) {
+        loadMoreProducts();
+      }
+    },
+    { threshold: 0.1 }
+  );
+
+  if (loadMoreTrigger.value) {
+    observer.observe(loadMoreTrigger.value);
+  }
+
+  onBeforeUnmount(() => {
+    if (loadMoreTrigger.value) {
+      observer.unobserve(loadMoreTrigger.value);
+    }
+  });
+});
+
+// For dropdown functionality
+function toggleDropdown() {
+  isOpen.value = !isOpen.value;
+  if (isOpen.value) {
+    nextTick(() => {
+      if (searchInput.value) {
+        searchInput.value.focus();
+      }
+    });
+  }
+}
+
+// Filter categories based on search
+const filteredCategories = computed(() => {
+  if (!searchQuery.value) return categories.value;
+
+  return categories.value.filter((category) =>
+    category.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// Select a category
+function selectCategory(category) {
+  selectedCategory.value = category;
+  isOpen.value = false;
+
+  // Reset pagination when category changes
+  currentPage.value = 1;
+  lastLoadedIndex.value = -1; // Reset for new animations
+}
+
+// Extract real categories from products
+const categories = computed(() => {
+  if (!initialProducts.value || initialProducts.value.length === 0) return [];
+
+  const uniqueCategories = [];
+  const categoryMap = new Map();
+
+  initialProducts.value.forEach((product) => {
+    if (
+      product.category_details &&
+      !categoryMap.has(product.category_details.id)
+    ) {
+      categoryMap.set(product.category_details.id, {
+        id: product.category_details.id,
+        name: product.category_details.name,
+        icon: getCategoryIcon(product.category_details.name),
+        count: 1,
+      });
+    } else if (product.category_details) {
+      const category = categoryMap.get(product.category_details.id);
+      category.count++;
+    }
+  });
+
+  return Array.from(categoryMap.values());
+});
+
+// Map category names to icons
+function getCategoryIcon(categoryName) {
+  const name = (categoryName || "").toLowerCase();
+  const iconMap = {
+    electronics: "i-heroicons-device-phone-mobile",
+    clothing: "i-heroicons-shirt",
+    home: "i-heroicons-home",
+    books: "i-heroicons-book-open",
+    sports: "i-heroicons-trophy",
+    beauty: "i-heroicons-sparkles",
+    toys: "i-heroicons-puzzle-piece",
+    automotive: "i-heroicons-truck",
+    one: "i-heroicons-star", // Your category "ONE"
+    two: "i-heroicons-heart", // Example for another category
+  };
+
+  // Try to find a matching icon or return default
+  for (const key in iconMap) {
+    if (name.includes(key)) return iconMap[key];
+  }
+
+  return "i-heroicons-squares-2x2"; // Default icon
+}
 
 // Category filtering
 const isOpen = ref(false);
@@ -523,240 +624,14 @@ const updateSortOption = (option) => {
   sortProducts();
 };
 
-// Enhanced categories for the dropdown
-const categories = ref([
-  {
-    id: 1,
-    name: "Electronics",
-    icon: "i-heroicons-device-phone-mobile",
-    count: 42,
-  },
-  { id: 2, name: "Clothing", icon: "i-heroicons-shirt", count: 38 },
-  { id: 3, name: "Home & Kitchen", icon: "i-heroicons-home", count: 24 },
-  { id: 4, name: "Books", icon: "i-heroicons-book-open", count: 18 },
-  { id: 5, name: "Sports", icon: "i-heroicons-trophy", count: 15 },
-  { id: 6, name: "Beauty", icon: "i-heroicons-sparkles", count: 27 },
-  { id: 7, name: "Toys", icon: "i-heroicons-puzzle-piece", count: 19 },
-  { id: 8, name: "Automotive", icon: "i-heroicons-truck", count: 23 },
-]);
-
-// Calculate total product count
-const totalProductCount = computed(() => {
-  return categories.value.reduce(
-    (total, category) => total + category.count,
-    0
-  );
-});
-
-// Filter categories based on search query
-const filteredCategories = computed(() => {
-  if (!searchQuery.value) return categories.value;
-  return categories.value.filter((category) =>
-    category.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
-
-// Category dropdown functions
-function toggleDropdown(event) {
-  // Prevent event propagation
-  event.stopPropagation();
-  isOpen.value = !isOpen.value;
-  if (isOpen.value && searchInput.value) {
-    nextTick(() => {
-      searchInput.value.focus();
-    });
-  }
-}
-
-function selectCategory(category) {
-  selectedCategory.value = category;
-  isOpen.value = false;
-}
-
-// Initialize sample product data
-const initialProducts = ref([
-  {
-    id: 1,
-    name: "Wireless Bluetooth Earbuds with Noise Cancellation",
-    price: "2,499",
-    oldPrice: "3,200",
-    discount: 22,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Earbuds",
-    rating: 4.5,
-    reviews: Array(12).fill({}),
-    category: "Electronics",
-    inStock: true,
-  },
-  {
-    id: 2,
-    name: "Premium Smart Watch with Heart Rate Monitor",
-    price: "4,999",
-    oldPrice: "5,500",
-    discount: 10,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Watch",
-    rating: 4.8,
-    reviews: Array(28).fill({}),
-    category: "Electronics",
-    inStock: true,
-  },
-  {
-    id: 3,
-    name: "Cotton Casual T-Shirt for Men",
-    price: "999",
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=T-Shirt",
-    rating: 4.2,
-    reviews: Array(42).fill({}),
-    category: "Clothing",
-    inStock: true,
-  },
-  {
-    id: 4,
-    name: "Stainless Steel Water Bottle 750ml",
-    price: "899",
-    oldPrice: "1,200",
-    discount: 25,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Bottle",
-    rating: 4.7,
-    reviews: Array(19).fill({}),
-    category: "Home & Kitchen",
-    inStock: false,
-  },
-  {
-    id: 5,
-    name: "Modern Desk Lamp with Adjustable Brightness",
-    price: "1,599",
-    oldPrice: "1,999",
-    discount: 20,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Lamp",
-    rating: 4.3,
-    reviews: Array(15).fill({}),
-    category: "Home & Kitchen",
-    inStock: true,
-  },
-  {
-    id: 6,
-    name: "Professional Chef Knife Set with Case",
-    price: "3,299",
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Knives",
-    rating: 4.9,
-    reviews: Array(31).fill({}),
-    category: "Home & Kitchen",
-    inStock: true,
-  },
-  {
-    id: 7,
-    name: "Wireless Gaming Mouse with RGB Lighting",
-    price: "1,999",
-    oldPrice: "2,499",
-    discount: 20,
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Mouse",
-    rating: 4.6,
-    reviews: Array(47).fill({}),
-    category: "Electronics",
-    inStock: true,
-  },
-  {
-    id: 8,
-    name: "Leather Wallet with RFID Protection",
-    price: "1,299",
-    image: "https://placehold.co/300x300/f1f5f9/64748b?text=Wallet",
-    rating: 4.4,
-    reviews: Array(22).fill({}),
-    category: "Clothing",
-    inStock: false,
-  },
-]);
-
-// async function fetchAllProducts() {
-//   const { data } = await get("/products/");
-//   initialProducts.value = data;
-// }
-
-// Infinity scroll implementation
-const currentPage = ref(0);
-const isLoading = ref(false);
-const hasMoreProducts = ref(true);
-const loadMoreTrigger = ref(null);
-const perPage = ref(10); // Products per page
-const allLoadedProducts = ref([]);
-const lastLoadedIndex = ref(-1);
-const isModalOpen = ref(false);
-const currentProduct = ref(null);
-
-// Generate more products for infinite scroll
-const generateMoreProducts = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Generate more products based on existing ones
-      const newProducts = [];
-      for (let i = 0; i < perPage.value; i++) {
-        const templateProduct =
-          initialProducts.value[
-            Math.floor(Math.random() * initialProducts.value.length)
-          ];
-        const newProduct = {
-          ...JSON.parse(JSON.stringify(templateProduct)),
-          id: allLoadedProducts.value.length + i + 1 + Math.random(),
-          name: `${templateProduct.name} ${
-            currentPage.value * perPage.value + i + 1
-          }`,
-          price: (
-            parseFloat(templateProduct.price.replace(/,/g, "")) +
-            Math.floor(Math.random() * 500)
-          ).toLocaleString(),
-          inStock: Math.random() > 0.2, // 80% chance of being in stock
-        };
-        newProducts.push(newProduct);
-      }
-
-      // If we've generated more than 50 products total, indicate we've reached the end
-      if (allLoadedProducts.value.length + newProducts.length > 40) {
-        hasMoreProducts.value = false;
-      }
-
-      resolve(newProducts);
-    }, 1000); // Simulate network delay
-  });
-};
-
-// Load the first batch of products
-const loadInitialProducts = async () => {
-  allLoadedProducts.value = [...initialProducts.value];
-  currentPage.value = 1;
-
-  // If we have less than perPage products, load more immediately
-  if (allLoadedProducts.value.length < perPage.value) {
-    await loadMoreProducts();
-  }
-};
-
-// Load more products when user scrolls to bottom
-const loadMoreProducts = async () => {
-  if (isLoading.value || !hasMoreProducts.value) return;
-
-  isLoading.value = true;
-  lastLoadedIndex.value = allLoadedProducts.value.length - 1;
-
-  try {
-    const newProducts = await generateMoreProducts();
-    await new Promise((r) => setTimeout(r, 300));
-    allLoadedProducts.value = [...allLoadedProducts.value, ...newProducts];
-    currentPage.value++;
-  } catch (error) {
-    console.error("Error loading more products:", error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
 // Apply all filters and sorting
 const filteredProducts = computed(() => {
-  let filtered = [...allLoadedProducts.value];
+  let filtered = [...initialProducts.value];
 
   // Category filter
   if (selectedCategory?.value) {
     filtered = filtered.filter(
-      (p) => p.category === selectedCategory.value.name
+      (p) => p.categoryId === selectedCategory.value.id
     );
   }
 
@@ -766,13 +641,14 @@ const filteredProducts = computed(() => {
     filtered = filtered.filter(
       (p) =>
         p.name.toLowerCase().includes(term) ||
-        p.category.toLowerCase().includes(term)
+        (p.description && p.description.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term))
     );
   }
 
   // Price range filter
   filtered = filtered.filter((p) => {
-    const price = parseFloat(p.price.replace(/,/g, ""));
+    const price = parseFloat(p.price);
     return price >= priceRange.value[0] && price <= priceRange.value[1];
   });
 
@@ -790,11 +666,6 @@ const filteredProducts = computed(() => {
   sortProductsArray(filtered);
 
   return filtered;
-});
-
-// Pagination for display
-const displayedProducts = computed(() => {
-  return filteredProducts.value;
 });
 
 // Sort function
@@ -831,15 +702,10 @@ function sortProductsArray(products) {
 
 function sortProducts() {
   // This triggers reactivity to resort products
-  const temp = [...allLoadedProducts.value];
+  const temp = [...initialProducts.value];
   sortProductsArray(temp);
-  allLoadedProducts.value = temp;
+  initialProducts.value = temp;
 }
-
-// Check if a product was just loaded (for animation)
-const isNewlyLoaded = (index) => {
-  return index > lastLoadedIndex.value;
-};
 
 // Open product modal
 function openReviewModal(product) {
@@ -852,75 +718,11 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// Set up intersection observer for infinite scrolling
-onMounted(async () => {
-  // Load initial products
-  await loadInitialProducts();
-
-  // Set up the intersection observer
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (
-        entries[0].isIntersecting &&
-        !isLoading.value &&
-        hasMoreProducts.value
-      ) {
-        loadMoreProducts();
-      }
-    },
-    { threshold: 0.1 }
-  );
-
-  if (loadMoreTrigger.value) {
-    observer.observe(loadMoreTrigger.value);
-  }
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", (e) => {
-    if (isOpen.value && !e.target.closest(".dropdown-container")) {
-      isOpen.value = false;
-    }
-  });
-
-  // Clean up the observer when component is destroyed
-  onBeforeUnmount(() => {
-    if (loadMoreTrigger.value) {
-      observer.unobserve(loadMoreTrigger.value);
-    }
-
-    // Remove the click event listener when component is unmounted
-    document.removeEventListener("click", (e) => {
-      if (isOpen.value && !e.target.closest(".dropdown-container")) {
-        isOpen.value = false;
-      }
-    });
-  });
-});
-
 // Watch for filter changes to reset products
 watch([selectedCategory, searchTerm, inStockOnly, minRating], async () => {
   // Reset pagination but keep loaded products
   currentPage.value = 1;
-
-  // If we have very few filtered products, load more
-  if (
-    filteredProducts.value.length < 10 &&
-    hasMoreProducts.value &&
-    !isLoading.value
-  ) {
-    await loadMoreProducts();
-  }
 });
-
-// Add this function to count active filters
-function getActiveFiltersCount() {
-  let count = 0;
-  if (selectedCategory) count++;
-  if (priceRange[0] > 0 || priceRange[1] < 10000) count++;
-  if (minRating > 0) count++;
-  if (inStockOnly) count++;
-  return count;
-}
 </script>
 
 <style>
