@@ -9,7 +9,7 @@
         </h1>
         <!-- Header underline -->
         <div
-          class="h-1 ml-4 w-28 md:w-48 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
+          class="h-1 ml-4 w-28 md:w-44 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
         ></div>
 
         <!-- Floating particles around header - FIXED -->
