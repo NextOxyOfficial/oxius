@@ -262,15 +262,15 @@
             icon: 'i-heroicons-home',
           },
           {
-            to: '#classified-category',
+            to: '/#classified-category',
             icon: 'i-bx-category',
           },
           {
-            to: '#microgigs',
+            to: '/#microgigs',
             icon: 'i-material-symbols-list-rounded',
           },
           {
-            to: `#eshop`,
+            to: `/#eshop`,
             icon: 'i-heroicons-shopping-bag',
           },
 
