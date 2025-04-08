@@ -17,15 +17,6 @@
           <UButton color="gray" variant="soft" size="sm" @click="resetChanges">
             Reset Changes
           </UButton>
-          <UButton
-            color="primary"
-            variant="solid"
-            size="sm"
-            @click="saveChanges"
-            :loading="isSaving"
-          >
-            Save Changes
-          </UButton>
         </div>
       </div>
     </div>
@@ -713,7 +704,6 @@ const props = defineProps({
 
 // Make edit mode active by default regardless of the prop value
 const editModeActive = ref(true); // Changed from props.isEditable to true
-const showAdvancedEditor = ref(false);
 
 // Function to toggle edit mode
 
@@ -847,7 +837,6 @@ const editingField = ref({
 });
 const editingFieldValue = ref("");
 const editingBenefitIndex = ref(-1);
-const editingFaqIndex = ref(-1);
 
 // Trust Badges Editor Modal state
 const isTrustBadgeModalOpen = ref(false);
@@ -950,7 +939,14 @@ function saveTrustBadges() {
 }
 
 // Save the current edit
+const originalSaveEdit = saveEdit;
 function saveEdit() {
+  console.log("Before saving edit:", {
+    editingField: editingField.value,
+    editingFieldValue: editingFieldValue.value,
+    editingBenefitIndex: editingBenefitIndex.value,
+  });
+
   if (editingBenefitIndex.value !== -1) {
     // Editing a benefit
     const index = editingBenefitIndex.value;
@@ -972,16 +968,7 @@ function saveEdit() {
     editorData[key] = editingFieldValue.value;
   }
 
-  // Create compiled data object from all editor components
-  const compiledData = {
-    ...editorData,
-    benefits: benefits.value,
-    faqs: editableFaqs.value,
-    trustBadges: trustBadges.value,
-  };
-
-  // Emit update event for parent components
-  emit("update:content", compiledData);
+  emitContentUpdate();
 
   // Close the modal
   isEditModalOpen.value = false;
@@ -995,6 +982,29 @@ function saveEdit() {
     color: "green",
     timeout: 3000,
   });
+
+  console.log("After saving edit:", {
+    editorData,
+    benefits: benefits.value,
+    faqs: editableFaqs.value,
+    trustBadges: trustBadges.value,
+  });
+}
+
+// Emit content update with detailed logging
+function emitContentUpdate() {
+  // Create compiled data object from all editor components
+  const compiledData = {
+    ...editorData,
+    benefits: benefits.value,
+    faqs: editableFaqs.value,
+    trustBadges: trustBadges.value,
+  };
+
+  console.log("Emitting update:content event with data:", compiledData);
+
+  // Emit update event for parent components
+  emit("update:content", compiledData);
 }
 
 // Reset changes to original state
@@ -1079,7 +1089,7 @@ async function saveChanges() {
     console.log("Saving Advanced Editor data:", compiledData);
 
     // Emit update event to parent component
-    emit("update:content", compiledData);
+    emitContentUpdate();
 
     // Show success message
     toast.add({
@@ -1101,6 +1111,130 @@ async function saveChanges() {
     });
   } finally {
     isSaving.value = false;
+  }
+}
+
+// Watch for changes to editor data
+watch(
+  editorData,
+  (newValue, oldValue) => {
+    console.log("Editor data changed:", {
+      newValue,
+      oldValue,
+      changedFields: getChangedFields(newValue, oldValue),
+    });
+  },
+  { deep: true }
+);
+
+// Watch for changes to benefits
+watch(
+  benefits,
+  (newValue, oldValue) => {
+    console.log("Benefits changed:", {
+      newValue,
+      oldValue,
+      diff: getDiffBetweenArrays(newValue, oldValue),
+    });
+  },
+  { deep: true }
+);
+
+// Watch for changes to FAQs
+watch(
+  editableFaqs,
+  (newValue, oldValue) => {
+    console.log("FAQs changed:", {
+      newValue,
+      oldValue,
+      diff: getDiffBetweenArrays(newValue, oldValue),
+    });
+  },
+  { deep: true }
+);
+
+// Watch for changes to trust badges
+watch(
+  trustBadges,
+  (newValue, oldValue) => {
+    console.log("Trust badges changed:", {
+      newValue,
+      oldValue,
+      diff: getDiffBetweenArrays(newValue, oldValue),
+    });
+  },
+  { deep: true }
+);
+
+// Helper function to identify changed fields between objects
+function getChangedFields(newObj, oldObj) {
+  if (!oldObj) return { allFieldsNew: true };
+
+  const changes = {};
+  Object.keys(newObj).forEach((key) => {
+    if (JSON.stringify(newObj[key]) !== JSON.stringify(oldObj[key])) {
+      changes[key] = {
+        from: oldObj[key],
+        to: newObj[key],
+      };
+    }
+  });
+
+  return changes;
+}
+
+// Helper function to identify differences between arrays
+function getDiffBetweenArrays(newArr, oldArr) {
+  if (!oldArr || oldArr.length === 0)
+    return { allItemsNew: true, items: newArr };
+  if (newArr.length !== oldArr.length)
+    return {
+      lengthChanged: true,
+      newLength: newArr.length,
+      oldLength: oldArr.length,
+    };
+
+  const changes = newArr
+    .map((item, index) => {
+      if (index >= oldArr.length) return { newItem: item };
+
+      const oldItem = oldArr[index];
+      const changedFields = {};
+      let hasChanges = false;
+
+      Object.keys(item).forEach((key) => {
+        if (JSON.stringify(item[key]) !== JSON.stringify(oldItem[key])) {
+          changedFields[key] = {
+            from: oldItem[key],
+            to: item[key],
+          };
+          hasChanges = true;
+        }
+      });
+
+      return hasChanges ? { index, changedFields } : null;
+    })
+    .filter(Boolean);
+
+  return changes.length > 0 ? changes : { noChanges: true };
+}
+
+// Function to add a new FAQ
+function addFaq() {
+  editableFaqs.value.push({
+    label: "New Question",
+    content: "Answer to the question",
+    icon: "i-heroicons-question-mark-circle",
+  });
+}
+
+// Function to remove a FAQ at the specified index
+function removeFaq(index) {
+  if (index >= 0 && index < editableFaqs.value.length) {
+    editableFaqs.value.splice(index, 1);
+
+    // Update editor data after removing
+    emitContentUpdate();
   }
 }
 

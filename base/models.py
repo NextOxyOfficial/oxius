@@ -14,6 +14,28 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 
+# Add this helper function for generating unique slugs
+def generate_unique_slug(model_class, field_value, instance=None):
+    """
+    Generate a unique slug based on the provided field value.
+    If the slug already exists, append a random string.
+    """
+    slug = slugify(field_value)
+    unique_slug = slug
+    
+    # Get the model class
+    queryset = model_class.objects.filter(slug=unique_slug)
+    
+    # Exclude the current instance from the queryset if updating
+    if instance and instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+    
+    # If the slug exists, append random string
+    if queryset.exists():
+        unique_slug = f"{slug}-{random.choice(string.ascii_lowercase)}{random.randint(1, 999)}"
+    
+    return unique_slug
+
 # Create your models here.
 
 
@@ -145,11 +167,17 @@ class ClassifiedCategory(models.Model):
   user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='classified_categories')
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   title = models.CharField(max_length=256)
+  slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
   business_type = models.CharField(max_length=256, default="shop")
   image = models.ImageField(upload_to='images/', blank=True, null=True)
   is_featured = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
+
+  def save(self, *args, **kwargs):
+      if not self.slug:
+          self.slug = generate_unique_slug(ClassifiedCategory, self.title, self)
+      super(ClassifiedCategory, self).save(*args, **kwargs)
 
   def __str__(self):
         return self.title
@@ -165,6 +193,7 @@ class ClassifiedCategoryPost(models.Model):
     category = models.ForeignKey(ClassifiedCategory,on_delete=models.SET_NULL, null=True,related_name='classified_categories_post')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     location = models.TextField(max_length=512)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     negotiable = models.BooleanField(default=False)
@@ -187,6 +216,12 @@ class ClassifiedCategoryPost(models.Model):
     ]
     service_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(ClassifiedCategoryPost, self.title, self)
+        super(ClassifiedCategoryPost, self).save(*args, **kwargs)
+    
     def __str__(self):
         return self.title
 
@@ -194,9 +229,16 @@ class MicroGigCategory(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gigs')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(MicroGigCategory, self.title, self)
+        super(MicroGigCategory, self).save(*args, **kwargs)
+    
     def __str__(self):
         return self.title
 
@@ -235,6 +277,7 @@ class MicroGigPost(models.Model):
     category = models.ForeignKey(MicroGigCategory,on_delete=models.SET_NULL, null=True,related_name='micro_gig_posts')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     required_quantity = models.IntegerField()
     filled_quantity = models.IntegerField(default=0)
@@ -260,17 +303,13 @@ class MicroGigPost(models.Model):
     ]
     gig_status = models.CharField(
       max_length=20, choices=GIG_STATUS, default='pending')
-    def __str__(self):
-        return self.title
-    @property
-    def task_submissions(self):
-        """Returns all tasks with user information"""
-        return self.microgigposttask_set.all().select_related('user').order_by('-created_at')
     
     def save(self, *args, **kwargs):
-    # Check if the gig is being marked as stopped
+        if not self.slug:
+            self.slug = generate_unique_slug(MicroGigPost, self.title, self)
+            
+        # Existing save logic
         if self.stop_gig and not self.gig_status == 'completed':
-            # Check for any pending tasks
             pending_tasks_exist = MicroGigPostTask.objects.filter(
                 gig=self,
                 completed=False,
@@ -279,28 +318,28 @@ class MicroGigPost(models.Model):
             ).exists()
             
             if pending_tasks_exist:
-                # Prevent stopping the gig by resetting stop_gig flag
-                # self.stop_gig = False
-                # self.active_gig = True
-                # You could raise a ValidationError here instead, but that would require
-                # try/except blocks in your views
                 raise ValidationError("Cannot stop this gig because there are pending tasks that need to be reviewed.")
             else:
-                # Only refund if no pending tasks and required quantity > 0
                 if self.required_quantity > 0:
-                    # Refund the unfulfilled portion
                     self.user.balance += self.balance
                     self.user.save()
                     self.balance = 0
                     self.gig_status = 'completed'
 
-        # Check if the gig is complete
         if self.filled_quantity >= self.required_quantity:
             self.active_gig = False
             self.gig_status = 'completed'
-
+            
         super(MicroGigPost, self).save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.title
 
+    @property
+    def task_submissions(self):
+        """Returns all tasks with user information"""
+        return self.microgigposttask_set.all().select_related('user').order_by('-created_at')
+    
 class ReferBonus(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='comission_bonus')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -378,64 +417,6 @@ class MicroGigPostTask(models.Model):
         super(MicroGigPostTask, self).save(*args, **kwargs)
 
 
-# class MicroGigReport(models.Model):
-#     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='micro_gig_reports')
-#     gig = models.ForeignKey(MicroGigPost, on_delete=models.SET_NULL, null=True,related_name='micro_gig_reports')
-#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     title = models.CharField(max_length=256)
-#     description = models.TextField(blank=True, null=True,default='')
-#     medias = models.ManyToManyField(MicroGigPostMedia, null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     def __str__(self):
-#         return self.title    
-    
-# class TaskStatus(models.TextChoices):
-#     PENDING = 'PENDING', _('Pending')
-#     APPROVED = 'APPROVED', _('Approved')
-#     REJECTED = 'REJECTED', _('Rejected')
-#     COMPLETED = 'COMPLETED', _('Completed')
-
-# class MicroGigPostTask(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='micro_gig_worker')
-#     gig = models.ForeignKey(MicroGigPost, on_delete=models.CASCADE, null=False)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     status = models.CharField(
-#         max_length=10,
-#         choices=TaskStatus.choices,
-#         default=TaskStatus.PENDING
-#     )
-#     medias = models.ManyToManyField(MicroGigPostMedia, blank=True)
-#     reason = models.CharField(max_length=200, blank=True, null=True)
-#     accepted_terms = models.BooleanField(default=True)
-#     accepted_condition = models.BooleanField(default=True)
-
-#     def __str__(self):
-#         return f"Task created at {self.created_at} by {self.user}"
-
-# # Signals for handling related updates
-# @receiver(pre_save, sender=MicroGigPostTask)
-# def handle_task_status_update(sender, instance, **kwargs):
-#     if instance.pk:  # Only for updates
-#         previous = MicroGigPostTask.objects.get(pk=instance.pk)
-#         if previous.status != instance.status:
-#             if instance.status == TaskStatus.APPROVED:
-#                 instance.user.balance += instance.gig.price
-#                 instance.user.pending_balance -= instance.gig.price
-#                 instance.user.save()
-#             elif instance.status == TaskStatus.REJECTED:
-#                 instance.gig.filled_quantity -= 1
-#                 instance.gig.save()
-#                 instance.user.pending_balance -= instance.gig.price
-#                 instance.user.save()
-#             elif instance.status == TaskStatus.PENDING:
-#                 instance.gig.filled_quantity += 1
-#                 instance.gig.save()
-#                 instance.user.pending_balance += instance.gig.price
-#                 instance.user.save()
-
-
 class Balance(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='user_balance')
     to_user = models.ForeignKey(User,on_delete=models.SET_NULL, blank=True, null=True,related_name='to_user')
@@ -500,27 +481,6 @@ class Balance(models.Model):
         super(Balance, self).save(*args, **kwargs)
 
 
-# class MicroGigs(models.Model):
-#     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='micro_gigs')
-#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     title = models.CharField(max_length=256)
-#     image = models.ImageField(upload_to='images/', blank=True, null=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     def __str__(self):
-#         return self.title
-    
-
-# class Balance(models.Model):
-#     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user_balance')
-#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     amount =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     def __str__(self):
-#         return f"{self.user.username}'s Service: {self.amount}"
-
 class PendingTask(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='pending_tasks')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -538,21 +498,19 @@ class Faq(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.label
-    
-
-
-    
-# class PoliceStation(models.Model):
-#     name = models.CharField(max_length=256)
-    
-#     def __str__(self):
-#         return self.name
 
 class ProductCategory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(ProductCategory, self.name, self)
+        super(ProductCategory, self).save(*args, **kwargs)
+    
     def __str__(self):
         return self.name
 
@@ -565,8 +523,14 @@ class ProductMedia(models.Model):
 class ProductBenefit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=150, unique=True, null=True, blank=True)
     description = models.TextField()
     icon = models.CharField(max_length=50)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(ProductBenefit, self.title, self)
+        super(ProductBenefit, self).save(*args, **kwargs)
     
     def __str__(self):
         return self.title
@@ -574,18 +538,30 @@ class ProductBenefit(models.Model):
 class ProductFAQ(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     label = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     content = models.TextField()
     icon = models.CharField(max_length=50, blank=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(ProductFAQ, self.label, self)
+        super(ProductFAQ, self).save(*args, **kwargs)
     
     def __str__(self):
         return self.label
 
 class ProductTrustBadge(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
-    text = models.CharField(max_length=100) 
+    text = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=150, unique=True, null=True, blank=True) 
     icon = models.CharField(max_length=50)
     enabled = models.BooleanField(default=True)
     description = models.TextField(blank=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(ProductTrustBadge, self.text, self)
+        super(ProductTrustBadge, self).save(*args, **kwargs)
     
     def __str__(self):
         return self.text
@@ -594,6 +570,7 @@ class Product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='products')
     name = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     image = models.ManyToManyField(ProductMedia, blank=True)
     description = models.TextField( blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
@@ -610,7 +587,7 @@ class Product(models.Model):
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    is_advanced = models.BooleanField(default=False)
     # New marketing fields
     benefits = models.ManyToManyField(ProductBenefit, blank=True, related_name='products')
     faqs = models.ManyToManyField(ProductFAQ, blank=True, related_name='products')
@@ -633,6 +610,11 @@ class Product(models.Model):
     cta_badge2 = models.CharField(max_length=50, blank=True, null=True)
     cta_badge3 = models.CharField(max_length=50, blank=True, null=True)
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug(Product, self.name, self)
+        super(Product, self).save(*args, **kwargs)
+    
     def __str__(self):
         return self.name
     
@@ -650,10 +632,11 @@ class OrderItem(models.Model):
 
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order_number = models.CharField(max_length=10, unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='orders')
-    name= models.CharField(max_length=256,blank=True, default="")
-    address= models.CharField(max_length=256,blank=True, default="")
-    phone= models.CharField(max_length=256,blank=True, default="")
+    name = models.CharField(max_length=256, blank=True, default="")
+    address = models.CharField(max_length=256, blank=True, default="")
+    phone = models.CharField(max_length=256, blank=True, default="")
     total = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     delivery_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     ORDER_STATUS_CHOICES = [
@@ -668,9 +651,33 @@ class Order(models.Model):
         ('balance', 'Account Balance'),
         ('cash_on_delivery', 'Cash on Delivery'),
     ]
-    payment_method = models.CharField(max_length=256,blank=True, choices=PAYMENT_METHOD_CHOICES, default="cash_on_delivery")
+    payment_method = models.CharField(max_length=256, blank=True, choices=PAYMENT_METHOD_CHOICES, default="cash_on_delivery")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def generate_order_number(self):
+        """Generate a unique 10-digit order number based on current time"""
+        from datetime import datetime
+        import random
+        
+        # Format: YYMMDDHHmm (Year, Month, Day, Hour, Minute)
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        
+        # Check if this number already exists and add random digits if needed
+        if Order.objects.filter(order_number=base_number).exists():
+            # Add a random number (0-999) to make it unique
+            random_suffix = f"{random.randint(0, 999):03d}"
+            # Take first 7 digits of base_number and add the 3 random digits
+            return base_number[:7] + random_suffix
+        
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        # Generate order_number for new orders
+        if not self.pk or not self.order_number:
+            self.order_number = self.generate_order_number()
+        super(Order, self).save(*args, **kwargs)
+    
     def __str__(self):
-        return f"{self.user}'s Order: {self.total}"
+        return f"#{self.order_number} - {self.user}'s Order: {self.total}"
