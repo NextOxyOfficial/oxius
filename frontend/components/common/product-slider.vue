@@ -107,7 +107,6 @@
                 v-for="product in getProductsForRow(i - 1, 0)"
                 :key="product.id"
                 :product="product"
-                class="transition-transform hover:-translate-y-1 hover:shadow-md duration-300"
               />
             </div>
 
@@ -119,7 +118,6 @@
                 v-for="product in getProductsForRow(i - 1, 1)"
                 :key="product.id"
                 :product="product"
-                class="transition-transform hover:-translate-y-1 hover:shadow-md duration-300"
               />
             </div>
           </div>

@@ -251,11 +251,7 @@
                         >
                           Referred User
                         </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                        >
-                          Task
-                        </th>
+
                         <th
                           class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                         >
@@ -291,11 +287,7 @@
                             </div>
                           </div>
                         </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
-                        >
-                          {{ earning.task }}
-                        </td>
+
                         <td class="px-6 py-4 whitespace-nowrap">
                           <div
                             class="text-sm font-medium text-green-600 dark:text-green-400 flex items-center"
@@ -401,7 +393,7 @@
             <UButton
               size="xl"
               color="primary"
-              to="/register"
+              to="/auth/register"
               class="cta-button"
             >
               Sign Up & Start Earning
@@ -588,7 +580,7 @@
               size="xl"
               color="white"
               variant="solid"
-              to="/register"
+              to="/auth/register"
               class="cta-button-final"
             >
               Create Your Account
@@ -647,7 +639,7 @@ const earnings = ref([
 // Define tabs with counts from actual data
 const tabs = ref([
   {
-    name: "Earnings",
+    name: "Earnings History",
     icon: "i-heroicons-banknotes",
     count: earnings.value.length,
   },
