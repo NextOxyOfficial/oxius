@@ -1,371 +1,268 @@
 <template>
-  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-2 md:py-4">
-    <!-- Main Content -->
-    <UContainer>
-      <PublicEshopTitle />
-      <div v-if="!user?.user?.is_pro" class="my-8">
-        <div
-          class="transition-all duration-700"
-          :class="
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          "
-        >
+  <div class="animate-fade-in">
+    <!-- Product Summary Cards -->
+    <div
+      class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2 bg-gray-50 border-b border-gray-200"
+    >
+      <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Total Products</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ products.length }}
+            </p>
+          </div>
           <div
-            class="relative mx-auto max-w-3xl overflow-hidden rounded-xl border-0 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl dark:from-slate-900 dark:to-slate-800"
+            class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center"
           >
-            <!-- Glass effect overlay -->
-            <div
-              class="absolute inset-0 bg-white/30 backdrop-blur-sm dark:bg-black/30"
-            ></div>
+            <ShoppingCart class="h-6 w-6 text-indigo-500" />
+          </div>
+        </div>
+        <p class="mt-2 text-sm font-medium text-indigo-600">
+          ৳{{ totalProductsValue }}
+        </p>
+      </div>
 
-            <!-- Decorative elements -->
-            <div
-              class="absolute -left-6 -top-6 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl"
-            ></div>
-            <div
-              class="absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-purple-500/20 blur-3xl"
-            ></div>
+      <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Active Products</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ activeProducts.length }}
+            </p>
+          </div>
+          <div
+            class="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center"
+          >
+            <CircleCheck class="h-6 w-6 text-green-500" />
+          </div>
+        </div>
+        <p class="mt-2 text-sm font-medium text-green-600">
+          ৳{{ activeProductsValue }}
+        </p>
+      </div>
 
-            <!-- Sparkles -->
-            <div
-              v-for="(sparkle, index) in sparkles"
-              :key="index"
-              class="sparkle absolute text-yellow-400 opacity-70 animate-pulse"
-              :class="sparkle.class"
-              :style="{ animationDelay: `${sparkle.delay}s` }"
+      <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Inactive Products</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ inactiveProducts.length }}
+            </p>
+          </div>
+          <div
+            class="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center"
+          >
+            <CirclePause class="h-6 w-6 text-gray-500" />
+          </div>
+        </div>
+        <p class="mt-2 text-sm font-medium text-gray-600">
+          ৳{{ inactiveProductsValue }}
+        </p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Out of Stock</p>
+            <p class="text-2xl font-bold text-gray-900">
+              {{ outOfStockProducts.length }}
+            </p>
+          </div>
+          <div
+            class="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center"
+          >
+            <CircleX class="h-6 w-6 text-red-500" />
+          </div>
+        </div>
+        <p class="mt-2 text-sm font-medium text-red-600">
+          ৳{{ outOfStockProductsValue }}
+        </p>
+      </div>
+    </div>
+
+    <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center space-x-2">
+          <ShoppingCart class="h-5 w-5 text-indigo-600" />
+          <h2 class="text-xl font-semibold text-gray-800">My Products</h2>
+        </div>
+        <div class="mt-3 md:mt-0 flex items-center space-x-4">
+          <div class="relative">
+            <select
+              v-model="productFilter"
+              class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none sm:text-sm rounded-md"
             >
-              <SparklesIcon :size="sparkle.size" />
+              <option value="all">All Products</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="out-of-stock">Out of Stock</option>
+            </select>
+          </div>
+          <div class="relative rounded-md shadow-sm">
+            <input
+              type="text"
+              v-model="productSearch"
+              placeholder="Search products..."
+              class="block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md focus:outline-none"
+            />
+            <div
+              class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+            >
+              <Search class="h-5 w-5 text-gray-400" />
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            <div class="relative flex flex-col overflow-hidden md:flex-row">
-              <!-- Left premium badge section -->
+    <!-- Products Grid -->
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div
+        v-for="product in products"
+        :key="product.id"
+        class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+      >
+        <div class="relative">
+          <img
+            v-if="product?.image_details?.length"
+            :src="product.image_details[0].image"
+            :alt="product.name"
+            class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div class="absolute top-2 right-2">
+            <span
+              v-if="product.status === 'active'"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+            >
+              <CircleCheck class="h-3 w-3 mr-1" />
+              Active
+            </span>
+            <span
+              v-else-if="product.status === 'inactive'"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+            >
+              <CirclePause class="h-3 w-3 mr-1" />
+              Inactive
+            </span>
+            <span
+              v-else
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+            >
+              <CircleX class="h-3 w-3 mr-1" />
+              Out of Stock
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-1 line-clamp-1">
+            {{ product.name }}
+          </h3>
+          <div
+            v-html="product.description"
+            class="text-sm text-gray-500 mb-2 line-clamp-2"
+          ></div>
+          <div class="flex justify-between items-center">
+            <div class="text-lg font-bold text-indigo-600">
+              ৳{{ product.sale_price }}
+            </div>
+            <div class="text-sm text-gray-500 flex items-center">
+              <Package class="h-4 w-4 mr-1 text-gray-400" />
+              {{ product.stock }}
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 mt-4">
+            <!-- Edit Button -->
+            <button
+              @click="editProduct(product)"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border border-indigo-100 dark:border-indigo-800/30 text-indigo-600 dark:text-indigo-400 hover:shadow-md transition-all duration-300"
+            >
+              <!-- Hover effect overlay -->
               <div
-                class="flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700 p-8 text-white md:w-2/5"
-              >
-                <div
-                  class="flex flex-col items-center justify-center space-y-3"
-                >
-                  <div class="relative">
-                    <div
-                      class="absolute -inset-1 animate-spin-slow rounded-full bg-gradient-to-r from-yellow-400 via-white to-yellow-400 opacity-30 blur-sm"
-                    ></div>
-                    <div
-                      class="relative rounded-full bg-gradient-to-br from-blue-600 to-purple-700 p-3"
-                    >
-                      <CrownIcon class="h-10 w-10 text-yellow-300" />
-                    </div>
-                  </div>
-                  <span
-                    class="text-sm font-medium uppercase tracking-wider text-blue-100"
-                    >{{ $t("premium_access") }}</span
-                  >
-                </div>
-              </div>
+                class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              ></div>
 
-              <!-- Right content section -->
-              <div class="relative p-8 md:w-3/5">
-                <div class="mb-6">
-                  <h3
-                    class="mb-3 text-2xl font-bold tracking-tight text-slate-700"
-                  >
-                    {{ $t("premium_access_required") }}
-                  </h3>
-                  <p class="text-muted-foreground">
-                    {{ $t("premium_access_text") }}
-                  </p>
-                </div>
-
-                <NuxtLink
-                  href="/upgrade-to-pro"
-                  class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-purple-700 px-4 py-3 text-white transition-all hover:shadow-lg hover:shadow-blue-500/25"
-                >
-                  <span>{{ $t("premium_upgrade") }}</span>
-                  <span
-                    class="inline-block transition-transform duration-300 group-hover:translate-x-1"
-                    >→</span
-                  >
-                  <span
-                    class="absolute -right-1 -top-1 h-8 w-8 rotate-12 animate-pulse rounded-full bg-white opacity-30 blur-md transition-all duration-300 group-hover:opacity-40"
-                  ></span>
-                </NuxtLink>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-else>
-        <CommonStoreCreateForm
-          v-if="user?.user.is_pro && !user?.user.store_username"
-        />
-        <div v-else>
-          <!-- store details -->
-          <div
-            class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 w-full mb-3 overflow-hidden transform hover:scale-[1.01]"
-          >
-            <!-- Compact Header with Shimmer Effect -->
-            <div
-              class="bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3 flex items-center relative overflow-hidden"
-            >
-              <!-- Shimmer Effect -->
-              <div class="absolute inset-0 opacity-20 shimmer-animation"></div>
-
-              <UIcon
-                name="i-heroicons-shopping-bag"
-                class="h-5 w-5 text-white mr-2 relative z-10"
+              <!-- Icon and text -->
+              <Edit2
+                class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
               />
-              <h3
-                class="text-base font-semibold text-white relative z-10 truncate"
+              <span
+                class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
+                >Edit</span
               >
-                My Store Details
-              </h3>
 
-              <!-- Edit Button -->
-              <button
-                @click="isEditing = !isEditing"
-                class="ml-auto inline-flex items-center px-3 py-1.5 bg-white/20 rounded text-xs font-medium text-white hover:bg-white/30 focus:outline-none transition-colors duration-300 relative z-10"
-              >
-                <UIcon
-                  :name="
-                    isEditing
-                      ? 'i-heroicons-check'
-                      : 'i-heroicons-pencil-square'
-                  "
-                  class="h-3.5 w-3.5 mr-1.5"
-                />
-                {{ isEditing ? "Save" : "Edit" }}
-              </button>
-            </div>
+              <!-- Subtle glow effect on hover -->
+              <div
+                class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-indigo-400/20 blur-sm"
+              ></div>
+            </button>
 
-            <!-- Content Grid with More Height -->
-            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Shop Name -->
-              <div class="flex items-start group">
-                <div class="flex-shrink-0 mt-1">
-                  <div
-                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
-                  >
-                    <UIcon
-                      name="i-heroicons-building-storefront"
-                      class="h-4 w-4 text-emerald-600"
-                    />
-                  </div>
-                </div>
-                <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
-                    Shop Name
-                  </p>
-                  <input
-                    v-if="isEditing"
-                    v-model="editedUser.store_name"
-                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
-                  />
-                  <p
-                    v-else
-                    class="text-sm font-semibold text-gray-800 truncate"
-                  >
-                    {{ storeDetails.store_name || "Not set" }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Store URL (Non-editable) -->
-              <div class="flex items-start group">
-                <div class="flex-shrink-0 mt-1">
-                  <div
-                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
-                  >
-                    <UIcon
-                      name="i-heroicons-link"
-                      class="h-4 w-4 text-emerald-600"
-                    />
-                  </div>
-                </div>
-                <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
-                    Store URL
-                  </p>
-                  <div class="flex items-center flex-wrap">
-                    <div
-                      class="flex items-center bg-gray-50 rounded px-2 py-1 max-w-full overflow-hidden"
-                    >
-                      <NuxtLink
-                        class="flex items-center"
-                        :to="`/eshop/${storeDetails.store_username}`"
-                      >
-                        <p class="text-xs text-gray-500 whitespace-nowrap">
-                          https://adsyclub.com/eshop/
-                        </p>
-                        <p
-                          class="text-sm font-semibold text-emerald-600 truncate"
-                        >
-                          {{ storeDetails.store_username || "Not set" }}
-                        </p>
-                      </NuxtLink>
-                      <button
-                        v-if="storeDetails.store_username"
-                        @click="
-                          copyToClipboard(
-                            `https://adsyclub.com/eshop/${storeDetails.store_username}`
-                          )
-                        "
-                        class="ml-1.5 text-gray-400 hover:text-emerald-600 transition-colors flex-shrink-0"
-                        :class="{ 'text-emerald-600': copied }"
-                      >
-                        <UIcon
-                          :name="
-                            copied
-                              ? 'i-heroicons-check'
-                              : 'i-heroicons-clipboard'
-                          "
-                          class="h-3.5 w-3.5"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                  <p class="text-xs text-gray-400 mt-1 italic">
-                    URL cannot be changed
-                  </p>
-                </div>
-              </div>
-
-              <!-- Shop Address -->
-              <div class="flex items-start group">
-                <div class="flex-shrink-0 mt-1">
-                  <div
-                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
-                  >
-                    <UIcon
-                      name="i-heroicons-map-pin"
-                      class="h-4 w-4 text-emerald-600"
-                    />
-                  </div>
-                </div>
-                <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
-                    Shop Address
-                  </p>
-                  <input
-                    v-if="isEditing"
-                    v-model="editedUser.store_address"
-                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
-                  />
-                  <p
-                    v-else
-                    class="text-sm font-semibold text-gray-800 truncate"
-                  >
-                    {{ storeDetails?.store_address || "Not set" }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Shop Description -->
-              <div class="flex items-start group">
-                <div class="flex-shrink-0 mt-1">
-                  <div
-                    class="bg-emerald-100 p-2 rounded-full group-hover:bg-emerald-200 transition-colors duration-300"
-                  >
-                    <UIcon
-                      name="i-heroicons-document-text"
-                      class="h-4 w-4 text-emerald-600"
-                    />
-                  </div>
-                </div>
-                <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
-                    Description
-                  </p>
-                  <textarea
-                    v-if="isEditing"
-                    v-model="editedUser.store_description"
-                    rows="2"
-                    class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
-                  ></textarea>
-                  <p v-else class="text-sm text-gray-800 line-clamp-2">
-                    {{
-                      storeDetails?.store_description ||
-                      "No description available"
-                    }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Status Indicator -->
-            <div
-              class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center"
+            <!-- Activate/Deactivate Button -->
+            <button
+              @click="toggleProductStatus(product)"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/30 border border-slate-200 dark:border-slate-800/30 text-slate-600 dark:text-slate-400 hover:shadow-md transition-all duration-300"
             >
-              <div class="flex items-center">
-                <div
-                  class="h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"
-                ></div>
-                <span class="text-xs text-gray-600">Store Active</span>
-              </div>
-              <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-500">
-                Last updated: {{ formatDate(new Date()) }}
-              </div>
-            </div>
+              <!-- Hover effect overlay -->
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-slate-600 to-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              ></div>
 
-            <!-- Pulse Effect at Bottom -->
-            <div
-              class="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 bg-[length:200%_100%] animate-gradient-x"
-            ></div>
-          </div>
-          <!-- Premium Tabs -->
-          <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-4">
-            <div class="flex border-b border-gray-100">
-              <button
-                v-for="tab in tabs"
-                :key="tab.id"
-                @click="activeTab = tab.id"
-                class="relative flex-1 flex items-center justify-center py-5 px-4 text-sm font-medium transition-all duration-200 overflow-hidden"
-                :class="[
-                  activeTab === tab.id
-                    ? 'text-indigo-600 bg-gray-200'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50',
-                ]"
+              <!-- Dynamic icon based on product status -->
+              <component
+                :is="product.status === 'active' ? 'EyeOff' : 'Eye'"
+                class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
+              />
+
+              <!-- Dynamic text based on product status -->
+              <span
+                class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300 whitespace-nowrap"
               >
-                <div class="flex items-center space-x-2">
-                  <component
-                    :is="tab.icon"
-                    :class="[
-                      'h-5 w-5 transition-transform duration-300',
-                      activeTab === tab.id
-                        ? 'text-indigo-600 scale-110'
-                        : 'text-gray-400',
-                    ]"
-                  />
-                  <span>{{ tab.name }}</span>
-                </div>
-                <div
-                  v-if="activeTab === tab.id"
-                  class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-400 to-indigo-600 transform origin-left animate-grow"
-                ></div>
-              </button>
-            </div>
-          </div>
+                {{ product.status === "active" ? "Deactivate" : "Activate" }}
+              </span>
 
-          <!-- Tab Content -->
-          <div
-            class="overflow-hidden transition-all duration-300"
-            :class="
-              activeTab === 'add-product' ? '' : 'bg-white shadow-xl rounded-xl'
-            "
-          >
-            <CommonMyOrdersTab v-if="activeTab === 'orders'" />
+              <!-- Subtle glow effect on hover -->
+              <div
+                class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-slate-400/20 blur-sm"
+              ></div>
+            </button>
 
-            <CommonMyProductsTab v-if="activeTab === 'products'" />
-          </div>
-          <!-- Add New Product Tab (Empty as requested) -->
-          <div
-            v-if="activeTab === 'add-product'"
-            class="text-center text-gray-500"
-          >
-            <CommonAddProductTab />
+            <!-- Delete Button -->
+            <button
+              @click="confirmDeleteProduct(product)"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 hover:shadow-md transition-all duration-300"
+            >
+              <!-- Hover effect overlay -->
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              ></div>
+
+              <!-- Icon and text -->
+              <Trash2
+                class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
+              />
+              <span
+                class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
+                >Delete</span
+              >
+
+              <!-- Subtle glow effect on hover -->
+              <div
+                class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-red-400/20 blur-sm"
+              ></div>
+            </button>
           </div>
         </div>
       </div>
-    </UContainer>
-
+      <div
+        v-if="paginatedProducts.length === 0"
+        class="col-span-full py-10 text-center text-gray-500"
+      >
+        <div class="flex flex-col items-center justify-center">
+          <PackageX class="h-12 w-12 text-gray-300 mb-2" />
+          No products found matching your criteria
+        </div>
+      </div>
+    </div>
     <!-- Edit Product Modal -->
     <div
       v-if="showEditProductModal"
@@ -763,11 +660,8 @@
 </template>
 
 <script setup>
-definePageMeta({
-  layout: "dashboard",
-});
 const { user } = useAuth();
-const { get, patch } = useApi();
+const { get, patch, del } = useApi();
 const { formatDate } = useUtils();
 import {
   ShoppingBag,
@@ -924,53 +818,6 @@ async function getOrders() {
     isOrdersLoading.value = false;
   }
 }
-
-// Helper function to format currency amounts
-function formatAmount(amount) {
-  if (amount === undefined || amount === null) return "0.00";
-  return parseFloat(amount).toFixed(2);
-}
-
-// Updated computed properties to handle API field structure
-const pendingOrders = computed(() => {
-  return orders.value.filter((order) => order.order_status === "pending");
-});
-
-const processingOrders = computed(() => {
-  return orders.value.filter((order) => order.order_status === "processing");
-});
-
-const deliveredOrders = computed(() => {
-  return orders.value.filter((order) => order.order_status === "delivered");
-});
-
-const totalOrdersAmount = computed(() => {
-  return orders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const pendingOrdersAmount = computed(() => {
-  return pendingOrders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const processingOrdersAmount = computed(() => {
-  return processingOrders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const deliveredOrdersAmount = computed(() => {
-  return deliveredOrders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
 
 // Add polling for real-time updates (optional)
 let orderUpdateInterval;
@@ -1318,92 +1165,6 @@ const calculateTotal = () => {
   return calculateSubtotal() + (editingDeliveryFee.value || 0);
 };
 
-const incrementQuantity = (index) => {
-  editingOrderItems.value[index].quantity++;
-};
-
-const decrementQuantity = (index) => {
-  if (editingOrderItems.value[index].quantity > 1) {
-    editingOrderItems.value[index].quantity--;
-  }
-};
-
-const removeOrderItem = (index) => {
-  editingOrderItems.value.splice(index, 1);
-};
-
-const addItemToOrder = () => {
-  if (!selectedProductToAdd.value || newItemQuantity.value < 1) return;
-
-  // Check if the product is already in the order
-  const existingItemIndex = editingOrderItems.value.findIndex(
-    (item) => item.name === selectedProductToAdd.value.name
-  );
-
-  if (existingItemIndex !== -1) {
-    // Update quantity if product already exists
-    editingOrderItems.value[existingItemIndex].quantity +=
-      newItemQuantity.value;
-  } else {
-    // Add new item
-    editingOrderItems.value.push({
-      name: selectedProductToAdd.value.name,
-      price: selectedProductToAdd.value.price,
-      quantity: newItemQuantity.value,
-      image: selectedProductToAdd.value.image,
-    });
-  }
-
-  // Reset form
-  selectedProductToAdd.value = null;
-  newItemQuantity.value = 1;
-  showAddItemModal.value = false;
-
-  // Show success toast
-  showToast("success", "Item Added", "Product has been added to the order.");
-};
-
-const saveOrderItemChanges = async () => {
-  console.log(
-    "Order items:",
-    editingOrderItems.value[0].id,
-    editingOrderItems.value[0].quantity
-  );
-  console.log("Delivery fee:", editingDeliveryFee.value);
-  console.log("Subtotal:", calculateSubtotal());
-  console.log("Total:", calculateTotal());
-};
-
-const updateOrderStatus = async (id) => {
-  console.log(editingOrderItems.value);
-  try {
-    const res = await patch(`/orders/${id}/`, {
-      order_status: editingOrderStatus.value,
-    });
-    if (res.data) {
-      // Show success toast
-      showToast(
-        "success",
-        "Order Status Updated",
-        `Order #${id} status has been updated to ${editingOrderStatus.value}.`
-      );
-
-      // Close modal
-      showOrderDetailsModal.value = false;
-    }
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    showToast(
-      "error",
-      "Update Failed",
-      "There was an error updating the order status."
-    );
-  } finally {
-    isProcessing.value = false;
-    await getOrders();
-  }
-};
-
 const printOrder = async (order) => {
   try {
     const doc = new jsPDF();
@@ -1535,10 +1296,6 @@ const printOrder = async (order) => {
       "There was an error generating the PDF."
     );
   }
-};
-
-const cancelOrder = () => {
-  showCancelOrderModal.value = true;
 };
 
 const confirmCancelOrder = async () => {
@@ -1693,7 +1450,8 @@ const deleteProduct = async () => {
 
   try {
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    const res = await del(`products/${selectedProduct.value.slug}/`);
+    console.log(res);
 
     // Remove the product from the products array
     const index = products.value.findIndex(
@@ -1863,18 +1621,3 @@ onMounted(async () => {
   }
 });
 </script>
-<style setup>
-/* Only essential styles */
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-.toast-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-.toast-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
-</style>
