@@ -375,7 +375,7 @@
               id="modal-title"
             >
               <ShoppingBag class="h-5 w-5 mr-2 text-indigo-600" />
-              Order #{{ selectedOrder?.id }}
+              Order #{{ selectedOrder?.order_number }}
             </h3>
             <div class="flex items-center space-x-2">
               <button
@@ -430,16 +430,11 @@
                     </div>
                     <div>
                       <p class="text-gray-500">Payment Method</p>
-                      <p class="font-medium">
-                        {{ selectedOrder?.paymentMethod }}
+                      <p class="font-medium capitalize">
+                        {{ selectedOrder?.payment_method }}
                       </p>
                     </div>
-                    <div>
-                      <p class="text-gray-500">Payment Status</p>
-                      <p class="font-medium">
-                        {{ selectedOrder?.paymentStatus }}
-                      </p>
-                    </div>
+                    <div></div>
                   </div>
                 </div>
               </div>
@@ -466,11 +461,13 @@
                   >
                     <div>
                       <p class="text-gray-500">Name</p>
-                      <p class="font-medium">{{ selectedOrder?.customer }}</p>
+                      <p class="font-medium">{{ selectedOrder?.name }}</p>
                     </div>
                     <div>
                       <p class="text-gray-500">Email</p>
-                      <p class="font-medium">{{ selectedOrder?.email }}</p>
+                      <p class="font-medium">
+                        {{ selectedOrder?.customer_details?.email }}
+                      </p>
                     </div>
                     <div>
                       <p class="text-gray-500">Phone</p>
@@ -611,19 +608,15 @@
                         <div class="flex items-center">
                           <div class="flex-shrink-0 h-10 w-10">
                             <img
-                              v-if="
-                                item?.product_details?.image_details?.length
-                              "
+                              v-if="item?.product_details?.image[0]"
                               class="h-10 w-10 rounded-md object-cover"
-                              :src="
-                                item?.product_details?.image_details[0].image
-                              "
+                              :src="item?.product_details?.image[0]"
                               alt=""
                             />
                           </div>
                           <div class="ml-4">
                             <div class="text-sm font-medium text-gray-900">
-                              {{ item.name }}
+                              {{ item.product_details?.name }}
                             </div>
                           </div>
                         </div>

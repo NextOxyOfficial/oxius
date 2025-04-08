@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="pt-6 bg-slate-100/70 dark:bg-slate-900 relative overflow-hidden"
+    class="pt-6 bg-slate-100/70 dark:bg-slate-900 relative overflow-hidden -z-10"
   >
     <!-- Modern Subtle Background Pattern -->
     <div class="absolute inset-0 bg-pattern opacity-10 dark:opacity-10"></div>
