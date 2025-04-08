@@ -107,7 +107,6 @@
                 v-for="product in getProductsForRow(i - 1, 0)"
                 :key="product.id"
                 :product="product"
-                @open-modal="openProductModal"
                 class="transition-transform hover:-translate-y-1 hover:shadow-md duration-300"
               />
             </div>
@@ -120,7 +119,6 @@
                 v-for="product in getProductsForRow(i - 1, 1)"
                 :key="product.id"
                 :product="product"
-                @open-modal="openProductModal"
                 class="transition-transform hover:-translate-y-1 hover:shadow-md duration-300"
               />
             </div>
@@ -210,7 +208,7 @@
     </div>
 
     <!-- Product Quick View Modal -->
-    <UModal
+    <!-- <UModal
       v-model="isModalOpen"
       :ui="{
         inner: 'fixed inset-0 overflow-y-auto rounded-md',
@@ -226,7 +224,25 @@
           @close-modal="closeProductModal"
         />
       </div>
-    </UModal>
+    </UModal> -->
+
+    <!-- <div
+      v-if="isModalOpen"
+      class="fixed inset-0 top-14 z-10 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+      >
+        <CommonProductDetailsCard
+          :current-product="selectedProduct"
+          :modal="true"
+          @close-modal="closeProductModal"
+        />
+      </div>
+    </div> -->
   </UContainer>
 </template>
 
@@ -238,8 +254,7 @@ const products = ref([]);
 const isLoading = ref(true);
 const currentSlide = ref(0);
 const itemsPerRow = ref(5); // Items per row
-const isModalOpen = ref(false);
-const selectedProduct = ref(null);
+
 const quantity = ref(1);
 
 // Add these new refs for controlling auto-sliding
@@ -351,16 +366,16 @@ function goToSlide(index) {
   currentSlide.value = index;
 }
 
-// Product modal
-function openProductModal(product) {
-  selectedProduct.value = product;
-  quantity.value = 1;
-  isModalOpen.value = true;
-}
+// // Product modal
+// function openProductModal(product) {
+//   selectedProduct.value = product;
+//   quantity.value = 1;
+//   isModalOpen.value = true;
+// }
 
-function closeProductModal() {
-  isModalOpen.value = false;
-}
+// function closeProductModal() {
+//   isModalOpen.value = false;
+// }
 
 // Start automatic sliding
 function startAutoSlide() {
@@ -474,5 +489,63 @@ watch(
 .progress-animation {
   animation: progress-animation var(--auto-slide-delay, 5000ms) linear infinite;
   animation-play-state: running;
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 20px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-modal-slide-up {
+  animation: modal-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom colors */
+:root {
+  --primary-400: #38bdf8;
+  --primary-500: #0ea5e9;
 }
 </style>
