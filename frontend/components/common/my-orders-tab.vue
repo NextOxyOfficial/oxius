@@ -874,163 +874,171 @@
     </div>
 
     <!-- Add Item Modal -->
-    <div
-      v-if="showAddItemModal"
-      class="fixed inset-0 z-20 overflow-y-auto"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-    >
+    <UModal v-model="showAddItemModal">
       <div
-        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full"
       >
         <div
-          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-          aria-hidden="true"
-          @click="showAddItemModal = false"
+          class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
         ></div>
-        <span
-          class="hidden sm:inline-block sm:align-middle sm:h-screen"
-          aria-hidden="true"
-          >&#8203;</span
-        >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+          class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
         >
-          <div
-            class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
-          ></div>
-          <div
-            class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
+          <h3
+            class="text-xl font-semibold text-gray-900 flex items-center"
+            id="modal-title"
           >
-            <h3
-              class="text-xl font-semibold text-gray-900 flex items-center"
-              id="modal-title"
+            <UIcon
+              name="i-heroicons-shopping-cart"
+              class="h-5 w-5 mr-2 text-indigo-600"
+            />
+            Add Product to Order
+          </h3>
+          <button
+            @click="showAddItemModal = false"
+            class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+          >
+            <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
+          </button>
+        </div>
+        <div class="px-6 py-4">
+          <div class="mb-4">
+            <label
+              for="product-select"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Select Product</label
             >
-              <ShoppingCart class="h-5 w-5 mr-2 text-indigo-600" />
-              Add Product to Order
-            </h3>
-            <button
-              @click="showAddItemModal = false"
-              class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+            <select
+              id="product-select"
+              v-model="selectedProductToAdd"
+              class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
             >
-              <X class="h-6 w-6" />
-            </button>
+              <option :value="null">Select a product</option>
+              <option
+                v-for="product in availableProducts"
+                :key="product.id"
+                :value="product"
+              >
+                {{ product.name }} - ৳{{ product.sale_price }}
+              </option>
+            </select>
           </div>
-          <div class="px-6 py-4">
-            <div class="mb-4">
-              <label
-                for="product-select"
-                class="block text-sm font-medium text-gray-700 mb-1"
-                >Select Product</label
-              >
-              <select
-                id="product-select"
-                v-model="selectedProductToAdd"
-                class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
-              >
-                <option value="">Select a product</option>
-                <option
-                  v-for="product in activeProducts"
-                  :key="product.id"
-                  :value="product"
-                >
-                  {{ product.name }} - ৳{{ product.price }}
-                </option>
-              </select>
-            </div>
 
-            <div
-              v-if="selectedProductToAdd"
-              class="bg-gray-50 rounded-lg p-4 mb-4"
-            >
-              <div class="flex items-start space-x-3">
+          <div
+            v-if="selectedProductToAdd"
+            class="bg-gray-50 rounded-lg p-4 mb-4"
+          >
+            <div class="flex items-start space-x-3">
+              <div class="h-16 w-16 rounded-md overflow-hidden bg-gray-200">
                 <img
-                  :src="selectedProductToAdd.image"
+                  v-if="selectedProductToAdd.image_details?.length"
+                  :src="selectedProductToAdd.image_details[0].image"
                   :alt="selectedProductToAdd.name"
-                  class="h-16 w-16 rounded-md object-cover"
+                  class="h-full w-full object-cover"
                 />
-                <div class="flex-1">
-                  <h5 class="font-medium text-gray-900">
-                    {{ selectedProductToAdd.name }}
-                  </h5>
-                  <p class="text-sm text-gray-500 mt-1">
-                    {{ selectedProductToAdd.description }}
-                  </p>
-                  <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span class="text-gray-500">Price:</span>
-                      <span class="font-medium"
-                        >৳{{ selectedProductToAdd.price }}</span
-                      >
-                    </div>
-                    <div>
-                      <span class="text-gray-500">Available:</span>
-                      <span class="font-medium">{{
-                        selectedProductToAdd.stock
-                      }}</span>
-                    </div>
+                <div
+                  v-else
+                  class="h-full w-full flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-photo"
+                    class="h-8 w-8 text-gray-400"
+                  />
+                </div>
+              </div>
+              <div class="flex-1">
+                <h5 class="font-medium text-gray-900">
+                  {{ selectedProductToAdd.name }}
+                </h5>
+                <p class="text-sm text-gray-500 mt-1 line-clamp-2">
+                  {{
+                    selectedProductToAdd.short_description ||
+                    "No description available"
+                  }}
+                </p>
+                <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span class="text-gray-500">Price:</span>
+                    <span class="font-medium">
+                      ৳{{ selectedProductToAdd.sale_price }}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Available:</span>
+                    <span class="font-medium">
+                      {{ selectedProductToAdd.quantity }}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div v-if="selectedProductToAdd">
-              <label
-                for="quantity-input"
-                class="block text-sm font-medium text-gray-700 mb-1"
-                >Quantity</label
-              >
-              <div class="flex items-center">
-                <button
-                  @click="newItemQuantity > 1 ? newItemQuantity-- : null"
-                  class="p-2 rounded-md bg-gray-100 hover:bg-gray-200"
-                  :disabled="newItemQuantity <= 1"
-                >
-                  <Minus class="h-4 w-4 text-gray-600" />
-                </button>
-                <input
-                  id="quantity-input"
-                  type="number"
-                  v-model.number="newItemQuantity"
-                  min="1"
-                  :max="selectedProductToAdd.stock"
-                  class="mx-2 block w-20 border-gray-300 rounded-md shadow-sm sm:text-sm text-center focus:outline-none px-2 py-1"
-                />
-                <button
-                  @click="
-                    newItemQuantity < selectedProductToAdd.stock
-                      ? newItemQuantity++
-                      : null
-                  "
-                  class="p-2 rounded-md bg-gray-100 hover:bg-gray-200"
-                  :disabled="newItemQuantity >= selectedProductToAdd.stock"
-                >
-                  <Plus class="h-4 w-4 text-gray-600" />
-                </button>
-              </div>
-            </div>
           </div>
-          <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
-            <button
-              @click="addItemToOrder"
-              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:text-sm transition-all duration-200"
-              :disabled="!selectedProductToAdd || newItemQuantity < 1"
+
+          <div v-if="selectedProductToAdd">
+            <label
+              for="quantity-input"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Quantity</label
             >
-              <Plus class="h-4 w-4 mr-1.5" />
-              Add to Order
-            </button>
-            <button
-              @click="showAddItemModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+            <div class="flex items-center">
+              <UButton
+                @click="decrementNewItemQuantity"
+                :disabled="newItemQuantity <= 1"
+                color="gray"
+                variant="soft"
+                icon="i-heroicons-minus"
+                size="sm"
+              />
+              <input
+                id="quantity-input"
+                type="number"
+                v-model.number="newItemQuantity"
+                min="1"
+                :max="selectedProductToAdd.quantity"
+                class="mx-2 block w-20 border-gray-300 rounded-md shadow-sm sm:text-sm text-center focus:ring-2 focus:ring-indigo-200 focus:outline-none px-2 py-1"
+              />
+              <UButton
+                @click="incrementNewItemQuantity"
+                :disabled="newItemQuantity >= maxAvailableQuantity"
+                color="gray"
+                variant="soft"
+                icon="i-heroicons-plus"
+                size="sm"
+              />
+            </div>
+            <p
+              v-if="newItemQuantity > maxAvailableQuantity"
+              class="text-xs text-red-500 mt-1"
             >
-              <X class="h-4 w-4 mr-1.5" />
-              Cancel
-            </button>
+              Only {{ maxAvailableQuantity }} items available in stock
+            </p>
           </div>
         </div>
+        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+          <UButton
+            @click="addItemToOrder"
+            :disabled="
+              !selectedProductToAdd ||
+              newItemQuantity < 1 ||
+              newItemQuantity > maxAvailableQuantity
+            "
+            color="indigo"
+            :loading="isAddingItem"
+            icon="i-heroicons-plus"
+          >
+            Add to Order
+          </UButton>
+          <UButton
+            @click="showAddItemModal = false"
+            color="gray"
+            variant="outline"
+            icon="i-heroicons-x-mark"
+          >
+            Cancel
+          </UButton>
+        </div>
       </div>
-    </div>
+    </UModal>
   </div>
 </template>
 
