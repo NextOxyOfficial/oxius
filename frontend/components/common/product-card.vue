@@ -173,19 +173,25 @@
 
     <!-- Premium Modal Design -->
     <Teleport to="body">
+      <!-- Backdrop with blur effect and fade animation -->
       <div
         v-if="isModalOpen"
-        class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto"
+        class="fixed inset-0 bg-gray-900/60 dark:bg-gray-900/80 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto"
         :class="{ 'animate-fade-in': isModalOpen }"
-        @click="closeProductModal()"
+        @click="closeOnBackdrop ? $emit('update:modelValue', false) : null"
       >
+        <!-- Modal container with animations -->
         <div
-          class="relative max-w-4xl mx-4 my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          class="relative flex flex-col w-full max-w-3xl mt-28 sm:mt-24 mb-10 h-[640px] sm:h-[750px] bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden"
           :class="{ 'animate-modal-slide-up': isModalOpen }"
           @click.stop
+          ref="modalRef"
         >
+          <!-- Close button with hover effect -->
+
+          <!-- Modal content with custom scrollbar -->
           <div
-            class="w-full max-h-[85vh] overflow-hidden overflow-y-auto custom-scrollbar"
+            class="w-full h-full overflow-hidden overflow-y-auto custom-scrollbar"
           >
             <CommonProductDetailsCard
               :current-product="selectedProduct"
@@ -194,12 +200,12 @@
             />
           </div>
 
-          <!-- Decorative blobs -->
+          <!-- Decorative elements -->
           <div
-            class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
+            class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 dark:bg-primary-400/5 rounded-full filter blur-3xl -z-10 transform translate-x-1/4 -translate-y-1/4"
           ></div>
           <div
-            class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-full filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
+            class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 dark:bg-violet-400/5 rounded-full filter blur-3xl -z-10 transform -translate-x-1/4 translate-y-1/4"
           ></div>
         </div>
       </div>
