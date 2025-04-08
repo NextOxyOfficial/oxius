@@ -78,6 +78,71 @@
               >
                 ৳{{ currentProduct.regular_price }}
               </span>
+
+              <!-- Stock indicator next to price -->
+              <div class="ml-4 flex items-center">
+                <div
+                  v-if="currentProduct.quantity > 0"
+                  class="flex items-center text-sm"
+                >
+                  <span
+                    class="inline-block w-2 h-2 rounded-full mr-1.5"
+                    :class="
+                      currentProduct.quantity > 10
+                        ? 'bg-green-400'
+                        : 'bg-amber-400'
+                    "
+                  ></span>
+                </div>
+                <div v-else class="flex items-center text-sm">
+                  <span
+                    class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5"
+                  ></span>
+                  <span class="text-white/80">Out of Stock</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Stock Count, Weight & Delivery Status Badges -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <!-- Stock Status Badge -->
+              <div
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                :class="
+                  currentProduct.quantity > 10
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                    : currentProduct.quantity > 0
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                "
+              >
+                <UIcon name="i-heroicons-cube" class="w-4 h-4 mr-1" />
+                <span v-if="currentProduct.quantity > 10"
+                  >In Stock ({{ currentProduct.quantity }})</span
+                >
+                <span v-else-if="currentProduct.quantity > 0"
+                  >Only {{ currentProduct.quantity }} left!</span
+                >
+                <span v-else>Out of Stock</span>
+              </div>
+
+              <!-- Weight Badge - Always show weight if available -->
+              <div
+                v-if="currentProduct.weight"
+                class="inline-flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 rounded-full text-sm font-medium"
+              >
+                <UIcon name="i-heroicons-scale" class="w-4 h-4 mr-1" />
+                Weight: {{ currentProduct.weight }}g
+              </div>
+
+              <!-- Free Delivery Badge - Only show if free delivery -->
+              <div
+                v-if="currentProduct.is_free_delivery"
+                class="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full text-sm font-medium"
+              >
+                <UIcon name="i-heroicons-gift" class="w-4 h-4 mr-1" />
+                Free Delivery
+              </div>
             </div>
 
             <!-- Primary CTA Button -->
@@ -222,16 +287,42 @@
 
         <div class="py-6 max-w-3xl mx-auto">
           <div
-            class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-900"
+            class="mb-6 p-4 rounded-lg"
+            :class="{
+              'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900':
+                currentProduct.is_free_delivery,
+              'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900':
+                !currentProduct.is_free_delivery,
+            }"
           >
             <div class="flex items-start">
               <UIcon
-                name="i-heroicons-information-circle"
-                class="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-2 flex-shrink-0"
+                :name="
+                  currentProduct.is_free_delivery
+                    ? 'i-heroicons-gift'
+                    : 'i-heroicons-information-circle'
+                "
+                :class="
+                  currentProduct.is_free_delivery
+                    ? 'w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-2 flex-shrink-0'
+                    : 'w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0'
+                "
               />
-              <p class="text-green-800 dark:text-green-300 text-sm">
-                <strong>Free shipping available!</strong> Orders over ৳5,000
-                qualify for free delivery nationwide.
+              <p
+                :class="
+                  currentProduct.is_free_delivery
+                    ? 'text-green-800 dark:text-green-300 text-sm'
+                    : 'text-blue-800 dark:text-blue-300 text-sm'
+                "
+              >
+                <template v-if="currentProduct.is_free_delivery">
+                  <strong>Free shipping available!</strong> This product
+                  qualifies for free delivery nationwide.
+                </template>
+                <template v-else>
+                  <strong>Shipping information:</strong> Standard delivery rates
+                  apply. Orders over ৳5,000 qualify for free delivery.
+                </template>
               </p>
             </div>
           </div>
@@ -634,25 +725,45 @@
       </div>
     </section>
 
-    <!-- Sticky Buy Now Button (Centered) -->
+    <!-- Sticky Buy Now Button - Updated to show stock count -->
     <div
       class="fixed bottom-24 left-12 right-12 z-50 transform transition-transform"
       :class="{ 'translate-y-full': hideSticky, 'translate-y-0': !hideSticky }"
     >
-      <div class="max-w-md mx-auto flex items-center justify-center">
+      <div class="max-w-md mx-auto flex flex-col items-center justify-center">
         <button
           @click="addToCart(currentProduct, 1)"
           class="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-lg font-medium shadow flex items-center justify-center gap-2"
+          :disabled="currentProduct.quantity <= 0"
+          :class="{
+            'opacity-75 cursor-not-allowed': currentProduct.quantity <= 0,
+          }"
         >
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-shopping-cart" class="w-5 h-5" />
-            <span
-              >Buy Now - ৳{{
+            <span v-if="currentProduct.quantity > 0">
+              Buy Now - ৳{{
                 currentProduct.sale_price || currentProduct.regular_price
-              }}</span
-            >
+              }}
+            </span>
+            <span v-else> Out of Stock </span>
           </div>
         </button>
+
+        <!-- Stock status indicator with count -->
+        <div
+          v-if="currentProduct.quantity > 0"
+          class="mt-2 text-xs bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-3 py-1 rounded-full"
+          :class="{
+            'animate-pulse bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400':
+              currentProduct.quantity <= 10,
+          }"
+        >
+          <span v-if="currentProduct.quantity <= 10"
+            >Only {{ currentProduct.quantity }} left in stock!</span
+          >
+          <span v-else>{{ currentProduct.quantity }} in stock</span>
+        </div>
       </div>
     </div>
   </div>
