@@ -14,9 +14,9 @@
         <div
           class="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tl from-blue-500/10 to-transparent rounded-full blur-3xl -z-10"
         ></div>
-
-        <PublicTitle />
-
+        <div id="classified-category">
+          <PublicTitle />
+        </div>
         <!-- Enhanced search form with premium styling -->
         <form
           @submit.prevent="handleSearch"
@@ -235,7 +235,9 @@
         :sectionTitle="t('recent_post')"
       />
     </div>
-    <CommonProductSlider />
+    <div id="eshop">
+      <CommonProductSlider />
+    </div>
 
     <!-- Premium divider -->
     <div class="my-8 sm:my-16 mx-auto max-w-[80%] relative">
@@ -255,6 +257,7 @@
       <UContainer>
         <h2
           class="text-2xl md:text-4xl mb-4 md:mb-8 text-center font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+          id="microgigs"
         >
           {{ $t("micro_gigs") }}
           <span class="text-slate-700 dark:text-slate-300"

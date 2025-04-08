@@ -254,6 +254,46 @@
           />
         </template>
       </UHorizontalNavigation>
+      <UHorizontalNavigation
+        v-else
+        :links="[
+          {
+            to: '/',
+            icon: 'i-heroicons-home',
+          },
+          {
+            to: '#classified-category',
+            icon: 'i-bx-category',
+          },
+          {
+            to: '#microgigs',
+            icon: 'i-material-symbols-list-rounded',
+          },
+          {
+            to: `#eshop`,
+            icon: 'i-heroicons-shopping-bag',
+          },
+
+          {
+            to: '/upgrade-to-pro',
+            icon: 'i-mdi-crown-outline',
+          },
+        ]"
+        :ui="{
+          inactive: 'after:hidden before:hidden',
+          active: 'after:hidden before:hidden',
+          padding: 'py-1',
+          container: 'flex items-center justify-evenly min-w-full',
+        }"
+      >
+        <template #icon="{ link, isActive }">
+          <UIcon
+            :name="link.icon"
+            class="text-3xl"
+            :class="isActive ? `text-green-600` : `text-green-400`"
+          />
+        </template>
+      </UHorizontalNavigation>
     </div>
   </footer>
 </template>

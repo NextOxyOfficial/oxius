@@ -1,7 +1,7 @@
 <template>
   <UContainer class="relative py-2">
     <!-- Header with Premium Styling -->
-    <div class="flex items-center justify-between mt-3 mb-4">
+    <div class="flex items-center justify-between mt-1 mb-6">
       <div class="flex items-center gap-2">
         <div
           class="p-1.5 rounded bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/30 text-primary relative overflow-hidden"
@@ -254,8 +254,6 @@ const products = ref([]);
 const isLoading = ref(true);
 const currentSlide = ref(0);
 const itemsPerRow = ref(5); // Items per row
-
-const quantity = ref(1);
 
 // Add these new refs for controlling auto-sliding
 const autoSlideInterval = ref(null);
