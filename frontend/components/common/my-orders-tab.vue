@@ -343,7 +343,7 @@
     <!-- Order Details Modal -->
     <div
       v-if="showOrderDetailsModal"
-      class="fixed inset-0 top-14 z-50 overflow-y-auto md:top-0"
+      class="fixed inset-0 top-14 z-10 overflow-y-auto md:top-0"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
