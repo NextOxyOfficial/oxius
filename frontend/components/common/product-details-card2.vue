@@ -93,13 +93,6 @@
                         : 'bg-amber-400'
                     "
                   ></span>
-                  <span class="text-white/80">
-                    {{
-                      currentProduct.quantity > 10
-                        ? "Available"
-                        : `${currentProduct.quantity} left`
-                    }}
-                  </span>
                 </div>
                 <div v-else class="flex items-center text-sm">
                   <span
@@ -139,7 +132,7 @@
                 class="inline-flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 rounded-full text-sm font-medium"
               >
                 <UIcon name="i-heroicons-scale" class="w-4 h-4 mr-1" />
-                {{ currentProduct.weight }}g
+                Weight: {{ currentProduct.weight }}g
               </div>
 
               <!-- Free Delivery Badge - Only show if free delivery -->
