@@ -507,11 +507,11 @@ function closeProductModal() {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fade-in 0.3s ease-out forwards;
 }
 
 .animate-modal-slide-up {
-  animation: modal-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modal-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom colors */
