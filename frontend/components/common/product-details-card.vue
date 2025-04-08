@@ -125,7 +125,7 @@
               {{ currentProduct?.category_details?.name || "Uncategorized" }}
             </UBadge>
             <div v-if="currentProduct.weight" class="text-xs text-slate-500">
-              Weight: {{ currentProduct.weight }}g
+              Weight: {{ currentProduct.weight }}kg
             </div>
           </div>
 

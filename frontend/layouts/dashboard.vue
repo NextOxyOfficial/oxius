@@ -11,14 +11,18 @@ onMounted(() => {
   }, 1000);
 });
 useHead({
-  title: "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+  title:
+    "AdsyClub, The Business Network | Earn Money, Connect with Society & Find the services you need!",
 });
 </script>
 
 <template>
   <div class="font-AnekBangla">
     <NuxtLoadingIndicator class="!opacity-[1]" />
-    <section class="h-screen w-screen flex items-center justify-center" v-if="!user">
+    <section
+      class="h-screen w-screen flex items-center justify-center"
+      v-if="!user"
+    >
       <!-- <UIcon
         name="svg-spinners:bars-scale-middle"
         dynamic

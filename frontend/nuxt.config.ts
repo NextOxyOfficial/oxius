@@ -37,12 +37,12 @@ export default defineNuxtConfig({
     buildAssetsDir: "/static/frontend/",
     head: {
       title:
-        "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+        "AdsyClub, The Business Network | Earn Money, Connect with Society & Find the services you need!",
       meta: [
         {
           name: "description",
           content:
-            "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+            "AdsyClub, The Business Network | Earn Money, Connect with Society & Find the services you need!",
         },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
       ],

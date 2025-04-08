@@ -570,7 +570,7 @@
 <script setup>
 useHead({
   title:
-    "AdsyClub | Earn Money, Connect with Society & Find the services you need!",
+    "AdsyClub, The Business Network | Earn Money, Connect with Society & Find the services you need!",
 });
 const { t } = useI18n();
 const { get } = useApi();
