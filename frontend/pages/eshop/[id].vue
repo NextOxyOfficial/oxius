@@ -121,7 +121,7 @@
           class="absolute max-sm:top-0 sm:bottom-0 left-1/2 -translate-x-1/2 sm:translate-y-1/2 md:-translate-y-2/3 w-[90%] max-w-4xl z-10"
         >
           <div
-            class="border-none shadow-lg sm:shadow-2xl bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden animate-fade-in-up relative"
+            class="border-none shadow-lg sm:shadow-2xl bg-slate-50/95 backdrop-blur-md rounded-2xl overflow-hidden animate-fade-in-up relative"
           >
             <div
               class="absolute inset-0 bg-gradient-to-r from-slate-100/50 to-white/50 opacity-80"
