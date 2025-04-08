@@ -100,7 +100,7 @@
 
           <!-- Pricing Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -150,7 +150,7 @@
 
           <!-- Media Upload Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -233,7 +233,7 @@
 
           <!-- Location Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -336,7 +336,7 @@
           </div>
 
           <!-- Terms Section -->
-          <div class="p-7 bg-gray-50">
+          <div class="p-2 md:p-7 bg-gray-50">
             <UCheckbox name="terms_privacy" v-model="form.accepted_privacy">
               <template #label>
                 <span class="text-gray-600 text-sm">
@@ -365,7 +365,6 @@
 
             <div class="flex justify-center mt-6">
               <UButton
-                v-if="user.user.kyc"
                 :loading="isLoading"
                 class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                 size="lg"
@@ -377,20 +376,6 @@
                   <UIcon name="i-heroicons-paper-airplane" />
                 </template>
                 {{ $t("post_classified_ad") }}
-              </UButton>
-
-              <UButton
-                v-else
-                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-                size="lg"
-                color="primary"
-                variant="solid"
-                @click="isOpen = true"
-              >
-                <template #leading>
-                  <UIcon name="i-heroicons-paper-airplane" />
-                </template>
-                Post Classified Ad
               </UButton>
             </div>
           </div>
