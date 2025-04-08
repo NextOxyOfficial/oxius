@@ -739,28 +739,157 @@ const checkSubmit = ref(false);
 const advanceEditMode = ref(false);
 const productEditorData = ref(null);
 
-function updateContent(p) {
-  form.value.description = p;
-}
-
-// Function to handle updates from the advanced editor
+// Function to log advanced editor updates
 function handleEditorUpdate(editorData) {
+  console.group("Advanced Editor Data Update");
   console.log("Received editor data in parent component:", editorData);
+
+  // Log individual sections for better visibility
+  console.log("Header texts:", {
+    benefitsTitle: editorData.benefitsTitle,
+    benefitsCta: editorData.benefitsCta,
+    faqsTitle: editorData.faqsTitle,
+    faqsSubtitle: editorData.faqsSubtitle,
+    ctaTitle: editorData.ctaTitle,
+    ctaSubtitle: editorData.ctaSubtitle,
+    ctaButtonText: editorData.ctaButtonText,
+    ctaButtonSubtext: editorData.ctaButtonSubtext,
+  });
+
+  console.log("Benefits:", editorData.benefits);
+  console.log("FAQs:", editorData.faqs);
+  console.log("Trust badges:", editorData.trustBadges);
 
   // Store the editor data in the form
   if (editorData) {
+    const previousData = form.value.editorData;
     form.value.editorData = editorData;
 
-    // Add this additional log to confirm data is properly stored
-    console.log("Updated form with editor data:", editorData);
+    // Compare with previous data if available
+    if (previousData) {
+      console.log("Changes from previous data:", {
+        headersChanged:
+          JSON.stringify(previousData.benefitsTitle) !==
+            JSON.stringify(editorData.benefitsTitle) ||
+          JSON.stringify(previousData.faqsTitle) !==
+            JSON.stringify(editorData.faqsTitle) ||
+          JSON.stringify(previousData.ctaTitle) !==
+            JSON.stringify(editorData.ctaTitle),
+        benefitsChanged:
+          JSON.stringify(previousData.benefits) !==
+          JSON.stringify(editorData.benefits),
+        faqsChanged:
+          JSON.stringify(previousData.faqs) !== JSON.stringify(editorData.faqs),
+        trustBadgesChanged:
+          JSON.stringify(previousData.trustBadges) !==
+          JSON.stringify(editorData.trustBadges),
+      });
+    }
+
+    // Add timestamp to track when changes occurred
+    const now = new Date();
+    console.log("Update timestamp:", now.toISOString());
+
+    // Log the full updated form
+    console.log("Updated form with editor data:", form.value);
+
+    // Update the reference for display in the template
     productEditorData.value = editorData;
+
     // Show confirmation toast
     toast.add({
       title: "Editor Content Updated",
-      description: "Advanced editor changes have been saved to the product",
+      description: `Advanced editor changes saved at ${now.toLocaleTimeString()}`,
       color: "green",
       timeout: 3000,
     });
+  }
+  console.groupEnd();
+}
+
+// Handle product submission with proper delivery fee processing
+async function handleAddProduct() {
+  // Start logging group
+  console.group("Product Submission");
+  console.log("Form data before submission:", form.value);
+
+  if (form.value.editorData) {
+    console.log(
+      "Advanced editor data included in submission:",
+      form.value.editorData
+    );
+  } else {
+    console.log("No advanced editor data in submission");
+  }
+
+  checkSubmit.value = true;
+
+  // Validate required fields
+  if (
+    !form.value.name ||
+    !form.value.category ||
+    !form.value.regular_price ||
+    !form.value.quantity ||
+    !form.value.deliveryMethod
+  ) {
+    toast.add({
+      title: "Missing Required Fields",
+      description: "Please fill in all required fields",
+      color: "red",
+    });
+    console.log("Form validation failed - missing required fields");
+    console.groupEnd();
+    return;
+  }
+
+  isSubmitting.value = true;
+
+  try {
+    // Create API submission object from form data
+    const productData = { ...form.value, ...form.value.editorData };
+
+    // Set is_free_delivery based on delivery method selection
+    if (form.value.deliveryMethod === "free") {
+      productData.is_free_delivery = true;
+      productData.delivery_fee_inside_dhaka = 0;
+      productData.delivery_fee_outside_dhaka = 0;
+    } else {
+      productData.is_free_delivery = false;
+      // Keep the user-entered delivery fee values
+    }
+
+    // Clean up temporary form fields before submission
+    delete productData.deliveryMethod;
+
+    console.log("Sending product data to API:", productData);
+    const res = await post("/products/", productData);
+
+    if (res.data) {
+      console.log("API response:", res.data);
+      toast.add({
+        title: "Success",
+        description: "Your product has been published successfully!",
+        color: "green",
+      });
+      successMessage.value = "Your product has been published successfully!";
+      isSuccessModalOpen.value = true;
+
+      // Reset form after successful submission
+      resetForm(false);
+      checkSubmit.value = false;
+      currentStep.value = 1;
+    }
+  } catch (error) {
+    console.error("Product submission error details:", error);
+    toast.add({
+      title: "Error",
+      description:
+        error?.message || "Failed to publish product. Please try again.",
+      color: "red",
+    });
+  } finally {
+    isSubmitting.value = false;
+    console.groupEnd();
   }
 }
 
@@ -809,73 +938,13 @@ function deleteUpload(ind) {
   }
 }
 
-// Handle product submission with proper delivery fee processing
-async function handleAddProduct() {
-  checkSubmit.value = true;
-
-  // Validate required fields
-  if (
-    !form.value.name ||
-    !form.value.category ||
-    !form.value.regular_price ||
-    !form.value.quantity ||
-    !form.value.deliveryMethod
-  ) {
-    toast.add({
-      title: "Missing Required Fields",
-      description: "Please fill in all required fields",
-      color: "red",
-    });
-    return;
-  }
-
-  isSubmitting.value = true;
-
-  try {
-    // Create API submission object from form data
-    const productData = { ...form.value };
-
-    // Set is_free_delivery based on delivery method selection
-    if (form.value.deliveryMethod === "free") {
-      productData.is_free_delivery = true;
-      productData.delivery_fee_inside_dhaka = 0;
-      productData.delivery_fee_outside_dhaka = 0;
-    } else {
-      productData.is_free_delivery = false;
-      // Keep the user-entered delivery fee values
-    }
-
-    // Clean up temporary form fields before submission
-    delete productData.deliveryMethod;
-
-    console.log("Sending product data:", productData);
-    const res = await post("/products/", productData);
-
-    if (res.data) {
-      toast.add({
-        title: "Success",
-        description: "Your product has been published successfully!",
-        color: "green",
-      });
-      successMessage.value = "Your product has been published successfully!";
-      isSuccessModalOpen.value = true;
-
-      // Reset form after successful submission
-      resetForm(false);
-      checkSubmit.value = false;
-      currentStep.value = 1;
-    }
-  } catch (error) {
-    toast.add({
-      title: "Error",
-      description:
-        error?.message || "Failed to publish product. Please try again.",
-      color: "red",
-    });
-    console.error("Product submission error:", error);
-  } finally {
-    isSubmitting.value = false;
-  }
+// Updated function to log changes in the editor content
+function updateContent(p) {
+  console.log(
+    "Content updated:",
+    p.substring(0, 100) + (p.length > 100 ? "..." : "")
+  );
+  form.value.description = p;
 }
 
 function resetForm(showConfirm = true) {
@@ -886,6 +955,7 @@ function resetForm(showConfirm = true) {
     : true;
 
   if (doReset) {
+    console.log("Resetting form");
     form.value = {
       name: "",
       category: "",
@@ -900,6 +970,8 @@ function resetForm(showConfirm = true) {
       delivery_fee_inside_dhaka: 0,
       delivery_fee_outside_dhaka: 0,
     };
+    // Also reset editor data
+    productEditorData.value = null;
   }
 }
 </script>

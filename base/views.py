@@ -1433,9 +1433,12 @@ class ProductListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
     
     def create(self, request, *args, **kwargs):
-        # Extract image data from request
+        # Extract data from request
         images_data = request.data.pop('images', None)
-        owner = request.user
+        benefits_data = request.data.pop('benefits', None)
+        faqs_data = request.data.pop('faqs', None)
+        trust_badges_data = request.data.pop('trustBadges', None)
+        
         # Create product using serializer
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -1448,19 +1451,83 @@ class ProductListCreateView(generics.ListCreateAPIView):
                 images_data = [images_data]
                 
             for image_data in images_data:
-                # Handle base64 images
-                if isinstance(image_data, str) and image_data.startswith('data:image'):
-                    image_file = base64ToFile(image_data)
-                    product_media = ProductMedia.objects.create(image=image_file)
-                    product.image.add(product_media)
-                # Handle regular file uploads
-                elif hasattr(image_data, 'name'):
-                    product_media = ProductMedia.objects.create(image=image_data)
-                    product.image.add(product_media)
+                try:
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # Process base64 image
+                        image_file = base64ToFile(image_data)
+                        product_media = ProductMedia.objects.create(image=image_file)
+                        product.image.add(product_media)
+                except Exception as e:
+                    # Log error but continue processing
+                    print(f"Error processing image: {str(e)}")
         
-        headers = self.get_success_headers(serializer.data)
+        # Process benefits if provided
+        if benefits_data and isinstance(benefits_data, list):
+            for benefit_data in benefits_data:
+                if isinstance(benefit_data, dict) and 'title' in benefit_data and 'description' in benefit_data:
+                    # Check if benefit already exists
+                    benefit, created = ProductBenefit.objects.get_or_create(
+                        title=benefit_data['title'],
+                        defaults={
+                            'description': benefit_data['description'],
+                            'icon': benefit_data.get('icon', 'i-heroicons-sparkles')
+                        }
+                    )
+                    if not created and benefit.description != benefit_data['description']:
+                        benefit.description = benefit_data['description']
+                        benefit.icon = benefit_data.get('icon', benefit.icon)
+                        benefit.save()
+                    
+                    product.benefits.add(benefit)
+        
+        # Process FAQs if provided
+        if faqs_data and isinstance(faqs_data, list):
+            for faq_data in faqs_data:
+                if isinstance(faq_data, dict) and 'label' in faq_data and 'content' in faq_data:
+                    # Check if FAQ already exists
+                    faq, created = ProductFAQ.objects.get_or_create(
+                        label=faq_data['label'],
+                        defaults={
+                            'content': faq_data['content'],
+                            'icon': faq_data.get('icon')
+                        }
+                    )
+                    if not created and faq.content != faq_data['content']:
+                        faq.content = faq_data['content']
+                        faq.icon = faq_data.get('icon', faq.icon)
+                        faq.save()
+                    
+                    product.faqs.add(faq)
+        
+        # Process trust badges if provided
+        if trust_badges_data and isinstance(trust_badges_data, list):
+            for badge_data in trust_badges_data:
+                if isinstance(badge_data, dict) and 'id' in badge_data and 'text' in badge_data:
+                    # Check if badge already exists
+                    badge, created = ProductTrustBadge.objects.get_or_create(
+                        id=badge_data['id'],
+                        defaults={
+                            'text': badge_data['text'],
+                            'icon': badge_data.get('icon', ''),
+                            'enabled': badge_data.get('enabled', True),
+                            'description': badge_data.get('description', '')
+                        }
+                    )
+                    if not created:
+                        # Update badge properties if they've changed
+                        badge.text = badge_data['text']
+                        badge.icon = badge_data.get('icon', badge.icon)
+                        badge.enabled = badge_data.get('enabled', badge.enabled)
+                        badge.description = badge_data.get('description', badge.description)
+                        badge.save()
+                    
+                    product.trust_badges.add(badge)
+        
+        # Re-serialize the product to include all data
+        updated_serializer = self.get_serializer(product)
+        headers = self.get_success_headers(updated_serializer.data)
         return Response(
-            serializer.data, 
+            updated_serializer.data, 
             status=status.HTTP_201_CREATED, 
             headers=headers
         )
@@ -1469,6 +1536,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    lookup_field = 'slug'
 
 # Featured Products
 class FeaturedProductsListView(generics.ListAPIView):

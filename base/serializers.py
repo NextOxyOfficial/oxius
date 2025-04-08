@@ -97,11 +97,13 @@ class ClassifiedServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClassifiedCategory
         fields = '__all__'
+        read_only_fields = ['slug']
 
 class MicroGigCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigCategory
         fields = '__all__'
+        read_only_fields = ['slug']
 
 class TargetNetworkSerializer(serializers.ModelSerializer):
     class Meta:
@@ -130,12 +132,14 @@ class MicroGigPostSerializer(serializers.ModelSerializer):
         model = MicroGigPost
         fields = '__all__'
         depth = 1
+        read_only_fields = ['slug']
         
 class MicroGigPostDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MicroGigPost
         depth = 1
         exclude = ['user']
+        read_only_fields = ['slug']
 
 class BalanceSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
@@ -154,6 +158,7 @@ class ClassifiedPostSerializer(serializers.ModelSerializer):
         model = ClassifiedCategoryPost
         fields = '__all__'
         depth = 1
+        read_only_fields = ['slug']
 
 class logoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -295,6 +300,7 @@ class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         fields = '__all__'
+        read_only_fields = ['slug']
 
 class ProductSerializer(serializers.ModelSerializer):
     category_details = ProductCategorySerializer(source='category', read_only=True)
@@ -303,17 +309,8 @@ class ProductSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Product
-        fields =  '__all__'
-    
-    # def to_representation(self, instance):
-    #     representation = super().to_representation(instance)
-    #     representation['regular_price'] = instance.sale_price
-    #     if instance.discount_price > 0:
-    #         representation['old_price'] = instance.sale_price
-    #         representation['price'] = instance.discount_price
-    #     else:
-    #         representation['price'] = instance.sale_price
-    #     return representation
+        fields = '__all__'
+        read_only_fields = ['slug']
 
 class ProductMinSerializer(serializers.ModelSerializer):
     """Minimal product information for order items"""
@@ -388,4 +385,25 @@ class FaqSerializer(serializers.ModelSerializer):
     class Meta:
         model= Faq
         fields = ('label', 'content')
-        
+        read_only_fields = ['slug']
+
+# Serializer for ProductBenefit model
+class ProductBenefitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductBenefit
+        fields = '__all__'
+        read_only_fields = ['slug']
+
+# Serializer for ProductFAQ model
+class ProductFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductFAQ
+        fields = '__all__'
+        read_only_fields = ['slug']
+
+# Serializer for ProductTrustBadge model
+class ProductTrustBadgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductTrustBadge
+        fields = '__all__'
+        read_only_fields = ['slug']

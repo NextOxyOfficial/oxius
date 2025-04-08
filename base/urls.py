@@ -93,7 +93,7 @@ urlpatterns = [
   path('store/<str:store_username>/', StoreDetailsView.as_view(), name='store-details'),
   path('store/<str:store_username>/products/', StoreProductsListView.as_view(), name='store-products'),
   path('products/', ProductListCreateView.as_view(), name='product-list-create'),
-  path('products/<uuid:pk>/', ProductDetailView.as_view(), name='product-detail'),
+  path('products/<slug:slug>/', ProductDetailView.as_view(), name='product-detail'),
   path('products/featured/', FeaturedProductsListView.as_view(), name='featured-products'),
   
   # Product Category URLs

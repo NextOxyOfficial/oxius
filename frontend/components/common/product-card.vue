@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="product-card relative group">
-      <!-- Product Card Content -->
       <div
         class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm md:hover:shadow-md transition-all duration-300 h-full flex flex-col"
       >
@@ -38,7 +37,7 @@
         <!-- Product Details -->
         <div class="p-3 flex-grow flex flex-col">
           <!-- Product Title -->
-          <NuxtLink :to="`/product-details/${product.id}`">
+          <NuxtLink :to="`/product-details/${product?.slug}`">
             <h3
               class="font-medium text-green-950 dark:text-white mb-1 line-clamp-2 flex-grow text-base first-letter:uppercase"
             >
