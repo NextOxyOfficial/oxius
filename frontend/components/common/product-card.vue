@@ -35,17 +35,6 @@
             </div>
           </div>
 
-          <!-- Wishlist Button -->
-          <button
-            class="absolute top-3 right-3 z-20 size-9 rounded-full transition-all duration-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 hover:bg-white dark:hover:bg-slate-700"
-            aria-label="Add to wishlist"
-          >
-            <UIcon
-              name="i-heroicons-heart"
-              class="size-5 text-slate-500 dark:text-slate-300 transition-colors hover:text-rose-500 dark:hover:text-rose-400"
-            />
-          </button>
-
           <!-- Image with Gradient Overlay -->
           <div
             class="absolute inset-0 bg-gradient-to-br from-black/5 via-transparent to-black/30 dark:from-black/20 dark:to-black/40 z-10"
