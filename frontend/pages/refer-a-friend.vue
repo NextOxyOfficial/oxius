@@ -209,46 +209,20 @@
               <div class="text-xs text-gray-500 dark:text-gray-400">
                 {{
                   activeTab === 0
-                    ? "View your referred users"
-                    : "Track your earning commissions"
+                    ? "Track your earning commissions"
+                    : "View your referred users"
                 }}
               </div>
 
               <div class="flex items-center gap-2">
-                <UInput
-                  v-if="activeTab === 0"
-                  v-model="searchUser"
-                  placeholder="Search users"
-                  size="sm"
-                  class="w-40 md:w-auto search-input"
-                >
-                  <template #leading>
-                    <UIcon name="i-heroicons-magnifying-glass" />
-                  </template>
-                </UInput>
-
                 <USelect
-                  v-if="activeTab === 1"
+                  v-if="activeTab === 0"
                   v-model="filterPeriod"
                   :options="['All Time', 'This Month', 'Last Month']"
                   placeholder="Period"
                   size="sm"
                   class="w-32"
                 />
-
-                <UButton
-                  size="sm"
-                  color="gray"
-                  variant="ghost"
-                  class="text-sm action-btn"
-                  :icon="
-                    activeTab === 0
-                      ? 'i-heroicons-user-plus'
-                      : 'i-heroicons-arrow-down-tray'
-                  "
-                >
-                  {{ activeTab === 0 ? "Invite" : "Export" }}
-                </UButton>
               </div>
             </div>
 
@@ -257,122 +231,6 @@
                 class="tab-pane transition-all duration-500"
                 :class="
                   activeTab === 0
-                    ? 'opacity-100 translate-x-0'
-                    : 'opacity-0 absolute top-0 -translate-x-full'
-                "
-              >
-                <div class="overflow-x-auto">
-                  <table
-                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-                  >
-                    <thead class="bg-gray-50 dark:bg-gray-800/50">
-                      <tr>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                        >
-                          User
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                        >
-                          Join Date
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                        >
-                          Status
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                        >
-                          Activity
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-                    >
-                      <tr
-                        v-for="(user, index) in filteredUsers"
-                        :key="user.id"
-                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all table-row-animate"
-                        :style="`--delay: ${index * 0.05}s`"
-                      >
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center">
-                            <div
-                              class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium overflow-hidden user-avatar"
-                            >
-                              {{ user.name.charAt(0) }}
-                            </div>
-                            <div class="ml-3">
-                              <div
-                                class="text-sm font-medium text-gray-900 dark:text-gray-100"
-                              >
-                                {{ user.name }}
-                              </div>
-                              <div
-                                class="text-xs text-gray-500 dark:text-gray-400"
-                              >
-                                {{ user.email }}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                        >
-                          {{ formatDate(user.joined) }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <span
-                            :class="[
-                              'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
-                              user.active
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-                            ]"
-                          >
-                            {{ user.active ? "Active" : "Inactive" }}
-                          </span>
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                        >
-                          {{ user.lastActivity }}
-                        </td>
-                      </tr>
-
-                      <tr v-if="filteredUsers.length === 0">
-                        <td
-                          colspan="4"
-                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
-                        >
-                          <div class="py-6">
-                            <div
-                              class="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
-                            >
-                              <UIcon
-                                name="i-heroicons-user-group"
-                                class="text-3xl text-gray-400 dark:text-gray-500"
-                              />
-                            </div>
-                            <p>No referred users found.</p>
-                            <UButton class="mt-3" color="primary" size="sm"
-                              >Invite Friends</UButton
-                            >
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div
-                class="tab-pane transition-all duration-500"
-                :class="
-                  activeTab === 1
                     ? 'opacity-100 translate-x-0'
                     : 'opacity-0 absolute top-0 translate-x-full'
                 "
@@ -481,23 +339,16 @@
               <div class="text-xs text-gray-500 dark:text-gray-400">
                 {{
                   activeTab === 0
-                    ? `Showing ${filteredUsers.length} users`
-                    : `Showing ${filteredEarnings.length} transactions`
+                    ? `Showing ${filteredEarnings.length} transactions`
+                    : ""
                 }}
               </div>
 
               <UPagination
-                v-if="
-                  (activeTab === 0 && filteredUsers.length > 5) ||
-                  (activeTab === 1 && filteredEarnings.length > 5)
-                "
+                v-if="activeTab === 0 && filteredEarnings.length > 5"
                 v-model="currentPage"
                 :page-count="2"
-                :total="
-                  activeTab === 0
-                    ? filteredUsers.length
-                    : filteredEarnings.length
-                "
+                :total="activeTab === 0 ? filteredEarnings.length : null"
                 size="xs"
                 class="pagination-control"
               />
@@ -765,34 +616,6 @@ const activeTab = ref(0);
 const indicatorLeft = ref(0);
 const indicatorWidth = ref(0);
 
-// Sample data for referred users
-const referredUsers = ref([
-  {
-    id: 1,
-    name: "Mohammad Rahman",
-    email: "mrahman@example.com",
-    joined: "2025-02-10T09:30:00",
-    active: true,
-    lastActivity: "2 days ago",
-  },
-  {
-    id: 2,
-    name: "Sakib Khan",
-    email: "sakib@example.com",
-    joined: "2025-02-15T14:20:00",
-    active: true,
-    lastActivity: "Today",
-  },
-  {
-    id: 3,
-    name: "Nusrat Jahan",
-    email: "nusrat@example.com",
-    joined: "2025-02-28T11:45:00",
-    active: false,
-    lastActivity: "1 week ago",
-  },
-]);
-
 // Sample data for earnings history
 const earnings = ref([
   {
@@ -823,11 +646,6 @@ const earnings = ref([
 
 // Define tabs with counts from actual data
 const tabs = ref([
-  {
-    name: "Referred Users",
-    icon: "i-heroicons-user-group",
-    count: referredUsers.value.length,
-  },
   {
     name: "Earnings",
     icon: "i-heroicons-banknotes",
@@ -901,18 +719,6 @@ function updateIndicator() {
     }
   }
 }
-
-// Filter users by search query
-const filteredUsers = computed(() => {
-  if (!searchUser.value) return referredUsers.value;
-
-  const search = searchUser.value.toLowerCase();
-  return referredUsers.value.filter(
-    (user) =>
-      user.name.toLowerCase().includes(search) ||
-      user.email.toLowerCase().includes(search)
-  );
-});
 
 // Filter earnings by period
 const filteredEarnings = computed(() => {
