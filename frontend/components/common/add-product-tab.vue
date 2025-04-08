@@ -702,6 +702,7 @@
         </div>
       </form>
     </div>
+    {{ productEditorData }}
   </div>
 </template>
 
@@ -710,32 +711,6 @@ const { get, post } = useApi();
 const router = useRoute();
 const toast = useToast();
 const currentStep = ref(0); // Track current step for highlighting
-
-function updateContent(p) {
-  form.value.description = p;
-}
-
-// Function to handle updates from the advanced editor
-function handleEditorUpdate(editorData) {
-  console.log("Received editor data in parent component:", editorData);
-
-  // Store the editor data in the form
-  if (editorData) {
-    form.value.editorData = editorData;
-
-    // Add this additional log to confirm data is properly stored
-    console.log("Updated form with editor data:", editorData);
-
-    // Show confirmation toast
-    toast.add({
-      title: "Editor Content Updated",
-      description: "Advanced editor changes have been saved to the product",
-      color: "green",
-      timeout: 3000,
-    });
-  }
-}
-
 const categories = ref([]);
 // Simplified form with only essential fields
 const form = ref({
@@ -762,6 +737,32 @@ const uploadError = ref("");
 const isUploading = ref(false);
 const checkSubmit = ref(false);
 const advanceEditMode = ref(false);
+const productEditorData = ref(null);
+
+function updateContent(p) {
+  form.value.description = p;
+}
+
+// Function to handle updates from the advanced editor
+function handleEditorUpdate(editorData) {
+  console.log("Received editor data in parent component:", editorData);
+
+  // Store the editor data in the form
+  if (editorData) {
+    form.value.editorData = editorData;
+
+    // Add this additional log to confirm data is properly stored
+    console.log("Updated form with editor data:", editorData);
+    productEditorData.value = editorData;
+    // Show confirmation toast
+    toast.add({
+      title: "Editor Content Updated",
+      description: "Advanced editor changes have been saved to the product",
+      color: "green",
+      timeout: 3000,
+    });
+  }
+}
 
 async function getCategories() {
   const { data } = await get("/product-categories/");

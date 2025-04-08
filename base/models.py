@@ -561,6 +561,34 @@ class ProductMedia(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     def __str__(self):
       return str(self.id)
+    
+class ProductBenefit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return self.title
+        
+class ProductFAQ(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    label = models.CharField(max_length=255)
+    content = models.TextField()
+    icon = models.CharField(max_length=50, blank=True, null=True)
+    
+    def __str__(self):
+        return self.label
+
+class ProductTrustBadge(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    text = models.CharField(max_length=100) 
+    icon = models.CharField(max_length=50)
+    enabled = models.BooleanField(default=True)
+    description = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.text
 
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -582,6 +610,29 @@ class Product(models.Model):
     weight = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # New marketing fields
+    benefits = models.ManyToManyField(ProductBenefit, blank=True, related_name='products')
+    faqs = models.ManyToManyField(ProductFAQ, blank=True, related_name='products')
+    trust_badges = models.ManyToManyField(ProductTrustBadge, blank=True, related_name='products')
+    
+    # Marketing section titles
+    benefits_title = models.CharField(max_length=200, blank=True, null=True)
+    benefits_cta = models.CharField(max_length=200, blank=True, null=True)
+    faqs_title = models.CharField(max_length=200, blank=True, null=True)
+    faqs_subtitle = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Call to action section
+    cta_title = models.CharField(max_length=200, blank=True, null=True)
+    cta_subtitle = models.CharField(max_length=200, blank=True, null=True)
+    cta_button_text = models.CharField(max_length=50, blank=True, null=True)
+    cta_button_subtext = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Badge highlights
+    cta_badge1 = models.CharField(max_length=50, blank=True, null=True)
+    cta_badge2 = models.CharField(max_length=50, blank=True, null=True)
+    cta_badge3 = models.CharField(max_length=50, blank=True, null=True)
+    
     def __str__(self):
         return self.name
     
