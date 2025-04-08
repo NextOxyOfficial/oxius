@@ -20,7 +20,7 @@
         >
           <!-- Primary Details Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -75,7 +75,7 @@
 
           <!-- Pricing Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -157,7 +157,7 @@
 
           <!-- Instructions Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -210,7 +210,7 @@
 
           <!-- Media Upload Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -285,7 +285,7 @@
 
           <!-- Targeting Section -->
           <div
-            class="p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
@@ -381,7 +381,7 @@
           </div>
 
           <!-- Submit Section -->
-          <div class="p-7 bg-gray-50">
+          <div class="p-2 md:p-7 bg-gray-50">
             <div
               v-if="showError"
               class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
@@ -434,7 +434,7 @@
 
         <!-- KYC Modal -->
         <UModal v-model="isOpen">
-          <div class="p-8 flex flex-col items-center text-center">
+          <div class="p-2 md:p-8 flex flex-col items-center text-center">
             <div
               class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-5"
             >

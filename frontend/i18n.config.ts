@@ -166,11 +166,11 @@ export default defineI18nConfig(() => ({
       inbox: "ইনবক্স",
       message_center: "ম্যাসেজ সেন্টার",
       message_center_text: "আপনার সকল ম্যাসেজ এখানে দেখুন",
-      all_messages: "সকল ম্যাসেজ",
+      all_messages: "সকল মেসেজ",
       unread: "এখনও পড়া হয়নি",
-      inbox_empty: "আপনার ইনবক্সে কোনো ম্যাসেজ নেই",
+      inbox_empty: "আপনার ইনবক্সে কোনো মেসেজ নেই",
       inbox_empty_message:
-        "আপনার এখনও কোনও ম্যাসেজ নেই। সিস্টেম বিজ্ঞপ্তি এবং গুরুত্বপূর্ণ আপডেটগুলি এখানে প্রদর্শিত হবে।",
+        "আপনার এখনও কোনও মেসেজ নেই। সিস্টেম বিজ্ঞপ্তি এবং গুরুত্বপূর্ণ আপডেটগুলি এখানে প্রদর্শিত হবে।",
       my_gigs: "মাই গিগস",
       post_gigs: "গিগস পোস্ট করি",
       refer: "রেফার করুন এবং ৫% কমিশন পান",
@@ -236,7 +236,7 @@ export default defineI18nConfig(() => ({
       upgrade_pro: "প্রো প্যাকেজ নিই",
       upgrade_pro_text: "প্রিমিয়াম ফিচার, অগ্রাধিকার সুবিধাসহ আরও ফিচার পান",
       pro_member: "প্রো মেম্বার",
-      packeges: "প্যাকেজ",
+      packeges: "মেম্বারশিপ",
       all_product: "সকল প্রডাক্ট",
       sell_on_eshop: "সেল করতে চান?",
       // Simplified translations
