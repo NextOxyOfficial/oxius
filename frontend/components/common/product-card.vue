@@ -127,7 +127,7 @@
       >
         <!-- Modal container with animations -->
         <div
-          class="relative flex flex-col w-full max-w-3xl mt-28 sm:mt-24 mb-10 h-[640px] sm:h-[750px] bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden"
+          class="relative flex flex-col w-full max-w-3xl mt-28 sm:mt-24 mb-10 sm:h-[750px] bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden"
           :class="{ 'animate-modal-slide-up': isModalOpen }"
           @click.stop
           ref="modalRef"

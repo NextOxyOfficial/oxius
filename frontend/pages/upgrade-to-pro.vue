@@ -63,7 +63,7 @@
 
             <!-- Card Body with Enhanced Features List -->
             <div class="p-6">
-              <ul class="space-y-4 mb-8">
+              <ul class="space-y-4 mb-8 capitalize">
                 <li class="flex items-center text-sm group/item">
                   <div
                     class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
@@ -83,8 +83,77 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300"
-                    >Basic store setup</span
+                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                    >Access to eShop manager</span
+                  >
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                    >Sell Products on AdsyClub</span
+                  >
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                    >Receive Unlimited Order</span
+                  >
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                    >Add up to 100 Products</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -107,7 +176,7 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300"
-                    >Up to 10 products</span
+                    >Post up 5 ads</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -130,7 +199,7 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300"
-                    >Community support</span
+                    >Earn money by completing task</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -153,7 +222,30 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300"
-                    >Basic analytics</span
+                    >Fast deposit and withdraw</span
+                  >
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300"
+                    >Regular support via Email</span
                   >
                 </li>
               </ul>
@@ -262,7 +354,7 @@
                 class="absolute inset-0 bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/5 dark:to-blue-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
               ></div>
 
-              <ul class="space-y-4 mb-8 relative z-10">
+              <ul class="space-y-4 mb-8 relative z-10 capitalize">
                 <li class="flex items-center text-sm group/item">
                   <div
                     class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
@@ -283,7 +375,7 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300 font-medium"
-                    >Unlimited store setup</span
+                    >Access to Eshop manager</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -306,7 +398,7 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300 font-medium"
-                    >Unlimited products</span
+                    >Sell Products on AdsyClub</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -329,7 +421,30 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300 font-medium"
-                    >Priority support 24/7</span
+                    >Receive Unlimited Order
+                  </span>
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                    >Add up to 100 Products</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -352,7 +467,7 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300 font-medium"
-                    >Advanced analytics & reporting</span
+                    >Post Unlimited Ads</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -375,7 +490,54 @@
                     </svg>
                   </div>
                   <span class="text-slate-600 dark:text-slate-300 font-medium"
-                    >Custom branding options</span
+                    >Earn money by completing task</span
+                  >
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                    >Fast deposit and withdraw</span
+                  >
+                </li>
+                <li class="flex items-center text-sm group/item">
+                  <div
+                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                    >Priority technical support 24/7 via
+                    Email/WhatsApp/Telegram</span
                   >
                 </li>
               </ul>
@@ -434,13 +596,12 @@
 
           <!-- Enhanced Footer -->
           <div class="mt-12 text-center max-w-2xl mx-auto">
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">
-              All plans include 14-day free trial. No credit card required.
-            </p>
             <p class="text-xs text-slate-400 dark:text-slate-500">
               Cancel anytime. Questions?
-              <a href="#" class="text-sky-500 dark:text-sky-400 hover:underline"
-                >Contact our team</a
+              <NuxtLink
+                href="/contact-us"
+                class="text-sky-500 dark:text-sky-400 hover:underline"
+                >Contact our team</NuxtLink
               >
             </p>
           </div>
