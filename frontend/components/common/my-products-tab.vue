@@ -155,9 +155,13 @@
           </div>
         </div>
         <div class="p-4">
-          <h3 class="text-lg font-medium text-gray-900 mb-1 line-clamp-1">
-            {{ product.name }}
-          </h3>
+          <NuxtLink :to="`/product-details/${product.slug}`">
+            <h3
+              class="text-lg font-medium mb-1 line-clamp-1 first-letter:uppercase text-green-950"
+            >
+              {{ product.name }}
+            </h3>
+          </NuxtLink>
           <div
             v-html="product.description"
             class="text-sm text-gray-500 mb-2 line-clamp-2"
@@ -173,30 +177,30 @@
           </div>
           <div class="flex flex-col sm:flex-row gap-2 mt-4">
             <!-- Edit Button -->
-            <button
-              @click="editProduct(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border border-indigo-100 dark:border-indigo-800/30 text-indigo-600 dark:text-indigo-400 hover:shadow-md transition-all duration-300"
-            >
-              <!-- Hover effect overlay -->
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              ></div>
-
-              <!-- Icon and text -->
-              <Edit2
-                class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
-              />
-              <span
-                class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
-                >Edit</span
+            <NuxtLink :to="`/product-details/${product.slug}/edit/`">
+              <button
+                class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border border-indigo-100 dark:border-indigo-800/30 text-indigo-600 dark:text-indigo-400 hover:shadow-md transition-all duration-300"
               >
+                <!-- Hover effect overlay -->
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                ></div>
 
-              <!-- Subtle glow effect on hover -->
-              <div
-                class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-indigo-400/20 blur-sm"
-              ></div>
-            </button>
+                <!-- Icon and text -->
+                <Edit2
+                  class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
+                />
+                <span
+                  class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
+                  >Edit</span
+                >
 
+                <!-- Subtle glow effect on hover -->
+                <div
+                  class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-indigo-400/20 blur-sm"
+                ></div>
+              </button>
+            </NuxtLink>
             <!-- Activate/Deactivate Button -->
             <button
               @click="toggleProductStatus(product)"
@@ -217,7 +221,7 @@
               <span
                 class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300 whitespace-nowrap"
               >
-                {{ product.status === "active" ? "Deactivate" : "Activate" }}
+                {{ product.is_active ? "Deactivate" : "Activate" }}
               </span>
 
               <!-- Subtle glow effect on hover -->
@@ -1408,26 +1412,25 @@ const toggleProductStatus = async (product) => {
   if (isProcessing.value) return;
 
   isProcessing.value = true;
-
   try {
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const index = products.value.findIndex((p) => p.id === product.id);
-    if (index !== -1) {
-      const newStatus = product.status === "active" ? "inactive" : "active";
-      products.value[index].status = newStatus;
-
+    const res = await patch(`/products/${product.slug}/`, {
+      is_active: !product.is_active,
+    });
+    console.log(res);
+    if (res.data) {
       // Show success toast
       showToast(
         "success",
         "Status Changed",
         `${product.name} is now ${
-          newStatus === "active" ? "visible" : "hidden"
+          res.data.is_active ? "visible" : "hidden"
         } to customers.`
       );
+      await getProducts();
     }
   } catch (error) {
+    console.log(error);
     showToast(
       "error",
       "Status Change Failed",
@@ -1450,28 +1453,21 @@ const deleteProduct = async () => {
 
   try {
     // Simulate API call
-    const res = await del(`products/${selectedProduct.value.slug}/`);
-    console.log(res);
+    const res = await del(`/products/${selectedProduct.value.slug}/`);
 
-    // Remove the product from the products array
-    const index = products.value.findIndex(
-      (p) => p.id === selectedProduct.value.id
-    );
-    if (index !== -1) {
-      const productName = selectedProduct.value.name;
-      products.value.splice(index, 1);
-
+    if (!res.error) {
       // Show success toast
       showToast(
         "success",
         "Product Deleted",
-        `${productName} has been successfully deleted.`
+        `${selectedProduct.value.name} has been successfully deleted.`
       );
     }
 
     // Close the modal
     showDeleteConfirmModal.value = false;
   } catch (error) {
+    console.log(error);
     showToast(
       "error",
       "Deletion Failed",

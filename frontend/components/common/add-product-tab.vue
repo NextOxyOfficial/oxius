@@ -244,50 +244,51 @@
 
               <div class="flex flex-wrap gap-4 relative">
                 <!-- Uploaded images with premium hover effects -->
-                <div
-                  v-for="(img, i) in form.images"
-                  :key="i"
-                  class="w-32 h-32 rounded-lg overflow-hidden relative group/img"
-                >
+                <div v-if="form.images">
                   <div
-                    class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10"
-                  ></div>
-                  <img
-                    v-if="img.image"
-                    :src="img.image"
-                    :alt="`Uploaded file ${i}`"
-                    class="w-full h-full object-cover transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
-                  />
-                  <img
-                    v-else
-                    :src="img"
-                    :alt="`Uploaded file ${i}`"
-                    class="w-full h-full object-cover transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
-                  />
-
-                  <!-- Premium overlay controls -->
-                  <div
-                    class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2"
+                    v-for="(img, i) in form.images"
+                    :key="i"
+                    class="w-32 h-32 rounded-lg overflow-hidden relative group/img"
                   >
-                    <div class="flex justify-between items-center">
-                      <div class="text-sm text-white opacity-90">
-                        Image {{ i + 1 }}
+                    <div
+                      class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10"
+                    ></div>
+                    <img
+                      v-if="img.image"
+                      :src="img.image"
+                      :alt="`Uploaded file ${i}`"
+                      class="w-full h-full object-cover transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
+                    />
+                    <img
+                      v-else
+                      :src="img"
+                      :alt="`Uploaded file ${i}`"
+                      class="w-full h-full object-cover transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
+                    />
+
+                    <!-- Premium overlay controls -->
+                    <div
+                      class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2"
+                    >
+                      <div class="flex justify-between items-center">
+                        <div class="text-sm text-white opacity-90">
+                          Image {{ i + 1 }}
+                        </div>
+                        <button
+                          type="button"
+                          class="w-7 h-7 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
+                          @click="deleteUpload(i)"
+                        >
+                          <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        class="w-7 h-7 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
-                        @click="deleteUpload(i)"
-                      >
-                        <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   </div>
                 </div>
-
                 <!-- Upload button with animation -->
                 <div
                   class="w-32 h-32 rounded-lg relative border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-700/30 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors flex items-center justify-center cursor-pointer group/upload"
-                  v-if="form.images.length < 5"
+                  v-if="form?.images?.length < 5"
                 >
                   <input
                     type="file"
@@ -702,32 +703,37 @@
         </div>
       </form>
     </div>
-    {{ productEditorData }}
   </div>
 </template>
 
 <script setup>
-const { get, post } = useApi();
+const props = defineProps({
+  product: Object,
+});
+console.log(props.product, "props");
+const { get, post, put } = useApi();
 const router = useRoute();
 const toast = useToast();
 const currentStep = ref(0); // Track current step for highlighting
 const categories = ref([]);
 // Simplified form with only essential fields
-const form = ref({
-  name: "",
-  category: "",
-  description: "",
-  short_description: "",
-  images: [],
-  discount_price: null,
-  sale_price: null,
-  quantity: null,
-  weight: null,
-  is_free_delivery: false,
-  delivery_fee_free: 0,
-  delivery_fee_inside_dhaka: 0,
-  delivery_fee_outside_dhaka: 0,
-});
+const form = ref(
+  props.product || {
+    name: "",
+    category: "",
+    description: "",
+    short_description: "",
+    images: [],
+    discount_price: null,
+    sale_price: null,
+    quantity: null,
+    weight: null,
+    is_free_delivery: false,
+    delivery_fee_free: 0,
+    delivery_fee_inside_dhaka: 0,
+    delivery_fee_outside_dhaka: 0,
+  }
+);
 
 // Loading state
 const isSubmitting = ref(false);
@@ -846,7 +852,11 @@ async function handleAddProduct() {
 
   try {
     // Create API submission object from form data
-    const productData = { ...form.value, ...form.value.editorData };
+    const productData = {
+      ...form.value,
+      ...form.value.editorData,
+      is_advanced: advanceEditMode.value,
+    };
 
     // Set is_free_delivery based on delivery method selection
     if (form.value.deliveryMethod === "free") {
@@ -862,29 +872,41 @@ async function handleAddProduct() {
     delete productData.deliveryMethod;
 
     console.log("Sending product data to API:", productData);
-    const res = await post("/products/", productData);
+
+    // Check if we are updating or creating a product
+    let res;
+    if (props.product?.id) {
+      // Update existing product
+      res = await put(`/products/${props.product.slug}/`, productData);
+      successMessage.value = "Your product has been updated successfully!";
+    } else {
+      // Create new product
+      res = await post("/products/", productData);
+      successMessage.value = "Your product has been published successfully!";
+    }
 
     if (res.data) {
       console.log("API response:", res.data);
       toast.add({
         title: "Success",
-        description: "Your product has been published successfully!",
+        description: successMessage.value,
         color: "green",
       });
-      successMessage.value = "Your product has been published successfully!";
       isSuccessModalOpen.value = true;
 
-      // Reset form after successful submission
-      resetForm(false);
-      checkSubmit.value = false;
-      currentStep.value = 1;
+      // Reset form after successful submission (only for new products)
+      if (!props.product?.id) {
+        resetForm(false);
+        checkSubmit.value = false;
+        currentStep.value = 1;
+      }
     }
   } catch (error) {
     console.error("Product submission error details:", error);
     toast.add({
       title: "Error",
       description:
-        error?.message || "Failed to publish product. Please try again.",
+        error?.message || "Failed to save product. Please try again.",
       color: "red",
     });
   } finally {

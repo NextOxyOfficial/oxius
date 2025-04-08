@@ -1,7 +1,11 @@
 <template>
   <PublicSection>
     <UContainer>
-      <CommonProductDetailsCard2 :currentProduct="currentProduct" />
+      <CommonProductDetailsCard2
+        :currentProduct="currentProduct"
+        v-if="currentProduct.is_advanced"
+      />
+      <CommonProductDetailsCard :currentProduct="currentProduct" v-else />
     </UContainer>
   </PublicSection>
 </template>

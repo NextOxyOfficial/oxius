@@ -802,168 +802,6 @@ def get_microgigpost_tasks(request, gig_id):
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# Single Task Approve / Reject
-# @api_view(['PUT'])
-# @permission_classes([IsAuthenticated])
-# def update_microgigpost_tasks(request, gig_id):
-#     try:
-#         # Retrieve the MicroGigPost instance
-#         micro_gig_post = MicroGigPost.objects.get(id=gig_id)
-#     except MicroGigPost.DoesNotExist:
-#         return Response(
-#             {"error": "MicroGigPost not found"},
-#             status=status.HTTP_404_NOT_FOUND
-#         )
-
-#     # Retrieve the tasks related to this MicroGigPost
-#     tasks = micro_gig_post.microgigposttask_set.all()
-
-#     # Validate and update each task
-#     data = request.data.get('tasks', [])
-#     if not isinstance(data, list):
-#         return Response(
-#             {"error": "Expected a list of tasks in 'tasks' field."},
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-#     # Create a list to track updated tasks
-#     updated_tasks = []
-
-#     for task_data in data:
-#         task_id = task_data.get('id')
-#         if not task_id:
-#             return Response(
-#                 {"error": "Task 'id' is required for updates."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-#         try:
-#             # Get the task instance
-#             task = tasks.get(id=task_id)
-#         except MicroGigPostTask.DoesNotExist:
-#             return Response(
-#                 {"error": f"Task with id {task_id} not found."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         # Serialize the task data and validate
-#         serializer = GetMicroGigPostTaskSerializer(task, data=task_data, partial=True)
-#         if serializer.is_valid():
-#             # Save the updated task
-#             serializer.save()
-#             updated_tasks.append(serializer.data)
-#         else:
-#             return Response(
-#                 {"error": f"Invalid data for task with id {task_id}.", "details": serializer.errors},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#     return Response({"updated_tasks": updated_tasks}, status=status.HTTP_200_OK)
-
-# @api_view(['PUT'])
-# @permission_classes([IsAuthenticated])
-# def update_microgigpost_tasks(request, gig_id):
-#     """
-#     Update tasks associated with a specific MicroGigPost.
-#     Handles both individual task updates and bulk approvals.
-#     """
-#     try:
-#         # Retrieve the MicroGigPost instance
-#         micro_gig_post = MicroGigPost.objects.get(id=gig_id)
-        
-#         # Check authorization - only gig owner or admin can update tasks
-#         if request.user != micro_gig_post.user and not request.user.is_staff:
-#             return Response(
-#                 {"error": "You don't have permission to update tasks for this gig"},
-#                 status=status.HTTP_403_FORBIDDEN
-#             )
-            
-#     except MicroGigPost.DoesNotExist:
-#         return Response(
-#             {"error": "MicroGigPost not found"},
-#             status=status.HTTP_404_NOT_FOUND
-#         )
-
-#     # Get the tasks data from request
-#     tasks_data = request.data.get('tasks')
-#     print(tasks_data)
-#     if not tasks_data:
-#         return Response(
-#             {"error": "No tasks provided in the request"},
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-        
-#     if not isinstance(tasks_data, list):
-#         return Response(
-#             {"error": "Expected a list of tasks in 'tasks' field"},
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-#     updated_tasks = []
-#     errors = []
-
-#     # Validate all task IDs before making any changes
-#     for index, task_data in enumerate(tasks_data):
-#         if not task_data.get('id'):
-#             errors.append({
-#                 "index": index,
-#                 "error": "Task ID is required"
-#             })
-    
-#     if errors:
-#         return Response(
-#             {"errors": errors},
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-#     # Process each task update
-#     try:
-#         for task_data in tasks_data:
-#             task_id = task_data.get('id')
-#             try:
-#                 task = MicroGigPostTask.objects.get(id=task_id, gig=micro_gig_post)
-                
-#                 # Handle the update based on the task data
-#                 if 'approved' in task_data:
-#                     task.approved = task_data['approved']
-#                     if task_data['approved']:
-#                         task.rejected = False
-#                 elif 'rejected' in task_data:
-#                     task.rejected = task_data['rejected']
-#                     if task_data['rejected']:
-#                         task.approved = False
-#                         if task_data.get('reason'):
-#                             task.reason = task_data['reason']
-
-#                 # Save the task
-#                 task.save()
-                
-#                 # Serialize the updated task
-#                 serializer = GetMicroGigPostTaskSerializer(task)
-#                 updated_tasks.append(serializer.data)
-
-#             except MicroGigPostTask.DoesNotExist:
-#                 errors.append({
-#                     "task_id": task_id,
-#                     "error": f"Task not found or doesn't belong to this gig"
-#                 })
-
-#         if errors:
-#             return Response(
-#                 {"message": "Some tasks could not be updated", "errors": errors},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         return Response({
-#             "message": "Tasks updated successfully",
-#             "updated_tasks": updated_tasks
-#         }, status=status.HTTP_200_OK)
-        
-#     except Exception as e:
-#         return Response({
-#             "error": "An error occurred while updating tasks",
-#             "detail": str(e)
-#         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_microgigpost_tasks(request, gig_id):
@@ -1537,6 +1375,150 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+    
+    def update(self, request, *args, **kwargs):
+        try:
+            # Extract related data from request
+            benefits_data = request.data.pop('benefits', None)
+            faqs_data = request.data.pop('faqs', None)
+            trust_badges_data = request.data.pop('trustBadges', None)
+            
+            # Get the instance to update
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            
+            # Check permissions
+            user = self.request.user
+            if not user.is_authenticated:
+                raise PermissionDenied("You must be logged in to update this product.")
+                
+            if user != instance.owner and not user.is_staff and not user.is_superuser:
+                raise PermissionDenied("You don't have permission to update this product.")
+            
+            # Update the main product data
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            
+            # Handle benefits if provided
+            if benefits_data and isinstance(benefits_data, list):
+                # Clear existing benefits if we're replacing them
+                instance.benefits.clear()
+                
+                for benefit_data in benefits_data:
+                    if isinstance(benefit_data, dict) and 'title' in benefit_data and 'description' in benefit_data:
+                        # Check if benefit already exists
+                        benefit, created = ProductBenefit.objects.get_or_create(
+                            title=benefit_data['title'],
+                            defaults={
+                                'description': benefit_data['description'],
+                                'icon': benefit_data.get('icon', 'i-heroicons-sparkles')
+                            }
+                        )
+                        if not created and benefit.description != benefit_data['description']:
+                            benefit.description = benefit_data['description']
+                            benefit.icon = benefit_data.get('icon', benefit.icon)
+                            benefit.save()
+                        
+                        instance.benefits.add(benefit)
+            
+            # Handle FAQs if provided
+            if faqs_data and isinstance(faqs_data, list):
+                # Clear existing FAQs if we're replacing them
+                instance.faqs.clear()
+                
+                for faq_data in faqs_data:
+                    if isinstance(faq_data, dict) and 'label' in faq_data and 'content' in faq_data:
+                        # Check if FAQ already exists
+                        faq, created = ProductFAQ.objects.get_or_create(
+                            label=faq_data['label'],
+                            defaults={
+                                'content': faq_data['content'],
+                                'icon': faq_data.get('icon')
+                            }
+                        )
+                        if not created and faq.content != faq_data['content']:
+                            faq.content = faq_data['content']
+                            faq.icon = faq_data.get('icon', faq.icon)
+                            faq.save()
+                        
+                        instance.faqs.add(faq)
+            
+            # Handle trust badges if provided
+            if trust_badges_data and isinstance(trust_badges_data, list):
+                # Clear existing trust badges if we're replacing them
+                instance.trust_badges.clear()
+                
+                for badge_data in trust_badges_data:
+                    if isinstance(badge_data, dict) and 'id' in badge_data and 'text' in badge_data:
+                        # Check if badge already exists
+                        badge, created = ProductTrustBadge.objects.get_or_create(
+                            id=badge_data['id'],
+                            defaults={
+                                'text': badge_data['text'],
+                                'icon': badge_data.get('icon', ''),
+                                'enabled': badge_data.get('enabled', True),
+                                'description': badge_data.get('description', '')
+                            }
+                        )
+                        if not created:
+                            # Update badge properties if they've changed
+                            badge.text = badge_data['text']
+                            badge.icon = badge_data.get('icon', badge.icon)
+                            badge.enabled = badge_data.get('enabled', badge.enabled)
+                            badge.description = badge_data.get('description', badge.description)
+                            badge.save()
+                        
+                        instance.trust_badges.add(badge)
+            
+            # Re-fetch the instance with all related fields
+            instance = self.get_object()
+            result = self.get_serializer(instance).data
+            
+            return Response(result)
+            
+        except Exception as e:
+            print(f"Update error: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def perform_update(self, serializer):
+        """
+        Ensure the user has permission to update the product
+        and handle the update process
+        """
+        instance = self.get_object()
+        user = self.request.user
+        
+        # Check if user is authenticated
+        if not user.is_authenticated:
+            raise PermissionDenied("You must be logged in to update this product.")
+            
+        # Check if user is either owner or admin
+        if user == instance.owner or user.is_staff or user.is_superuser:
+            # User is authorized, proceed with update
+            serializer.save()
+        else:
+            # User is not authorized
+            raise PermissionDenied("You don't have permission to update this product. Only the owner or admin can modify products.")
+    
+    def perform_destroy(self, instance):
+        """
+        Check if user is the product owner or admin before allowing deletion
+        """
+        # Get the user making the request
+        user = self.request.user
+        
+        # Check if user is authenticated
+        if not user.is_authenticated:
+            raise PermissionDenied("You must be logged in to delete a product.")
+        
+        # Check if user is either owner or admin
+        if user == instance.owner or user.is_staff or user.is_superuser:
+            # User is authorized, proceed with deletion
+            instance.delete()
+        else:
+            # User is not authorized
+            raise PermissionDenied("You don't have permission to delete this product. Only the owner or admin can delete products.")
 
 # Featured Products
 class FeaturedProductsListView(generics.ListAPIView):

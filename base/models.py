@@ -588,6 +588,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_advanced = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     # New marketing fields
     benefits = models.ManyToManyField(ProductBenefit, blank=True, related_name='products')
     faqs = models.ManyToManyField(ProductFAQ, blank=True, related_name='products')
