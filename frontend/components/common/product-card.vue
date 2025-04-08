@@ -40,7 +40,7 @@
           <!-- Product Title -->
           <NuxtLink :to="`/product-details/${product.id}`">
             <h3
-              class="font-medium text-green-950 dark:text-white mb-1 line-clamp-2 flex-grow text-base"
+              class="font-medium text-green-950 dark:text-white mb-1 line-clamp-2 flex-grow text-base first-letter:uppercase"
             >
               {{ product.name }}
             </h3>
@@ -177,6 +177,8 @@ function getProductImage(item) {
     if (typeof item.image_details === "string") {
       return item.image_details;
     }
+  } else if (item.image) {
+    return item.image;
   }
 
   return "/placeholder-image.jpg";
