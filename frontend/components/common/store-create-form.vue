@@ -474,7 +474,6 @@ async function handleCreateStore() {
     console.log(res);
     if (res.data) {
       // Show success toast
-      await getStoreDetails();
       showToast(
         "success",
         "Store Created",
@@ -482,7 +481,7 @@ async function handleCreateStore() {
       );
       form.store_name = "";
       form.store_username = "";
-      jwtLogin();
+      getStoreDetails();
     }
 
     // Show success modal

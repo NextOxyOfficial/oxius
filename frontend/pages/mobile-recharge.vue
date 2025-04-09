@@ -315,6 +315,7 @@
       fullscreen
       :ui="{
         fullscreen: 'w-auto h-auto',
+        inner: 'fixed inset-0 overflow-y-auto top-20',
       }"
       class="relative"
     >

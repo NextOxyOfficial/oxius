@@ -838,7 +838,7 @@
           'flex min-h-full items-end sm:items-center justify-center text-center max-w-sm w-full',
       }"
     >
-      <div class="flex items-center justify-center" v-if="!showSuccess">
+      <div class="flex items-center justify-center pb-16" v-if="!showSuccess">
         <div class="w-full max-w-sm">
           <!-- Glass Card Effect -->
           <div
@@ -1022,7 +1022,7 @@
     <!-- Transaction Details Modal -->
     <div
       v-if="showDetailsModal"
-      class="fixed inset-0 overflow-y-auto z-50"
+      class="fixed inset-0 top-16 overflow-y-auto z-50"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"

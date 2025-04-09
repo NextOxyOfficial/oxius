@@ -96,7 +96,7 @@
       <div v-else>
         <CommonStoreCreateForm
           v-if="user?.user.is_pro && !user?.user.store_username"
-          :getStoreDetails="getStoreDetails"
+          :getStoreDetails="handleReload"
         />
         <div v-else>
           <!-- store details -->
@@ -122,7 +122,23 @@
 
               <!-- Edit Button -->
               <button
-                @click="isEditing = !isEditing"
+                v-if="!isEditing"
+                @click="isEditing = true"
+                class="ml-auto inline-flex items-center px-3 py-1.5 bg-white/20 rounded text-xs font-medium text-white hover:bg-white/30 focus:outline-none transition-colors duration-300 relative z-10"
+              >
+                <UIcon
+                  :name="
+                    isEditing
+                      ? 'i-heroicons-check'
+                      : 'i-heroicons-pencil-square'
+                  "
+                  class="h-3.5 w-3.5 mr-1.5"
+                />
+                {{ isEditing ? "Save" : "Edit" }}
+              </button>
+              <button
+                v-else
+                @click="(isEditing = false), updateStoreInfo()"
                 class="ml-auto inline-flex items-center px-3 py-1.5 bg-white/20 rounded text-xs font-medium text-white hover:bg-white/30 focus:outline-none transition-colors duration-300 relative z-10"
               >
                 <UIcon
@@ -767,7 +783,7 @@
 definePageMeta({
   layout: "dashboard",
 });
-const { user } = useAuth();
+const { user, jwtLogin } = useAuth();
 const { get, patch } = useApi();
 const { formatDate } = useUtils();
 import {
@@ -1014,6 +1030,10 @@ async function getProducts() {
   }
 }
 
+function handleReload() {
+  jwtLogin();
+}
+
 // Product summary computed properties
 const activeProducts = computed(() => {
   return products.value.filter((product) => product.status === "active");
@@ -1100,213 +1120,6 @@ const paginationEnd = computed(() => {
     filteredOrders.value.length
   );
 });
-
-const displayedPages = computed(() => {
-  const pages = [];
-  const maxPagesToShow = 5;
-
-  if (totalPages.value <= maxPagesToShow) {
-    // Show all pages if there are fewer than maxPagesToShow
-    for (let i = 1; i <= totalPages.value; i++) {
-      pages.push(i);
-    }
-  } else {
-    // Always show first page
-    pages.push(1);
-
-    // Calculate start and end of page range
-    let startPage = Math.max(2, currentPage.value - 1);
-    let endPage = Math.min(totalPages.value - 1, currentPage.value + 1);
-
-    // Adjust if we're at the beginning or end
-    if (currentPage.value <= 2) {
-      endPage = 4;
-    } else if (currentPage.value >= totalPages.value - 1) {
-      startPage = totalPages.value - 3;
-    }
-
-    // Add ellipsis if needed
-    if (startPage > 2) {
-      pages.push("...");
-    }
-
-    // Add middle pages
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    // Add ellipsis if needed
-    if (endPage < totalPages.value - 1) {
-      pages.push("...");
-    }
-
-    // Always show last page
-    if (totalPages.value > 1) {
-      pages.push(totalPages.value);
-    }
-  }
-
-  return pages;
-});
-
-// Product pagination
-const filteredProducts = computed(() => {
-  let result = products.value;
-
-  // Apply status filter
-  if (productFilter.value !== "all") {
-    result = result.filter((product) => product.status === productFilter.value);
-  }
-
-  // Apply search filter
-  if (productSearch.value) {
-    const search = productSearch.value.toLowerCase();
-    result = result.filter(
-      (product) =>
-        product.name.toLowerCase().includes(search) ||
-        product.description.toLowerCase().includes(search)
-    );
-  }
-
-  return result;
-});
-
-const totalProductPages = computed(() => {
-  return Math.ceil(filteredProducts.value.length / itemsPerPage);
-});
-
-const paginatedProducts = computed(() => {
-  const start = (currentProductPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredProducts.value.slice(start, end);
-});
-
-// Methods
-const getStatusClass = (status) => {
-  switch (status) {
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "processing":
-      return "bg-blue-100 text-blue-800";
-    case "shipped":
-      return "bg-purple-100 text-purple-800";
-    case "delivered":
-      return "bg-green-100 text-green-800";
-    case "cancelled":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
-const getRelativeTime = (timestamp) => {
-  const now = new Date().getTime();
-  const diff = now - timestamp;
-
-  // Convert to seconds
-  const seconds = Math.floor(diff / 1000);
-
-  if (seconds < 60) {
-    return `${seconds} seconds ago`;
-  }
-
-  // Convert to minutes
-  const minutes = Math.floor(seconds / 60);
-
-  if (minutes < 60) {
-    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to hours
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to days
-  const days = Math.floor(hours / 24);
-
-  if (days < 30) {
-    return `${days} day${days > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to months
-  const months = Math.floor(days / 30);
-
-  if (months < 12) {
-    return `${months} month${months > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to years
-  const years = Math.floor(months / 12);
-
-  return `${years} year${years > 1 ? "s" : ""} ago`;
-};
-
-const viewOrderDetails = (order) => {
-  selectedOrder.value = order;
-  editingOrderStatus.value = order.order_status;
-  editCustomerInfo.value = false;
-  editOrderItems.value = false;
-
-  // Initialize editing customer info
-  editingCustomer.customer = order.customer;
-  editingCustomer.email = order.email;
-  editingCustomer.phone = order.phone;
-  editingCustomer.address = order.address;
-
-  // Initialize editing order items
-  editingOrderItems.value = JSON.parse(JSON.stringify(order.items));
-  editingDeliveryFee.value = order.deliveryFee;
-
-  showOrderDetailsModal.value = true;
-};
-
-const saveCustomerChanges = async () => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    if (selectedOrder.value) {
-      // Update customer info
-      selectedOrder.value.customer = editingCustomer.customer;
-      selectedOrder.value.email = editingCustomer.email;
-      selectedOrder.value.phone = editingCustomer.phone;
-      selectedOrder.value.address = editingCustomer.address;
-
-      // Update the order in the orders array
-      const index = orders.value.findIndex(
-        (o) => o.id === selectedOrder.value.id
-      );
-      if (index !== -1) {
-        orders.value[index] = { ...selectedOrder.value };
-      }
-
-      // Show success toast
-      showToast(
-        "success",
-        "Customer Updated",
-        "Customer information has been successfully updated."
-      );
-
-      // Exit edit mode
-      editCustomerInfo.value = false;
-    }
-  } catch (error) {
-    showToast(
-      "error",
-      "Update Failed",
-      "There was an error updating the customer information."
-    );
-  } finally {
-    isProcessing.value = false;
-  }
-};
 
 const calculateSubtotal = () => {
   return editingOrderItems.value.reduce(
@@ -1851,6 +1664,20 @@ async function getStoreDetails() {
     });
   } finally {
     isLoading.value = false;
+  }
+}
+async function updateStoreInfo() {
+  try {
+    const { data } = await patch(`/store/${user.value.user.store_username}/`, {
+      store_name: editedUser.store_name,
+      store_address: editedUser.store_address,
+      store_description: editedUser.store_description,
+    });
+    if (data) {
+      jwtLogin();
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 
