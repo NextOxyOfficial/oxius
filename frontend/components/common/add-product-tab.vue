@@ -206,6 +206,7 @@
               (recommended size: 1000×1000px)
             </p>
 
+            <!-- Upload Container with Side-by-Side Layout -->
             <div
               class="premium-upload-container p-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/20 relative group"
             >
@@ -231,13 +232,16 @@
                 ></div>
               </div>
 
-              <div class="flex flex-wrap gap-4 relative">
+              <!-- Image Gallery with Side-by-Side Layout -->
+              <div
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 relative"
+              >
                 <!-- Uploaded images with premium hover effects -->
-                <div v-if="form.images">
+                <template v-if="form.images && form.images.length > 0">
                   <div
                     v-for="(img, i) in form.images"
                     :key="i"
-                    class="w-32 h-32 rounded-lg overflow-hidden relative group/img"
+                    class="aspect-square rounded-lg overflow-hidden relative group/img flex items-center justify-center bg-slate-100 dark:bg-slate-800"
                   >
                     <div
                       class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10"
@@ -245,14 +249,14 @@
                     <img
                       v-if="img.image"
                       :src="img.image"
-                      :alt="`Uploaded file ${i}`"
-                      class="w-full h-full object-cover transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
+                      :alt="`Uploaded file ${i + 1}`"
+                      class="object-cover w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
                     />
                     <img
                       v-else
                       :src="img"
-                      :alt="`Uploaded file ${i}`"
-                      class="w-full h-full object-cover transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
+                      :alt="`Uploaded file ${i + 1}`"
+                      class="object-cover w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
                     />
 
                     <!-- Premium overlay controls -->
@@ -273,11 +277,12 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </template>
+
                 <!-- Upload button with animation -->
                 <div
-                  class="w-32 h-32 rounded-lg relative border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-700/30 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors flex items-center justify-center cursor-pointer group/upload"
-                  v-if="form?.images?.length < 5"
+                  v-if="!form.images || form.images.length < 5"
+                  class="aspect-square rounded-lg relative border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-700/30 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors flex items-center justify-center cursor-pointer group/upload"
                 >
                   <input
                     type="file"
