@@ -270,7 +270,7 @@ async function fetchProducts() {
   isLoading.value = true;
 
   try {
-    const response = await get("/products/");
+    const response = await get("/all-products/");
     console.log("API Response:", response);
 
     if (response && response.data) {

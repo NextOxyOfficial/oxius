@@ -14,17 +14,6 @@
 
     <div class="relative max-w-4xl mx-auto">
       <!-- Form Title with Animation -->
-      <div class="mb-10 text-center">
-        <h1
-          class="text-3xl font-bold bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400 bg-clip-text text-transparent"
-        >
-          Create New Product
-        </h1>
-        <p class="mt-3 text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-          Fill in the details below to create your new product listing with a
-          professional touch
-        </p>
-      </div>
 
       <form
         @submit.prevent="handleAddProduct"
@@ -35,7 +24,7 @@
           <!-- Product Basic Info Section -->
           <div
             class="form-section transition-all duration-500"
-            :class="{ 'shadow-lg': currentStep === 0 }"
+            :class="{ 'shadow-sm': currentStep === 0 }"
           >
             <div class="section-header">
               <div class="section-icon-wrapper">
