@@ -243,8 +243,7 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900">
-                {{ order.customer_details?.first_name }}
-                {{ order.customer_details?.last_name }}
+                {{ order.name }}
               </div>
               <div class="text-sm text-gray-500">
                 {{ order.email }}

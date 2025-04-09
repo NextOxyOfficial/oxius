@@ -69,7 +69,7 @@
               product?.owner_details?.store_username ||
               product?.owner?.store_username
             }`"
-            class="text-primary-500 dark:text-primary-400 text-xs mb-1.5 inline-flex items-center gap-1 hover:text-primary-600 transition-colors"
+            class="text-primary-500 dark:text-primary-400 text-sm mb-1.5 inline-flex items-center gap-1 hover:text-primary-600 transition-colors"
           >
             <div
               class="flex items-center justify-center size-4 bg-primary-50 dark:bg-primary-900/20 rounded-full"

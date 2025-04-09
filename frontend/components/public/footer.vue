@@ -419,7 +419,7 @@ const items = [
 ];
 </script>
 
-<style>
+<style scoped>
 /* Professional geometric pattern background - subtle diagonal lines */
 .bg-pattern {
   background-color: transparent;

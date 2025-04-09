@@ -1863,7 +1863,7 @@ onMounted(async () => {
   }
 });
 </script>
-<style setup>
+<style scoped>
 /* Only essential styles */
 .toast-enter-active,
 .toast-leave-active {
