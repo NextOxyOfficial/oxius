@@ -146,7 +146,8 @@
               </div>
               <input
                 id="storeUsername"
-                v-model="form.store_username"
+                :value="form.store_username"
+                @change="handleStoreUsername"
                 type="text"
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white lowercase"
                 placeholder="Enter your store username"
@@ -166,7 +167,7 @@
                   >https://adsyclub.com/eshop/</span
                 >
                 <span
-                  class="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
+                  class="text-sm text-indigo-600 dark:text-indigo-400 font-medium lowercase"
                   >{{ form.store_username || "your-store" }}</span
                 >
               </div>
@@ -353,6 +354,12 @@
 const { user, jwtLogin } = useAuth();
 const { put } = useApi();
 const isOpen = ref(false);
+
+const { getStoreDetails } = defineProps({
+  getStoreDetails: {
+    type: Function,
+  },
+});
 // Form state
 const form = reactive({
   store_name: "",
@@ -393,6 +400,10 @@ function showToast(type, title, message, duration = 3000) {
   toast.timeout = setTimeout(() => {
     toast.show = false;
   }, duration);
+}
+
+function handleStoreUsername(e) {
+  form.store_username = e.target.value.toLowerCase();
 }
 
 // Validate form
@@ -456,10 +467,14 @@ async function handleCreateStore() {
 
   try {
     // Simulate API call
-    const res = await put(`/persons/update/${user.value?.user?.email}/`, form);
+    const res = await put(`/persons/update/${user.value?.user?.email}/`, {
+      store_name: form.store_name,
+      store_username: form.store_username.toLowerCase(),
+    });
     console.log(res);
     if (res.data) {
       // Show success toast
+      await getStoreDetails();
       showToast(
         "success",
         "Store Created",

@@ -96,6 +96,7 @@
       <div v-else>
         <CommonStoreCreateForm
           v-if="user?.user.is_pro && !user?.user.store_username"
+          :getStoreDetails="getStoreDetails"
         />
         <div v-else>
           <!-- store details -->

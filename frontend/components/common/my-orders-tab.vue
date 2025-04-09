@@ -342,7 +342,7 @@
     <!-- Order Details Modal -->
     <div
       v-if="showOrderDetailsModal"
-      class="fixed inset-0 top-14 z-10 overflow-y-auto md:top-0"
+      class="fixed inset-0 top-14 z-[9999999] overflow-y-auto md:top-0"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
@@ -873,7 +873,12 @@
     </div>
 
     <!-- Add Item Modal -->
-    <UModal v-model="showAddItemModal">
+    <UModal
+      v-model="showAddItemModal"
+      :ui="{
+        wrapper: 'relative z-[9999999]',
+      }"
+    >
       <div
         class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full"
       >
