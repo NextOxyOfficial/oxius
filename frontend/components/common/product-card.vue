@@ -89,12 +89,9 @@
           </NuxtLink>
 
           <!-- Product Title with Premium Hover Effect -->
-          <NuxtLink
-            :to="`/product-details/${product?.slug}`"
-            class="group/title"
-          >
+          <NuxtLink :to="`/product-details/${product?.slug}`" class="">
             <h3
-              class="font-medium text-slate-800 dark:text-white mb-2 line-clamp-2 flex-grow text-base first-letter:uppercase group-hover/title:text-primary-600 dark:group-hover/title:text-primary-400 transition-colors"
+              class="font-medium text-slate-800 dark:text-white mb-2 line-clamp-2 flex-grow text-base first-letter:uppercase text-primary-600 transition-colors"
             >
               {{ product.name }}
             </h3>
@@ -175,7 +172,7 @@
     <Teleport to="body">
       <div
         v-if="isModalOpen"
-        class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto"
+        class="fixed inset-0 top-14 z-10 overflow-y-auto md:top-0"
         :class="{ 'animate-fade-in': isModalOpen }"
         @click="closeProductModal()"
       >
@@ -185,7 +182,7 @@
           @click.stop
         >
           <div
-            class="w-full max-h-[85vh] overflow-hidden overflow-y-auto custom-scrollbar"
+            class="w-full md:h-[80vh] overflow-hidden overflow-y-auto custom-scrollbar mb-5"
           >
             <CommonProductDetailsCard
               :current-product="selectedProduct"
