@@ -587,6 +587,11 @@
                     : row.transaction_type
                 }}</span
               >
+              <span
+                class="ml-2 text-sm text-gray-900 capitalize"
+                v-if="row.transaction_type == 'transfer'"
+                >{{ row.transaction_type }}</span
+              >
             </div>
           </template>
           <template #recipient-data="{ row }">
@@ -619,6 +624,7 @@
           </template>
           <template #amount-data="{ row }">
             <div
+              v-if="row.amount !== '0.00'"
               class="text-sm font-medium"
               :class="{
                 'text-green-600': row.transaction_type === 'Deposit',
@@ -627,6 +633,22 @@
               }"
             >
               {{ formatAmount(row.amount, row.transaction_type.toLowerCase()) }}
+            </div>
+            <div
+              v-else
+              class="text-sm font-medium"
+              :class="{
+                'text-green-600': row.transaction_type === 'Deposit',
+                'text-red-600': row.transaction_type === 'Withdraw',
+                'text-blue-600': row.transaction_type === 'Transfer',
+              }"
+            >
+              {{
+                formatAmount(
+                  row.payable_amount,
+                  row.transaction_type.toLowerCase()
+                )
+              }}
             </div>
           </template>
           <template #status-data="{ row }">

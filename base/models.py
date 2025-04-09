@@ -441,6 +441,7 @@ class Balance(models.Model):
     completed = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)
+    description = models.TextField(blank=True, null=True,default='')
     class Meta:
         ordering = ['-updated_at']
 

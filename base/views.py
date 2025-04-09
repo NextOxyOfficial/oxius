@@ -1714,6 +1714,7 @@ class OrderItemsByOrder(generics.ListAPIView):
 class OrderWithItemsCreate(generics.CreateAPIView):
     """Create an order with multiple items in a single request"""
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
         # Extract order and items data
@@ -1729,9 +1730,9 @@ class OrderWithItemsCreate(generics.CreateAPIView):
         total_amount = Decimal(order_data.get('total', 0))
         
         # If using account balance, check if user has sufficient funds
+        buyer = request.user
         if payment_method == 'balance':
-            user = request.user
-            if user.balance < total_amount:
+            if buyer.balance < total_amount:
                 return Response(
                     {"detail": "Insufficient balance to complete this order."},
                     status=status.HTTP_400_BAD_REQUEST
@@ -1742,37 +1743,52 @@ class OrderWithItemsCreate(generics.CreateAPIView):
         if order_serializer.is_valid():
             order = order_serializer.save()
             
-            # Track payments to sellers by product owner
-            seller_payments = {}
+            # Track payments due to each seller (product owner)
+            # Key: seller_id, Value: amount to pay to this seller
+            seller_payment_amounts = {}
             
-            # Then create order items
+            # Process all order items
             for item_data in items_data:
+                # Associate item with the order
                 item_data['order'] = str(order.id)
                 item_serializer = OrderItemSerializer(data=item_data)
+                
                 if item_serializer.is_valid():
+                    # Save the order item
                     order_item = item_serializer.save()
                     
-                    # Get the product and calculate the seller payment
-                    product = Product.objects.get(id=item_data['product'])
-                    item_price = Decimal(str(product.sale_price if product.sale_price else product.regular_price))
-                    item_quantity = int(item_data.get('quantity', 1))
-                    item_total = item_price * item_quantity
-                    
-                    # Add delivery fee if applicable
-                    delivery_fee = Decimal('0.00')
-                    if not product.is_free_delivery:
-                        if order_data.get('delivery_location') == 'inside_dhaka':
-                            delivery_fee = Decimal(str(product.delivery_fee_inside_dhaka))
-                        else:
-                            delivery_fee = Decimal(str(product.delivery_fee_outside_dhaka))
-                    
-                    # Track payment due to this seller
-                    seller_id = str(product.owner.id)
-                    if seller_id not in seller_payments:
-                        seller_payments[seller_id] = Decimal('0.00')
-                    
-                    # Add the product price and delivery fee to the seller's payment
-                    seller_payments[seller_id] += item_total + delivery_fee
+                    # Get the product details
+                    try:
+                        product = Product.objects.get(id=item_data['product'])
+                        product_owner = product.owner  # The seller who owns this product
+                        
+                        # Calculate the amount for this item
+                        unit_price = Decimal(str(product.sale_price if product.sale_price else product.regular_price))
+                        quantity = int(item_data.get('quantity', 1))
+                        item_subtotal = unit_price * quantity
+                        
+                        # Calculate delivery fee if applicable
+                        delivery_fee = Decimal('0.00')
+                        if not product.is_free_delivery:
+                            if order_data.get('delivery_location') == 'inside_dhaka':
+                                delivery_fee = Decimal(str(product.delivery_fee_inside_dhaka))
+                            else:
+                                delivery_fee = Decimal(str(product.delivery_fee_outside_dhaka))
+                        
+                        # Add to the seller's payment amount
+                        seller_id = str(product_owner.id)
+                        if seller_id not in seller_payment_amounts:
+                            seller_payment_amounts[seller_id] = Decimal('0.00')
+                        
+                        seller_payment_amounts[seller_id] += item_subtotal + delivery_fee
+                        
+                    except Product.DoesNotExist:
+                        # If product doesn't exist, delete the order and return error
+                        order.delete()
+                        return Response(
+                            {"detail": f"Product with id {item_data['product']} does not exist"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
                 else:
                     # If any item fails validation, delete the order and return error
                     order.delete()
@@ -1781,49 +1797,53 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            # Deduct balance if payment method is 'balance'
+            # Process payment if using balance
             if payment_method == 'balance':
-                user = request.user
-                user.balance -= total_amount
-                user.save()
+                # 1. Deduct total amount from buyer's balance
+                buyer.balance -= total_amount
+                buyer.save()
                 
-                # Create a balance transaction record for the buyer
+                # 2. Create a transaction record for the buyer's payment
                 Balance.objects.create(
-                    user=user,
-                    amount=-total_amount,
+                    user=buyer,  # The buyer who is making the payment
+                    to_user=product_owner,
+                    amount=-total_amount,  # Negative amount as it's a deduction
                     transaction_type='order_payment',
                     completed=True,
                     bank_status='completed',
+                    description=f"Payment for order #{order.id}"
                 )
                 
-                # Credit each seller with their portion of the payment
-                for seller_id, amount in seller_payments.items():
+                # 3. Distribute payments to each seller (product owner)
+                for seller_id, payment_amount in seller_payment_amounts.items():
                     try:
-                        seller = User.objects.get(id=seller_id)
+                        # Get the seller account
+                        product_owner = User.objects.get(id=seller_id)
                         
                         # Add payment to seller's balance
-                        seller.balance += amount
-                        seller.save()
+                        product_owner.balance += payment_amount
+                        product_owner.save()
                         
-                        # Create transaction record for the seller
+                        # Create transaction record for the seller's receipt
                         Balance.objects.create(
-                            to_user=seller,
-                            amount=amount,
+                            user=product_owner,  # The seller receiving the payment
+                            to_user=buyer,  # The buyer who made the payment
+                            amount=payment_amount,  # Positive amount as it's a credit
                             transaction_type='order_received',
                             completed=True,
                             bank_status='completed',
-                            user=user  # Track who made the payment
+                            description=f"Payment received for order #{order.id}"
                         )
                     except User.DoesNotExist:
-                        # Log this error but don't fail the order
-                        print(f"Failed to credit seller {seller_id} for order {order.id}")
+                        Response({"error": f"Failed to credit seller {seller_id} for order {order.id}"})
             
-            # Return the complete order with items
+            # Return the complete order details
             return Response(
                 OrderSerializer(order).data,
                 status=status.HTTP_201_CREATED
             )
         
+        # Return validation errors if order serializer is invalid
         return Response(
             order_serializer.errors,
             status=status.HTTP_400_BAD_REQUEST

@@ -159,14 +159,18 @@
       <UDivider label="" class="mb-2" />
       <div class="flex gap-4 py-2" v-for="(b, i) in result" :key="b.id">
         <div class="text-left">
-          <h1 class="text-lg font-semibold">{{ i + 1 }}. {{ b.name }}</h1>
-          <p v-if="b.description">{{ b.description }}</p>
-          <p v-if="b.address">{{ b.address }}</p>
+          <h1 class="text-lg font-semibold break-words">
+            {{ i + 1 }}. {{ b.name }}
+          </h1>
+          <p v-if="b.description" class="break-words">{{ b.description }}</p>
+          <p v-if="b.address" class="break-words">{{ b.address }}</p>
 
           <ul class="list-disc list-inside">
-            <li v-if="b.phone">Mobile: {{ b.phone }}</li>
-            <li v-if="b.email">Email: {{ b.email }}</li>
-            <li v-if="b.website">Website: {{ b.website }}</li>
+            <li v-if="b.phone" class="break-words">Mobile: {{ b.phone }}</li>
+            <li v-if="b.email" class="break-words">Email: {{ b.email }}</li>
+            <li v-if="b.website" class="break-words">
+              Website: {{ b.website }}
+            </li>
           </ul>
         </div>
       </div>
