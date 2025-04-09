@@ -87,7 +87,6 @@
               }}
             </span>
           </NuxtLink>
-
           <!-- Product Title with Premium Hover Effect -->
           <NuxtLink
             :to="`/product-details/${product?.slug}`"

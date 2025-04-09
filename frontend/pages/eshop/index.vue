@@ -353,33 +353,29 @@ const loadMoreTrigger = ref(null);
 const currentProduct = ref(null);
 const isModalOpen = ref(false);
 
-// Load all products from API
+// Modified getAllProducts function to preserve all fields
 async function getAllProducts() {
   try {
     isLoading.value = true;
     const res = await get("/all-products/");
     console.log("API response:", res);
 
-    // Process products but keep original price field names
-    initialProducts.value = res.data.map((product) => ({
-      id: product.id,
-      name: product.name,
-      description: product.description || product.short_description || "",
-      sale_price: product.sale_price, // Keep original field name
-      regular_price: product.regular_price, // Keep original field name
-      image: product.image_details?.[0]?.image || "/placeholder.svg",
-      category: product.category_details?.name || "Uncategorized",
-      categoryId: product.category,
-      inStock: product.quantity > 0,
-      quantity: product.quantity,
-      rating: 5, // Default rating since we don't have it from API
-      reviews: [], // Empty reviews array as placeholder
-      discount: calculateDiscount(product.regular_price, product.sale_price),
-      is_free_delivery: product.is_free_delivery,
-      weight: product.weight,
-      owner: product.owner_details,
-      created_at: product.created_at,
-    }));
+    // Preserve all original fields instead of mapping to new objects
+    initialProducts.value = res.data.map((product) => {
+      // Calculate discount only if needed
+      const discount = calculateDiscount(
+        product.regular_price,
+        product.sale_price
+      );
+
+      // Return the original product with minimal modifications
+      return {
+        ...product, // Keep ALL original fields including slug
+        // Only add fields that don't exist in the API response
+        inStock: product.quantity > 0,
+        discount: discount,
+      };
+    });
 
     console.log("Processed products:", initialProducts.value);
 
@@ -518,7 +514,7 @@ function selectCategory(category) {
   lastLoadedIndex.value = -1; // Reset for new animations
 }
 
-// Extract real categories from products
+// Extract real categories from products using original API field names
 const categories = computed(() => {
   if (!initialProducts.value || initialProducts.value.length === 0) return [];
 
@@ -630,9 +626,7 @@ const filteredProducts = computed(() => {
 
   // Category filter
   if (selectedCategory?.value) {
-    filtered = filtered.filter(
-      (p) => p.categoryId === selectedCategory.value.id
-    );
+    filtered = filtered.filter((p) => p.category === selectedCategory.value.id);
   }
 
   // Search term filter
@@ -642,24 +636,25 @@ const filteredProducts = computed(() => {
       (p) =>
         p.name.toLowerCase().includes(term) ||
         (p.description && p.description.toLowerCase().includes(term)) ||
-        (p.category && p.category.toLowerCase().includes(term))
+        (p.category_details?.name &&
+          p.category_details.name.toLowerCase().includes(term))
     );
   }
 
-  // Price range filter - update to use sale_price (or regular_price if sale_price not available)
+  // Price range filter - use same field names as API
   filtered = filtered.filter((p) => {
-    const price = parseFloat(p.sale_price || p.regular_price);
+    const price = parseFloat(p.sale_price);
     return price >= priceRange.value[0] && price <= priceRange.value[1];
   });
 
   // Rating filter
   if (minRating.value > 0) {
-    filtered = filtered.filter((p) => p.rating >= minRating.value);
+    filtered = filtered.filter((p) => (p.rating || 5) >= minRating.value);
   }
 
   // Stock filter
   if (inStockOnly.value) {
-    filtered = filtered.filter((p) => p.inStock);
+    filtered = filtered.filter((p) => p.quantity > 0);
   }
 
   // Sort products
@@ -672,28 +667,25 @@ const filteredProducts = computed(() => {
 function sortProductsArray(products) {
   switch (sortOption.value) {
     case "Price: Low to High":
-      products.sort((a, b) => {
-        const priceA = parseFloat(a.sale_price || a.regular_price);
-        const priceB = parseFloat(b.sale_price || b.regular_price);
-        return priceA - priceB;
-      });
+      products.sort(
+        (a, b) => parseFloat(a.sale_price) - parseFloat(b.sale_price)
+      );
       break;
     case "Price: High to Low":
-      products.sort((a, b) => {
-        const priceA = parseFloat(a.sale_price || a.regular_price);
-        const priceB = parseFloat(b.sale_price || b.regular_price);
-        return priceB - priceA;
-      });
+      products.sort(
+        (a, b) => parseFloat(b.sale_price) - parseFloat(a.sale_price)
+      );
       break;
     case "Best Rated":
-      products.sort((a, b) => b.rating - a.rating);
+      products.sort((a, b) => (b.rating || 5) - (a.rating || 5));
       break;
     case "Popular":
-      products.sort((a, b) => b.reviews.length - a.reviews.length);
+      products.sort(
+        (a, b) => (b.reviews?.length || 0) - (a.reviews?.length || 0)
+      );
       break;
     // Newest First is default
     default:
-      // Sort by created_at date
       products.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       break;
   }
