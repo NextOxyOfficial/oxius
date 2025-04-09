@@ -279,10 +279,11 @@
                   </div>
                 </template>
 
-                <!-- Upload button with animation -->
+                <!-- Upload button with clearer feedback and animations -->
                 <div
                   v-if="!form.images || form.images.length < 5"
                   class="aspect-square rounded-lg relative border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-700/30 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors flex items-center justify-center cursor-pointer group/upload"
+                  :class="{ 'opacity-50 pointer-events-none': isUploading }"
                 >
                   <input
                     type="file"
@@ -290,6 +291,7 @@
                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     @change="handleFileUpload"
                     accept="image/*"
+                    :disabled="isUploading"
                   />
 
                   <!-- Pulse animation on hover -->
@@ -304,11 +306,28 @@
                       class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center group-hover/upload:bg-primary-100 dark:group-hover/upload:bg-primary-900/30 transition-colors"
                     >
                       <UIcon
+                        v-if="!isUploading"
                         name="i-heroicons-plus"
                         class="w-5 h-5 group-hover/upload:scale-110 transition-transform"
                       />
+                      <UIcon
+                        v-else
+                        name="i-heroicons-arrow-path"
+                        class="w-5 h-5 animate-spin"
+                      />
                     </div>
-                    <span class="text-sm font-medium">Add Photo</span>
+                    <span class="text-sm font-medium">
+                      {{ isUploading ? "Uploading..." : "Add Photo" }}
+                    </span>
+                    <span
+                      v-if="!isUploading"
+                      class="text-xs text-slate-400 dark:text-slate-500"
+                    >
+                      {{
+                        form.images ? `${form.images.length}/5` : "0/5"
+                      }}
+                      images
+                    </span>
                   </div>
                 </div>
               </div>
@@ -916,41 +935,106 @@ async function getCategories() {
 
 await getCategories();
 
+// Add these improved functions to your script setup section
+
+// Enhanced file upload handling with better error handling and file input reset
 function handleFileUpload(event) {
   isUploading.value = true;
   uploadError.value = "";
 
-  const files = Array.from(event.target.files);
+  try {
+    const files = Array.from(event.target.files);
 
-  if (files[0].size > 5 * 1024 * 1024) {
-    uploadError.value = "Image size must be less than 5MB";
+    if (!files || files.length === 0) {
+      uploadError.value = "No file selected";
+      isUploading.value = false;
+      return;
+    }
+
+    const file = files[0]; // Process one file at a time
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      uploadError.value = "Please select a valid image file";
+      isUploading.value = false;
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      uploadError.value = "Image size must be less than 5MB";
+      isUploading.value = false;
+      return;
+    }
+
+    // Initialize form.images array if it doesn't exist
+    if (!form.value.images) {
+      form.value.images = [];
+    }
+
+    // Check if we've reached the maximum number of images
+    if (form.value.images.length >= 5) {
+      uploadError.value = "Maximum 5 images allowed";
+      isUploading.value = false;
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      form.value.images.push(reader.result);
+      isUploading.value = false;
+
+      // Reset file input to allow selecting the same file again
+      if (event.target) {
+        event.target.value = null;
+      }
+    };
+
+    reader.onerror = (error) => {
+      console.error("FileReader error:", error);
+      uploadError.value = "Error uploading image. Please try again.";
+      isUploading.value = false;
+    };
+
+    reader.readAsDataURL(file);
+  } catch (error) {
+    console.error("File upload error:", error);
+    uploadError.value = "Unexpected error occurred during upload";
     isUploading.value = false;
-    return;
   }
-
-  const reader = new FileReader();
-
-  // Event listener for successful read
-  reader.onload = () => {
-    form.value.images.push(reader.result);
-    isUploading.value = false;
-  };
-
-  // Event listener for errors
-  reader.onerror = (error) => {
-    uploadError.value = "Error uploading image. Please try again.";
-    isUploading.value = false;
-  };
-
-  // Read the file as a data URL (Base64 string)
-  reader.readAsDataURL(files[0]);
 }
 
-function deleteUpload(ind) {
-  if (ind >= 0 && ind < form.value.images.length) {
-    // Create a new array without the deleted item to maintain reactivity
-    form.value.images = form.value.images.filter((_, i) => i !== ind);
-    uploadError.value = ""; // Clear any error messages
+// More robust image deletion with confirmation and error handling
+function deleteUpload(index) {
+  try {
+    if (index < 0 || !form.value.images || index >= form.value.images.length) {
+      console.warn("Invalid image index for deletion:", index);
+      return;
+    }
+
+    // Optional: Add confirmation dialog
+    if (confirm("Are you sure you want to remove this image?")) {
+      // Create a new array without the deleted item
+      const newImages = [...form.value.images];
+      newImages.splice(index, 1);
+      form.value.images = newImages;
+
+      // Success notification
+      toast.add({
+        title: "Image Removed",
+        description: "The image has been removed successfully",
+        color: "blue",
+        timeout: 2000,
+      });
+    }
+  } catch (error) {
+    console.error("Error removing image:", error);
+    toast.add({
+      title: "Error",
+      description: "Failed to remove the image. Please try again.",
+      color: "red",
+    });
   }
 }
 

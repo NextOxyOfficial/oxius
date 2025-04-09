@@ -892,9 +892,21 @@ const estimatedDelivery = computed(() => {
   });
 });
 
-// Fixed methods to use count instead of quantity
+// Modified function to prevent increasing quantity beyond available stock
 const increaseQuantity = (index) => {
-  products.value[index].count++;
+  const product = products.value[index];
+  // Only allow increasing if stock is available
+  if (product.count < product.quantity) {
+    product.count++;
+  } else {
+    // Optional: Show toast notification when trying to exceed stock
+    toast.add({
+      title: "Maximum Available",
+      description: `Only ${product.quantity} units available in stock`,
+      color: "amber",
+      timeout: 3000,
+    });
+  }
 };
 
 const decreaseQuantity = (index) => {
@@ -903,12 +915,14 @@ const decreaseQuantity = (index) => {
   }
 };
 
+// Modified validateForm to include stock validation
 const validateForm = () => {
   let isValid = true;
 
   // Reset errors
   errors.name = "";
   errors.phone = "";
+  errors.email = "";
   errors.address = "";
 
   // Validate name
@@ -926,21 +940,47 @@ const validateForm = () => {
     isValid = false;
   }
 
+  // Validate email
+  if (!form.email.trim()) {
+    errors.email = "Email is required";
+    isValid = false;
+  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+    errors.email = "Please enter a valid email address";
+    isValid = false;
+  }
+
   // Validate address
   if (!form.address.trim()) {
     errors.address = "Address is required";
     isValid = false;
   }
 
+  // Validate product quantities against available stock
+  const stockError = products.value.find(
+    (product) => product.count > product.quantity
+  );
+  if (stockError) {
+    toast.add({
+      title: "Insufficient Stock",
+      description: `Only ${stockError.quantity} units of ${stockError.name} are available`,
+      color: "red",
+      timeout: 5000,
+    });
+    isValid = false;
+  }
+
   return isValid;
 };
 
-// Modified process checkout to send data to API
+// Modified processCheckout function to add better error handling
 const processCheckout = async () => {
   if (!validateForm()) return;
 
   // Check if account funds are sufficient when that payment method is selected
-  if (form.paymentMethod === "account" && accountBalance.value < total.value) {
+  if (
+    form.paymentMethod === "account" &&
+    user.value?.user?.balance < total.value
+  ) {
     showInsufficientFundsModal.value = true;
     return;
   }
@@ -949,7 +989,7 @@ const processCheckout = async () => {
     // Format data according to API requirements
     const orderPayload = {
       order: {
-        user: user.value?.user?.id || null, // Add user ID if available
+        user: user.value?.user?.id || null,
         name: form.name,
         email: form.email,
         address: form.address,
@@ -957,40 +997,38 @@ const processCheckout = async () => {
         total: total.value,
         order_status: "pending",
         delivery_fee: deliveryFee.value,
+        delivery_location:
+          form.deliveryOption === "inside" ? "inside_dhaka" : "outside_dhaka",
         payment_method:
           form.paymentMethod === "account" ? "balance" : "cash_on_delivery",
       },
       items: products.value.map((product) => ({
         product: product.id,
         quantity: product.count,
-        price: product.sale_price,
+        price: parseFloat(product.sale_price),
       })),
     };
 
-    // Log the payload for debugging
-    console.log("Order payload:", orderPayload);
-
     // Send data to API
     const response = await post("/orders/create-with-items/", orderPayload);
-    console.log("API response:", response);
 
     if (response.data) {
       // Show success modal
       orderNumber.value =
-        response?.id || Math.floor(100000 + Math.random() * 900000);
+        response.data.id || Math.floor(100000 + Math.random() * 900000);
       showSuccessModal.value = true;
-
-      // If using account balance, update user balance
-      if (form.paymentMethod === "account" && user.value?.user) {
-        user.value.user.balance -= total.value;
-      }
     }
   } catch (error) {
     console.error("Error creating order:", error);
-    // Show error notification
+
+    // Show specific error message based on response
+    const errorMessage =
+      error.response?.data?.detail ||
+      "There was an error processing your order. Please try again.";
+
     toast.add({
       title: "Order Failed",
-      description: error.message || "There was an error processing your order",
+      description: errorMessage,
       color: "red",
       timeout: 5000,
     });
@@ -1034,6 +1072,7 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 100;
 };
 
+// Add an onMounted hook to initialize and validate initial quantities
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
 
@@ -1042,10 +1081,21 @@ onMounted(() => {
     products.value = [...cart.products];
   }
 
-  // Ensure all products have a count property
+  // Validate and adjust initial quantities if they exceed available stock
   products.value.forEach((product) => {
     if (!product.count) {
       product.count = 1;
+    }
+
+    // If initial count exceeds available quantity, cap it
+    if (product.count > product.quantity) {
+      product.count = product.quantity;
+      toast.add({
+        title: "Quantity Adjusted",
+        description: `Quantity for ${product.name} has been adjusted to match available stock`,
+        color: "blue",
+        timeout: 3000,
+      });
     }
   });
 });
