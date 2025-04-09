@@ -183,8 +183,6 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-
 // Props
 const props = defineProps({
   title: {

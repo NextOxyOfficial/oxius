@@ -1538,13 +1538,13 @@ class UserProductsListView(generics.ListAPIView):
 
 class AllProductsListView(generics.ListAPIView):
     """View for retrieving all products - accessible to anyone"""
-    queryset = Product.objects.all().order_by('-created_at')
+    ##queryset = Product.objects.all().order_by('-created_at')
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
     
     def get_queryset(self):
         """Return all available products with optional filtering"""
-        queryset = Product.objects.all().order_by('-created_at')
+        queryset = Product.objects.filter(is_active=True).order_by('-created_at')
         
         # Add optional filtering by category
         category = self.request.query_params.get('category', None)

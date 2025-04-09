@@ -113,8 +113,16 @@
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
                 <div class="bg-gray-50 p-3 rounded-lg">
                   <div class="text-sm text-gray-500">Price</div>
+                  <div class="font-medium text-lg line-through">
+                    ৳{{ currentProduct.regular_price }}
+                  </div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <div class="text-sm text-gray-500">Discounted Price</div>
                   <div class="font-medium text-lg">
-                    ৳{{ currentProduct.sale_price }}
+                    {{
+                      currentProduct.sale_price || currentProduct.regular_price
+                    }}
                   </div>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
@@ -127,12 +135,6 @@
                   <div class="text-sm text-gray-500">Category</div>
                   <div class="font-medium text-lg truncate">
                     {{ currentProduct.category_details?.name || "N/A" }}
-                  </div>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-sm text-gray-500">SKU</div>
-                  <div class="font-medium text-lg">
-                    {{ currentProduct.sku || "N/A" }}
                   </div>
                 </div>
               </div>
