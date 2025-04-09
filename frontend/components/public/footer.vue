@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="pt-6 bg-slate-100/70 dark:bg-slate-900 relative overflow-hidden -z-10"
+    class="pt-6 bg-slate-100/70 dark:bg-slate-900 relative overflow-hidden"
   >
     <!-- Modern Subtle Background Pattern -->
     <div class="absolute inset-0 bg-pattern opacity-10 dark:opacity-10"></div>
@@ -213,7 +213,7 @@
 
     <!-- Mobile Navigation Bar -->
     <div
-      class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-lg"
+      class="sm:hidden block fixed left-0 right-0 z-[99999999] bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-lg"
     >
       <UHorizontalNavigation
         v-if="user?.user?.id"

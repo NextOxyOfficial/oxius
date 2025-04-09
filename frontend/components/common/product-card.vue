@@ -120,26 +120,26 @@
               </span>
             </div>
 
-            <!-- Premium Buy Button with Mobile Compatibility -->
+            <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1.5 px-3.5 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[80px] shadow-md"
+              class="premium-buy-button flex items-center justify-center gap-1.5 px-5 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px] group"
               @click="addToCart(product, quantity)"
             >
-              <!-- Always visible base gradient (works on mobile) -->
+              <!-- Gradient backgrounds -->
               <span
                 class="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600"
               ></span>
-
-              <!-- Enhanced gradient visible on hover (desktop) and always partially visible (mobile) -->
               <span
-                class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-20 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
+                class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               ></span>
 
-              <!-- Subtle glow effect that's always visible -->
-              <span class="absolute inset-0 rounded-full pointer-events-none">
+              <!-- Glow effect -->
+              <span
+                class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              >
                 <span
-                  class="absolute inset-0 rounded-full bg-primary-400 blur-md opacity-20"
+                  class="absolute inset-0 rounded-full bg-primary-400 blur-xl opacity-30"
                 ></span>
               </span>
 
@@ -161,9 +161,9 @@
                 </template>
               </span>
 
-              <!-- Mobile-friendly active state style -->
+              <!-- Shine effect -->
               <span
-                class="absolute inset-0 bg-black/10 opacity-0 active:opacity-100 transition-opacity duration-200"
+                class="absolute top-0 left-0 w-full h-full shine-effect"
               ></span>
             </button>
           </div>
@@ -173,25 +173,19 @@
 
     <!-- Premium Modal Design -->
     <Teleport to="body">
-      <!-- Backdrop with blur effect and fade animation -->
       <div
         v-if="isModalOpen"
-        class="fixed inset-0 bg-gray-900/60 dark:bg-gray-900/80 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto"
+        class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center overflow-y-auto"
         :class="{ 'animate-fade-in': isModalOpen }"
-        @click="closeOnBackdrop ? $emit('update:modelValue', false) : null"
+        @click="closeProductModal()"
       >
-        <!-- Modal container with animations -->
         <div
-          class="relative flex flex-col w-full max-w-3xl mt-28 sm:mt-24 mb-10 h-[640px] sm:h-[750px] bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden"
+          class="relative max-w-4xl mx-4 my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
           :class="{ 'animate-modal-slide-up': isModalOpen }"
           @click.stop
-          ref="modalRef"
         >
-          <!-- Close button with hover effect -->
-
-          <!-- Modal content with custom scrollbar -->
           <div
-            class="w-full h-full overflow-hidden overflow-y-auto custom-scrollbar"
+            class="w-full max-h-[85vh] overflow-hidden overflow-y-auto custom-scrollbar"
           >
             <CommonProductDetailsCard
               :current-product="selectedProduct"
@@ -200,12 +194,12 @@
             />
           </div>
 
-          <!-- Decorative elements -->
+          <!-- Decorative blobs -->
           <div
-            class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 dark:bg-primary-400/5 rounded-full filter blur-3xl -z-10 transform translate-x-1/4 -translate-y-1/4"
+            class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
           ></div>
           <div
-            class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 dark:bg-violet-400/5 rounded-full filter blur-3xl -z-10 transform -translate-x-1/4 translate-y-1/4"
+            class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-full filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
           ></div>
         </div>
       </div>
@@ -282,55 +276,16 @@ function addToCart(item, qty = 1) {
   }
 }
 
-// Add these functions to handle body scroll locking
-function lockBodyScroll() {
-  // Store the current scroll position
-  const scrollY = window.scrollY;
-
-  // Add styles to lock the body in place
-  document.body.style.position = "fixed";
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.width = "100%";
-  document.body.dataset.scrollPosition = scrollY;
-}
-
-function unlockBodyScroll() {
-  // Get the scroll position from before locking
-  const scrollY = document.body.dataset.scrollPosition || "0";
-
-  // Remove the locking styles
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.width = "";
-  delete document.body.dataset.scrollPosition;
-
-  // Scroll back to the original position
-  window.scrollTo(0, parseInt(scrollY));
-}
-
 // Product modal functions
 function openProductModal(product) {
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
-
-  // Lock body scroll when modal opens
-  lockBodyScroll();
 }
 
 function closeProductModal() {
   isModalOpen.value = false;
-
-  // Unlock body scroll when modal closes
-  unlockBodyScroll();
 }
-
-// Add cleanup in case component unmounts with modal open
-onBeforeUnmount(() => {
-  if (isModalOpen.value) {
-    unlockBodyScroll();
-  }
-});
 </script>
 
 <style scoped>
@@ -355,62 +310,17 @@ onBeforeUnmount(() => {
   transform: translateY(-8px);
 }
 
-/* Premium button effects - mobile friendly */
+/* Premium button effects */
 .premium-buy-button {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  /* Initial shadow visible on all devices */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Apply hover effects only on non-touch devices */
-@media (hover: hover) {
-  .premium-buy-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .premium-buy-button:hover .cart-icon {
-    animation: cartBounce 0.75s ease;
-  }
-
-  .premium-buy-button:hover .shine-effect {
-    animation: shine 1.5s ease-in-out;
-  }
+.premium-buy-button:hover {
+  transform: translateY(-2px);
 }
 
-/* Active state works on both mobile and desktop */
 .premium-buy-button:active {
-  transform: translateY(1px) scale(0.98);
-  transition: transform 0.1s;
-}
-
-/* Cart icon animation - always visible */
-.cart-icon {
-  transition: transform 0.3s ease;
-}
-
-/* Add a touch-specific animation that triggers on tap */
-@keyframes tap-flash {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.15;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Apply a subtle flash effect on tap for mobile */
-.premium-buy-button:active::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: white;
-  border-radius: inherit;
-  animation: tap-flash 0.3s ease-out forwards;
-  z-index: 1;
+  transform: translateY(0);
 }
 
 /* Cart icon animation */
@@ -540,10 +450,6 @@ onBeforeUnmount(() => {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-  max-height: calc(
-    100vh - 100px
-  ); /* Ensure modal content doesn't exceed viewport */
-  overflow-y: auto;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -595,11 +501,11 @@ onBeforeUnmount(() => {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
+  animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-modal-slide-up {
-  animation: modal-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modal-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom colors */
@@ -623,12 +529,5 @@ onBeforeUnmount(() => {
   50% {
     transform: translateY(-3px);
   }
-}
-
-/* You'll also need to add this to prevent background scrolling on iOS */
-.body-scroll-lock {
-  position: fixed;
-  width: 100%;
-  overflow: hidden;
 }
 </style>

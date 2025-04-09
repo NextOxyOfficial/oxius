@@ -636,6 +636,7 @@ class Order(models.Model):
     order_number = models.CharField(max_length=10, unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='orders')
     name = models.CharField(max_length=256, blank=True, default="")
+    email = models.EmailField(default='',blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, default="")
     phone = models.CharField(max_length=256, blank=True, default="")
     total = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)

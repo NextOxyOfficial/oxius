@@ -85,7 +85,7 @@
           <form @submit.prevent="processCheckout" class="p-3 sm:p-8">
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
               <!-- Left Column: Customer Information -->
-              <div class="space-y-8">
+              <div class="space-y-4">
                 <!-- Product Details -->
                 <Transition
                   appear
@@ -186,7 +186,7 @@
                       <MapPin class="mr-2 h-5 w-5 text-indigo-500" />
                       Customer Information
                     </h2>
-                    <div class="mt-4 space-y-5">
+                    <div class="mt-3 space-y-3">
                       <div class="relative">
                         <label
                           for="name"
@@ -212,6 +212,33 @@
                         </p>
                       </div>
 
+                      <div class="relative">
+                        <label
+                          for="email"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Email
+                        </label>
+                        <input
+                          id="phone"
+                          v-model="form.email"
+                          type="tel"
+                          required
+                          :class="[
+                            'block w-full px-4 py-1.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200',
+                            errors.email
+                              ? 'border-red-300 ring-1 ring-red-300'
+                              : 'border-gray-300',
+                          ]"
+                          placeholder="Enter your email"
+                        />
+                        <p
+                          v-if="errors.email"
+                          class="mt-1 text-sm text-red-600"
+                        >
+                          {{ errors.email }}
+                        </p>
+                      </div>
                       <div class="relative">
                         <label
                           for="phone"
@@ -273,7 +300,7 @@
               </div>
 
               <!-- Right Column: Payment and Summary -->
-              <div class="space-y-8">
+              <div class="space-y-4">
                 <Transition
                   appear
                   enter-active-class="transition duration-500 delay-400 ease-out"
@@ -792,6 +819,7 @@ const orderNumber = ref(Math.floor(100000 + Math.random() * 900000));
 const form = reactive({
   name: "",
   phone: "",
+  email: "",
   address: "",
   deliveryOption: "inside",
   paymentMethod: "account",
@@ -801,6 +829,7 @@ const form = reactive({
 const errors = reactive({
   name: "",
   phone: "",
+  email: "",
   address: "",
 });
 
@@ -922,6 +951,7 @@ const processCheckout = async () => {
       order: {
         user: user.value?.user?.id || null, // Add user ID if available
         name: form.name,
+        email: form.email,
         address: form.address,
         phone: form.phone,
         total: total.value,
@@ -975,6 +1005,7 @@ const switchToCOD = () => {
 const resetForm = () => {
   // Reset form
   form.name = "";
+  form.email = "";
   form.phone = "";
   form.address = "";
   form.deliveryOption = "inside";

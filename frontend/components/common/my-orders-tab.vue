@@ -466,7 +466,7 @@
                     <div>
                       <p class="text-gray-500">Email</p>
                       <p class="font-medium">
-                        {{ selectedOrder?.customer_details?.email }}
+                        {{ selectedOrder?.email }}
                       </p>
                     </div>
                     <div>
@@ -486,7 +486,7 @@
                       >
                       <input
                         type="text"
-                        v-model="editingCustomer.customer"
+                        v-model="editingCustomer.name"
                         class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm focus:outline-none px-2 py-1"
                       />
                     </div>
@@ -1128,7 +1128,7 @@ const editingProduct = reactive({
 });
 const editingOrderStatus = ref("");
 const editingCustomer = reactive({
-  customer: "",
+  name: "",
   email: "",
   phone: "",
   address: "",
@@ -1508,7 +1508,7 @@ const viewOrderDetails = (order) => {
   editOrderItems.value = false;
 
   // Initialize editing customer info
-  editingCustomer.customer = order.customer;
+  editingCustomer.name = order.name;
   editingCustomer.email = order.email;
   editingCustomer.phone = order.phone;
   editingCustomer.address = order.address;
@@ -1526,34 +1526,30 @@ const saveCustomerChanges = async () => {
   isProcessing.value = true;
 
   try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    // if (selectedOrder.value) {
+    //   // Update customer info
+    //   selectedOrder.value.customer = editingCustomer.name;
+    //   selectedOrder.value.email = editingCustomer.email;
+    //   selectedOrder.value.phone = editingCustomer.phone;
+    //   selectedOrder.value.address = editingCustomer.address;
 
-    if (selectedOrder.value) {
-      // Update customer info
-      selectedOrder.value.customer = editingCustomer.customer;
-      selectedOrder.value.email = editingCustomer.email;
-      selectedOrder.value.phone = editingCustomer.phone;
-      selectedOrder.value.address = editingCustomer.address;
+    // Update the order in the orders array
+    // const index = orders.value.findIndex(
+    //   (o) => o.id === selectedOrder.value.id
+    // );
+    // if (index !== -1) {
+    //   orders.value[index] = { ...selectedOrder.value };
+    // }
 
-      // Update the order in the orders array
-      const index = orders.value.findIndex(
-        (o) => o.id === selectedOrder.value.id
-      );
-      if (index !== -1) {
-        orders.value[index] = { ...selectedOrder.value };
-      }
+    // Show success toast
+    showToast(
+      "success",
+      "Customer Updated",
+      "Customer information has been successfully updated."
+    );
 
-      // Show success toast
-      showToast(
-        "success",
-        "Customer Updated",
-        "Customer information has been successfully updated."
-      );
-
-      // Exit edit mode
-      editCustomerInfo.value = false;
-    }
+    // Exit edit mode
+    editCustomerInfo.value = false;
   } catch (error) {
     showToast(
       "error",
