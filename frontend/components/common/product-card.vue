@@ -90,7 +90,7 @@
           <!-- Product Title with Premium Hover Effect -->
           <NuxtLink :to="`/product-details/${product?.slug}`" class="">
             <h3
-              class="font-medium text-slate-800 dark:text-white mb-2 line-clamp-2 flex-grow text-base first-letter:uppercase text-primary-600 transition-colors"
+              class="font-medium text-slate-800 dark:text-white mb-2 line-clamp-1 flex-grow text-base first-letter:uppercase text-primary-600 transition-colors"
             >
               {{ product.name }}
             </h3>
