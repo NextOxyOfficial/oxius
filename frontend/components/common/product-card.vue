@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="product-card group">
+    <div class="md:hover:-translate-y-2 transition-all duration-300">
       <!-- Glass-like Card Container with Premium Shadows -->
       <div
         class="bg-white/95 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-2xl overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
       >
         <!-- Product Image Section -->
-        <div class="relative pt-[100%] overflow-hidden">
+        <div class="relative pt-[100%] overflow-hidden group">
           <!-- Premium-looking Discount Badge -->
           <div
             v-if="
@@ -42,7 +42,7 @@
           <img
             :src="getProductImage(product)"
             :alt="product.name"
-            class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out-expo group-hover:scale-110"
+            class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out-expo hover:scale-110"
             loading="lazy"
           />
 
@@ -50,7 +50,7 @@
           <div class="absolute inset-0 z-10 flex items-center justify-center">
             <button
               @click="openProductModal(product)"
-              class="quick-view-btn px-5 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-full transform translate-y-8 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 shadow-lg flex items-center"
+              class="quick-view-btn px-5 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-full transform opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-lg flex items-center"
             >
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
@@ -119,7 +119,7 @@
             <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1.5 px-5 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px] group"
+              class="premium-buy-button flex items-center justify-center gap-1.5 px-5 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
               @click="addToCart(product, quantity)"
             >
               <!-- Gradient backgrounds -->
@@ -127,12 +127,12 @@
                 class="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600"
               ></span>
               <span
-                class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 hover:opacity-100 transition-opacity duration-300"
               ></span>
 
               <!-- Glow effect -->
               <span
-                class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                class="absolute inset-0 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-500"
               >
                 <span
                   class="absolute inset-0 rounded-full bg-primary-400 blur-xl opacity-30"
@@ -171,32 +171,41 @@
     <Teleport to="body">
       <div
         v-if="isModalOpen"
-        class="fixed inset-0 top-14 z-10 overflow-y-auto md:top-0"
+        class="fixed inset-0 top-14 z-10 overflow-y-auto"
         :class="{ 'animate-fade-in': isModalOpen }"
         @click="closeProductModal()"
       >
         <div
-          class="relative max-w-4xl mx-4 my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
-          :class="{ 'animate-modal-slide-up': isModalOpen }"
-          @click.stop
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+          aria-hidden="true"
+          @click="isModalOpen = false"
+        ></div>
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
         >
           <div
-            class="w-full md:h-[80vh] overflow-hidden overflow-y-auto custom-scrollbar mb-5"
+            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+            :class="{ 'animate-modal-slide-up': isModalOpen }"
+            @click.stop
           >
-            <CommonProductDetailsCard
-              :current-product="selectedProduct"
-              :modal="true"
-              @close-modal="closeProductModal"
-            />
-          </div>
+            <div
+              class="w-full md:h-[80vh] overflow-hidden overflow-y-auto custom-scrollbar"
+            >
+              <CommonProductDetailsCard
+                :current-product="selectedProduct"
+                :modal="true"
+                @close-modal="closeProductModal"
+              />
+            </div>
 
-          <!-- Decorative blobs -->
-          <div
-            class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
-          ></div>
-          <div
-            class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-full filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
-          ></div>
+            <!-- Decorative blobs -->
+            <div
+              class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-full filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
+            ></div>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -274,6 +283,7 @@ function addToCart(item, qty = 1) {
 
 // Product modal functions
 function openProductModal(product) {
+  document.body.style.overflow = "hidden";
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
@@ -298,13 +308,6 @@ function closeProductModal() {
 }
 
 /* Premium card hover effect */
-.product-card {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.product-card:hover {
-  transform: translateY(-8px);
-}
 
 /* Premium button effects */
 .premium-buy-button {

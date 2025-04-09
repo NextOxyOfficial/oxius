@@ -2,6 +2,11 @@
   <UCard
     v-if="currentProduct"
     class="p-0 overflow-hidden border-none shadow-lg"
+    :ui="{
+      body: {
+        padding: 'px-2 py-5 sm:p-6',
+      },
+    }"
   >
     <!-- Header section remains the same -->
     <template #header>
@@ -37,7 +42,7 @@
       </div>
     </template>
 
-    <div class="p-4 md:p-6">
+    <div class="p-2 md:p-6">
       <!-- Two-column layout remains the same -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         <!-- Left column with images remains the same -->

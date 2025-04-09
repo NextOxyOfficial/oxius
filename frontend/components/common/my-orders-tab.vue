@@ -1526,29 +1526,25 @@ const saveCustomerChanges = async () => {
   isProcessing.value = true;
 
   try {
-    // if (selectedOrder.value) {
-    //   // Update customer info
-    //   selectedOrder.value.customer = editingCustomer.name;
-    //   selectedOrder.value.email = editingCustomer.email;
-    //   selectedOrder.value.phone = editingCustomer.phone;
-    //   selectedOrder.value.address = editingCustomer.address;
-
-    // Update the order in the orders array
-    // const index = orders.value.findIndex(
-    //   (o) => o.id === selectedOrder.value.id
-    // );
-    // if (index !== -1) {
-    //   orders.value[index] = { ...selectedOrder.value };
-    // }
-
-    // Show success toast
-    showToast(
-      "success",
-      "Customer Updated",
-      "Customer information has been successfully updated."
-    );
-
-    // Exit edit mode
+    if (selectedOrder.value) {
+      const res = await patch(`/orders/${selectedOrder.value.id}/`, {
+        name: editingCustomer.name,
+        email: editingCustomer.email,
+        phone: editingCustomer.phone,
+        address: editingCustomer.address,
+      });
+      if (res.data) {
+        selectedOrder.value = res.data;
+        await getOrders();
+        showToast(
+          "success",
+          "Customer Updated",
+          "Customer information has been successfully updated."
+        );
+      }
+    } else {
+      return;
+    }
     editCustomerInfo.value = false;
   } catch (error) {
     showToast(

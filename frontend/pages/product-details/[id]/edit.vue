@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
       <!-- Product Summary Card -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <UIcon
@@ -164,6 +164,11 @@
       <UCard
         v-if="Object.keys(currentProduct).length > 0"
         class="animate-fade-in"
+        :ui="{
+          body: {
+            padding: 'px-2 py-5 sm:p-6',
+          },
+        }"
       >
         <template #header>
           <div class="flex items-center">
