@@ -139,7 +139,11 @@
                             ></div>
                             <div class="flex items-center justify-between mt-2">
                               <div class="text-indigo-600 font-semibold">
-                                ৳{{ product.sale_price }}
+                                ৳{{
+                                  product.regular_price && !product.sale_price
+                                    ? product.regular_price
+                                    : product.sale_price
+                                }}
                               </div>
                               <div
                                 class="flex items-center border border-gray-200 rounded-lg overflow-hidden shadow-sm"
@@ -843,10 +847,17 @@ const subtotal = computed(() => {
   return products.value.reduce((total, product) => {
     // Convert sale_price to number in case it's a string
     const price =
-      typeof product.sale_price === "string"
-        ? parseFloat(product.sale_price)
+      typeof product.regular_price && !product.sale_price
+        ? product.regular_price
+        : product.sale_price === "string"
+        ? parseFloat(
+            product.regular_price && !product.sale_price
+              ? product.regular_price
+              : product.sale_price
+          )
+        : product.regular_price && !product.sale_price
+        ? product.regular_price
         : product.sale_price;
-
     return total + price * product.count;
   }, 0);
 });
@@ -1005,7 +1016,11 @@ const processCheckout = async () => {
       items: products.value.map((product) => ({
         product: product.id,
         quantity: product.count,
-        price: parseFloat(product.sale_price),
+        price: parseFloat(
+          product.regular_price && !product.sale_price
+            ? product.regular_price
+            : product.sale_price
+        ),
       })),
     };
 
