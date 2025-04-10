@@ -775,11 +775,9 @@ const { currentProduct, modal } = defineProps({
   modal: { type: Boolean, required: false },
 });
 
-const emit = defineEmits(["close-modal"]);
+console.log("currentProduct:", currentProduct);
 
-function closeModal() {
-  emit("close-modal");
-}
+const emit = defineEmits(["close-modal"]);
 
 const cart = useStoreCart();
 const user = useState("user"); // Access user state

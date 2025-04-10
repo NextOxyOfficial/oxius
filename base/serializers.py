@@ -301,11 +301,34 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         model = ProductCategory
         fields = '__all__'
         read_only_fields = ['slug']
+        
+# Serializer for ProductBenefit model
+class ProductBenefitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductBenefit
+        fields = '__all__'
+        read_only_fields = ['slug']
+
+# Serializer for ProductFAQ model
+class ProductFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductFAQ
+        fields = '__all__'
+        read_only_fields = ['slug']
+
+# Serializer for ProductTrustBadge model
+class ProductTrustBadgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductTrustBadge
+        fields = '__all__'
+        read_only_fields = ['slug']
 
 class ProductSerializer(serializers.ModelSerializer):
     category_details = ProductCategorySerializer(source='category', read_only=True)
     image_details = ProductMediaSerializer(source='image', many=True, read_only=True)
     owner_details = UserSerializer(source='owner', read_only=True)
+    faqs = ProductFAQSerializer(many=True, read_only=True)
+    benefits = ProductBenefitSerializer(many=True, read_only=True)
     
     class Meta:
         model = Product
@@ -387,23 +410,4 @@ class FaqSerializer(serializers.ModelSerializer):
         fields = ('label', 'content')
         read_only_fields = ['slug']
 
-# Serializer for ProductBenefit model
-class ProductBenefitSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductBenefit
-        fields = '__all__'
-        read_only_fields = ['slug']
 
-# Serializer for ProductFAQ model
-class ProductFAQSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductFAQ
-        fields = '__all__'
-        read_only_fields = ['slug']
-
-# Serializer for ProductTrustBadge model
-class ProductTrustBadgeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductTrustBadge
-        fields = '__all__'
-        read_only_fields = ['slug']

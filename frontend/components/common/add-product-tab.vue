@@ -269,7 +269,7 @@
                         </div>
                         <button
                           type="button"
-                          class="w-7 h-7 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
+                          class="w-7 h-7 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 z-10"
                           @click="deleteUpload(i)"
                         >
                           <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
@@ -323,9 +323,7 @@
                       v-if="!isUploading"
                       class="text-xs text-slate-400 dark:text-slate-500"
                     >
-                      {{
-                        form.images ? `${form.images.length}/5` : "0/5"
-                      }}
+                      {{ form.images ? `${form.images.length}/5` : "0/5" }}
                       images
                     </span>
                   </div>
@@ -577,7 +575,7 @@
                       form.deliveryMethod === 'standard',
                   }"
                 >
-                  <label class="px-4 pt-4 pb-2 flex items-start cursor-pointer">
+                  <label class="px-4 pt-4 pb-2 flex cursor-pointer">
                     <div class="flex items-center h-5 mt-0.5">
                       <input
                         type="radio"
@@ -587,18 +585,18 @@
                         name="deliveryMethod"
                       />
                     </div>
-                    <div class="ml-3">
+                    <p class="ml-3 inline-flex flex-col items-start">
                       <span
                         class="text-sm font-medium text-slate-700 dark:text-slate-300"
                       >
                         Standard Shipping (Location Based)
                       </span>
-                      <p
+                      <span
                         class="text-sm text-slate-500 dark:text-slate-400 mt-1"
                       >
                         Set different rates for inside and outside Dhaka
-                      </p>
-                    </div>
+                      </span>
+                    </p>
                   </label>
 
                   <!-- Rate inputs (only shown when standard is selected) -->
@@ -723,7 +721,6 @@
 const props = defineProps({
   product: Object,
 });
-console.log(props.product, "props");
 const { get, post, put } = useApi();
 const router = useRoute();
 const toast = useToast();
