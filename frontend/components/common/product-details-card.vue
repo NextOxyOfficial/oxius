@@ -386,9 +386,9 @@
         </div>
       </div>
 
-      <div class="flex justify-center mt-6">
+      <div class="flex justify-center mt-6" v-if="seeDetails">
         <UButton
-          :to="`/product-details/${currentProduct.id}`"
+          :to="`/product-details/${currentProduct.slug}`"
           color="primary"
           variant="outline"
           size="lg"
@@ -420,9 +420,10 @@
 </template>
 
 <script setup>
-const { currentProduct, modal } = defineProps({
+const { currentProduct, modal, seeDetails } = defineProps({
   currentProduct: { type: Object, required: true },
   modal: { type: Boolean, required: false },
+  seeDetails: { type: Boolean, required: false },
 });
 
 const emit = defineEmits(["close-modal"]);
