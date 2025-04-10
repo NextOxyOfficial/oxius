@@ -270,6 +270,26 @@
           </div>
         </div>
 
+        <!-- Balance warning -->
+        <div
+          v-if="
+            parseFloat(selectedPackage.price.replace(/[^\d.]/g, '')) >
+            parseFloat(user?.user.balance || 0)
+          "
+          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm"
+        >
+          <div class="flex items-center">
+            <UIcon
+              name="i-heroicons-exclamation-triangle"
+              class="w-5 h-5 mr-2"
+            />
+            <span
+              >Insufficient balance for this recharge. Please add funds to your
+              account.</span
+            >
+          </div>
+        </div>
+
         <div class="mb-4">
           <label
             for="phone"
@@ -310,15 +330,7 @@
       <check-circle-icon class="w-5 h-5 mr-2" />
       <span>Recharge successful!</span>
     </div>
-    <UModal
-      v-model="isHistory"
-      fullscreen
-      :ui="{
-        fullscreen: 'w-auto h-auto',
-        inner: 'fixed inset-0 overflow-y-auto top-20',
-      }"
-      class="relative"
-    >
+    <UModal v-model="isHistory" class="relative">
       <UButton
         icon="i-heroicons-x-mark"
         size="sm"
@@ -394,6 +406,19 @@ async function handleRecharge() {
     toast.error("Please enter a valid phone number");
     return;
   }
+
+  // Extract numeric value from price (removing currency symbol)
+  const packagePrice = parseFloat(
+    selectedPackage.value.price.replace(/[^\d.]/g, "")
+  );
+  const userBalance = parseFloat(user?.user.balance || 0);
+
+  // Check if user has sufficient balance
+  if (packagePrice > userBalance) {
+    toast.error("Insufficient balance for this recharge");
+    return;
+  }
+
   console.log(selectedPackage.value);
   const submitValues = {
     package: selectedPackage.value.id,

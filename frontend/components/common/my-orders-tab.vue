@@ -348,7 +348,7 @@
       aria-modal="true"
     >
       <div
-        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
       >
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
@@ -361,7 +361,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-24 sm:align-middle sm:max-w-3xl sm:w-full animate-slide-up"
+          class="inline-block align-bottom bg-white rounded-xl text-left shadow-2xl transform transition-all sm:my-24 sm:align-middle sm:max-w-3xl sm:w-full animate-slide-up max-h-[70vh] overflow-auto"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
@@ -462,12 +462,12 @@
                       <p class="text-gray-500">Name</p>
                       <p class="font-medium">{{ selectedOrder?.name }}</p>
                     </div>
-                    <div>
+                    <!-- <div>
                       <p class="text-gray-500">Email</p>
                       <p class="font-medium">
                         {{ selectedOrder?.email }}
                       </p>
-                    </div>
+                    </div> -->
                     <div>
                       <p class="text-gray-500">Phone</p>
                       <p class="font-medium">{{ selectedOrder?.phone }}</p>

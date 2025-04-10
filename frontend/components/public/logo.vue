@@ -16,9 +16,13 @@
 </template>
 
 <script setup>
-defineProps({
-  logo: { type: Object },
-});
+const { get } = useApi();
+const logo = ref({});
+async function getLogo() {
+  const res = await get("/logo/");
+  logo.value = res.data;
+}
+await getLogo();
 </script>
 
 <style scoped></style>

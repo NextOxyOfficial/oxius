@@ -20,11 +20,7 @@
         <!-- Logo at the top -->
         <div class="flex justify-center mb-4">
           <div class="flex flex-col items-center">
-            <img
-              src="/static/frontend/images/logo.png"
-              alt="Logo"
-              class="h-8 md:h-10"
-            />
+            <PublicLogo />
             <h3
               class="mt-6 px-7 text-center text-base font-medium text-slate-600 dark:text-slate-300"
             >
