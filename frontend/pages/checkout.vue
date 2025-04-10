@@ -212,7 +212,7 @@
                         </p>
                       </div>
 
-                      <div class="relative">
+                      <!-- <div class="relative">
                         <label
                           for="email"
                           class="block text-sm font-medium text-gray-700 mb-1"
@@ -238,7 +238,7 @@
                         >
                           {{ errors.email }}
                         </p>
-                      </div>
+                      </div> -->
                       <div class="relative">
                         <label
                           for="phone"
@@ -941,13 +941,13 @@ const validateForm = () => {
   }
 
   // Validate email
-  if (!form.email.trim()) {
-    errors.email = "Email is required";
-    isValid = false;
-  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-    errors.email = "Please enter a valid email address";
-    isValid = false;
-  }
+  // if (!form.email.trim()) {
+  //   errors.email = "Email is required";
+  //   isValid = false;
+  // } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+  //   errors.email = "Please enter a valid email address";
+  //   isValid = false;
+  // }
 
   // Validate address
   if (!form.address.trim()) {
@@ -1011,11 +1011,13 @@ const processCheckout = async () => {
 
     // Send data to API
     const response = await post("/orders/create-with-items/", orderPayload);
+    console.log(response.data);
 
     if (response.data) {
       // Show success modal
       orderNumber.value =
-        response.data.id || Math.floor(100000 + Math.random() * 900000);
+        response.data.order_number ||
+        Math.floor(100000 + Math.random() * 900000);
       showSuccessModal.value = true;
     }
   } catch (error) {

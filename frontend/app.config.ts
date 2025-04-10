@@ -9,7 +9,8 @@ export default defineAppConfig({
       background: "bg-white dark:bg-white",
     },
     modal: {
-      container: "items-center sm:items-center",
+      container:
+        "flex min-h-full items-center sm:items-center justify-center text-center",
     },
     input: {
       size: {

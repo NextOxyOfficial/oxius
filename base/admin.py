@@ -262,9 +262,7 @@ admin.site.register(AdminNotice, AdminNoticeAdmin)
 admin.site.register(ClassifiedCategoryPostMedia)
 
 
-from django.utils.html import format_html
-from django.contrib import admin
-from .models import NID
+
 
 class NidAdmin(admin.ModelAdmin):
     list_display = ('user', 'approved', 'rejected', 'completed', 'front_image', 'back_image', 'selfie_image', 'other_document_image')
@@ -322,4 +320,12 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(OrderItem)
-admin.site.register(Order)
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('order_number','created_at','updated_at','user','order_status','total','payment_method',)
+    
+    @admin.display(ordering='-created_at')
+    def created_at(self,obj):
+        return obj.created_at
+
+admin.site.register(Order,OrderAdmin)
