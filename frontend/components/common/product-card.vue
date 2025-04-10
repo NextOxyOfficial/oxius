@@ -105,10 +105,14 @@
                 class="font-bold text-slate-900 dark:text-white text-lg flex items-center"
               >
                 <span class="text-xs mr-1 text-slate-500">৳</span
-                >{{ product.sale_price }}
+                >{{
+                  product.regular_price && !product.sale_price
+                    ? product.regular_price
+                    : product.sale_price
+                }}
               </span>
               <span
-                v-if="product.regular_price"
+                v-if="product.sale_price && product.regular_price"
                 class="text-xs text-slate-400 line-through -mt-0.5 flex items-center"
               >
                 <span class="text-[10px] mr-0.5">৳</span

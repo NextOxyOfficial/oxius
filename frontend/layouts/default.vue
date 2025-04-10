@@ -37,6 +37,6 @@ onMounted(() => {
 });
 useHead({
   title:
-    "AdsyClub, The Business Network | Earn Money, Connect with Society & Find the services you need!",
+    "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
 });
 </script>

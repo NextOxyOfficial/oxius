@@ -33,19 +33,19 @@
 
       <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">
         <span v-if="!editModeActive">
-          {{ editorData.benefitsTitle || `Why Choose?` }}
+          {{ editorData.benefits_title || `Why Choose?` }}
         </span>
         <span
           v-else
           @click="
             editField(
               'benefitsTitle',
-              editorData.benefitsTitle || `Why Choose ?`
+              editorData.benefits_title || `Why Choose ?`
             )
           "
           class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
         >
-          {{ editorData.benefitsTitle || `Why Choose ?` }}
+          {{ editorData.benefits_title || `Why Choose ?` }}
         </span>
       </h2>
 
@@ -260,19 +260,19 @@
           class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300"
         >
           <span v-if="!editModeActive">{{
-            editorData.benefitsCta || "Yes! I Want This Now"
+            editorData.benefits_cta || "Yes! I Want This Now"
           }}</span>
           <span
             v-else
             @click.stop="
               editField(
                 'benefitsCta',
-                editorData.benefitsCta || 'Yes! I Want This Now'
+                editorData.benefits_cta || 'Yes! I Want This Now'
               )
             "
             class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
           >
-            {{ editorData.benefitsCta || "Yes! I Want This Now" }}
+            {{ editorData.benefits_cta || "Yes! I Want This Now" }}
           </span>
         </button>
       </div>
@@ -291,25 +291,25 @@
       <div class="w-full px-3 max-w-4xl mx-auto">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
           <span v-if="!editModeActive">{{
-            editorData.faqsTitle || "Frequently Asked Questions"
+            editorData.faqs_title || "Frequently Asked Questions"
           }}</span>
           <span
             v-else
             @click="
               editField(
                 'faqsTitle',
-                editorData.faqsTitle || 'Frequently Asked Questions'
+                editorData.faqs_title || 'Frequently Asked Questions'
               )
             "
             class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
           >
-            {{ editorData.faqsTitle || "Frequently Asked Questions" }}
+            {{ editorData.faqs_title || "Frequently Asked Questions" }}
           </span>
         </h2>
 
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
           <span v-if="!editModeActive">{{
-            editorData.faqsSubtitle ||
+            editorData.faqs_subtitle ||
             "Everything you need to know about our product"
           }}</span>
           <span
@@ -317,14 +317,14 @@
             @click="
               editField(
                 'faqsSubtitle',
-                editorData.faqsSubtitle ||
+                editorData.faqs_subtitle ||
                   'Everything you need to know about our product'
               )
             "
             class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
           >
             {{
-              editorData.faqsSubtitle ||
+              editorData.faqs_subtitle ||
               "Everything you need to know about our product"
             }}
           </span>
@@ -410,25 +410,25 @@
       <div class="px-6 py-8 text-center w-full">
         <h2 class="text-3xl md:text-4xl font-bold mb-6">
           <span v-if="!editModeActive">{{
-            editorData.ctaTitle || "Ready to Experience the Difference?"
+            editorData.cta_title || "Ready to Experience the Difference?"
           }}</span>
           <span
             v-else
             @click="
               editField(
                 'ctaTitle',
-                editorData.ctaTitle || 'Ready to Experience the Difference?'
+                editorData.cta_title || 'Ready to Experience the Difference?'
               )
             "
             class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
           >
-            {{ editorData.ctaTitle || "Ready to Experience the Difference?" }}
+            {{ editorData.cta_title || "Ready to Experience the Difference?" }}
           </span>
         </h2>
 
         <p class="text-white/80 mb-8 text-lg max-w-3xl mx-auto">
           <span v-if="!editModeActive">{{
-            editorData.ctaSubtitle ||
+            editorData.cta_subtitle ||
             `Join thousands of satisfied customers who have already transformed their experience with ${currentProduct.name}.`
           }}</span>
           <span
@@ -436,14 +436,14 @@
             @click="
               editField(
                 'ctaSubtitle',
-                editorData.ctaSubtitle ||
+                editorData.cta_subtitle ||
                   `Join thousands of satisfied customers who have already transformed their experience with ${currentProduct.name}.`
               )
             "
             class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
           >
             {{
-              editorData.ctaSubtitle ||
+              editorData.cta_subtitle ||
               `Join thousands of satisfied customers who have already transformed their experience with ${currentProduct.name}.`
             }}
           </span>
@@ -481,35 +481,37 @@
           class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-2xl transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
         >
           <span v-if="!editModeActive">{{
-            editorData.ctaButtonText || "Order Now & Save"
+            editorData.cta_button_text || "Order Now & Save"
           }}</span>
           <span
             v-else
             @click.stop="
               editField(
                 'ctaButtonText',
-                editorData.ctaButtonText || 'Order Now & Save'
+                editorData.cta_button_text || 'Order Now & Save'
               )
             "
             class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
           >
-            {{ editorData.ctaButtonText || "Order Now & Save" }}
+            {{ editorData.cta_button_text || "Order Now & Save" }}
           </span>
           <span class="block text-sm font-normal mt-1">
             <span v-if="!editModeActive">{{
-              editorData.ctaButtonSubtext || "30-Day Money Back Guarantee"
+              editorData.cta_button_subtext || "30-Day Money Back Guarantee"
             }}</span>
             <span
               v-else
               @click.stop="
                 editField(
                   'ctaButtonSubtext',
-                  editorData.ctaButtonSubtext || '30-Day Money Back Guarantee'
+                  editorData.cta_button_subtext || '30-Day Money Back Guarantee'
                 )
               "
               class="cursor-pointer hover:bg-slate-800 dark:hover:bg-primary-900/20 px-2 rounded"
             >
-              {{ editorData.ctaButtonSubtext || "30-Day Money Back Guarantee" }}
+              {{
+                editorData.cta_button_subtext || "30-Day Money Back Guarantee"
+              }}
             </span>
           </span>
         </button>
@@ -519,7 +521,7 @@
           <!-- Only show enabled badges in view mode -->
 
           <div
-            v-for="badge in trustBadges.filter((b) => b.enabled)"
+            v-for="badge in trust_badges.filter((b) => b.enabled)"
             :key="badge.id"
             class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10"
           >
@@ -567,7 +569,7 @@
               </p>
               <div class="space-y-3">
                 <div
-                  v-for="badge in trustBadges"
+                  v-for="badge in trust_badges"
                   :key="badge.id"
                   class="flex items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 >
@@ -717,17 +719,17 @@ const emit = defineEmits(["update:section", "update:content"]);
 
 // Editor data to store all editable fields
 const editorData = reactive({
-  benefitsTitle: "",
-  benefitsCta: "",
-  faqsTitle: "",
-  faqsSubtitle: "",
-  ctaTitle: "",
-  ctaSubtitle: "",
-  ctaButtonText: "",
-  ctaButtonSubtext: "",
-  ctaBadge1: "",
-  ctaBadge2: "",
-  ctaBadge3: "",
+  benefits_title: "",
+  benefits_cta: "",
+  faqs_title: "",
+  faqs_subtitle: "",
+  cta_title: "",
+  cta_subtitle: "",
+  cta_button_text: "",
+  cta_button_subtext: "",
+  cta_badge1: "",
+  cta_badge2: "",
+  cta_badge3: "",
 });
 
 // Store original data for reset functionality
@@ -801,7 +803,7 @@ const commonIcons = [
 ];
 
 // Trust badges for the final CTA section
-const trustBadges = ref([
+const trust_badges = ref([
   {
     id: "payment",
     text: "Secure Payment",
@@ -870,17 +872,17 @@ function editField(key, value, multiline = false) {
   if (!editModeActive.value) return;
 
   const labels = {
-    benefitsTitle: "Benefits Title",
-    benefitsCta: "Benefits Button Text",
-    faqsTitle: "FAQs Title",
-    faqsSubtitle: "FAQs Subtitle",
-    ctaTitle: "CTA Title",
-    ctaSubtitle: "CTA Subtitle",
-    ctaButtonText: "Button Text",
-    ctaButtonSubtext: "Button Subtext",
-    ctaBadge1: "Badge 1 Text",
-    ctaBadge2: "Badge 2 Text",
-    ctaBadge3: "Badge 3 Text",
+    benefits_title: "Benefits Title",
+    benefits_cta: "Benefits Button Text",
+    faqs_title: "FAQs Title",
+    faqs_subtitle: "FAQs Subtitle",
+    cta_title: "CTA Title",
+    cta_subtitle: "CTA Subtitle",
+    cta_button_text: "Button Text",
+    cta_button_subtext: "Button Subtext",
+    cta_badge1: "Badge 1 Text",
+    cta_badge2: "Badge 2 Text",
+    cta_badge3: "Badge 3 Text",
   };
 
   editingField.value = {
@@ -987,7 +989,7 @@ function saveEdit() {
     editorData,
     benefits: benefits.value,
     faqs: editableFaqs.value,
-    trustBadges: trustBadges.value,
+    trust_badges: trust_badges.value,
   });
 }
 
@@ -998,7 +1000,7 @@ function emitContentUpdate() {
     ...editorData,
     benefits: benefits.value,
     faqs: editableFaqs.value,
-    trustBadges: trustBadges.value,
+    trust_badges: trust_badges.value,
   };
 
   console.log("Emitting update:content event with data:", compiledData);
@@ -1022,7 +1024,7 @@ function resetChanges() {
     editableFaqs.value = JSON.parse(JSON.stringify(originalFaqs.value));
 
     // Reset trust badges
-    trustBadges.value = JSON.parse(JSON.stringify(originalTrustBadges.value));
+    trust_badges.value = JSON.parse(JSON.stringify(originalTrustBadges.value));
 
     toast.add({
       title: "Changes Reset",
@@ -1038,7 +1040,7 @@ function saveOriginalState() {
   originalEditorData.value = { ...editorData };
   originalBenefits.value = JSON.parse(JSON.stringify(benefits.value));
   originalFaqs.value = JSON.parse(JSON.stringify(editableFaqs.value));
-  originalTrustBadges.value = JSON.parse(JSON.stringify(trustBadges.value));
+  originalTrustBadges.value = JSON.parse(JSON.stringify(trust_badges.value));
 }
 
 // Initialize when component is mounted
@@ -1063,8 +1065,8 @@ onMounted(() => {
     }
 
     // Populate trust badges
-    if (props.currentProduct.editorData.trustBadges?.length) {
-      trustBadges.value = [...props.currentProduct.editorData.trustBadges];
+    if (props.currentProduct.editorData.trust_badges?.length) {
+      trust_badges.value = [...props.currentProduct.editorData.trust_badges];
     }
   }
 
@@ -1082,7 +1084,7 @@ async function saveChanges() {
       ...editorData,
       benefits: [...benefits.value],
       faqs: [...editableFaqs.value],
-      trustBadges: [...trustBadges.value],
+      trust_badges: [...trust_badges.value],
     };
 
     // Log the data being saved (this will show in browser console)
@@ -1155,7 +1157,7 @@ watch(
 
 // Watch for changes to trust badges
 watch(
-  trustBadges,
+  trust_badges,
   (newValue, oldValue) => {
     console.log("Trust badges changed:", {
       newValue,

@@ -1275,7 +1275,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
         images_data = request.data.pop('images', None)
         benefits_data = request.data.pop('benefits', None)
         faqs_data = request.data.pop('faqs', None)
-        trust_badges_data = request.data.pop('trustBadges', None)
+        trust_badges_data = request.data.pop('trust_badges', None)
         
         # Create product using serializer
         serializer = self.get_serializer(data=request.data)
