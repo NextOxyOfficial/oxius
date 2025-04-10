@@ -24,8 +24,8 @@
             <h3
               class="mt-6 px-7 text-center text-base font-medium text-slate-600 dark:text-slate-300"
             >
-              AdsyClub, The Business Network | Earn Money, Connect with Society
-              & Find the services you need!
+              AdsyClub – Bangladesh’s First Social Business Network: Earn Money,
+              Connect with Society, and Find the Services You Need!
             </h3>
           </div>
         </div>

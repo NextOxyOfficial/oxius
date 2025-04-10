@@ -212,7 +212,7 @@
     <!-- Key Benefits Section -->
     <section class="py-2 w-full">
       <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">
-        Why Choose
+        {{ currentProduct.benefits_title }}
         <span class="text-primary-600 dark:text-primary-400">{{
           currentProduct.name
         }}</span
@@ -220,45 +220,13 @@
       </h2>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="benefit-card">
+        <div v-for="benefit in currentProduct?.benefits" class="benefit-card">
           <div class="icon-container">
-            <UIcon
-              name="i-heroicons-sparkles"
-              class="w-8 h-8 text-primary-500"
-            />
+            <UIcon :name="benefit.icon" class="w-8 h-8 text-primary-500" />
           </div>
-          <h3 class="text-xl font-semibold mb-2">Premium Quality</h3>
+          <h3 class="text-xl font-semibold mb-2">{{ benefit.title }}</h3>
           <p>
-            Crafted with the highest quality materials for exceptional
-            durability and performance.
-          </p>
-        </div>
-
-        <div class="benefit-card">
-          <div class="icon-container">
-            <UIcon
-              name="i-heroicons-rocket-launch"
-              class="w-8 h-8 text-primary-500"
-            />
-          </div>
-          <h3 class="text-xl font-semibold mb-2">Fast Results</h3>
-          <p>
-            Experience immediate benefits and see results faster than with
-            competing products.
-          </p>
-        </div>
-
-        <div class="benefit-card">
-          <div class="icon-container">
-            <UIcon
-              name="i-heroicons-check-badge"
-              class="w-8 h-8 text-primary-500"
-            />
-          </div>
-          <h3 class="text-xl font-semibold mb-2">Satisfaction Guarantee</h3>
-          <p>
-            Not completely satisfied? Return within 30 days for a full refund,
-            no questions asked.
+            {{ benefit.description }}
           </p>
         </div>
       </div>
@@ -640,14 +608,14 @@
     <section class="py-2 w-full">
       <div class="w-full px-3 max-w-4xl mx-auto">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
-          Frequently Asked Questions
+          {{ currentProduct.faqs_title }}
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
-          Everything you need to know about our product
+          {{ currentProduct.faqs_subtitle }}
         </p>
 
         <div>
-          <UAccordion :items="faqs" />
+          <UAccordion :items="currentProduct?.faqs" />
         </div>
       </div>
     </section>
@@ -658,11 +626,10 @@
     >
       <div class="px-6 py-8 text-center w-full">
         <h2 class="text-3xl md:text-4xl font-bold mb-6">
-          Ready to Experience the Difference?
+          {{ currentProduct.cta_title }}
         </h2>
         <p class="text-white/80 mb-8 text-lg max-w-3xl mx-auto">
-          Join thousands of satisfied customers who have already transformed
-          their experience with {{ currentProduct.name }}.
+          {{ currentProduct.cta_subtitle }} {{ currentProduct.name }}.
         </p>
 
         <!-- Price Box -->
@@ -695,10 +662,10 @@
           @click="addToCart(currentProduct, 1)"
           class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-2xl transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
         >
-          Order Now & Save
-          <span class="block text-sm font-normal mt-1"
-            >30-Day Money Back Guarantee</span
-          >
+          {{ currentProduct.cta_button_text }}
+          <span class="block text-sm font-normal mt-1">{{
+            currentProduct.cta_button_subtext
+          }}</span>
         </button>
 
         <!-- Trust Badges -->

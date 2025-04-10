@@ -570,7 +570,7 @@
 <script setup>
 useHead({
   title:
-    "AdsyClub, The Business Network | Earn Money, Connect with Society & Find the services you need!",
+    "AdsyClub – Bangladesh’s First Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
 });
 const { t } = useI18n();
 const { get } = useApi();
