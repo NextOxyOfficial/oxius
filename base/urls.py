@@ -110,4 +110,7 @@ urlpatterns = [
   path('order-items/<uuid:id>/', OrderItemDetail.as_view(), name='order-item-detail'),
   path('order-items/search/', OrderItemSearch.as_view(), name='order-item-search'),
   path('orders/<uuid:order_id>/items/', OrderItemsByOrder.as_view(), name='order-items-by-order'),
+
+
+  path('check-store-username/', check_store_username_availability, name='check-store-username'),
 ]

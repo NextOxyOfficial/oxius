@@ -857,7 +857,7 @@
       :ui="{
         inner: 'fixed inset-0 overflow-y-auto flex item-center justify-center',
         container:
-          'flex min-h-full items-end sm:items-center justify-center text-center max-w-sm w-full',
+          'flex min-h-full items-center justify-center text-center max-w-sm w-full',
       }"
     >
       <div class="flex items-center justify-center pb-16" v-if="!showSuccess">

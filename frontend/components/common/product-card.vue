@@ -3,7 +3,7 @@
     <div class="md:hover:-translate-y-2 transition-all duration-300">
       <!-- Glass-like Card Container with Premium Shadows -->
       <div
-        class="bg-white/95 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-2xl overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
+        class="bg-slate-50 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-2xl overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
       >
         <!-- Product Image Section -->
         <div class="relative pt-[100%] overflow-hidden group">

@@ -20,7 +20,7 @@
         <!-- Logo at the top -->
         <div class="flex justify-center mb-4">
           <div class="flex flex-col items-center">
-            <PublicLogo />
+            <PublicLogo customClass="h-10 sm:h-12" />
             <h3
               class="mt-6 px-7 text-center text-base font-medium text-slate-600 dark:text-slate-300"
             >

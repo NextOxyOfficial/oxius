@@ -4,7 +4,7 @@
       v-if="logo?.image"
       :src="logo?.image"
       alt="Logo"
-      class="h-7 sm:h-8 object-contain"
+      :class="customClass ? customClass : 'h-7 sm:h-8 object-contain'"
     />
     <img
       v-else
@@ -16,6 +16,12 @@
 </template>
 
 <script setup>
+defineProps({
+  customClass: {
+    type: String,
+    default: "",
+  },
+});
 const { get } = useApi();
 const logo = ref({});
 async function getLogo() {

@@ -1900,3 +1900,52 @@ class SellerOrdersView(generics.ListAPIView):
         
         # Return the corresponding orders
         return Order.objects.filter(id__in=order_ids).order_by('-created_at')
+    
+
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_store_username_availability(request):
+    """
+    Check if a store_username is available
+    
+    Query param: username - The store username to check
+    Returns: JSON with availability status
+    """
+    username = request.query_params.get('username', None)
+    
+    if not username:
+        return Response(
+            {'error': 'Username parameter is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if username exists
+    exists = User.objects.filter(store_username=username).exists()
+    
+    if exists:
+        # If username exists, suggest alternatives
+        import random
+        original_username = username
+        suggestions = []
+        
+        # Generate 3 alternative suggestions
+        for _ in range(3):
+            # Trim username if needed to fit the max length with suffix
+            base_username = original_username[:16]  # Leave room for random suffix
+            random_suffix = random.randint(100, 999)
+            suggestion = f"{base_username}{random_suffix}"
+            suggestions.append(suggestion)
+        
+        return Response({
+            'available': False,
+            'message': 'This store username is already taken',
+            'suggestions': suggestions
+        })
+    
+    return Response({
+        'available': True,
+        'message': 'Store username is available'
+    })

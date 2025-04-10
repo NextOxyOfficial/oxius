@@ -291,10 +291,12 @@
               </UFormGroup>
 
               <UFormGroup
-                label="Thana"
+                label="Area/Upazila"
                 required
                 :error="
-                  !form.upazila && checkSubmit && 'You must select a Thana'
+                  !form.upazila &&
+                  checkSubmit &&
+                  'You must select a Area/Upazila'
                 "
                 class="mb-5"
               >
@@ -303,7 +305,7 @@
                   color="white"
                   size="md"
                   :options="upazilas"
-                  placeholder="Select Thana"
+                  placeholder="Select Area/Upazila"
                   class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
@@ -466,6 +468,7 @@ async function fetchServices() {
     country,
     state,
     city,
+    upazila,
     location,
     negotiable,
     accepted_privacy,
@@ -480,6 +483,7 @@ async function fetchServices() {
     country,
     state,
     city,
+    upazila,
     location,
     negotiable,
     accepted_privacy,

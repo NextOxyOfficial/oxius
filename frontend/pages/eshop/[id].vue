@@ -191,15 +191,18 @@
                     {{ storeDetails?.store_address }}
                   </span>
                   <span
+                    v-if="storeDetails?.phone"
                     class="px-3 py-1 bg-white shadow-sm hover:shadow transition-shadow duration-300 rounded-full text-sm flex items-center"
                   >
-                    <Clock class="w-3 h-3 mr-1" /> Mon-Fri, 9am-5pm
+                    <Phone class="w-3 h-3 mr-1" />
+                    {{ storeDetails?.phone || "" }}
                   </span>
                 </div>
               </div>
               <div class="flex gap-2">
                 <UButton
                   type="button"
+                  variant="outline"
                   class="rounded-full border border-slate-300 hover:bg-slate-100 transition-all duration-300 hover:scale-105 transform px-4 py-2 font-medium"
                 >
                   Follow
@@ -360,18 +363,15 @@
         <!-- Vendor Details with Animation -->
         <div
           ref="detailsRef"
-          :class="`grid grid-cols-1 md:grid-cols-3 gap-6 my-16 max-w-5xl mx-auto transition-all duration-500 transform ${
+          :class="`grid grid-cols-1 md:grid-cols-2 gap-6 my-16 max-w-5xl mx-auto transition-all duration-500 transform w-fit ${
             visibleSections.details
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-10'
           }`"
         >
           <div
-            v-for="(item, index) in vendorDetails"
-            :key="index"
             class="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 group rounded-xl relative"
             :style="{
-              animationDelay: `${index * 100}ms`,
               animation: 'fadeInUp 0.3s ease-out forwards',
               opacity: 0,
               transform: 'translateY(20px)',
@@ -388,11 +388,41 @@
                 <div
                   class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-800 group-hover:text-white transition-all duration-300 transform group-hover:scale-110 shadow-md group-hover:shadow-xl"
                 >
-                  <component :is="item.icon" class="w-5 h-5" />
+                  <component :is="Mail" class="w-5 h-5" />
                 </div>
-                <h3 class="font-semibold text-lg mb-2">{{ item.title }}</h3>
+
+                <h3 class="font-semibold text-lg mb-2">Email</h3>
                 <p class="text-slate-600 whitespace-pre-line">
-                  {{ item.content }}
+                  {{ storeDetails?.email }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 group rounded-xl relative"
+            :style="{
+              animation: 'fadeInUp 0.3s ease-out forwards',
+              opacity: 0,
+              transform: 'translateY(20px)',
+            }"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-slate-50 to-white opacity-80"
+            ></div>
+            <div
+              class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)]"
+            ></div>
+            <div class="p-6 relative">
+              <div class="flex flex-col items-center text-center">
+                <div
+                  class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-800 group-hover:text-white transition-all duration-300 transform group-hover:scale-110 shadow-md group-hover:shadow-xl"
+                >
+                  <component :is="LocateIcon" class="w-5 h-5" />
+                </div>
+
+                <h3 class="font-semibold text-lg mb-2">Address</h3>
+                <p class="text-slate-600 whitespace-pre-line">
+                  {{ storeDetails?.store_address }}
                 </p>
               </div>
             </div>
@@ -548,6 +578,8 @@ import {
   Heart,
   Truck,
   PackageX,
+  Phone,
+  LocateIcon,
 } from "lucide-vue-next";
 
 async function getMyProducts() {
@@ -620,25 +652,6 @@ function getProductCountByCategory(categoryId) {
   return products.value.filter((product) => product.category === categoryId)
     .length;
 }
-
-// Vendor details
-const vendorDetails = [
-  {
-    icon: Mail,
-    title: "Contact Us",
-    content: "support@techvendorpro.com\n(555) 123-4567",
-  },
-  {
-    icon: Clock,
-    title: "Business Hours",
-    content: "Monday to Friday: 9am - 5pm\nWeekends: 10am - 3pm",
-  },
-  {
-    icon: MapPin,
-    title: "Our Location",
-    content: "123 Tech Avenue\nNew York, NY 10001",
-  },
-];
 
 // State variables
 const scrolled = ref(false);

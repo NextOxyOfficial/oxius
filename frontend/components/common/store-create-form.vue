@@ -148,11 +148,82 @@
                 id="storeUsername"
                 :value="form.store_username"
                 @change="handleStoreUsername"
+                @blur="checkUsernameAvailability"
                 type="text"
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white lowercase"
                 placeholder="Enter your store username"
               />
+              <div v-if="isCheckingUsername" class="absolute right-3 top-2">
+                <div
+                  class="animate-spin h-5 w-5 border-2 border-indigo-500 rounded-full border-t-transparent"
+                ></div>
+              </div>
             </div>
+
+            <!-- Username availability messages -->
+            <div
+              v-if="usernameAvailability.checked && form.store_username"
+              class="mt-1"
+            >
+              <p
+                v-if="usernameAvailability.available"
+                class="text-sm text-green-600"
+              >
+                <span class="flex items-center">
+                  <svg
+                    class="h-4 w-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                  Username is available!
+                </span>
+              </p>
+              <div v-else>
+                <p class="text-sm text-red-600 flex items-center">
+                  <svg
+                    class="h-4 w-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                  This username is already taken
+                </p>
+                <div
+                  v-if="usernameAvailability.suggestions.length > 0"
+                  class="mt-2"
+                >
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Try one of these instead:
+                  </p>
+                  <div class="flex flex-wrap gap-2 mt-1">
+                    <button
+                      v-for="suggestion in usernameAvailability.suggestions"
+                      :key="suggestion"
+                      @click="selectSuggestion(suggestion)"
+                      class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded text-gray-700 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-300"
+                    >
+                      {{ suggestion }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <p v-if="errors.store_username" class="mt-1 text-sm text-red-600">
               {{ errors.store_username }}
             </p>
@@ -352,7 +423,7 @@
 
 <script setup>
 const { user, jwtLogin } = useAuth();
-const { put } = useApi();
+const { put, get } = useApi();
 const isOpen = ref(false);
 
 const { getStoreDetails } = defineProps({
@@ -402,11 +473,67 @@ function showToast(type, title, message, duration = 3000) {
   }, duration);
 }
 
-function handleStoreUsername(e) {
-  form.store_username = e.target.value.toLowerCase();
+// Add these new variables and methods to your script
+const isCheckingUsername = ref(false);
+const usernameAvailability = reactive({
+  checked: false,
+  available: false,
+  suggestions: [],
+});
+
+async function checkUsernameAvailability() {
+  // Don't check if the username is empty or too short
+  if (!form.store_username || form.store_username.length < 3) {
+    usernameAvailability.checked = false;
+    return;
+  }
+
+  try {
+    isCheckingUsername.value = true;
+
+    // Call the API endpoint
+    const response = await get(
+      `/check-store-username/?username=${encodeURIComponent(
+        form.store_username
+      )}`
+    );
+
+    usernameAvailability.checked = true;
+    usernameAvailability.available = response.data.available;
+
+    // If not available, store suggestions
+    if (!response.data.available && response.data.suggestions) {
+      usernameAvailability.suggestions = response.data.suggestions;
+    } else {
+      usernameAvailability.suggestions = [];
+    }
+
+    // Clear the error if the username is available
+    if (response.data.available) {
+      errors.store_username = "";
+    }
+  } catch (error) {
+    console.error("Error checking username availability:", error);
+    usernameAvailability.checked = false;
+  } finally {
+    isCheckingUsername.value = false;
+  }
 }
 
-// Validate form
+function selectSuggestion(suggestion) {
+  form.store_username = suggestion;
+  usernameAvailability.available = true;
+  usernameAvailability.suggestions = [];
+  errors.store_username = "";
+}
+
+// Modify your existing handleStoreUsername function to also check availability
+function handleStoreUsername(e) {
+  form.store_username = e.target.value.toLowerCase();
+  usernameAvailability.checked = false; // Reset check when username changes
+}
+
+// Update validateForm to use the availability check result
 function validateForm() {
   let isValid = true;
 
@@ -432,20 +559,15 @@ function validateForm() {
         "Username can only contain lowercase letters, numbers, hyphens, and underscores";
       isValid = false;
     }
-
     // Check if username is at least 3 characters
     else if (form.store_username.length < 3) {
       errors.store_username = "Username must be at least 3 characters long";
       isValid = false;
     }
-
-    // Check if username is available (mock check)
-    else {
-      const takenUsernames = ["mystore", "store", "admin", "test"];
-      if (takenUsernames.includes(form.store_username.toLowerCase())) {
-        errors.store_username = "This username is already taken";
-        isValid = false;
-      }
+    // Check if username has been checked and is not available
+    else if (usernameAvailability.checked && !usernameAvailability.available) {
+      errors.store_username = "This username is already taken";
+      isValid = false;
     }
   }
 
