@@ -5,7 +5,11 @@
         :currentProduct="currentProduct"
         v-if="currentProduct.is_advanced"
       />
-      <CommonProductDetailsCard :currentProduct="currentProduct" v-else />
+      <CommonProductDetailsCard
+        :seeDetails="false"
+        :currentProduct="currentProduct"
+        v-else
+      />
     </UContainer>
   </PublicSection>
 </template>

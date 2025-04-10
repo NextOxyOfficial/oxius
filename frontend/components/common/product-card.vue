@@ -194,6 +194,7 @@
               <CommonProductDetailsCard
                 :current-product="selectedProduct"
                 :modal="true"
+                :seeDetails="true"
                 @close-modal="closeProductModal"
               />
             </div>
