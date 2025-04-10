@@ -1714,7 +1714,7 @@ class OrderItemsByOrder(generics.ListAPIView):
 class OrderWithItemsCreate(generics.CreateAPIView):
     """Create an order with multiple items in a single request"""
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
         # Extract order and items data

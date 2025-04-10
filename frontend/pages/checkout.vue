@@ -860,7 +860,12 @@ const deliveryFee = computed(() => {
   if (!products.value.length || !products.value[0]) return 0;
 
   // If the product has free delivery, return 0 regardless of delivery option
-  if (products.value[0].is_free_delivery) return 0;
+  if (
+    products.value[0].is_free_delivery &&
+    products.value[0].delivery_fee_inside_dhaka === 0 &&
+    products.value[0].delivery_fee_outside_dhaka === 0
+  )
+    return 0;
 
   const fee =
     form.deliveryOption === "inside"
