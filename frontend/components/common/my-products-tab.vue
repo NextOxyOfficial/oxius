@@ -191,7 +191,7 @@
           </div>
           <div class="flex justify-between items-center">
             <div class="text-lg font-bold text-indigo-600">
-              ৳{{ product.sale_price }}
+              ৳{{ product.sale_price || product.regular_price }}
             </div>
             <div class="text-sm text-gray-500 flex items-center">
               <UIcon
