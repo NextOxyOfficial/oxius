@@ -4,7 +4,7 @@
       v-if="logo?.image"
       :src="logo?.image"
       alt="Logo"
-      class="h-8 object-contain"
+      class="h-7 sm:h-8 object-contain"
     />
     <img
       v-else
