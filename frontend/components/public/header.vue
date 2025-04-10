@@ -251,7 +251,7 @@
             color="gray"
           />
         </div>
-        <PublicLogo :logo="logo" class="max-sm:mr-auto" />
+        <PublicLogo class="max-sm:mr-auto" />
         <div class="hidden md:block">
           <UHorizontalNavigation
             :links="[
