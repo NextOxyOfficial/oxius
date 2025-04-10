@@ -1587,6 +1587,31 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
         # Handle base64 image data
         data = request.data.copy()
         
+        # Check for store_username uniqueness if it's being updated
+        if 'store_username' in data and data['store_username'] != instance.store_username:
+            original_username = data['store_username']
+            
+            # Check if this store_username is already taken by another user
+            while User.objects.filter(store_username=data['store_username']).exclude(id=instance.id).exists():
+                # Generate a random number between 1 and 999
+                random_suffix = random.randint(1, 999)
+                
+                # Trim username if needed to fit within the max length
+                base_username = original_username[:16]  # Leave room for suffix
+                data['store_username'] = f"{base_username}{random_suffix}"
+                
+            # Let the user know if we changed their requested username
+            if data['store_username'] != original_username:
+                # We'll return this information in the response
+                username_changed = True
+                new_username = data['store_username']
+            else:
+                username_changed = False
+                new_username = original_username
+        else:
+            username_changed = False
+            new_username = instance.store_username
+        
         # Process store_logo if provided as base64
         if 'store_logo' in data and isinstance(data['store_logo'], str) and data['store_logo'].startswith('data:image'):
             try:
@@ -1617,7 +1642,15 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
+        # Prepare response with information about username change
+        response_data = serializer.data
+        if username_changed:
+            response_data['username_changed'] = True
+            response_data['original_username_request'] = original_username
+            response_data['modified_username'] = new_username
+            response_data['message'] = f"Your requested username '{original_username}' was already taken. We've assigned '{new_username}' instead."
+
+        return Response(response_data)
     
     
     

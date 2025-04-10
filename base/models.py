@@ -77,7 +77,7 @@ class User(AbstractUser):
   is_pro = models.BooleanField(default=False)
   pro_validity = models.DateTimeField(null=True, blank=True)
   store_name = models.CharField(max_length=30,blank=True, default="")
-  store_username = models.CharField(max_length=20,blank=True, default="")
+  store_username = models.CharField(max_length=20,blank=True, default="", unique=True)
   store_description = models.TextField(null=True, blank=True, default="")
   store_address = models.CharField(max_length=256,blank=True, default="")
   store_logo = models.ImageField(upload_to='images/', blank=True, null=True)
