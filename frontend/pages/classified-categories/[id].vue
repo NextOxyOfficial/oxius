@@ -277,12 +277,12 @@
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="size-24 rounded-md"
+                      class="object-cover size-24 rounded-md"
                     />
                     <img
                       v-else
                       :src="service.category_details.image"
-                      class="size-24 rounded-md"
+                      class="object-cover size-24 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
@@ -456,16 +456,16 @@
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
                 <div class="flex flex-row gap-2 items-start">
-                  <div class="size-24 mt-2">
+                  <div class="mt-2">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="object-cover rounded-md"
+                      class="object-cover size-24 rounded-md"
                     />
                     <img
                       v-else
                       :src="service.category_details.image"
-                      class="size-10 sm:size-14 rounded-md"
+                      class="object-cover size-24 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
