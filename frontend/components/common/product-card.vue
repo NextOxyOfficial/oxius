@@ -102,7 +102,7 @@
           >
             <div class="flex flex-col">
               <span
-                class="font-bold text-slate-900 dark:text-white text-lg flex items-center"
+                class="font-semibold text-slate-900 dark:text-white text-md flex items-center"
               >
                 <span class="text-xs mr-1 text-slate-500">৳</span
                 >{{
@@ -123,15 +123,15 @@
             <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1.5 px-3 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
+              class="premium-buy-button flex items-center justify-center gap-1 px-2 py-1.5 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
               @click="addToCart(product, quantity)"
             >
               <!-- Gradient backgrounds -->
               <span
-                class="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600"
+                class="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-500"
               ></span>
               <span
-                class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                class="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600 opacity-0 hover:opacity-100 transition-opacity duration-300"
               ></span>
 
               <!-- Glow effect -->
