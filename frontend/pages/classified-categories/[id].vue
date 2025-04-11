@@ -273,7 +273,7 @@
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
                 <div class="flex flex-row gap-2">
-                  <div>
+                  <div class="mt-2">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
@@ -456,11 +456,11 @@
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
                 <div class="flex flex-row gap-2 items-start">
-                  <div class="w-10 sm:w-14">
+                  <div class="size-24 mt-2">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="size-24 object-cover rounded-md"
+                      class="object-cover rounded-md"
                     />
                     <img
                       v-else
