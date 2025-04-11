@@ -267,22 +267,22 @@
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
             <div
-              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+              class="flex flex-col pl-3 pr-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
-                <div class="flex flex-row gap-4">
+                <div class="flex flex-row gap-2">
                   <div>
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="size-10 sm:size-14 rounded-md"
+                      class="size-24 rounded-md"
                     />
                     <img
                       v-else
                       :src="service.category_details.image"
-                      class="size-10 sm:size-14 rounded-md"
+                      class="size-24 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
@@ -450,17 +450,17 @@
         >
           <NuxtLink :to="`/classified-categories/details/${service.id}`">
             <div
-              class="flex flex-col pl-3 pr-5 py-2.5 sm:flex-row sm:items-center w-full"
+              class="flex flex-col pl-3 pr-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
               <div
                 class="flex flex-col sm:flex-row sm:items-center justify-between w-full max-sm:relative"
               >
-                <div class="flex flex-row gap-4 items-start">
+                <div class="flex flex-row gap-2 items-start">
                   <div class="w-10 sm:w-14">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="size-10 sm:size-14 object-cover rounded-md"
+                      class="size-24 object-cover rounded-md"
                     />
                     <img
                       v-else
