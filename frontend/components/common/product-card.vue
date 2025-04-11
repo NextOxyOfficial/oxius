@@ -98,7 +98,7 @@
 
           <!-- Price Section with Premium Styling -->
           <div
-            class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100/70 dark:border-slate-700/30"
+            class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100/70 dark:border-slate-700/30 mr-0.5 sm:mr-3"
           >
             <div class="flex flex-col">
               <span
