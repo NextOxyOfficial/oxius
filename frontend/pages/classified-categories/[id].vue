@@ -321,18 +321,17 @@
                           service?.location
                         }}</span>
                       </p>
-                      <div class="flex col-span-2">
-                        <div class="flex gap-1 items-center flex-1">
-                          <UIcon name="i-heroicons-clock-solid" />
-                          <div class="flex-1">
-                            <span class="text-sm"
-                              >Posted: {{ formatDate(service?.created_at) }},
-                              By:
-                              <span class="text-green-600"
-                                >{{ service.user?.name.slice(0, 6) }}***</span
-                              ></span
-                            >
-                          </div>
+                    </div>
+                    <div class="flex col-span-2 mt-1 sm:mt-2">
+                      <div class="flex gap-1 items-center flex-1">
+                        <UIcon name="i-heroicons-clock-solid" />
+                        <div class="flex-1">
+                          <span class="text-sm"
+                            >Posted: {{ formatDate(service?.created_at) }}, By:
+                            <span class="text-green-600"
+                              >{{ service.user?.name.slice(0, 6) }}***</span
+                            ></span
+                          >
                         </div>
                       </div>
                     </div>
@@ -504,18 +503,17 @@
                           service?.location
                         }}</span>
                       </p>
-                      <div class="flex col-span-2">
-                        <div class="flex gap-1 items-center flex-1">
-                          <UIcon name="i-heroicons-clock-solid" />
-                          <div class="flex-1">
-                            <span class="text-sm"
-                              >Posted: {{ formatDate(service?.created_at) }},
-                              By:
-                              <span class="text-green-600"
-                                >{{ service.user?.name.slice(0, 6) }}***</span
-                              ></span
-                            >
-                          </div>
+                    </div>
+                    <div class="flex col-span-2 mt-1 sm:mt-2">
+                      <div class="flex gap-1 items-center flex-1">
+                        <UIcon name="i-heroicons-clock-solid" />
+                        <div class="flex-1">
+                          <span class="text-sm"
+                            >Posted: {{ formatDate(service?.created_at) }}, By:
+                            <span class="text-green-600"
+                              >{{ service.user?.name.slice(0, 6) }}***</span
+                            ></span
+                          >
                         </div>
                       </div>
                     </div>
