@@ -3,7 +3,7 @@
     <div class="md:hover:-translate-y-2 transition-all duration-300">
       <!-- Glass-like Card Container with Premium Shadows -->
       <div
-        class="bg-slate-50 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-2xl overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
+        class="bg-slate-100/80 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-2xl overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
       >
         <!-- Product Image Section -->
         <div class="relative pt-[100%] overflow-hidden group">
@@ -50,7 +50,7 @@
           <div class="absolute inset-0 z-10 flex items-center justify-center">
             <button
               @click="openProductModal(product)"
-              class="quick-view-btn px-5 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-full transform opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-lg flex items-center"
+              class="quick-view-btn px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-full transform opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-lg flex items-center"
             >
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
@@ -62,7 +62,7 @@
         </div>
 
         <!-- Product Details with Improved Layout -->
-        <div class="p-4 flex-grow flex flex-col">
+        <div class="my-4 px-2 flex-grow flex flex-col">
           <!-- Store Link with Premium Style -->
           <NuxtLink
             :to="`/eshop/${
@@ -123,7 +123,7 @@
             <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1.5 px-5 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
+              class="premium-buy-button flex items-center justify-center gap-1.5 px-3 py-2 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
               @click="addToCart(product, quantity)"
             >
               <!-- Gradient backgrounds -->
@@ -148,7 +148,7 @@
                 <template v-if="!loadingStates[product.id]">
                   <UIcon
                     name="i-heroicons-shopping-cart"
-                    class="size-4 mr-1.5 cart-icon"
+                    class="size-4 mr-1 cart-icon"
                   />
                   <span class="text-sm whitespace-nowrap">Buy</span>
                 </template>

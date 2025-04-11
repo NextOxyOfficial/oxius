@@ -112,7 +112,7 @@
 
             <!-- Second row -->
             <div
-              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
+              class="grid grid-cols-2 pb-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
             >
               <CommonProductCard
                 v-for="product in getProductsForRow(i - 1, 1)"

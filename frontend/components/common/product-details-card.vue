@@ -4,22 +4,17 @@
     class="p-0 overflow-hidden border-none shadow-lg"
     :ui="{
       body: {
-        padding: 'px-2 py-5 sm:p-6',
+        padding: 'px-2 py-3 sm:p-6',
       },
     }"
   >
     <!-- Header section remains the same -->
     <template #header>
-      <div
-        class="relative bg-gradient-to-r from-primary-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4"
-      >
-        <div class="flex justify-between items-center">
-          <h3
-            class="text-xl md:text-2xl font-bold text-primary-700 dark:text-primary-300"
-          >
-            {{ currentProduct.name }}
-          </h3>
-          <div v-if="modal" class="flex items-center gap-2">
+      <div class="flex-block">
+        <div
+          class="relative bg-gradient-to-r from-primary-50 to-white dark:from-slate-900 dark:to-slate-800 py-2"
+        >
+          <div v-if="modal" class="flex items-start ml-2">
             <UBadge
               v-if="currentProduct.quantity > 0"
               color="green"
@@ -27,11 +22,18 @@
             >
               In Stock
             </UBadge>
-            <UBadge v-else color="red" class="mr-2"> Out of Stock </UBadge>
+            <UBadge v-else color="red"> Out of Stock </UBadge>
+          </div>
+          <div class="flex gap-3 justify-between items-start">
+            <h3
+              class="text-xl ml-1 md:text-2xl font-bold text-primary-700 dark:text-primary-300"
+            >
+              {{ currentProduct.name }}
+            </h3>
             <UButton
               icon="i-heroicons-x-mark"
               size="sm"
-              color="gray"
+              color="orange"
               square
               variant="ghost"
               class="hover:bg-white/20"
