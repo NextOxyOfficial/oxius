@@ -17,21 +17,6 @@
       </div>
 
       <UContainer class="relative z-10 pt-8 pb-6">
-        <!-- Shop Title -->
-        <div class="text-center mb-8">
-          <h1
-            class="relative inline-block text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-900 dark:from-white dark:to-slate-200 mb-2"
-          >
-            <span
-              class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-500 dark:to-blue-400"
-              >Adsy eShop</span
-            >
-          </h1>
-          <p class="text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-            Discover premium products with exceptional quality and prices
-          </p>
-        </div>
-
         <!-- Search & Filter Bar -->
         <div
           class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm mb-6 relative z-20"
