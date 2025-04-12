@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-7xl w-full mx-auto">
     <div
-      class="rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-sm bg-gradient-to-br from-white to-gray-50"
+      class="rounded-md overflow-hidden flex flex-col md:flex-row shadow-sm bg-gradient-to-br from-white to-gray-50"
     >
       <!-- Left side - Image Slider -->
       <div
