@@ -10,8 +10,8 @@
             <!-- Aspect ratio container - reduced by ~10% -->
             <div class="relative pb-[40.625%] md:pb-[40.4%] lg:pb-[40.625%]">
               <div
-                v-for="(src, index) in sliderImages"
-                :key="index"
+                v-for="({ id, image }, index) in sliderImages"
+                :key="id"
                 class="absolute inset-0 transition-all duration-700 ease-in-out transform"
                 :class="{
                   'opacity-100 scale-100': index === currentSlide,
@@ -23,7 +23,8 @@
                   class="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent z-10"
                 ></div>
                 <img
-                  :src="src"
+                  v-if="image"
+                  :src="image"
                   :alt="`Slide ${index + 1}`"
                   class="w-full h-full object-cover"
                 />
@@ -133,7 +134,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
 import {
   ChevronLeft,
   ChevronRight,
@@ -143,13 +143,25 @@ import {
   Shield,
   UserCheck,
 } from "lucide-vue-next";
+const { get } = useApi();
 
 // Sample slider images - replace with your actual images
-const sliderImages = [
-  "/img/banner1.jpg",
-  "/img/banner2.jpg",
-  "/img/banner3.jpg",
-];
+const sliderImages = ref([]);
+
+async function getSlideImages() {
+  try {
+    const res = await get("/banner-images/");
+    if (res && res.data) {
+      sliderImages.value = res.data;
+    } else {
+      console.error("Failed to fetch slider images:", res);
+    }
+  } catch (error) {
+    console.error("Error fetching slider images:", error);
+  }
+}
+
+await getSlideImages();
 
 const currentSlide = ref(0);
 let intervalId = null;
