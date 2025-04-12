@@ -6,7 +6,7 @@
       >
         <div class="flex flex-col md:flex-row">
           <!-- Left side - Image Slider with reduced height -->
-          <div class="w-full md:w-3/5 relative overflow-hidden">
+          <div class="w-full relative overflow-hidden">
             <!-- Aspect ratio container - reduced by ~10% -->
             <div class="relative pb-[40.625%] md:pb-[40.4%] lg:pb-[40.625%]">
               <div
@@ -66,74 +66,13 @@
           </div>
 
           <!-- Right side - Premium content area -->
-          <div class="w-full md:w-2/5 p-3 sm:p-8 flex flex-col justify-center">
-            <div class="relative">
-              <!-- Decorative accent element -->
-              <div
-                class="absolute -left-2 top-0 h-12 w-1 bg-gradient-to-b from-emerald-400 to-blue-500 rounded-full"
-              ></div>
-
-              <h1
-                class="text-xl sm:text-xl font-semibold leading-tight text-gray-800 mb-2"
-              >
-                Bangladesh's 1st Social Business Network
-              </h1>
-              <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Connect, collaborate, and grow with our all-in-one platform that
-                helps you earn money, sell products, and find services you need.
-              </p>
-
-              <div
-                class="sm:grid grid-cols-2 gap-3 sm:gap-4 hidden md:grid mt-3"
-              >
-                <a href="#micro-gigs" class="btn-primary group">
-                  <span class="flex items-center justify-center gap-2">
-                    <DollarSign
-                      class="h-4 w-4 group-hover:scale-110 transition-transform"
-                    />
-                    <span>Earn Money</span>
-                  </span>
-                </a>
-                <NuxtLink to="/shop-manager" class="btn-secondary group">
-                  <span class="flex items-center justify-center gap-2">
-                    <ShoppingBag
-                      class="h-4 w-4 group-hover:scale-110 transition-transform"
-                    />
-                    <span>Sell Products</span>
-                  </span>
-                </NuxtLink>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-
-    <div
-      class="grid grid-cols-2 my-2 gap-3 sm:gap-4 sm:hidden mt-5 max-w-sm mx-8"
-    >
-      <a href="#micro-gigs" class="btn-primary group">
-        <span class="flex items-center justify-center gap-2">
-          <DollarSign
-            class="h-4 w-4 group-hover:scale-110 transition-transform"
-          />
-          <span>Earn Money</span>
-        </span>
-      </a>
-      <NuxtLink to="/shop-manager" class="btn-secondary group">
-        <span class="flex items-center justify-center gap-2">
-          <ShoppingBag
-            class="h-4 w-4 group-hover:scale-110 transition-transform"
-          />
-          <span>Sell Products</span>
-        </span>
-      </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
 import {
   ChevronLeft,
   ChevronRight,

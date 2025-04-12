@@ -31,6 +31,7 @@
               {{ currentProduct.name }}
             </h3>
             <UButton
+              v-if="seeDetails"
               icon="i-heroicons-x-mark"
               size="sm"
               color="orange"

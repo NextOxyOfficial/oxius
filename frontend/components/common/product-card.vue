@@ -175,7 +175,7 @@
     <Teleport to="body">
       <div
         v-if="isModalOpen"
-        class="fixed inset-0 top-14 z-10 overflow-y-auto"
+        class="fixed inset-0 top-14 z-50 overflow-y-auto"
         :class="{ 'animate-fade-in': isModalOpen }"
         @click="closeProductModal()"
       >
