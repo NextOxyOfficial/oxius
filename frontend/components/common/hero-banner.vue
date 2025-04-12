@@ -84,13 +84,13 @@
             class="h-9 sm:h-10 border border-amber-600 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 shadow-sm"
           >
             <ShoppingBag class="h-3.5 w-3.5" />
-            Sell
+            Sell Products
           </NuxtLink>
         </div>
       </div>
     </div>
   </div>
-  <div class="grid grid-cols-2 gap-2 sm:gap-3 sm:hidden mb-2">
+  <div class="grid grid-cols-2 gap-2 sm:gap-3 sm:hidden mb-2 mt-2">
     <a
       href="#micro-gigs"
       class="h-9 sm:h-10 border border-emerald-600 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 shadow-sm"
@@ -103,7 +103,7 @@
       class="h-9 sm:h-10 border border-amber-600 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 shadow-sm"
     >
       <ShoppingBag class="h-3.5 w-3.5" />
-      Sell
+      Sell Products
     </NuxtLink>
   </div>
 </template>
