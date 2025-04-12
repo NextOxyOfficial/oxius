@@ -1,15 +1,15 @@
 <template>
-  <div class="flex items-center justify-between mb-6 md:mb-8">
+  <div class="flex items-center justify-between mb-4 md:mb-8">
     <div>
       <div class="py-4 text-start relative">
         <h1
-          class="text-2xl md:text-4xl ml-3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
+          class="text-2xl ml-3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
         >
           {{ $t("classified_service") }}
         </h1>
         <!-- Header underline -->
         <div
-          class="h-1 ml-4 w-28 md:w-44 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
+          class="h-1 ml-4 w-28 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
         ></div>
 
         <!-- Floating particles around header - FIXED -->
@@ -35,7 +35,7 @@
           sm: 'text-sm',
         },
         padding: {
-          sm: 'px-3 py-2 md:px-3.5 md:py-2.5',
+          sm: 'px-3 py-1.5',
         },
         icon: {
           size: {

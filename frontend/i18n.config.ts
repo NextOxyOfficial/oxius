@@ -144,7 +144,7 @@ export default defineI18nConfig(() => ({
       logout: "লগ আউট",
       my_post: "মাই পোস্ট",
       post_classified: "অ্যাড পোস্ট করি",
-      post_free_ad: "ফ্রি অ্যাড পোস্ট করি",
+      post_free_ad: "ফ্রি বিজ্ঞাপন দিই",
       post_classified_text: "আপনার কাস্টোমারের জন্য লিস্টিং করুন",
       basic_details: "বেসিক বর্ণনা",
       pricing: "প্রাইচ",

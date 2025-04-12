@@ -7,6 +7,7 @@
         }"
         class="relative"
       >
+        <CommonHeroBanner />
         <!-- Premium decorative elements -->
         <div
           class="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl -z-10"
@@ -33,7 +34,7 @@
 
           <!-- Premium search container with glass effect -->
           <div
-            class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl h-12 sm:h-16 shadow-md border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-sm group"
+            class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl h-12 sm:h-14 shadow-md border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-sm group"
           >
             <!-- Accent line animation -->
             <div
@@ -55,7 +56,7 @@
                   ref="searchInput"
                   type="search"
                   v-model="title"
-                  class="w-full h-full py-3 sm:py-4 px-3 sm:px-4 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-base sm:text-lg"
+                  class="w-full h-full py-3 px-3 sm:px-4 bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-800 dark:text-white placeholder-transparent text-base"
                   :class="isLoading ? 'opacity-70' : 'opacity-100'"
                   @focus="stopTyping"
                   @blur="restartTypingIfEmpty"
@@ -67,9 +68,7 @@
                   v-if="!title && showPlaceholder"
                   class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none flex items-center"
                 >
-                  <span
-                    class="text-slate-400 dark:text-slate-500 text-base sm:text-lg"
-                  >
+                  <span class="text-slate-400 dark:text-slate-500 text-base">
                     <span>{{ displayedPlaceholder }}</span>
                     <span
                       class="inline-block w-0.5 h-5 sm:h-6 bg-emerald-500 dark:bg-emerald-400 ml-0.5 animate-cursor-blink"
@@ -83,7 +82,7 @@
               <button
                 type="submit"
                 text="Search"
-                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-md hover:shadow-md"
+                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-1.5 px-4 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-md hover:shadow-md text-sm"
                 :disabled="isLoading"
               >
                 <!-- Button background animation -->
@@ -98,12 +97,12 @@
                 <UIcon
                   v-if="!isLoading"
                   name="i-heroicons-magnifying-glass"
-                  class="w-4 h-4 sm:w-5 sm:h-5 relative"
+                  class="w-4 h-4 relative"
                 />
                 <UIcon
                   v-else
                   name="i-heroicons-arrow-path"
-                  class="w-4 h-4 sm:w-5 sm:h-5 animate-spin relative"
+                  class="w-4 h-4 animate-spin relative"
                 />
               </button>
             </div>
@@ -373,7 +372,7 @@
               class="flex-1 max-sm:border max-sm:mt-4 max-sm:rounded-xl min-h-[500px] flex flex-col"
             >
               <div
-                class="flex justify-between items-center p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md"
+                class="flex flex-col sm:flex-row justify-between items-center p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md gap-1 sm:gap-0"
               >
                 <div class="flex items-center gap-2">
                   <UIcon

@@ -119,6 +119,7 @@
         <!-- Vendor Info Card at Bottom of Banner -->
         <div
           class="absolute max-sm:top-0 sm:bottom-0 left-1/2 -translate-x-1/2 sm:translate-y-1/2 md:-translate-y-2/3 w-[90%] max-w-4xl z-10"
+          :class="isSeeMore ? 'md:translate-y-0' : ''"
         >
           <div
             class="border-none shadow-lg sm:shadow-2xl bg-slate-50/95 backdrop-blur-md rounded-2xl overflow-hidden animate-fade-in-up relative"
@@ -174,12 +175,23 @@
                 >
                   {{ storeDetails?.store_name || "Store Name" }}
                 </h1>
-                <p class="text-slate-600 mt-1">
+                <p
+                  class="text-slate-600 mt-1"
+                  :class="isSeeMore ? '' : 'line-clamp-2'"
+                >
                   {{
                     storeDetails?.store_description ||
                     "Store description will appear here"
                   }}
                 </p>
+                <UButton
+                  v-if="storeDetails?.store_description"
+                  @click="isSeeMore = !isSeeMore"
+                  :label="isSeeMore ? 'See Less' : 'See More'"
+                  variant="link"
+                  size="sm"
+                  color="blue"
+                />
                 <div
                   class="flex flex-wrap gap-2 mt-4 justify-center md:justify-start"
                 >
@@ -558,6 +570,7 @@ const products = ref([]);
 const storeDetails = ref({});
 const { user, token } = useAuth();
 const isLoading = ref(false);
+const isSeeMore = ref(false);
 
 // Check if current user is store owner
 const isOwner = computed(() => {
@@ -566,6 +579,7 @@ const isOwner = computed(() => {
   );
 });
 
+import { is } from "date-fns/locale";
 import {
   Search,
   MapPin,
