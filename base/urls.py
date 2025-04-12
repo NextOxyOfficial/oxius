@@ -113,4 +113,8 @@ urlpatterns = [
 
 
   path('check-store-username/', check_store_username_availability, name='check-store-username'),
+
+  # banner image
+  path('banner-images/', BannerImageListView.as_view(), name='banner-image'),
+  path('shop-banner-images/', ShopBannerImageListView.as_view(), name='shop-banner-image'),
 ]

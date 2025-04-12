@@ -410,4 +410,13 @@ class FaqSerializer(serializers.ModelSerializer):
         fields = ('label', 'content')
         read_only_fields = ['slug']
 
+class BannerImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BannerImage
+        fields = '__all__'
+        
 
+class ShopBannerImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShopBannerImage
+        fields = '__all__'

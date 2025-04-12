@@ -1949,3 +1949,18 @@ def check_store_username_availability(request):
         'available': True,
         'message': 'Store username is available'
     })
+    
+    
+class BannerImageListView(generics.ListAPIView):
+    """
+    View to retrieve all banners.
+    """
+    queryset = BannerImage.objects.all()
+    serializer_class = BannerImageSerializer
+    
+class ShopBannerImageListView(generics.ListAPIView):
+    """
+    View to retrieve all shop banners.
+    """
+    queryset = ShopBannerImage.objects.all()
+    serializer_class = ShopBannerImageSerializer

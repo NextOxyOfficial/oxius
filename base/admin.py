@@ -329,3 +329,5 @@ class OrderAdmin(admin.ModelAdmin):
         return obj.created_at
 
 admin.site.register(Order,OrderAdmin)
+admin.site.register(BannerImage)
+admin.site.register(ShopBannerImage)
