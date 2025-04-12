@@ -1390,10 +1390,10 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             # Check permissions
             user = self.request.user
             if not user.is_authenticated:
-                raise PermissionDenied("You must be logged in to update this product.")
+                return Response({"error":"You must be logged in to update this product."})
                 
             if user != instance.owner and not user.is_staff and not user.is_superuser:
-                raise PermissionDenied("You don't have permission to update this product.")
+                return Response({"error":"You don't have permission to update this product."})
             
             # Update the main product data
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -1491,7 +1491,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Check if user is authenticated
         if not user.is_authenticated:
-            raise PermissionDenied("You must be logged in to update this product.")
+            return Response({"error":"You must be logged in to update this product."})
             
         # Check if user is either owner or admin
         if user == instance.owner or user.is_staff or user.is_superuser:
@@ -1499,7 +1499,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             serializer.save()
         else:
             # User is not authorized
-            raise PermissionDenied("You don't have permission to update this product. Only the owner or admin can modify products.")
+            return Response({"error":"You don't have permission to update this product. Only the owner or admin can modify products."})
     
     def perform_destroy(self, instance):
         """
@@ -1510,7 +1510,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Check if user is authenticated
         if not user.is_authenticated:
-            raise PermissionDenied("You must be logged in to delete a product.")
+            return Response({"error":"You must be logged in to delete a product."})
         
         # Check if user is either owner or admin
         if user == instance.owner or user.is_staff or user.is_superuser:
@@ -1518,7 +1518,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             instance.delete()
         else:
             # User is not authorized
-            raise PermissionDenied("You don't have permission to delete this product. Only the owner or admin can delete products.")
+            return Response({"error":"You don't have permission to delete this product. Only the owner or admin can delete products."})
 
 # Featured Products
 class FeaturedProductsListView(generics.ListAPIView):
@@ -1536,11 +1536,17 @@ class UserProductsListView(generics.ListAPIView):
             owner=self.request.user
         ).order_by('-created_at')
 
+class ProductPagination(PageNumberPagination):
+    page_size = 25
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+# Then update your view to use it
 class AllProductsListView(generics.ListAPIView):
     """View for retrieving all products - accessible to anyone"""
-    ##queryset = Product.objects.all().order_by('-created_at')
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
+    pagination_class = ProductPagination
     
     def get_queryset(self):
         """Return all available products with optional filtering"""
@@ -1561,9 +1567,9 @@ class AllProductsListView(generics.ListAPIView):
         max_price = self.request.query_params.get('max_price', None)
         
         if min_price:
-            queryset = queryset.filter(sale_price__gte=min_price) if min_price else queryset
+            queryset = queryset.filter(sale_price__gte=min_price)
         if max_price:
-            queryset = queryset.filter(sale_price__lte=max_price) if max_price else queryset
+            queryset = queryset.filter(sale_price__lte=max_price)
             
         return queryset
  
