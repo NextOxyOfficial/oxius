@@ -100,19 +100,26 @@
           <div
             class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100/70 dark:border-slate-700/30 mr-0.5 sm:mr-3"
           >
+            <!-- Price Section with Improved Logic - regular_price is used if sale_price is missing/0/null -->
             <div class="flex flex-col">
               <span
                 class="font-semibold text-slate-900 dark:text-white text-md flex items-center"
               >
                 <span class="text-xs mr-1 text-slate-500">৳</span
                 >{{
-                  product.regular_price && !product.sale_price
-                    ? product.regular_price
-                    : product.sale_price
+                  product.sale_price && parseFloat(product.sale_price) > 0
+                    ? product.sale_price
+                    : product.regular_price
                 }}
               </span>
               <span
-                v-if="product.sale_price && product.regular_price"
+                v-if="
+                  product.sale_price &&
+                  parseFloat(product.sale_price) > 0 &&
+                  product.regular_price &&
+                  parseFloat(product.sale_price) <
+                    parseFloat(product.regular_price)
+                "
                 class="text-xs text-slate-400 line-through -mt-0.5 flex items-center"
               >
                 <span class="text-[10px] mr-0.5">৳</span

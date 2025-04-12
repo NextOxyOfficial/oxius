@@ -330,14 +330,6 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  computed,
-  onMounted,
-  onBeforeUnmount,
-  nextTick,
-  watch,
-} from "vue";
 
 const { get } = useApi();
 const initialProducts = ref([]);
