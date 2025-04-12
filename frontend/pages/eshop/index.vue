@@ -40,25 +40,75 @@
       <!-- Premium Search & Filters Section -->
       <div class="mb-3 space-y-3">
         <!-- Elegant Search Bar -->
-        <div class="relative max-w-3xl mx-auto">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search premium products..."
-            class="text-base w-full px-5 py-1.5 pl-12 pr-12 rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/60 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-md"
-            @input="debouncedSearch"
-          />
-          <UIcon
-            name="i-heroicons-magnifying-glass"
-            class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 size-5"
-          />
-          <button
-            v-if="searchQuery"
-            @click="clearSearch"
-            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <UIcon name="i-heroicons-x-mark" class="size-5" />
-          </button>
+        <div class="flex gap-2 flex-col sm:flex-row">
+          <div class="relative flex-1">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search premium products..."
+              class="text-base w-full px-5 py-1.5 pl-12 pr-12 rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/60 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-md"
+              @input="debouncedSearch"
+            />
+            <UIcon
+              name="i-heroicons-magnifying-glass"
+              class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 size-5"
+            />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <UIcon name="i-heroicons-x-mark" class="size-5" />
+            </button>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-1 sm:items-center">
+            <h3
+              class="text-base font-medium text-gray-700 dark:text-gray-300 flex items-center"
+            >
+              <UIcon
+                name="i-heroicons-banknotes"
+                class="mr-2 size-4 text-emerald-500"
+              />
+              Price Range:
+            </h3>
+
+            <div class="flex items-center space-x-3">
+              <div class="relative flex-1">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500"
+                  >৳</span
+                >
+                <input
+                  v-model="minPrice"
+                  type="number"
+                  placeholder="Min"
+                  class="w-full pl-8 pr-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/60 focus:ring-1 focus:ring-emerald-400"
+                  @change="applyPriceFilter"
+                />
+              </div>
+              <div class="relative flex-1">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500"
+                  >৳</span
+                >
+                <input
+                  v-model="maxPrice"
+                  type="number"
+                  placeholder="Max"
+                  class="w-full pl-8 pr-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/60 focus:ring-1 focus:ring-emerald-400"
+                  @change="applyPriceFilter"
+                />
+              </div>
+              <UButton
+                color="emerald"
+                variant="soft"
+                @click="applyPriceFilter"
+                class="whitespace-nowrap px-4"
+              >
+                Apply
+              </UButton>
+            </div>
+          </div>
         </div>
 
         <!-- Elegant Filter Container -->
@@ -72,7 +122,7 @@
                 class="text-base font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center"
               >
                 <UIcon
-                  name="i-heroicons-squares-2x2-mini"
+                  name="i-heroicons-squares-2x2"
                   class="mr-2 size-4 text-emerald-500"
                 />
                 Categories
@@ -160,54 +210,7 @@
           </div>
         </div>
       </div>
-      <div class="lg:col-span-2 mb-3">
-        <h3
-          class="text-base font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center"
-        >
-          <UIcon
-            name="i-heroicons-banknotes-mini"
-            class="mr-2 size-4 text-emerald-500"
-          />
-          Price Range
-        </h3>
 
-        <div class="flex items-center space-x-3">
-          <div class="relative flex-1">
-            <span
-              class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500"
-              >৳</span
-            >
-            <input
-              v-model="minPrice"
-              type="number"
-              placeholder="Min"
-              class="w-full pl-8 pr-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/60 focus:ring-1 focus:ring-emerald-400"
-              @change="applyPriceFilter"
-            />
-          </div>
-          <div class="relative flex-1">
-            <span
-              class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500"
-              >৳</span
-            >
-            <input
-              v-model="maxPrice"
-              type="number"
-              placeholder="Max"
-              class="w-full pl-8 pr-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/60 focus:ring-1 focus:ring-emerald-400"
-              @change="applyPriceFilter"
-            />
-          </div>
-          <UButton
-            color="emerald"
-            variant="soft"
-            @click="applyPriceFilter"
-            class="whitespace-nowrap px-4"
-          >
-            Apply
-          </UButton>
-        </div>
-      </div>
       <!-- Enhanced Loading State -->
       <div v-if="isLoading" class="py-20">
         <div class="flex flex-col items-center justify-center">
