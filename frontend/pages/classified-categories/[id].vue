@@ -295,7 +295,7 @@
                     <div
                       class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
                     >
-                      <div class="flex gap-2 col-span-2">
+                      <div class="flex gap-2 col-span-2 flex-wrap">
                         <p
                           class="text-sm md:text-base sm:hidden font-semibold text-green-950"
                         >
@@ -323,11 +323,13 @@
                       </p>
                     </div>
                     <div class="flex col-span-2 mt-1 sm:mt-2">
-                      <div class="flex gap-1 items-center flex-1">
-                        <UIcon name="i-heroicons-clock-solid" />
-                        <div class="flex-1">
-                          <span class="text-sm"
-                            >Posted: {{ formatDate(service?.created_at) }}, By:
+                      <div class="flex-1">
+                        <div class="">
+                          <span
+                            class="text-sm inline-flex gap-1 items-center flex-wrap"
+                          >
+                            <UIcon name="i-heroicons-clock-solid" />Posted:
+                            {{ formatDate(service?.created_at) }}, By:
                             <span class="text-green-600"
                               >{{ service.user?.name.slice(0, 6) }}***</span
                             ></span
@@ -477,7 +479,7 @@
                     <div
                       class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
                     >
-                      <div class="flex gap-2 col-span-2">
+                      <div class="flex gap-2 col-span-2 flex-wrap">
                         <p
                           class="text-sm md:text-base sm:hidden font-semibold text-green-950"
                         >
@@ -505,11 +507,12 @@
                       </p>
                     </div>
                     <div class="flex col-span-2 mt-1 sm:mt-2">
-                      <div class="flex gap-1 items-center flex-1">
-                        <UIcon name="i-heroicons-clock-solid" />
-                        <div class="flex-1">
-                          <span class="text-sm"
-                            >Posted: {{ formatDate(service?.created_at) }}, By:
+                      <div class="flex-1">
+                        <div class="">
+                          <span
+                            class="text-sm inline-flex gap-1 items-center flex-wrap"
+                            ><UIcon name="i-heroicons-clock-solid" />Posted:
+                            {{ formatDate(service?.created_at) }}, By:
                             <span class="text-green-600"
                               >{{ service.user?.name.slice(0, 6) }}***</span
                             ></span

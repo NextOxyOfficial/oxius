@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-10 px-2"
+    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-6 sm:py-10 px-2"
   >
     <!-- Decorative background elements -->
     <div class="absolute top-0 left-0 w-full h-64 overflow-hidden">
@@ -663,7 +663,7 @@
               </div>
             </div>
           </div>
-          <UCard class="mx-2">
+          <UCard class="mx-6">
             <UCheckbox
               name="notifications"
               v-model="advanceEditMode"
@@ -678,7 +678,7 @@
           </UCard>
           <!-- Form Actions -->
           <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-2"
+            class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-6"
           >
             <!-- Left side buttons -->
             <div class="flex flex-wrap gap-4">
@@ -948,28 +948,24 @@ function handleFileUpload(event) {
       return;
     }
 
-    const file = files[0]; // Process one file at a time
+    const file = files[0];
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       uploadError.value = "Please select a valid image file";
       isUploading.value = false;
       return;
     }
 
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       uploadError.value = "Image size must be less than 5MB";
       isUploading.value = false;
       return;
     }
 
-    // Initialize form.images array if it doesn't exist
     if (!form.value.images) {
       form.value.images = [];
     }
 
-    // Check if we've reached the maximum number of images
     if (form.value.images.length >= 5) {
       uploadError.value = "Maximum 5 images allowed";
       isUploading.value = false;
@@ -978,14 +974,47 @@ function handleFileUpload(event) {
 
     const reader = new FileReader();
 
-    reader.onload = () => {
-      form.value.images.push(reader.result);
-      isUploading.value = false;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
 
-      // Reset file input to allow selecting the same file again
-      if (event.target) {
-        event.target.value = null;
-      }
+        // Resize while maintaining aspect ratio
+        const maxSize = 1000;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = height * (maxSize / width);
+            width = maxSize;
+          } else {
+            width = width * (maxSize / height);
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
+
+        form.value.images.push(compressedDataUrl);
+        isUploading.value = false;
+
+        if (event.target) {
+          event.target.value = null;
+        }
+      };
+
+      img.onerror = () => {
+        uploadError.value = "Invalid image. Please try again.";
+        isUploading.value = false;
+      };
+
+      img.src = e.target.result;
     };
 
     reader.onerror = (error) => {
@@ -1081,7 +1110,7 @@ function resetForm(showConfirm = true) {
 
 /* Section Styling */
 .form-section {
-  @apply px-2 py-5 rounded-xl relative transition-all duration-300;
+  @apply px-2 sm:px-6 py-5 rounded-xl relative transition-all duration-300;
 }
 
 .section-header {

@@ -363,17 +363,12 @@ async function getAllProducts() {
     // Preserve all original fields instead of mapping to new objects
     initialProducts.value = res.data.map((product) => {
       // Calculate discount only if needed
-      const discount = calculateDiscount(
-        product.regular_price,
-        product.sale_price
-      );
 
       // Return the original product with minimal modifications
       return {
         ...product, // Keep ALL original fields including slug
         // Only add fields that don't exist in the API response
         inStock: product.quantity > 0,
-        discount: discount,
       };
     });
 
