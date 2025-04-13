@@ -236,7 +236,7 @@
           @click="addToCart(currentProduct, 1)"
           class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300"
         >
-          Yes! I Want This Now
+          {{ currentProduct.benefits_cta }}
         </button>
       </div>
     </section>
@@ -672,18 +672,21 @@
         <div class="flex flex-wrap justify-center gap-6 mt-8">
           <div
             class="flex items-center gap-1.5 bg-white/10 px-4 py-2 rounded-full"
+            v-if="currentProduct.cta_badge1"
           >
             <UIcon name="i-heroicons-credit-card" class="w-5 h-5" />
             <span class="text-sm">Secure Payment</span>
           </div>
           <div
             class="flex items-center gap-1.5 bg-white/10 px-4 py-2 rounded-full"
+            v-if="currentProduct.cta_badge2"
           >
             <UIcon name="i-heroicons-shield-check" class="w-5 h-5" />
             <span class="text-sm">Money-Back Guarantee</span>
           </div>
           <div
             class="flex items-center gap-1.5 bg-white/10 px-4 py-2 rounded-full"
+            v-if="currentProduct.cta_badge3"
           >
             <UIcon name="i-heroicons-truck" class="w-5 h-5" />
             <span class="text-sm">Fast Delivery</span>
