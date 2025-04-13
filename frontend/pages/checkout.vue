@@ -135,7 +135,7 @@
                             </h3>
                             <div
                               v-html="product.description"
-                              class="text-gray-500 text-sm"
+                              class="text-gray-500 text-sm line-clamp-3"
                             ></div>
                             <div class="flex items-center justify-between mt-2">
                               <div class="text-indigo-600 font-semibold">

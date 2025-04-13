@@ -1419,35 +1419,6 @@ function openTransactionDetails(transaction) {
   showDetailsModal.value = true;
 }
 
-// Get transaction status badge class
-function getStatusBadgeClass(status) {
-  switch (status) {
-    case "completed":
-      return "bg-green-100 text-green-800";
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "failed":
-    case "rejected":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-}
-
-// Get transaction type icon color
-function getTransactionTypeColor(type) {
-  switch (type) {
-    case "Deposit":
-      return "text-green-500";
-    case "Withdraw":
-      return "text-red-500";
-    case "Transfer":
-      return "text-blue-500";
-    default:
-      return "text-gray-500";
-  }
-}
-
 const options = [
   { value: "bkash", label: "BKash", icon: "bkash.png" },
   { value: "nagad", label: "Nagad", icon: "nagad.png" },

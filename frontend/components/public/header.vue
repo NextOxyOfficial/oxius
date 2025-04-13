@@ -268,7 +268,7 @@
             <div class="flex items-center gap-4">
               <NuxtLink
                 to="/coming-soon"
-                class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
+                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/google.png"
@@ -278,7 +278,7 @@
               </NuxtLink>
               <NuxtLink
                 href="/coming-soon"
-                class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
+                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/apple.png"
@@ -335,13 +335,14 @@
           </div>
         </UCard>
       </USlideover>
-      <div class="flex items-center justify-between gap-3 lg:gap-6">
+      <div class="flex items-center justify-between gap-1.5 lg:gap-6">
         <div class="block md:hidden">
           <UButton
             @click="isOpen = true"
             icon="i-ci-hamburger-md"
             variant="outline"
             color="gray"
+            size="xs"
           />
         </div>
         <PublicLogo class="max-sm:mr-auto" />
@@ -414,6 +415,10 @@
             <UButton
               icon="i-ic:twotone-qr-code-scanner"
               size="md"
+              :ui="{
+                size: { md: 'text-xs sm:text-sm' },
+                padding: { md: 'px-2.5 py-1.5 sm:px-3 sm:py-2' },
+              }"
               color="primary"
               variant="outline"
               @click="showQr = !showQr"
@@ -459,7 +464,7 @@
                 sm: 'gap-x-1 md:gap-x-1.5',
               },
               size: {
-                sm: 'text-sm',
+                sm: 'text-xs sm:text-sm',
               },
               padding: {
                 sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
@@ -490,7 +495,7 @@
             />
             <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
 
-            Hi {{ (user?.user?.first_name).slice(0, 12) }}
+            Hi {{ (user?.user?.first_name).slice(0, 8) }}
             <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
             <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
           </UButton>
