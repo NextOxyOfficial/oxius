@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <div v-else-if="productsCount > 0" class="relative overflow-hidden">
+    <div v-else-if="productsCount > 0" class="relative">
       <!-- Navigation Arrows with Premium Styling -->
       <button
         @click="
