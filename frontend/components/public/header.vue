@@ -178,70 +178,152 @@
     <UContainer>
       <!-- <PublicDonation /> -->
       <USlideover
-        v-model="isOpen"
-        side="left"
-        :ui="{
-          width: 'w-screen max-w-[270px]',
-        }"
-      >
-        <UCard
-          :ui="{
-            header: {
-              padding: 'pb-0.5',
-            },
-            ring: '',
-            rounded: '',
-            shadow: '',
-          }"
-        >
-          <template #header>
-            <div class="w-full flex justify-end pt-12 pb-2">
-              <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark-20-solid"
-                class="-my-1"
-                @click="isOpen = false"
-              />
-            </div>
-          </template>
-        </UCard>
-        <UVerticalNavigation
-          :links="[
-            {
-              label: $t('home'),
-              to: '/',
-              icon: 'i-heroicons-home',
-            },
-            {
-              label: $t('classified_service'),
-              to: '#classified-services',
-              icon: 'i-heroicons-clipboard-document-list',
-            },
-            {
-              label: $t('earn_money'),
-              to: '#micro-gigs',
-              icon: 'i-healthicons:money-bag-outline',
-            },
-            {
-              label: $t('faq'),
-              to: '/faq/',
-              icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
-            },
-            {
-              label: 'মোবাইল রিচার্জ',
-              to: '/mobile-recharge',
-              icon: 'i-ic-baseline-install-mobile',
-            },
-          ]"
-          :ui="{
-            inactive: 'after:hidden before:hidden',
-            active: 'after:hidden before:hidden',
-            padding: 'py-2',
-          }"
+  v-model="isOpen"
+  side="left"
+  :ui="{
+    width: 'w-screen max-w-[300px]',
+  }"
+  class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-lg"
+>
+  <UCard
+    :ui="{
+      header: {
+        padding: 'pb-0.5',
+      },
+      ring: '',
+      rounded: '',
+      shadow: '',
+    }"
+    class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md"
+  >
+    <!-- Header Section -->
+    <template #header>
+      <div class="w-full flex justify-end pt-14 pb-2 px-4">
+        <UButton
+          color="gray"
+          variant="ghost"
+          icon="i-heroicons-x-mark-20-solid"
+          class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110"
+          @click="isOpen = false"
         />
-        <PublicTranslateHandler class="px-2 mt-3" />
-      </USlideover>
+      </div>
+    </template>
+
+    <!-- Navigation Links -->
+    <div class="px-4 py-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        {{ $t('menu') }}
+      </h3>
+      <UVerticalNavigation
+        :links="[ 
+          {
+            label: $t('home'),
+            to: '/',
+            icon: 'i-heroicons-home',
+          },
+          {
+            label: $t('classified_service'),
+            to: '#classified-services',
+            icon: 'i-heroicons-clipboard-document-list',
+          },
+          {
+            label: $t('earn_money'),
+            to: '#micro-gigs',
+            icon: 'i-healthicons:money-bag-outline',
+          },
+          {
+            label: $t('faq'),
+            to: '/faq/',
+            icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
+          },
+          {
+            label: 'মোবাইল রিচার্জ',
+            to: '/mobile-recharge',
+            icon: 'i-ic-baseline-install-mobile',
+          },
+        ]"
+        :ui="{
+          inactive: 'after:hidden before:hidden text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors',
+          active: 'after:hidden before:hidden text-emerald-600 dark:text-emerald-400 font-semibold',
+          padding: 'py-3 px-4',
+        }"
+        class="space-y-2"
+      />
+    </div>
+
+    <!-- Download App Section -->
+    <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        {{ $t('download_our_app') }}
+      </h3>
+      <div class="flex items-center gap-4">
+        <a
+          href="#"
+          class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+        >
+          <img
+            src="/images/google.png"
+            alt="Google Play"
+            class="h-6"
+          />
+        </a>
+        <a
+          href="#"
+          class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+        >
+          <img
+            src="/images/apple.png"
+            alt="App Store"
+            class="h-6"
+          />
+        </a>
+      </div>
+    </div>
+
+    <!-- Social Media Share Section -->
+    <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        {{ $t('follow_us') }}
+      </h3>
+      <div class="flex items-center gap-4">
+        <a
+          href="#"
+          class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition"
+          aria-label="Facebook"
+        >
+          <UIcon name="i-heroicons-facebook" class="w-5 h-5" />
+        </a>
+        <a
+          href="#"
+          class="w-10 h-10 rounded-full bg-sky-400 text-white flex items-center justify-center hover:bg-sky-500 transition"
+          aria-label="Twitter"
+        >
+          <UIcon name="i-heroicons-twitter" class="w-5 h-5" />
+        </a>
+        <a
+          href="#"
+          class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center hover:bg-pink-600 transition"
+          aria-label="Instagram"
+        >
+          <UIcon name="i-heroicons-instagram" class="w-5 h-5" />
+        </a>
+        <a
+          href="#"
+          class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition"
+          aria-label="YouTube"
+        >
+          <UIcon name="i-heroicons-youtube" class="w-5 h-5" />
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+      <PublicTranslateHandler class="px-2 mt-3" />
+      
+    </div>
+  </UCard>
+</USlideover>
       <div class="flex items-center justify-between gap-3 lg:gap-6">
         <div class="block md:hidden">
           <UButton

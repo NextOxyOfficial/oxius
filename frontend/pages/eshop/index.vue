@@ -26,7 +26,7 @@
                   <img
                     :src="banner.image"
                     :alt="banner.title"
-                    class="w-full h-32 sm:h-72 md:h-80 object-cover"
+                    class="w-full h-36 sm:h-72 md:h-80 object-cover"
                   />
                 </div>
               </div>
@@ -130,7 +130,7 @@
 
               <!-- Horizontal scrollable categories -->
               <div
-                class="overflow-x-auto pb-2 flex flex-nowrap gap-2 hide-scrollbar"
+                class="overflow-x-auto py-2 flex flex-nowrap gap-2 hide-scrollbar"
               >
                 <div class="flex gap-2">
                   <UBadge

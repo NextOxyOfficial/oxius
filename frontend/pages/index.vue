@@ -446,7 +446,7 @@
 
               <!-- Gigs list with premium styling -->
               <div
-                class="flex-1 p-2 space-y-1.5 overflow-y-auto max-h-[600px] scrollbar-thin"
+                class="flex-1 p-1 space-y-1.5 overflow-y-auto max-h-[600px] scrollbar-thin"
               >
                 <div
                   v-for="(gig, i) in microGigs"
@@ -454,13 +454,13 @@
                   class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
                 >
                   <div
-                    class="flex flex-col sm:flex-row sm:items-center w-full px-4 py-2"
+                    class="flex flex-col sm:flex-row sm:items-center w-full px-2 py-2"
                     v-if="gig.user"
                   >
                     <div
                       class="flex flex-col sm:flex-row sm:justify-between w-full"
                     >
-                      <div class="flex gap-4">
+                      <div class="flex gap-1">
                         <!-- Gig image with premium styling -->
                         <div class="flex-shrink-0">
                           <div
@@ -549,7 +549,7 @@
 
                       <!-- Gig actions with premium styling -->
                       <div
-                        class="hidden sm:flex gap-4 items-center justify-end md:justify-between max-sm:mt-3 flex-shrink-0"
+                        class="hidden sm:flex gap-2 items-center justify-end md:justify-between max-sm:mt-3 flex-shrink-0"
                       >
                         <p
                           class="font-bold text-lg text-emerald-700 dark:text-emerald-400 sm:inline-flex items-center hidden px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
