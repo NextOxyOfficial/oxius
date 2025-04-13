@@ -251,8 +251,8 @@ export default defineI18nConfig(() => ({
       day: "day",
       days: "days",
       menu: "মেনু",
-      download_our_app: "আমাদের অ্যাপ ডাউনলোড করুন",
-      follow_us: "আমাদের ফোলো করুন",
+      download_our_app: "অ্যাপ ডাউনলোড করুন",
+      follow_us: "ফলো করুন",
     },
   },
 }));

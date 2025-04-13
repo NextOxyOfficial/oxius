@@ -268,22 +268,22 @@
             <div class="flex items-center gap-4">
               <NuxtLink
                 to="/coming-soon"
-                class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/google.png"
                   alt="Google Play"
-                  class="h-6"
+                  class="w-full h-full object-contain"
                 />
               </NuxtLink>
               <NuxtLink
                 href="/coming-soon"
-                class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                class="block w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/apple.png"
                   alt="App Store"
-                  class="h-6"
+                  class="w-full h-full object-contain"
                 />
               </NuxtLink>
             </div>
