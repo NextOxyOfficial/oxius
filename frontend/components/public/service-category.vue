@@ -1,7 +1,7 @@
 <template>
   <div class="py-2 md:p-6">
     <div
-      class="grid grid-cols-3 sm:grid-cols-4 lg:flex justify-center lg:flex-wrap gap-3 mt-6"
+      class="grid grid-cols-3 sm:grid-cols-4 lg:flex justify-center lg:flex-wrap gap-1.5 sm:gap-3 mt-4 sm:mt-6"
     >
       <div
         v-for="service in services?.results"
