@@ -226,9 +226,12 @@
       </div>
 
       <!-- Main Content -->
-      <div class="container mx-auto sm:pt-48 md:pt-0 mt-0 md:-mt-8">
+      <div
+        class="container mx-auto sm:pt-48 md:pt-0"
+        :class="isSeeMore ? 'mt-96 md:mt-3' : 'mt-8 md:-mt-14'"
+      >
         <!-- Enhanced Search Section - No Dropdown -->
-        <div class="mb-7 sm:mb-16 mt-8">
+        <div class="mb-7">
           <div
             :class="`relative max-w-2xl mx-auto transition-all duration-300 ease-out ${
               searchFocused ? 'scale-105' : 'scale-100'
@@ -293,7 +296,7 @@
           <!-- Category Tabs -->
           <div
             ref="categoriesRef"
-            :class="`flex flex-col items-center sm:mt-16 transition-all duration-500 transform ${
+            :class="`flex flex-col items-center sm:mt-12 transition-all duration-500 transform ${
               visibleSections.categories
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-10'
