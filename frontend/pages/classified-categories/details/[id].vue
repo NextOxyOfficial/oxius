@@ -71,7 +71,7 @@
             >
               <NuxtImg
                 :src="item.image"
-                class="w-full rounded-md max-w-44 sm:max-w-52 mx-auto"
+                class="w-full rounded-md max-w-48 sm:max-w-52 mx-auto"
               />
             </UCarousel>
           </div>

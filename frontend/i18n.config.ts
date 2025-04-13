@@ -123,6 +123,9 @@ export default defineI18nConfig(() => ({
       renew_now: "Renew Now",
       day: "day",
       days: "days",
+      menu: "Menu",
+      download_our_app: "Download Our App",
+      follow_us: "Follow Us",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -247,6 +250,9 @@ export default defineI18nConfig(() => ({
       renew_now: "Renew Now",
       day: "day",
       days: "days",
+      menu: "মেনু",
+      download_our_app: "আমাদের অ্যাপ ডাউনলোড করুন",
+      follow_us: "আমাদের ফোলো করুন",
     },
   },
 }));
