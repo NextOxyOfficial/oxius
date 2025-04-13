@@ -150,35 +150,107 @@
 
       <div class="block lg:hidden mb-6">
         <UContainer>
-          <div class="grid grid-cols-2 gap-4">
-            <div
+          <div class="flex overflow-x-auto space-x-4 scrollbar-thin">
+            <button
               v-for="category in categoriesWithCounts"
               :key="category.value"
               @click="selectCategory(category.value)"
-              class="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-dashed border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              class="flex-shrink-0 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              :class="{
+                'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300':
+                  selectedCategory === category.value,
+              }"
             >
-              <img
-                :src="category.image"
-                :alt="category.label"
-                class="w-12 h-12 object-cover rounded-full mb-2"
-              />
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {{ category.label }}
-              </span>
+              {{ category.label }}
               <span
-                class="mt-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full px-2 py-0.5"
+                class="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full px-2 py-0.5"
               >
                 {{ category.count }}
               </span>
-            </div>
+            </button>
           </div>
         </UContainer>
       </div>
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- Categories Sidebar -->
-        <div class="hidden lg:block w-full lg:w-64 flex-shrink-0">
-          <!-- Sidebar content -->
+        <div class="w-full lg:w-64 flex-shrink-0">
+          <div
+            class="bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700/30 sticky top-24"
+          >
+            <div class="flex items-center mb-4">
+              <div
+                class="h-5 w-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 mr-3"
+              ></div>
+              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                Categories
+              </h2>
+            </div>
+
+            <!-- Category List with Post Counts and Icons -->
+            <div
+              class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1 scrollbar-thin"
+            >
+              <button
+                @click="clearCategoryFilter"
+                class="w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center"
+                :class="
+                  !selectedCategory
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30'
+                "
+              >
+                <UIcon name="i-heroicons-squares-2x2" class="mr-2 size-4" />
+                All Categories
+                <span
+                  class="ml-auto bg-emerald-100 dark:bg-emerald-800/30 text-emerald-700 dark:text-emerald-300 text-xs rounded-full px-2 py-0.5"
+                >
+                  {{ totalItems }}
+                </span>
+              </button>
+
+              <button
+                v-for="category in categoriesWithCounts"
+                :key="category.value"
+                @click="() => selectCategory(category.value)"
+                class="w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center group"
+                :class="
+                  selectedCategory === category.value
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30'
+                "
+              >
+                <NuxtImg
+                  :src="getCategoryIcon(category.value)"
+                  :alt="category.label"
+                  class="mr-2 size-4"
+                />
+
+                {{ category.label }}
+                <span
+                  class="ml-auto bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 text-xs rounded-full px-2 py-0.5"
+                >
+                  {{ category.count }}
+                </span>
+              </button>
+            </div>
+
+            <!-- Sort By Section -->
+            <div
+              class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/30"
+            >
+              <h3 class="font-medium text-slate-900 dark:text-white mb-3">
+                Sort Results
+              </h3>
+              <USelect
+                v-model="sortOption"
+                :options="sortOptions"
+                size="md"
+                class="w-full"
+                @update:modelValue="sortResults"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Main Content Area -->
@@ -374,12 +446,9 @@
                     {{ post.title }}
                   </h3>
                   <p
-                    class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-3"
+                    class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2"
                   >
                     {{ post.description }}
-                  </p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Contact: {{ post.contactNumber || "N/A" }}
                   </p>
                   <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-500 dark:text-gray-400">
@@ -1108,13 +1177,5 @@ watch(
   .result-card:hover {
     transform: none;
   }
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>
