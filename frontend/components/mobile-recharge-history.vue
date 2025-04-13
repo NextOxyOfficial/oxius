@@ -1,6 +1,6 @@
 <template>
   <div class="transaction-history h-max">
-    <h1 class="text-3xl font-bold text-center mb-2">
+    <h1 class="text-lg sm:text-2xl font-bold text-center mb-2">
       {{ $t("recharge_history") }}
     </h1>
     <p class="text-center text-gray-600 mb-6">
@@ -17,7 +17,7 @@
           :class="[
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === filter.value
-              ? 'bg-green-500 text-white shadow-sm'
+              ? 'border border-green-500  shadow-sm'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
           ]"
         >
@@ -28,7 +28,7 @@
 
     <!-- Transactions list with proper null checks -->
     <div
-      class="transactions overflow-auto h-[460px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+      class="transactions overflow-auto h-[36vh] sm:h-[460px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
     >
       <div
         v-if="filteredTransactions.length === 0"

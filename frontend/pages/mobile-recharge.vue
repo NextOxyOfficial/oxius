@@ -2,26 +2,26 @@
   <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="text-center mb-10">
-        <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">
+      <div class="text-center mb-6">
+        <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">
           {{ $t("mobile_recharge") }}
         </h1>
-        <p class="mt-3 text-xl text-gray-500">
+        <p class="mt-2 text-base sm:text-xl text-gray-500">
           {{ $t("recharge_package_choice") }}
         </p>
       </div>
 
       <!-- Search and Filter -->
-      <div class="mb-8 max-w-md mx-auto">
+      <div class="max-w-md mx-auto">
         <div class="relative">
           <input
             v-model="searchQuery"
             type="text"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            class="w-full px-4 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             :placeholder="t('search_packages')"
           />
-          <span class="absolute right-3 top-4 text-gray-400">
-            <UIcon name="i-gg-search" class="w-5 h-5" />
+          <span class="absolute right-3 top-2.5 text-gray-400">
+            <UIcon name="i-gg-search" class="size-4" />
           </span>
         </div>
 
@@ -54,13 +54,13 @@
             </button>
           </div>
         </div>
-        <div class="mt-4 flex flex-wrap gap-2 justify-center">
+        <div class="my-4 flex gap-1.5 justify-center">
           <button
             v-for="(filter, index) in filters"
             :key="index"
             @click="activeFilter = filter.value"
             :class="[
-              'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+              'px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors',
               activeFilter === filter.value
                 ? 'bg-green-500 text-white'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
@@ -272,10 +272,7 @@
 
         <!-- Balance warning -->
         <div
-          v-if="
-            parseFloat(selectedPackage.price.replace(/[^\d.]/g, '')) >
-            parseFloat(user?.user.balance || 0)
-          "
+          v-if="!hasSufficientBalance"
           class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm"
         >
           <div class="flex items-center">
@@ -283,14 +280,26 @@
               name="i-heroicons-exclamation-triangle"
               class="w-5 h-5 mr-2"
             />
-            <span
-              >Insufficient balance for this recharge. Please add funds to your
-              account.</span
-            >
+            <span>
+              Insufficient balance for this recharge. Please add funds to your
+              account.
+            </span>
           </div>
+
+          <!-- Add a button to navigate to deposit page -->
+          <UButton
+            to="/deposit-withdraw"
+            color="emerald"
+            variant="soft"
+            class="w-full mt-3"
+            size="sm"
+          >
+            Add Funds
+          </UButton>
         </div>
 
-        <div class="mb-4">
+        <!-- Only show phone input field if balance is sufficient -->
+        <div v-if="hasSufficientBalance" class="mb-4">
           <label
             for="phone"
             class="block text-sm font-medium text-gray-700 mb-1"
@@ -314,9 +323,17 @@
           </button>
           <button
             @click="handleRecharge"
-            class="flex-1 py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md"
+            :disabled="
+              !hasSufficientBalance || (!phoneNumber && hasSufficientBalance)
+            "
+            class="flex-1 py-2 px-4 text-white font-medium rounded-md transition"
+            :class="[
+              hasSufficientBalance
+                ? 'bg-green-500 hover:bg-green-600'
+                : 'bg-gray-400 cursor-not-allowed',
+            ]"
           >
-            Recharge
+            {{ hasSufficientBalance ? "Recharge" : "Insufficient Balance" }}
           </button>
         </div>
       </div>
@@ -402,33 +419,27 @@ function selectPackage(pack) {
 }
 
 async function handleRecharge() {
+  // Skip recharge if balance is insufficient
+  if (!hasSufficientBalance.value) {
+    toast.error("Insufficient balance for this recharge");
+    return;
+  }
+
   if (!phoneNumber.value) {
     toast.error("Please enter a valid phone number");
     return;
   }
 
-  // Extract numeric value from price (removing currency symbol)
-  const packagePrice = parseFloat(
-    selectedPackage.value.price.replace(/[^\d.]/g, "")
-  );
-  const userBalance = parseFloat(user?.user.balance || 0);
-
-  // Check if user has sufficient balance
-  if (packagePrice > userBalance) {
-    toast.error("Insufficient balance for this recharge");
-    return;
-  }
-
-  console.log(selectedPackage.value);
+  // Proceed with recharge
   const submitValues = {
     package: selectedPackage.value.id,
     phone_number: phoneNumber.value,
     operator: selectedPackage.value.operator,
     amount: selectedPackage.value.price,
   };
+
   try {
     console.log(submitValues);
-
     const res = await post("/mobile-recharge/recharges/", submitValues);
     if (res.data) {
       toast.add({ title: "Recharge successful!" });
@@ -438,6 +449,17 @@ async function handleRecharge() {
     }
   } catch (err) {
     console.log(err);
+    toast.error(err.response?.data?.message || "Recharge failed");
   }
 }
+
+// Add this computed property to check balance sufficiency
+const hasSufficientBalance = computed(() => {
+  if (!selectedPackage.value) return true;
+  const packagePrice = parseFloat(
+    selectedPackage.value.price.replace(/[^\d.]/g, "")
+  );
+  const userBalance = parseFloat(user.value?.user.balance || 0);
+  return packagePrice <= userBalance;
+});
 </script>

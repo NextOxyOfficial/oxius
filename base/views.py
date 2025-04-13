@@ -1970,3 +1970,19 @@ class ShopBannerImageListView(generics.ListAPIView):
     """
     queryset = ShopBannerImage.objects.all()
     serializer_class = ShopBannerImageSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def referred_users(request):
+    current_user = request.user
+    referred_users = User.objects.filter(refer=current_user).order_by('-date_joined')
+    total_referred = referred_users.count()
+    total_earned = current_user.commission_earned
+    
+    serializer = UserSerializer(referred_users, many=True)
+    
+    return Response({
+        'total_referred': total_referred,
+        'total_earned': total_earned,
+        'referred_users': serializer.data
+    }, status=status.HTTP_200_OK)

@@ -189,18 +189,6 @@
                   </div>
                 </button>
               </div>
-
-              <div
-                :class="
-                  activeTab === index
-                    ? `absolute bottom-0 h-0.5 bg-primary-500 dark:bg-primary-400 transition-all duration-300`
-                    : ''
-                "
-                :style="{
-                  left: indicatorLeft + 'px',
-                  width: indicatorWidth + 'px',
-                }"
-              ></div>
             </div>
 
             <div
@@ -323,6 +311,139 @@
                   </table>
                 </div>
               </div>
+
+              <!-- Referred Users Tab -->
+              <div
+                class="tab-pane transition-all duration-500"
+                :class="
+                  activeTab === 1
+                    ? 'opacity-100 translate-x-0'
+                    : 'opacity-0 absolute top-0 translate-x-full'
+                "
+              >
+                <div class="overflow-x-auto">
+                  <table
+                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                  >
+                    <thead class="bg-gray-50 dark:bg-gray-800/50">
+                      <tr>
+                        <th
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          User
+                        </th>
+                        <th
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Email
+                        </th>
+                        <th
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Date Joined
+                        </th>
+                        <th
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                    >
+                      <tr
+                        v-for="(user, index) in referredUsers"
+                        :key="user.id"
+                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all table-row-animate"
+                        :style="`--delay: ${index * 0.05}s`"
+                      >
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div
+                              v-if="!user.image"
+                              class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium user-avatar"
+                            >
+                              {{
+                                (
+                                  user.first_name ||
+                                  user.username ||
+                                  "User"
+                                ).charAt(0)
+                              }}
+                            </div>
+                            <UAvatar
+                              v-else
+                              :src="user.image"
+                              size="sm"
+                              class="user-avatar"
+                            />
+                            <div
+                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100"
+                            >
+                              <div>
+                                {{ user.first_name }} {{ user.last_name }}
+                              </div>
+                              <div class="text-xs text-gray-500">
+                                @{{ user.username }}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                        >
+                          {{ user.email }}
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                        >
+                          {{
+                            user.date_joined_formatted ||
+                            formatDate(user.date_joined)
+                          }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <UBadge
+                            :color="user.is_active ? 'green' : 'gray'"
+                            variant="soft"
+                            size="sm"
+                          >
+                            {{ user.is_active ? "Active" : "Inactive" }}
+                          </UBadge>
+                        </td>
+                      </tr>
+
+                      <tr v-if="referredUsers.length === 0">
+                        <td
+                          colspan="4"
+                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                        >
+                          <div class="py-6">
+                            <div
+                              class="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
+                            >
+                              <UIcon
+                                name="i-heroicons-users"
+                                class="text-3xl text-gray-400 dark:text-gray-500"
+                              />
+                            </div>
+                            <p>You haven't referred any users yet.</p>
+                            <UButton
+                              class="mt-3"
+                              color="primary"
+                              size="sm"
+                              @click="shareOnSocial('whatsapp')"
+                            >
+                              Invite Friends
+                            </UButton>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
             <div
@@ -332,15 +453,22 @@
                 {{
                   activeTab === 0
                     ? `Showing ${filteredEarnings.length} transactions`
-                    : ""
+                    : `Showing ${referredUsers.length} referred users`
                 }}
               </div>
 
               <UPagination
-                v-if="activeTab === 0 && filteredEarnings.length > 5"
+                v-if="
+                  (activeTab === 0 && filteredEarnings.length > 5) ||
+                  (activeTab === 1 && referredUsers.length > 5)
+                "
                 v-model="currentPage"
                 :page-count="2"
-                :total="activeTab === 0 ? filteredEarnings.length : null"
+                :total="
+                  activeTab === 0
+                    ? filteredEarnings.length
+                    : referredUsers.length
+                "
                 size="xs"
                 class="pagination-control"
               />
@@ -601,12 +729,38 @@ definePageMeta({
 });
 
 const { user } = useAuth();
+const { get } = useApi();
 const filterPeriod = ref("All Time");
 const currentPage = ref(1);
-const searchUser = ref("");
 const activeTab = ref(0);
 const indicatorLeft = ref(0);
 const indicatorWidth = ref(0);
+const referredUsers = ref([]);
+
+async function getReferredUsers() {
+  try {
+    const res = await get("/referred-users/");
+    console.log(res);
+
+    if (res?.data?.referred_users) {
+      // If API returns data in the expected format with referred_users array
+      referredUsers.value = res.data.referred_users;
+      // Update the tab count
+      tabs.value[1].count = referredUsers.value.length;
+    } else if (Array.isArray(res?.data)) {
+      // If API directly returns an array
+      referredUsers.value = res.data;
+      // Update the tab count
+      tabs.value[1].count = referredUsers.value.length;
+    } else {
+      console.error("Unexpected data format:", res);
+      referredUsers.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching referred users:", error);
+    referredUsers.value = [];
+  }
+}
 
 // Sample data for earnings history
 const earnings = ref([
@@ -642,6 +796,11 @@ const tabs = ref([
     name: "Earnings History",
     icon: "i-heroicons-banknotes",
     count: earnings.value.length,
+  },
+  {
+    name: "Referred Users",
+    icon: "i-heroicons-users",
+    count: 0, // This will be updated after data is fetched
   },
 ]);
 
@@ -748,45 +907,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateIndicator);
 });
-
-// public section
-definePageMeta({
-  layout: "default",
-});
-
-// FAQ items
-const faqItems = [
-  {
-    label: "How does the referral program work?",
-    content:
-      "When you sign up, you get a unique referral link. Share this link with friends, and when they sign up and complete tasks or make purchases, you earn a 5% commission on their transactions.",
-    icon: "i-heroicons-question-mark-circle",
-  },
-  {
-    label: "When do I get paid my commissions?",
-    content:
-      "Commissions are processed within 24 hours of your referred friend completing a transaction. You can withdraw your earnings once you reach the minimum threshold of ৳100.",
-    icon: "i-heroicons-banknotes",
-  },
-  {
-    label: "Is there a limit to how many people I can refer?",
-    content:
-      "No, there is no limit! You can refer as many friends as you want and earn commissions on all their qualifying transactions.",
-    icon: "i-heroicons-user-group",
-  },
-  {
-    label: "What transactions qualify for the 5% commission?",
-    content:
-      "Most transactions including product purchases, subscription payments, and premium service upgrades qualify. Some exceptions may apply to promotional or discounted items.",
-    icon: "i-heroicons-shopping-bag",
-  },
-  {
-    label: "How long does my referral link stay active?",
-    content:
-      "Your referral link stays active indefinitely. Once a friend uses your link to sign up, they are permanently linked to your account for commission purposes.",
-    icon: "i-heroicons-link",
-  },
-];
 </script>
 
 <style scoped>
