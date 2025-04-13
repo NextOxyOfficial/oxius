@@ -148,6 +148,30 @@
         </div>
       </div>
 
+      <div class="block lg:hidden mb-6">
+        <UContainer>
+          <div class="flex overflow-x-auto space-x-4 scrollbar-thin">
+            <button
+              v-for="category in categoriesWithCounts"
+              :key="category.value"
+              @click="selectCategory(category.value)"
+              class="flex-shrink-0 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              :class="{
+                'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300':
+                  selectedCategory === category.value,
+              }"
+            >
+              {{ category.label }}
+              <span
+                class="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full px-2 py-0.5"
+              >
+                {{ category.count }}
+              </span>
+            </button>
+          </div>
+        </UContainer>
+      </div>
+
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- Categories Sidebar -->
         <div class="w-full lg:w-64 flex-shrink-0">
@@ -400,11 +424,43 @@
                       </span>
                     </div>
                     <span class="text-xs text-slate-400 dark:text-slate-500">
-                      {{ formatDate(item.created_at) }}
+                      {{ timeAgo(item.created_at) }}
                     </span>
                   </div>
                 </div>
               </NuxtLink>
+              <div
+                v-for="post in filteredPosts"
+                :key="post.id"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                <img
+                  :src="post.image"
+                  :alt="post.title"
+                  class="w-full h-40 object-cover"
+                />
+                <div class="p-4">
+                  <h3
+                    class="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2"
+                  >
+                    {{ post.title }}
+                  </h3>
+                  <p
+                    class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2"
+                  >
+                    {{ post.description }}
+                  </p>
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">
+                      Posted by {{ post.user.firstName }} •
+                      {{ timeAgo(post.createdAt) }}
+                    </span>
+                    <span class="text-emerald-500 font-bold">
+                      ${{ post.price }}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Load More Button instead of pagination -->
@@ -429,6 +485,12 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
+import { formatDistanceToNow } from "date-fns";
+
+const timeAgo = (date) => {
+  return formatDistanceToNow(new Date(date), { addSuffix: true });
+};
+
 const route = useRoute();
 const router = useRouter();
 const { get } = useApi();
