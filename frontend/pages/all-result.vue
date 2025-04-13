@@ -2,65 +2,152 @@
   <div
     class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90"
   >
-    <!-- Hero Header with Animated Background -->
-    <div
-      class="relative overflow-hidden py-10 border-b border-slate-200 dark:border-slate-800"
-    >
-      <!-- Animated Background Elements -->
-      <div class="absolute inset-0 z-0">
+    <!-- Banner Slider Section with UContainer -->
+    <div class="relative overflow-hidden mt-4 mb-8">
+      <UContainer class="!px-0">
         <div
-          class="absolute top-10 left-[10%] w-64 h-64 rounded-full bg-primary-300/10 dark:bg-primary-600/5 blur-3xl"
-        ></div>
-        <div
-          class="absolute bottom-5 right-[15%] w-72 h-72 rounded-full bg-amber-300/10 dark:bg-amber-600/5 blur-3xl"
-        ></div>
-      </div>
-
-      <UContainer class="relative z-10">
-        <div class="max-w-3xl mx-auto text-center">
-          <h1
-            class="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight"
+          class="carousel-container rounded-md overflow-hidden shadow-md relative"
+        >
+          <div
+            class="carousel-slides flex transition-transform duration-700 ease-in-out"
+            :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
           >
-            All Posts
-          </h1>
-          <p class="text-slate-600 dark:text-slate-300 mb-6 max-w-xl mx-auto">
-            {{
-              searchQuery
-                ? `Showing results for "${searchQuery}"`
-                : "Discover our extensive collection of high-quality posts"
-            }}
-          </p>
-
-          <!-- Premium Search Bar -->
-          <div class="relative max-w-2xl mx-auto">
             <div
-              class="absolute inset-0 bg-gradient-to-r from-primary-500/20 via-transparent to-amber-500/20 blur-lg rounded-full opacity-50"
-            ></div>
-            <div class="relative flex">
-              <input
-                v-model="searchInput"
-                type="text"
-                placeholder="Search for anything..."
-                class="w-full py-4 px-6 pl-12 rounded-l-xl border-0 bg-white dark:bg-slate-800/90 shadow-lg focus:ring-2 focus:ring-primary-500"
-                @keyup.enter="performSearch"
-              />
-              <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 size-5"
-              />
-              <button
-                @click="performSearch"
-                class="bg-primary-600 hover:bg-primary-700 text-white px-6 rounded-r-xl font-medium transition-colors flex items-center justify-center"
-              >
-                Search
-              </button>
+              v-for="(slide, index) in bannerSlides"
+              :key="index"
+              class="w-full flex-shrink-0 relative"
+            >
+              <div class="relative h-64 sm:h-72 md:h-80">
+                <img
+                  :src="slide.image"
+                  :alt="slide.title"
+                  class="w-full h-full object-cover"
+                />
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex items-center"
+                >
+                  <div class="px-6 sm:px-10 max-w-2xl">
+                    <div
+                      class="w-12 h-1 bg-emerald-400 mb-4 rounded-full"
+                    ></div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">
+                      {{ slide.title }}
+                    </h2>
+                    <p class="text-white/80 text-sm sm:text-base mb-4">
+                      {{ slide.description }}
+                    </p>
+                    <UButton
+                      color="emerald"
+                      :to="slide.link"
+                      class="text-white font-medium"
+                    >
+                      {{ slide.buttonText }}
+                    </UButton>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- Banner Controls -->
+          <div
+            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2"
+          >
+            <button
+              v-for="(_, index) in bannerSlides"
+              :key="index"
+              @click="goToSlide(index)"
+              class="w-2.5 h-2.5 rounded-full transition-all duration-300"
+              :class="
+                currentSlide === index
+                  ? 'bg-emerald-400 scale-110'
+                  : 'bg-white/50 hover:bg-white/70'
+              "
+            ></button>
+          </div>
+
+          <button
+            @click="prevSlide"
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 backdrop-blur-sm"
+          >
+            <UIcon name="i-heroicons-chevron-left" />
+          </button>
+          <button
+            @click="nextSlide"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 backdrop-blur-sm"
+          >
+            <UIcon name="i-heroicons-chevron-right" />
+          </button>
         </div>
       </UContainer>
     </div>
 
-    <UContainer class="py-10">
+    <UContainer>
+      <!-- Compact Search Bar -->
+      <div class="mb-8 relative">
+        <div class="max-w-2xl mx-auto relative">
+          <input
+            v-model="searchInput"
+            type="text"
+            placeholder="Search posts..."
+            class="w-full py-3 px-5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-emerald-500"
+            @input="debouncedSearch"
+            @keyup.enter="performSearch"
+          />
+          <UIcon
+            name="i-heroicons-magnifying-glass"
+            class="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 size-4"
+          />
+          <button
+            v-if="searchInput"
+            @click="clearSearch"
+            class="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          >
+            <UIcon name="i-heroicons-x-mark" class="size-4" />
+          </button>
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div
+          v-if="showSearchResults && searchResults.length > 0"
+          class="absolute mt-1 w-full max-w-2xl bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-10 max-h-80 overflow-y-auto mx-auto left-0 right-0 search-dropdown"
+          style="margin-left: auto; margin-right: auto"
+        >
+          <div class="p-2">
+            <div class="text-xs text-slate-500 dark:text-slate-400 mb-1 px-2">
+              Search results
+            </div>
+            <NuxtLink
+              v-for="result in searchResults.slice(0, 5)"
+              :key="result.id"
+              :to="`/classified/${result.id}`"
+              class="block p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
+              @click="showSearchResults = false"
+            >
+              <div class="font-medium text-slate-900 dark:text-white">
+                {{ result.title }}
+              </div>
+              <div
+                class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1"
+                v-html="result.description || 'No description'"
+              ></div>
+            </NuxtLink>
+
+            <div
+              v-if="searchResults.length > 5"
+              class="mt-1 p-2 text-center text-sm text-emerald-600 dark:text-emerald-400 border-t border-slate-100 dark:border-slate-700"
+            >
+              <button
+                @click="performSearch"
+                class="font-medium hover:underline"
+              >
+                View all {{ searchResults.length }} results
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- Categories Sidebar -->
         <div class="w-full lg:w-64 flex-shrink-0">
@@ -69,14 +156,14 @@
           >
             <div class="flex items-center mb-4">
               <div
-                class="h-5 w-1.5 rounded-full bg-gradient-to-b from-primary-400 to-primary-600 mr-3"
+                class="h-5 w-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 mr-3"
               ></div>
               <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
                 Categories
               </h2>
             </div>
 
-            <!-- Category List -->
+            <!-- Category List with Post Counts and Icons -->
             <div
               class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1 scrollbar-thin"
             >
@@ -85,44 +172,41 @@
                 class="w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center"
                 :class="
                   !selectedCategory
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30'
                 "
               >
-                <UIcon
-                  name="i-heroicons-squares-2x2-mini"
-                  class="mr-2 size-4"
-                />
+                <UIcon name="i-heroicons-squares-2x2" class="mr-2 size-4" />
                 All Categories
                 <span
-                  v-if="!selectedCategory"
-                  class="ml-auto bg-primary-100 dark:bg-primary-800/30 text-primary-700 dark:text-primary-300 text-xs rounded-full px-2 py-0.5"
+                  class="ml-auto bg-emerald-100 dark:bg-emerald-800/30 text-emerald-700 dark:text-emerald-300 text-xs rounded-full px-2 py-0.5"
                 >
                   {{ totalItems }}
                 </span>
               </button>
 
               <button
-                v-for="category in categories.filter((c) => c.value !== null)"
+                v-for="category in categoriesWithCounts"
                 :key="category.value"
                 @click="() => selectCategory(category.value)"
                 class="w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center group"
                 :class="
                   selectedCategory === category.value
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30'
                 "
               >
-                <UIcon
-                  :name="getCategoryIcon(category.value)"
+                <NuxtImg
+                  :src="getCategoryIcon(category.value)"
+                  :alt="category.label"
                   class="mr-2 size-4"
                 />
+
                 {{ category.label }}
                 <span
-                  v-if="selectedCategory === category.value"
-                  class="ml-auto bg-primary-100 dark:bg-primary-800/30 text-primary-700 dark:text-primary-300 text-xs rounded-full px-2 py-0.5"
+                  class="ml-auto bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 text-xs rounded-full px-2 py-0.5"
                 >
-                  {{ resultsCount }}
+                  {{ category.count }}
                 </span>
               </button>
             </div>
@@ -168,7 +252,7 @@
                 <UBadge
                   v-for="filter in activeFilters"
                   :key="filter.id"
-                  color="primary"
+                  color="emerald"
                   variant="soft"
                   class="ml-2 px-2.5 py-1 cursor-pointer"
                   @click="removeFilter(filter.id)"
@@ -185,26 +269,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- View Mode Toggle -->
-            <UButtonGroup>
-              <UButton
-                :color="viewMode === 'grid' ? 'primary' : 'gray'"
-                @click="viewMode = 'grid'"
-                icon="i-heroicons-squares-2x2"
-                variant="soft"
-                size="sm"
-                aria-label="Grid view"
-              />
-              <UButton
-                :color="viewMode === 'list' ? 'primary' : 'gray'"
-                @click="viewMode = 'list'"
-                icon="i-heroicons-bars-3"
-                variant="soft"
-                size="sm"
-                aria-label="List view"
-              />
-            </UButtonGroup>
           </div>
 
           <!-- Loading State with Premium Animation -->
@@ -217,7 +281,7 @@
                 class="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700"
               ></div>
               <div
-                class="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-t-primary-500 animate-spin"
+                class="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-t-emerald-500 animate-spin"
               ></div>
             </div>
             <p class="mt-6 text-slate-500 dark:text-slate-400 font-medium">
@@ -250,7 +314,7 @@
               your filters or search terms.
             </p>
             <UButton
-              color="primary"
+              color="emerald"
               variant="soft"
               size="lg"
               @click="clearAllFilters"
@@ -258,13 +322,10 @@
               Clear filters
             </UButton>
           </div>
-
-          <!-- Results Grid with Staggered Animation -->
+          <!-- Results Grid with 4 items per row -->
           <div v-else>
-            <!-- Grid View - 6 cards per row on large screens -->
             <div
-              v-if="viewMode === 'grid'"
-              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5"
+              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
             >
               <NuxtLink
                 v-for="(item, index) in results"
@@ -289,31 +350,37 @@
                   ></div>
 
                   <!-- Category Badge -->
-                  <UBadge
-                    :color="getCategoryColor(item.category?.id)"
-                    variant="soft"
-                    class="absolute top-3 left-3"
-                  >
-                    {{ item.category?.title || "Uncategorized" }}
-                  </UBadge>
+                  <div class="absolute top-3 right-3">
+                    <UBadge color="emerald" variant="solid" class="shadow-sm">
+                      <div class="flex items-center">
+                        <UIcon
+                          :name="getCategoryIcon(item.category?.id)"
+                          class="size-3.5 mr-1"
+                        />
+                        <span>{{
+                          item.category?.title || "Uncategorized"
+                        }}</span>
+                      </div>
+                    </UBadge>
+                  </div>
                 </div>
 
                 <!-- Content -->
                 <div class="p-4">
                   <h3
-                    class="font-semibold text-slate-900 dark:text-white text-base mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
+                    class="font-semibold text-slate-900 dark:text-white text-base mb-2 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
                   >
                     {{ item.title }}
                   </h3>
+                  <!-- Using v-html for description -->
                   <p
                     class="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2"
-                  >
-                    {{
+                    v-html="
                       item.instructions ||
                       item.description ||
-                      "No description available"
-                    }}
-                  </p>
+                      'No description available'
+                    "
+                  ></p>
 
                   <!-- Footer with metadata -->
                   <div
@@ -340,96 +407,19 @@
               </NuxtLink>
             </div>
 
-            <!-- List View -->
-            <div v-else class="space-y-4">
-              <NuxtLink
-                v-for="(item, index) in results"
-                :key="item.id"
-                :to="`/classified/${item.id}`"
-                class="result-card flex flex-col sm:flex-row bg-white dark:bg-slate-800/90 rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-slate-200/70 dark:border-slate-700/40 transition-all duration-300"
-                :style="{ animationDelay: `${index * 40}ms` }"
+            <!-- Load More Button instead of pagination -->
+            <div class="mt-12 flex justify-center" v-if="hasMoreItems">
+              <UButton
+                color="emerald"
+                variant="outline"
+                @click="loadMore"
+                :loading="isLoadingMore"
+                size="lg"
+                class="min-w-40"
               >
-                <!-- Thumbnail -->
-                <div class="sm:w-48 md:w-64 relative overflow-hidden">
-                  <img
-                    :src="
-                      item.medias && item.medias.length > 0
-                        ? item.medias[0].image
-                        : '/images/placeholder.jpg'
-                    "
-                    :alt="item.title"
-                    class="w-full h-full object-cover aspect-video sm:aspect-auto"
-                  />
-
-                  <!-- Category Badge -->
-                  <UBadge
-                    :color="getCategoryColor(item.category?.id)"
-                    variant="soft"
-                    class="absolute top-3 left-3"
-                  >
-                    {{ item.category?.title || "Uncategorized" }}
-                  </UBadge>
-                </div>
-
-                <!-- Content -->
-                <div class="flex-1 p-5">
-                  <h3
-                    class="font-semibold text-slate-900 dark:text-white text-lg mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
-                  >
-                    {{ item.title }}
-                  </h3>
-                  <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">
-                    {{
-                      item.instructions ||
-                      item.description ||
-                      "No description available"
-                    }}
-                  </p>
-
-                  <!-- Footer with metadata -->
-                  <div
-                    class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700/30"
-                  >
-                    <div class="flex items-center">
-                      <UAvatar
-                        :src="item.user?.image"
-                        :alt="item.user?.username || 'Anonymous'"
-                        size="sm"
-                        class="mr-2"
-                      />
-                      <span class="text-sm text-slate-500 dark:text-slate-400">
-                        {{ item.user?.username || "Anonymous" }}
-                      </span>
-                    </div>
-                    <span class="text-xs text-slate-400 dark:text-slate-500">
-                      {{ formatDate(item.created_at) }}
-                    </span>
-                  </div>
-                </div>
-              </NuxtLink>
+                Load More
+              </UButton>
             </div>
-          </div>
-
-          <!-- Enhanced Pagination -->
-          <div class="mt-12 flex justify-center">
-            <UPagination
-              v-model="currentPage"
-              :total="totalItems"
-              :page-count="5"
-              :items-per-page="itemsPerPage"
-              :ui="{
-                wrapper: 'flex items-center gap-1',
-                base: 'rounded-lg transition-colors flex items-center justify-center',
-                default: {
-                  size: 'size-10',
-                  inactive:
-                    'bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600',
-                  active:
-                    'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/30 text-primary-600 dark:text-primary-400 font-semibold',
-                },
-              }"
-              @change="changePage"
-            />
           </div>
         </div>
       </div>
@@ -438,7 +428,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 const route = useRoute();
 const router = useRouter();
 const { get } = useApi();
@@ -449,14 +439,53 @@ const searchInput = ref("");
 const searchQuery = ref("");
 const selectedCategory = ref(null);
 const sortOption = ref("newest");
-const viewMode = ref("grid");
 const isLoading = ref(true);
+const isLoadingMore = ref(false);
 const results = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = ref(18); // 3 rows of 6 items for desktop
+const itemsPerPage = ref(16); // 4 rows of 4 items
 const totalItems = ref(0);
-const categories = ref([{ label: "All Categories", value: null }]);
+const categories = ref([
+  {
+    label: "All Categories",
+    value: null,
+    image: null,
+  },
+]);
+const categoryCounts = ref({});
+const searchResults = ref([]);
+const showSearchResults = ref(false);
 
+// Banner Slider State
+const currentSlide = ref(0);
+const intervalId = ref(null);
+const bannerSlides = ref([
+  {
+    image: "/images/banners/classified-banner-1.jpg",
+    title: "Find What You Need",
+    description:
+      "Explore our marketplace for the best deals on thousands of items",
+    link: "/all-result",
+    buttonText: "Browse All",
+  },
+  {
+    image: "/images/banners/classified-banner-2.jpg",
+    title: "Post Your Items",
+    description:
+      "List your items for free and reach thousands of potential buyers",
+    link: "/create-classified",
+    buttonText: "Get Started",
+  },
+  {
+    image: "/images/banners/classified-banner-3.jpg",
+    title: "Local Services",
+    description: "Find reliable local service providers for all your needs",
+    link: "/all-result?category=services",
+    buttonText: "Find Services",
+  },
+]);
+
+// Sort options
 const sortOptions = [
   { label: "Newest First", value: "newest" },
   { label: "Oldest First", value: "oldest" },
@@ -467,44 +496,30 @@ const sortOptions = [
 
 // Icons for categories (pseudorandom based on category id)
 const categoryIcons = [
-  "i-heroicons-shopping-bag-mini",
-  "i-heroicons-home-mini",
-  "i-heroicons-wrench-screwdriver-mini",
-  "i-heroicons-academic-cap-mini",
-  "i-heroicons-briefcase-mini",
-  "i-heroicons-building-office-mini",
-  "i-heroicons-computer-desktop-mini",
-  "i-heroicons-truck-mini",
+  "i-heroicons-shopping-bag",
+  "i-heroicons-home",
+  "i-heroicons-wrench-screwdriver",
+  "i-heroicons-academic-cap",
+  "i-heroicons-briefcase",
+  "i-heroicons-building-office",
+  "i-heroicons-computer-desktop",
+  "i-heroicons-truck",
 ];
 
-// Fetch categories
-async function fetchCategories() {
-  try {
-    const response = await get("/classified-categories-all/");
-    if (response && response.data) {
-      // Map API response to format needed for USelect
-      const apiCategories = response.data.map((category) => ({
-        label: category.title,
-        value: category.id,
-      }));
-
-      // Keep "All Categories" option at the top
-      categories.value = [
-        { label: "All Categories", value: null },
-        ...apiCategories,
-      ];
-    }
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    toast.add({
-      title: "Failed to load categories",
-      description: error.message || "An unexpected error occurred",
-      color: "red",
-    });
-  }
-}
-
 // Computed properties
+const hasMoreItems = computed(() => {
+  return results.value.length < totalItems.value;
+});
+
+const categoriesWithCounts = computed(() => {
+  return categories.value
+    .filter((cat) => cat.value !== null)
+    .map((category) => ({
+      ...category,
+      count: categoryCounts.value[category.value] || 0,
+    }));
+});
+
 const activeFilters = computed(() => {
   const filters = [];
 
@@ -542,11 +557,83 @@ const activeFilters = computed(() => {
 
 const resultsCount = computed(() => results.value.length);
 
-// Methods
+// Banner methods
+function nextSlide() {
+  currentSlide.value = (currentSlide.value + 1) % bannerSlides.value.length;
+  resetSliderInterval();
+}
+
+function prevSlide() {
+  currentSlide.value =
+    (currentSlide.value - 1 + bannerSlides.value.length) %
+    bannerSlides.value.length;
+  resetSliderInterval();
+}
+
+function goToSlide(index) {
+  currentSlide.value = index;
+  resetSliderInterval();
+}
+
+function startSliderInterval() {
+  intervalId.value = setInterval(() => {
+    nextSlide();
+  }, 5000);
+}
+
+function resetSliderInterval() {
+  clearInterval(intervalId.value);
+  startSliderInterval();
+}
+
+// Methods for search and filtering
+let searchTimeout = null;
+function debouncedSearch() {
+  showSearchResults.value = !!searchInput.value;
+
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    if (searchInput.value) {
+      fetchSearchResults();
+    } else {
+      searchResults.value = [];
+      showSearchResults.value = false;
+    }
+  }, 300);
+}
+
+function clearSearch() {
+  searchInput.value = "";
+  searchQuery.value = "";
+  searchResults.value = [];
+  showSearchResults.value = false;
+  fetchResults();
+}
+
+async function fetchSearchResults() {
+  try {
+    const params = new URLSearchParams();
+    params.append("title", searchInput.value);
+    params.append("is_approved", "true");
+    params.append("status", "active");
+    params.append("page_size", "10");
+
+    const response = await get(`/classified-posts/?${params.toString()}`);
+
+    if (response && response.data && response.data.results) {
+      searchResults.value = response.data.results;
+    }
+  } catch (error) {
+    console.error("Error fetching search results:", error);
+    searchResults.value = [];
+  }
+}
+
 function performSearch() {
   if (searchInput.value) {
     searchQuery.value = searchInput.value;
     currentPage.value = 1;
+    showSearchResults.value = false;
     fetchResults();
 
     // Update URL with search query
@@ -555,7 +642,6 @@ function performSearch() {
       query: {
         ...route.query,
         q: searchInput.value,
-        page: 1,
       },
     });
   }
@@ -572,7 +658,6 @@ function selectCategory(categoryId) {
     query: {
       ...route.query,
       category: categoryId,
-      page: 1,
     },
   });
 }
@@ -642,33 +727,89 @@ function clearAllFilters() {
   router.push({ path: route.path });
 }
 
-function changePage(page) {
-  currentPage.value = page;
-  fetchResults();
+// Load more items function instead of pagination
+async function loadMore() {
+  if (isLoadingMore.value) return;
 
-  // Update URL with page number
-  router.push({
-    path: route.path,
-    query: {
-      ...route.query,
-      page,
-    },
-  });
+  isLoadingMore.value = true;
 
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  try {
+    currentPage.value += 1;
+
+    // Build query parameters
+    let endpoint = "/classified-posts/";
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.append("page", currentPage.value);
+    params.append("page_size", itemsPerPage.value);
+
+    // Only show approved posts
+    params.append("is_approved", "true");
+    params.append("status", "active");
+
+    // Add search if present
+    if (searchQuery.value) {
+      params.append("title", searchQuery.value);
+    }
+
+    // Change endpoint if category filtering is needed
+    if (selectedCategory.value) {
+      endpoint = "/classified-posts/filter/";
+      params.append("category", selectedCategory.value);
+    }
+
+    // Add sorting
+    if (sortOption.value) {
+      // Map frontend sort options to backend options
+      const sortMapping = {
+        newest: "-created_at",
+        oldest: "created_at",
+        price_asc: "price",
+        price_desc: "-price",
+        popular: "-view_count",
+      };
+
+      const backendSort = sortMapping[sortOption.value] || "-created_at";
+      params.append("ordering", backendSort);
+    }
+
+    // Make the API call
+    const response = await get(`${endpoint}?${params.toString()}`);
+
+    if (response && response.data) {
+      if (response.data.results) {
+        // Append to existing results
+        results.value = [...results.value, ...response.data.results];
+        totalItems.value = response.data.count;
+      } else if (Array.isArray(response.data)) {
+        // Handle array response
+        results.value = [...results.value, ...response.data];
+        totalItems.value = results.value.length;
+      }
+    }
+  } catch (error) {
+    console.error("Error loading more posts:", error);
+    toast.add({
+      title: "Error loading more posts",
+      description: error.message || "Failed to load more posts",
+      color: "red",
+    });
+  } finally {
+    isLoadingMore.value = false;
+  }
 }
 
 function getCategoryColor(categoryId) {
   // Create a deterministic color based on category ID
   const colors = [
     "green",
-    "blue",
-    "purple",
-    "orange",
-    "red",
-    "amber",
     "emerald",
+    "teal",
+    "cyan",
+    "blue",
+    "indigo",
+    "violet",
   ];
 
   if (!categoryId) return "gray";
@@ -682,16 +823,36 @@ function getCategoryColor(categoryId) {
   return colors[Math.abs(hash) % colors.length];
 }
 
+// Modified function to get category icon or image
 function getCategoryIcon(categoryId) {
-  if (!categoryId) return "i-heroicons-squares-2x2-mini";
+  // First check if we have this category with an image
+  const category = categories.value.find((c) => c.value === categoryId);
+
+  // If we have a category with an image, return that
+  if (category && category.image) {
+    return category.image;
+  }
+
+  // Fallback to default icons
+  if (!categoryId) return "i-heroicons-squares-2x2";
 
   // Use the string hash to pick a consistent icon
-  const hash = categoryId.split("").reduce((a, b) => {
-    a = (a << 5) - a + b.charCodeAt(0);
-    return a & a;
-  }, 0);
+  const hash = String(categoryId)
+    .split("")
+    .reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0);
+      return a & a;
+    }, 0);
 
   return categoryIcons[Math.abs(hash) % categoryIcons.length];
+}
+
+// New function to check if a value is a URL
+function isImageUrl(value) {
+  return (
+    typeof value === "string" &&
+    (value.startsWith("http://") || value.startsWith("https://"))
+  );
 }
 
 function formatDate(dateString) {
@@ -703,8 +864,60 @@ function formatDate(dateString) {
   }).format(date);
 }
 
+// Fetch category counts
+async function fetchCategoryCounts() {
+  try {
+    const response = await get("/classified-categories-count/");
+    if (response && response.data) {
+      const countData = {};
+
+      // Assuming response.data is an array of objects with id and count properties
+      response.data.forEach((item) => {
+        countData[item.id] = item.count;
+      });
+
+      categoryCounts.value = countData;
+    }
+  } catch (error) {
+    console.error("Error fetching category counts:", error);
+  }
+}
+
+// Fetch categories
+async function fetchCategories() {
+  try {
+    const response = await get("/classified-categories-all/");
+    if (response && response.data) {
+      // Map API response to format needed with images
+      const apiCategories = response.data.map((category) => ({
+        label: category.title,
+        value: category.id,
+        image: category.image || null,
+      }));
+
+      // Keep "All Categories" option at the top
+      categories.value = [
+        { label: "All Categories", value: null, image: null },
+        ...apiCategories,
+      ];
+
+      // Fetch category counts after fetching categories
+      await fetchCategoryCounts();
+    }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    toast.add({
+      title: "Failed to load categories",
+      description: error.message || "An unexpected error occurred",
+      color: "red",
+    });
+  }
+}
+
 async function fetchResults() {
   isLoading.value = true;
+  results.value = []; // Clear results when fetching new ones
+  currentPage.value = 1; // Reset to first page
 
   try {
     // Build query parameters
@@ -784,7 +997,7 @@ async function fetchResults() {
 
 // Initialize from URL params and fetch data
 onMounted(async () => {
-  const { q, category, sort, page } = route.query;
+  const { q, category, sort } = route.query;
 
   if (q) {
     searchInput.value = q;
@@ -799,20 +1012,32 @@ onMounted(async () => {
     sortOption.value = sort;
   }
 
-  if (page) {
-    currentPage.value = parseInt(page, 10);
-  }
+  // Start banner slider
+  startSliderInterval();
 
   // Fetch categories first, then fetch results
   await fetchCategories();
   fetchResults();
+
+  // Handle clicks outside search results dropdown
+  window.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-dropdown") && showSearchResults.value) {
+      showSearchResults.value = false;
+    }
+  });
+});
+
+// Cleanup on component unmount
+onBeforeUnmount(() => {
+  clearInterval(intervalId.value);
+  window.removeEventListener("click", () => {});
 });
 
 // Watch for route changes
 watch(
   () => route.query,
   (newQuery) => {
-    const { q, category, sort, page } = newQuery;
+    const { q, category, sort } = newQuery;
 
     if (q !== undefined && q !== searchQuery.value) {
       searchInput.value = q || "";
@@ -825,10 +1050,6 @@ watch(
 
     if (sort !== undefined && sort !== sortOption.value) {
       sortOption.value = sort || "newest";
-    }
-
-    if (page !== undefined && parseInt(page, 10) !== currentPage.value) {
-      currentPage.value = parseInt(page, 10) || 1;
     }
 
     if (JSON.stringify(newQuery) !== JSON.stringify(route.query)) {
