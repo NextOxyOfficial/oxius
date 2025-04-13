@@ -331,3 +331,6 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order,OrderAdmin)
 admin.site.register(BannerImage)
 admin.site.register(ShopBannerImage)
+admin.site.register(ProductBenefit)
+admin.site.register(ProductFAQ)
+admin.site.register(ProductTrustBadge)

@@ -39,7 +39,7 @@
           v-else
           @click="
             editField(
-              'benefitsTitle',
+              'benefits_title',
               editorData.benefits_title || `Why Choose ?`
             )
           "
@@ -266,7 +266,7 @@
             v-else
             @click.stop="
               editField(
-                'benefitsCta',
+                'benefits_cta',
                 editorData.benefits_cta || 'Yes! I Want This Now'
               )
             "
@@ -297,7 +297,7 @@
             v-else
             @click="
               editField(
-                'faqsTitle',
+                'faqs_title',
                 editorData.faqs_title || 'Frequently Asked Questions'
               )
             "
@@ -316,7 +316,7 @@
             v-else
             @click="
               editField(
-                'faqsSubtitle',
+                'faqs_subtitle',
                 editorData.faqs_subtitle ||
                   'Everything you need to know about our product'
               )
@@ -416,7 +416,7 @@
             v-else
             @click="
               editField(
-                'ctaTitle',
+                'cta_title',
                 editorData.cta_title || 'Ready to Experience the Difference?'
               )
             "
@@ -435,7 +435,7 @@
             v-else
             @click="
               editField(
-                'ctaSubtitle',
+                'cta_subtitle',
                 editorData.cta_subtitle ||
                   `Join thousands of satisfied customers who have already transformed their experience with ${currentProduct.name}.`
               )
@@ -487,7 +487,7 @@
             v-else
             @click.stop="
               editField(
-                'ctaButtonText',
+                'cta_button_text',
                 editorData.cta_button_text || 'Order Now & Save'
               )
             "
@@ -503,7 +503,7 @@
               v-else
               @click.stop="
                 editField(
-                  'ctaButtonSubtext',
+                  'cta_button_subtext',
                   editorData.cta_button_subtext || '30-Day Money Back Guarantee'
                 )
               "
@@ -810,6 +810,7 @@ const trust_badges = ref([
     icon: "i-heroicons-credit-card",
     enabled: true,
     description: "Emphasize the security of your payment process",
+    editorField: "cta_badge1", 
   },
   {
     id: "guarantee",
@@ -817,6 +818,7 @@ const trust_badges = ref([
     icon: "i-heroicons-shield-check",
     enabled: true,
     description: "Build customer confidence with a guarantee",
+    editorField: "cta_badge2", 
   },
   {
     id: "delivery",
@@ -824,6 +826,7 @@ const trust_badges = ref([
     icon: "i-heroicons-truck",
     enabled: true,
     description: "Highlight your quick shipping options",
+    editorField: "cta_badge3", 
   },
 ]);
 
@@ -925,12 +928,29 @@ function editBenefit(index, field, value) {
 
 // Open Trust Badge Editor Modal
 function openTrustBadgeEditor() {
+  // Sync editor data to trust badges before opening modal
+  trust_badges.value.forEach((badge) => {
+    if (badge.editorField && editorData[badge.editorField]) {
+      badge.text = editorData[badge.editorField];
+    }
+  });
+
   isTrustBadgeModalOpen.value = true;
 }
 
 // Save Trust Badges changes
 function saveTrustBadges() {
+  // Update editorData fields with badge text values
+  trust_badges.value.forEach((badge) => {
+    if (badge.editorField) {
+      editorData[badge.editorField] = badge.enabled ? badge.text : "";
+    }
+  });
+
   isTrustBadgeModalOpen.value = false;
+
+  // Emit content update after saving
+  emitContentUpdate();
 
   toast.add({
     title: "Trust Badges Updated",
@@ -1067,6 +1087,14 @@ onMounted(() => {
     // Populate trust badges
     if (props.currentProduct.editorData.trust_badges?.length) {
       trust_badges.value = [...props.currentProduct.editorData.trust_badges];
+    } else {
+      // If no trust badges in editorData but badge text exists, update trust badges
+      trust_badges.value.forEach((badge) => {
+        if (badge.editorField && editorData[badge.editorField]) {
+          badge.text = editorData[badge.editorField];
+          badge.enabled = Boolean(editorData[badge.editorField]);
+        }
+      });
     }
   }
 

@@ -667,7 +667,7 @@
             <UCheckbox
               name="notifications"
               v-model="advanceEditMode"
-              label="Advance Edit Mode"
+              label="Apply Custom Landing Page For This Product"
               class="mb-2"
             />
             <CommonAdvanceProductEditor
@@ -867,6 +867,7 @@ async function handleAddProduct() {
       ...form.value.editorData,
       is_advanced: advanceEditMode.value,
     };
+    console.log("Product data for API submission:", productData);
 
     // Set is_free_delivery based on delivery method selection
     if (form.value.deliveryMethod === "free") {
