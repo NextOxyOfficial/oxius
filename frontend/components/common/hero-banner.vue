@@ -139,9 +139,6 @@ import {
   ChevronRight,
   DollarSign,
   ShoppingBag,
-  Clock,
-  Shield,
-  UserCheck,
 } from "lucide-vue-next";
 const { get } = useApi();
 
@@ -167,13 +164,12 @@ const currentSlide = ref(0);
 let intervalId = null;
 
 const nextSlide = () => {
-  currentSlide.value =
-    currentSlide.value === sliderImages.length - 1 ? 0 : currentSlide.value + 1;
+  currentSlide.value = (currentSlide.value + 1) % sliderImages.value.length;
 };
 
 const prevSlide = () => {
   currentSlide.value =
-    currentSlide.value === 0 ? sliderImages.length - 1 : currentSlide.value - 1;
+    currentSlide.value === 0 ? sliderImages.value.length - 1 : currentSlide.value - 1;
 };
 
 const goToSlide = (index) => {
