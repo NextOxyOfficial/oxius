@@ -680,6 +680,7 @@
     >
       <GigsViewer @close="isOpen = false" :gid="previewGid" />
     </UModal>
+    <!-- <CommonFloatingNotification /> -->
   </div>
 </template>
 
