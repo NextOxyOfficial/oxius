@@ -151,20 +151,10 @@
             Please select this field
           </p>
           <div class="my-2 space-x-3">
-            <UButton
-              v-if="
-                user.user.name &&
-                user.user.address &&
-                user.user.phone &&
-                user.user.city &&
-                user.user.zip
-              "
-              size="sm"
-              @click="deposit"
-              :loading="isDepositLoading"
-              >{{ $t("diposit") }}</UButton
-            >
-            <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton>
+            <UButton size="sm" @click="deposit" :loading="isDepositLoading">{{
+              $t("diposit")
+            }}</UButton>
+            <!-- <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton> -->
           </div>
         </div>
         <div v-if="currentTab === 2" class="max-sm:w-full">

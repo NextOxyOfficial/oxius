@@ -400,7 +400,6 @@
 
             <div class="flex justify-center">
               <UButton
-                v-if="user.user.kyc"
                 :loading="isLoading"
                 class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                 size="lg"
@@ -415,7 +414,7 @@
                 Post Gig
               </UButton>
 
-              <UButton
+              <!-- <UButton
                 v-else
                 class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                 size="lg"
@@ -427,7 +426,7 @@
                   <UIcon name="i-heroicons-paper-airplane" />
                 </template>
                 Post Gig
-              </UButton>
+              </UButton> -->
             </div>
           </div>
         </form>
