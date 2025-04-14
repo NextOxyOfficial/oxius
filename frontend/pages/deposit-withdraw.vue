@@ -321,7 +321,7 @@
               }"
             >
               <div
-                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
+                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden max-h-[30vh]"
               >
                 <UButton
                   icon="i-heroicons-x-mark"
