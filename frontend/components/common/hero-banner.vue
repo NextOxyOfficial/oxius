@@ -34,7 +34,7 @@
             <!-- Navigation arrows - slightly reduced size -->
             <button
               @click="prevSlide"
-              class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full p-1.5 sm:p-2 z-20 transition-all duration-300 border border-white/20"
+              class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full p-1.5 sm:p-2 z-20 transition-all duration-300 border border-white/20 opacity-0"
               aria-label="Previous slide"
             >
               <ChevronLeft class="h-4 w-4 text-white" />
@@ -42,7 +42,7 @@
 
             <button
               @click="nextSlide"
-              class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full p-1.5 sm:p-2 z-20 transition-all duration-300 border border-white/20"
+              class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full p-1.5 sm:p-2 z-20 transition-all duration-300 border border-white/20 opacity-0"
               aria-label="Next slide"
             >
               <ChevronRight class="h-4 w-4 text-white" />
@@ -169,7 +169,9 @@ const nextSlide = () => {
 
 const prevSlide = () => {
   currentSlide.value =
-    currentSlide.value === 0 ? sliderImages.value.length - 1 : currentSlide.value - 1;
+    currentSlide.value === 0
+      ? sliderImages.value.length - 1
+      : currentSlide.value - 1;
 };
 
 const goToSlide = (index) => {
