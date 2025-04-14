@@ -604,6 +604,7 @@ async function handleCreateStore() {
       form.store_name = "";
       form.store_username = "";
       getStoreDetails();
+      jwtLogin();
     }
 
     // Show success modal

@@ -174,7 +174,7 @@
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- Categories Sidebar -->
-        <div class="w-full lg:w-64 flex-shrink-0">
+        <div class="w-full lg:w-64 flex-shrink-0 max-sm:hidden">
           <div
             class="bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700/30 sticky top-24"
           >
@@ -397,14 +397,14 @@
                     {{ item.title }}
                   </h3>
                   <!-- Using v-html for description -->
-                  <p
-                    class="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2"
+                  <div
+                    class="text-slate-600 dark:text-slate-300 text-sm mb-4 !line-clamp-2"
                     v-html="
                       item.instructions ||
                       item.description ||
                       'No description available'
                     "
-                  ></p>
+                  ></div>
 
                   <!-- Footer with metadata -->
                   <div

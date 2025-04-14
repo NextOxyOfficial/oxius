@@ -1,40 +1,28 @@
 <template>
   <div class="font-AnekBangla">
-    <template v-if="loader">
+    <PublicHeader />
+    <slot />
+    <PublicFooter />
+    <UNotifications />
+
+    <div v-if="loader" class="fixed inset-0 z-[99999999] bg-white">
       <NuxtLoadingIndicator class="!opacity-[1]" />
-      <section
-        class="h-screen w-screen flex items-center justify-center"
-        v-if="!user"
-      >
-        <div class="opacity-0 absolute -z-50">
-          <slot />
-        </div>
+      <section class="h-screen w-screen flex items-center justify-center">
         <CommonPreloader />
       </section>
-    </template>
-    <template v-else>
-      <PublicHeader />
-      <slot />
-      <PublicFooter />
-    </template>
-    <UNotifications />
+    </div>
   </div>
 </template>
 
 <script setup>
-const { jwtLogin, user } = useAuth();
+const { jwtLogin } = useAuth();
 const loader = ref(true);
-if (!useCookie("adsyclub-jwt").value) {
-  loader.value = false;
-} else {
-  jwtLogin();
-  loader.value = false;
-}
-// onMounted(() => {
-//   setTimeout(() => {
-
-//   }, 1000);
-// });
+await jwtLogin();
+onMounted(() => {
+  setTimeout(() => {
+    loader.value = false;
+  }, 1000);
+});
 useHead({
   title:
     "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
