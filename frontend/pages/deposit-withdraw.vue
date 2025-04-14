@@ -401,8 +401,8 @@
               class="my-3"
               v-model="transfer.payable_amount"
             />
-            <p class="text-sm text-red-500" v-if="transferErrors.transfer">
-              *Insufficient Fund
+            <p class="text-sm text-red-500 mb-2" v-if="transferErrors.transfer">
+              {{ transferErrors.limit || transferErrors.transfer }}
             </p>
             <p class="text-sm text-red-500">
               {{ transferErrors.payable_amount }}
@@ -842,7 +842,6 @@
       </div>
     </UModal>
     <UModal
-      prevent-close
       v-model="isOpenTransfer"
       :ui="{
         inner: 'fixed inset-0 overflow-y-auto flex item-center justify-center',
@@ -850,7 +849,7 @@
           'flex min-h-full items-center justify-center text-center max-w-sm w-full',
       }"
     >
-      <div class="flex items-center justify-center pb-16" v-if="!showSuccess">
+      <div class="flex items-center justify-center" v-if="!showSuccess">
         <div class="w-full max-w-sm">
           <!-- Glass Card Effect -->
           <div
@@ -1613,8 +1612,15 @@ async function sendToUser() {
     transferErrors.value.payable_amount = "Amount is required";
   }
 
-  if (transfer.value.payable_amount > user.value?.user.balance) {
-    transferErrors.value.transfer = "Insufficient balance";
+  if (Number(transfer.value.payable_amount) > 25000) {
+    transferErrors.value.limit = "Maximum single transfer limit is 25,000/=";
+  }
+
+  const transferAmount = Number(transfer.value.payable_amount);
+  const userBalance = Number(user.value?.user.balance);
+
+  if (transferAmount > userBalance) {
+    transferErrors.value.transfer = "* Insufficient Balance";
   }
 
   if (!policy.value) {

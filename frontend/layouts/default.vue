@@ -24,17 +24,17 @@
 <script setup>
 const { jwtLogin, user } = useAuth();
 const loader = ref(true);
+if (!useCookie("adsyclub-jwt").value) {
+  loader.value = false;
+} else {
+  jwtLogin();
+  loader.value = false;
+}
+// onMounted(() => {
+//   setTimeout(() => {
 
-onMounted(() => {
-  setTimeout(() => {
-    if (!useCookie("adsyclub-jwt").value) {
-      loader.value = false;
-    } else {
-      jwtLogin();
-      loader.value = false;
-    }
-  }, 1000);
-});
+//   }, 1000);
+// });
 useHead({
   title:
     "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
