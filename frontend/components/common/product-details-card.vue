@@ -381,7 +381,7 @@
           </h3>
 
           <div
-            class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-semibold prose-a:text-primary-600 dark:prose-a:text-primary-400"
+            class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-semibold prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left"
             v-html="
               currentProduct.description || 'No detailed description available.'
             "

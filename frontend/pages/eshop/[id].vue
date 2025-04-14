@@ -4,7 +4,7 @@
       class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50"
     >
       <!-- Banner Section with Parallax Effect -->
-      <div class="relative w-full max-sm:mt-6 h-[300px] sm:h-[60vh]">
+      <div class="relative w-full max-sm:mt-6 min-h-[300px] sm:h-[60vh]">
         <div
           ref="bannerRef"
           class="absolute inset-0 w-full h-[60%] transition-transform duration-300 max-sm:hidden"
@@ -118,7 +118,7 @@
 
         <!-- Vendor Info Card at Bottom of Banner -->
         <div
-          class="absolute max-sm:top-0 sm:bottom-0 left-1/2 -translate-x-1/2 sm:translate-y-1/2 md:-translate-y-2/3 w-[90%] max-w-4xl z-10"
+          class="sm:absolute max-sm:top-0 sm:bottom-0 sm:left-1/2 sm:-translate-x-1/2 sm:translate-y-1/2 md:-translate-y-2/3 sm:w-[90%] max-w-4xl z-10"
           :class="isSeeMore ? 'md:translate-y-0' : ''"
         >
           <div
