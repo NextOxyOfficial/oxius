@@ -134,8 +134,8 @@
           Categories
         </h3>
 
-        <!-- First row: All Categories + first 3 categories -->
-        <div class="mb-3 overflow-x-auto hide-scrollbar">
+        <!-- First row: All Categories + first half of categories -->
+        <div class="mb-3 overflow-x-auto hide-scrollbar relative">
           <div class="flex space-x-3 min-w-min py-1">
             <button
               @click="clearCategoryFilter"
@@ -168,7 +168,10 @@
             </button>
 
             <button
-              v-for="category in categories.slice(0, 3)"
+              v-for="category in categories.slice(
+                0,
+                Math.ceil(categories.length / 2)
+              )"
               :key="category.id"
               @click="filterByCategory(category.id)"
               class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
@@ -202,55 +205,13 @@
           </div>
         </div>
 
-        <!-- Second row of categories -->
-        <div
-          class="mb-3 overflow-x-auto hide-scrollbar"
-          v-if="categories.length > 3"
-        >
+        <!-- Second row: Second half of categories -->
+        <div class="overflow-x-auto hide-scrollbar relative">
           <div class="flex space-x-3 min-w-min py-1">
             <button
-              v-for="category in categories.slice(3, 7)"
-              :key="category.id"
-              @click="filterByCategory(category.id)"
-              class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-              :class="{
-                'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
-                  selectedCategory === category.id,
-                'border-slate-200 dark:border-slate-700':
-                  selectedCategory !== category.id,
-              }"
-            >
-              <div class="flex flex-col items-center text-center">
-                <div
-                  class="w-10 h-10 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 overflow-hidden mb-2"
-                >
-                  <img
-                    :src="category.image || '/images/category-placeholder.jpg'"
-                    :alt="category.title"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                <div
-                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
-                >
-                  {{ category.title }}
-                </div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
-                  {{ getCategoryCount(category.id) }}
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Third row of categories -->
-        <div
-          class="overflow-x-auto hide-scrollbar"
-          v-if="categories.length > 7"
-        >
-          <div class="flex space-x-3 min-w-min py-1">
-            <button
-              v-for="category in categories.slice(7, 11)"
+              v-for="category in categories.slice(
+                Math.ceil(categories.length / 2)
+              )"
               :key="category.id"
               @click="filterByCategory(category.id)"
               class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
