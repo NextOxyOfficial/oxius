@@ -32,7 +32,7 @@
 
                 <!-- Content -->
                 <div class="absolute inset-0 flex items-center">
-                  <div class="container mx-auto px-4 md:px-8">
+                  <div class="container mx-auto px-2 md:px-8">
                     <div
                       class="max-w-md mx-auto md:mx-0 slide-content"
                       :class="{ active: currentSlide === index }"
@@ -127,7 +127,7 @@
       </div>
 
       <!-- Mobile Categories (single row with horizontal scrolling) -->
-      <div class="lg:hidden mb-8">
+      <div class="lg:hidden mb-4">
         <h3
           class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3 px-1"
         >
@@ -279,28 +279,74 @@
 
             <!-- Simplified Sort options -->
             <div
-              class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700"
+              class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700"
             >
               <h3
-                class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3"
+                class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4 flex items-center"
               >
+                <UIcon
+                  name="i-heroicons-arrow-up-down"
+                  class="w-4 h-4 mr-2 text-emerald-500"
+                />
                 Sort by
               </h3>
-              <div class="space-y-2">
-                <URadio
-                  v-model="sortBy"
-                  value="newest"
-                  label="Newest First"
-                  name="sort"
-                  @change="sortPosts"
-                />
-                <URadio
-                  v-model="sortBy"
-                  value="oldest"
-                  label="Oldest First"
-                  name="sort"
-                  @change="sortPosts"
-                />
+
+              <div class="flex flex-col gap-2.5">
+                <button
+                  @click="
+                    sortBy = 'newest';
+                    sortPosts();
+                  "
+                  class="flex items-center justify-between p-3 rounded-lg transition-all duration-200"
+                  :class="
+                    sortBy === 'newest'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300'
+                  "
+                >
+                  <div class="flex items-center">
+                    <UIcon
+                      name="i-heroicons-clock"
+                      class="w-4 h-4 mr-2.5"
+                      :class="sortBy === 'newest' ? 'text-emerald-500' : ''"
+                    />
+                    <span>Newest First</span>
+                  </div>
+                  <div v-if="sortBy === 'newest'" class="flex-shrink-0">
+                    <UIcon
+                      name="i-heroicons-check"
+                      class="w-5 h-5 text-emerald-500"
+                    />
+                  </div>
+                </button>
+
+                <button
+                  @click="
+                    sortBy = 'oldest';
+                    sortPosts();
+                  "
+                  class="flex items-center justify-between p-3 rounded-lg transition-all duration-200"
+                  :class="
+                    sortBy === 'oldest'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300'
+                  "
+                >
+                  <div class="flex items-center">
+                    <UIcon
+                      name="i-heroicons-clock-rewind"
+                      class="w-4 h-4 mr-2.5"
+                      :class="sortBy === 'oldest' ? 'text-emerald-500' : ''"
+                    />
+                    <span>Oldest First</span>
+                  </div>
+                  <div v-if="sortBy === 'oldest'" class="flex-shrink-0">
+                    <UIcon
+                      name="i-heroicons-check"
+                      class="w-5 h-5 text-emerald-500"
+                    />
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -607,7 +653,7 @@
             </div>
 
             <!-- Load More Button -->
-            <div v-if="hasMorePosts" class="mt-10 text-center">
+            <div v-if="hasMorePosts" class="my-10 text-center">
               <UButton
                 color="emerald"
                 variant="soft"
