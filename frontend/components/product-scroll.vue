@@ -1,7 +1,7 @@
 <template>
   <div class="relative product-slider-container my-8">
     <!-- Section Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 px-3.5">
       <div class="flex items-center gap-2">
         <div
           class="p-1.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"

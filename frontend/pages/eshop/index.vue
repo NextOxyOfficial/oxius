@@ -26,7 +26,7 @@
                   <img
                     :src="banner.image"
                     :alt="banner.title"
-                    class="w-full h-36 sm:h-72 md:h-80 object-cover"
+                    class="w-full h-44 sm:h-72 md:h-80 object-cover"
                   />
                 </div>
               </div>
