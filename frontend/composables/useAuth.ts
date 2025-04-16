@@ -27,7 +27,6 @@ export function useAuth() {
     }
     if (data.value) {
       user.value = data.value;
-      // getUserDetails(data.value);
       const jwt = useCookie("adsyclub-jwt");
       jwt.value = data.value.access;
       const username = useCookie("username");
@@ -39,13 +38,16 @@ export function useAuth() {
   };
   const login = async (email: string, password: string) => {
     try {
-      const { data, pending, error } = await useFetch<any>(baseURL + "/auth/login/", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-        headers: {
-          "Content-Type": "application/json", // Ensure correct header
-        },
-      });
+      const { data, pending, error } = await useFetch<any>(
+        baseURL + "/auth/login/",
+        {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+          headers: {
+            "Content-Type": "application/json", // Ensure correct header
+          },
+        }
+      );
 
       if (error.value) {
         //console.log("Login error:", error.value); // Log the error for debugging

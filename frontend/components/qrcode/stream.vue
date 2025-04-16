@@ -1,6 +1,11 @@
 <template>
   <div>
-    <video ref="videoElement" width="100%" height="100%"></video>
+    <video
+      class="max-h-[200px] max-w-[200px] mx-auto"
+      ref="videoElement"
+      width="100%"
+      height="100%"
+    ></video>
     <div v-if="qrCode" class="qr-result">
       <p>Scanned QR Code: {{ qrCode }}</p>
     </div>

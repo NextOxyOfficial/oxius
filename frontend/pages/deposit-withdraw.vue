@@ -321,7 +321,7 @@
               }"
             >
               <div
-                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden max-h-[30vh]"
+                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden "
               >
                 <UButton
                   icon="i-heroicons-x-mark"
@@ -336,7 +336,7 @@
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
                 <div class="border p-4 rounded-lg shadow-md bg-white">
                   <NuxtImg
-                    class="w-[250px]"
+                    class="max-w-[250px] max-sm:h-[200px]"
                     :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
                   ></NuxtImg>
                 </div>
