@@ -199,6 +199,8 @@
                 <div class="text-xs text-slate-500 dark:text-slate-400">
                   {{ getCategoryCount(category.id) }}
                 </div>
+                <!-- Add this inside the button content for debugging -->
+                <div class="text-[8px] text-slate-400"></div>
               </div>
             </button>
           </div>
@@ -786,39 +788,33 @@ const fetchData = async () => {
       get("/classified-categories-all/"),
     ]);
 
-    console.log("API responses received");
-    console.log("Posts response:", postsResponse?.data?.length || 0, "items");
-    console.log(
-      "Categories response:",
-      categoriesResponse?.data?.length || 0,
-      "items"
-    );
+    // Log sample structures to help debug
+    if (postsResponse?.data?.results?.length > 0) {
+      console.log("Sample post structure:", postsResponse.data.results[0]);
+    } else if (postsResponse?.data?.length > 0) {
+      console.log("Sample post structure:", postsResponse.data[0]);
+    }
+
+    if (categoriesResponse?.data?.length > 0) {
+      console.log("Sample category structure:", categoriesResponse.data[0]);
+    }
 
     // Process and store the responses
     posts.value = postsResponse.data.results || postsResponse.data || [];
     categories.value = categoriesResponse.data || [];
 
-    console.log("Processed data:");
-    console.log("Posts:", posts.value.length);
-    console.log("Categories:", categories.value.length);
-
-    // Initial state - ensure no category is selected by default
-    selectedCategory.value = null;
-
-    // Set pagination data if available
-    if (postsResponse.data.count) {
-      totalPages.value = Math.ceil(postsResponse.data.count / postsPerPage);
-      hasMorePosts.value = currentPage.value < totalPages.value;
-    }
-
-    // Log filtered posts to confirm they're working
-    console.log("Initial filtered posts:", filteredPosts.value.length);
-
     // Initial sort
     sortPosts();
+
+    // Let's check how the counts look
+    if (categories.value.length > 0) {
+      console.log("Category counts:");
+      categories.value.forEach((category) => {
+        console.log(`${category.title}: ${getCategoryCount(category.id)}`);
+      });
+    }
   } catch (error) {
     console.error("Error fetching data:", error);
-    // Handle the error appropriately
   } finally {
     isLoading.value = false;
   }
@@ -843,9 +839,20 @@ const getCategoryName = (categoryId) => {
   return alternateCategory ? alternateCategory.title : "Uncategorized";
 };
 
-// Helper function to get post count by category
+// Updated helper function to get post count by category
 const getCategoryCount = (categoryId) => {
-  return posts.value.filter((post) => post.category_id === categoryId).length;
+  return posts.value.filter((post) => {
+    // Check for category_id directly
+    if (post.category_id === categoryId) return true;
+
+    // Check for category.id
+    if (post.category && post.category.id === categoryId) return true;
+
+    // Check for string comparison
+    if (String(post.category_id) === String(categoryId)) return true;
+
+    return false;
+  }).length;
 };
 
 // Get total posts count
@@ -878,7 +885,20 @@ const formatDate = (dateString) => {
 // Filter posts by category
 const filterByCategory = (categoryId) => {
   console.log("Filtering by category:", categoryId);
+
+  // Log a few posts to see their category structure
+  const samplePosts = posts.value.slice(0, 3);
+  console.log("Sample posts category structure:");
+  samplePosts.forEach((post) => {
+    console.log(
+      `Post ${post.id} - category_id: ${post.category_id}, category?.id: ${post.category?.id}`
+    );
+  });
+
   selectedCategory.value = categoryId;
+
+  // Log filtered count after selection
+  console.log(`After filtering, showing ${filteredPosts.value.length} posts`);
 };
 
 // Clear category filter
