@@ -690,13 +690,28 @@ const bannerSlides = ref([
 
 // Filtered posts based on category and search
 const filteredPosts = computed(() => {
+  console.log("Recalculating filtered posts");
+  console.log("Total posts:", posts.value.length);
+  console.log("Selected category:", selectedCategory.value);
+
   let filtered = [...posts.value];
 
   // Filter by category
   if (selectedCategory.value !== null) {
-    filtered = filtered.filter(
-      (post) => post.category_id === selectedCategory.value
-    );
+    filtered = filtered.filter((post) => {
+      // Check for category_id directly
+      if (post.category_id === selectedCategory.value) return true;
+
+      // Check for category.id
+      if (post.category && post.category.id === selectedCategory.value)
+        return true;
+
+      // Check for string comparison
+      if (String(post.category_id) === String(selectedCategory.value))
+        return true;
+
+      return false;
+    });
   }
 
   // Filter by search
@@ -709,6 +724,7 @@ const filteredPosts = computed(() => {
     );
   }
 
+  console.log("Filtered posts:", filtered.length);
   return filtered;
 });
 
@@ -716,6 +732,7 @@ const filteredPosts = computed(() => {
 const fetchData = async () => {
   try {
     isLoading.value = true;
+    console.log("Fetching data...");
 
     // Fetch from the actual API endpoints
     const [postsResponse, categoriesResponse] = await Promise.all([
@@ -723,9 +740,24 @@ const fetchData = async () => {
       get("/classified-categories-all/"),
     ]);
 
+    console.log("API responses received");
+    console.log("Posts response:", postsResponse?.data?.length || 0, "items");
+    console.log(
+      "Categories response:",
+      categoriesResponse?.data?.length || 0,
+      "items"
+    );
+
     // Process and store the responses
-    posts.value = postsResponse.data.results || postsResponse.data;
-    categories.value = categoriesResponse.data;
+    posts.value = postsResponse.data.results || postsResponse.data || [];
+    categories.value = categoriesResponse.data || [];
+
+    console.log("Processed data:");
+    console.log("Posts:", posts.value.length);
+    console.log("Categories:", categories.value.length);
+
+    // Initial state - ensure no category is selected by default
+    selectedCategory.value = null;
 
     // Set pagination data if available
     if (postsResponse.data.count) {
@@ -733,13 +765,14 @@ const fetchData = async () => {
       hasMorePosts.value = currentPage.value < totalPages.value;
     }
 
+    // Log filtered posts to confirm they're working
+    console.log("Initial filtered posts:", filteredPosts.value.length);
+
     // Initial sort
     sortPosts();
   } catch (error) {
     console.error("Error fetching data:", error);
     // Handle the error appropriately
-    posts.value = [];
-    categories.value = [];
   } finally {
     isLoading.value = false;
   }
@@ -747,8 +780,21 @@ const fetchData = async () => {
 
 // Helper function to get category name by ID
 const getCategoryName = (categoryId) => {
-  const category = categories.value.find((c) => c.id === categoryId);
-  return category ? category.title : "Uncategorized";
+  if (!categoryId) return "Uncategorized";
+
+  // Try direct lookup first
+  const directCategory = categories.value.find((c) => c.id === categoryId);
+  if (directCategory) return directCategory.title;
+
+  // If that fails, try different ways categories might be referenced
+  const alternateCategory = categories.value.find(
+    (c) =>
+      String(c.id) === String(categoryId) || // String comparison
+      c.category_id === categoryId || // Alternate field
+      c.slug === categoryId // Possibly using slug
+  );
+
+  return alternateCategory ? alternateCategory.title : "Uncategorized";
 };
 
 // Helper function to get post count by category
@@ -785,11 +831,13 @@ const formatDate = (dateString) => {
 
 // Filter posts by category
 const filterByCategory = (categoryId) => {
+  console.log("Filtering by category:", categoryId);
   selectedCategory.value = categoryId;
 };
 
 // Clear category filter
 const clearCategoryFilter = () => {
+  console.log("Clearing category filter");
   selectedCategory.value = null;
 };
 
@@ -922,7 +970,19 @@ watch(sortBy, () => {
 
 // Helper function to get user name
 const getUserName = (post) => {
-  return post.user?.name || post.author?.name || "Anonymous";
+  if (!post) return "Anonymous";
+
+  // Try all possible user name fields in order of preference
+  return (
+    post.user?.first_name ||
+    post.user?.name ||
+    post.user?.username ||
+    post.author?.first_name ||
+    post.author?.name ||
+    post.author?.username ||
+    post.created_by ||
+    "Anonymous"
+  );
 };
 </script>
 
