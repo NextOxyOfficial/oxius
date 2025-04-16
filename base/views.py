@@ -1908,8 +1908,155 @@ class SellerOrdersView(generics.ListAPIView):
         return Order.objects.filter(id__in=order_ids).order_by('-created_at')
     
 
+class OrderWithItemsUpdate(generics.UpdateAPIView):
+    """Update an order by adding new items or updating existing ones"""
+    serializer_class = OrderSerializer
+    queryset = Order.objects.all()
+    lookup_field = 'id'
 
+    def update(self, request, *args, **kwargs):
+        order = self.get_object()
+        items_data = request.data.get('items', [])
+        
+        try:
+            seller_payment_amounts = {}
+            total_additional_amount = Decimal('0.00')
 
+            # Process all items
+            for item_data in items_data:
+                product_id = item_data.get('product')
+                new_quantity = int(item_data.get('quantity', 1))
+                
+                try:
+                    # Check if this product already exists in the order
+                    existing_item = OrderItem.objects.filter(
+                        order=order,
+                        product_id=product_id
+                    ).first()
+
+                    product = Product.objects.get(id=product_id)
+                    unit_price = Decimal(str(product.sale_price if product.sale_price else product.regular_price))
+
+                    if existing_item:
+                        # Update existing item
+                        old_quantity = existing_item.quantity
+                        quantity_diff = new_quantity - old_quantity
+
+                        if quantity_diff != 0:
+                            price_difference = unit_price * quantity_diff
+                            
+                            # Update seller payment amounts
+                            seller_id = str(product.owner.id)
+                            if seller_id not in seller_payment_amounts:
+                                seller_payment_amounts[seller_id] = Decimal('0.00')
+                            seller_payment_amounts[seller_id] += price_difference
+                            total_additional_amount += price_difference
+
+                            # Update the order item quantity
+                            existing_item.quantity = new_quantity
+                            existing_item.save()
+                    else:
+                        # Add new item to order
+                        new_item_data = {
+                            'order': str(order.id),
+                            'product': product_id,
+                            'quantity': new_quantity,
+                            'price': unit_price
+                        }
+                        
+                        item_serializer = OrderItemSerializer(data=new_item_data)
+                        if item_serializer.is_valid():
+                            order_item = item_serializer.save()
+                            
+                            item_subtotal = unit_price * new_quantity
+                            
+                            # Calculate delivery fee if applicable
+                            delivery_fee = Decimal('0.00')
+                            if not product.is_free_delivery:
+                                if order.delivery_location == 'inside_dhaka':
+                                    delivery_fee = Decimal(str(product.delivery_fee_inside_dhaka))
+                                else:
+                                    delivery_fee = Decimal(str(product.delivery_fee_outside_dhaka))
+                            
+                            # Update seller payment amounts
+                            seller_id = str(product.owner.id)
+                            if seller_id not in seller_payment_amounts:
+                                seller_payment_amounts[seller_id] = Decimal('0.00')
+                            seller_payment_amounts[seller_id] += item_subtotal + delivery_fee
+                            total_additional_amount += item_subtotal + delivery_fee
+                        else:
+                            return Response(
+                                {"error": "Invalid item data", "errors": item_serializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+
+                except Product.DoesNotExist:
+                    return Response(
+                        {"error": f"Product with id {product_id} does not exist"},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+
+            # Process additional payment if needed
+            if total_additional_amount > 0:
+                buyer = request.user
+                if order.payment_method == 'balance':
+                    if buyer.balance < total_additional_amount:
+                        return Response(
+                            {"error": "Insufficient balance for additional items"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Deduct additional amount from buyer's balance
+                    buyer.balance -= total_additional_amount
+                    buyer.save()
+
+                    # Create transaction record for additional payment
+                    Balance.objects.create(
+                        user=buyer,
+                        amount=-total_additional_amount,
+                        transaction_type='order_update_payment',
+                        completed=True,
+                        bank_status='completed',
+                        description=f"Additional payment for order #{order.id}"
+                    )
+
+                    # Distribute additional payments to sellers
+                    for seller_id, payment_amount in seller_payment_amounts.items():
+                        if payment_amount > 0:
+                            try:
+                                seller = User.objects.get(id=seller_id)
+                                seller.balance += payment_amount
+                                seller.save()
+
+                                Balance.objects.create(
+                                    user=seller,
+                                    to_user=buyer,
+                                    amount=payment_amount,
+                                    transaction_type='order_update_received',
+                                    completed=True,
+                                    bank_status='completed',
+                                    description=f"Additional payment received for order #{order.id}"
+                                )
+                            except User.DoesNotExist:
+                                return Response(
+                                    {"error": f"Failed to credit seller {seller_id}"},
+                                    status=status.HTTP_400_BAD_REQUEST
+                                )
+
+            # Update order total
+            order.total += total_additional_amount
+            order.save()
+
+            return Response(
+                OrderSerializer(order).data,
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

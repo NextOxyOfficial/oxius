@@ -32,7 +32,7 @@
 
                 <!-- Content -->
                 <div class="absolute inset-0 flex items-center">
-                  <div class="container mx-auto px-4 md:px-8">
+                  <div class="container mx-auto px-2 md:px-8">
                     <div
                       class="max-w-md mx-auto md:mx-0 slide-content"
                       :class="{ active: currentSlide === index }"
@@ -127,7 +127,7 @@
       </div>
 
       <!-- Mobile Categories (single row with horizontal scrolling) -->
-      <div class="lg:hidden mb-8">
+      <div class="lg:hidden mb-4">
         <h3
           class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3 px-1"
         >
@@ -136,11 +136,11 @@
 
         <!-- Single row of categories with horizontal scrolling -->
         <div class="overflow-x-auto hide-scrollbar relative">
-          <div class="flex space-x-3 min-w-min py-1">
-            <!-- All Categories button (fixed as first item) -->
+          <div class="flex space-x-2 py-1 snap-x">
+            <!-- All Categories button -->
             <button
               @click="clearCategoryFilter"
-              class="flex-shrink-0 w-[23%] min-w-[80px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              class="flex-shrink-0 w-[24%] max-w-[24%] snap-start bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               :class="{
                 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
                   selectedCategory === null,
@@ -158,9 +158,9 @@
                   />
                 </div>
                 <div
-                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-full"
                 >
-                  All Categories
+                  All
                 </div>
                 <div class="text-xs text-slate-500 dark:text-slate-400">
                   {{ getTotalPostsCount() }}
@@ -173,7 +173,7 @@
               v-for="category in categories"
               :key="category.id"
               @click="filterByCategory(category.id)"
-              class="flex-shrink-0 w-[23%] min-w-[80px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              class="flex-shrink-0 w-[24%] max-w-[24%] snap-start bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               :class="{
                 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
                   selectedCategory === category.id,
@@ -192,13 +192,15 @@
                   />
                 </div>
                 <div
-                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-full"
                 >
                   {{ category.title }}
                 </div>
                 <div class="text-xs text-slate-500 dark:text-slate-400">
                   {{ getCategoryCount(category.id) }}
                 </div>
+                <!-- Add this inside the button content for debugging -->
+                <div class="text-[8px] text-slate-400"></div>
               </div>
             </button>
           </div>
@@ -279,28 +281,74 @@
 
             <!-- Simplified Sort options -->
             <div
-              class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700"
+              class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700"
             >
               <h3
-                class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3"
+                class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4 flex items-center"
               >
+                <UIcon
+                  name="i-heroicons-arrow-up-down"
+                  class="w-4 h-4 mr-2 text-emerald-500"
+                />
                 Sort by
               </h3>
-              <div class="space-y-2">
-                <URadio
-                  v-model="sortBy"
-                  value="newest"
-                  label="Newest First"
-                  name="sort"
-                  @change="sortPosts"
-                />
-                <URadio
-                  v-model="sortBy"
-                  value="oldest"
-                  label="Oldest First"
-                  name="sort"
-                  @change="sortPosts"
-                />
+
+              <div class="flex flex-col gap-2.5">
+                <button
+                  @click="
+                    sortBy = 'newest';
+                    sortPosts();
+                  "
+                  class="flex items-center justify-between p-3 rounded-lg transition-all duration-200"
+                  :class="
+                    sortBy === 'newest'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300'
+                  "
+                >
+                  <div class="flex items-center">
+                    <UIcon
+                      name="i-heroicons-clock"
+                      class="w-4 h-4 mr-2.5"
+                      :class="sortBy === 'newest' ? 'text-emerald-500' : ''"
+                    />
+                    <span>Newest First</span>
+                  </div>
+                  <div v-if="sortBy === 'newest'" class="flex-shrink-0">
+                    <UIcon
+                      name="i-heroicons-check"
+                      class="w-5 h-5 text-emerald-500"
+                    />
+                  </div>
+                </button>
+
+                <button
+                  @click="
+                    sortBy = 'oldest';
+                    sortPosts();
+                  "
+                  class="flex items-center justify-between p-3 rounded-lg transition-all duration-200"
+                  :class="
+                    sortBy === 'oldest'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300'
+                  "
+                >
+                  <div class="flex items-center">
+                    <UIcon
+                      name="i-heroicons-clock-rewind"
+                      class="w-4 h-4 mr-2.5"
+                      :class="sortBy === 'oldest' ? 'text-emerald-500' : ''"
+                    />
+                    <span>Oldest First</span>
+                  </div>
+                  <div v-if="sortBy === 'oldest'" class="flex-shrink-0">
+                    <UIcon
+                      name="i-heroicons-check"
+                      class="w-5 h-5 text-emerald-500"
+                    />
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -607,7 +655,7 @@
             </div>
 
             <!-- Load More Button -->
-            <div v-if="hasMorePosts" class="mt-10 text-center">
+            <div v-if="hasMorePosts" class="my-10 text-center">
               <UButton
                 color="emerald"
                 variant="soft"
@@ -690,13 +738,28 @@ const bannerSlides = ref([
 
 // Filtered posts based on category and search
 const filteredPosts = computed(() => {
+  console.log("Recalculating filtered posts");
+  console.log("Total posts:", posts.value.length);
+  console.log("Selected category:", selectedCategory.value);
+
   let filtered = [...posts.value];
 
   // Filter by category
   if (selectedCategory.value !== null) {
-    filtered = filtered.filter(
-      (post) => post.category_id === selectedCategory.value
-    );
+    filtered = filtered.filter((post) => {
+      // Check for category_id directly
+      if (post.category_id === selectedCategory.value) return true;
+
+      // Check for category.id
+      if (post.category && post.category.id === selectedCategory.value)
+        return true;
+
+      // Check for string comparison
+      if (String(post.category_id) === String(selectedCategory.value))
+        return true;
+
+      return false;
+    });
   }
 
   // Filter by search
@@ -709,6 +772,7 @@ const filteredPosts = computed(() => {
     );
   }
 
+  console.log("Filtered posts:", filtered.length);
   return filtered;
 });
 
@@ -716,6 +780,7 @@ const filteredPosts = computed(() => {
 const fetchData = async () => {
   try {
     isLoading.value = true;
+    console.log("Fetching data...");
 
     // Fetch from the actual API endpoints
     const [postsResponse, categoriesResponse] = await Promise.all([
@@ -723,23 +788,33 @@ const fetchData = async () => {
       get("/classified-categories-all/"),
     ]);
 
-    // Process and store the responses
-    posts.value = postsResponse.data.results || postsResponse.data;
-    categories.value = categoriesResponse.data;
-
-    // Set pagination data if available
-    if (postsResponse.data.count) {
-      totalPages.value = Math.ceil(postsResponse.data.count / postsPerPage);
-      hasMorePosts.value = currentPage.value < totalPages.value;
+    // Log sample structures to help debug
+    if (postsResponse?.data?.results?.length > 0) {
+      console.log("Sample post structure:", postsResponse.data.results[0]);
+    } else if (postsResponse?.data?.length > 0) {
+      console.log("Sample post structure:", postsResponse.data[0]);
     }
+
+    if (categoriesResponse?.data?.length > 0) {
+      console.log("Sample category structure:", categoriesResponse.data[0]);
+    }
+
+    // Process and store the responses
+    posts.value = postsResponse.data.results || postsResponse.data || [];
+    categories.value = categoriesResponse.data || [];
 
     // Initial sort
     sortPosts();
+
+    // Let's check how the counts look
+    if (categories.value.length > 0) {
+      console.log("Category counts:");
+      categories.value.forEach((category) => {
+        console.log(`${category.title}: ${getCategoryCount(category.id)}`);
+      });
+    }
   } catch (error) {
     console.error("Error fetching data:", error);
-    // Handle the error appropriately
-    posts.value = [];
-    categories.value = [];
   } finally {
     isLoading.value = false;
   }
@@ -747,13 +822,37 @@ const fetchData = async () => {
 
 // Helper function to get category name by ID
 const getCategoryName = (categoryId) => {
-  const category = categories.value.find((c) => c.id === categoryId);
-  return category ? category.title : "Uncategorized";
+  if (!categoryId) return "Uncategorized";
+
+  // Try direct lookup first
+  const directCategory = categories.value.find((c) => c.id === categoryId);
+  if (directCategory) return directCategory.title;
+
+  // If that fails, try different ways categories might be referenced
+  const alternateCategory = categories.value.find(
+    (c) =>
+      String(c.id) === String(categoryId) || // String comparison
+      c.category_id === categoryId || // Alternate field
+      c.slug === categoryId // Possibly using slug
+  );
+
+  return alternateCategory ? alternateCategory.title : "Uncategorized";
 };
 
-// Helper function to get post count by category
+// Updated helper function to get post count by category
 const getCategoryCount = (categoryId) => {
-  return posts.value.filter((post) => post.category_id === categoryId).length;
+  return posts.value.filter((post) => {
+    // Check for category_id directly
+    if (post.category_id === categoryId) return true;
+
+    // Check for category.id
+    if (post.category && post.category.id === categoryId) return true;
+
+    // Check for string comparison
+    if (String(post.category_id) === String(categoryId)) return true;
+
+    return false;
+  }).length;
 };
 
 // Get total posts count
@@ -785,11 +884,26 @@ const formatDate = (dateString) => {
 
 // Filter posts by category
 const filterByCategory = (categoryId) => {
+  console.log("Filtering by category:", categoryId);
+
+  // Log a few posts to see their category structure
+  const samplePosts = posts.value.slice(0, 3);
+  console.log("Sample posts category structure:");
+  samplePosts.forEach((post) => {
+    console.log(
+      `Post ${post.id} - category_id: ${post.category_id}, category?.id: ${post.category?.id}`
+    );
+  });
+
   selectedCategory.value = categoryId;
+
+  // Log filtered count after selection
+  console.log(`After filtering, showing ${filteredPosts.value.length} posts`);
 };
 
 // Clear category filter
 const clearCategoryFilter = () => {
+  console.log("Clearing category filter");
   selectedCategory.value = null;
 };
 
@@ -922,7 +1036,19 @@ watch(sortBy, () => {
 
 // Helper function to get user name
 const getUserName = (post) => {
-  return post.user?.name || post.author?.name || "Anonymous";
+  if (!post) return "Anonymous";
+
+  // Try all possible user name fields in order of preference
+  return (
+    post.user?.first_name ||
+    post.user?.name ||
+    post.user?.username ||
+    post.author?.first_name ||
+    post.author?.name ||
+    post.author?.username ||
+    post.created_by ||
+    "Anonymous"
+  );
 };
 </script>
 
