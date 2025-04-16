@@ -1188,35 +1188,7 @@ const saveOrderItemChanges = async () => {
   console.log("Total:", calculateTotal());
 };
 
-const updateOrderStatus = async (id) => {
-  console.log(editingOrderItems.value);
-  try {
-    const res = await patch(`/orders/${id}/`, {
-      order_status: editingOrderStatus.value,
-    });
-    if (res.data) {
-      // Show success toast
-      showToast(
-        "success",
-        "Order Status Updated",
-        `Order #${id} status has been updated to ${editingOrderStatus.value}.`
-      );
 
-      // Close modal
-      showOrderDetailsModal.value = false;
-    }
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    showToast(
-      "error",
-      "Update Failed",
-      "There was an error updating the order status."
-    );
-  } finally {
-    isProcessing.value = false;
-    await getOrders();
-  }
-};
 
 const printOrder = async (order) => {
   try {
@@ -1351,9 +1323,6 @@ const printOrder = async (order) => {
   }
 };
 
-const cancelOrder = () => {
-  showCancelOrderModal.value = true;
-};
 
 const confirmCancelOrder = async () => {
   if (isProcessing.value) return;
@@ -1419,12 +1388,7 @@ const confirmCancelOrder = async () => {
   }
 };
 
-const editProduct = (product) => {
-  selectedProduct.value = product;
-  // Clone the product to avoid direct mutation
-  Object.assign(editingProduct, product);
-  showEditProductModal.value = true;
-};
+
 
 const saveProductChanges = async () => {
   if (isProcessing.value) return;
@@ -1461,44 +1425,6 @@ const saveProductChanges = async () => {
   }
 };
 
-const toggleProductStatus = async (product) => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const index = products.value.findIndex((p) => p.id === product.id);
-    if (index !== -1) {
-      const newStatus = product.status === "active" ? "inactive" : "active";
-      products.value[index].status = newStatus;
-
-      // Show success toast
-      showToast(
-        "success",
-        "Status Changed",
-        `${product.name} is now ${
-          newStatus === "active" ? "visible" : "hidden"
-        } to customers.`
-      );
-    }
-  } catch (error) {
-    showToast(
-      "error",
-      "Status Change Failed",
-      "There was an error changing the product status."
-    );
-  } finally {
-    isProcessing.value = false;
-  }
-};
-
-const confirmDeleteProduct = (product) => {
-  selectedProduct.value = product;
-  showDeleteConfirmModal.value = true;
-};
 
 const deleteProduct = async () => {
   if (isProcessing.value) return;
@@ -1538,24 +1464,7 @@ const deleteProduct = async () => {
   }
 };
 
-// Pagination methods
-const goToPage = (page) => {
-  if (typeof page === "number") {
-    currentPage.value = page;
-  }
-};
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-  }
-};
-
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-  }
-};
 
 // Toast methods
 const showToast = (type, title, message) => {
@@ -1674,7 +1583,9 @@ async function updateStoreInfo() {
       store_description: editedUser.store_description,
     });
     if (data) {
-      jwtLogin();
+      setTimeout(() => {
+        jwtLogin();
+      }, 2000);
     }
   } catch (error) {
     console.log(error);
