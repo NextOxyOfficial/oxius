@@ -77,7 +77,7 @@
                   color="primary"
                   size="md"
                   :options="upazilas"
-                  :placeholder="t('select_area')"
+                  :placeholder="t('select_area_upozila')"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
                   class="location-select"
