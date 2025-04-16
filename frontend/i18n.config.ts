@@ -1,3 +1,5 @@
+import { se } from "date-fns/locale";
+
 export default defineI18nConfig(() => ({
   legacy: false,
   locale: "en",
@@ -126,6 +128,16 @@ export default defineI18nConfig(() => ({
       menu: "Menu",
       download_our_app: "Download Our App",
       follow_us: "Follow Us",
+      bangladesh_first_title: "Bangladesh's 1st Social Business Network",
+      bangladesh_first_text:
+        "Connect, collaborate, and grow with our all-in-one platform that helps you earn money, sell products, and find services you need.",
+      sell_products: "Sell Products",
+      division: "Division",
+      select_division: "Select your division",
+      city: "City",
+      select_city: "Select your city",
+      area_upozila: "Area/Upazila",
+      select_area_upozila: "Select your area/upazila",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -253,6 +265,15 @@ export default defineI18nConfig(() => ({
       menu: "মেনু",
       download_our_app: "অ্যাপ ডাউনলোড করুন",
       follow_us: "ফলো করুন",
+      bangladesh_first_title: "বাংলাদেশের প্রথম সোশাল বিজনেস নেটওয়ার্ক",
+      bangladesh_first_text: "",
+      sell_products: "পণ্য বিক্রি",
+      division: "বিভাগ",
+      select_division: "বিভাগ সিলেক্ট করুন",
+      city: "শহর",
+      select_city: "শহর সিলেক্ট করুন",
+      area_upozila: "এলাকা/উপজেলা",
+      select_area_upozila: "এলাকা/উপজেলা সিলেক্ট করুন",
     },
   },
 }));

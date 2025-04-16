@@ -77,7 +77,7 @@
               <h1
                 class="text-xl sm:text-xl font-semibold leading-tight text-gray-800 mb-2"
               >
-                Bangladesh's 1st Social Business Network
+                {{ $t("bangladesh_first_title") }}
               </h1>
               <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Connect, collaborate, and grow with our all-in-one platform that
@@ -92,7 +92,7 @@
                     <DollarSign
                       class="h-4 w-4 group-hover:scale-110 transition-transform"
                     />
-                    <span>Earn Money</span>
+                    <span>{{ $t("earn_money") }}</span>
                   </span>
                 </a>
                 <NuxtLink to="/shop-manager" class="btn-secondary group">
@@ -100,7 +100,7 @@
                     <ShoppingBag
                       class="h-4 w-4 group-hover:scale-110 transition-transform"
                     />
-                    <span>Sell Products</span>
+                    <span>{{ $t("sell_products") }}</span>
                   </span>
                 </NuxtLink>
               </div>
@@ -118,7 +118,7 @@
           <DollarSign
             class="h-4 w-4 group-hover:scale-110 transition-transform"
           />
-          <span>Earn Money</span>
+          <span>{{ $t("earn_money") }}</span>
         </span>
       </a>
       <NuxtLink to="/shop-manager" class="btn-secondary group">
@@ -126,7 +126,7 @@
           <ShoppingBag
             class="h-4 w-4 group-hover:scale-110 transition-transform"
           />
-          <span>Sell Products</span>
+          <span>{{ $t("sell_products") }}</span>
         </span>
       </NuxtLink>
     </div>

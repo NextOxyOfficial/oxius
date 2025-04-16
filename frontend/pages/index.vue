@@ -912,19 +912,19 @@ const cursorVisible = ref(true);
 const typingInterval = ref(null);
 const cursorInterval = ref(null);
 const currentIndex = ref(0);
-const placeholder = t("search_placeholder");
+const placeholder = ref(t("search_placeholder"));
 
 // Typing animation functions
 const typeNextChar = () => {
-  if (currentIndex.value < placeholder.length) {
-    displayedPlaceholder.value += placeholder[currentIndex.value];
+  if (currentIndex.value < placeholder.value.length) {
+    displayedPlaceholder.value += placeholder.value[currentIndex.value];
     currentIndex.value++;
 
     // Variable typing speed for human-like effect
     const nextSpeed = Math.floor(Math.random() * 130) + 70;
 
     // Add slight pauses at certain points
-    if (placeholder[currentIndex.value - 1] === " ") {
+    if (placeholder.value[currentIndex.value - 1] === " ") {
       typingInterval.value = setTimeout(typeNextChar, 300); // Longer pause after space
     } else {
       typingInterval.value = setTimeout(typeNextChar, nextSpeed);

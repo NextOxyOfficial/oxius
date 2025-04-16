@@ -24,13 +24,13 @@
 
             <!-- Form Fields -->
             <div class="space-y-4">
-              <UFormGroup label="State" required>
+              <UFormGroup :label="t('division')" required>
                 <USelectMenu
                   v-model="form.state"
                   color="primary"
                   size="md"
                   :options="regions"
-                  placeholder="Select your state"
+                  :placeholder="t('select_division')"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
                   class="location-select"
@@ -47,13 +47,13 @@
                 </p>
               </UFormGroup>
 
-              <UFormGroup label="City" required>
+              <UFormGroup :label="t('city')" required>
                 <USelectMenu
                   v-model="form.city"
                   color="primary"
                   size="md"
                   :options="cities"
-                  placeholder="Select your city"
+                  :placeholder="t('select_city')"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
                   class="location-select"
@@ -71,13 +71,13 @@
                 </p>
               </UFormGroup>
 
-              <UFormGroup label="Area/Upazila" required>
+              <UFormGroup :label="t('area_upozila')" required>
                 <USelectMenu
                   v-model="form.upazila"
                   color="primary"
                   size="md"
                   :options="upazilas"
-                  placeholder="Select your area"
+                  :placeholder="t('select_area')"
                   option-attribute="name_eng"
                   value-attribute="name_eng"
                   class="location-select"
