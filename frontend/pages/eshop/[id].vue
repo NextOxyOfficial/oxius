@@ -308,7 +308,7 @@
         :class="isSeeMore ? 'mt-12 sm:mt-24 md:mt-3' : 'mt-8 md:-mt-14'"
       >
         <!-- Enhanced Search Section -->
-        <div class="mb-20 mt-8 md:mt-16">
+        <div class="mb-1 mt-1 md:mt-1">
           <div
             class="relative max-w-2xl mx-auto transition-all duration-500 ease-out transform"
             :class="searchFocused ? 'scale-105' : 'scale-100'"
@@ -393,21 +393,14 @@
           <!-- Categories Section with Enhanced Animation -->
           <div
             ref="categoriesRef"
-            class="flex flex-col items-center mt-16 transition-all duration-700 transform"
+            class="flex flex-col items-center mt-10 transition-all duration-700 transform"
             :class="
               visibleSections.categories
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-10'
             "
           >
-            <h2 class="text-xl font-semibold mb-8 text-center relative">
-              <span class="relative inline-block">
-                Browse Categories
-                <span
-                  class="absolute -bottom-2 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-400 to-transparent rounded-full transform scale-x-50 group-hover:scale-x-100 transition-transform duration-500"
-                ></span>
-              </span>
-            </h2>
+            
 
             <!-- Enhanced Categories Grid -->
             <div class="flex flex-wrap justify-center gap-3 max-w-3xl">
