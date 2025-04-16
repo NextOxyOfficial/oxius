@@ -830,7 +830,7 @@
                 Saving...
               </span>
             </button>
-            
+
             <button
               @click="updateOrderStatus(selectedOrder.id)"
               class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
@@ -864,11 +864,20 @@
         wrapper: 'relative z-[9999999]',
       }"
     >
-      <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"></div>
-        <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+      <div
+        class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full"
+      >
+        <div
+          class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
+        ></div>
+        <div
+          class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
+        >
           <h3 class="text-xl font-semibold text-gray-900 flex items-center">
-            <UIcon name="i-heroicons-shopping-cart" class="h-5 w-5 mr-2 text-indigo-600" />
+            <UIcon
+              name="i-heroicons-shopping-cart"
+              class="h-5 w-5 mr-2 text-indigo-600"
+            />
             Add Product to Order
           </h3>
           <button
@@ -878,7 +887,7 @@
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>
         </div>
-        
+
         <div class="px-6 py-4">
           <!-- Product Search/Select -->
           <div class="mb-4">
@@ -888,14 +897,17 @@
               option-attribute="name"
               :ui="{
                 input: 'w-full',
-                container: 'w-full'
+                container: 'w-full',
               }"
               placeholder="Search for a product..."
             />
           </div>
 
           <!-- Selected Product Details -->
-          <div v-if="selectedProductToAdd" class="bg-gray-50 rounded-lg p-4 mb-4">
+          <div
+            v-if="selectedProductToAdd"
+            class="bg-gray-50 rounded-lg p-4 mb-4"
+          >
             <div class="flex items-start space-x-3">
               <div class="h-16 w-16 rounded-md overflow-hidden bg-gray-200">
                 <img
@@ -904,23 +916,38 @@
                   :alt="selectedProductToAdd.name"
                   class="h-full w-full object-cover"
                 />
-                <div v-else class="h-full w-full flex items-center justify-center">
-                  <UIcon name="i-heroicons-photo" class="h-8 w-8 text-gray-400" />
+                <div
+                  v-else
+                  class="h-full w-full flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-photo"
+                    class="h-8 w-8 text-gray-400"
+                  />
                 </div>
               </div>
               <div class="flex-1">
-                <h5 class="font-medium text-gray-900">{{ selectedProductToAdd.name }}</h5>
+                <h5 class="font-medium text-gray-900">
+                  {{ selectedProductToAdd.name }}
+                </h5>
                 <p class="text-sm text-gray-500 mt-1 line-clamp-2">
-                  {{ selectedProductToAdd.short_description || "No description available" }}
+                  {{
+                    selectedProductToAdd.short_description ||
+                    "No description available"
+                  }}
                 </p>
                 <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span class="text-gray-500">Price:</span>
-                    <span class="font-medium ml-1">৳{{ selectedProductToAdd.sale_price }}</span>
+                    <span class="font-medium ml-1"
+                      >৳{{ selectedProductToAdd.sale_price }}</span
+                    >
                   </div>
                   <div>
                     <span class="text-gray-500">Available:</span>
-                    <span class="font-medium ml-1">{{ selectedProductToAdd.quantity }}</span>
+                    <span class="font-medium ml-1">{{
+                      selectedProductToAdd.quantity
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -929,7 +956,10 @@
 
           <!-- Quantity Input -->
           <div v-if="selectedProductToAdd">
-            <label for="quantity-input" class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              for="quantity-input"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
               Quantity
             </label>
             <div class="flex items-center">
@@ -958,7 +988,10 @@
                 size="sm"
               />
             </div>
-            <p v-if="newItemQuantity > maxAvailableQuantity" class="text-xs text-red-500 mt-1">
+            <p
+              v-if="newItemQuantity > maxAvailableQuantity"
+              class="text-xs text-red-500 mt-1"
+            >
               Only {{ maxAvailableQuantity }} items available in stock
             </p>
           </div>
@@ -968,7 +1001,11 @@
         <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
           <UButton
             @click="addItemToOrder"
-            :disabled="!selectedProductToAdd || newItemQuantity < 1 || newItemQuantity > maxAvailableQuantity"
+            :disabled="
+              !selectedProductToAdd ||
+              newItemQuantity < 1 ||
+              newItemQuantity > maxAvailableQuantity
+            "
             color="indigo"
             :loading="isAddingItem"
             icon="i-heroicons-plus"
@@ -991,7 +1028,7 @@
 
 <script setup>
 const { user } = useAuth();
-const { get, patch,put } = useApi();
+const { get, patch, put } = useApi();
 const { formatDate } = useUtils();
 import {
   ShoppingBag,
@@ -1033,7 +1070,6 @@ import "jspdf-autotable";
 
 // Tab state
 const activeTab = ref("orders");
-
 
 // UI state
 const showOrderDetailsModal = ref(false);
@@ -1222,7 +1258,6 @@ async function getProducts() {
   }
 }
 
-
 // Computed properties
 const filteredOrders = computed(() => {
   let result = orders.value;
@@ -1335,7 +1370,6 @@ const getStatusClass = (status) => {
   }
 };
 
-
 const viewOrderDetails = (order) => {
   selectedOrder.value = order;
   editingOrderStatus.value = order.order_status;
@@ -1401,18 +1435,20 @@ const calculateSubtotal = () => {
     );
   } else {
     // Before editing, use selectedOrder items
-    return selectedOrder.value?.items?.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    ) || 0;
+    return (
+      selectedOrder.value?.items?.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      ) || 0
+    );
   }
 };
 
 const calculateTotal = () => {
   const subtotal = calculateSubtotal();
-  const deliveryFee = editOrderItems.value 
-    ? (editingDeliveryFee.value || 0) 
-    : (selectedOrder.value?.delivery_fee || 0);
+  const deliveryFee = editOrderItems.value
+    ? editingDeliveryFee.value || 0
+    : selectedOrder.value?.delivery_fee || 0;
   return subtotal + Number(deliveryFee);
 };
 
@@ -1437,7 +1473,9 @@ const maxAvailableQuantity = computed(() => {
 
 watch(orderItemAddition, (newValue) => {
   if (newValue) {
-    selectedProductToAdd.value = products.value.find(p => p.name === newValue);
+    selectedProductToAdd.value = products.value.find(
+      (p) => p.name === newValue
+    );
     newItemQuantity.value = 1;
   }
 });
@@ -1456,27 +1494,43 @@ const decrementNewItemQuantity = () => {
 
 const addItemToOrder = async () => {
   if (isAddingItem.value || !selectedProductToAdd.value) return;
-  
+
   isAddingItem.value = true;
-  
+
   try {
+    // Create a new item with complete details
     const newItem = {
       product: selectedProductToAdd.value.id,
       quantity: newItemQuantity.value,
-      price: selectedProductToAdd.value.sale_price,
+      price:
+        selectedProductToAdd.value.sale_price ||
+        selectedProductToAdd.value.regular_price,
+      // Store product details to ensure they're available in the UI
+      product_details: {
+        name: selectedProductToAdd.value.name,
+        image:
+          selectedProductToAdd.value.image_details &&
+          selectedProductToAdd.value.image_details.length > 0
+            ? [selectedProductToAdd.value.image_details[0].image]
+            : [],
+      },
     };
+
+    console.log("Adding new item with details:", newItem);
 
     // Check if product already exists in order
     const existingItemIndex = editingOrderItems.value.findIndex(
-      item => item.product === newItem.product
+      (item) => item.product === newItem.product
     );
 
     if (existingItemIndex !== -1) {
       // Update existing item
       editingOrderItems.value[existingItemIndex].quantity += newItem.quantity;
+      console.log("Updated existing item quantity");
     } else {
       // Add new item
       editingOrderItems.value.push(newItem);
+      console.log("Added new item to order");
     }
 
     // Reset form
@@ -1497,15 +1551,15 @@ const addItemToOrder = async () => {
 
 const saveOrderItemChanges = async () => {
   const res = await patch(`/orders/${selectedOrder.value.id}/`, {
-        delivery_fee: editingDeliveryFee.value,
-        total: calculateTotal(),
-      })
-      console.log(res)
-      console.log(editingOrderItems.value,'new order items');
-      const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
-        items: editingOrderItems.value,
-      });
-      console.log(res2,'res2')
+    delivery_fee: editingDeliveryFee.value,
+    total: calculateTotal(),
+  });
+  console.log(res);
+  console.log(editingOrderItems.value, "new order items");
+  const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
+    items: editingOrderItems.value,
+  });
+  console.log(res2, "res2");
   if (res.data) {
     // Show success toast
     showToast(
@@ -1797,7 +1851,6 @@ const saveProductChanges = async () => {
     isProcessing.value = false;
   }
 };
-
 
 // Pagination methods
 const goToPage = (page) => {

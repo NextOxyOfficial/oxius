@@ -1958,7 +1958,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
         items_data = request.data.get('items', [])
         
         try:
-            seller_payment_amounts = {}
+            seller_objects = {}  # Store seller objects instead of string IDs
             total_additional_amount = Decimal('0.00')
 
             # Process all items
@@ -1975,6 +1975,10 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
 
                     product = Product.objects.get(id=product_id)
                     unit_price = Decimal(str(product.sale_price if product.sale_price else product.regular_price))
+                    
+                    # Get seller directly from product
+                    seller = product.owner
+                    seller_key = seller.pk  
 
                     if existing_item:
                         # Update existing item
@@ -1984,11 +1988,13 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         if quantity_diff != 0:
                             price_difference = unit_price * quantity_diff
                             
-                            # Update seller payment amounts
-                            seller_id = str(product.owner.id)
-                            if seller_id not in seller_payment_amounts:
-                                seller_payment_amounts[seller_id] = Decimal('0.00')
-                            seller_payment_amounts[seller_id] += price_difference
+                            # Store seller object and update payment amounts
+                            if seller_key not in seller_objects:
+                                seller_objects[seller_key] = {
+                                    'user': seller,
+                                    'amount': Decimal('0.00')
+                                }
+                            seller_objects[seller_key]['amount'] += price_difference
                             total_additional_amount += price_difference
 
                             # Update the order item quantity
@@ -1997,7 +2003,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                     else:
                         # Add new item to order
                         new_item_data = {
-                            'order': str(order.id),
+                            'order': order.id,  # Use the ID directly, not string
                             'product': product_id,
                             'quantity': new_quantity,
                             'price': unit_price
@@ -2017,11 +2023,13 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                                 else:
                                     delivery_fee = Decimal(str(product.delivery_fee_outside_dhaka))
                             
-                            # Update seller payment amounts
-                            seller_id = str(product.owner.id)
-                            if seller_id not in seller_payment_amounts:
-                                seller_payment_amounts[seller_id] = Decimal('0.00')
-                            seller_payment_amounts[seller_id] += item_subtotal + delivery_fee
+                            # Store seller object and update payment amounts
+                            if seller_key not in seller_objects:
+                                seller_objects[seller_key] = {
+                                    'user': seller,
+                                    'amount': Decimal('0.00')
+                                }
+                            seller_objects[seller_key]['amount'] += item_subtotal + delivery_fee
                             total_additional_amount += item_subtotal + delivery_fee
                         else:
                             return Response(
@@ -2056,31 +2064,29 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         transaction_type='order_update_payment',
                         completed=True,
                         bank_status='completed',
-                        description=f"Additional payment for order #{order.id}"
+                        description=f"Payment for order {order.id}"  # Shortened description
                     )
 
                     # Distribute additional payments to sellers
-                    for seller_id, payment_amount in seller_payment_amounts.items():
+                    for seller_data in seller_objects.values():
+                        seller = seller_data['user']
+                        payment_amount = seller_data['amount']
+                        
                         if payment_amount > 0:
-                            try:
-                                seller = User.objects.get(id=seller_id)
-                                seller.balance += payment_amount
-                                seller.save()
+                            # Update seller balance
+                            seller.balance += payment_amount
+                            seller.save()
 
-                                Balance.objects.create(
-                                    user=seller,
-                                    to_user=buyer,
-                                    amount=payment_amount,
-                                    transaction_type='order_update_received',
-                                    completed=True,
-                                    bank_status='completed',
-                                    description=f"Additional payment received for order #{order.id}"
-                                )
-                            except User.DoesNotExist:
-                                return Response(
-                                    {"error": f"Failed to credit seller {seller_id}"},
-                                    status=status.HTTP_400_BAD_REQUEST
-                                )
+                            # Create transaction record
+                            Balance.objects.create(
+                                user=seller,
+                                to_user=buyer,
+                                amount=payment_amount,
+                                transaction_type='order_update_received',
+                                completed=True,
+                                bank_status='completed',
+                                description=f"Payment for order {order.id}"  # Shortened description
+                            )
 
             # Update order total
             order.total += total_additional_amount
@@ -2092,6 +2098,9 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
             )
 
         except Exception as e:
+            import traceback
+            print(f"Error in order update: {str(e)}")
+            print(traceback.format_exc())
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
