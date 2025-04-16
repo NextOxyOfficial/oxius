@@ -1216,10 +1216,49 @@ def subscribeToPro(request):
             {'error': 'Both months and total are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    nr = Subscription.objects.create(user=user, months=months, total=total)
+    
+    # Check if this is the user's first subscription (only pay commission once)
+    is_first_time = not Subscription.objects.filter(user=user).exists()
+    
+    # Create the subscription record
+    subscription = Subscription.objects.create(user=user, months=months, total=total)
+    
+    # Process referral commission for first-time subscribers
+    commission_processed = False
+    if is_first_time and user.refer:  # Check if user has a referrer
+        try:
+            referrer = user.refer
+            # Calculate 5% commission
+            total_decimal = Decimal(total)
+            commission_amount = total_decimal * Decimal('0.05')  # 5% commission
+            
+            # Update referrer's balance
+            referrer.balance += commission_amount
+            # Track total commission earned by referrer
+            referrer.commission_earned += commission_amount
+            referrer.save()
+            
+            # Create transaction record
+            Balance.objects.create(
+                user=referrer,
+                to_user=user,
+                amount=commission_amount,
+                transaction_type='referral_commission',
+                completed=True,
+                bank_status='completed',
+                description=f"Referral commission from {user.name or user.email}'s first Pro subscription"
+            )
+            
+            commission_processed = True
+            print(f"Referral commission of {commission_amount} credited to {referrer.email}")
+        except Exception as e:
+            print(f"Error processing referral commission: {str(e)}")
+    
     resp = {
         'message': 'Subscription successful',
-        'status': 'success'
+        'status': 'success',
+        'subscription_id': subscription.id,
+        'commission_processed': commission_processed
     }
     return Response(resp, status=status.HTTP_200_OK)
 @api_view(['POST'])
