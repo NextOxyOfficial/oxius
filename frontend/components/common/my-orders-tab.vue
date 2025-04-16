@@ -792,7 +792,7 @@
 
                 <div v-if="!editOrderItems">
                   <span class="font-medium"
-                    >৳{{ selectedOrder?.deliveryFee || 0 }}</span
+                    >৳{{ Number(selectedOrder?.delivery_fee) || 0 }}</span
                   >
                 </div>
                 <div v-else class="flex items-center">
@@ -879,23 +879,11 @@
         wrapper: 'relative z-[9999999]',
       }"
     >
-      <div
-        class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full"
-      >
-        <div
-          class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
-        ></div>
-        <div
-          class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
-        >
-          <h3
-            class="text-xl font-semibold text-gray-900 flex items-center"
-            id="modal-title"
-          >
-            <UIcon
-              name="i-heroicons-shopping-cart"
-              class="h-5 w-5 mr-2 text-indigo-600"
-            />
+      <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"></div>
+        <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+            <UIcon name="i-heroicons-shopping-cart" class="h-5 w-5 mr-2 text-indigo-600" />
             Add Product to Order
           </h3>
           <button
@@ -905,33 +893,24 @@
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>
         </div>
+        
         <div class="px-6 py-4">
+          <!-- Product Search/Select -->
           <div class="mb-4">
-            <label
-              for="product-select"
-              class="block text-sm font-medium text-gray-700 mb-1"
-              >Select Product</label
-            >
-            <select
-              id="product-select"
+            <UInputMenu
               v-model="selectedProductToAdd"
-              class="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
-            >
-              <option :value="null">Select a product</option>
-              <option
-                v-for="product in availableProducts"
-                :key="product.id"
-                :value="product"
-              >
-                {{ product.name }} - ৳{{ product.sale_price }}
-              </option>
-            </select>
+              :options="products"
+              option-attribute="name"
+              :ui="{
+                input: 'w-full',
+                container: 'w-full'
+              }"
+              placeholder="Search for a product..."
+            />
           </div>
 
-          <div
-            v-if="selectedProductToAdd"
-            class="bg-gray-50 rounded-lg p-4 mb-4"
-          >
+          <!-- Selected Product Details -->
+          <div v-if="selectedProductToAdd" class="bg-gray-50 rounded-lg p-4 mb-4">
             <div class="flex items-start space-x-3">
               <div class="h-16 w-16 rounded-md overflow-hidden bg-gray-200">
                 <img
@@ -940,50 +919,34 @@
                   :alt="selectedProductToAdd.name"
                   class="h-full w-full object-cover"
                 />
-                <div
-                  v-else
-                  class="h-full w-full flex items-center justify-center"
-                >
-                  <UIcon
-                    name="i-heroicons-photo"
-                    class="h-8 w-8 text-gray-400"
-                  />
+                <div v-else class="h-full w-full flex items-center justify-center">
+                  <UIcon name="i-heroicons-photo" class="h-8 w-8 text-gray-400" />
                 </div>
               </div>
               <div class="flex-1">
-                <h5 class="font-medium text-gray-900">
-                  {{ selectedProductToAdd.name }}
-                </h5>
+                <h5 class="font-medium text-gray-900">{{ selectedProductToAdd.name }}</h5>
                 <p class="text-sm text-gray-500 mt-1 line-clamp-2">
-                  {{
-                    selectedProductToAdd.short_description ||
-                    "No description available"
-                  }}
+                  {{ selectedProductToAdd.short_description || "No description available" }}
                 </p>
                 <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span class="text-gray-500">Price:</span>
-                    <span class="font-medium">
-                      ৳{{ selectedProductToAdd.sale_price }}
-                    </span>
+                    <span class="font-medium ml-1">৳{{ selectedProductToAdd.sale_price }}</span>
                   </div>
                   <div>
                     <span class="text-gray-500">Available:</span>
-                    <span class="font-medium">
-                      {{ selectedProductToAdd.quantity }}
-                    </span>
+                    <span class="font-medium ml-1">{{ selectedProductToAdd.quantity }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Quantity Input -->
           <div v-if="selectedProductToAdd">
-            <label
-              for="quantity-input"
-              class="block text-sm font-medium text-gray-700 mb-1"
-              >Quantity</label
-            >
+            <label for="quantity-input" class="block text-sm font-medium text-gray-700 mb-1">
+              Quantity
+            </label>
             <div class="flex items-center">
               <UButton
                 @click="decrementNewItemQuantity"
@@ -998,7 +961,7 @@
                 type="number"
                 v-model.number="newItemQuantity"
                 min="1"
-                :max="selectedProductToAdd.quantity"
+                :max="maxAvailableQuantity"
                 class="mx-2 block w-20 border-gray-300 rounded-md shadow-sm sm:text-sm text-center focus:ring-2 focus:ring-indigo-200 focus:outline-none px-2 py-1"
               />
               <UButton
@@ -1010,22 +973,17 @@
                 size="sm"
               />
             </div>
-            <p
-              v-if="newItemQuantity > maxAvailableQuantity"
-              class="text-xs text-red-500 mt-1"
-            >
+            <p v-if="newItemQuantity > maxAvailableQuantity" class="text-xs text-red-500 mt-1">
               Only {{ maxAvailableQuantity }} items available in stock
             </p>
           </div>
         </div>
+
+        <!-- Modal Footer -->
         <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
           <UButton
             @click="addItemToOrder"
-            :disabled="
-              !selectedProductToAdd ||
-              newItemQuantity < 1 ||
-              newItemQuantity > maxAvailableQuantity
-            "
+            :disabled="!selectedProductToAdd || newItemQuantity < 1 || newItemQuantity > maxAvailableQuantity"
             color="indigo"
             :loading="isAddingItem"
             icon="i-heroicons-plus"
@@ -1048,7 +1006,7 @@
 
 <script setup>
 const { user } = useAuth();
-const { get, patch } = useApi();
+const { get, patch,put } = useApi();
 const { formatDate } = useUtils();
 import {
   ShoppingBag,
@@ -1090,6 +1048,7 @@ import "jspdf-autotable";
 
 // Tab state
 const activeTab = ref("orders");
+
 
 // UI state
 const showOrderDetailsModal = ref(false);
@@ -1138,6 +1097,8 @@ const editingCustomer = reactive({
   address: "",
 });
 
+const orderItemAddition = ref({});
+
 // Toast notifications
 const toasts = ref([]);
 let toastId = 0;
@@ -1169,6 +1130,7 @@ onMounted(() => {
 // Dummy data - Orders with timestamps
 const orders = ref([]);
 const isOrdersLoading = ref(false);
+const isAddingItem = ref(false);
 
 async function getOrders() {
   isOrdersLoading.value = true;
@@ -1275,46 +1237,6 @@ async function getProducts() {
   }
 }
 
-// Product summary computed properties
-const activeProducts = computed(() => {
-  return products.value.filter((product) => product.status === "active");
-});
-
-const inactiveProducts = computed(() => {
-  return products.value.filter((product) => product.status === "inactive");
-});
-
-const outOfStockProducts = computed(() => {
-  return products.value.filter((product) => product.status === "out-of-stock");
-});
-
-const totalProductsValue = computed(() => {
-  return products.value.reduce(
-    (total, product) => total + product.sale_price * product.quantity,
-    0
-  );
-});
-
-const activeProductsValue = computed(() => {
-  return activeProducts.value.reduce(
-    (total, product) => total + product.sale_price * product.quantity,
-    0
-  );
-});
-
-const inactiveProductsValue = computed(() => {
-  return inactiveProducts.value.reduce(
-    (total, product) => total + product.sale_price * product.quantity,
-    0
-  );
-});
-
-const outOfStockProductsValue = computed(() => {
-  return outOfStockProducts.value.reduce(
-    (total, product) => total + product.sale_price * product.quantity,
-    0
-  );
-});
 
 // Computed properties
 const filteredOrders = computed(() => {
@@ -1410,38 +1332,6 @@ const displayedPages = computed(() => {
   return pages;
 });
 
-// Product pagination
-const filteredProducts = computed(() => {
-  let result = products.value;
-
-  // Apply status filter
-  if (productFilter.value !== "all") {
-    result = result.filter((product) => product.status === productFilter.value);
-  }
-
-  // Apply search filter
-  if (productSearch.value) {
-    const search = productSearch.value.toLowerCase();
-    result = result.filter(
-      (product) =>
-        product.name.toLowerCase().includes(search) ||
-        product.description.toLowerCase().includes(search)
-    );
-  }
-
-  return result;
-});
-
-const totalProductPages = computed(() => {
-  return Math.ceil(filteredProducts.value.length / itemsPerPage);
-});
-
-const paginatedProducts = computed(() => {
-  const start = (currentProductPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredProducts.value.slice(start, end);
-});
-
 // Methods
 const getStatusClass = (status) => {
   switch (status) {
@@ -1460,50 +1350,6 @@ const getStatusClass = (status) => {
   }
 };
 
-const getRelativeTime = (timestamp) => {
-  const now = new Date().getTime();
-  const diff = now - timestamp;
-
-  // Convert to seconds
-  const seconds = Math.floor(diff / 1000);
-
-  if (seconds < 60) {
-    return `${seconds} seconds ago`;
-  }
-
-  // Convert to minutes
-  const minutes = Math.floor(seconds / 60);
-
-  if (minutes < 60) {
-    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to hours
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to days
-  const days = Math.floor(hours / 24);
-
-  if (days < 30) {
-    return `${days} day${days > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to months
-  const months = Math.floor(days / 30);
-
-  if (months < 12) {
-    return `${months} month${months > 1 ? "s" : ""} ago`;
-  }
-
-  // Convert to years
-  const years = Math.floor(months / 12);
-
-  return `${years} year${years > 1 ? "s" : ""} ago`;
-};
 
 const viewOrderDetails = (order) => {
   selectedOrder.value = order;
@@ -1517,9 +1363,9 @@ const viewOrderDetails = (order) => {
   editingCustomer.phone = order.phone;
   editingCustomer.address = order.address;
 
-  // Initialize editing order items
+  // Initialize editing order items and delivery fee
   editingOrderItems.value = JSON.parse(JSON.stringify(order.items));
-  editingDeliveryFee.value = order.deliveryFee;
+  editingDeliveryFee.value = Number(order.delivery_fee) || 0; // Convert to number and handle null/undefined
 
   showOrderDetailsModal.value = true;
 };
@@ -1562,14 +1408,27 @@ const saveCustomerChanges = async () => {
 };
 
 const calculateSubtotal = () => {
-  return editingOrderItems.value.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+  if (editOrderItems.value) {
+    // When editing, use editingOrderItems
+    return editingOrderItems.value.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
+  } else {
+    // Before editing, use selectedOrder items
+    return selectedOrder.value?.items?.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    ) || 0;
+  }
 };
 
 const calculateTotal = () => {
-  return calculateSubtotal() + (editingDeliveryFee.value || 0);
+  const subtotal = calculateSubtotal();
+  const deliveryFee = editOrderItems.value 
+    ? (editingDeliveryFee.value || 0) 
+    : (selectedOrder.value?.delivery_fee || 0);
+  return subtotal + Number(deliveryFee);
 };
 
 const incrementQuantity = (index) => {
@@ -1586,46 +1445,99 @@ const removeOrderItem = (index) => {
   editingOrderItems.value.splice(index, 1);
 };
 
-const addItemToOrder = () => {
-  if (!selectedProductToAdd.value || newItemQuantity.value < 1) return;
+const maxAvailableQuantity = computed(() => {
+  if (!selectedProductToAdd.value) return 0;
+  return selectedProductToAdd.value.quantity || 0;
+});
 
-  // Check if the product is already in the order
-  const existingItemIndex = editingOrderItems.value.findIndex(
-    (item) => item.name === selectedProductToAdd.value.name
-  );
-
-  if (existingItemIndex !== -1) {
-    // Update quantity if product already exists
-    editingOrderItems.value[existingItemIndex].quantity +=
-      newItemQuantity.value;
-  } else {
-    // Add new item
-    editingOrderItems.value.push({
-      name: selectedProductToAdd.value.name,
-      price: selectedProductToAdd.value.price,
-      quantity: newItemQuantity.value,
-      image: selectedProductToAdd.value.image,
-    });
+watch(orderItemAddition, (newValue) => {
+  if (newValue) {
+    selectedProductToAdd.value = products.value.find(p => p.name === newValue);
+    newItemQuantity.value = 1;
   }
+});
 
-  // Reset form
-  selectedProductToAdd.value = null;
-  newItemQuantity.value = 1;
-  showAddItemModal.value = false;
+const incrementNewItemQuantity = () => {
+  if (newItemQuantity.value < maxAvailableQuantity.value) {
+    newItemQuantity.value++;
+  }
+};
 
-  // Show success toast
-  showToast("success", "Item Added", "Product has been added to the order.");
+const decrementNewItemQuantity = () => {
+  if (newItemQuantity.value > 1) {
+    newItemQuantity.value--;
+  }
+};
+
+const addItemToOrder = async () => {
+  if (isAddingItem.value || !selectedProductToAdd.value) return;
+  
+  isAddingItem.value = true;
+  
+  try {
+    const newItem = {
+      product: selectedProductToAdd.value.id,
+      quantity: newItemQuantity.value,
+      price: selectedProductToAdd.value.sale_price,
+    };
+
+    // Check if product already exists in order
+    const existingItemIndex = editingOrderItems.value.findIndex(
+      item => item.product === newItem.product
+    );
+
+    if (existingItemIndex !== -1) {
+      // Update existing item
+      editingOrderItems.value[existingItemIndex].quantity += newItem.quantity;
+    } else {
+      // Add new item
+      editingOrderItems.value.push(newItem);
+    }
+
+    // Reset form
+    orderItemAddition.value = null;
+    selectedProductToAdd.value = null;
+    newItemQuantity.value = 1;
+    showAddItemModal.value = false;
+
+    // Show success message
+    showToast("success", "Item Added", "Product has been added to the order");
+  } catch (error) {
+    console.error("Error adding item:", error);
+    showToast("error", "Error", "Failed to add item to order");
+  } finally {
+    isAddingItem.value = false;
+  }
 };
 
 const saveOrderItemChanges = async () => {
-  console.log(
-    "Order items:",
-    editingOrderItems.value[0].id,
-    editingOrderItems.value[0].quantity
-  );
-  console.log("Delivery fee:", editingDeliveryFee.value);
-  console.log("Subtotal:", calculateSubtotal());
-  console.log("Total:", calculateTotal());
+  const res = await patch(`/orders/${selectedOrder.value.id}/`, {
+        delivery_fee: editingDeliveryFee.value,
+        total: calculateTotal(),
+      })
+      console.log(res)
+      console.log(editingOrderItems.value,'new order items');
+      const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
+        items: editingOrderItems.value,
+      });
+      console.log(res2,'res2')
+  if (res.data) {
+    // Show success toast
+    showToast(
+      "success",
+      "Order Items Updated",
+      "Order items have been successfully updated."
+    );
+    await getOrders();
+  } else {
+    // Show error toast
+    showToast(
+      "error",
+      "Update Failed",
+      "There was an error updating the order items."
+    );
+  }
+  showOrderDetailsModal.value = false;
 };
 
 const updateOrderStatus = async (id) => {
@@ -1901,82 +1813,6 @@ const saveProductChanges = async () => {
   }
 };
 
-const toggleProductStatus = async (product) => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const index = products.value.findIndex((p) => p.id === product.id);
-    if (index !== -1) {
-      const newStatus = product.status === "active" ? "inactive" : "active";
-      products.value[index].status = newStatus;
-
-      // Show success toast
-      showToast(
-        "success",
-        "Status Changed",
-        `${product.name} is now ${
-          newStatus === "active" ? "visible" : "hidden"
-        } to customers.`
-      );
-    }
-  } catch (error) {
-    showToast(
-      "error",
-      "Status Change Failed",
-      "There was an error changing the product status."
-    );
-  } finally {
-    isProcessing.value = false;
-  }
-};
-
-const confirmDeleteProduct = (product) => {
-  selectedProduct.value = product;
-  showDeleteConfirmModal.value = true;
-};
-
-const deleteProduct = async () => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    // Remove the product from the products array
-    const index = products.value.findIndex(
-      (p) => p.id === selectedProduct.value.id
-    );
-    if (index !== -1) {
-      const productName = selectedProduct.value.name;
-      products.value.splice(index, 1);
-
-      // Show success toast
-      showToast(
-        "success",
-        "Product Deleted",
-        `${productName} has been successfully deleted.`
-      );
-    }
-
-    // Close the modal
-    showDeleteConfirmModal.value = false;
-  } catch (error) {
-    showToast(
-      "error",
-      "Deletion Failed",
-      "There was an error deleting the product."
-    );
-  } finally {
-    isProcessing.value = false;
-  }
-};
 
 // Pagination methods
 const goToPage = (page) => {
