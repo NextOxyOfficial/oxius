@@ -136,11 +136,11 @@
 
         <!-- Single row of categories with horizontal scrolling -->
         <div class="overflow-x-auto hide-scrollbar relative">
-          <div class="flex space-x-3 min-w-min py-1">
-            <!-- All Categories button (fixed as first item) -->
+          <div class="flex space-x-2 py-1 snap-x">
+            <!-- All Categories button -->
             <button
               @click="clearCategoryFilter"
-              class="flex-shrink-0 w-[23%] min-w-[80px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              class="flex-shrink-0 w-[24%] max-w-[24%] snap-start bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               :class="{
                 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
                   selectedCategory === null,
@@ -158,9 +158,9 @@
                   />
                 </div>
                 <div
-                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-full"
                 >
-                  All Categories
+                  All
                 </div>
                 <div class="text-xs text-slate-500 dark:text-slate-400">
                   {{ getTotalPostsCount() }}
@@ -173,7 +173,7 @@
               v-for="category in categories"
               :key="category.id"
               @click="filterByCategory(category.id)"
-              class="flex-shrink-0 w-[23%] min-w-[80px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              class="flex-shrink-0 w-[24%] max-w-[24%] snap-start bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               :class="{
                 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
                   selectedCategory === category.id,
@@ -192,7 +192,7 @@
                   />
                 </div>
                 <div
-                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-full"
                 >
                   {{ category.title }}
                 </div>
