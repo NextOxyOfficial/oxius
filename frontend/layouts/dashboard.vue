@@ -12,7 +12,7 @@ if (!useCookie("adsyclub-jwt").value) {
 // });
 useHead({
   title:
-    "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
+    "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
 });
 </script>
 

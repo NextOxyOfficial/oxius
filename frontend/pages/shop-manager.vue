@@ -1583,9 +1583,7 @@ async function updateStoreInfo() {
       store_description: editedUser.store_description,
     });
     if (data) {
-      setTimeout(() => {
-        jwtLogin();
-      }, 2000);
+      getStoreDetails(); 
     }
   } catch (error) {
     console.log(error);

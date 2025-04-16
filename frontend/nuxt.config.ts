@@ -37,12 +37,12 @@ export default defineNuxtConfig({
     buildAssetsDir: "/static/frontend/",
     head: {
       title:
-        "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
+        "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
       meta: [
         {
           name: "description",
           content:
-            "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society, and Find the Services You Need!",
+            "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
         },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
       ],

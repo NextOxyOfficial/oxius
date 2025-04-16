@@ -1,27 +1,32 @@
 <template>
   <div class="notification-container">
-    <!-- Notification Bell Button -->
+    <!-- Notification Bell Button with Premium Effect -->
     <button
       @click="toggleNotifications"
-      class="fixed z-[9999999999] top-2/3 transform left-2 sm:left-4 bg-white dark:bg-slate-800 shadow-lg rounded-lg p-3 flex items-center space-x-2 notification-bell"
+      class="notification-bell-button"
       :class="{ 'has-new': unreadCount > 0 }"
     >
-      <UIcon
-        :name="isOpen ? 'i-heroicons-bell-solid' : 'i-heroicons-bell'"
-        class="w-5 h-5 text-slate-700 dark:text-slate-300"
-      />
-      <transition name="pulse">
-        <div v-if="unreadCount > 0" class="notification-badge">
-          {{ unreadCount > 99 ? "99+" : unreadCount }}
-        </div>
-      </transition>
+      <div class="bell-inner">
+        <UIcon
+          :name="isOpen ? 'i-heroicons-bell-alert' : 'i-heroicons-bell'"
+          class="w-5 h-5 text-slate-700 dark:text-slate-300"
+        />
+        <transition name="pulse">
+          <div v-if="unreadCount > 0" class="notification-badge">
+            {{ unreadCount > 99 ? "99+" : unreadCount }}
+          </div>
+        </transition>
+      </div>
     </button>
 
-    <!-- Notifications Panel -->
+    <!-- Notifications Panel with Premium Design -->
     <transition name="slide-fade">
-      <div v-if="isOpen" class="notifications-panel">
+      <div v-if="isOpen" class="notifications-panel relative">
         <div class="panel-header">
-          <h3>Notifications</h3>
+          <h3 class="flex items-center gap-2">
+            <UIcon name="i-heroicons-bell-alert" class="w-5 h-5 text-indigo-500" />
+            Notifications
+          </h3>
           <div class="header-actions">
             <button
               v-if="unreadCount > 0"
@@ -34,12 +39,14 @@
         </div>
 
         <div v-if="isLoading" class="loading-state">
-          <div class="spinner"></div>
+          <div class="premium-spinner"></div>
           <p>Loading notifications...</p>
         </div>
 
         <div v-else-if="notifications.length === 0" class="empty-state">
-          <UIcon name="i-heroicons-inbox" class="empty-icon" />
+          <div class="empty-icon-wrapper">
+            <UIcon name="i-heroicons-inbox" class="empty-icon" />
+          </div>
           <p>No notifications</p>
           <p class="empty-subtext">You're all caught up!</p>
         </div>
@@ -48,613 +55,410 @@
           <div
             v-for="notification in notifications"
             :key="notification.id"
-            :class="['notification-item', { unread: !notification.read }]"
+            class="notification-item"
+            :class="[
+              { unread: !notification.read },
+              getNotificationTypeClass(notification.type)
+            ]"
             @click="openNotification(notification)"
           >
-            <!-- Notification Icon -->
-            <div
-              class="notification-icon"
-              :class="getNotificationColorClass(notification.type)"
-            >
+            <div class="notification-icon-wrapper">
               <UIcon :name="getNotificationIcon(notification.type)" />
+              <div class="notification-glow"></div>
             </div>
 
-            <!-- Notification Content -->
             <div class="notification-content">
               <div class="notification-title">
-                {{ notification.title }}
+                {{ getNotificationTitle(notification) }}
                 <span v-if="!notification.read" class="unread-indicator"></span>
               </div>
               <p class="notification-message">{{ notification.message }}</p>
-              <span class="notification-time">{{
-                formatTime(notification.created_at)
-              }}</span>
+              <div class="notification-meta">
+                <span class="notification-time">
+                  {{ formatTime(notification.created_at) }}
+                </span>
+                <span v-if="notification.amount" class="notification-amount">
+                  {{ formatAmount(notification.amount) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </transition>
 
-    <!-- Backdrop for mobile -->
+    <!-- Premium Backdrop -->
     <div
       v-if="isOpen"
       class="notification-backdrop"
-      @click="isOpen = false"
+      @click="closeNotifications"
     ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { formatDistanceToNow } from "date-fns";
-import { useAuth } from "@/composables/useAuth";
 
-const { user } = useAuth();
+const notificationTypes = {
+  DEPOSIT: 'deposit',
+  WITHDRAW: 'withdraw',
+  TRANSFER: 'transfer',
+  ORDER_RECEIVED: 'order_received',
+  KYC_APPROVED: 'kyc_approved',
+  RECHARGE_SUCCESS: 'recharge_success',
+  PRO_UPGRADED: 'pro_upgraded'
+};
 
-// State
-const isOpen = ref(false);
-const unreadCount = ref(0);
-const notifications = ref([]);
-const isLoading = ref(true);
-const intervalId = ref(null);
+// State management
+const isOpen = ref(false)
+const isLoading = ref(false)
+const notifications = ref([])
+const unreadCount = ref(0)
 
-// Toggle notification panel
-function toggleNotifications() {
-  isOpen.value = !isOpen.value;
-
-  // If opening the panel, mark notifications as seen
+// Toggle notifications panel
+const toggleNotifications = async () => {
+  isOpen.value = !isOpen.value
+  
   if (isOpen.value) {
-    markNotificationsAsSeen();
+    await fetchNotifications()
   }
 }
 
-// Format time to relative format (e.g. "5 minutes ago")
-function formatTime(timestamp) {
-  if (!timestamp) return "";
-  return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+// Close notifications panel
+const closeNotifications = () => {
+  isOpen.value = false
 }
 
-// Get appropriate icon based on notification type
-function getNotificationIcon(type) {
-  switch (type) {
-    case "order_received":
-      return "i-heroicons-shopping-bag";
-    case "product_purchase":
-      return "i-heroicons-shopping-cart";
-    case "deposit":
-      return "i-heroicons-arrow-down-tray";
-    case "withdraw":
-      return "i-heroicons-arrow-up-tray";
-    case "transfer":
-      return "i-heroicons-arrows-right-left";
-    case "system_maintenance":
-      return "i-heroicons-wrench-screwdriver";
-    default:
-      return "i-heroicons-bell";
-  }
-}
-
-// Get color class based on notification type
-function getNotificationColorClass(type) {
-  switch (type) {
-    case "order_received":
-      return "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400";
-    case "product_purchase":
-      return "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400";
-    case "deposit":
-      return "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400";
-    case "withdraw":
-      return "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400";
-    case "transfer":
-      return "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400";
-    case "system_maintenance":
-      return "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400";
-    default:
-      return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
-  }
-}
-
-// Mark all notifications as read
-async function markAllAsRead() {
+// Fetch notifications
+const fetchNotifications = async () => {
   try {
-    await fetch("/api/notifications/mark-all-read", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    // Update local state
-    notifications.value = notifications.value.map((notification) => ({
-      ...notification,
-      read: true,
-    }));
-
-    updateUnreadCount();
+    isLoading.value = true
+    // Replace with your actual API call
+    const response = await fetch('/api/notifications')
+    const data = await response.json()
+    notifications.value = data.notifications
+    unreadCount.value = data.notifications.filter(n => !n.read).length
   } catch (error) {
-    console.error("Error marking notifications as read:", error);
-  }
-}
-
-// Mark notifications as seen (when opening the panel)
-async function markNotificationsAsSeen() {
-  try {
-    const unreadIds = notifications.value
-      .filter((n) => !n.read)
-      .map((n) => n.id);
-
-    if (unreadIds.length === 0) return;
-
-    await fetch("/api/notifications/mark-as-seen", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ ids: unreadIds }),
-      credentials: "include",
-    });
-  } catch (error) {
-    console.error("Error marking notifications as seen:", error);
-  }
-}
-
-// Update the unread count
-function updateUnreadCount() {
-  unreadCount.value = notifications.value.filter((n) => !n.read).length;
-}
-
-// Handle click on notification
-async function openNotification(notification) {
-  try {
-    // Mark as read in the database
-    if (!notification.read) {
-      await fetch(`/api/notifications/${notification.id}/mark-read`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      // Update local state
-      const index = notifications.value.findIndex(
-        (n) => n.id === notification.id
-      );
-      if (index !== -1) {
-        notifications.value[index].read = true;
-        updateUnreadCount();
-      }
-    }
-
-    // Handle navigation based on notification type and reference
-    if (notification.link) {
-      window.location.href = notification.link;
-    } else {
-      // Navigate based on type and reference_id
-      switch (notification.type) {
-        case "order_received":
-          if (notification.reference_id) {
-            window.location.href = `/orders/${notification.reference_id}`;
-          }
-          break;
-
-        case "product_purchase":
-          if (notification.reference_id) {
-            window.location.href = `/purchases/${notification.reference_id}`;
-          }
-          break;
-
-        case "deposit":
-        case "withdraw":
-        case "transfer":
-          window.location.href = "/deposit-withdraw";
-          break;
-
-        default:
-          // Do nothing for system maintenance
-          break;
-      }
-    }
-  } catch (error) {
-    console.error("Error handling notification click:", error);
-  }
-}
-
-// Fetch notifications data from the API
-async function fetchNotifications() {
-  if (!user.value) return;
-
-  isLoading.value = true;
-
-  try {
-    const response = await fetch("/api/notifications", {
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch notifications");
-    }
-
-    const data = await response.json();
-
-    // Filter notifications by types we want to display
-    const validTypes = [
-      "order_received",
-      "product_purchase",
-      "deposit",
-      "withdraw",
-      "transfer",
-      "system_maintenance",
-    ];
-
-    notifications.value = data.filter((n) => validTypes.includes(n.type));
-    updateUnreadCount();
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
+    console.error('Error fetching notifications:', error)
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
-// Setup event listeners and polling
-onMounted(() => {
-  // Initial fetch
-  fetchNotifications();
+// Mark all as read
+const markAllAsRead = async () => {
+  try {
+    // Replace with your actual API call
+    await fetch('/api/notifications/mark-all-read', {
+      method: 'POST'
+    })
+    notifications.value = notifications.value.map(n => ({
+      ...n,
+      read: true
+    }))
+    unreadCount.value = 0
+  } catch (error) {
+    console.error('Error marking notifications as read:', error)
+  }
+}
 
-  // Set up polling every 30 seconds
-  intervalId.value = setInterval(fetchNotifications, 30000);
-
-  // Clean up on unmount
-  onUnmounted(() => {
-    if (intervalId.value) {
-      clearInterval(intervalId.value);
-    }
-  });
-});
-
-// Watch for user changes to refetch notifications
-watch(
-  () => user.value,
-  (newUser) => {
-    if (newUser) {
-      fetchNotifications();
-    } else {
-      notifications.value = [];
-      unreadCount.value = 0;
+// Open notification
+const openNotification = async (notification) => {
+  if (!notification.read) {
+    try {
+      // Replace with your actual API call
+      await fetch(`/api/notifications/${notification.id}/mark-read`, {
+        method: 'POST'
+      })
+      notification.read = true
+      unreadCount.value--
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
     }
   }
-);
+
+  // Handle notification click based on type
+  switch (notification.type) {
+    case notificationTypes.DEPOSIT:
+    case notificationTypes.WITHDRAW:
+    case notificationTypes.TRANSFER:
+      navigateTo('/wallet/transactions')
+      break
+    case notificationTypes.ORDER_RECEIVED:
+      navigateTo(`/orders/${notification.orderId}`)
+      break
+    case notificationTypes.KYC_APPROVED:
+      navigateTo('/profile/verification')
+      break
+    case notificationTypes.RECHARGE_SUCCESS:
+      navigateTo('/mobile/recharge-history')
+      break
+    case notificationTypes.PRO_UPGRADED:
+      navigateTo('/subscription')
+      break
+  }
+
+  closeNotifications()
+}
+
+// Format time
+const formatTime = (date) => {
+  const now = new Date()
+  const notificationDate = new Date(date)
+  const diffInSeconds = Math.floor((now - notificationDate) / 1000)
+
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+  return notificationDate.toLocaleDateString()
+}
+
+// Get notification type class
+function getNotificationTypeClass(type) {
+  const classes = {
+    [notificationTypes.DEPOSIT]: 'notification-deposit',
+    [notificationTypes.WITHDRAW]: 'notification-withdraw',
+    [notificationTypes.TRANSFER]: 'notification-transfer',
+    [notificationTypes.ORDER_RECEIVED]: 'notification-order',
+    [notificationTypes.KYC_APPROVED]: 'notification-kyc',
+    [notificationTypes.RECHARGE_SUCCESS]: 'notification-recharge',
+    [notificationTypes.PRO_UPGRADED]: 'notification-pro'
+  };
+  return classes[type] || '';
+}
+
+// Get notification icon
+function getNotificationIcon(type) {
+  const icons = {
+    [notificationTypes.DEPOSIT]: 'i-heroicons-arrow-down-circle',
+    [notificationTypes.WITHDRAW]: 'i-heroicons-arrow-up-circle',
+    [notificationTypes.TRANSFER]: 'i-heroicons-arrows-right-left',
+    [notificationTypes.ORDER_RECEIVED]: 'i-heroicons-shopping-bag',
+    [notificationTypes.KYC_APPROVED]: 'i-heroicons-check-badge',
+    [notificationTypes.RECHARGE_SUCCESS]: 'i-heroicons-device-phone-mobile',
+    [notificationTypes.PRO_UPGRADED]: 'i-heroicons-star'
+  };
+  return icons[type] || 'i-heroicons-bell';
+}
+
+// Get notification title
+function getNotificationTitle(notification) {
+  const titles = {
+    [notificationTypes.DEPOSIT]: 'Deposit Successful',
+    [notificationTypes.WITHDRAW]: 'Withdrawal Processed',
+    [notificationTypes.TRANSFER]: 'Transfer Complete',
+    [notificationTypes.ORDER_RECEIVED]: 'New Order Received',
+    [notificationTypes.KYC_APPROVED]: 'KYC Verified',
+    [notificationTypes.RECHARGE_SUCCESS]: 'Recharge Successful',
+    [notificationTypes.PRO_UPGRADED]: 'Welcome to Pro!'
+  };
+  return titles[notification.type] || notification.title;
+}
+
+// Format amount with currency
+function formatAmount(amount) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'BDT'
+  }).format(amount);
+}
 </script>
 
 <style scoped>
-.notification-container {
+/* Add these new styles to your existing CSS */
+
+.notification-bell-button {
+  @apply fixed z-[9999999999] top-2/3 transform left-2 sm:left-4 
+         bg-white dark:bg-slate-800 rounded-lg p-3
+         transition-all duration-300 ease-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.bell-inner {
+  @apply relative flex items-center justify-center;
+}
+
+.notification-icon-wrapper {
+  @apply relative w-10 h-10 rounded-full flex items-center justify-center;
+}
+
+.notification-glow {
+  @apply absolute inset-0 rounded-full opacity-25;
+  animation: glow 2s infinite;
+}
+
+/* Notification Type Specific Styles */
+.notification-deposit .notification-icon-wrapper {
+  @apply bg-green-100 text-green-600;
+}
+
+.notification-withdraw .notification-icon-wrapper {
+  @apply bg-red-100 text-red-600;
+}
+
+.notification-transfer .notification-icon-wrapper {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.notification-order .notification-icon-wrapper {
+  @apply bg-purple-100 text-purple-600;
+}
+
+.notification-kyc .notification-icon-wrapper {
+  @apply bg-teal-100 text-teal-600;
+}
+
+.notification-recharge .notification-icon-wrapper {
+  @apply bg-orange-100 text-orange-600;
+}
+
+.notification-pro .notification-icon-wrapper {
+  @apply bg-amber-100 text-amber-600;
+}
+
+/* Premium Spinner */
+.premium-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(to right, #6366f1, #8b5cf6);
+  animation: spin 1s linear infinite;
   position: relative;
 }
 
-.notification-bell {
-  position: relative;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+.premium-spinner::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: white;
+  border-radius: 50%;
 }
 
-.dark .notification-bell {
-  border-color: rgba(255, 255, 255, 0.1);
+/* Glow Animation */
+@keyframes glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
-.notification-bell:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+/* Enhanced Notification Item */
+.notification-item {
+  @apply relative overflow-hidden transition-all duration-300 ease-out;
 }
 
-.notification-bell:active {
-  transform: translateY(0);
+.notification-item::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.1), transparent);
 }
 
-.notification-bell.has-new {
-  animation: pulse 2s infinite;
+.notification-item:hover::before {
+  @apply opacity-100;
+}
+
+.notification-meta {
+  @apply flex justify-between items-center mt-2 text-xs text-gray-500;
+}
+
+.notification-amount {
+  @apply font-semibold text-indigo-600 dark:text-indigo-400;
+}
+
+/* Dark Mode Enhancements */
+.dark .premium-spinner::before {
+  background: #1e293b;
+}
+
+.dark .notification-item::before {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.2), transparent);
+}
+
+/* Add to your existing styles */
+.notifications-panel {
+  @apply fixed right-2 sm:right-4 top-16 w-96 max-w-[calc(100vw-1rem)] 
+         bg-white dark:bg-slate-800 rounded-xl shadow-xl 
+         border border-gray-200 dark:border-gray-700
+         overflow-hidden z-[9999999999];
+  max-height: calc(100vh - 5rem);
+}
+
+.panel-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.mark-read-button {
+  @apply text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 
+         dark:hover:text-indigo-300 font-medium transition-colors;
+}
+
+.notifications-list {
+  @apply divide-y divide-gray-200 dark:divide-gray-700 overflow-y-auto;
+  max-height: calc(100vh - 12rem);
+}
+
+.notification-item {
+  @apply flex items-start gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 
+         cursor-pointer transition-colors;
+}
+
+.notification-content {
+  @apply flex-1;
+}
+
+.notification-title {
+  @apply text-sm font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2;
+}
+
+.unread-indicator {
+  @apply w-2 h-2 rounded-full bg-indigo-500;
+}
+
+.notification-message {
+  @apply text-sm text-gray-600 dark:text-gray-300;
+}
+
+.notification-backdrop {
+  @apply fixed inset-0 bg-black/20 dark:bg-black/40 z-[999999999];
+}
+
+/* Animations */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.pulse-enter-active {
+  animation: pulse 0.3s ease-out;
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(79, 209, 197, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(79, 209, 197, 0);
+    transform: scale(0.9);
+    opacity: 0;
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(79, 209, 197, 0);
+    transform: scale(1);
+    opacity: 1;
   }
-}
-
-.notification-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: linear-gradient(to bottom right, #f97316, #ef4444);
-  color: white;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-  border: 1px solid white;
-}
-
-.dark .notification-badge {
-  border-color: #1e293b;
-}
-
-.notifications-panel {
-  position: fixed;
-  top: 50%;
-  left: 3.5rem;
-  transform: translateY(-50%);
-  width: 320px;
-  max-width: calc(100vw - 5rem);
-  background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  z-index: 9999999998;
-}
-
-.dark .notifications-panel {
-  background-color: #1e293b;
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.panel-header {
-  padding: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dark .panel-header {
-  border-bottom-color: #334155;
-}
-
-.panel-header h3 {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #1e293b;
-}
-
-.dark .panel-header h3 {
-  color: #f8fafc;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-}
-
-.mark-read-button {
-  font-size: 0.75rem;
-  color: #6366f1;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.dark .mark-read-button {
-  color: #818cf8;
-}
-
-.mark-read-button:hover {
-  text-decoration: underline;
-}
-
-.notifications-list {
-  overflow-y: auto;
-  flex-grow: 1;
-  max-height: calc(80vh - 60px);
-}
-
-.notification-item {
-  padding: 1rem;
-  display: flex;
-  border-bottom: 1px solid #f1f5f9;
-  transition: background-color 0.2s;
-  cursor: pointer;
-}
-
-.dark .notification-item {
-  border-bottom-color: #334155;
-}
-
-.notification-item:hover {
-  background-color: #f8fafc;
-}
-
-.dark .notification-item:hover {
-  background-color: #0f172a;
-}
-
-.notification-item.unread {
-  background-color: rgba(99, 102, 241, 0.05);
-}
-
-.dark .notification-item.unread {
-  background-color: rgba(99, 102, 241, 0.1);
-}
-
-.notification-item.unread:hover {
-  background-color: rgba(99, 102, 241, 0.08);
-}
-
-.dark .notification-item.unread:hover {
-  background-color: rgba(99, 102, 241, 0.15);
-}
-
-.notification-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-}
-
-.notification-icon > svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.notification-content {
-  flex-grow: 1;
-  min-width: 0;
-}
-
-.notification-title {
-  font-weight: 500;
-  color: #1e293b;
-  margin-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.dark .notification-title {
-  color: #f1f5f9;
-}
-
-.unread-indicator {
-  width: 0.5rem;
-  height: 0.5rem;
-  background-color: #6366f1;
-  border-radius: 50%;
-}
-
-.notification-message {
-  color: #64748b;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.dark .notification-message {
-  color: #cbd5e1;
-}
-
-.notification-time {
-  color: #94a3b8;
-  font-size: 0.75rem;
-}
-
-.dark .notification-time {
-  color: #64748b;
-}
-
-.loading-state,
-.empty-state {
-  padding: 3rem 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  text-align: center;
-}
-
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid #f1f5f9;
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-.dark .spinner {
-  border-color: #334155;
-  border-top-color: #818cf8;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-.empty-icon {
-  width: 3rem;
-  height: 3rem;
-  color: #cbd5e1;
-  margin-bottom: 1rem;
-}
-
-.dark .empty-icon {
-  color: #475569;
-}
-
-.empty-subtext {
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.notification-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: 9999999990;
-}
-
-/* Animation classes */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translate3d(-20px, -50%, 0);
-}
-
-.pulse-enter-active {
-  animation: badge-pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-@keyframes badge-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.1);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .notifications-panel {
-    width: calc(100vw - 4rem);
-    max-height: 60vh;
   }
 }
 </style>

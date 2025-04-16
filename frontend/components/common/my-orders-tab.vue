@@ -830,22 +830,7 @@
                 Saving...
               </span>
             </button>
-            <button
-              @click="cancelOrder"
-              v-if="
-                selectedOrder?.status !== 'cancelled' &&
-                selectedOrder?.status !== 'delivered'
-              "
-              class="inline-flex justify-center items-center rounded-md border border-red-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-red-700 hover:bg-red-50 focus:outline-none sm:text-sm transition-all duration-200"
-              :disabled="isProcessing"
-            >
-              <XCircle class="h-4 w-4 mr-1.5" />
-              <span v-if="!isProcessing">Cancel Order</span>
-              <span v-else class="flex items-center">
-                <Loader2 class="h-4 w-4 mr-1.5 animate-spin" />
-                Processing...
-              </span>
-            </button>
+            
             <button
               @click="updateOrderStatus(selectedOrder.id)"
               class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
