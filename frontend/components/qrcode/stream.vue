@@ -1,7 +1,7 @@
 <template>
   <div>
     <video
-      class="max-sm:w-60 max-sm:h-60 mx-auto"
+      class="max-sm:w-72 max-sm:h-72 mx-auto"
       ref="videoElement"
       width="100%"
       height="100%"
