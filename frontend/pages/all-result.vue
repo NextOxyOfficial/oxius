@@ -134,11 +134,12 @@
           Categories
         </h3>
 
-        <div class="overflow-x-auto hide-scrollbar">
-          <div class="flex flex-wrap gap-2 py-2">
+        <!-- First row: All Categories + first 3 categories -->
+        <div class="mb-3 overflow-x-auto hide-scrollbar">
+          <div class="flex space-x-3 min-w-min py-1">
             <button
               @click="clearCategoryFilter"
-              class="flex-shrink-0 bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               :class="{
                 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
                   selectedCategory === null,
@@ -167,10 +168,92 @@
             </button>
 
             <button
-              v-for="category in categories"
+              v-for="category in categories.slice(0, 3)"
               :key="category.id"
               @click="filterByCategory(category.id)"
-              class="flex-shrink-0 bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              :class="{
+                'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
+                  selectedCategory === category.id,
+                'border-slate-200 dark:border-slate-700':
+                  selectedCategory !== category.id,
+              }"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div
+                  class="w-10 h-10 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 overflow-hidden mb-2"
+                >
+                  <img
+                    :src="category.image || '/images/category-placeholder.jpg'"
+                    :alt="category.title"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                >
+                  {{ category.title }}
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ getCategoryCount(category.id) }}
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Second row of categories -->
+        <div
+          class="mb-3 overflow-x-auto hide-scrollbar"
+          v-if="categories.length > 3"
+        >
+          <div class="flex space-x-3 min-w-min py-1">
+            <button
+              v-for="category in categories.slice(3, 7)"
+              :key="category.id"
+              @click="filterByCategory(category.id)"
+              class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              :class="{
+                'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
+                  selectedCategory === category.id,
+                'border-slate-200 dark:border-slate-700':
+                  selectedCategory !== category.id,
+              }"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div
+                  class="w-10 h-10 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 overflow-hidden mb-2"
+                >
+                  <img
+                    :src="category.image || '/images/category-placeholder.jpg'"
+                    :alt="category.title"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                >
+                  {{ category.title }}
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ getCategoryCount(category.id) }}
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Third row of categories -->
+        <div
+          class="overflow-x-auto hide-scrollbar"
+          v-if="categories.length > 7"
+        >
+          <div class="flex space-x-3 min-w-min py-1">
+            <button
+              v-for="category in categories.slice(7, 11)"
+              :key="category.id"
+              @click="filterByCategory(category.id)"
+              class="flex-shrink-0 w-[22%] min-w-[85px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               :class="{
                 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
                   selectedCategory === category.id,
@@ -458,7 +541,9 @@
                       color="white"
                       class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white shadow-md"
                     >
-                      {{ getCategoryName(post.category_id) }}
+                      {{
+                        getCategoryName(post.category_id || post.category?.id)
+                      }}
                     </UBadge>
                   </div>
                 </div>
@@ -486,15 +571,16 @@
                     <div class="flex items-center">
                       <UAvatar
                         :src="
-                          post.author?.avatar ||
+                          post.user?.image ||
+                          post.user?.avatar ||
                           '/images/avatar-placeholder.jpg'
                         "
-                        :alt="post.author?.name || 'User'"
+                        :alt="getUserName(post)"
                         size="xs"
                         class="mr-2"
                       />
                       <span class="truncate max-w-[80px]">
-                        {{ post.author?.name || "Anonymous" }}
+                        {{ getUserName(post) }}
                       </span>
                     </div>
 
@@ -548,7 +634,9 @@
                         color="white"
                         class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white shadow-md"
                       >
-                        {{ getCategoryName(post.category_id) }}
+                        {{
+                          getCategoryName(post.category_id || post.category?.id)
+                        }}
                       </UBadge>
                     </div>
                   </div>
@@ -576,14 +664,15 @@
                       <div class="flex items-center">
                         <UAvatar
                           :src="
-                            post.author?.avatar ||
+                            post.user?.image ||
+                            post.user?.avatar ||
                             '/images/avatar-placeholder.jpg'
                           "
-                          :alt="post.author?.name || 'User'"
+                          :alt="getUserName(post)"
                           size="xs"
                           class="mr-2"
                         />
-                        <span>{{ post.author?.name || "Anonymous" }}</span>
+                        <span>{{ getUserName(post) }}</span>
                       </div>
 
                       <!-- Date -->
@@ -910,6 +999,11 @@ onUnmounted(() => {
 watch(sortBy, () => {
   sortPosts();
 });
+
+// Helper function to get user name
+const getUserName = (post) => {
+  return post.user?.name || post.author?.name || "Anonymous";
+};
 </script>
 
 <style scoped>
@@ -980,6 +1074,27 @@ watch(sortBy, () => {
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+  cursor: grab;
+}
+
+.hide-scrollbar:active {
+  cursor: grabbing;
+}
+
+/* Add highlight indicator to show there's more content */
+.hide-scrollbar::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, transparent, rgba(241, 245, 249, 0.5));
+  pointer-events: none;
+}
+
+.dark .hide-scrollbar::after {
+  background: linear-gradient(to right, transparent, rgba(15, 23, 42, 0.5));
 }
 
 /* Responsive adjustments */
