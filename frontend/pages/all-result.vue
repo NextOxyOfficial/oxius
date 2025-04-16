@@ -1,15 +1,14 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90"
-  >
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
     <!-- Banner Slider Section with UContainer -->
-    <div class="relative overflow-hidden mt-4 mb-8">
-      <UContainer class="!px-0">
-        <div
-          class="carousel-container rounded-md overflow-hidden shadow-md relative"
-        >
+    <UContainer class="py-4">
+      <div
+        class="relative overflow-hidden banner-section mb-6 rounded-xl shadow-lg"
+      >
+        <div class="banner-slider relative">
+          <!-- Slides Container -->
           <div
-            class="carousel-slides flex transition-transform duration-700 ease-in-out"
+            class="flex transition-transform duration-500 ease-out"
             :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
           >
             <div
@@ -17,32 +16,48 @@
               :key="index"
               class="w-full flex-shrink-0 relative"
             >
-              <div class="relative h-64 sm:h-72 md:h-80">
+              <div class="relative w-full h-52 sm:h-64 md:h-80 overflow-hidden">
+                <!-- Banner Image -->
                 <img
                   :src="slide.image"
                   :alt="slide.title"
-                  class="w-full h-full object-cover"
+                  class="absolute inset-0 w-full h-full object-cover transform scale-105 transition-transform duration-10000"
+                  :class="{ 'animate-ken-burns': currentSlide === index }"
                 />
+
+                <!-- Gradient Overlay -->
                 <div
-                  class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex items-center"
-                >
-                  <div class="px-6 sm:px-10 max-w-2xl">
+                  class="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent"
+                ></div>
+
+                <!-- Content -->
+                <div class="absolute inset-0 flex items-center">
+                  <div class="container mx-auto px-4 md:px-8">
                     <div
-                      class="w-12 h-1 bg-emerald-400 mb-4 rounded-full"
-                    ></div>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">
-                      {{ slide.title }}
-                    </h2>
-                    <p class="text-white/80 text-sm sm:text-base mb-4">
-                      {{ slide.description }}
-                    </p>
-                    <UButton
-                      color="emerald"
-                      :to="slide.link"
-                      class="text-white font-medium"
+                      class="max-w-md mx-auto md:mx-0 slide-content"
+                      :class="{ active: currentSlide === index }"
                     >
-                      {{ slide.buttonText }}
-                    </UButton>
+                      <h2
+                        class="text-white text-2xl md:text-3xl font-bold mb-2 transform translate-y-8 opacity-0 transition-all duration-500 delay-100"
+                      >
+                        {{ slide.title }}
+                      </h2>
+                      <p
+                        class="text-white/80 mb-4 max-w-md transform translate-y-8 opacity-0 transition-all duration-500 delay-200"
+                      >
+                        {{ slide.description }}
+                      </p>
+                      <UButton
+                        color="emerald"
+                        :to="slide.link"
+                        class="transform translate-y-8 opacity-0 transition-all duration-500 delay-300 shadow-lg"
+                      >
+                        {{ slide.buttonText }}
+                        <template #trailing>
+                          <UIcon name="i-heroicons-arrow-right" />
+                        </template>
+                      </UButton>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -51,7 +66,7 @@
 
           <!-- Banner Controls -->
           <div
-            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2"
+            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10"
           >
             <button
               v-for="(_, index) in bannerSlides"
@@ -60,270 +75,336 @@
               class="w-2.5 h-2.5 rounded-full transition-all duration-300"
               :class="
                 currentSlide === index
-                  ? 'bg-emerald-400 scale-110'
+                  ? 'bg-emerald-500 w-6'
                   : 'bg-white/50 hover:bg-white/70'
               "
             ></button>
           </div>
 
+          <!-- Navigation Arrows -->
           <button
             @click="prevSlide"
-            class="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 backdrop-blur-sm"
+            class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-emerald-500 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
           >
-            <UIcon name="i-heroicons-chevron-left" />
+            <UIcon name="i-heroicons-chevron-left" class="w-5 h-5" />
           </button>
           <button
             @click="nextSlide"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 backdrop-blur-sm"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-emerald-500 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
           >
-            <UIcon name="i-heroicons-chevron-right" />
+            <UIcon name="i-heroicons-chevron-right" class="w-5 h-5" />
           </button>
         </div>
-      </UContainer>
-    </div>
+      </div>
+    </UContainer>
 
     <UContainer>
-      <!-- Compact Search Bar -->
-      <div class="mb-8 relative">
-        <div class="max-w-2xl mx-auto relative">
-          <input
-            v-model="searchInput"
-            type="text"
-            placeholder="Search posts..."
-            class="w-full py-3 px-5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-emerald-500"
-            @input="debouncedSearch"
-            @keyup.enter="performSearch"
-          />
-          <UIcon
-            name="i-heroicons-magnifying-glass"
-            class="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 size-4"
-          />
-          <button
-            v-if="searchInput"
-            @click="clearSearch"
-            class="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-          >
-            <UIcon name="i-heroicons-x-mark" class="size-4" />
-          </button>
-        </div>
-
-        <!-- Search Results Dropdown -->
-        <div
-          v-if="showSearchResults && searchResults.length > 0"
-          class="absolute mt-1 w-full max-w-2xl bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-10 max-h-80 overflow-y-auto mx-auto left-0 right-0 search-dropdown"
-          style="margin-left: auto; margin-right: auto"
-        >
-          <div class="p-2">
-            <div class="text-xs text-slate-500 dark:text-slate-400 mb-1 px-2">
-              Search results
-            </div>
-            <NuxtLink
-              v-for="result in searchResults.slice(0, 5)"
-              :key="result.id"
-              :to="`/classified/${result.id}`"
-              class="block p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
-              @click="showSearchResults = false"
-            >
-              <div class="font-medium text-slate-900 dark:text-white">
-                {{ result.title }}
-              </div>
-              <div
-                class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1"
-                v-html="result.description || 'No description'"
-              ></div>
-            </NuxtLink>
-
-            <div
-              v-if="searchResults.length > 5"
-              class="mt-1 p-2 text-center text-sm text-emerald-600 dark:text-emerald-400 border-t border-slate-100 dark:border-slate-700"
-            >
-              <button
-                @click="performSearch"
-                class="font-medium hover:underline"
-              >
-                View all {{ searchResults.length }} results
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="block lg:hidden mb-6">
-        <UContainer>
-          <div class="flex overflow-x-auto space-x-4 scrollbar-thin">
+      <!-- Search Bar -->
+      <div class="mb-6 sm:mb-8">
+        <div class="relative max-w-2xl mx-auto">
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search for posts..."
+              class="w-full py-3 px-5 pl-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all duration-300"
+              @input="debouncedSearch"
+              @keyup.enter="search"
+            />
+            <UIcon
+              name="i-heroicons-magnifying-glass"
+              class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5"
+            />
             <button
-              v-for="category in categoriesWithCounts"
-              :key="category.value"
-              @click="selectCategory(category.value)"
-              class="flex-shrink-0 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-              :class="{
-                'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300':
-                  selectedCategory === category.value,
-              }"
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
-              {{ category.label }}
-              <span
-                class="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full px-2 py-0.5"
-              >
-                {{ category.count }}
-              </span>
+              <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
             </button>
           </div>
-        </UContainer>
+        </div>
       </div>
 
-      <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Categories Sidebar -->
-        <div class="w-full lg:w-64 flex-shrink-0 max-sm:hidden">
+      <!-- Replace the Mobile Categories section with this more dynamic approach -->
+      <div class="lg:hidden mb-8">
+        <h3
+          class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3 px-1"
+        >
+          Categories
+        </h3>
+
+        <div class="overflow-x-auto hide-scrollbar">
+          <div class="flex flex-wrap gap-2 py-2">
+            <button
+              @click="clearCategoryFilter"
+              class="flex-shrink-0 bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              :class="{
+                'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
+                  selectedCategory === null,
+                'border-slate-200 dark:border-slate-700':
+                  selectedCategory !== null,
+              }"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div
+                  class="w-10 h-10 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 overflow-hidden mb-2 flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-squares-2x2"
+                    class="w-5 h-5 text-emerald-500"
+                  />
+                </div>
+                <div
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                >
+                  All Categories
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ getTotalPostsCount() }}
+                </div>
+              </div>
+            </button>
+
+            <button
+              v-for="category in categories"
+              :key="category.id"
+              @click="filterByCategory(category.id)"
+              class="flex-shrink-0 bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-dashed transition-all duration-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+              :class="{
+                'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20':
+                  selectedCategory === category.id,
+                'border-slate-200 dark:border-slate-700':
+                  selectedCategory !== category.id,
+              }"
+            >
+              <div class="flex flex-col items-center text-center">
+                <div
+                  class="w-10 h-10 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 overflow-hidden mb-2"
+                >
+                  <img
+                    :src="category.image || '/images/category-placeholder.jpg'"
+                    :alt="category.title"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div
+                  class="font-medium text-slate-800 dark:text-white text-xs truncate w-20"
+                >
+                  {{ category.title }}
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ getCategoryCount(category.id) }}
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Desktop Categories Sidebar -->
+        <div class="hidden lg:block w-64 flex-shrink-0">
           <div
-            class="bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700/30 sticky top-24"
+            class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 sticky top-24"
           >
-            <div class="flex items-center mb-4">
-              <div
-                class="h-5 w-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 mr-3"
-              ></div>
-              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+            <div class="flex items-center mb-5">
+              <div class="h-5 w-1 bg-emerald-500 rounded-full mr-2"></div>
+              <h3 class="font-semibold text-slate-900 dark:text-white">
                 Categories
-              </h2>
+              </h3>
             </div>
 
-            <!-- Category List with Post Counts and Icons -->
             <div
-              class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1 scrollbar-thin"
+              class="space-y-1.5 max-h-[calc(100vh-200px)] overflow-y-auto pr-2 scrollbar-thin"
             >
               <button
                 @click="clearCategoryFilter"
-                class="w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center"
+                class="w-full text-left py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-between"
                 :class="
-                  !selectedCategory
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30'
+                  selectedCategory === null
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300'
                 "
               >
-                <UIcon name="i-heroicons-squares-2x2" class="mr-2 size-4" />
-                All Categories
+                <div class="flex items-center">
+                  <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5 mr-3" />
+                  All Categories
+                </div>
                 <span
-                  class="ml-auto bg-emerald-100 dark:bg-emerald-800/30 text-emerald-700 dark:text-emerald-300 text-xs rounded-full px-2 py-0.5"
+                  class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
                 >
-                  {{ totalItems }}
+                  {{ getTotalPostsCount() }}
                 </span>
               </button>
 
               <button
-                v-for="category in categoriesWithCounts"
-                :key="category.value"
-                @click="() => selectCategory(category.value)"
-                class="w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center group"
+                v-for="category in categories"
+                :key="category.id"
+                @click="filterByCategory(category.id)"
+                class="w-full text-left py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-between group"
                 :class="
-                  selectedCategory === category.value
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30'
+                  selectedCategory === category.id
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300'
                 "
               >
-                <NuxtImg
-                  :src="getCategoryIcon(category.value)"
-                  :alt="category.label"
-                  class="mr-2 size-4"
-                />
-
-                {{ category.label }}
+                <div class="flex items-center">
+                  <div class="w-5 h-5 mr-3 flex items-center justify-center">
+                    <img
+                      :src="
+                        category.image || '/images/category-placeholder.jpg'
+                      "
+                      :alt="category.title"
+                      class="w-full h-full object-cover rounded transform transition-transform duration-300 group-hover:scale-110"
+                    />
+                  </div>
+                  {{ category.title }}
+                </div>
                 <span
-                  class="ml-auto bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 text-xs rounded-full px-2 py-0.5"
+                  class="text-xs px-2 py-0.5 rounded-full"
+                  :class="
+                    selectedCategory === category.id
+                      ? 'bg-emerald-100 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                  "
                 >
-                  {{ category.count }}
+                  {{ getCategoryCount(category.id) }}
                 </span>
               </button>
             </div>
 
-            <!-- Sort By Section -->
+            <!-- Simplified Sort options -->
             <div
-              class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/30"
+              class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700"
             >
-              <h3 class="font-medium text-slate-900 dark:text-white mb-3">
-                Sort Results
+              <h3
+                class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3"
+              >
+                Sort by
               </h3>
-              <USelect
-                v-model="sortOption"
-                :options="sortOptions"
-                size="md"
-                class="w-full"
-                @update:modelValue="sortResults"
-              />
+              <div class="space-y-2">
+                <URadio
+                  v-model="sortBy"
+                  value="newest"
+                  label="Newest First"
+                  name="sort"
+                  @change="sortPosts"
+                />
+                <URadio
+                  v-model="sortBy"
+                  value="oldest"
+                  label="Oldest First"
+                  name="sort"
+                  @change="sortPosts"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Main Content Area -->
+        <!-- Main Content - Posts -->
         <div class="flex-1">
-          <!-- Filter Summary Bar -->
+          <!-- Status Bar -->
           <div
-            class="bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-slate-200/70 dark:border-slate-700/30 mb-6 flex flex-wrap items-center justify-between gap-3"
+            class="mb-6 flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-200 dark:border-slate-700"
           >
             <div class="flex items-center">
-              <h2
-                class="text-base font-semibold text-slate-900 dark:text-white"
-              >
-                {{ resultsCount }} {{ resultsCount === 1 ? "Post" : "Posts" }}
+              <UIcon
+                name="i-heroicons-document-text"
+                class="w-5 h-5 text-emerald-500 mr-2"
+              />
+              <h2 class="font-medium text-slate-800 dark:text-white">
+                {{ filteredPosts.length }}
+                {{ filteredPosts.length === 1 ? "Post" : "Posts" }}
               </h2>
 
               <div
-                v-if="activeFilters.length > 0"
-                class="flex items-center ml-4"
+                v-if="selectedCategory !== null"
+                class="ml-3 flex items-center"
               >
                 <div
-                  class="bg-slate-100 dark:bg-slate-700/50 rounded-full h-1 w-1 mx-2"
+                  class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-2"
                 ></div>
                 <UBadge
-                  v-for="filter in activeFilters"
-                  :key="filter.id"
                   color="emerald"
                   variant="soft"
-                  class="ml-2 px-2.5 py-1 cursor-pointer"
-                  @click="removeFilter(filter.id)"
+                  class="flex items-center"
                 >
-                  {{ filter.label }}
-                  <UIcon name="i-heroicons-x-mark" class="ml-1.5 size-3" />
+                  {{ getCategoryName(selectedCategory) }}
+                  <button
+                    @click="clearCategoryFilter"
+                    class="ml-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300"
+                  >
+                    <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5" />
+                  </button>
                 </UBadge>
-
-                <button
-                  @click="clearAllFilters"
-                  class="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 ml-2 underline underline-offset-2"
-                >
-                  Clear all
-                </button>
               </div>
+            </div>
+
+            <!-- Mobile Sort -->
+            <div class="lg:hidden">
+              <UButton
+                color="gray"
+                variant="ghost"
+                icon="i-heroicons-adjustments-horizontal"
+                @click="showMobileFilters = !showMobileFilters"
+              >
+                Sort
+              </UButton>
             </div>
           </div>
 
-          <!-- Loading State with Premium Animation -->
+          <!-- Mobile Sort Options (Modal) -->
+          <UModal v-model="showMobileFilters" class="p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-5">
+              <h3
+                class="text-lg font-semibold text-slate-900 dark:text-white mb-4"
+              >
+                Sort Options
+              </h3>
+              <URadioGroup
+                v-model="sortBy"
+                :options="sortOptions"
+                @update:modelValue="sortPosts"
+              />
+              <div class="mt-6 flex justify-end">
+                <UButton @click="showMobileFilters = false" color="emerald"
+                  >Apply</UButton
+                >
+              </div>
+            </div>
+          </UModal>
+
+          <!-- Loading State -->
           <div
             v-if="isLoading"
             class="flex flex-col items-center justify-center py-32"
           >
-            <div class="relative w-16 h-16">
+            <div class="w-16 h-16 relative">
               <div
-                class="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700"
+                class="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700"
               ></div>
               <div
-                class="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-t-emerald-500 animate-spin"
+                class="absolute inset-0 rounded-full border-4 border-t-emerald-500 animate-spin"
               ></div>
             </div>
-            <p class="mt-6 text-slate-500 dark:text-slate-400 font-medium">
-              Loading posts...
+            <p class="mt-6 text-slate-500 dark:text-slate-400">
+              Loading amazing posts...
             </p>
           </div>
 
           <!-- No Results State -->
           <div
-            v-else-if="results.length === 0"
+            v-else-if="filteredPosts.length === 0"
             class="flex flex-col items-center justify-center py-32"
           >
             <div
-              class="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4"
+              class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6"
             >
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="size-10 text-slate-400"
+                class="w-10 h-10 text-slate-400"
               />
             </div>
             <h3
@@ -332,148 +413,202 @@
               No posts found
             </h3>
             <p
-              class="text-slate-500 dark:text-slate-400 max-w-md text-center mb-6"
+              class="text-slate-500 dark:text-slate-400 mb-6 text-center max-w-md"
             >
               We couldn't find any posts matching your criteria. Try adjusting
               your filters or search terms.
             </p>
-            <UButton
-              color="emerald"
-              variant="soft"
-              size="lg"
-              @click="clearAllFilters"
-            >
-              Clear filters
+            <UButton color="emerald" @click="resetFilters">
+              Reset Filters
             </UButton>
           </div>
-          <!-- Results Grid with 4 items per row -->
+
+          <!-- Posts Grid -->
           <div v-else>
-            <div
-              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
-            >
+            <!-- Desktop Grid (4 columns) -->
+            <div class="hidden lg:grid lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <NuxtLink
-                v-for="(item, index) in results"
-                :key="item.id"
-                :to="`/classified/${item.id}`"
-                class="result-card group bg-white dark:bg-slate-800/90 rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-slate-200/70 dark:border-slate-700/40 transition-all duration-300"
-                :style="{ animationDelay: `${index * 40}ms` }"
+                v-for="post in filteredPosts"
+                :key="post.id"
+                :to="`/post/${post.id}`"
+                class="post-card group bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200 dark:border-slate-700 relative"
               >
-                <!-- Thumbnail with hover effect -->
-                <div class="relative overflow-hidden aspect-video">
-                  <img
-                    :src="
-                      item.medias && item.medias.length > 0
-                        ? item.medias[0].image
-                        : '/images/placeholder.jpg'
-                    "
-                    :alt="item.title"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
+                <!-- Premium Badge (if post is premium) -->
+                <div v-if="post.is_premium" class="absolute top-3 right-3 z-10">
                   <div
-                    class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  ></div>
+                    class="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-1 rounded-full shadow-lg flex items-center"
+                  >
+                    <UIcon name="i-heroicons-star" class="w-3 h-3 mr-1" />
+                    Premium
+                  </div>
+                </div>
+
+                <!-- Post Thumbnail -->
+                <div class="aspect-[4/3] relative overflow-hidden">
+                  <img
+                    :src="post.thumbnail || '/images/placeholder.jpg'"
+                    :alt="post.title"
+                    class="w-full h-full object-cover transform transition-transform duration-700 ease-out"
+                    :class="{ 'group-hover:scale-105': true }"
+                  />
 
                   <!-- Category Badge -->
-                  <div class="absolute top-3 right-3">
-                    <UBadge color="emerald" variant="solid" class="shadow-sm">
-                      <div class="flex items-center">
-                        <UIcon
-                          :name="getCategoryIcon(item.category?.id)"
-                          class="size-3.5 mr-1"
-                        />
-                        <span>{{
-                          item.category?.title || "Uncategorized"
-                        }}</span>
-                      </div>
+                  <div class="absolute bottom-3 left-3">
+                    <UBadge
+                      color="white"
+                      class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white shadow-md"
+                    >
+                      {{ getCategoryName(post.category_id) }}
                     </UBadge>
                   </div>
                 </div>
 
-                <!-- Content -->
                 <div class="p-4">
+                  <!-- Post Title -->
                   <h3
-                    class="font-semibold text-slate-900 dark:text-white text-base mb-2 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
-                  >
-                    {{ item.title }}
-                  </h3>
-                  <!-- Using v-html for description -->
-                  <div
-                    class="text-slate-600 dark:text-slate-300 text-sm mb-4 !line-clamp-2"
-                    v-html="
-                      item.instructions ||
-                      item.description ||
-                      'No description available'
-                    "
-                  ></div>
-
-                  <!-- Footer with metadata -->
-                  <div
-                    class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700/30"
-                  >
-                    <div class="flex items-center">
-                      <UAvatar
-                        :src="item.user?.image"
-                        :alt="item.user?.username || 'Anonymous'"
-                        size="xs"
-                        class="mr-2"
-                      />
-                      <span
-                        class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[100px]"
-                      >
-                        {{ item.user?.username || "Anonymous" }}
-                      </span>
-                    </div>
-                    <span class="text-xs text-slate-400 dark:text-slate-500">
-                      {{ timeAgo(item.created_at) }}
-                    </span>
-                  </div>
-                </div>
-              </NuxtLink>
-              <div
-                v-for="post in filteredPosts"
-                :key="post.id"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-              >
-                <img
-                  :src="post.image"
-                  :alt="post.title"
-                  class="w-full h-40 object-cover"
-                />
-                <div class="p-4">
-                  <h3
-                    class="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2"
+                    class="font-medium text-slate-900 dark:text-white text-base mb-1 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300"
                   >
                     {{ post.title }}
                   </h3>
+
+                  <!-- Post Description -->
                   <p
-                    class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2"
+                    class="text-slate-600 dark:text-slate-400 text-sm line-clamp-2 mb-3"
                   >
-                    {{ post.description }}
+                    {{ post.description || "No description available" }}
                   </p>
-                  <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">
-                      Posted by {{ post.user.firstName }} •
-                      {{ timeAgo(post.createdAt) }}
-                    </span>
-                    <span class="text-emerald-500 font-bold">
-                      ${{ post.price }}
-                    </span>
+
+                  <!-- Post Footer -->
+                  <div
+                    class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-500 border-t border-slate-100 dark:border-slate-700 pt-3"
+                  >
+                    <!-- Author Info -->
+                    <div class="flex items-center">
+                      <UAvatar
+                        :src="
+                          post.author?.avatar ||
+                          '/images/avatar-placeholder.jpg'
+                        "
+                        :alt="post.author?.name || 'User'"
+                        size="xs"
+                        class="mr-2"
+                      />
+                      <span class="truncate max-w-[80px]">
+                        {{ post.author?.name || "Anonymous" }}
+                      </span>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="flex items-center">
+                      <UIcon name="i-heroicons-clock" class="w-3 h-3 mr-1" />
+                      {{ formatDate(post.created_at) }}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </NuxtLink>
             </div>
 
-            <!-- Load More Button instead of pagination -->
-            <div class="mt-12 flex justify-center" v-if="hasMoreItems">
+            <!-- Mobile Post Cards (1 column) -->
+            <div class="lg:hidden space-y-6">
+              <NuxtLink
+                v-for="post in filteredPosts"
+                :key="post.id"
+                :to="`/post/${post.id}`"
+                class="block"
+              >
+                <div
+                  class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row h-full relative"
+                >
+                  <!-- Premium Badge -->
+                  <div
+                    v-if="post.is_premium"
+                    class="absolute top-3 right-3 z-10"
+                  >
+                    <div
+                      class="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-1 rounded-full shadow-lg flex items-center"
+                    >
+                      <UIcon name="i-heroicons-star" class="w-3 h-3 mr-1" />
+                      Premium
+                    </div>
+                  </div>
+
+                  <!-- Post Thumbnail -->
+                  <div
+                    class="sm:w-1/3 aspect-video sm:aspect-square relative overflow-hidden"
+                  >
+                    <img
+                      :src="post.thumbnail || '/images/placeholder.jpg'"
+                      :alt="post.title"
+                      class="w-full h-full object-cover"
+                    />
+
+                    <!-- Category Badge -->
+                    <div class="absolute bottom-3 left-3">
+                      <UBadge
+                        color="white"
+                        class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white shadow-md"
+                      >
+                        {{ getCategoryName(post.category_id) }}
+                      </UBadge>
+                    </div>
+                  </div>
+
+                  <!-- Post Content -->
+                  <div class="p-4 sm:w-2/3 flex flex-col justify-between">
+                    <div>
+                      <h3
+                        class="font-medium text-slate-900 dark:text-white text-base mb-2"
+                      >
+                        {{ post.title }}
+                      </h3>
+                      <p
+                        class="text-slate-600 dark:text-slate-400 text-sm line-clamp-2 mb-4"
+                      >
+                        {{ post.description || "No description available" }}
+                      </p>
+                    </div>
+
+                    <!-- Post Footer -->
+                    <div
+                      class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-500 border-t border-slate-100 dark:border-slate-700 pt-3"
+                    >
+                      <!-- Author Info -->
+                      <div class="flex items-center">
+                        <UAvatar
+                          :src="
+                            post.author?.avatar ||
+                            '/images/avatar-placeholder.jpg'
+                          "
+                          :alt="post.author?.name || 'User'"
+                          size="xs"
+                          class="mr-2"
+                        />
+                        <span>{{ post.author?.name || "Anonymous" }}</span>
+                      </div>
+
+                      <!-- Date -->
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-clock" class="w-3 h-3 mr-1" />
+                        {{ formatDate(post.created_at) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </NuxtLink>
+            </div>
+
+            <!-- Load More Button -->
+            <div v-if="hasMorePosts" class="mt-10 text-center">
               <UButton
                 color="emerald"
-                variant="outline"
-                @click="loadMore"
-                :loading="isLoadingMore"
+                variant="soft"
                 size="lg"
-                class="min-w-40"
+                @click="loadMorePosts"
+                :loading="isLoadingMore"
+                class="px-6 shadow-sm hover:shadow-md"
               >
-                Load More
+                <span v-if="!isLoadingMore">Load More Posts</span>
+                <span v-else>Loading...</span>
               </UButton>
             </div>
           </div>
@@ -484,669 +619,332 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
-import { formatDistanceToNow } from "date-fns";
-
-const timeAgo = (date) => {
-  return formatDistanceToNow(new Date(date), { addSuffix: true });
-};
-
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+const { get } = useApi();
 const route = useRoute();
 const router = useRouter();
-const { get } = useApi();
-const toast = useToast();
+
+// Define page meta
+definePageMeta({
+  layout: "default",
+});
 
 // State
-const searchInput = ref("");
-const searchQuery = ref("");
-const selectedCategory = ref(null);
-const sortOption = ref("newest");
 const isLoading = ref(true);
 const isLoadingMore = ref(false);
-const results = ref([]);
-const currentPage = ref(1);
-const itemsPerPage = ref(16); // 4 rows of 4 items
-const totalItems = ref(0);
-const categories = ref([
-  {
-    label: "All Categories",
-    value: null,
-    image: null,
-  },
-]);
-const categoryCounts = ref({});
-const searchResults = ref([]);
-const showSearchResults = ref(false);
-
-// Banner Slider State
+const posts = ref([]);
+const categories = ref([]);
+const selectedCategory = ref(null);
+const searchQuery = ref("");
 const currentSlide = ref(0);
-const intervalId = ref(null);
-const bannerSlides = ref([
-  {
-    image: "/images/banners/classified-banner-1.jpg",
-    title: "Find What You Need",
-    description:
-      "Explore our marketplace for the best deals on thousands of items",
-    link: "/all-result",
-    buttonText: "Browse All",
-  },
-  {
-    image: "/images/banners/classified-banner-2.jpg",
-    title: "Post Your Items",
-    description:
-      "List your items for free and reach thousands of potential buyers",
-    link: "/create-classified",
-    buttonText: "Get Started",
-  },
-  {
-    image: "/images/banners/classified-banner-3.jpg",
-    title: "Local Services",
-    description: "Find reliable local service providers for all your needs",
-    link: "/all-result?category=services",
-    buttonText: "Find Services",
-  },
-]);
+const slideInterval = ref(null);
+const showMobileFilters = ref(false);
+const sortBy = ref("newest");
+const currentPage = ref(1);
+const totalPages = ref(1);
+const hasMorePosts = ref(true);
+const postsPerPage = 20;
 
-// Sort options
+// Simplified sort options
 const sortOptions = [
   { label: "Newest First", value: "newest" },
   { label: "Oldest First", value: "oldest" },
-  { label: "Price: Low to High", value: "price_asc" },
-  { label: "Price: High to Low", value: "price_desc" },
-  { label: "Most Popular", value: "popular" },
 ];
 
-// Icons for categories (pseudorandom based on category id)
-const categoryIcons = [
-  "i-heroicons-shopping-bag",
-  "i-heroicons-home",
-  "i-heroicons-wrench-screwdriver",
-  "i-heroicons-academic-cap",
-  "i-heroicons-briefcase",
-  "i-heroicons-building-office",
-  "i-heroicons-computer-desktop",
-  "i-heroicons-truck",
-];
+// Banner slides data - in a real app, these would come from the API
+const bannerSlides = ref([
+  {
+    title: "Discover Amazing Deals",
+    description:
+      "Find the best offers from our trusted sellers and service providers.",
+    image: "/images/banners/banner-1.jpg",
+    link: "/promotions",
+    buttonText: "Explore Now",
+  },
+  {
+    title: "Join Our Community",
+    description:
+      "Connect with thousands of users and find exactly what you need.",
+    image: "/images/banners/banner-2.jpg",
+    link: "/register",
+    buttonText: "Sign Up",
+  },
+  {
+    title: "Premium Listings",
+    description:
+      "Exclusive offers and premium content from our verified partners.",
+    image: "/images/banners/banner-3.jpg",
+    link: "/premium",
+    buttonText: "Go Premium",
+  },
+]);
 
-// Computed properties
-const hasMoreItems = computed(() => {
-  return results.value.length < totalItems.value;
-});
+// Filtered posts based on category and search
+const filteredPosts = computed(() => {
+  let filtered = [...posts.value];
 
-const categoriesWithCounts = computed(() => {
-  return categories.value
-    .filter((cat) => cat.value !== null)
-    .map((category) => ({
-      ...category,
-      count: categoryCounts.value[category.value] || 0,
-    }));
-});
-
-const activeFilters = computed(() => {
-  const filters = [];
-
-  if (searchQuery.value) {
-    filters.push({
-      id: "search",
-      label: `Search: ${searchQuery.value}`,
-    });
-  }
-
-  if (selectedCategory.value) {
-    const category = categories.value.find(
-      (c) => c.value === selectedCategory.value
+  // Filter by category
+  if (selectedCategory.value !== null) {
+    filtered = filtered.filter(
+      (post) => post.category_id === selectedCategory.value
     );
-    if (category) {
-      filters.push({
-        id: "category",
-        label: `Category: ${category.label}`,
-      });
-    }
   }
 
-  if (sortOption.value && sortOption.value !== "newest") {
-    const sort = sortOptions.find((s) => s.value === sortOption.value);
-    if (sort) {
-      filters.push({
-        id: "sort",
-        label: `Sort: ${sort.label}`,
-      });
-    }
+  // Filter by search
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(
+      (post) =>
+        post.title.toLowerCase().includes(query) ||
+        (post.description && post.description.toLowerCase().includes(query))
+    );
   }
 
-  return filters;
+  return filtered;
 });
 
-const resultsCount = computed(() => results.value.length);
-
-// Banner methods
-function nextSlide() {
-  currentSlide.value = (currentSlide.value + 1) % bannerSlides.value.length;
-  resetSliderInterval();
-}
-
-function prevSlide() {
-  currentSlide.value =
-    (currentSlide.value - 1 + bannerSlides.value.length) %
-    bannerSlides.value.length;
-  resetSliderInterval();
-}
-
-function goToSlide(index) {
-  currentSlide.value = index;
-  resetSliderInterval();
-}
-
-function startSliderInterval() {
-  intervalId.value = setInterval(() => {
-    nextSlide();
-  }, 5000);
-}
-
-function resetSliderInterval() {
-  clearInterval(intervalId.value);
-  startSliderInterval();
-}
-
-// Methods for search and filtering
-let searchTimeout = null;
-function debouncedSearch() {
-  showSearchResults.value = !!searchInput.value;
-
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    if (searchInput.value) {
-      fetchSearchResults();
-    } else {
-      searchResults.value = [];
-      showSearchResults.value = false;
-    }
-  }, 300);
-}
-
-function clearSearch() {
-  searchInput.value = "";
-  searchQuery.value = "";
-  searchResults.value = [];
-  showSearchResults.value = false;
-  fetchResults();
-}
-
-async function fetchSearchResults() {
+// Fetch posts and categories from the API
+const fetchData = async () => {
   try {
-    const params = new URLSearchParams();
-    params.append("title", searchInput.value);
-    params.append("is_approved", "true");
-    params.append("status", "active");
-    params.append("page_size", "10");
+    isLoading.value = true;
 
-    const response = await get(`/classified-posts/?${params.toString()}`);
+    // Fetch from the actual API endpoints
+    const [postsResponse, categoriesResponse] = await Promise.all([
+      get("/classified-posts/"),
+      get("/classified-categories-all/"),
+    ]);
 
-    if (response && response.data && response.data.results) {
-      searchResults.value = response.data.results;
+    // Process and store the responses
+    posts.value = postsResponse.data.results || postsResponse.data;
+    categories.value = categoriesResponse.data;
+
+    // Set pagination data if available
+    if (postsResponse.data.count) {
+      totalPages.value = Math.ceil(postsResponse.data.count / postsPerPage);
+      hasMorePosts.value = currentPage.value < totalPages.value;
     }
+
+    // Initial sort
+    sortPosts();
   } catch (error) {
-    console.error("Error fetching search results:", error);
-    searchResults.value = [];
+    console.error("Error fetching data:", error);
+    // Handle the error appropriately
+    posts.value = [];
+    categories.value = [];
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 
-function performSearch() {
-  if (searchInput.value) {
-    searchQuery.value = searchInput.value;
-    currentPage.value = 1;
-    showSearchResults.value = false;
-    fetchResults();
+// Helper function to get category name by ID
+const getCategoryName = (categoryId) => {
+  const category = categories.value.find((c) => c.id === categoryId);
+  return category ? category.title : "Uncategorized";
+};
 
-    // Update URL with search query
-    router.push({
-      path: route.path,
-      query: {
-        ...route.query,
-        q: searchInput.value,
-      },
-    });
+// Helper function to get post count by category
+const getCategoryCount = (categoryId) => {
+  return posts.value.filter((post) => post.category_id === categoryId).length;
+};
+
+// Get total posts count
+const getTotalPostsCount = () => {
+  return posts.value.length;
+};
+
+// Format date
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "Today";
+  } else if (diffDays === 1) {
+    return "Yesterday";
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else if (diffDays < 30) {
+    return `${Math.floor(diffDays / 7)} weeks ago`;
+  } else {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
-}
+};
 
-function selectCategory(categoryId) {
+// Filter posts by category
+const filterByCategory = (categoryId) => {
   selectedCategory.value = categoryId;
-  currentPage.value = 1;
-  fetchResults();
+};
 
-  // Update URL with category
-  router.push({
-    path: route.path,
-    query: {
-      ...route.query,
-      category: categoryId,
-    },
-  });
-}
-
-function clearCategoryFilter() {
+// Clear category filter
+const clearCategoryFilter = () => {
   selectedCategory.value = null;
-  currentPage.value = 1;
-  fetchResults();
+};
 
-  // Update URL
-  const query = { ...route.query };
-  delete query.category;
-
-  router.push({
-    path: route.path,
-    query,
-  });
-}
-
-function sortResults() {
-  fetchResults();
-
-  // Update URL with sort option
-  router.push({
-    path: route.path,
-    query: {
-      ...route.query,
-      sort: sortOption.value,
-    },
-  });
-}
-
-function removeFilter(filterId) {
-  if (filterId === "search") {
-    searchQuery.value = "";
-    searchInput.value = "";
-  } else if (filterId === "category") {
-    selectedCategory.value = null;
-  } else if (filterId === "sort") {
-    sortOption.value = "newest";
-  }
-
-  fetchResults();
-
-  // Update URL
-  const query = { ...route.query };
-  if (filterId === "search") delete query.q;
-  if (filterId === "category") delete query.category;
-  if (filterId === "sort") delete query.sort;
-
-  router.push({
-    path: route.path,
-    query,
-  });
-}
-
-function clearAllFilters() {
+// Reset all filters
+const resetFilters = () => {
+  selectedCategory.value = null;
   searchQuery.value = "";
-  searchInput.value = "";
-  selectedCategory.value = null;
-  sortOption.value = "newest";
-  currentPage.value = 1;
+};
 
-  fetchResults();
+// Sort posts
+const sortPosts = () => {
+  // In a real application, you'd typically send this as a sort parameter to the API
+  // For client-side sorting:
+  switch (sortBy.value) {
+    case "newest":
+      posts.value.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      break;
+    case "oldest":
+      posts.value.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at)
+      );
+      break;
+  }
+};
 
-  // Reset URL
-  router.push({ path: route.path });
-}
-
-// Load more items function instead of pagination
-async function loadMore() {
-  if (isLoadingMore.value) return;
+// Load more posts
+const loadMorePosts = async () => {
+  if (currentPage.value >= totalPages.value) {
+    hasMorePosts.value = false;
+    return;
+  }
 
   isLoadingMore.value = true;
 
   try {
-    currentPage.value += 1;
+    const nextPage = currentPage.value + 1;
+    const response = await get(`/classified-posts/?page=${nextPage}`);
 
-    // Build query parameters
-    let endpoint = "/classified-posts/";
-    const params = new URLSearchParams();
+    const newPosts = response.data.results || response.data;
 
-    // Add pagination
-    params.append("page", currentPage.value);
-    params.append("page_size", itemsPerPage.value);
-
-    // Only show approved posts
-    params.append("is_approved", "true");
-    params.append("status", "active");
-
-    // Add search if present
-    if (searchQuery.value) {
-      params.append("title", searchQuery.value);
-    }
-
-    // Change endpoint if category filtering is needed
-    if (selectedCategory.value) {
-      endpoint = "/classified-posts/filter/";
-      params.append("category", selectedCategory.value);
-    }
-
-    // Add sorting
-    if (sortOption.value) {
-      // Map frontend sort options to backend options
-      const sortMapping = {
-        newest: "-created_at",
-        oldest: "created_at",
-        price_asc: "price",
-        price_desc: "-price",
-        popular: "-view_count",
-      };
-
-      const backendSort = sortMapping[sortOption.value] || "-created_at";
-      params.append("ordering", backendSort);
-    }
-
-    // Make the API call
-    const response = await get(`${endpoint}?${params.toString()}`);
-
-    if (response && response.data) {
-      if (response.data.results) {
-        // Append to existing results
-        results.value = [...results.value, ...response.data.results];
-        totalItems.value = response.data.count;
-      } else if (Array.isArray(response.data)) {
-        // Handle array response
-        results.value = [...results.value, ...response.data];
-        totalItems.value = results.value.length;
-      }
+    if (newPosts.length === 0) {
+      hasMorePosts.value = false;
+    } else {
+      // Add new posts to the existing list
+      posts.value = [...posts.value, ...newPosts];
+      currentPage.value = nextPage;
+      hasMorePosts.value = currentPage.value < totalPages.value;
     }
   } catch (error) {
     console.error("Error loading more posts:", error);
-    toast.add({
-      title: "Error loading more posts",
-      description: error.message || "Failed to load more posts",
-      color: "red",
-    });
   } finally {
     isLoadingMore.value = false;
   }
+};
+
+// Search functionality
+const search = () => {
+  // In a real app, this might trigger an API call with search parameters
+  console.log("Searching for:", searchQuery.value);
+};
+
+// Create a custom debounce function implementation
+function debounce(fn, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
 }
 
-function getCategoryColor(categoryId) {
-  // Create a deterministic color based on category ID
-  const colors = [
-    "green",
-    "emerald",
-    "teal",
-    "cyan",
-    "blue",
-    "indigo",
-    "violet",
-  ];
+// Create the debounced search function
+const debouncedSearch = debounce(() => {
+  search();
+}, 500);
 
-  if (!categoryId) return "gray";
+// Clear search
+const clearSearch = () => {
+  searchQuery.value = "";
+  search();
+};
 
-  // Use the string hash to pick a consistent color
-  const hash = categoryId.split("").reduce((a, b) => {
-    a = (a << 5) - a + b.charCodeAt(0);
-    return a & a;
-  }, 0);
+// Banner slider controls
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % bannerSlides.value.length;
+  resetSlideInterval();
+};
 
-  return colors[Math.abs(hash) % colors.length];
-}
+const prevSlide = () => {
+  currentSlide.value =
+    (currentSlide.value - 1 + bannerSlides.value.length) %
+    bannerSlides.value.length;
+  resetSlideInterval();
+};
 
-// Modified function to get category icon or image
-function getCategoryIcon(categoryId) {
-  // First check if we have this category with an image
-  const category = categories.value.find((c) => c.value === categoryId);
+const goToSlide = (index) => {
+  currentSlide.value = index;
+  resetSlideInterval();
+};
 
-  // If we have a category with an image, return that
-  if (category && category.image) {
-    return category.image;
-  }
+const resetSlideInterval = () => {
+  clearInterval(slideInterval.value);
+  startSlideInterval();
+};
 
-  // Fallback to default icons
-  if (!categoryId) return "i-heroicons-squares-2x2";
+const startSlideInterval = () => {
+  slideInterval.value = setInterval(() => {
+    nextSlide();
+  }, 5000);
+};
 
-  // Use the string hash to pick a consistent icon
-  const hash = String(categoryId)
-    .split("")
-    .reduce((a, b) => {
-      a = (a << 5) - a + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-
-  return categoryIcons[Math.abs(hash) % categoryIcons.length];
-}
-
-// New function to check if a value is a URL
-function isImageUrl(value) {
-  return (
-    typeof value === "string" &&
-    (value.startsWith("http://") || value.startsWith("https://"))
-  );
-}
-
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-// Fetch category counts
-async function fetchCategoryCounts() {
-  try {
-    const response = await get("/classified-categories-count/");
-    if (response && response.data) {
-      const countData = {};
-
-      // Assuming response.data is an array of objects with id and count properties
-      response.data.forEach((item) => {
-        countData[item.id] = item.count;
-      });
-
-      categoryCounts.value = countData;
-    }
-  } catch (error) {
-    console.error("Error fetching category counts:", error);
-  }
-}
-
-// Fetch categories
-async function fetchCategories() {
-  try {
-    const response = await get("/classified-categories-all/");
-    if (response && response.data) {
-      // Map API response to format needed with images
-      const apiCategories = response.data.map((category) => ({
-        label: category.title,
-        value: category.id,
-        image: category.image || null,
-      }));
-
-      // Keep "All Categories" option at the top
-      categories.value = [
-        { label: "All Categories", value: null, image: null },
-        ...apiCategories,
-      ];
-
-      // Fetch category counts after fetching categories
-      await fetchCategoryCounts();
-    }
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    toast.add({
-      title: "Failed to load categories",
-      description: error.message || "An unexpected error occurred",
-      color: "red",
-    });
-  }
-}
-
-async function fetchResults() {
-  isLoading.value = true;
-  results.value = []; // Clear results when fetching new ones
-  currentPage.value = 1; // Reset to first page
-
-  try {
-    // Build query parameters
-    let endpoint = "/classified-posts/";
-    const params = new URLSearchParams();
-
-    // Add pagination
-    params.append("page", currentPage.value);
-    params.append("page_size", itemsPerPage.value);
-
-    // Only show approved posts
-    params.append("is_approved", "true");
-    params.append("status", "active");
-
-    // Add search if present
-    if (searchQuery.value) {
-      params.append("title", searchQuery.value);
-    }
-
-    // Change endpoint if category filtering is needed
-    if (selectedCategory.value) {
-      endpoint = "/classified-posts/filter/";
-      params.append("category", selectedCategory.value);
-    }
-
-    // Add sorting
-    if (sortOption.value) {
-      // Map frontend sort options to backend options
-      const sortMapping = {
-        newest: "-created_at",
-        oldest: "created_at",
-        price_asc: "price",
-        price_desc: "-price",
-        popular: "-view_count", // Assuming there's a view_count field
-      };
-
-      const backendSort = sortMapping[sortOption.value] || "-created_at";
-      params.append("ordering", backendSort);
-    }
-
-    // Make the API call
-    const response = await get(`${endpoint}?${params.toString()}`);
-
-    if (response && response.data) {
-      if (response.data.results) {
-        // Handle paginated response
-        results.value = response.data.results;
-        totalItems.value = response.data.count;
-      } else if (Array.isArray(response.data)) {
-        // Handle array response
-        results.value = response.data;
-        totalItems.value = response.data.length;
-      } else {
-        // Handle unexpected format
-        results.value = [];
-        totalItems.value = 0;
-        console.error("Unexpected API response format:", response.data);
-      }
-    } else {
-      results.value = [];
-      totalItems.value = 0;
-    }
-  } catch (error) {
-    console.error("Error fetching results:", error);
-    results.value = [];
-    totalItems.value = 0;
-
-    toast.add({
-      title: "Error loading posts",
-      description: error.message || "Failed to load classified posts",
-      color: "red",
-    });
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-// Initialize from URL params and fetch data
-onMounted(async () => {
-  const { q, category, sort } = route.query;
-
-  if (q) {
-    searchInput.value = q;
-    searchQuery.value = q;
-  }
-
-  if (category) {
-    selectedCategory.value = category;
-  }
-
-  if (sort) {
-    sortOption.value = sort;
-  }
-
-  // Start banner slider
-  startSliderInterval();
-
-  // Fetch categories first, then fetch results
-  await fetchCategories();
-  fetchResults();
-
-  // Handle clicks outside search results dropdown
-  window.addEventListener("click", (e) => {
-    if (!e.target.closest(".search-dropdown") && showSearchResults.value) {
-      showSearchResults.value = false;
-    }
-  });
+// Initialize data and slider on component mount
+onMounted(() => {
+  fetchData();
+  startSlideInterval();
 });
 
 // Cleanup on component unmount
-onBeforeUnmount(() => {
-  clearInterval(intervalId.value);
-  window.removeEventListener("click", () => {});
+onUnmounted(() => {
+  clearInterval(slideInterval.value);
 });
 
-// Watch for route changes
-watch(
-  () => route.query,
-  (newQuery) => {
-    const { q, category, sort } = newQuery;
-
-    if (q !== undefined && q !== searchQuery.value) {
-      searchInput.value = q || "";
-      searchQuery.value = q || "";
-    }
-
-    if (category !== undefined && category !== selectedCategory.value) {
-      selectedCategory.value = category || null;
-    }
-
-    if (sort !== undefined && sort !== sortOption.value) {
-      sortOption.value = sort || "newest";
-    }
-
-    if (JSON.stringify(newQuery) !== JSON.stringify(route.query)) {
-      fetchResults();
-    }
-  },
-  { deep: true }
-);
+// Watch sort option changes
+watch(sortBy, () => {
+  sortPosts();
+});
 </script>
 
 <style scoped>
-.result-card {
-  animation: fadeUp 0.5s ease-out forwards;
-  opacity: 0;
+/* Banner Slider Animation */
+.slide-content.active h2,
+.slide-content.active p,
+.slide-content.active button {
+  transform: translateY(0);
+  opacity: 1;
 }
 
-@keyframes fadeUp {
+/* Ken Burns effect */
+@keyframes kenBurns {
   from {
-    opacity: 0;
-    transform: translateY(20px);
+    transform: scale(1.05);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: scale(1.15);
   }
 }
 
-/* Premium card hover effect */
-.result-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05),
-    0 8px 10px -6px rgba(0, 0, 0, 0.03);
+.animate-ken-burns {
+  animation: kenBurns 10s ease-out forwards;
 }
 
-/* Custom scrollbar styling */
+/* Premium card animations */
+.post-card {
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Custom scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
 }
@@ -1156,26 +954,38 @@ watch(
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.3);
-  border-radius: 6px;
+  background-color: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.15);
+  background-color: rgba(148, 163, 184, 0.2);
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.5);
+  background-color: rgba(16, 185, 129, 0.5);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .result-card {
-    animation: none;
-    opacity: 1;
-  }
+/* Mobile categories scrolling */
+.mobile-categories-row {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+}
 
-  .result-card:hover {
-    transform: none;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .banner-slider {
+    height: auto;
   }
 }
 </style>
