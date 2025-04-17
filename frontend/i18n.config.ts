@@ -176,7 +176,7 @@ export default defineI18nConfig(() => ({
         "দুঃখিত, এই নামে কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি",
       category_search_text2: "অন্য ক্যাটাগরি দেখুন অথবা আবার চেষ্টা করুন",
       search: "খুঁজুন",
-      search_placeholder: "খুঁজে নিন যা প্রয়োজন....",
+      search_placeholder: " খুঁজে নিন যা প্রয়োজন ....",
       deposit_withdraw: "ডিপোজিট/উইথড্রো",
       inbox: "ইনবক্স",
       message_center: "ম্যাসেজ সেন্টার",
