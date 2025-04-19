@@ -1948,10 +1948,11 @@ class SellerOrdersView(generics.ListAPIView):
     
 
 class OrderWithItemsUpdate(generics.UpdateAPIView):
-    """Update an order by adding new items or updating existing ones"""
+    """Update an order by adding new items, updating quantities, or removing items"""
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         order = self.get_object()
@@ -1960,6 +1961,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
         try:
             seller_objects = {}  # Store seller objects instead of string IDs
             total_additional_amount = Decimal('0.00')
+            items_to_remove = []
 
             # Process all items
             for item_data in items_data:
@@ -1981,11 +1983,25 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                     seller_key = seller.pk  
 
                     if existing_item:
-                        # Update existing item
+                        # Handle existing item update
                         old_quantity = existing_item.quantity
                         quantity_diff = new_quantity - old_quantity
 
-                        if quantity_diff != 0:
+                        # If quantity is 0, mark for removal
+                        if new_quantity == 0:
+                            items_to_remove.append(existing_item)
+                            price_difference = -unit_price * old_quantity
+                            
+                            # Update seller amounts (negative since removing item)
+                            if seller_key not in seller_objects:
+                                seller_objects[seller_key] = {
+                                    'user': seller,
+                                    'amount': Decimal('0.00')
+                                }
+                            seller_objects[seller_key]['amount'] += price_difference
+                            total_additional_amount += price_difference
+                        elif quantity_diff != 0:
+                            # Update quantity and calculate price difference
                             price_difference = unit_price * quantity_diff
                             
                             # Store seller object and update payment amounts
@@ -2001,9 +2017,13 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                             existing_item.quantity = new_quantity
                             existing_item.save()
                     else:
+                        # Skip if trying to add an item with quantity 0
+                        if new_quantity == 0:
+                            continue
+                            
                         # Add new item to order
                         new_item_data = {
-                            'order': order.id,  # Use the ID directly, not string
+                            'order': order.id,
                             'product': product_id,
                             'quantity': new_quantity,
                             'price': unit_price
@@ -2043,9 +2063,14 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         status=status.HTTP_404_NOT_FOUND
                     )
 
-            # Process additional payment if needed
+            # Delete items marked for removal
+            for item in items_to_remove:
+                item.delete()
+
+            # Process payment adjustments
+            buyer = request.user
             if total_additional_amount > 0:
-                buyer = request.user
+                # Handle additional payment needed
                 if order.payment_method == 'balance':
                     if buyer.balance < total_additional_amount:
                         return Response(
@@ -2064,7 +2089,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         transaction_type='order_update_payment',
                         completed=True,
                         bank_status='completed',
-                        description=f"Payment for order {order.id}"  # Shortened description
+                        description=f"Payment adjustment for order {order.id}"
                     )
 
                     # Distribute additional payments to sellers
@@ -2073,7 +2098,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         payment_amount = seller_data['amount']
                         
                         if payment_amount > 0:
-                            # Update seller balance
+                            # Update seller balance (only for positive adjustments)
                             seller.balance += payment_amount
                             seller.save()
 
@@ -2085,12 +2110,63 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                                 transaction_type='order_update_received',
                                 completed=True,
                                 bank_status='completed',
-                                description=f"Payment for order {order.id}"  # Shortened description
+                                description=f"Additional payment for order {order.id}"
                             )
+            elif total_additional_amount < 0 and order.payment_method == 'balance':
+                # Handle refund for reduced items
+                refund_amount = -total_additional_amount  # Make positive for refund
+                
+                # Add refund to buyer's balance
+                buyer.balance += refund_amount
+                buyer.save()
+                
+                # Create transaction record for refund
+                Balance.objects.create(
+                    user=buyer,
+                    amount=refund_amount,
+                    transaction_type='order_update_refund',
+                    completed=True,
+                    bank_status='completed',
+                    description=f"Refund for order {order.id} updates"
+                )
+                
+                # Handle seller balance adjustments for negative amounts
+                for seller_data in seller_objects.values():
+                    seller = seller_data['user']
+                    payment_amount = seller_data['amount']
+                    
+                    if payment_amount < 0:
+                        # Deduct from seller balance (negative adjustment becomes positive)
+                        deduction_amount = -payment_amount
+                        seller.balance -= deduction_amount
+                        seller.save()
+                        
+                        # Create transaction record
+                        Balance.objects.create(
+                            user=seller,
+                            to_user=buyer,
+                            amount=-deduction_amount,  # Negative amount for deduction
+                            transaction_type='order_update_deduction',
+                            completed=True,
+                            bank_status='completed',
+                            description=f"Payment adjustment for order {order.id}"
+                        )
 
             # Update order total
             order.total += total_additional_amount
             order.save()
+            
+            # Recalculate order total from scratch to ensure accuracy
+            order_items = OrderItem.objects.filter(order=order)
+            calculated_total = Decimal('0.00')
+            for order_item in order_items:
+                item_price = order_item.price * order_item.quantity
+                calculated_total += item_price
+                
+            # Update with calculated total if different
+            if calculated_total != order.total:
+                order.total = calculated_total
+                order.save()
 
             return Response(
                 OrderSerializer(order).data,
