@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    'https://localhost',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://adsyclub.com',
@@ -63,6 +64,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://www.adsyclub.com'
 ]
 CSRF_TRUSTED_ORIGINS = [
+    'https://localhost',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://adsyclub.com',
