@@ -240,7 +240,7 @@
               <span class="text-red-500">* </span>
               <span class="inline-flex items-center">
                 Minimum withdrawal
-                <UIcon name="i-mdi:currency-bdt" class="text-base" />200</span
+                <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ min_withdrawal }}</span
               >
             </p>
             <p class="text-sm">
@@ -1255,6 +1255,7 @@ const { formatDate } = useUtils();
 const policy = ref(false);
 const amount = ref(null);
 const withdrawAmount = ref(null);
+const min_withdrawal = ref(200);
 const currentTab = ref(1);
 const selected = ref("nagad");
 const payment_number = ref(null);
@@ -1559,6 +1560,11 @@ const withdraw = async () => {
     return;
   }
 
+  if (Number(withdrawAmount.value) < Number(min_withdrawal.value)) {
+    errors.value.min_withdrawal = true;
+    return;
+  }
+
   try {
     isWithdrawLoading.value = true;
 
@@ -1589,9 +1595,10 @@ const withdraw = async () => {
     await jwtLogin();
     isWithdrawLoading.value = false;
   } catch (error) {
+  console.log(error);
     toast.add({
       title: "Withdrawal failed",
-      description: error.message,
+      description: error.txt,
       color: "red",
     });
     console.error("Withdraw error:", error);

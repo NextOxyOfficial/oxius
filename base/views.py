@@ -885,7 +885,7 @@ def postBalance(request):
     data['user'] = request.user.id
     print(data)
     to_user = None
-    
+    data['payable_amount'] = Decimal(data['payable_amount']).quantize(Decimal('0.01'))
 
     # Check if 'merchant_invoice_no' exists in the data
     if 'merchant_invoice_no' in data:
