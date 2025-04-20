@@ -3,7 +3,7 @@
       <div class="max-w-3xl mx-auto px-2 sm:px-6 lg:px-8 relative z-10 pt-3">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6">
           <div class="flex flex-col md:flex-row sm:gap-6">
-            <div class="relative flex gap-2">
+            <div class="relative flex gap-4">
               <div class="flex relative">
                 <div class="relative h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-gray-100 shadow-md">
                 <img :src="user.avatar" :alt="user.name" class="w-full h-full object-cover" />

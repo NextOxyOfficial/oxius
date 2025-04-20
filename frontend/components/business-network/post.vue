@@ -2,7 +2,7 @@
 
 <template>
 <div class="max-w-3xl mx-auto pb-20">
-        <div class="space-y-4 p-2 sm:px-4">
+        <div class="space-y-4 px-2 mt-1 sm:px-4">
           <div
             v-for="(post, index) in posts"
             :key="post.id"
@@ -31,6 +31,7 @@
                           <Check class="h-3.5 w-3.5" />
                         </div>
                       </NuxtLink>
+                      <p class="text-xs font-semibold bg-white py-0.5 text-slate-500">Writer</p>
                       <p class="text-xs text-gray-500">{{ formatTimeAgo(post.timestamp) }}</p>
                     </div>
                   </div>

@@ -5,7 +5,7 @@
     
             <!-- Main Navigation -->
             <div
-              class="flex flex-row gap-4 justify-between items-center px-4 py-2 bg-slate-50 sm:px-6 lg:px-8"
+              class="flex flex-row gap-4 justify-between items-center px-4 py-2 bg-slate-50 sm:px-6 lg:px-8 !bg-slate-100/70 rounded-b-xl"
             >
               <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -31,7 +31,7 @@
                     type="text"
                     placeholder="Search topics..."
                     v-model="searchQuery"
-                    class="w-full sm:w-64 pl-10 pr-4 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-900"
+                    class="w-full sm:w-64 pl-8 pr-2 py-1 border border-gray-300 rounded-xl text-mb focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-200/80 text-gray-900"
                     @input="performSearch"
                   />
                   <SearchIcon
@@ -85,7 +85,11 @@
                 </div>
                
               </div>
-              <UButton to="/" class="bg-slate-700/80 max-sm:hidden">AdsyClub</UButton>
+              <div class="flex gap-2 max-sm:hidden">
+                <UButton to="/" class="bg-slate-700/80 max-sm:hidden">AdsyClub</UButton>
+              <UButton to="/adsy-news" class="bg-slate-700/80 max-sm:hidden">AdsyNews</UButton>
+              </div>
+
             </div>
     
            
