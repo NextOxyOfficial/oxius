@@ -209,86 +209,99 @@
 
     <!-- Mobile Navigation Bar -->
     <div
-      class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg"
+      class="sm:hidden block fixed left-0 right-0 z-[99999999] bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-lg"
     >
-      <div class="flex justify-between items-center px-2">
-        <NuxtLink
-          v-for="item in menuItems"
-          :key="item.path"
-          :to="item.path"
-          class="flex flex-col items-center py-3 px-3 text-xs relative"
-          :class="[
-            $route.path === item.path
-              ? 'text-blue-500 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-500'
-              : 'text-gray-500',
-          ]"
-        >
-          <div class="relative">
-            <component
-              :is="item.icon"
-              class="h-6 w-6 mb-1"
-              :class="
-                $route.path === item.path ? 'text-blue-500' : 'text-gray-500'
-              "
-            />
-            <span
-              v-if="item.badge"
-              class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
-            >
-              {{ item.badge }}
-            </span>
-          </div>
-          <span>{{ item.title }}</span>
-        </NuxtLink>
-      </div>
+      <UHorizontalNavigation
+        v-if="user?.user?.id"
+        :links="[
+          {
+            to: '/',
+            icon: 'i-heroicons-home',
+          },
+          {
+            to: '/deposit-withdraw',
+            icon: 'i-token:cusd',
+          },
+          {
+            to: `/micro-gigs`,
+            icon: 'i-material-symbols:list-rounded',
+          },
+          {
+            to: '/inbox',
+            icon: 'i-material-symbols:mark-email-unread-outline',
+          },
+          {
+            to: '/mobile-recharge',
+            icon: 'i-uil-mobile-vibrate',
+          },
+        ]"
+        :ui="{
+          inactive: 'after:hidden before:hidden',
+          active: 'after:hidden before:hidden',
+          padding: 'py-1',
+          container: 'flex items-center justify-evenly min-w-full',
+        }"
+      >
+        <template #icon="{ link, isActive }">
+          <UIcon
+            :name="link.icon"
+            class="text-3xl"
+            :class="isActive ? `text-green-600` : `text-green-400`"
+          />
+        </template>
+      </UHorizontalNavigation>
+      <UHorizontalNavigation
+        v-else
+        :links="[
+          {
+            to: '/',
+            icon: 'i-heroicons-home',
+          },
+          {
+            to: '/#classified-category',
+            icon: 'i-bx-category',
+          },
+          {
+            to: '/#microgigs',
+            icon: 'i-material-symbols-list-rounded',
+          },
+          {
+            to: `/#eshop`,
+            icon: 'i-heroicons-shopping-bag',
+          },
+
+          {
+            to: '/upgrade-to-pro',
+            icon: 'i-mdi-crown-outline',
+          },
+        ]"
+        :ui="{
+          inactive: 'after:hidden before:hidden',
+          active: 'after:hidden before:hidden',
+          padding: 'py-1',
+          container: 'flex items-center justify-evenly min-w-full',
+        }"
+      >
+        <template #icon="{ link, isActive }">
+          <UIcon
+            :name="link.icon"
+            class="text-3xl"
+            :class="isActive ? `text-green-600` : `text-green-400`"
+          />
+        </template>
+      </UHorizontalNavigation>
     </div>
   </footer>
 </template>
 
 <script setup>
-import {
-  Home as HomeIcon,
-  Bell as BellIcon,
-  User as UserIcon,
-  BarChart2 as BarChart2Icon,
-  Bookmark as BookmarkIcon,
-} from "lucide-vue-next";
-
 const { t } = useI18n();
 const toggleStatus = ref("");
+const { user } = useAuth();
 
 watch(toggleStatus, () => {
   console.log("State Changed");
 });
-
-const menuItems = [
-  {
-    title: "Home",
-    icon: HomeIcon,
-    path: "/",
-  },
-  {
-    title: "Notifications",
-    icon: BellIcon,
-    path: "/notifications",
-    badge: 5,
-  },
-  {
-    title: "Profile",
-    icon: UserIcon,
-    path: "/profile",
-  },
-  {
-    title: "Dashboard",
-    icon: BarChart2Icon,
-    path: "/dashboard",
-  },
-  {
-    title: "Saved",
-    icon: BookmarkIcon,
-    path: "/saved",
-  },
-];
 </script>
 
 <style scoped>
