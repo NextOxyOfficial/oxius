@@ -38,7 +38,7 @@ import { BarChart2, Bell, Bookmark, Clock, Home, Newspaper, User } from 'lucide-
             <span>Profile</span>
           </NuxtLink>
           <NuxtLink
-            to="/dashboard"
+            to="/"
             class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
           >
             <div class="relative">
@@ -47,7 +47,7 @@ import { BarChart2, Bell, Bookmark, Clock, Home, Newspaper, User } from 'lucide-
             <span>Adsy Club</span>
           </NuxtLink>
           <NuxtLink
-            to="/saved"
+            to="/adsy-news/"
             class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
           >
             <div class="relative">
