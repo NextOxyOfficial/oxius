@@ -182,6 +182,7 @@
         side="left"
         :ui="{
           width: 'w-screen max-w-[300px]',
+          height: 'max-h-screen',
         }"
         class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-lg"
       >
@@ -197,21 +198,20 @@
               padding: '',
             },
           }"
-          class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md mt-4"
+          class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 mt-4 overflow-y-scroll"
         >
-          <!-- Header Section -->
-          <template #header>
-            <div class="w-full flex justify-end pt-8 pb-2 px-4">
-              <UButton
-                color="gray"
-                variant="ghost"
-                icon="i-heroicons-x-mark-20-solid"
-                class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110"
-                @click="isOpen = false"
-              />
-            </div>
-          </template>
-
+          <div class="w-full flex justify-end pt-12 px-4">
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110"
+              @click="isOpen = false"
+            />
+          </div>
+          <div class="px-4">
+            <PublicTranslateHandler class="px-2 mt-3" />
+          </div>
           <!-- Navigation Links -->
           <div class="px-4 py-6">
             <h3
@@ -255,7 +255,11 @@
                 padding: 'py-3 px-4',
               }"
               class="space-y-2"
-            />
+            >
+              <template #default="{ link }">
+                <span @click="isOpen = false">{{ link.label }}</span>
+              </template>
+            </UVerticalNavigation>
           </div>
 
           <!-- Download App Section -->
@@ -330,9 +334,6 @@
           </div>
 
           <!-- Footer Section -->
-          <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
-            <PublicTranslateHandler class="px-2 mt-3" />
-          </div>
         </UCard>
       </USlideover>
       <div class="flex items-center justify-between gap-1.5 lg:gap-6">
