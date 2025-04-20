@@ -2257,3 +2257,13 @@ def referred_users(request):
         'total_earned': total_earned,
         'referred_users': serializer.data
     }, status=status.HTTP_200_OK)
+
+
+
+class BNLogoView(generics.ListAPIView):
+    queryset = BNLogo.objects.all().order_by('-created_at')
+    serializer_class = BNLogoSerializer
+
+class NewsLogoView(generics.ListAPIView):
+    queryset = NewsLogo.objects.all().order_by('-created_at')
+    serializer_class = NewsLogoSerializer

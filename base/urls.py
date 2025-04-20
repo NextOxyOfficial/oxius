@@ -119,4 +119,6 @@ urlpatterns = [
   path('banner-images/', BannerImageListView.as_view(), name='banner-image'),
   path('shop-banner-images/', ShopBannerImageListView.as_view(), name='shop-banner-image'),
   path('referred-users/', referred_users, name='referred-users'),
+  path('bn-logo/', BNLogoView.as_view(), name='bn-logo'),
+  path('news-logo/', NewsLogoView.as_view(), name='news-logo'),
 ]

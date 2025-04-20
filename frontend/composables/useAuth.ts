@@ -22,7 +22,7 @@ export function useAuth() {
       console.log("JWT validation error:", error.value);
       user.value = null;
       jwt.value = null;
-      navigateTo("/");
+      // navigateTo("/");
       return false;
     }
     if (data.value) {

@@ -10,8 +10,9 @@
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <NuxtLink to="/business-network/">
-                    <img
-                      src="/static/frontend/images/abn-logo.png"
+                    <NuxtImg
+                    v-if="logo[0]?.image"
+                      :src="logo[0].image"
                       alt="Adsy News Logo"
                       width="150"
                       height="50"
@@ -97,6 +98,16 @@
     
     <script setup>
     
+const {get} = useApi()
+const logo = ref({})
+
+async function getLogo() {
+  const {data} = await get('/bn-logo/')
+  logo.value = data
+}
+
+await getLogo()
+
     import {
       SunIcon,
       MenuIcon,

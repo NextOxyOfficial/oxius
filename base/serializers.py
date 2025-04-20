@@ -420,3 +420,12 @@ class ShopBannerImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopBannerImage
         fields = '__all__'
+
+class BNLogoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BNLogo
+        fields = ['id', 'image', 'created_at', 'updated_at']
+class NewsLogoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsLogo
+        fields = ['id', 'image', 'created_at', 'updated_at']
