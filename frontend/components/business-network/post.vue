@@ -38,7 +38,7 @@
                   <div class="flex items-center gap-2">
                     <button
                       :class="[
-                        'text-xs h-7 rounded-full px-3 flex items-center gap-1',
+                        'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                         post.isFollowing ? 'border border-gray-200 text-gray-700' : 'bg-blue-600 text-white'
                       ]"
                       @click="toggleFollow(post)"
@@ -85,7 +85,7 @@
   
                 <!-- Categories -->
                 <div v-if="post.categories && post.categories.length > 0" class="flex flex-wrap gap-1 mb-2">
-                  <span v-for="(category, idx) in post.categories" :key="idx" class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                  <span v-for="(category, idx) in post.categories" :key="idx" class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                     {{ category }}
                   </span>
                 </div>
@@ -95,7 +95,7 @@
                   <p :class="['text-sm text-gray-700', !post.showFullDescription && 'line-clamp-4']">
                     {{ post.content }}
                   </p>
-                  <button v-if="post.content.length > 160" class="text-xs text-blue-600 font-medium mt-1" @click="toggleDescription(post)">
+                  <button v-if="post.content.length > 160" class="text-sm text-blue-600 font-medium mt-1" @click="toggleDescription(post)">
                     {{ post.showFullDescription ? 'Read less' : 'Read more' }}
                   </button>
                 </div>
@@ -116,7 +116,7 @@
                         </div>
                       </div>
                       <div v-if="mediaIndex === 7 && post.media.length > 8" class="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span class="text-white font-medium text-xs">+{{ post.media.length - 8 }}</span>
+                        <span class="text-white font-medium text-sm">+{{ post.media.length - 8 }}</span>
                       </div>
                     </div>
                   </div>
@@ -129,21 +129,21 @@
                       <button class="p-1 rounded-full hover:bg-gray-100 transition-colors" @click="toggleLike(post)">
                         <Heart :class="['h-4 w-4', post.isLiked ? 'text-red-500 fill-red-500' : 'text-gray-500']" />
                       </button>
-                      <button class="text-xs text-gray-600 hover:underline" @click="openLikesModal(post)">
+                      <button class="text-sm text-gray-600 hover:underline" @click="openLikesModal(post)">
                         {{ post.likeCount }} likes
                       </button>
                     </div>
                     <button class="flex items-center space-x-1" @click="openCommentsModal(post)">
                       <MessageCircle class="h-4 w-4 text-gray-500" />
-                      <span class="text-xs text-gray-600">{{ post.comments.length }} comments</span>
+                      <span class="text-sm text-gray-600">{{ post.comments.length }} comments</span>
                     </button>
                     <button class="flex items-center space-x-1" @click="sharePost(post)">
                       <Share2 class="h-4 w-4 text-gray-500" />
-                      <span class="text-xs text-gray-600">Share</span>
+                      <span class="text-sm text-gray-600">Share</span>
                     </button>
                     <button class="flex items-center space-x-1" @click="toggleSave(post)">
                       <Bookmark :class="['h-4 w-4', post.isSaved ? 'text-blue-600 fill-blue-600' : 'text-gray-500']" />
-                      <span class="text-xs text-gray-600">Save</span>
+                      <span class="text-sm text-gray-600">Save</span>
                     </button>
                   </div>
                 </div>
@@ -154,18 +154,18 @@
                     <img :src="comment.user.avatar" :alt="comment.user.fullName" class="w-5 h-5 rounded-full mt-0.5" />
                     <div class="flex-1">
                       <div class="bg-gray-50 rounded-lg p-2">
-                        <NuxtLink :to="`/profile/${comment.user.id}`" class="text-xs font-medium hover:underline">
+                        <NuxtLink :to="`/profile/${comment.user.id}`" class="text-sm font-medium hover:underline">
                           {{ comment.user.fullName }}
                         </NuxtLink>
-                        <p class="text-xs">{{ comment.text }}</p>
+                        <p class="text-sm">{{ comment.text }}</p>
                       </div>
-                      <span class="text-[10px] text-gray-500 mt-1 inline-block">
+                      <span class="text-sm text-gray-500 mt-1 inline-block">
                         {{ formatTimeAgo(comment.timestamp) }}
                       </span>
                     </div>
                   </div>
   
-                  <button v-if="post.comments.length > 2" class="text-xs text-blue-600 font-medium mt-1" @click="openCommentsModal(post)">
+                  <button v-if="post.comments.length > 2" class="text-sm text-blue-600 font-medium mt-1" @click="openCommentsModal(post)">
                     See all {{ post.comments.length }} comments
                   </button>
                 </div>
@@ -177,7 +177,7 @@
                     <input
                       type="text"
                       placeholder="Add a comment..."
-                      class="w-full text-xs py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                      class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                       v-model="post.commentText"
                       @keyup.enter="addComment(post)"
                     />
@@ -255,7 +255,7 @@
                 >
                   <ChevronRight class="h-5 w-5" />
                 </button>
-                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-xs">
+                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm">
                   {{ activeMediaIndex + 1 }} / {{ activePost.media.length }}
                 </div>
               </div>
@@ -268,13 +268,13 @@
                     <button class="p-1 rounded-full hover:bg-gray-100 transition-colors" @click.stop="toggleMediaLike">
                       <Heart :class="['h-4 w-4', activeMedia.isLiked ? 'text-red-500 fill-red-500' : 'text-gray-500']" />
                     </button>
-                    <button class="text-xs text-gray-600 hover:underline" @click.stop="openMediaLikesModal">
+                    <button class="text-sm text-gray-600 hover:underline" @click.stop="openMediaLikesModal">
                       {{ activeMedia.likeCount }} likes
                     </button>
                   </div>
                   <div class="flex items-center space-x-1">
                     <MessageCircle class="h-4 w-4 text-gray-500" />
-                    <span class="text-xs text-gray-600">
+                    <span class="text-sm text-gray-600">
                       {{ activeMedia.comments?.length || 0 }} comments
                     </span>
                   </div>
@@ -283,20 +283,20 @@
   
               <!-- Media comments -->
               <div v-if="activeMedia.comments && activeMedia.comments.length > 0" class="max-h-[20vh] overflow-y-auto mb-3">
-                <h4 class="text-xs font-medium text-gray-500 mb-2">Comments</h4>
+                <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
                 <div class="space-y-2">
                   <div v-for="comment in activeMedia.comments" :key="comment.id" class="flex items-start space-x-2">
                     <img :src="comment.user.avatar" alt="User" class="w-6 h-6 rounded-full" />
                     <div class="flex-1">
                       <div class="bg-gray-50 rounded-lg p-2">
                         <div class="flex items-center justify-between">
-                          <NuxtLink :to="`/profile/${comment.user.id}`" class="text-xs font-medium hover:underline">
+                          <NuxtLink :to="`/profile/${comment.user.id}`" class="text-sm font-medium hover:underline">
                             {{ comment.user.fullName }}
                           </NuxtLink>
                           <button
                             v-if="comment.user.id !== 'current-user'"
                             :class="[
-                              'text-[10px] h-5 rounded-full px-2 flex items-center',
+                              'text-sm h-5 rounded-full px-2 flex items-center',
                               comment.user.isFollowing ? 'border border-gray-200 text-gray-700' : 'bg-blue-600 text-white'
                             ]"
                             @click.stop="toggleUserFollow(comment.user)"
@@ -304,10 +304,10 @@
                             {{ comment.user.isFollowing ? 'Following' : 'Follow' }}
                           </button>
                         </div>
-                        <p class="text-xs mt-1">{{ comment.text }}</p>
+                        <p class="text-sm mt-1">{{ comment.text }}</p>
                       </div>
                       <div class="flex items-center mt-1 space-x-3">
-                        <span class="text-[10px] text-gray-500">{{ formatTimeAgo(comment.timestamp) }}</span>
+                        <span class="text-sm text-gray-500">{{ formatTimeAgo(comment.timestamp) }}</span>
                         
                         
                       </div>
@@ -322,7 +322,7 @@
                   <input
                     type="text"
                     placeholder="Add a comment..."
-                    class="w-full text-xs py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                    class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                     v-model="mediaCommentText"
                     @click.stop
                   />
@@ -437,14 +437,14 @@
   
                   <div class="flex items-center justify-between">
                     <button
-                      class="border border-gray-200 rounded-md px-3 py-1 text-xs flex items-center gap-1 hover:bg-gray-50"
+                      class="border border-gray-200 rounded-md px-3 py-1 text-sm flex items-center gap-1 hover:bg-gray-50"
                       @click.stop="triggerFileInput"
                       :disabled="selectedMedia.length >= 14"
                     >
                       <Paperclip class="h-3 w-3" />
                       Add More
                     </button>
-                    <div class="text-xs text-gray-500">
+                    <div class="text-sm text-gray-500">
                       {{ selectedMedia.filter(f => f.type.startsWith('image/')).length }}/12 images,
                       {{ selectedMedia.filter(f => f.type.startsWith('video/')).length }}/2 videos
                     </div>
@@ -458,7 +458,7 @@
                     <span
                       v-for="category in createPostCategories"
                       :key="category"
-                      class="px-2 py-1 gap-1 group bg-gray-100 text-gray-700 text-xs rounded-full flex items-center"
+                      class="px-2 py-1 gap-1 group bg-gray-100 text-gray-700 text-sm rounded-full flex items-center"
                     >
                       {{ category }}
                       <button
@@ -545,13 +545,13 @@
                     <NuxtLink :to="`/profile/${user.id}`" class="font-medium hover:underline">
                       {{ user.fullName }}
                     </NuxtLink>
-                    <p class="text-xs text-gray-500">@{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}</p>
+                    <p class="text-sm text-gray-500">@{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}</p>
                   </div>
                 </div>
                 <button
                   v-if="user.id !== 'current-user'"
                   :class="[
-                    'text-xs h-7 rounded-full px-3 flex items-center gap-1',
+                    'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     user.isFollowing ? 'border border-gray-200 text-gray-700' : 'bg-blue-600 text-white'
                   ]"
                   @click.stop="toggleUserFollow(user)"
@@ -585,13 +585,13 @@
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg p-2">
                     <div class="flex items-center justify-between mb-1">
-                      <NuxtLink :to="`/profile/${comment.user.id}`" class="text-xs font-medium hover:underline">
+                      <NuxtLink :to="`/profile/${comment.user.id}`" class="text-sm font-medium hover:underline">
                         {{ comment.user.fullName }}
                       </NuxtLink>
                       <button
                         v-if="comment.user.id !== 'current-user'"
                         :class="[
-                          'text-[10px] h-5 rounded-full px-2 flex items-center',
+                          'text-sm h-5 rounded-full px-2 flex items-center',
                           comment.user.isFollowing ? 'border border-gray-200 text-gray-700' : 'bg-blue-600 text-white'
                         ]"
                         @click.stop="toggleUserFollow(comment.user)"
@@ -599,10 +599,10 @@
                         {{ comment.user.isFollowing ? 'Following' : 'Follow' }}
                       </button>
                     </div>
-                    <p class="text-xs">{{ comment.text }}</p>
+                    <p class="text-sm">{{ comment.text }}</p>
                   </div>
                   <div class="flex items-center mt-1 space-x-3">
-                    <span class="text-[10px] text-gray-500">{{ formatTimeAgo(comment.timestamp) }}</span>
+                    <span class="text-sm text-gray-500">{{ formatTimeAgo(comment.timestamp) }}</span>
                   </div>
                 </div>
               </div>
@@ -614,7 +614,7 @@
                   <input
                     type="text"
                     placeholder="Add a comment..."
-                    class="w-full text-xs py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                    class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                     v-model="activeCommentsPost.commentText"
                     @click.stop
                   />
@@ -654,13 +654,13 @@
                     <NuxtLink :to="`/profile/${user.id}`" class="font-medium hover:underline">
                       {{ user.fullName }}
                     </NuxtLink>
-                    <p class="text-xs text-gray-500">@{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}</p>
+                    <p class="text-sm text-gray-500">@{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}</p>
                   </div>
                 </div>
                 <button
                   v-if="user.id !== 'current-user'"
                   :class="[
-                    'text-xs h-7 rounded-full px-3 flex items-center gap-1',
+                    'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     user.isFollowing ? 'border border-gray-200 text-gray-700' : 'bg-blue-600 text-white'
                   ]"
                   @click.stop="toggleUserFollow(user)"
