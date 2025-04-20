@@ -454,7 +454,9 @@
   </template>
   
   <script setup>
-  import { ref, computed } from 'vue';
+  definePageMeta({
+    layout: 'adsy-business-network',
+  });
   import { 
     Camera, Edit, MapPin, Briefcase, Calendar, LinkIcon, Grid, List, 
     Settings, UserPlus, Check, BadgeCheck, Mail, Phone, Upload, Trash2, X,

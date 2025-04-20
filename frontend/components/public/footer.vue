@@ -216,23 +216,23 @@
         :links="[
           {
             to: '/',
-            icon: 'i-heroicons-home',
+            icon: 'i-material-symbols:android-google-home',
           },
           {
             to: '/deposit-withdraw',
             icon: 'i-token:cusd',
           },
           {
-            to: `/micro-gigs`,
-            icon: 'i-material-symbols:list-rounded',
-          },
-          {
-            to: '/inbox',
-            icon: 'i-material-symbols:mark-email-unread-outline',
-          },
-          {
             to: '/mobile-recharge',
             icon: 'i-uil-mobile-vibrate',
+          },
+          {
+            to: '/business-network/',
+            icon: 'i-eos-icons:network',
+          },
+          {
+            to: '/adsy-news/',
+            icon: 'i-mdi:newspaper-variant-multiple-outline',
           },
         ]"
         :ui="{
@@ -255,25 +255,26 @@
         :links="[
           {
             to: '/',
-            icon: 'i-heroicons-home',
-          },
-          {
-            to: '/#classified-category',
-            icon: 'i-bx-category',
+            icon: 'i-material-symbols:android-google-home',
           },
           {
             to: '/#microgigs',
-            icon: 'i-material-symbols-list-rounded',
+            icon: 'i-streamline:money-cash-bag-dollar-bag-payment-cash-money-finance',
           },
-          {
-            to: `/#eshop`,
-            icon: 'i-heroicons-shopping-bag',
-          },
-
+          
           {
             to: '/upgrade-to-pro',
             icon: 'i-mdi-crown-outline',
           },
+          {
+            to: '/business-network/',
+            icon: 'i-eos-icons:network',
+          },
+          {
+            to: '/adsy-news/',
+            icon: 'i-mdi:newspaper-variant-multiple-outline',
+          },
+
         ]"
         :ui="{
           inactive: 'after:hidden before:hidden',
@@ -283,9 +284,14 @@
         }"
       >
         <template #icon="{ link, isActive }">
-          <UIcon
+          <UIcon v-if="link.to === '/'"
             :name="link.icon"
             class="text-3xl"
+            :class="isActive ? `text-green-600` : `text-green-400`"
+          />
+          <UIcon v-else
+            :name="link.icon"
+            class="text-2xl"
             :class="isActive ? `text-green-600` : `text-green-400`"
           />
         </template>

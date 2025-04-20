@@ -1,10 +1,11 @@
 <template>
-    <div class="min-h-screen bg-gray-50">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div class="flex flex-col md:flex-row gap-6">
-            <div class="relative">
-              <div class="relative h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-gray-100 shadow-md">
+    <div class="min-h-screen bg-gray-50 mt-14">
+      <div class="max-w-3xl mx-auto px-2 sm:px-6 lg:px-8 relative z-10 pt-3">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6">
+          <div class="flex flex-col md:flex-row sm:gap-6">
+            <div class="relative flex gap-2">
+              <div class="flex relative">
+                <div class="relative h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-gray-100 shadow-md">
                 <img :src="user.avatar" :alt="user.name" class="w-full h-full object-cover" />
                 <div v-if="user.verified" class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white">
                   <BadgeCheck class="h-4 w-4" />
@@ -17,10 +18,57 @@
               >
                 <Camera class="h-4 w-4" />
               </button>
+              </div>
+
+              <div class="flex sm:hidden flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 class="text-2xl font-bold flex items-center gap-1">
+                    {{ user.name }}
+                    <BadgeCheck v-if="user.verified" class="h-5 w-5 text-blue-500" />
+                  </h1>
+                  <UBadge class="bg-gray-100 text-slate-500">Writer</UBadge>
+                  <p class="text-gray-500">@{{ user.username }}</p>
+                </div>
+                <div class="flex gap-2">
+                  <template v-if="user.isCurrentUser">
+                    <button 
+                      class="px-3 py-1.5 border border-gray-200 rounded-md text-sm flex items-center gap-1 hover:bg-gray-50"
+                      @click="isEditProfileOpen = true"
+                    >
+                      <Edit class="h-4 w-4" />
+              
+                    </button>
+                    <button class="p-2 border border-gray-200 rounded-md hover:bg-gray-50">
+                      <Settings class="h-4 w-4" />
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button
+                      :class="[
+                        'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
+                        user.isFollowing ? 'border border-gray-200 hover:bg-gray-50' : 'bg-blue-600 text-white hover:bg-blue-700'
+                      ]"
+                      @click="toggleFollow"
+                    >
+                      <template v-if="user.isFollowing">
+                        <Check class="h-4 w-4" />
+                        Following
+                      </template>
+                      <template v-else>
+                        <UserPlus class="h-4 w-4" />
+                        Follow
+                      </template>
+                    </button>
+                    <button class="p-2 border border-gray-200 rounded-md hover:bg-gray-50">
+                      <Mail class="h-4 w-4" />
+                    </button>
+                  </template>
+                </div>
+              </div>
             </div>
   
             <div class="flex-1">
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="hidden sm:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h1 class="text-2xl font-bold flex items-center gap-1">
                     {{ user.name }}
@@ -173,58 +221,7 @@
         </div>
       </div>
   
-      <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
-        <div class="flex justify-between items-center px-2">
-          <NuxtLink
-            to="/"
-            class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
-          >
-            <div class="relative">
-              <Home class="h-6 w-6 mb-1 text-gray-500" />
-            </div>
-            <span>Recent</span>
-          </NuxtLink>
-          <NuxtLink
-            to="/notifications"
-            class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
-          >
-            <div class="relative">
-              <Bell class="h-6 w-6 mb-1 text-gray-500" />
-              <span class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-                5
-              </span>
-            </div>
-            <span>Notifications</span>
-          </NuxtLink>
-          <NuxtLink
-            to="/profile"
-            class="flex flex-col items-center py-3 px-3 text-xs relative text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600"
-          >
-            <div class="relative">
-              <User class="h-6 w-6 mb-1 text-blue-600" />
-            </div>
-            <span>Profile</span>
-          </NuxtLink>
-          <NuxtLink
-            to="/dashboard"
-            class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
-          >
-            <div class="relative">
-              <BarChart2 class="h-6 w-6 mb-1 text-gray-500" />
-            </div>
-            <span>Dashboard</span>
-          </NuxtLink>
-          <NuxtLink
-            to="/saved"
-            class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
-          >
-            <div class="relative">
-              <Bookmark class="h-6 w-6 mb-1 text-gray-500" />
-            </div>
-            <span>Saved</span>
-          </NuxtLink>
-        </div>
-      </div>
+      
   
       <Teleport to="body">
         <div v-if="isEditProfileOpen" class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4" @click="isEditProfileOpen = false">
@@ -454,7 +451,9 @@
   </template>
   
   <script setup>
-  import { ref, computed } from 'vue';
+definePageMeta({
+    layout: 'adsy-business-network',
+  });
   import { 
     Camera, Edit, MapPin, Briefcase, Calendar, LinkIcon, Grid, List, 
     Settings, UserPlus, Check, BadgeCheck, Mail, Phone, Upload, Trash2, X,

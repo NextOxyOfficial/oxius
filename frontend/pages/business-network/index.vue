@@ -1,19 +1,6 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-6">
-      <!-- Header -->
-      <header class="sticky top-0 z-10 bg-white border-b border-gray-200 px-2 py-3 shadow-sm">
-        <div class="container mx-auto flex items-center justify-between">
-            <h1 class="text-xl font-semibold text-gray-800 bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent">
-          Business Network
-        </h1>
-        <div class="flex items-center space-x-2">
-          <button class="p-2 rounded-full hover:bg-gray-100 transition-colors" @click="isSearchOpen = true">
-            <Search class="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
-        </div>
-        
-      </header>
+    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-14">
+     
   
       <BusinessNetworkPost/>
   
@@ -116,6 +103,10 @@
   </template>
   
   <script setup>
+definePageMeta({
+    layout: 'adsy-business-network',
+  });
+
   import { 
     Search, X, Clock, ArrowRight, Heart, MessageCircle, Share2, 
     Bookmark, Check, UserPlus, MoreHorizontal, Link2, Flag, Send,

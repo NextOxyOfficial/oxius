@@ -1,6 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header with Navigation -->
+<div>
     <header class="sticky top-0 z-50 bg-white shadow-md">
       <div class="max-w-7xl mx-auto">
         <!-- Top Bar -->
@@ -28,17 +27,27 @@
 
         <!-- Main Navigation -->
         <div
-          class="flex justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
+          class="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
         >
-          <div class="flex items-center">
+          <div class="flex items-center flex-1">
             <div class="flex-shrink-0">
-              <h1 class="text-2xl font-bold text-primary">
-                GLOBAL<span class="text-gray-800">NEWS</span>
-              </h1>
+              <NuxtLink to="/adsy-news/">
+                <img
+                  src="/images/adsy-news-logo.png"
+                  alt="Adsy News Logo"
+                  width="150"
+                  height="50"
+                  class="h-8 mr-6 sm:h-10 w-auto object-fit"
+                />
+              </NuxtLink>
             </div>
+            <div class="sm:hidden flex gap-1">
+            <UButton class="bg-black/70" to="/" >AdsyClub</UButton>
+            <UButton class="bg-black/70" to="/business-network" >Adsy BN</UButton>
+          </div>
             <nav class="hidden md:ml-10 md:flex space-x-8">
               <a
-                v-for="category in categories"
+                v-for="category in categories.slice(0, 4)"
                 :key="category.id"
                 :class="[
                   'text-sm font-medium hover:text-primary transition-colors duration-200',
@@ -53,8 +62,11 @@
               </a>
             </nav>
           </div>
-          <div class="flex items-center space-x-4">
-            <div class="relative">
+          
+          <div class="flex items-center sm:justify-end space-x-2 flex-1 max-sm:w-full">
+            <UButton class="bg-black/70 max-sm:hidden" to="/" >AdsyClub</UButton>
+            <UButton class="bg-black/70 max-sm:hidden" to="/business-network" >Adsy BN</UButton>
+            <div class="relative max-sm:flex-1">
               <input
                 type="text"
                 placeholder="Search news..."
@@ -146,12 +158,11 @@
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Breaking News Banner -->
-      <div class="bg-primary text-white py-3 px-6 rounded-lg mb-8 shadow-md">
+    <UContainer>
+      <div class="bg-primary text-white py-3 px-6 rounded-lg mb-8 shadow-md mt-3">
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <span class="font-bold text-lg mr-4 border-r border-white/30 pr-4"
+            <span class="font-bold text-sm sm:text-lg mr-4 border-r border-white/30 pr-4"
               >BREAKING NEWS</span
             >
           </div>
@@ -172,571 +183,14 @@
           </div>
         </div>
       </div>
+    </UContainer>
+</div>
 
-      <!-- Latest News Hero Section (Always displayed with priority) -->
-      <div class="mb-12">
-        <div
-          class="relative rounded-xl overflow-hidden shadow-xl h-[500px] group"
-        >
-          <img
-            :src="latestArticle.image"
-            :alt="latestArticle.title"
-            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
-          ></div>
-          <div
-            class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-10 text-white"
-          >
-            <div class="flex items-center mb-4">
-              <span
-                class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
-                >LATEST NEWS</span
-              >
-              <span class="ml-3 text-sm opacity-80">{{
-                latestArticle.date
-              }}</span>
-              <span class="ml-3 text-sm opacity-80 flex items-center">
-                <ClockIcon class="h-4 w-4 mr-1" />
-                {{ latestArticle.readTime }} min read
-              </span>
-            </div>
-            <h2
-              class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight"
-            >
-              <a
-                href="#"
-                @click.prevent="selectArticle(latestArticle)"
-                class="hover:text-primary transition-colors duration-200"
-              >
-                {{ latestArticle.title }}
-              </a>
-            </h2>
-            <p class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl">
-              {{ latestArticle.summary }}
-            </p>
-            <div class="flex items-center">
-              <img
-                :src="latestArticle.authorImage"
-                :alt="latestArticle.author"
-                class="h-10 w-10 rounded-full mr-3 border-2 border-white"
-              />
-              <div>
-                <p class="font-medium">
-                  Posted by:
-                  <span class="text-primary">{{ latestArticle.author }}</span>
-                </p>
-                <p class="text-sm opacity-80">
-                  {{ latestArticle.authorTitle }}
-                </p>
-              </div>
-              <button
-                @click="readArticle(latestArticle)"
-                class="ml-auto bg-white text-gray-900 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
-              >
-                Read Article
-                <ArrowRightIcon class="h-4 w-4 ml-2" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Trending News Carousel -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Trending News</h2>
-          <div class="flex space-x-2">
-            <button
-              @click="prevTrending"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              <ChevronLeftIcon class="h-5 w-5 text-gray-700" />
-            </button>
-            <button
-              @click="nextTrending"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              <ChevronRightIcon class="h-5 w-5 text-gray-700" />
-            </button>
-          </div>
-        </div>
-
-        <div class="relative overflow-hidden">
-          <div
-            class="flex transition-transform duration-500 ease-in-out"
-            :style="{
-              transform: `translateX(-${
-                (trendingIndex * 100) / trendingPerPage
-              }%)`,
-            }"
-          >
-            <div
-              v-for="article in trendingArticles"
-              :key="article.id"
-              class="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
-            >
-              <div
-                class="bg-white rounded-lg shadow-md overflow-hidden h-full hover:shadow-lg transition-shadow duration-300"
-              >
-                <div class="relative h-40">
-                  <img
-                    :src="article.image"
-                    :alt="article.title"
-                    class="w-full h-full object-cover"
-                  />
-                  <div class="absolute top-0 left-0 m-2">
-                    <span
-                      class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
-                    >
-                      {{ getCategoryName(article.categoryId) }}
-                    </span>
-                  </div>
-                  <div class="absolute top-0 right-0 m-2">
-                    <span
-                      class="bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center"
-                    >
-                      <TrendingUpIcon class="h-3 w-3 mr-1" />
-                      Trending
-                    </span>
-                  </div>
-                </div>
-                <div class="p-4">
-                  <h3
-                    @click="selectArticle(article)"
-                    class="text-lg font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer line-clamp-2"
-                  >
-                    {{ article.title }}
-                  </h3>
-                  <div
-                    class="flex justify-between items-center text-sm text-gray-500"
-                  >
-                    <span>{{ article.date }}</span>
-                    <span class="flex items-center">
-                      <MessageSquareIcon class="h-4 w-4 mr-1" />
-                      {{ article.comments.length }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-center mt-6 space-x-2">
-          <button
-            v-for="(_, i) in Math.ceil(
-              trendingArticles.length / trendingPerPage
-            )"
-            :key="i"
-            @click="trendingIndex = i"
-            :class="[
-              'w-2 h-2 rounded-full transition-colors',
-              trendingIndex === i
-                ? 'bg-primary'
-                : 'bg-gray-300 hover:bg-gray-400',
-            ]"
-          ></button>
-        </div>
-      </div>
-
-      <!-- Category Title -->
-      <div
-        v-if="!selectedArticle"
-        class="flex justify-between items-center mb-8"
-      >
-        <h2 class="text-2xl font-bold text-gray-900">
-          {{ getCategoryName(activeCategory) }}
-        </h2>
-        <div class="flex space-x-2">
-          <button
-            v-for="layout in layouts"
-            :key="layout.id"
-            @click="currentLayout = layout.id"
-            :class="[
-              'p-2 rounded-md transition-colors',
-              currentLayout === layout.id ? 'bg-gray-200' : 'hover:bg-gray-100',
-            ]"
-          >
-            <LayoutGridIcon
-              v-if="layout.id === 'grid'"
-              class="h-5 w-5 text-gray-700"
-            />
-            <LayoutListIcon v-else class="h-5 w-5 text-gray-700" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Articles Grid/List -->
-      <div v-if="!selectedArticle">
-        <div
-          :class="[
-            currentLayout === 'grid'
-              ? 'grid gap-8 md:grid-cols-2 lg:grid-cols-3'
-              : 'space-y-8',
-          ]"
-        >
-          <article
-            v-for="article in filteredArticles"
-            :key="article.id"
-            :class="[
-              'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
-              currentLayout === 'list' ? 'flex flex-col md:flex-row' : '',
-            ]"
-          >
-            <div :class="[currentLayout === 'list' ? 'md:w-1/3' : '']">
-              <div
-                class="relative overflow-hidden"
-                :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
-              >
-                <img
-                  :src="article.image"
-                  :alt="article.title"
-                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                />
-                <div class="absolute top-0 left-0 m-3">
-                  <span
-                    class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
-                  >
-                    {{ getCategoryName(article.categoryId) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-6' : 'p-6']">
-              <div class="flex items-center text-sm text-gray-500 mb-2">
-                <CalendarIcon class="h-4 w-4 mr-1" />
-                <span>{{ article.date }}</span>
-                <span class="mx-2">•</span>
-                <ClockIcon class="h-4 w-4 mr-1" />
-                <span>{{ article.readTime }} min read</span>
-              </div>
-              <h3
-                @click="selectArticle(article)"
-                class="text-xl font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer transition-colors duration-200"
-              >
-                {{ article.title }}
-              </h3>
-              <p class="text-gray-600 mb-4 line-clamp-2">
-                {{ article.summary }}
-              </p>
-              <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                  <img
-                    :src="article.authorImage"
-                    :alt="article.author"
-                    class="h-8 w-8 rounded-full mr-2"
-                  />
-                  <span class="text-sm font-medium text-gray-700"
-                    >Posted by:
-                    <span class="text-primary">{{ article.author }}</span></span
-                  >
-                </div>
-                <div class="flex items-center text-gray-500">
-                  <MessageSquareIcon class="h-4 w-4 mr-1" />
-                  <span class="text-sm">{{ article.comments.length }}</span>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- Load More Button -->
-        <div class="mt-12 text-center">
-          <button
-            @click="loadMoreArticles"
-            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
-          >
-            Load More Articles
-          </button>
-        </div>
-      </div>
-
-      <!-- Article Detail View -->
-      <div v-else>
-        <button
-          @click="selectedArticle = null"
-          class="mb-6 flex items-center text-gray-700 hover:text-primary transition-colors"
-        >
-          <ArrowLeftIcon class="h-5 w-5 mr-1" />
-          Back to all news
-        </button>
-
-        <article class="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div class="relative h-[400px]">
-            <img
-              :src="selectedArticle.image"
-              :alt="selectedArticle.title"
-              class="w-full h-full object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"
-            ></div>
-            <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
-              <div class="flex items-center mb-4">
-                <span
-                  class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
-                >
-                  {{ getCategoryName(selectedArticle.categoryId) }}
-                </span>
-                <span class="ml-3 text-sm opacity-80">{{
-                  selectedArticle.date
-                }}</span>
-                <span class="ml-3 text-sm opacity-80 flex items-center">
-                  <ClockIcon class="h-4 w-4 mr-1" />
-                  {{ selectedArticle.readTime }} min read
-                </span>
-              </div>
-              <h1 class="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
-                {{ selectedArticle.title }}
-              </h1>
-            </div>
-          </div>
-
-          <div class="p-6 sm:p-8">
-            <div class="flex items-center mb-8 border-b border-gray-200 pb-6">
-              <img
-                :src="selectedArticle.authorImage"
-                :alt="selectedArticle.author"
-                class="h-12 w-12 rounded-full mr-4 border-2 border-primary"
-              />
-              <div>
-                <p class="font-medium text-gray-900">
-                  Posted by:
-                  <span class="text-primary">{{ selectedArticle.author }}</span>
-                </p>
-                <p class="text-sm text-gray-500">
-                  {{ selectedArticle.authorTitle }}
-                </p>
-              </div>
-              <div class="ml-auto flex space-x-3">
-                <button
-                  class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                >
-                  <TwitterIcon class="h-4 w-4" />
-                </button>
-                <button
-                  class="p-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
-                >
-                  <FacebookIcon class="h-4 w-4" />
-                </button>
-                <button
-                  class="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
-                >
-                  <LinkIcon class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div
-              class="prose max-w-none mb-10"
-              v-html="selectedArticle.content"
-            ></div>
-
-            <div class="flex flex-wrap gap-2 mb-10">
-              <span
-                v-for="(tag, index) in selectedArticle.tags"
-                :key="index"
-                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 cursor-pointer transition-colors"
-              >
-                #{{ tag }}
-              </span>
-            </div>
-
-            <!-- Comments Section -->
-            <div class="border-t border-gray-200 pt-8">
-              <h2 class="text-2xl font-bold mb-6 text-gray-900">
-                Comments ({{ selectedArticle.comments.length }})
-              </h2>
-
-              <!-- Add Comment Form -->
-              <form @submit.prevent="addComment" class="mb-8">
-                <div class="flex items-start space-x-4">
-                  <img
-                    src="/placeholder.svg?height=40&width=40"
-                    alt="User"
-                    class="h-10 w-10 rounded-full"
-                  />
-                  <div class="flex-1">
-                    <textarea
-                      v-model="newComment.text"
-                      rows="3"
-                      placeholder="Write a comment..."
-                      required
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary bg-white text-gray-900"
-                    ></textarea>
-                    <div class="mt-3 flex justify-end">
-                      <button
-                        type="submit"
-                        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                      >
-                        Post Comment
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-
-              <!-- Comments List - Simplified without like/dislike/reply options -->
-              <div class="space-y-6">
-                <transition-group name="comment-list">
-                  <div
-                    v-for="(comment, index) in selectedArticle.comments"
-                    :key="index"
-                    class="bg-gray-50 p-4 rounded-lg border border-gray-200"
-                  >
-                    <div class="flex items-start space-x-4">
-                      <img
-                        :src="
-                          comment.userImage ||
-                          '/placeholder.svg?height=40&width=40'
-                        "
-                        :alt="comment.name"
-                        class="h-10 w-10 rounded-full"
-                      />
-                      <div class="flex-1">
-                        <div class="flex justify-between mb-2">
-                          <h3 class="font-bold text-gray-900">
-                            {{ comment.name }}
-                          </h3>
-                          <span class="text-sm text-gray-500">{{
-                            comment.date
-                          }}</span>
-                        </div>
-                        <p class="text-gray-700">{{ comment.text }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </transition-group>
-                <div
-                  v-if="selectedArticle.comments.length === 0"
-                  class="text-center py-8 text-gray-500"
-                >
-                  No comments yet. Be the first to comment!
-                </div>
-              </div>
-            </div>
-
-            <!-- Related Articles -->
-            <div class="mt-12 border-t border-gray-200 pt-8">
-              <h2 class="text-2xl font-bold mb-6 text-gray-900">
-                Related Articles
-              </h2>
-              <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div
-                  v-for="article in relatedArticles"
-                  :key="article.id"
-                  class="bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
-                >
-                  <div class="relative h-40 overflow-hidden">
-                    <img
-                      :src="article.image"
-                      :alt="article.title"
-                      class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                    />
-                  </div>
-                  <div class="p-4">
-                    <h3
-                      @click="selectArticle(article)"
-                      class="text-lg font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer transition-colors"
-                    >
-                      {{ article.title }}
-                    </h3>
-                    <div
-                      class="flex items-center justify-between text-sm text-gray-500"
-                    >
-                      <div class="flex items-center">
-                        <CalendarIcon class="h-4 w-4 mr-1" />
-                        <span>{{ article.date }}</span>
-                      </div>
-                      <span
-                        >Posted by:
-                        <span class="text-primary">{{
-                          article.author
-                        }}</span></span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <!-- Trending Topics Section -->
-      <div class="mt-16 bg-gray-100 rounded-xl p-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Trending Topics</h2>
-        <div class="flex flex-wrap gap-3">
-          <a
-            v-for="(topic, index) in trendingTopics"
-            :key="index"
-            href="#"
-            class="px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-sm font-medium flex items-center"
-          >
-            <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
-            {{ topic }}
-          </a>
-        </div>
-      </div>
-
-      <!-- Newsletter Section -->
-      <div class="mt-16">
-        <div class="bg-primary rounded-xl p-8 sm:p-10 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-1/3 h-full opacity-10">
-            <svg
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="75" cy="25" r="20" fill="white" />
-              <circle cx="25" cy="75" r="20" fill="white" />
-              <circle cx="75" cy="75" r="20" fill="white" />
-              <circle cx="25" cy="25" r="20" fill="white" />
-            </svg>
-          </div>
-          <div
-            class="relative z-10 flex flex-col md:flex-row items-center justify-between"
-          >
-            <div class="mb-6 md:mb-0 md:mr-8">
-              <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Stay Updated
-              </h2>
-              <p class="text-white/80 max-w-md">
-                Subscribe to our newsletter to receive the latest news and
-                exclusive content straight to your inbox.
-              </p>
-            </div>
-            <div class="w-full md:w-auto">
-              <form
-                @submit.prevent="subscribeNewsletter"
-                class="flex flex-col sm:flex-row gap-3"
-              >
-                <input
-                  type="email"
-                  v-model="newsletterEmail"
-                  placeholder="Your email address"
-                  required
-                  class="px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 w-full sm:w-64"
-                />
-                <button
-                  type="submit"
-                  class="px-6 py-3 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
 </template>
 
+
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from "vue";
+
 import {
   SunIcon,
   MenuIcon,
@@ -891,17 +345,6 @@ const prevTrending = () => {
     trendingIndex.value <= 0 ? maxIndex : trendingIndex.value - 1;
 };
 
-// Trending Topics
-const trendingTopics = ref([
-  "Climate Change",
-  "Artificial Intelligence",
-  "Global Economy",
-  "Space Exploration",
-  "Renewable Energy",
-  "Healthcare Innovation",
-  "Cybersecurity",
-]);
-
 // Articles data
 const articles = ref([
   {
@@ -919,12 +362,12 @@ const articles = ref([
               <p class="mb-4">The research team is now working with industry partners to scale up production and expects the first commercial products to be available within three years.</p>
               <p class="mb-4">Environmental groups have hailed the announcement as a potential turning point in the fight against climate change. "This kind of technological leap is exactly what we need to accelerate the transition away from fossil fuels," said James Rivera, director of the Climate Action Coalition.</p>
               <p class="mb-4">The breakthrough comes at a critical time, as countries around the world are seeking to reduce carbon emissions and meet ambitious climate targets. If successfully deployed at scale, this technology could help nations achieve their renewable energy goals while potentially reducing electricity costs for consumers.</p>`,
-    image: "/placeholder.svg?height=600&width=800",
+    image: "/images/placeholder.jpg?height=600&width=800",
     date: "May 15, 2023",
     readTime: 5,
     author: "John Doe",
     authorTitle: "Science Correspondent",
-    authorImage: "/placeholder.svg?height=100&width=100",
+    authorImage: "/images/placeholder.jpg?height=100&width=100",
     categoryId: "technology",
     tags: ["renewable energy", "solar power", "climate change", "technology"],
     comments: [
@@ -932,13 +375,13 @@ const articles = ref([
         name: "Alex Johnson",
         text: "This is incredible news! I wonder how long until we see this technology in commercial applications.",
         date: "May 15, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "Maria Garcia",
         text: "I'm skeptical about the timeline for commercialization. These breakthroughs often take decades to reach the market.",
         date: "May 16, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -962,12 +405,12 @@ const articles = ref([
               <p class="mb-4">The agreement is legally binding, with provisions for regular reporting and verification of progress. Countries that fail to meet their commitments could face trade penalties and exclusion from certain international financial mechanisms.</p>
               <p class="mb-4">Market reaction to the announcement has been positive, with renewable energy stocks surging and fossil fuel companies seeing modest declines. Analysts suggest this reflects growing investor confidence in the global energy transition.</p>
               <p class="mb-4">The next steps will involve each country developing detailed implementation plans, which must be submitted to the UN within six months. A follow-up summit is scheduled for next year to assess progress and address any challenges in implementation.</p>`,
-    image: "/placeholder.svg?height=600&width=800",
+    image: "/images/placeholder.jpg?height=600&width=800",
     date: "June 2, 2023",
     readTime: 6,
     author: "Emma Wilson",
     authorTitle: "Political Correspondent",
-    authorImage: "/placeholder.svg?height=100&width=100",
+    authorImage: "/images/placeholder.jpg?height=100&width=100",
     categoryId: "world",
     tags: [
       "climate change",
@@ -980,19 +423,19 @@ const articles = ref([
         name: "Thomas Lee",
         text: "It's about time! Now we need to make sure countries actually follow through on these commitments.",
         date: "June 2, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "Sarah Johnson",
         text: "I'm concerned about the enforcement mechanisms. Without real consequences, these agreements don't mean much.",
         date: "June 3, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "Michael Chen",
         text: "This is a significant step forward. The inclusion of financial support for developing nations is particularly important.",
         date: "June 3, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -1005,12 +448,12 @@ const articles = ref([
               <p class="mb-4">The system, named MediScan, was trained on millions of medical images and can identify subtle patterns that might be missed by human observers. In clinical trials, it demonstrated a 94% accuracy rate in detecting early-stage pancreatic cancer, compared to 65% for specialist physicians.</p>
               <p class="mb-4">"Early detection is crucial for successful treatment of many cancers," explained Dr. Robert Kim, who led the research team. "MediScan could potentially save thousands of lives by identifying cancers at a stage when they're much more treatable."</p>
               <p class="mb-4">The technology is now undergoing FDA review and could be deployed in hospitals within the next two years.</p>`,
-    image: "/placeholder.svg?height=600&width=800",
+    image: "/images/placeholder.jpg?height=600&width=800",
     date: "June 10, 2023",
     readTime: 4,
     author: "David Chen",
     authorTitle: "Health & Science Editor",
-    authorImage: "/placeholder.svg?height=100&width=100",
+    authorImage: "/images/placeholder.jpg?height=100&width=100",
     categoryId: "health",
     tags: [
       "artificial intelligence",
@@ -1029,12 +472,12 @@ const articles = ref([
               <p class="mb-4">Key provisions of the bill include tax incentives for businesses that create domestic manufacturing jobs, expanded child tax credits for families, and measures to reduce prescription drug prices.</p>
               <p class="mb-4">"This represents the most significant economic legislation in a generation," said Senate Majority Leader in a press conference following the vote. "We're taking concrete steps to build an economy that works for everyone, not just those at the top."</p>
               <p class="mb-4">Economists have generally responded positively to the package, with many predicting it could help reduce inflation while stimulating economic growth. However, some have expressed concerns about its impact on the national debt.</p>`,
-    image: "/placeholder.svg?height=600&width=800",
+    image: "/images/placeholder.jpg?height=600&width=800",
     date: "June 15, 2023",
     readTime: 7,
     author: "Jennifer Adams",
     authorTitle: "Economics Correspondent",
-    authorImage: "/placeholder.svg?height=100&width=100",
+    authorImage: "/images/placeholder.jpg?height=100&width=100",
     categoryId: "politics",
     tags: ["economics", "legislation", "inflation", "politics"],
     comments: [
@@ -1042,7 +485,7 @@ const articles = ref([
         name: "Robert Johnson",
         text: "It's about time we saw some real action on economic reform. The expanded child tax credit will make a huge difference for families.",
         date: "June 15, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -1055,12 +498,12 @@ const articles = ref([
               <p class="mb-4">The most notable advancement is the phone's new solid-state battery technology, which the company claims can fully charge in just 10 minutes and last up to 72 hours on normal usage. If these claims hold up in real-world testing, it would represent a major leap forward in addressing one of the most common consumer complaints about smartphones.</p>
               <p class="mb-4">"We've been working on this technology for over five years," said Quantum's CEO during the launch event. "This isn't just an incremental improvement—it's a fundamental rethinking of how we power mobile devices."</p>
               <p class="mb-4">The Quantum X also features an advanced AI system that runs entirely on-device, rather than relying on cloud processing. This approach offers both improved privacy and faster performance for AI-driven features like photography, translation, and voice assistance.</p>`,
-    image: "/placeholder.svg?height=600&width=800",
+    image: "/images/placeholder.jpg?height=600&width=800",
     date: "June 20, 2023",
     readTime: 5,
     author: "Michael Zhang",
     authorTitle: "Technology Reporter",
-    authorImage: "/placeholder.svg?height=100&width=100",
+    authorImage: "/images/placeholder.jpg?height=100&width=100",
     categoryId: "technology",
     tags: [
       "technology",
@@ -1073,13 +516,13 @@ const articles = ref([
         name: "Lisa Chen",
         text: "I'm most excited about the battery technology. If it lives up to the hype, this could be a game-changer.",
         date: "June 20, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "James Wilson",
         text: "The on-device AI processing is a huge step forward for privacy. I'm glad to see companies finally taking this seriously.",
         date: "June 21, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -1093,12 +536,12 @@ const articles = ref([
               <p class="mb-4">"This is what sports is all about," said FC United's captain after the match. "We believed in ourselves even when no one else did. This victory is for all the underdogs out there."</p>
               <p class="mb-4">The upset has already been compared to some of the greatest in sports history, with social media exploding with reactions from fans and celebrities alike.</p>
               <p class="mb-4">Atletico Stars, who had dominated the season with an almost perfect record, were visibly stunned by the defeat. "We didn't underestimate them, but sometimes in football, the best team doesn't win," said their manager in the post-match press conference.</p>`,
-    image: "/placeholder.svg?height=600&width=800",
+    image: "/images/placeholder.jpg?height=600&width=800",
     date: "June 25, 2023",
     readTime: 4,
     author: "Carlos Rodriguez",
     authorTitle: "Sports Editor",
-    authorImage: "/placeholder.svg?height=100&width=100",
+    authorImage: "/images/placeholder.jpg?height=100&width=100",
     categoryId: "sports",
     tags: ["sports", "football", "champions cup", "upsets"],
     comments: [
@@ -1106,7 +549,7 @@ const articles = ref([
         name: "Diego Fernandez",
         text: "I was there! The atmosphere was electric when that final goal went in. A moment I'll never forget.",
         date: "June 25, 2023",
-        userImage: "/placeholder.svg?height=40&width=40",
+        userImage: "/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -1186,7 +629,7 @@ const addComment = () => {
         month: "long",
         day: "numeric",
       }),
-      userImage: "/placeholder.svg?height=40&width=40",
+      userImage: "/images/placeholder.jpg?height=40&width=40",
     });
 
     // Reset form
