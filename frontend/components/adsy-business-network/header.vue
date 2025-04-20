@@ -1,11 +1,11 @@
 <template>
     <div class="fixed top-0 left-0 right-0 w-full z-50 shadow-xs rounded-e-xl overflow-hidden max-w-3xl mx-auto">
-        <header class="sticky top-0 z-50 shadow-md max-w-3xl mx-auto px-2 sm:px-4">
+        <header class="sticky top-0 z-50  max-w-3xl mx-auto sm:px-4">
           <div class="max-w-3xl mx-auto">
     
             <!-- Main Navigation -->
             <div
-              class="flex flex-row gap-4 justify-between items-center px-4 py-2 bg-slate-50 sm:px-6 lg:px-8 !bg-slate-100/70 rounded-b-xl"
+              class="flex flex-row gap-4 justify-between items-center shadow-md px-4 py-2 bg-slate-50 sm:px-6 lg:px-8 !bg-white rounded-b-xl w-full"
             >
               <div class="flex items-center">
                 <div class="flex-shrink-0">
