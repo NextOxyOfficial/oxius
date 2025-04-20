@@ -70,7 +70,7 @@
                   @click="readArticle(latestArticle)"
                   class="ml-auto bg-white text-gray-900 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
                 >
-                  Read Article
+                  Read
                   <ArrowRightIcon class="h-4 w-4 ml-2" />
                 </button>
               </div>
@@ -85,12 +85,14 @@
             <div class="flex space-x-2">
               <button
                 @click="prevTrending"
+                @mouseenter="pauseCarousel"
                 class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
               >
                 <ChevronLeftIcon class="h-5 w-5 text-gray-700" />
               </button>
               <button
                 @click="nextTrending"
+                @mouseenter="pauseCarousel"
                 class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
               >
                 <ChevronRightIcon class="h-5 w-5 text-gray-700" />
@@ -106,11 +108,13 @@
                   (trendingIndex * 100) / trendingPerPage
                 }%)`,
               }"
+              @mouseenter="pauseCarousel"
+              @mouseleave="resumeCarousel"
             >
               <div
                 v-for="article in trendingArticles"
                 :key="article.id"
-                class="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
+                class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
               >
                 <div
                   class="bg-white rounded-lg shadow-md overflow-hidden h-full hover:shadow-lg transition-shadow duration-300"
@@ -523,6 +527,33 @@
       trendingIndex.value <= 0 ? maxIndex : trendingIndex.value - 1;
   };
   
+  const carouselInterval = ref(null);
+  const isPaused = ref(false);
+  
+  const startCarousel = () => {
+    stopCarousel(); // Clear any existing interval
+    carouselInterval.value = setInterval(() => {
+      if (!isPaused.value) {
+        nextTrending();
+      }
+    }, 4000);
+  };
+  
+  const stopCarousel = () => {
+    if (carouselInterval.value) {
+      clearInterval(carouselInterval.value);
+      carouselInterval.value = null;
+    }
+  };
+  
+  const pauseCarousel = () => {
+    isPaused.value = true;
+  };
+  
+  const resumeCarousel = () => {
+    isPaused.value = false;
+  };
+  
   // Trending Topics
   const trendingTopics = ref([
     "Climate Change",
@@ -836,6 +867,12 @@
       // Reset carousel index when screen size changes to avoid empty slides
       trendingIndex.value = 0;
     });
+  
+    startCarousel();
+  });
+  
+  onUnmounted(() => {
+    stopCarousel();
   });
   </script>
   
@@ -914,4 +951,3 @@
     overflow: hidden;
   }
   </style>
-  
