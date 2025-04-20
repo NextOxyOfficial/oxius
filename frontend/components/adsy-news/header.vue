@@ -33,7 +33,7 @@
             <div class="flex-shrink-0">
               <NuxtLink to="/adsy-news/">
                 <img
-                  src="/images/adsy-news-logo.png"
+                  src="/static/frontend/images/adsy-news-logo.png"
                   alt="Adsy News Logo"
                   width="150"
                   height="50"
@@ -362,12 +362,12 @@ const articles = ref([
               <p class="mb-4">The research team is now working with industry partners to scale up production and expects the first commercial products to be available within three years.</p>
               <p class="mb-4">Environmental groups have hailed the announcement as a potential turning point in the fight against climate change. "This kind of technological leap is exactly what we need to accelerate the transition away from fossil fuels," said James Rivera, director of the Climate Action Coalition.</p>
               <p class="mb-4">The breakthrough comes at a critical time, as countries around the world are seeking to reduce carbon emissions and meet ambitious climate targets. If successfully deployed at scale, this technology could help nations achieve their renewable energy goals while potentially reducing electricity costs for consumers.</p>`,
-    image: "/images/placeholder.jpg?height=600&width=800",
+    image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
     date: "May 15, 2023",
     readTime: 5,
     author: "John Doe",
     authorTitle: "Science Correspondent",
-    authorImage: "/images/placeholder.jpg?height=100&width=100",
+    authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
     categoryId: "technology",
     tags: ["renewable energy", "solar power", "climate change", "technology"],
     comments: [
@@ -375,13 +375,13 @@ const articles = ref([
         name: "Alex Johnson",
         text: "This is incredible news! I wonder how long until we see this technology in commercial applications.",
         date: "May 15, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "Maria Garcia",
         text: "I'm skeptical about the timeline for commercialization. These breakthroughs often take decades to reach the market.",
         date: "May 16, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -405,12 +405,12 @@ const articles = ref([
               <p class="mb-4">The agreement is legally binding, with provisions for regular reporting and verification of progress. Countries that fail to meet their commitments could face trade penalties and exclusion from certain international financial mechanisms.</p>
               <p class="mb-4">Market reaction to the announcement has been positive, with renewable energy stocks surging and fossil fuel companies seeing modest declines. Analysts suggest this reflects growing investor confidence in the global energy transition.</p>
               <p class="mb-4">The next steps will involve each country developing detailed implementation plans, which must be submitted to the UN within six months. A follow-up summit is scheduled for next year to assess progress and address any challenges in implementation.</p>`,
-    image: "/images/placeholder.jpg?height=600&width=800",
+    image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
     date: "June 2, 2023",
     readTime: 6,
     author: "Emma Wilson",
     authorTitle: "Political Correspondent",
-    authorImage: "/images/placeholder.jpg?height=100&width=100",
+    authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
     categoryId: "world",
     tags: [
       "climate change",
@@ -423,19 +423,19 @@ const articles = ref([
         name: "Thomas Lee",
         text: "It's about time! Now we need to make sure countries actually follow through on these commitments.",
         date: "June 2, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "Sarah Johnson",
         text: "I'm concerned about the enforcement mechanisms. Without real consequences, these agreements don't mean much.",
         date: "June 3, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "Michael Chen",
         text: "This is a significant step forward. The inclusion of financial support for developing nations is particularly important.",
         date: "June 3, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -448,12 +448,12 @@ const articles = ref([
               <p class="mb-4">The system, named MediScan, was trained on millions of medical images and can identify subtle patterns that might be missed by human observers. In clinical trials, it demonstrated a 94% accuracy rate in detecting early-stage pancreatic cancer, compared to 65% for specialist physicians.</p>
               <p class="mb-4">"Early detection is crucial for successful treatment of many cancers," explained Dr. Robert Kim, who led the research team. "MediScan could potentially save thousands of lives by identifying cancers at a stage when they're much more treatable."</p>
               <p class="mb-4">The technology is now undergoing FDA review and could be deployed in hospitals within the next two years.</p>`,
-    image: "/images/placeholder.jpg?height=600&width=800",
+    image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
     date: "June 10, 2023",
     readTime: 4,
     author: "David Chen",
     authorTitle: "Health & Science Editor",
-    authorImage: "/images/placeholder.jpg?height=100&width=100",
+    authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
     categoryId: "health",
     tags: [
       "artificial intelligence",
@@ -472,12 +472,12 @@ const articles = ref([
               <p class="mb-4">Key provisions of the bill include tax incentives for businesses that create domestic manufacturing jobs, expanded child tax credits for families, and measures to reduce prescription drug prices.</p>
               <p class="mb-4">"This represents the most significant economic legislation in a generation," said Senate Majority Leader in a press conference following the vote. "We're taking concrete steps to build an economy that works for everyone, not just those at the top."</p>
               <p class="mb-4">Economists have generally responded positively to the package, with many predicting it could help reduce inflation while stimulating economic growth. However, some have expressed concerns about its impact on the national debt.</p>`,
-    image: "/images/placeholder.jpg?height=600&width=800",
+    image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
     date: "June 15, 2023",
     readTime: 7,
     author: "Jennifer Adams",
     authorTitle: "Economics Correspondent",
-    authorImage: "/images/placeholder.jpg?height=100&width=100",
+    authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
     categoryId: "politics",
     tags: ["economics", "legislation", "inflation", "politics"],
     comments: [
@@ -485,7 +485,7 @@ const articles = ref([
         name: "Robert Johnson",
         text: "It's about time we saw some real action on economic reform. The expanded child tax credit will make a huge difference for families.",
         date: "June 15, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -498,12 +498,12 @@ const articles = ref([
               <p class="mb-4">The most notable advancement is the phone's new solid-state battery technology, which the company claims can fully charge in just 10 minutes and last up to 72 hours on normal usage. If these claims hold up in real-world testing, it would represent a major leap forward in addressing one of the most common consumer complaints about smartphones.</p>
               <p class="mb-4">"We've been working on this technology for over five years," said Quantum's CEO during the launch event. "This isn't just an incremental improvement—it's a fundamental rethinking of how we power mobile devices."</p>
               <p class="mb-4">The Quantum X also features an advanced AI system that runs entirely on-device, rather than relying on cloud processing. This approach offers both improved privacy and faster performance for AI-driven features like photography, translation, and voice assistance.</p>`,
-    image: "/images/placeholder.jpg?height=600&width=800",
+    image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
     date: "June 20, 2023",
     readTime: 5,
     author: "Michael Zhang",
     authorTitle: "Technology Reporter",
-    authorImage: "/images/placeholder.jpg?height=100&width=100",
+    authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
     categoryId: "technology",
     tags: [
       "technology",
@@ -516,13 +516,13 @@ const articles = ref([
         name: "Lisa Chen",
         text: "I'm most excited about the battery technology. If it lives up to the hype, this could be a game-changer.",
         date: "June 20, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
       {
         name: "James Wilson",
         text: "The on-device AI processing is a huge step forward for privacy. I'm glad to see companies finally taking this seriously.",
         date: "June 21, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -536,12 +536,12 @@ const articles = ref([
               <p class="mb-4">"This is what sports is all about," said FC United's captain after the match. "We believed in ourselves even when no one else did. This victory is for all the underdogs out there."</p>
               <p class="mb-4">The upset has already been compared to some of the greatest in sports history, with social media exploding with reactions from fans and celebrities alike.</p>
               <p class="mb-4">Atletico Stars, who had dominated the season with an almost perfect record, were visibly stunned by the defeat. "We didn't underestimate them, but sometimes in football, the best team doesn't win," said their manager in the post-match press conference.</p>`,
-    image: "/images/placeholder.jpg?height=600&width=800",
+    image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
     date: "June 25, 2023",
     readTime: 4,
     author: "Carlos Rodriguez",
     authorTitle: "Sports Editor",
-    authorImage: "/images/placeholder.jpg?height=100&width=100",
+    authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
     categoryId: "sports",
     tags: ["sports", "football", "champions cup", "upsets"],
     comments: [
@@ -549,7 +549,7 @@ const articles = ref([
         name: "Diego Fernandez",
         text: "I was there! The atmosphere was electric when that final goal went in. A moment I'll never forget.",
         date: "June 25, 2023",
-        userImage: "/images/placeholder.jpg?height=40&width=40",
+        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
     ],
   },
@@ -629,7 +629,7 @@ const addComment = () => {
         month: "long",
         day: "numeric",
       }),
-      userImage: "/images/placeholder.jpg?height=40&width=40",
+      userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
     });
 
     // Reset form

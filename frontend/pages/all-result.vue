@@ -714,7 +714,7 @@ const bannerSlides = ref([
     title: "Discover Amazing Deals",
     description:
       "Find the best offers from our trusted sellers and service providers.",
-    image: "/images/banners/banner-1.jpg",
+    image: "/static/frontend/images/banners/banner-1.jpg",
     link: "/promotions",
     buttonText: "Explore Now",
   },
@@ -722,7 +722,7 @@ const bannerSlides = ref([
     title: "Join Our Community",
     description:
       "Connect with thousands of users and find exactly what you need.",
-    image: "/images/banners/banner-2.jpg",
+    image: "/static/frontend/images/banners/banner-2.jpg",
     link: "/register",
     buttonText: "Sign Up",
   },
@@ -730,7 +730,7 @@ const bannerSlides = ref([
     title: "Premium Listings",
     description:
       "Exclusive offers and premium content from our verified partners.",
-    image: "/images/banners/banner-3.jpg",
+    image: "/static/frontend/images/banners/banner-3.jpg",
     link: "/premium",
     buttonText: "Go Premium",
   },

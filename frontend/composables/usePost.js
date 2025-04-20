@@ -19,29 +19,29 @@ export function usePost() {
       {
         id: "user-1",
         fullName: "Emma Johnson",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
+        avatar: "/static/frontend/images/placeholder.jpg?height=40&width=40",
         verified: true,
       },
       {
         id: "user-2",
         fullName: "Liam Smith",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
+        avatar: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
       {
         id: "user-3",
         fullName: "Olivia Williams",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
+        avatar: "/static/frontend/images/placeholder.jpg?height=40&width=40",
         verified: true,
       },
       {
         id: "user-4",
         fullName: "Noah Brown",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
+        avatar: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
       {
         id: "user-5",
         fullName: "Ava Jones",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
+        avatar: "/static/frontend/images/placeholder.jpg?height=40&width=40",
       },
     ];
 
@@ -193,7 +193,7 @@ export function usePost() {
         author: {
           id: "current-user",
           fullName: "You",
-          avatar: "/images/placeholder.jpg?height=40&width=40",
+          avatar: "/static/frontend/images/placeholder.jpg?height=40&width=40",
           verified: true,
         },
         timestamp: new Date().toISOString(),

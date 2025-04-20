@@ -172,7 +172,7 @@
   
                 <!-- Add Comment Input -->
                 <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
-                  <img src="/images/placeholder.jpg?height=24&width=24" alt="Your avatar" class="w-6 h-6 rounded-full" />
+                  <img src="/static/frontend/images/placeholder.jpg?height=24&width=24" alt="Your avatar" class="w-6 h-6 rounded-full" />
                   <div class="flex-1 relative">
                     <input
                       type="text"
@@ -317,7 +317,7 @@
               </div>
   
               <div class="flex items-center gap-2">
-                <img src="/images/placeholder.jpg?height=24&width=24" alt="Your avatar" class="w-6 h-6 rounded-full" />
+                <img src="/static/frontend/images/placeholder.jpg?height=24&width=24" alt="Your avatar" class="w-6 h-6 rounded-full" />
                 <div class="flex-1 relative">
                   <input
                     type="text"
@@ -609,7 +609,7 @@
             </div>
             <div class="p-3 border-t border-gray-200">
               <div class="flex items-center gap-2">
-                <img src="/images/placeholder.jpg?height=24&width=24" alt="Your avatar" class="w-6 h-6 rounded-full" />
+                <img src="/static/frontend/images/placeholder.jpg?height=24&width=24" alt="Your avatar" class="w-6 h-6 rounded-full" />
                 <div class="flex-1 relative">
                   <input
                     type="text"

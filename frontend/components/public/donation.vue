@@ -61,7 +61,7 @@
 
         <img
           class="h-12"
-          src="/images/donate.png"
+          src="/static/frontend/images/donate.png"
           @click="showDonationModal = true"
         />
       </div>
