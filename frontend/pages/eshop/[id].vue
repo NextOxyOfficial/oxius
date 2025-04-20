@@ -15,7 +15,7 @@
             :style="{
               backgroundImage: storeDetails?.store_banner
                 ? `url(${storeDetails?.store_banner})`
-                : 'url(\'/placeholder.svg?height=800&width=1600\')',
+                : 'url(\'/images/placeholder.jpg?height=800&width=1600\')',
               backgroundPosition: 'center 30%',
             }"
           ></div>
@@ -207,7 +207,7 @@
                   :style="{
                     backgroundImage: storeDetails?.store_logo
                       ? `url(${storeDetails?.store_logo})`
-                      : 'url(\'/placeholder.svg?height=200&width=200\')',
+                      : 'url(\'/images/placeholder.jpg?height=200&width=200\')',
                   }"
                 ></div>
 

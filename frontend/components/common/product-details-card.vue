@@ -65,7 +65,7 @@
                 "
                 :alt="currentProduct.name"
                 class="absolute inset-0 w-full h-full object-contain p-2"
-                @error="(e) => (e.target.src = '/placeholder.svg')"
+                @error="(e) => (e.target.src = '/images/placeholder.jpg')"
               />
               <div
                 v-else
@@ -115,7 +115,7 @@
                 :src="img.image"
                 :alt="currentProduct.name"
                 class="absolute inset-0 w-full h-full object-cover"
-                @error="(e) => (e.target.src = '/placeholder.svg?size=100')"
+                @error="(e) => (e.target.src = '/images/placeholder.jpg?size=100')"
               />
             </div>
           </div>

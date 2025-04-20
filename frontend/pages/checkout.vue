@@ -30,7 +30,7 @@
           <!-- Header -->
           <div class="relative overflow-hidden">
             <div
-              class="absolute inset-0 bg-[url('/placeholder.svg?height=200&width=1000')] bg-cover bg-center opacity-20"
+              class="absolute inset-0 bg-[url('/images/placeholder.jpg?height=200&width=1000')] bg-cover bg-center opacity-20"
             ></div>
             <div
               class="bg-gradient-to-r from-violet-600 to-indigo-600 p-8 relative z-10"
@@ -120,7 +120,7 @@
                               v-if="product.image_details"
                               :src="
                                 product?.image_details[0]?.image ||
-                                '/placeholder.svg'
+                                '/images/placeholder.jpg'
                               "
                               :alt="product.name"
                               class="w-20 h-20 object-cover rounded-xl shadow-sm transition-transform duration-300 group-hover:scale-105"
