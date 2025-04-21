@@ -26,7 +26,7 @@ urlpatterns = urlpatterns + [
     path('api/geo/', include('cities.urls')),
     path('api/', include('mobile_recharge.urls')),
     path('api/', include('subscription.urls')),
-    path('api/', include('business_network.urls')),
+    path('api/bn/', include('business_network.urls')),
     path('api/news/', include('news.urls')),
     # for frontend
     path('', index, name='index'),

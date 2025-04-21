@@ -38,6 +38,7 @@ class NewsPostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDetailSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    lookup_field = 'slug'
 
 class NewsPostCommentList(generics.ListCreateAPIView):
     serializer_class = NewsPostCommentSerializer

@@ -13,7 +13,7 @@ from .views import (
 urlpatterns = [
     # News Post endpoints
     path('posts/', NewsPostList.as_view(), name='post-list'),
-    path('posts/<int:pk>/', NewsPostDetail.as_view(), name='post-detail'),
+    path('posts/<slug:slug>/', NewsPostDetail.as_view(), name='post-detail'),
     
     # Comments endpoints
     path('posts/<int:pk>/comments/', NewsPostCommentList.as_view(), name='post-comments'),

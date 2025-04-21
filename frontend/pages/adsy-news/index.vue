@@ -1,953 +1,800 @@
 <template>
-    <div class="min-h-screen bg-gray-50">
-     
-      
-  
-      <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
-        <!-- Breaking News Banner -->
-        
-  
-        <!-- Latest News Hero Section (Always displayed with priority) -->
-        <div class="mb-12">
+  <div class="min-h-screen bg-gray-50">
+    <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
+      <div class="mb-12">
+        <div
+          class="relative rounded-xl overflow-hidden shadow-xl h-[500px] group"
+        >
+          <img
+            :src="latestArticle.image"
+            :alt="latestArticle.title"
+            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
           <div
-            class="relative rounded-xl overflow-hidden shadow-xl h-[500px] group"
+            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
+          ></div>
+          <div
+            class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-10 text-white"
           >
-            <img
-              :src="latestArticle.image"
-              :alt="latestArticle.title"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
-            ></div>
-            <div
-              class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-10 text-white"
-            >
-              <div class="flex items-center mb-4">
-                <span
-                  class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
-                  >LATEST NEWS</span
-                >
-                <span class="ml-3 text-sm opacity-80">{{
-                  latestArticle.date
-                }}</span>
-                <span class="ml-3 text-sm opacity-80 flex items-center">
-                  <ClockIcon class="h-4 w-4 mr-1" />
-                  {{ latestArticle.readTime }} min read
-                </span>
-              </div>
-              <h2
-                class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight"
+            <div class="flex items-center mb-4">
+              <span
+                class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
+                >LATEST NEWS</span
               >
-                <NuxtLink
-                  :to="`/adsy-news/${latestArticle.id}/`"
-                
-                  
-                  class="hover:text-primary transition-colors duration-200"
-                >
-                  {{ latestArticle.title }}
-                </NuxtLink>
-              </h2>
-              <p class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl">
-                {{ latestArticle.summary }}
-              </p>
-              <div class="flex items-center">
-                <img
-                  :src="latestArticle.authorImage"
-                  :alt="latestArticle.author"
-                  class="h-10 w-10 rounded-full mr-3 border-2 border-white"
-                />
-                <div>
-                  <p class="font-medium">
-                    Posted by:
-                    <span class="text-primary">{{ latestArticle.author }}</span>
-                  </p>
-                  <p class="text-sm opacity-80">
-                    {{ latestArticle.authorTitle }}
-                  </p>
-                </div>
-                <button
-                  @click="readArticle(latestArticle)"
-                  class="ml-auto bg-white text-gray-900 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
-                >
-                  Read
-                  <ArrowRightIcon class="h-4 w-4 ml-2" />
-                </button>
+              <span class="ml-3 text-sm opacity-80">{{
+                latestArticle.date
+              }}</span>
+              <span class="ml-3 text-sm opacity-80 flex items-center">
+                <ClockIcon class="h-4 w-4 mr-1" />
+                {{ latestArticle.readTime }} min read
+              </span>
+            </div>
+            <h2
+              class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight"
+            >
+              <NuxtLink
+                :to="`/adsy-news/${latestArticle.slug}/`"
+                class="hover:text-primary transition-colors duration-200"
+              >
+                {{ latestArticle.title }}
+              </NuxtLink>
+            </h2>
+            <p class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl">
+              {{ latestArticle.summary }}
+            </p>
+            <div class="flex items-center">
+              <img
+                :src="latestArticle.authorImage"
+                :alt="latestArticle.author"
+                class="h-10 w-10 rounded-full mr-3 border-2 border-white"
+              />
+              <div>
+                <p class="font-medium">
+                  Posted by:
+                  <span class="text-primary">{{ latestArticle.author }}</span>
+                </p>
+                <p class="text-sm opacity-80">
+                  {{ latestArticle.authorTitle }}
+                </p>
               </div>
+              <button
+                @click="readArticle(latestArticle)"
+                class="ml-auto bg-white text-gray-900 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
+              >
+                Read
+                <ArrowRightIcon class="h-4 w-4 ml-2" />
+              </button>
             </div>
           </div>
         </div>
-  
-        <!-- Trending News Carousel -->
-        <div class="mb-12">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Trending News</h2>
-            <div class="flex space-x-2">
-              <button
-                @click="prevTrending"
-                @mouseenter="pauseCarousel"
-                class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                <ChevronLeftIcon class="h-5 w-5 text-gray-700" />
-              </button>
-              <button
-                @click="nextTrending"
-                @mouseenter="pauseCarousel"
-                class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                <ChevronRightIcon class="h-5 w-5 text-gray-700" />
-              </button>
-            </div>
-          </div>
-  
-          <div class="relative overflow-hidden">
-            <div
-              class="flex transition-transform duration-500 ease-in-out"
-              :style="{
-                transform: `translateX(-${
-                  (trendingIndex * 100) / trendingPerPage
-                }%)`,
-              }"
+      </div>
+
+      <!-- Trending News Carousel -->
+      <div class="mb-12">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">Trending News</h2>
+          <div class="flex space-x-2">
+            <button
+              @click="prevTrending"
               @mouseenter="pauseCarousel"
-              @mouseleave="resumeCarousel"
+              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              <ChevronLeftIcon class="h-5 w-5 text-gray-700" />
+            </button>
+            <button
+              @click="nextTrending"
+              @mouseenter="pauseCarousel"
+              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              <ChevronRightIcon class="h-5 w-5 text-gray-700" />
+            </button>
+          </div>
+        </div>
+
+        <div class="relative overflow-hidden">
+          <div
+            class="flex transition-transform duration-500 ease-in-out"
+            :style="{
+              transform: `translateX(-${
+                (trendingIndex * 100) / trendingPerPage
+              }%)`,
+            }"
+            @mouseenter="pauseCarousel"
+            @mouseleave="resumeCarousel"
+          >
+            <div
+              v-for="article in trendingArticles"
+              :key="article.id"
+              class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
             >
               <div
-                v-for="article in trendingArticles"
-                :key="article.id"
-                class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
+                class="bg-white rounded-lg shadow-md overflow-hidden h-full hover:shadow-lg transition-shadow duration-300"
               >
-                <div
-                  class="bg-white rounded-lg shadow-md overflow-hidden h-full hover:shadow-lg transition-shadow duration-300"
-                >
-                  <div class="relative h-40">
-                    <img
-                      :src="article.image"
-                      :alt="article.title"
-                      class="w-full h-full object-cover"
-                    />
-                    <div class="absolute top-0 left-0 m-2">
-                      <span
-                        class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
-                      >
-                        {{ getCategoryName(article.categoryId) }}
-                      </span>
-                    </div>
-                    <div class="absolute top-0 right-0 m-2">
-                      <span
-                        class="bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center"
-                      >
-                        <TrendingUpIcon class="h-3 w-3 mr-1" />
-                        Trending
-                      </span>
-                    </div>
+                <div class="relative h-40">
+                  <img
+                    :src="article.image"
+                    :alt="article.title"
+                    class="w-full h-full object-cover"
+                  />
+                  <div class="absolute top-0 left-0 m-2">
+                    <span
+                      class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
+                    >
+                      All News
+                    </span>
                   </div>
-                  <div class="p-4">
-                    <NuxtLink :to="`/adsy-news/${article.id}/`">
-                        <h3
-                      
+                  <div class="absolute top-0 right-0 m-2">
+                    <span
+                      class="bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center"
+                    >
+                      <TrendingUpIcon class="h-3 w-3 mr-1" />
+                      Trending
+                    </span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <NuxtLink :to="`/adsy-news/${article.slug}/`">
+                    <h3
                       class="text-lg font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer line-clamp-2"
                     >
                       {{ article.title }}
                     </h3>
-                    </NuxtLink>
-                    <div
-                      class="flex justify-between items-center text-sm text-gray-500"
-                    >
-                      <span>{{ article.date }}</span>
-                      <span class="flex items-center">
-                        <MessageSquareIcon class="h-4 w-4 mr-1" />
-                        {{ article.comments.length }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <div class="flex justify-center mt-6 space-x-2">
-            <button
-              v-for="(_, i) in Math.ceil(
-                trendingArticles.length / trendingPerPage
-              )"
-              :key="i"
-              @click="trendingIndex = i"
-              :class="[
-                'w-2 h-2 rounded-full transition-colors',
-                trendingIndex === i
-                  ? 'bg-primary'
-                  : 'bg-gray-300 hover:bg-gray-400',
-              ]"
-            ></button>
-          </div>
-        </div>
-  
-        <!-- Category Title -->
-        <div
-          v-if="!selectedArticle"
-          class="flex justify-between items-center mb-8"
-        >
-          <h2 class="text-2xl font-bold text-gray-900">
-            {{ getCategoryName(activeCategory) }}
-          </h2>
-          <div class="flex space-x-2">
-            <button
-              v-for="layout in layouts"
-              :key="layout.id"
-              @click="currentLayout = layout.id"
-              :class="[
-                'p-2 rounded-md transition-colors',
-                currentLayout === layout.id ? 'bg-gray-200' : 'hover:bg-gray-100',
-              ]"
-            >
-              <LayoutGridIcon
-                v-if="layout.id === 'grid'"
-                class="h-5 w-5 text-gray-700"
-              />
-              <LayoutListIcon v-else class="h-5 w-5 text-gray-700" />
-            </button>
-          </div>
-        </div>
-  
-        <!-- Articles Grid/List -->
-        <div v-if="!selectedArticle">
-          <div
-            :class="[
-              currentLayout === 'grid'
-                ? 'grid gap-8 md:grid-cols-2 lg:grid-cols-3'
-                : 'space-y-8',
-            ]"
-          >
-            <article
-              v-for="article in filteredArticles"
-              :key="article.id"
-              :class="[
-                'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
-                currentLayout === 'list' ? 'flex flex-col md:flex-row' : '',
-              ]"
-            >
-              <div :class="[currentLayout === 'list' ? 'md:w-1/3' : '']">
-                <div
-                  class="relative overflow-hidden"
-                  :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
-                >
-                  <img
-                    :src="article.image"
-                    :alt="article.title"
-                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                  />
-                  <div class="absolute top-0 left-0 m-3">
-                    <span
-                      class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
-                    >
-                      {{ getCategoryName(article.categoryId) }}
+                  </NuxtLink>
+                  <div
+                    class="flex justify-between items-center text-sm text-gray-500"
+                  >
+                    <span>{{ article.date }}</span>
+                    <span class="flex items-center">
+                      <MessageSquareIcon class="h-4 w-4 mr-1" />
+                      {{ article.comments.length }}
                     </span>
                   </div>
                 </div>
               </div>
-              <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-6' : 'p-6']">
-                <div class="flex items-center text-sm text-gray-500 mb-2">
-                  <CalendarIcon class="h-4 w-4 mr-1" />
-                  <span>{{ article.date }}</span>
-                  <span class="mx-2">•</span>
-                  <ClockIcon class="h-4 w-4 mr-1" />
-                  <span>{{ article.readTime }} min read</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-center mt-6 space-x-2">
+          <button
+            v-for="(_, i) in Math.ceil(
+              trendingArticles.length / trendingPerPage
+            )"
+            :key="i"
+            @click="trendingIndex = i"
+            :class="[
+              'w-2 h-2 rounded-full transition-colors',
+              trendingIndex === i
+                ? 'bg-primary'
+                : 'bg-gray-300 hover:bg-gray-400',
+            ]"
+          ></button>
+        </div>
+      </div>
+
+      <!-- Category Title -->
+      <div
+        v-if="!selectedArticle"
+        class="flex justify-between items-center mb-8"
+      >
+        <h2 class="text-2xl font-bold text-gray-900">All News</h2>
+        <div class="flex space-x-2">
+          <button
+            v-for="layout in layouts"
+            :key="layout.id"
+            @click="currentLayout = layout.id"
+            :class="[
+              'p-2 rounded-md transition-colors',
+              currentLayout === layout.id ? 'bg-gray-200' : 'hover:bg-gray-100',
+            ]"
+          >
+            <LayoutGridIcon
+              v-if="layout.id === 'grid'"
+              class="h-5 w-5 text-gray-700"
+            />
+            <LayoutListIcon v-else class="h-5 w-5 text-gray-700" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Articles Grid/List -->
+      <div v-if="!selectedArticle">
+        <div
+          :class="[
+            currentLayout === 'grid'
+              ? 'grid gap-8 md:grid-cols-2 lg:grid-cols-3'
+              : 'space-y-8',
+          ]"
+        >
+          <article
+            v-for="article in filteredArticles"
+            :key="article.id"
+            :class="[
+              'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
+              currentLayout === 'list' ? 'flex flex-col md:flex-row' : '',
+            ]"
+          >
+            <div :class="[currentLayout === 'list' ? 'md:w-1/3' : '']">
+              <div
+                class="relative overflow-hidden"
+                :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
+              >
+                <img
+                  :src="article.image"
+                  :alt="article.title"
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                />
+                <div class="absolute top-0 left-0 m-3">
+                  <span
+                    class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
+                  >
+                    All News
+                  </span>
                 </div>
-                <NuxtLink :to="`/adsy-news/${article.id}/`">
-                    <h3
-                  
+              </div>
+            </div>
+            <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-6' : 'p-6']">
+              <div class="flex items-center text-sm text-gray-500 mb-2">
+                <CalendarIcon class="h-4 w-4 mr-1" />
+                <span>{{ article.date }}</span>
+                <span class="mx-2">•</span>
+                <ClockIcon class="h-4 w-4 mr-1" />
+                <span>{{ article.readTime }} min read</span>
+              </div>
+              <NuxtLink :to="`/adsy-news/${article.slug}/`">
+                <h3
                   class="text-xl font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer transition-colors duration-200"
                 >
                   {{ article.title }}
                 </h3>
-                </NuxtLink>
-                <p class="text-gray-600 mb-4 line-clamp-2">
-                  {{ article.summary }}
-                </p>
-                <div class="flex justify-between items-center">
-                  <div class="flex items-center">
-                    <img
-                      :src="article.authorImage"
-                      :alt="article.author"
-                      class="h-8 w-8 rounded-full mr-2"
-                    />
-                    <span class="text-sm font-medium text-gray-700"
-                      >Posted by:
-                      <span class="text-primary">{{ article.author }}</span></span
-                    >
-                  </div>
-                  <div class="flex items-center text-gray-500">
-                    <MessageSquareIcon class="h-4 w-4 mr-1" />
-                    <span class="text-sm">{{ article.comments.length }}</span>
-                  </div>
+              </NuxtLink>
+              <p class="text-gray-600 mb-4 line-clamp-2">
+                {{ article.summary }}
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <img
+                    :src="article.authorImage"
+                    :alt="article.author"
+                    class="h-8 w-8 rounded-full mr-2"
+                  />
+                  <span class="text-sm font-medium text-gray-700"
+                    >Posted by:
+                    <span class="text-primary">{{ article.author }}</span></span
+                  >
+                </div>
+                <div class="flex items-center text-gray-500">
+                  <MessageSquareIcon class="h-4 w-4 mr-1" />
+                  <span class="text-sm">{{ article.comments.length }}</span>
                 </div>
               </div>
-            </article>
-          </div>
-  
-          <!-- Load More Button -->
-          <div class="mt-12 text-center">
-            <button
-              @click="loadMoreArticles"
-              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
-            >
-              Load More Articles
-            </button>
-          </div>
+            </div>
+          </article>
         </div>
-  
-        <!-- Article Detail View -->
-    
-  
-        <!-- Trending Topics Section -->
-        <div class="mt-16 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Trending Topics</h2>
-          <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
-            <a
-              v-for="(topic, index) in trendingTopics"
-              :key="index"
-              href="#"
-              class="px-1 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
-            >
-              <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
-              {{ topic }}
-            </a>
-          </div>
+
+        <!-- Load More Button -->
+        <div class="mt-12 text-center">
+          <button
+            @click="loadMoreArticles"
+            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+          >
+            Load More Articles
+          </button>
         </div>
-  
-        <!-- Newsletter Section -->
-        <div class="mt-16">
-          <div class="bg-primary rounded-xl p-8 sm:p-10 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-1/3 h-full opacity-10">
-              <svg
-                viewBox="0 0 100 100"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+      </div>
+
+      <!-- Article Detail View -->
+
+      <!-- Trending Topics Section -->
+      <div class="mt-16 bg-gray-100 rounded-xl p-3 sm:p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Trending Topics</h2>
+        <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
+          <a
+            v-for="(topic, index) in trendingTopics"
+            :key="index"
+            href="#"
+            class="px-1 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
+          >
+            <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
+            {{ topic }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Newsletter Section -->
+      <div class="mt-16">
+        <div class="bg-primary rounded-xl p-8 sm:p-10 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-1/3 h-full opacity-10">
+            <svg
+              viewBox="0 0 100 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="75" cy="25" r="20" fill="white" />
+              <circle cx="25" cy="75" r="20" fill="white" />
+              <circle cx="75" cy="75" r="20" fill="white" />
+              <circle cx="25" cy="25" r="20" fill="white" />
+            </svg>
+          </div>
+          <div
+            class="relative z-10 flex flex-col md:flex-row items-center justify-between"
+          >
+            <div class="mb-6 md:mb-0 md:mr-8">
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">
+                Stay Updated
+              </h2>
+              <p class="text-white/80 max-w-md">
+                Subscribe to our newsletter to receive the latest news and
+                exclusive content straight to your inbox.
+              </p>
+            </div>
+            <div class="w-full md:w-auto">
+              <form
+                @submit.prevent="subscribeNewsletter"
+                class="flex flex-col sm:flex-row gap-3"
               >
-                <circle cx="75" cy="25" r="20" fill="white" />
-                <circle cx="25" cy="75" r="20" fill="white" />
-                <circle cx="75" cy="75" r="20" fill="white" />
-                <circle cx="25" cy="25" r="20" fill="white" />
-              </svg>
-            </div>
-            <div
-              class="relative z-10 flex flex-col md:flex-row items-center justify-between"
-            >
-              <div class="mb-6 md:mb-0 md:mr-8">
-                <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">
-                  Stay Updated
-                </h2>
-                <p class="text-white/80 max-w-md">
-                  Subscribe to our newsletter to receive the latest news and
-                  exclusive content straight to your inbox.
-                </p>
-              </div>
-              <div class="w-full md:w-auto">
-                <form
-                  @submit.prevent="subscribeNewsletter"
-                  class="flex flex-col sm:flex-row gap-3"
+                <input
+                  type="email"
+                  v-model="newsletterEmail"
+                  placeholder="Your email address"
+                  required
+                  class="px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 w-full sm:w-64"
+                />
+                <button
+                  type="submit"
+                  class="px-6 py-3 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <input
-                    type="email"
-                    v-model="newsletterEmail"
-                    placeholder="Your email address"
-                    required
-                    class="px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 w-full sm:w-64"
-                  />
-                  <button
-                    type="submit"
-                    class="px-6 py-3 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    Subscribe
-                  </button>
-                </form>
-              </div>
+                  Subscribe
+                </button>
+              </form>
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  </template>
-  
-  <script setup>
-  definePageMeta({
-    layout: "adsy-news",
-  });
-  import {
-    SunIcon,
-    MenuIcon,
-    XIcon,
-    SearchIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    CalendarIcon,
-    ClockIcon,
-    MessageSquareIcon,
-    ArrowRightIcon,
-    ArrowLeftIcon,
-    TwitterIcon,
-    FacebookIcon,
-    LinkIcon,
-    CloudIcon,
-    CloudRainIcon,
-    LayoutGridIcon,
-    LayoutListIcon,
-    TrendingUpIcon,
-  } from "lucide-vue-next";
-  
-  // Navigation state
-  const mobileMenuOpen = ref(false);
-  
-  // Search state
-  const searchQuery = ref("");
-  const searchResults = ref([]);
-  
-  // Perform search when query changes
-  const performSearch = () => {
-    // Always show results as user types, even with just 1 character
-    if (!searchQuery.value) {
-      searchResults.value = [];
-      return;
-    }
-  
-    // Filter articles based on search query
-    const query = searchQuery.value.toLowerCase();
-  
-    searchResults.value = articles.value.filter((article) => {
-      return article.title.toLowerCase().includes(query);
-    });
-  };
-  
-  // Clear search
-  const clearSearch = () => {
-    searchQuery.value = "";
-    searchResults.value = [];
-  };
-  
-  // Newsletter
-  const newsletterEmail = ref("");
-  const subscribeNewsletter = () => {
-    // Simulate subscription
-    alert(`Thank you for subscribing with ${newsletterEmail.value}!`);
-    newsletterEmail.value = "";
-  };
-  
-  // Categories
-  const categories = ref([
-    { id: "all", name: "All News" },
-    { id: "world", name: "World" },
-    { id: "politics", name: "Politics" },
-    { id: "business", name: "Business" },
-    { id: "technology", name: "Technology" },
-    { id: "science", name: "Science" },
-    { id: "health", name: "Health" },
-    { id: "sports", name: "Sports" },
-    { id: "entertainment", name: "Entertainment" },
-  ]);
-  
-  const activeCategory = ref("all");
-  const setActiveCategory = (categoryId) => {
-    activeCategory.value = categoryId;
-    selectedArticle.value = null;
-    mobileMenuOpen.value = false;
-  };
-  
-  const getCategoryName = (categoryId) => {
-    const category = categories.value.find((c) => c.id === categoryId);
-    return category ? category.name : "Uncategorized";
-  };
-  
-  // Layout options
-  const layouts = ref([
-    { id: "grid", name: "Grid View" },
-    { id: "list", name: "List View" },
-  ]);
-  const currentLayout = ref("grid");
-  
-  // Breaking news ticker
-  const breakingNews = ref([
-    "Global Summit on Climate Change Reaches Historic Agreement",
-    "New Technology Breakthrough Could Revolutionize Renewable Energy",
-    "Major Economic Reform Bill Passes in Senate",
-    "Scientists Discover Potential Cure for Rare Disease",
-  ]);
-  const currentTickerIndex = ref(0);
-  
-  const startTicker = () => {
-    setInterval(() => {
-      currentTickerIndex.value =
-        (currentTickerIndex.value + 1) % breakingNews.value.length;
-    }, 5000);
-  };
-  
-  // Current date
-  const currentDate = computed(() => {
-    return new Date().toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  });
-  
-  // Weather data (simulated)
-  const weather = reactive({
-    temp: 24,
-    condition: "Partly Cloudy",
-    icon: "cloud",
-  });
-  
-  // Trending News Carousel
-  const trendingArticles = computed(() => {
-    // Sort articles by number of comments (as a proxy for popularity)
-    return [...articles.value]
-      .sort((a, b) => b.comments.length - a.comments.length)
-      .slice(0, 8); // Take top 8 trending articles
-  });
-  
-  const trendingIndex = ref(0);
-  const trendingPerPage = computed(() => {
-    if (window.innerWidth < 640) return 1;
-    if (window.innerWidth < 768) return 2;
-    if (window.innerWidth < 1024) return 3;
-    return 4;
-  });
-  
-  const nextTrending = () => {
-    const maxIndex =
-      Math.ceil(trendingArticles.value.length / trendingPerPage.value) - 1;
-    trendingIndex.value =
-      trendingIndex.value >= maxIndex ? 0 : trendingIndex.value + 1;
-  };
-  
-  const prevTrending = () => {
-    const maxIndex =
-      Math.ceil(trendingArticles.value.length / trendingPerPage.value) - 1;
-    trendingIndex.value =
-      trendingIndex.value <= 0 ? maxIndex : trendingIndex.value - 1;
-  };
-  
-  const carouselInterval = ref(null);
-  const isPaused = ref(false);
-  
-  const startCarousel = () => {
-    stopCarousel(); // Clear any existing interval
-    carouselInterval.value = setInterval(() => {
-      if (!isPaused.value) {
-        nextTrending();
-      }
-    }, 4000);
-  };
-  
-  const stopCarousel = () => {
-    if (carouselInterval.value) {
-      clearInterval(carouselInterval.value);
-      carouselInterval.value = null;
-    }
-  };
-  
-  const pauseCarousel = () => {
-    isPaused.value = true;
-  };
-  
-  const resumeCarousel = () => {
-    isPaused.value = false;
-  };
-  
-  // Trending Topics
-  const trendingTopics = ref([
-    "Climate Change",
-    "Artificial Intelligence",
-    "Global Economy",
-    "Space Exploration",
-    "Renewable Energy",
-    "Healthcare Innovation",
-    "Cybersecurity",
-  ]);
-  
-  // Articles data
-  const articles = ref([
-    {
-      id: 1,
-      title: "New Technology Breakthrough Could Revolutionize Renewable Energy",
-      summary:
-        "Scientists have developed a new method to harness solar energy with unprecedented efficiency, potentially making renewable energy more accessible worldwide.",
-      content: `<p class="mb-4">Scientists at the National Renewable Energy Laboratory have announced a breakthrough in solar cell technology that could dramatically increase efficiency while reducing costs.</p>
-                <p class="mb-4">The new technology, which uses a novel arrangement of materials to capture a broader spectrum of sunlight, has achieved a record-breaking 39% efficiency in laboratory tests. This represents a significant improvement over current commercial solar panels, which typically operate at 15-20% efficiency.</p>
-                <p class="mb-4">"This is a game-changer for renewable energy," said Dr. Sarah Chen, lead researcher on the project. "With this level of efficiency, solar power becomes not just competitive with fossil fuels, but potentially more economical in many regions."</p>
-                <p class="mb-4">Industry analysts predict that if the technology can be successfully commercialized, it could accelerate the global transition to renewable energy sources and help combat climate change.</p>
-                <p class="mb-4">The breakthrough involves a new type of "tandem" solar cell that stacks multiple layers of light-absorbing materials. Each layer is designed to capture a different part of the solar spectrum, allowing the cell to harvest more energy from the same amount of sunlight.</p>
-                <p class="mb-4">What makes this development particularly promising is that the materials used are abundant and relatively inexpensive, addressing one of the key challenges in scaling up renewable energy technologies.</p>
-                <p class="mb-4">"We've been working on this for nearly a decade," Dr. Chen explained. "The real innovation came when we developed a new manufacturing process that allows these complex cells to be produced at scale without significantly increasing costs."</p>
-                <p class="mb-4">The research team is now working with industry partners to scale up production and expects the first commercial products to be available within three years.</p>
-                <p class="mb-4">Environmental groups have hailed the announcement as a potential turning point in the fight against climate change. "This kind of technological leap is exactly what we need to accelerate the transition away from fossil fuels," said James Rivera, director of the Climate Action Coalition.</p>
-                <p class="mb-4">The breakthrough comes at a critical time, as countries around the world are seeking to reduce carbon emissions and meet ambitious climate targets. If successfully deployed at scale, this technology could help nations achieve their renewable energy goals while potentially reducing electricity costs for consumers.</p>`,
-      image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
-      date: "May 15, 2023",
-      readTime: 5,
-      author: "John Doe",
-      authorTitle: "Science Correspondent",
-      authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
-      categoryId: "technology",
-      tags: ["renewable energy", "solar power", "climate change", "technology"],
-      comments: [
-        {
-          name: "Alex Johnson",
-          text: "This is incredible news! I wonder how long until we see this technology in commercial applications.",
-          date: "May 15, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-        {
-          name: "Maria Garcia",
-          text: "I'm skeptical about the timeline for commercialization. These breakthroughs often take decades to reach the market.",
-          date: "May 16, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Global Summit on Climate Change Reaches Historic Agreement",
-      summary:
-        "World leaders have committed to ambitious new targets for reducing carbon emissions by 2030, marking a significant step forward in international climate cooperation.",
-      content: `<p class="mb-4">In a landmark decision, representatives from 195 countries have agreed to a new framework for tackling climate change at the Global Climate Summit in Geneva.</p>
-                <p class="mb-4">The agreement, which builds on the Paris Climate Accord, sets more ambitious targets for reducing greenhouse gas emissions and provides financial mechanisms to support developing nations in their transition to cleaner energy sources.</p>
-                <p class="mb-4">"This represents a turning point in our collective effort to address the climate crisis," said UN Secretary-General António Guterres. "For the first time, we have concrete commitments from all major economies that align with what the science tells us is necessary."</p>
-                <p class="mb-4">Key provisions of the agreement include:</p>
-                <ul class="list-disc pl-5 mb-4">
-                  <li class="mb-2">A 50% reduction in global carbon emissions by 2030 compared to 2005 levels</li>
-                  <li class="mb-2">Establishment of a $100 billion annual fund to help vulnerable nations adapt to climate impacts</li>
-                  <li class="mb-2">Phasing out of coal power in developed nations by 2030 and globally by 2040</li>
-                  <li class="mb-2">Commitment to protect 30% of land and ocean ecosystems by 2030</li>
-                </ul>
-                <p class="mb-4">The agreement came after intense negotiations that extended nearly 48 hours beyond the scheduled conclusion of the summit. Several key sticking points had threatened to derail the talks, including disagreements over financing mechanisms and the timeline for emissions reductions.</p>
-                <p class="mb-4">Climate activists have cautiously welcomed the agreement while emphasizing the need for immediate action. "These commitments are a step in the right direction, but the real test will be implementation," said Greta Thunberg, who led protests outside the summit. "We need to see concrete policies and actions, not just promises."</p>
-                <p class="mb-4">The agreement is legally binding, with provisions for regular reporting and verification of progress. Countries that fail to meet their commitments could face trade penalties and exclusion from certain international financial mechanisms.</p>
-                <p class="mb-4">Market reaction to the announcement has been positive, with renewable energy stocks surging and fossil fuel companies seeing modest declines. Analysts suggest this reflects growing investor confidence in the global energy transition.</p>
-                <p class="mb-4">The next steps will involve each country developing detailed implementation plans, which must be submitted to the UN within six months. A follow-up summit is scheduled for next year to assess progress and address any challenges in implementation.</p>`,
-      image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
-      date: "June 2, 2023",
-      readTime: 6,
-      author: "Emma Wilson",
-      authorTitle: "Political Correspondent",
-      authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
-      categoryId: "world",
-      tags: [
-        "climate change",
-        "global summit",
-        "carbon emissions",
-        "international relations",
-      ],
-      comments: [
-        {
-          name: "Thomas Lee",
-          text: "It's about time! Now we need to make sure countries actually follow through on these commitments.",
-          date: "June 2, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-        {
-          name: "Sarah Johnson",
-          text: "I'm concerned about the enforcement mechanisms. Without real consequences, these agreements don't mean much.",
-          date: "June 3, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-        {
-          name: "Michael Chen",
-          text: "This is a significant step forward. The inclusion of financial support for developing nations is particularly important.",
-          date: "June 3, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "Artificial Intelligence Makes Breakthrough in Medical Diagnostics",
-      summary:
-        "A new AI system can detect early signs of cancer with greater accuracy than human doctors, potentially revolutionizing early disease detection.",
-      content: `<p class="mb-4">Researchers at Stanford Medical Center have developed an artificial intelligence system that can detect early signs of several types of cancer with significantly higher accuracy than experienced oncologists.</p>
-                <p class="mb-4">The system, named MediScan, was trained on millions of medical images and can identify subtle patterns that might be missed by human observers. In clinical trials, it demonstrated a 94% accuracy rate in detecting early-stage pancreatic cancer, compared to 65% for specialist physicians.</p>
-                <p class="mb-4">"Early detection is crucial for successful treatment of many cancers," explained Dr. Robert Kim, who led the research team. "MediScan could potentially save thousands of lives by identifying cancers at a stage when they're much more treatable."</p>
-                <p class="mb-4">The technology is now undergoing FDA review and could be deployed in hospitals within the next two years.</p>`,
-      image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
-      date: "June 10, 2023",
-      readTime: 4,
-      author: "David Chen",
-      authorTitle: "Health & Science Editor",
-      authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
-      categoryId: "health",
-      tags: [
-        "artificial intelligence",
-        "healthcare",
-        "cancer research",
-        "medical technology",
-      ],
-      comments: [],
-    },
-    {
-      id: 4,
-      title: "Major Economic Reform Bill Passes in Senate",
-      summary:
-        "After months of negotiation, the Senate has passed a comprehensive economic reform package aimed at reducing inflation and boosting growth.",
-      content: `<p class="mb-4">The U.S. Senate has passed a sweeping economic reform bill that aims to address inflation, create jobs, and strengthen the middle class. The legislation, which passed with bipartisan support, now moves to the House of Representatives.</p>
-                <p class="mb-4">Key provisions of the bill include tax incentives for businesses that create domestic manufacturing jobs, expanded child tax credits for families, and measures to reduce prescription drug prices.</p>
-                <p class="mb-4">"This represents the most significant economic legislation in a generation," said Senate Majority Leader in a press conference following the vote. "We're taking concrete steps to build an economy that works for everyone, not just those at the top."</p>
-                <p class="mb-4">Economists have generally responded positively to the package, with many predicting it could help reduce inflation while stimulating economic growth. However, some have expressed concerns about its impact on the national debt.</p>`,
-      image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
-      date: "June 15, 2023",
-      readTime: 7,
-      author: "Jennifer Adams",
-      authorTitle: "Economics Correspondent",
-      authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
-      categoryId: "politics",
-      tags: ["economics", "legislation", "inflation", "politics"],
-      comments: [
-        {
-          name: "Robert Johnson",
-          text: "It's about time we saw some real action on economic reform. The expanded child tax credit will make a huge difference for families.",
-          date: "June 15, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-      ],
-    },
-    {
-      id: 5,
-      title: "Tech Giant Unveils Revolutionary New Smartphone",
-      summary:
-        "The latest flagship device features groundbreaking battery technology and advanced AI capabilities that could set new industry standards.",
-      content: `<p class="mb-4">Tech industry leader Quantum Technologies has unveiled its latest flagship smartphone, the Quantum X, featuring several innovations that could reshape the mobile device market.</p>
-                <p class="mb-4">The most notable advancement is the phone's new solid-state battery technology, which the company claims can fully charge in just 10 minutes and last up to 72 hours on normal usage. If these claims hold up in real-world testing, it would represent a major leap forward in addressing one of the most common consumer complaints about smartphones.</p>
-                <p class="mb-4">"We've been working on this technology for over five years," said Quantum's CEO during the launch event. "This isn't just an incremental improvement—it's a fundamental rethinking of how we power mobile devices."</p>
-                <p class="mb-4">The Quantum X also features an advanced AI system that runs entirely on-device, rather than relying on cloud processing. This approach offers both improved privacy and faster performance for AI-driven features like photography, translation, and voice assistance.</p>`,
-      image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
-      date: "June 20, 2023",
-      readTime: 5,
-      author: "Michael Zhang",
-      authorTitle: "Technology Reporter",
-      authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
-      categoryId: "technology",
-      tags: [
-        "technology",
-        "smartphones",
-        "battery technology",
-        "artificial intelligence",
-      ],
-      comments: [
-        {
-          name: "Lisa Chen",
-          text: "I'm most excited about the battery technology. If it lives up to the hype, this could be a game-changer.",
-          date: "June 20, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-        {
-          name: "James Wilson",
-          text: "The on-device AI processing is a huge step forward for privacy. I'm glad to see companies finally taking this seriously.",
-          date: "June 21, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-      ],
-    },
-    {
-      id: 6,
-      title: "Historic Sports Upset Shocks Fans Worldwide",
-      summary:
-        "Underdog team defeats reigning champions in what analysts are calling one of the biggest upsets in sports history.",
-      content: `<p class="mb-4">In a stunning turn of events that has shocked the sports world, underdog team FC United has defeated the heavily favored Atletico Stars in the Champions Cup final.</p>
-                <p class="mb-4">FC United, ranked 15th in the league and given less than a 5% chance of winning by oddsmakers, managed to secure a 2-1 victory with a dramatic goal in the final minutes of extra time.</p>
-                <p class="mb-4">"This is what sports is all about," said FC United's captain after the match. "We believed in ourselves even when no one else did. This victory is for all the underdogs out there."</p>
-                <p class="mb-4">The upset has already been compared to some of the greatest in sports history, with social media exploding with reactions from fans and celebrities alike.</p>
-                <p class="mb-4">Atletico Stars, who had dominated the season with an almost perfect record, were visibly stunned by the defeat. "We didn't underestimate them, but sometimes in football, the best team doesn't win," said their manager in the post-match press conference.</p>`,
-      image: "/static/frontend/images/placeholder.jpg?height=600&width=800",
-      date: "June 25, 2023",
-      readTime: 4,
-      author: "Carlos Rodriguez",
-      authorTitle: "Sports Editor",
-      authorImage: "/static/frontend/images/placeholder.jpg?height=100&width=100",
-      categoryId: "sports",
-      tags: ["sports", "football", "champions cup", "upsets"],
-      comments: [
-        {
-          name: "Diego Fernandez",
-          text: "I was there! The atmosphere was electric when that final goal went in. A moment I'll never forget.",
-          date: "June 25, 2023",
-          userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-        },
-      ],
-    },
-  ]);
-  
-  // Latest article (most recent by date)
-  const latestArticle = computed(() => {
-    return [...articles.value].sort((a, b) => {
-      return new Date(b.date) - new Date(a.date);
-    })[0];
-  });
-  
-  // Filter articles based on active category and exclude latest article
-  const filteredArticles = computed(() => {
-    let filtered = articles.value.filter(
-      (article) => article.id !== latestArticle.value.id
-    );
-  
-    if (activeCategory.value === "all") {
-      return filtered;
-    } else {
-      return filtered.filter(
-        (article) => article.categoryId === activeCategory.value
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup>
+definePageMeta({
+  layout: "adsy-news",
+});
+
+const { get } = useApi();
+
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CalendarIcon,
+  ClockIcon,
+  MessageSquareIcon,
+  ArrowRightIcon,
+  LayoutGridIcon,
+  LayoutListIcon,
+  TrendingUpIcon,
+} from "lucide-vue-next";
+
+// Navigation state
+const mobileMenuOpen = ref(false);
+const articles = ref([]);
+
+async function getArticles() {
+  try {
+    const res = await get("/news/posts/");
+    console.log("API response:", res.data); // Debug log to see what we're getting
+    if (res.data && res.data.results) {
+      articles.value = res.data.results;
+      console.log("Articles loaded:", articles.value.length);
+    } else if (res.data) {
+      // If the API doesn't return a paginated response with 'results'
+      articles.value = Array.isArray(res.data) ? res.data : [res.data];
+      console.log(
+        "Alternative format - Articles loaded:",
+        articles.value.length
       );
     }
-  });
-  
-  // Related articles (for article detail view)
-  const relatedArticles = computed(() => {
-    if (!selectedArticle.value) return [];
-  
-    return articles.value
-      .filter(
-        (article) =>
-          article.id !== selectedArticle.value.id &&
-          article.categoryId === selectedArticle.value.categoryId
-      )
-      .slice(0, 3);
-  });
-  
-  // Article view state
-  const selectedArticle = ref(null);
-  
-  const selectArticle = (article) => {
-    selectedArticle.value = article;
-    window.scrollTo(0, 0);
-    // Clear search when selecting an article
-    searchQuery.value = "";
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+  }
+}
+await getArticles();
+
+// Search state
+const searchQuery = ref("");
+const searchResults = ref([]);
+
+// Perform search when query changes
+const performSearch = () => {
+  // Always show results as user types, even with just 1 character
+  if (!searchQuery.value) {
     searchResults.value = [];
-  };
-  
-  const readArticle = (article) => {
-    selectArticle(article);
-  };
-  
-  // Load more articles (simulated)
-  const loadMoreArticles = () => {
-    // In a real app, this would fetch more articles from an API
-    alert(
-      "In a real application, this would load more articles from the server."
-    );
-  };
-  
-  // New comment form data
-  const newComment = reactive({
-    text: "",
+    return;
+  }
+
+  // Filter articles based on search query
+  const query = searchQuery.value.toLowerCase();
+
+  searchResults.value = articles.value.filter((article) => {
+    return article.title.toLowerCase().includes(query);
   });
-  
-  // Function to add a new comment
-  const addComment = () => {
-    if (newComment.text) {
-      selectedArticle.value.comments.unshift({
-        name: "Guest User",
-        text: newComment.text,
-        date: new Date().toLocaleDateString("en-US", {
+};
+
+// Clear search
+const clearSearch = () => {
+  searchQuery.value = "";
+  searchResults.value = [];
+};
+
+// Newsletter
+const newsletterEmail = ref("");
+const subscribeNewsletter = () => {
+  // Simulate subscription
+  alert(`Thank you for subscribing with ${newsletterEmail.value}!`);
+  newsletterEmail.value = "";
+};
+
+// Categories
+const categories = ref([
+  { id: "all", name: "All News" },
+  { id: "world", name: "World" },
+  { id: "politics", name: "Politics" },
+  { id: "business", name: "Business" },
+  { id: "technology", name: "Technology" },
+  { id: "science", name: "Science" },
+  { id: "health", name: "Health" },
+  { id: "sports", name: "Sports" },
+  { id: "entertainment", name: "Entertainment" },
+]);
+
+const activeCategory = ref("all");
+const setActiveCategory = (categoryId) => {
+  activeCategory.value = categoryId;
+  selectedArticle.value = null;
+  mobileMenuOpen.value = false;
+};
+
+const getCategoryName = (categoryId) => {
+  const category = categories.value.find((c) => c.id === categoryId);
+  return category ? category.name : "Uncategorized";
+};
+
+// Layout options
+const layouts = ref([
+  { id: "grid", name: "Grid View" },
+  { id: "list", name: "List View" },
+]);
+const currentLayout = ref("grid");
+
+// Breaking news ticker
+const breakingNews = ref([
+  "Global Summit on Climate Change Reaches Historic Agreement",
+  "New Technology Breakthrough Could Revolutionize Renewable Energy",
+  "Major Economic Reform Bill Passes in Senate",
+  "Scientists Discover Potential Cure for Rare Disease",
+]);
+const currentTickerIndex = ref(0);
+
+const startTicker = () => {
+  setInterval(() => {
+    currentTickerIndex.value =
+      (currentTickerIndex.value + 1) % breakingNews.value.length;
+  }, 5000);
+};
+
+// Current date
+const currentDate = computed(() => {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+});
+
+// Weather data (simulated)
+const weather = reactive({
+  temp: 24,
+  condition: "Partly Cloudy",
+  icon: "cloud",
+});
+
+// Format article for display
+const formatArticleForDisplay = (article) => {
+  if (!article) return null;
+
+  return {
+    id: article.id || "",
+    slug: article.slug || "",
+    title: article.title || "Untitled Article",
+    content: article.content || "",
+    image:
+      article.post_media &&
+      article.post_media.length > 0 &&
+      article.post_media[0].image
+        ? article.post_media[0].image
+        : "/static/frontend/images/placeholder.jpg",
+    date: article.created_at
+      ? new Date(article.created_at).toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
-        }),
-        userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-      });
-  
-      // Reset form
-      newComment.text = "";
-    }
+        })
+      : "Unknown date",
+    readTime: article.content ? Math.ceil(article.content.length / 1000) : 1,
+    author: article.author_details
+      ? `${article.author_details.first_name || ""} ${
+          article.author_details.last_name || ""
+        }`.trim() || article.author_details.username
+      : "Anonymous",
+    authorTitle: article.author_details?.user_type || "",
+    authorImage:
+      article.author_details?.image ||
+      "/static/frontend/images/placeholder.jpg",
+    comments: article.post_comments || [],
+    summary: article.content
+      ? article.content.substring(0, 150) + "..."
+      : "No content available",
   };
-  
-  // Initialize on mount
-  onMounted(() => {
-    // Start breaking news ticker
-    startTicker();
-  
-    // Set up window resize listener for responsive carousel
-    window.addEventListener("resize", () => {
-      // Reset carousel index when screen size changes to avoid empty slides
-      trendingIndex.value = 0;
+};
+
+// Latest article (most recent by date)
+const latestArticle = computed(() => {
+  if (articles.value.length === 0) {
+    return {
+      id: "",
+      title: "No articles available",
+      content: "",
+      image: "/static/frontend/images/placeholder.jpg",
+      date: new Date().toLocaleDateString(),
+      readTime: 1,
+      author: "System",
+      authorImage: "/static/frontend/images/placeholder.jpg",
+      summary: "No articles available at this moment.",
+      comments: [],
+      categoryId: "all",
+    };
+  }
+
+  // Sort by created_at date and return the most recent as formatted display object
+  const latest = [...articles.value].sort((a, b) => {
+    return new Date(b.created_at) - new Date(a.created_at);
+  })[0];
+
+  return formatArticleForDisplay(latest);
+});
+
+// Filter articles based on active category and exclude latest article
+const filteredArticles = computed(() => {
+  if (articles.value.length === 0) return [];
+
+  // Get the latest article to exclude it
+  const latest = latestArticle.value;
+
+  // Filter and format remaining articles - only exclude the latest
+  let filtered = articles.value
+    .filter((article) => latest && article.id !== latest.id)
+    .map((article) => formatArticleForDisplay(article));
+
+  return filtered;
+});
+
+// Trending articles (based on engagement)
+const trendingArticles = computed(() => {
+  // For now, just use all articles and format them
+  return articles.value.map((article) => formatArticleForDisplay(article));
+});
+
+const trendingIndex = ref(0);
+const trendingPerPage = computed(() => {
+  if (window.innerWidth < 640) return 1;
+  if (window.innerWidth < 768) return 2;
+  if (window.innerWidth < 1024) return 3;
+  return 4;
+});
+
+const nextTrending = () => {
+  const maxIndex =
+    Math.ceil(trendingArticles.value.length / trendingPerPage.value) - 1;
+  trendingIndex.value =
+    trendingIndex.value >= maxIndex ? 0 : trendingIndex.value + 1;
+};
+
+const prevTrending = () => {
+  const maxIndex =
+    Math.ceil(trendingArticles.value.length / trendingPerPage.value) - 1;
+  trendingIndex.value =
+    trendingIndex.value <= 0 ? maxIndex : trendingIndex.value - 1;
+};
+
+const carouselInterval = ref(null);
+const isPaused = ref(false);
+
+const startCarousel = () => {
+  stopCarousel(); // Clear any existing interval
+  carouselInterval.value = setInterval(() => {
+    if (!isPaused.value) {
+      nextTrending();
+    }
+  }, 4000);
+};
+
+const stopCarousel = () => {
+  if (carouselInterval.value) {
+    clearInterval(carouselInterval.value);
+    carouselInterval.value = null;
+  }
+};
+
+const pauseCarousel = () => {
+  isPaused.value = true;
+};
+
+const resumeCarousel = () => {
+  isPaused.value = false;
+};
+
+// Trending Topics
+const trendingTopics = ref([
+  "Climate Change",
+  "Artificial Intelligence",
+  "Global Economy",
+  "Space Exploration",
+  "Renewable Energy",
+  "Healthcare Innovation",
+  "Cybersecurity",
+]);
+
+// Related articles (for article detail view)
+const relatedArticles = computed(() => {
+  if (!selectedArticle.value) return [];
+
+  return articles.value
+    .filter(
+      (article) =>
+        article.id !== selectedArticle.value.id &&
+        article.categoryId === selectedArticle.value.categoryId
+    )
+    .slice(0, 3);
+});
+
+// Article view state
+const selectedArticle = ref(null);
+
+const selectArticle = (article) => {
+  selectedArticle.value = article;
+  window.scrollTo(0, 0);
+  // Clear search when selecting an article
+  searchQuery.value = "";
+  searchResults.value = [];
+};
+
+const readArticle = (article) => {
+  selectArticle(article);
+};
+
+// Load more articles (simulated)
+const loadMoreArticles = () => {
+  // In a real app, this would fetch more articles from an API
+  alert(
+    "In a real application, this would load more articles from the server."
+  );
+};
+
+// New comment form data
+const newComment = reactive({
+  text: "",
+});
+
+// Function to add a new comment
+const addComment = () => {
+  if (newComment.text) {
+    selectedArticle.value.comments.unshift({
+      name: "Guest User",
+      text: newComment.text,
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
     });
-  
-    startCarousel();
+
+    // Reset form
+    newComment.text = "";
+  }
+};
+
+// Initialize on mount
+onMounted(() => {
+  // Start breaking news ticker
+  startTicker();
+
+  // Set up window resize listener for responsive carousel
+  window.addEventListener("resize", () => {
+    // Reset carousel index when screen size changes to avoid empty slides
+    trendingIndex.value = 0;
   });
-  
-  onUnmounted(() => {
-    stopCarousel();
-  });
-  </script>
-  
-  <style>
-  :root {
-    --color-primary: #e53e3e;
-    --color-primary-dark: #c53030;
+
+  startCarousel();
+});
+
+onUnmounted(() => {
+  stopCarousel();
+});
+</script>
+
+<style>
+:root {
+  --color-primary: #e53e3e;
+  --color-primary-dark: #c53030;
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.hover\:text-primary:hover {
+  color: var(--color-primary);
+}
+
+.hover\:text-primary-dark:hover {
+  color: var(--color-primary-dark);
+}
+
+.hover\:bg-primary-dark:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--color-primary);
+}
+
+.focus\:border-primary:focus {
+  border-color: var(--color-primary);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+/* Ticker animation */
+.ticker-container {
+  animation: ticker 20s linear infinite;
+}
+
+.ticker-item {
+  margin-right: 50px;
+}
+
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
   }
-  
-  .bg-primary {
-    background-color: var(--color-primary);
+  100% {
+    transform: translateX(-100%);
   }
-  
-  .text-primary {
-    color: var(--color-primary);
-  }
-  
-  .hover\:text-primary:hover {
-    color: var(--color-primary);
-  }
-  
-  .hover\:text-primary-dark:hover {
-    color: var(--color-primary-dark);
-  }
-  
-  .hover\:bg-primary-dark:hover {
-    background-color: var(--color-primary-dark);
-  }
-  
-  .focus\:ring-primary:focus {
-    --tw-ring-color: var(--color-primary);
-  }
-  
-  .focus\:border-primary:focus {
-    border-color: var(--color-primary);
-  }
-  
-  .border-primary {
-    border-color: var(--color-primary);
-  }
-  
-  /* Ticker animation */
-  .ticker-container {
-    animation: ticker 20s linear infinite;
-  }
-  
-  .ticker-item {
-    margin-right: 50px;
-  }
-  
-  @keyframes ticker {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
-  }
-  
-  /* Transition effects */
-  .comment-list-enter-active,
-  .comment-list-leave-active {
-    transition: all 0.5s ease;
-  }
-  .comment-list-enter-from,
-  .comment-list-leave-to {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  
-  /* Line clamp for article summaries */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  </style>
+}
+
+/* Transition effects */
+.comment-list-enter-active,
+.comment-list-leave-active {
+  transition: all 0.5s ease;
+}
+.comment-list-enter-from,
+.comment-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* Line clamp for article summaries */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
