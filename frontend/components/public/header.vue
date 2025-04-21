@@ -723,7 +723,7 @@
                         badge: {
                           show: true,
                           type: 'free',
-                          text: 'FREE',
+                          text: t('free'),
                         },
                       },
                       {
@@ -736,8 +736,24 @@
                         badge: {
                           show: true,
                           type: 'pro',
-                          text: 'PRO',
+                          text: t('pro'),
                         },
+                      },
+                      {
+                        label: t('business_network'),
+                        to: '/business-network',
+                        icon: 'i-eos-icons-network',
+                        color: 'text-orange-600 dark:text-orange-400',
+                        bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
+                        border: 'border-orange-200 dark:border-orange-800/30',
+                      },
+                      {
+                        label: t('adsy_news'),
+                        to: '/adsy-news',
+                        icon: 'i-mdi-newspaper-variant-multiple-outline',
+                        color: 'text-purple-600 dark:text-purple-400',
+                        bg: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10',
+                        border: 'border-purple-200 dark:border-purple-800/30',
                       },
                       {
                         label: $t('transaction'),
@@ -748,28 +764,12 @@
                         border: 'border-emerald-200 dark:border-emerald-800/30',
                       },
                       {
-                        label: $t('upload_center'),
-                        icon: 'material-symbols:drive-folder-upload-outline-sharp',
-                        to: '/upload-center',
-                        color: 'text-amber-600 dark:text-amber-400',
-                        bg: 'from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-amber-900/10',
-                        border: 'border-amber-200 dark:border-amber-800/30',
-                      },
-                      {
                         label: $t('mobile_recharge'),
                         to: '/mobile-recharge',
                         icon: 'i-uil-mobile-vibrate',
                         color: 'text-orange-600 dark:text-orange-400',
                         bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
                         border: 'border-orange-200 dark:border-orange-800/30',
-                      },
-                      {
-                        label: $t('refer_friend'),
-                        to: '/refer-a-friend',
-                        icon: 'i-solar-users-group-rounded-broken',
-                        color: 'text-purple-600 dark:text-purple-400',
-                        bg: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10',
-                        border: 'border-purple-200 dark:border-purple-800/30',
                       },
                     ]"
                     :key="index"
@@ -856,7 +856,7 @@
 
                   <!-- Support Link -->
                   <NuxtLink
-                    to="/contact-us"
+                    to="/upload-center"
                     class="flex items-center gap-2 py-2 px-3 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors group"
                     @click="openMenu = false"
                   >
@@ -864,11 +864,11 @@
                       class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors"
                     >
                       <UIcon
-                        name="i-heroicons-question-mark-circle"
+                        name="i-material-symbols-drive-folder-upload-outline-sharp"
                         class="w-4 h-4 text-slate-500 dark:text-slate-400"
                       />
                     </div>
-                    <span class="text-sm">{{ $t("support") }}</span>
+                    <span class="text-sm">{{ $t("verification") }}</span>
                   </NuxtLink>
                 </div>
 

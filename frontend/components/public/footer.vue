@@ -268,11 +268,11 @@
           },
           {
             to: '/business-network/',
-            icon: 'i-eos-icons:network',
+            icon: 'i-eos-icons-network',
           },
           {
             to: '/adsy-news/',
-            icon: 'i-mdi:newspaper-variant-multiple-outline',
+            icon: 'i-mdi-newspaper-variant-multiple-outline',
           },
         ]"
         :ui="{

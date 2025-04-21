@@ -138,6 +138,9 @@ export default defineI18nConfig(() => ({
       select_city: "Select your city",
       area_upozila: "Area/Upazila",
       select_area_upozila: "Select your area/upazila",
+      business_network: "Business Network",
+      adsy_news: "Adsy News",
+      verification: "Verification",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -274,6 +277,9 @@ export default defineI18nConfig(() => ({
       select_city: "জেলা সিলেক্ট করুন",
       area_upozila: "এলাকা/উপজেলা",
       select_area_upozila: "এলাকা/উপজেলা সিলেক্ট করুন",
+      business_network: "বিজনেস",
+      adsy_news: "নিউজ",
+      verification: "ভেরিফিকেশন",
     },
   },
 }));
