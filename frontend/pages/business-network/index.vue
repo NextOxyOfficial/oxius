@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-14">
+    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-16">
      
   
       <BusinessNetworkPost/>
