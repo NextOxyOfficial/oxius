@@ -21,24 +21,8 @@
     >
       <!-- Sidebar Header -->
       <div
-        class="h-16 flex items-center justify-between px-4 border-gray-100 relative"
+        class="h-16 mt-2flex items-center justify-between px-4 border-gray-100 relative"
       >
-        <div class="flex items-center">
-          <div class="items-center flex sm:hidden">
-            <div class="flex-shrink-0 max-sm-hidden">
-              <NuxtLink to="/business-network/">
-                <NuxtImg
-                  v-if="logo[0]?.image"
-                  :src="logo[0].image"
-                  alt="Adsy News Logo"
-                  width="150"
-                  height="50"
-                  class="h-7 mr-4 sm:h-10 w-auto object-fit"
-                />
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
         <button
           v-if="cart.burgerMenu"
           class="fixed flex top-3 -right-10 lg:hidden h-8 w-8 items-center justify-center rounded-md bg-gray-200 text-gray-500"
