@@ -5,3 +5,7 @@ from .models import *
 admin.site.register(BusinessNetworkMedia)
 admin.site.register(BusinessNetworkPost)
 admin.site.register(BusinessNetworkPostComment)
+admin.site.register(BusinessNetworkPostLike)
+admin.site.register(BusinessNetworkPostFollow)
+admin.site.register(BusinessNetworkPostTag)
+
