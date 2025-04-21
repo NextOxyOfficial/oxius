@@ -1,14 +1,14 @@
 <template>
   <div
-    class="fixed top-0 left-0 right-0 w-full z-50 rounded-e-xl max-w-3xl mx-auto"
+    class="fixed top-0 left-0 right-0 w-full z-50 rounded-e-sm max-w-3xl mx-auto"
   >
     <header class="sticky top-0 z-50 max-w-3xl mx-auto sm:px-4">
       <div class="max-w-3xl mx-auto">
         <!-- Main Navigation -->
         <div
-          class="flex flex-row gap-4 justify-between shadow items-center px-4 py-2 sm:px-6 lg:px-8 bg-white rounded-b-xl w-full"
+          class="flex flex-row gap-4 justify-between shadow-sm items-center px-4 py-2 sm:px-6 lg:px-8 bg-white rounded-b-xl w-full"
         >
-          <div class="flex items-center">
+          <div class="flex items-center sm:hidden">
             <div class="flex-shrink-0">
               <NuxtLink to="/business-network/">
                 <NuxtImg
@@ -22,7 +22,6 @@
               </NuxtLink>
             </div>
           </div>
-
           <div class="flex items-center sm:justify-end space-x-2">
             <div class="relative max-sm:flex-1">
               <input

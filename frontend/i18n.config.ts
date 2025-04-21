@@ -277,7 +277,7 @@ export default defineI18nConfig(() => ({
       select_city: "জেলা সিলেক্ট করুন",
       area_upozila: "এলাকা/উপজেলা",
       select_area_upozila: "এলাকা/উপজেলা সিলেক্ট করুন",
-      business_network: "বিজনেস",
+      business_network: "বিজনেস নেটওয়ার্ক",
       adsy_news: "নিউজ",
       verification: "ভেরিফিকেশন",
     },
