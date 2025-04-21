@@ -29,7 +29,7 @@
                 type="text"
                 placeholder="Search topics..."
                 v-model="searchQuery"
-                class="w-full sm:w-64 pl-8 pr-2 py-1 border border-gray-300 rounded-xl text-mb focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-200/80 text-gray-900"
+                class="w-full sm:w-64 pl-2 pr-11 py-1 border border-gray-300 rounded-xl text-mb focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-200/80 text-gray-900"
                 @input="performSearch"
               />
               <SearchIcon
@@ -38,7 +38,7 @@
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="absolute right-3 top-2.5"
+                class="absolute right-7 top-2.5"
               >
                 <XIcon class="h-4 w-4 text-gray-500" />
               </button>
@@ -566,7 +566,7 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 :root {
   --color-primary: #e53e3e;
   --color-primary-dark: #c53030;

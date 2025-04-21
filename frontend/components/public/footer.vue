@@ -261,10 +261,10 @@
             to: '/#microgigs',
             icon: 'i-streamline:money-cash-bag-dollar-bag-payment-cash-money-finance',
           },
-          
+
           {
-            to: '/upgrade-to-pro',
-            icon: 'i-mdi-crown-outline',
+            to: '/eshop',
+            icon: 'i-heroicons-shopping-bag',
           },
           {
             to: '/business-network/',
@@ -274,7 +274,6 @@
             to: '/adsy-news/',
             icon: 'i-mdi:newspaper-variant-multiple-outline',
           },
-
         ]"
         :ui="{
           inactive: 'after:hidden before:hidden',
@@ -284,12 +283,14 @@
         }"
       >
         <template #icon="{ link, isActive }">
-          <UIcon v-if="link.to === '/'"
+          <UIcon
+            v-if="link.to === '/'"
             :name="link.icon"
             class="text-3xl"
             :class="isActive ? `text-green-600` : `text-green-400`"
           />
-          <UIcon v-else
+          <UIcon
+            v-else
             :name="link.icon"
             class="text-2xl"
             :class="isActive ? `text-green-600` : `text-green-400`"
