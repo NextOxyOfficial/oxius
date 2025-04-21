@@ -268,14 +268,7 @@
                 </button>
               </div>
             </div>
-            <div class="p-4 border-t border-gray-200 flex justify-end">
-              <button 
-                class="px-4 py-2 bg-blue-600 text-white rounded-md"
-                @click="isFilterOpen = false"
-              >
-                Apply
-              </button>
-            </div>
+            
           </div>
         </div>
       </Teleport>
