@@ -74,16 +74,16 @@
         <span>Login</span>
       </NuxtLink>
       <NuxtLink
-        to="/mobile-recharge"
+        to="/#micro-gigs"
         class="flex flex-col items-center py-3 px-3 text-xs relative text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600"
       >
         <div class="relative">
           <UIcon
-            name="i-ic-baseline-install-mobile"
+            name="i-material-symbols-attach-money"
             class="h-6 w-6 mb-1 text-blue-600"
           />
         </div>
-        <span>Mobile Recharge</span>
+        <span>Earn</span>
       </NuxtLink>
       <NuxtLink
         to="/"
