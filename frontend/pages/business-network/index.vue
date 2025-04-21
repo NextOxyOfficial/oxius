@@ -4,8 +4,6 @@
   
       <BusinessNetworkPost/>
   
-      
-  
       <!-- Search Overlay -->
       <Teleport to="body">
         <div v-if="isSearchOpen" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4" @click="isSearchOpen = false">

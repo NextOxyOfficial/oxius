@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'cities_light',
     'mobile_recharge',
     'subscription',
+    'business_network',
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
