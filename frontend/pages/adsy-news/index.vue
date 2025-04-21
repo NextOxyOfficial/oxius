@@ -236,13 +236,6 @@
               </div>
             </div>
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-6' : 'p-6']">
-              <div class="flex items-center text-sm text-gray-500 mb-2">
-                <CalendarIcon class="h-4 w-4 mr-1" />
-                <span>{{ formatDate(article.created_at) }}</span>
-                <span class="mx-2">•</span>
-                <ClockIcon class="h-4 w-4 mr-1" />
-                <span>{{ calculateReadTime(article.content) }} min read</span>
-              </div>
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
                   class="text-xl font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer transition-colors duration-200"
