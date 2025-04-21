@@ -344,7 +344,7 @@
 
     <!-- Create Post Button -->
     <button
-      class="fixed bottom-24 right-4 lg:right-[35%] md:bottom-4 rounded-full h-14 w-14 shadow-lg bg-gradient-to-r from-blue-600 to-blue-600 transition-all duration-300 hover:scale-105 border-none z-40 flex items-center justify-center text-white"
+      class="fixed bottom-24 right-4 lg:right-[22%] md:bottom-4 rounded-full h-14 w-14 shadow-lg bg-gradient-to-r from-blue-600 to-blue-600 transition-all duration-300 hover:scale-105 border-none z-40 flex items-center justify-center text-white"
       @click="isCreatePostOpen = true"
     >
       <Plus class="h-6 w-6" />

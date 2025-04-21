@@ -24,7 +24,7 @@
         class="h-16 flex items-center justify-between px-4 border-gray-100 relative"
       >
         <div class="flex items-center">
-          <div class="items-center hidden sm:flex">
+          <div class="items-center flex sm:hidden">
             <div class="flex-shrink-0">
               <NuxtLink to="/business-network/">
                 <NuxtImg
@@ -49,7 +49,7 @@
       </div>
 
       <!-- Sidebar Content (Scrollable) -->
-      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-7 -mt-12 sm:mt-0">
+      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-7 -mt-12 sm:-mt-10">
         <!-- Main Menu Section -->
         <div>
           <h3
@@ -100,10 +100,10 @@
             <span>Useful Links</span>
           </h3>
           <div class="grid grid-cols-2 gap-2 px-3">
-            <a
+            <NuxtLink
               v-for="item in usefulLinks"
               :key="item.path"
-              :href="item.path"
+              :to="item.path"
               class="flex flex-col items-center justify-center p-3 rounded-md bg-gray-50 border border-gray-100 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm"
               @click="handleNavigation(item.path)"
             >
@@ -111,7 +111,7 @@
               <span class="text-xs font-medium text-gray-700">{{
                 item.label
               }}</span>
-            </a>
+            </NuxtLink>
           </div>
         </div>
 
@@ -419,12 +419,12 @@
     </aside>
 
     <!-- Mobile Toggle Button -->
-    <button
+    <!-- <button
       class="fixed bottom-24 left-4 md:top-4 md:bottom-auto z-30 lg:hidden h-10 w-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center"
       @click="toggleSidebar"
     >
       <Menu class="h-5 w-5 text-gray-600" />
-    </button>
+    </button> -->
   </div>
 </template>
 
@@ -460,6 +460,7 @@ const isOpen = ref(false);
 const isMobile = ref(false);
 const currentProductIndex = ref(0);
 const currentNewsIndex = ref(0);
+const { user } = useAuth();
 const { get } = useApi();
 const logo = ref([]);
 const cart = useStoreCart();
@@ -481,7 +482,7 @@ const mainMenu = [
   },
   {
     label: "Profile",
-    path: "/profile",
+    path: `/business-network/profile${user.value?.user?.id}`,
     icon: User,
     active: false,
   },

@@ -6,12 +6,12 @@
       <div class="">
         <!-- Main Navigation -->
         <div
-          class="flex flex-row gap-4 justify-between shadow-sm items-center px-4 py-2 sm:px-6 lg:px-8 bg-white rounded-b-sm w-full"
+          class="flex flex-row gap-4 justify-between shadow-sm items-center px-4 py-2 sm:px-6 lg:px-8 bg-white rounded-b-md w-full"
         >
           <div @click="cart.toggleBurgerMenu()" class="sm:hidden">
             <UIcon name="i-lineicons-menu-hamburger-1" class="h-6 w-6" />
           </div>
-          <div class="flex items-center sm:hidden">
+          <div class="flex items-center">
             <div class="flex-shrink-0">
               <NuxtLink to="/business-network/">
                 <NuxtImg
