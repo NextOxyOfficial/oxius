@@ -48,8 +48,6 @@ class BusinessNetworkMedia(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostLike(models.Model):
@@ -74,11 +72,10 @@ class BusinessNetworkPostLike(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostFollow(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='post_followers')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_follows')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -99,11 +96,10 @@ class BusinessNetworkPostFollow(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostComment(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='post_comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_comments')
     content = models.TextField()
@@ -125,11 +121,10 @@ class BusinessNetworkPostComment(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostTag(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='post_tags')
     tag = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -147,8 +142,5 @@ class BusinessNetworkPostTag(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
-    
- 
+
