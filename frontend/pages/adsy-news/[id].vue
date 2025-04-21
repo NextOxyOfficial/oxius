@@ -76,16 +76,19 @@
           <div class="ml-auto flex space-x-3">
             <button
               class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+              @click="shareArticle('twitter')"
             >
               <TwitterIcon class="h-4 w-4" />
             </button>
             <button
               class="p-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
+              @click="shareArticle('facebook')"
             >
               <FacebookIcon class="h-4 w-4" />
             </button>
             <button
               class="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
+              @click="shareArticle('copy')"
             >
               <LinkIcon class="h-4 w-4" />
             </button>
@@ -129,8 +132,10 @@
                   <button
                     type="submit"
                     class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                    :disabled="isSubmittingComment"
                   >
-                    Post Comment
+                    <span v-if="isSubmittingComment">Posting...</span>
+                    <span v-else>Post Comment</span>
                   </button>
                 </div>
               </div>
@@ -203,25 +208,25 @@
               <div class="p-4">
                 <NuxtLink :to="`/adsy-news/${relatedArticle.slug}/`">
                   <h3
-                    class="text-lg font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer transition-colors"
+                    class="font-bold text-lg mb-2 hover:text-primary transition-colors"
                   >
                     {{ relatedArticle.title }}
                   </h3>
                 </NuxtLink>
-                <div
-                  class="flex items-center justify-between text-sm text-gray-500"
-                >
-                  <div class="flex items-center">
-                    <CalendarIcon class="h-4 w-4 mr-1" />
-                    <span>{{ formatDate(relatedArticle.created_at) }}</span>
-                  </div>
-                  <span
-                    >Posted by:
-                    <span class="text-primary">{{
-                      relatedArticle.author_details
-                        ? getAuthorName(relatedArticle.author_details)
-                        : "Anonymous"
-                    }}</span>
+                <p class="text-sm text-gray-500 mb-4 line-clamp-2">
+                  {{ relatedArticle.content.substring(0, 100) + "..." }}
+                </p>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500">{{
+                    formatDate(relatedArticle.created_at)
+                  }}</span>
+                  <span class="text-gray-500 flex items-center">
+                    <MessageSquareIcon class="h-3 w-3 mr-1" />
+                    {{
+                      relatedArticle.post_comments
+                        ? relatedArticle.post_comments.length
+                        : 0
+                    }}
                   </span>
                 </div>
               </div>
@@ -230,17 +235,39 @@
         </div>
       </div>
     </article>
+
+    <!-- Loading state -->
+    <div v-else class="py-12 text-center">
+      <div class="animate-pulse space-y-8">
+        <div class="h-64 bg-gray-200 rounded-xl"></div>
+        <div class="h-8 bg-gray-200 rounded-full w-3/4 mx-auto"></div>
+        <div class="space-y-3">
+          <div class="h-4 bg-gray-200 rounded-full"></div>
+          <div class="h-4 bg-gray-200 rounded-full w-5/6"></div>
+          <div class="h-4 bg-gray-200 rounded-full w-4/6"></div>
+        </div>
+      </div>
+    </div>
   </UContainer>
 </template>
+
 <script setup>
 definePageMeta({
   layout: "adsy-news",
 });
-const { get } = useApi();
+
+const { get, post } = useApi();
 const route = useRoute();
+const toast = useToast();
 
 const article = ref(null);
 const relatedArticles = ref([]);
+const isSubmittingComment = ref(false);
+
+// New comment form data
+const newComment = ref({
+  content: "",
+});
 
 async function getArticle() {
   try {
@@ -258,19 +285,126 @@ async function getArticle() {
 
 async function getRelatedArticles() {
   try {
-    // Fetch all articles to find related ones
-    const res = await get("/news/posts/");
+    if (
+      !article.value ||
+      !article.value.post_tags ||
+      article.value.post_tags.length === 0
+    ) {
+      // If no tags, just get the latest articles
+      const res = await get("/news/posts/?limit=3");
+      if (res.data && res.data.results) {
+        // Filter out the current article
+        relatedArticles.value = res.data.results
+          .filter((a) => a.id !== article.value.id)
+          .slice(0, 3);
+      }
+      return;
+    }
+
+    // Get articles with similar tags
+    const tags = article.value.post_tags.map((tag) => tag.tag).join(",");
+    // Here we would ideally have an endpoint that returns related articles by tag
+    // But for now, we'll just get all articles and filter on the client side
+    const res = await get(`/news/posts/?limit=10`);
+
     if (res.data && res.data.results) {
       // Filter out the current article
-      relatedArticles.value = res.data.results
-        .filter((a) => a.id !== article.value.id)
-        .slice(0, 3); // Limit to 3 related articles
+      const filtered = res.data.results.filter(
+        (a) => a.id !== article.value.id
+      );
+
+      // Sort by relevance (number of matching tags)
+      const withRelevance = filtered.map((a) => {
+        const articleTags = a.post_tags ? a.post_tags.map((t) => t.tag) : [];
+        const matchingTags = article.value.post_tags.filter((t) =>
+          articleTags.includes(t.tag)
+        ).length;
+
+        return {
+          ...a,
+          relevance: matchingTags,
+        };
+      });
+
+      // Sort by relevance (higher first) and take top 3
+      relatedArticles.value = withRelevance
+        .sort((a, b) => b.relevance - a.relevance)
+        .slice(0, 3);
     }
   } catch (error) {
     console.error("Error fetching related articles:", error);
   }
 }
 
+async function addComment() {
+  if (!newComment.value.content.trim()) return;
+
+  isSubmittingComment.value = true;
+
+  try {
+    const response = await post(`/news/posts/${article.value.id}/comments/`, {
+      content: newComment.value.content,
+    });
+
+    if (response && response.data) {
+      // Add the new comment to the article's comments
+      if (!article.value.post_comments) {
+        article.value.post_comments = [];
+      }
+
+      // Add author details from the returned comment
+      article.value.post_comments.unshift(response.data);
+
+      // Clear the comment form
+      newComment.value.content = "";
+
+      toast.success("Comment posted successfully");
+    }
+  } catch (error) {
+    console.error("Error posting comment:", error);
+    toast.error("Failed to post comment. Please try again.");
+  } finally {
+    isSubmittingComment.value = false;
+  }
+}
+
+// Share functionality
+function shareArticle(platform) {
+  const url = window.location.href;
+  const title = article.value ? article.value.title : "Interesting article";
+
+  switch (platform) {
+    case "twitter":
+      window.open(
+        `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(title)}`,
+        "_blank"
+      );
+      break;
+    case "facebook":
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          url
+        )}`,
+        "_blank"
+      );
+      break;
+    case "copy":
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          toast.success("Link copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Failed to copy: ", err);
+          toast.error("Failed to copy link");
+        });
+      break;
+  }
+}
+
+// Load the article data
 await getArticle();
 
 // Helper functions
@@ -285,8 +419,9 @@ function formatDate(dateString) {
 
 function calculateReadTime(content) {
   if (!content) return 1;
-  // Estimate read time based on content length (1 min per 1000 chars)
-  return Math.max(1, Math.ceil(content.length / 1000));
+  // Estimate read time based on content length (average reading speed: 200 words per minute)
+  // Assuming 5 characters per word on average
+  return Math.max(1, Math.ceil(content.length / (5 * 200)));
 }
 
 function getAuthorName(authorDetails) {
@@ -311,86 +446,84 @@ import {
   TwitterIcon,
   FacebookIcon,
   LinkIcon,
+  MessageSquareIcon,
 } from "lucide-vue-next";
-
-// New comment form data
-const newComment = reactive({
-  content: "",
-});
-
-// Function to add a new comment
-const addComment = async () => {
-  if (newComment.content && article.value) {
-    try {
-      // Add code here to send the comment to the API
-      // Currently just showing a message since implementing this requires the post comment API
-      alert(
-        "Comment functionality would be implemented here with a POST to the API"
-      );
-
-      // Reset form
-      newComment.content = "";
-    } catch (error) {
-      console.error("Error posting comment:", error);
-    }
-  }
-};
 </script>
 
-<style>
-:root {
-  --color-primary: #e53e3e;
-  --color-primary-dark: #c53030;
+<style scoped>
+.prose {
+  max-width: 100% !important;
+  color: #374151;
 }
 
-.bg-primary {
-  background-color: var(--color-primary);
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: #111827;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
 }
 
-.text-primary {
+.prose p {
+  margin-bottom: 1.25em;
+  line-height: 1.7;
+}
+
+.prose img {
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.prose a {
   color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
-.hover\:text-primary:hover {
-  color: var(--color-primary);
+.prose a:hover {
+  text-decoration-thickness: 2px;
 }
 
-.hover\:text-primary-dark:hover {
-  color: var(--color-primary-dark);
+.prose blockquote {
+  border-left-width: 4px;
+  border-left-color: var(--color-primary);
+  padding-left: 1rem;
+  font-style: italic;
+  color: #6b7280;
 }
 
-.hover\:bg-primary-dark:hover {
-  background-color: var(--color-primary-dark);
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
 }
 
-.focus\:ring-primary:focus {
-  --tw-ring-color: var(--color-primary);
+.prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
-.focus\:border-primary:focus {
-  border-color: var(--color-primary);
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.border-primary {
-  border-color: var(--color-primary);
-}
-
-/* Transition effects */
+/* Comment animation */
 .comment-list-enter-active,
 .comment-list-leave-active {
   transition: all 0.5s ease;
 }
+
 .comment-list-enter-from,
 .comment-list-leave-to {
   opacity: 0;
   transform: translateY(30px);
-}
-
-/* Line clamp for article summaries */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 </style>

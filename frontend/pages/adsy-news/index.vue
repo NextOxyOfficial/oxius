@@ -362,13 +362,11 @@ definePageMeta({
   layout: "adsy-news",
 });
 
-const { get } = useApi();
+const { get, post } = useApi();
 
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  CalendarIcon,
-  ClockIcon,
   MessageSquareIcon,
   ArrowRightIcon,
   LayoutGridIcon,
@@ -376,89 +374,13 @@ import {
   TrendingUpIcon,
 } from "lucide-vue-next";
 
-// Navigation state
-const mobileMenuOpen = ref(false);
+// Articles state
 const articles = ref([]);
-
-async function getArticles() {
-  try {
-    const res = await get("/news/posts/");
-    console.log("API response:", res.data); // Debug log to see what we're getting
-    if (res.data && res.data.results) {
-      articles.value = res.data.results;
-      console.log("Articles loaded:", articles.value.length);
-    } else if (res.data) {
-      // If the API doesn't return a paginated response with 'results'
-      articles.value = Array.isArray(res.data) ? res.data : [res.data];
-      console.log(
-        "Alternative format - Articles loaded:",
-        articles.value.length
-      );
-    }
-  } catch (error) {
-    console.error("Error fetching articles:", error);
-  }
-}
-await getArticles();
-
-// Search state
-const searchQuery = ref("");
-const searchResults = ref([]);
-
-// Perform search when query changes
-const performSearch = () => {
-  // Always show results as user types, even with just 1 character
-  if (!searchQuery.value) {
-    searchResults.value = [];
-    return;
-  }
-
-  // Filter articles based on search query
-  const query = searchQuery.value.toLowerCase();
-
-  searchResults.value = articles.value.filter((article) => {
-    return article.title.toLowerCase().includes(query);
-  });
-};
-
-// Clear search
-const clearSearch = () => {
-  searchQuery.value = "";
-  searchResults.value = [];
-};
-
-// Newsletter
-const newsletterEmail = ref("");
-const subscribeNewsletter = () => {
-  // Simulate subscription
-  alert(`Thank you for subscribing with ${newsletterEmail.value}!`);
-  newsletterEmail.value = "";
-};
-
-// Categories
-const categories = ref([
-  { id: "all", name: "All News" },
-  { id: "world", name: "World" },
-  { id: "politics", name: "Politics" },
-  { id: "business", name: "Business" },
-  { id: "technology", name: "Technology" },
-  { id: "science", name: "Science" },
-  { id: "health", name: "Health" },
-  { id: "sports", name: "Sports" },
-  { id: "entertainment", name: "Entertainment" },
-]);
-
-const activeCategory = ref("all");
-const setActiveCategory = (categoryId) => {
-  activeCategory.value = categoryId;
-  selectedArticle.value = null;
-  mobileMenuOpen.value = false;
-};
-
-const getCategoryName = (categoryId) => {
-  const category = categories.value.find((c) => c.id === categoryId);
-  return category ? category.name : "Uncategorized";
-};
+const totalPages = ref(0);
+const isLoading = ref(false);
+const hasMoreArticles = ref(true);
+const currentPage = ref(1);
+const allArticlesLoaded = ref(false);
 
 // Layout options
 const layouts = ref([
@@ -467,127 +389,79 @@ const layouts = ref([
 ]);
 const currentLayout = ref("grid");
 
-// Breaking news ticker
-const breakingNews = ref([
-  "Global Summit on Climate Change Reaches Historic Agreement",
-  "New Technology Breakthrough Could Revolutionize Renewable Energy",
-  "Major Economic Reform Bill Passes in Senate",
-  "Scientists Discover Potential Cure for Rare Disease",
-]);
-const currentTickerIndex = ref(0);
+// Get articles from API
+async function getArticles(page = 1, append = false) {
+  try {
+    isLoading.value = true;
+    const res = await get(`/news/posts/?page=${page}`);
 
-const startTicker = () => {
-  setInterval(() => {
-    currentTickerIndex.value =
-      (currentTickerIndex.value + 1) % breakingNews.value.length;
-  }, 5000);
-};
+    if (res.data) {
+      if (res.data.results) {
+        // Handle paginated response
+        if (append) {
+          articles.value = [...articles.value, ...res.data.results];
+        } else {
+          articles.value = res.data.results;
+        }
 
-// Current date
-const currentDate = computed(() => {
-  return new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-});
+        // Check if there are more pages
+        hasMoreArticles.value = !!res.data.next;
+        // Update allArticlesLoaded state
+        allArticlesLoaded.value = !hasMoreArticles.value;
 
-// Weather data (simulated)
-const weather = reactive({
-  temp: 24,
-  condition: "Partly Cloudy",
-  icon: "cloud",
-});
-
-// Format article for display
-const formatArticleForDisplay = (article) => {
-  if (!article) return null;
-
-  return {
-    id: article.id || "",
-    slug: article.slug || "",
-    title: article.title || "Untitled Article",
-    content: article.content || "",
-    image:
-      article.post_media &&
-      article.post_media.length > 0 &&
-      article.post_media[0].image
-        ? article.post_media[0].image
-        : "/static/frontend/images/placeholder.jpg",
-    date: article.created_at
-      ? new Date(article.created_at).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      : "Unknown date",
-    readTime: article.content ? Math.ceil(article.content.length / 1000) : 1,
-    author: article.author_details
-      ? `${article.author_details.first_name || ""} ${
-          article.author_details.last_name || ""
-        }`.trim() || article.author_details.username
-      : "Anonymous",
-    authorTitle: article.author_details?.user_type || "",
-    authorImage:
-      article.author_details?.image ||
-      "/static/frontend/images/placeholder.jpg",
-    comments: article.post_comments || [],
-    summary: article.content
-      ? article.content.substring(0, 150) + "..."
-      : "No content available",
-  };
-};
-
-// Latest article (most recent by date)
-const latestArticle = computed(() => {
-  if (articles.value.length === 0) {
-    return {
-      id: "",
-      title: "No articles available",
-      content: "",
-      image: "/static/frontend/images/placeholder.jpg",
-      date: new Date().toLocaleDateString(),
-      readTime: 1,
-      author: "System",
-      authorImage: "/static/frontend/images/placeholder.jpg",
-      summary: "No articles available at this moment.",
-      comments: [],
-      categoryId: "all",
-    };
+        if (res.data.count) {
+          totalPages.value = Math.ceil(res.data.count / 10); // Assuming 10 items per page
+        }
+      } else if (Array.isArray(res.data)) {
+        // Handle non-paginated array response
+        if (append) {
+          articles.value = [...articles.value, ...res.data];
+        } else {
+          articles.value = res.data;
+        }
+        // If we get a direct array, assume all articles are loaded
+        hasMoreArticles.value = false;
+        allArticlesLoaded.value = true;
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+  } finally {
+    isLoading.value = false;
   }
+}
 
-  // Sort by created_at date and return the most recent as formatted display object
-  const latest = [...articles.value].sort((a, b) => {
-    return new Date(b.created_at) - new Date(a.created_at);
-  })[0];
+// Load initial articles
+await getArticles();
 
-  return formatArticleForDisplay(latest);
-});
+// Load more articles
+async function loadMoreArticles() {
+  if (isLoading.value || !hasMoreArticles.value) return;
 
-// Filter articles based on active category and exclude latest article
-const filteredArticles = computed(() => {
-  if (articles.value.length === 0) return [];
+  currentPage.value++;
+  await getArticles(currentPage.value, true);
+}
 
-  // Get the latest article to exclude it
-  const latest = latestArticle.value;
+// Newsletter subscription
+const newsletterEmail = ref("");
+const subscribeNewsletter = async () => {
+  if (!newsletterEmail.value) return;
 
-  // Filter and format remaining articles - only exclude the latest
-  let filtered = articles.value
-    .filter((article) => latest && article.id !== latest.id)
-    .map((article) => formatArticleForDisplay(article));
+  try {
+    // This would typically connect to your newsletter subscription API
+    // await post("/newsletter/subscribe/", { email: newsletterEmail.value });
+    alert(`Thank you for subscribing with ${newsletterEmail.value}!`);
+    newsletterEmail.value = "";
+  } catch (error) {
+    console.error("Error subscribing to newsletter:", error);
+  }
+};
 
-  return filtered;
-});
-
-// Trending articles (based on engagement)
-const trendingArticles = computed(() => {
-  // For now, just use all articles and format them
-  return articles.value.map((article) => formatArticleForDisplay(article));
-});
-
+// Trending News Carousel
 const trendingIndex = ref(0);
 const trendingPerPage = computed(() => {
+  if (typeof window === "undefined") return 4; // Server-side rendering default
+
   if (window.innerWidth < 640) return 1;
   if (window.innerWidth < 768) return 2;
   if (window.innerWidth < 1024) return 3;
@@ -635,109 +509,118 @@ const resumeCarousel = () => {
   isPaused.value = false;
 };
 
-// Trending Topics
-const trendingTopics = ref([
-  "Climate Change",
-  "Artificial Intelligence",
-  "Global Economy",
-  "Space Exploration",
-  "Renewable Energy",
-  "Healthcare Innovation",
-  "Cybersecurity",
-]);
+// Trending Topics (ideally these would come from an API based on popular tags)
+const trendingTopics = ref([]);
 
-// Related articles (for article detail view)
-const relatedArticles = computed(() => {
-  if (!selectedArticle.value) return [];
-
-  return articles.value
-    .filter(
-      (article) =>
-        article.id !== selectedArticle.value.id &&
-        article.categoryId === selectedArticle.value.categoryId
-    )
-    .slice(0, 3);
-});
-
-// Article view state
-const selectedArticle = ref(null);
-
-const selectArticle = (article) => {
-  selectedArticle.value = article;
-  window.scrollTo(0, 0);
-  // Clear search when selecting an article
-  searchQuery.value = "";
-  searchResults.value = [];
-};
-
-const readArticle = (article) => {
-  selectArticle(article);
-};
-
-// Pagination handling
-const currentPage = ref(1);
-const isLoading = ref(false);
-const hasMoreArticles = ref(true);
-
-// Load more articles
-async function loadMoreArticles() {
+async function getTrendingTopics() {
   try {
-    isLoading.value = true;
-    currentPage.value++;
-    const res = await get(`/news/posts/?page=${currentPage.value}`);
-
-    if (res.data && res.data.results && res.data.results.length > 0) {
-      articles.value = [...articles.value, ...res.data.results];
-    } else {
-      hasMoreArticles.value = false;
+    // Get all tags from the API
+    const res = await get("/news/tags/");
+    if (res.data && Array.isArray(res.data.results)) {
+      // Extract unique tags and take the first 7 (or fewer if there aren't 7)
+      const uniqueTags = [...new Set(res.data.results.map((tag) => tag.tag))];
+      trendingTopics.value = uniqueTags.slice(0, 7);
     }
   } catch (error) {
-    console.error("Error loading more articles:", error);
-  } finally {
-    isLoading.value = false;
+    console.error("Error fetching trending topics:", error);
+    // Fallback to default trending topics if API call fails
+    trendingTopics.value = [
+      "Climate Change",
+      "Artificial Intelligence",
+      "Global Economy",
+      "Healthcare Innovation",
+      "Technology",
+      "Business",
+      "Science",
+    ];
   }
 }
 
-// New comment form data
-const newComment = reactive({
-  text: "",
-});
-
-// Function to add a new comment
-const addComment = () => {
-  if (newComment.text) {
-    selectedArticle.value.comments.unshift({
-      name: "Guest User",
-      text: newComment.text,
-      date: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      userImage: "/static/frontend/images/placeholder.jpg?height=40&width=40",
-    });
-
-    // Reset form
-    newComment.text = "";
-  }
-};
+// Call trending topics function
+getTrendingTopics();
 
 // Helper functions for article display
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+const formatArticleForDisplay = (article) => {
+  if (!article) return null;
+
+  return {
+    id: article.id || "",
+    slug: article.slug || "",
+    title: article.title || "Untitled Article",
+    content: article.content || "",
+    image:
+      article.post_media &&
+      article.post_media.length > 0 &&
+      article.post_media[0].image
+        ? article.post_media[0].image
+        : "/static/frontend/images/placeholder.jpg",
+    date: article.created_at
+      ? new Date(article.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "Unknown date",
+    readTime: article.content ? Math.ceil(article.content.length / 1000) : 1,
+    author: getAuthorName(article.author_details),
+    authorTitle: article.author_details?.user_type || "",
+    authorImage:
+      article.author_details?.image ||
+      "/static/frontend/images/placeholder.jpg",
+    comments: article.post_comments || [],
+    summary: article.content
+      ? article.content.substring(0, 150) + "..."
+      : "No content available",
+  };
 };
 
-const calculateReadTime = (content) => {
-  if (!content) return 1;
-  // Estimate read time based on content length (1 min per 1000 chars)
-  return Math.max(1, Math.ceil(content.length / 1000));
-};
+// Latest article (most recent by date)
+const latestArticle = computed(() => {
+  if (articles.value.length === 0) {
+    return {
+      id: "",
+      title: "No articles available",
+      content: "",
+      image: "/static/frontend/images/placeholder.jpg",
+      date: new Date().toLocaleDateString(),
+      readTime: 1,
+      author: "System",
+      authorImage: "/static/frontend/images/placeholder.jpg",
+      summary: "No articles available at this moment.",
+      comments: [],
+    };
+  }
 
+  // Sort by created_at date and return the most recent as formatted display object
+  const latest = [...articles.value].sort((a, b) => {
+    return new Date(b.created_at) - new Date(a.created_at);
+  })[0];
+
+  return formatArticleForDisplay(latest);
+});
+
+// Filter articles based on active category and include all articles
+const filteredArticles = computed(() => {
+  if (articles.value.length === 0) return [];
+
+  // Use all articles, don't exclude any
+  return articles.value.map((article) => article);
+});
+
+// Trending articles (based on comment count)
+const trendingArticles = computed(() => {
+  // Sort articles by comment count (or can be replaced with other engagement metrics if available)
+  return [...articles.value]
+    .sort((a, b) => {
+      const aComments = a.post_comments ? a.post_comments.length : 0;
+      const bComments = b.post_comments ? b.post_comments.length : 0;
+      return bComments - aComments;
+    })
+    .slice(0, 8) // Take the top 8 articles
+    .map((article) => formatArticleForDisplay(article));
+});
+
+// Helper functions
 const getAuthorName = (authorDetails) => {
   if (!authorDetails) return "Anonymous";
 
@@ -755,9 +638,6 @@ const getAuthorName = (authorDetails) => {
 
 // Initialize on mount
 onMounted(() => {
-  // Start breaking news ticker
-  startTicker();
-
   // Set up window resize listener for responsive carousel
   window.addEventListener("resize", () => {
     // Reset carousel index when screen size changes to avoid empty slides
@@ -769,6 +649,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopCarousel();
+  window.removeEventListener("resize", () => {});
 });
 </script>
 
@@ -843,6 +724,7 @@ onUnmounted(() => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
