@@ -87,20 +87,20 @@
               <div
                 class="sm:grid grid-cols-2 gap-3 sm:gap-4 hidden md:grid mt-3"
               >
-                <a href="#micro-gigs" class="btn-primary group">
+                <a href="/business-network" class="btn-primary group">
                   <span class="flex items-center justify-center gap-2">
-                    <DollarSign
+                    <Globe
                       class="h-4 w-4 group-hover:scale-110 transition-transform"
                     />
-                    <span>{{ $t("earn_money") }}</span>
+                    <span>Business Network</span>
                   </span>
                 </a>
-                <NuxtLink to="/shop-manager" class="btn-secondary group">
+                <NuxtLink to="/adsy-news" class="btn-secondary group">
                   <span class="flex items-center justify-center gap-2">
-                    <ShoppingBag
+                    <Newspaper
                       class="h-4 w-4 group-hover:scale-110 transition-transform"
                     />
-                    <span>{{ $t("sell_products") }}</span>
+                    <span>Adsy News</span>
                   </span>
                 </NuxtLink>
               </div>
@@ -113,21 +113,21 @@
     <div
       class="grid grid-cols-2 my-2 gap-3 sm:gap-4 sm:hidden mt-5 max-w-sm mx-8"
     >
-      <a href="#micro-gigs" class="btn-primary group">
+      <a href="/business-network" class="btn-primary group">
         <span class="flex items-center justify-center gap-2">
-          <DollarSign
-            class="h-4 w-4 group-hover:scale-110 transition-transform"
-          />
-          <span>{{ $t("earn_money") }}</span>
-        </span>
-      </a>
-      <NuxtLink to="/shop-manager" class="btn-secondary group">
-        <span class="flex items-center justify-center gap-2">
-          <ShoppingBag
-            class="h-4 w-4 group-hover:scale-110 transition-transform"
-          />
-          <span>{{ $t("sell_products") }}</span>
-        </span>
+          <Globe
+                      class="h-4 w-4 group-hover:scale-110 transition-transform"
+                    />
+                    <span>Business Network</span>
+                  </span>
+                </a>
+                <NuxtLink to="/adsy-news" class="btn-secondary group">
+                  <span class="flex items-center justify-center gap-2">
+                    <Newspaper
+                      class="h-4 w-4 group-hover:scale-110 transition-transform"
+                    />
+                    <span>Adsy News</span>
+                  </span>
       </NuxtLink>
     </div>
   </div>
@@ -138,6 +138,8 @@ import {
   ChevronLeft,
   ChevronRight,
   DollarSign,
+  Globe,
+  Newspaper,
   ShoppingBag,
 } from "lucide-vue-next";
 const { get } = useApi();
