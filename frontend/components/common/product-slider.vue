@@ -12,7 +12,7 @@
           ></div>
           <UIcon
             name="i-heroicons-shopping-bag"
-            class="w-5 h-5 relative z-10"
+            class="w-5 h-5 relative z-10 text-green-500"
           />
         </div>
         <h2 class="font-bold text-lg md:text-xl text-slate-800 dark:text-white">
@@ -137,7 +137,7 @@
           class="w-2 h-2 rounded-full transition-all duration-200 hover:scale-110"
           :class="
             currentSlide === i - 1
-              ? 'bg-primary w-6'
+              ? 'bg-green-500 w-6'
               : 'bg-slate-300 dark:bg-slate-600'
           "
         ></button>
@@ -148,7 +148,7 @@
         class="w-full max-w-[250px] mx-auto mt-2 h-0.5 bg-slate-200 dark:bg-slate-700 overflow-hidden rounded-full"
       >
         <div
-          class="h-full bg-primary transition-all duration-300 rounded-full"
+          class="h-full bg-green-500 transition-all duration-300 rounded-full"
           :class="{ 'progress-animation': !isPaused }"
           :style="{
             animation: isPaused
