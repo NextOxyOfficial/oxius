@@ -92,7 +92,7 @@
                     <Globe
                       class="h-4 w-4 group-hover:scale-110 transition-transform"
                     />
-                    <span>Business Network</span>
+                    <span>{{ $t("business_network") }}</span>
                   </span>
                 </a>
                 <NuxtLink to="/adsy-news" class="btn-secondary group">
@@ -100,7 +100,7 @@
                     <Newspaper
                       class="h-4 w-4 group-hover:scale-110 transition-transform"
                     />
-                    <span>Adsy News</span>
+                    <span>{{ $t("adsy_news") }}</span>
                   </span>
                 </NuxtLink>
               </div>
@@ -115,19 +115,17 @@
     >
       <a href="/business-network" class="btn-primary group">
         <span class="flex items-center justify-center gap-2">
-          <Globe
-                      class="h-4 w-4 group-hover:scale-110 transition-transform"
-                    />
-                    <span>Business Network</span>
-                  </span>
-                </a>
-                <NuxtLink to="/adsy-news" class="btn-secondary group">
-                  <span class="flex items-center justify-center gap-2">
-                    <Newspaper
-                      class="h-4 w-4 group-hover:scale-110 transition-transform"
-                    />
-                    <span>Adsy News</span>
-                  </span>
+          <Globe class="h-4 w-4 group-hover:scale-110 transition-transform" />
+          <span>Business Network</span>
+        </span>
+      </a>
+      <NuxtLink to="/adsy-news" class="btn-secondary group">
+        <span class="flex items-center justify-center gap-2">
+          <Newspaper
+            class="h-4 w-4 group-hover:scale-110 transition-transform"
+          />
+          <span>Adsy News</span>
+        </span>
       </NuxtLink>
     </div>
   </div>

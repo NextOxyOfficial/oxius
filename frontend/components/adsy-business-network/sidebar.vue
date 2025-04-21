@@ -21,7 +21,7 @@
     >
       <!-- Sidebar Header -->
       <div
-        class="h-16 flex items-center justify-between px-4 border-gray-100 relative"
+        class="h-[70px] max-sm:hidden flex items-center justify-between px-4 border-gray-100 relative"
       >
         <div class="flex items-center">
           <div class="items-center flex sm:hidden">
@@ -59,7 +59,7 @@
             <span>Menu</span>
           </h3>
           <nav class="space-y-1">
-            <a
+            <NuxtLink
               v-for="item in mainMenu"
               :key="item.path"
               :href="item.path"
@@ -69,7 +69,6 @@
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-gray-50',
               ]"
-              @click="handleNavigation(item.path)"
             >
               <component
                 :is="item.icon"
@@ -87,7 +86,7 @@
               >
                 {{ item.badge }}
               </div>
-            </a>
+            </NuxtLink>
           </nav>
         </div>
 
@@ -105,7 +104,6 @@
               :key="item.path"
               :to="item.path"
               class="flex flex-col items-center justify-center p-3 rounded-md bg-gray-50 border border-gray-100 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm"
-              @click="handleNavigation(item.path)"
             >
               <component :is="item.icon" class="h-5 w-5 mb-2 text-blue-600" />
               <span class="text-xs font-medium text-gray-700">{{
@@ -388,48 +386,11 @@
           </div>
         </div>
       </div>
-
-      <!-- Sidebar Footer -->
-      <div class="p-4 border-t border-gray-100 bg-gray-50">
-        <div class="flex items-center">
-          <div class="relative">
-            <img
-              src="/images/placeholder.jpg?height=40&width=40"
-              alt="User avatar"
-              class="h-9 w-9 rounded-full object-cover border-2 border-white shadow-sm"
-            />
-            <div
-              class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border border-white"
-            ></div>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-gray-700">Tom Cook</p>
-            <p class="text-xs text-gray-500">View profile</p>
-          </div>
-          <div class="ml-auto flex space-x-1">
-            <button class="p-1.5 rounded-full hover:bg-gray-200 text-gray-500">
-              <Settings class="h-4 w-4" />
-            </button>
-            <button class="p-1.5 rounded-full hover:bg-gray-200 text-gray-500">
-              <LogOut class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
     </aside>
-
-    <!-- Mobile Toggle Button -->
-    <!-- <button
-      class="fixed bottom-24 left-4 md:top-4 md:bottom-auto z-30 lg:hidden h-10 w-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center"
-      @click="toggleSidebar"
-    >
-      <Menu class="h-5 w-5 text-gray-600" />
-    </button> -->
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
 import {
   Home,
   User,
@@ -476,19 +437,19 @@ await getLogo();
 const mainMenu = [
   {
     label: "Recent",
-    path: "/",
+    path: "/business-network/",
     icon: Home,
     active: true,
   },
   {
     label: "Profile",
-    path: `/business-network/profile${user.value?.user?.id}`,
+    path: `/business-network/profile/${user.value?.user?.id}`,
     icon: User,
     active: false,
   },
   {
     label: "Notifications",
-    path: "/notifications",
+    path: "business-network/notifications",
     icon: Bell,
     badge: 5,
     active: false,
@@ -510,17 +471,17 @@ const usefulLinks = [
   },
   {
     label: "Earn Money",
-    path: "/earn",
+    path: "/#micro-gigs",
     icon: DollarSign,
   },
   {
     label: "Sell Products",
-    path: "/sell",
+    path: "/shop-manager",
     icon: Store,
   },
   {
     label: "Mobile Recharge",
-    path: "/recharge",
+    path: "/mobile-recharge",
     icon: Smartphone,
   },
 ];
