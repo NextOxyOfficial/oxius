@@ -16,7 +16,7 @@
                       alt="Adsy News Logo"
                       width="150"
                       height="50"
-                      class="h-6 mr-6 sm:h-10 w-auto object-fit"
+                      class="h-7 mr-4 sm:h-10 w-auto object-fit"
                     />
                   </NuxtLink>
                 </div>
