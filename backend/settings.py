@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'mobile_recharge',
     'subscription',
     'business_network',
+    'news',
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
