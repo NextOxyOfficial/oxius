@@ -111,7 +111,7 @@
               class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center"
               @click="handleNavigation('/adsy-news')"
             >
-              <span>Top 100</span>
+              <span>See All</span>
               <ChevronRight class="h-3 w-3 ml-0.5" />
             </a>
           </h3>
@@ -302,22 +302,24 @@
                     >
                       <div class="flex items-center justify-between mb-1">
                         <span class="text-white text-xs font-bold"
-                          >৳{{ product.sale_price }}</span
-                        >
+                          >৳
+                          {{
+                            product.sale_price &&
+                            parseFloat(product.sale_price) > 0
+                              ? product.sale_price
+                              : product.regular_price
+                          }}
+                        </span>
                         <span
                           v-if="
-                            calculateDiscount(
-                              product.sale_price,
-                              product.regular_price
-                            ) > 0
+                            product.sale_price &&
+                            parseFloat(product.sale_price) > 0 &&
+                            product.regular_price &&
+                            parseFloat(product.sale_price) <
+                              parseFloat(product.regular_price)
                           "
                           class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-sm"
-                          >{{
-                            calculateDiscount(
-                              product.sale_price,
-                              product.regular_price
-                            )
-                          }}% OFF</span
+                          >{{ product.regular_price }} % OFF</span
                         >
                       </div>
                       <h4 class="text-white text-sm font-medium line-clamp-1">
@@ -506,7 +508,7 @@ const mainMenu = [
 const usefulLinks = [
   {
     label: "eShop",
-    path: "/shop",
+    path: "/eshop",
     icon: ShoppingBag,
   },
   {
