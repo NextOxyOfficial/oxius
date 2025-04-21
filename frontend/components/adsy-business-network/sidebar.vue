@@ -21,11 +21,11 @@
     >
       <!-- Sidebar Header -->
       <div
-        class="h-[70px] max-sm:hidden flex items-center justify-between px-4 border-gray-100 relative"
+        class="h-16 flex items-center justify-between px-4 border-gray-100 relative"
       >
         <div class="flex items-center">
           <div class="items-center flex sm:hidden">
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 max-sm-hidden">
               <NuxtLink to="/business-network/">
                 <NuxtImg
                   v-if="logo[0]?.image"
