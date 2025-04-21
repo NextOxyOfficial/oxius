@@ -1,5 +1,5 @@
 <template>
-<div>
+  <div>
     <header class="sticky top-0 z-50 bg-white shadow-md">
       <div class="max-w-7xl mx-auto">
         <!-- Top Bar -->
@@ -33,8 +33,8 @@
             <div class="flex-shrink-0">
               <NuxtLink to="/adsy-news/">
                 <NuxtImg
-                 v-if="logo[0]?.image"
-                      :src="logo[0].image"
+                  v-if="logo[0]?.image"
+                  :src="logo[0].image"
                   alt="Adsy News Logo"
                   width="150"
                   height="50"
@@ -43,10 +43,16 @@
               </NuxtLink>
             </div>
             <div class="sm:hidden flex gap-1">
-            <UButton class="bg-black/70" to="/" >AdsyClub</UButton>
-            <UButton class="bg-black/70" to="/business-network" >Adsy BN</UButton>
-          </div>
-            <nav class="hidden md:ml-10 md:flex space-x-8">
+              <UButton class="bg-black/70" to="/">AdsyClub</UButton>
+              <UButton class="bg-black/70" to="/business-network"
+                >Adsy BN</UButton
+              >
+            </div>
+
+            <nav
+              class="hidden md:ml-10 md:flex space-x-8"
+              v-if="categories?.length > 0"
+            >
               <a
                 v-for="category in categories.slice(0, 4)"
                 :key="category.id"
@@ -61,12 +67,46 @@
               >
                 {{ category.name }}
               </a>
+              <div class="relative" v-if="categories.length > 4">
+                <button
+                  @click="toggleMoreCategories"
+                  @blur="moreMenuOpen = false"
+                  class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+                >
+                  See More
+                  <UIcon name="i-heroicons-arrow-small-down-20-solid" />
+                </button>
+                <div
+                  v-if="moreMenuOpen"
+                  class="absolute top-full right-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 min-w-[200px]"
+                >
+                  <a
+                    v-for="category in categories.slice(4)"
+                    :key="category.id"
+                    :class="[
+                      'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
+                      activeCategory === category.id
+                        ? 'text-primary'
+                        : 'text-gray-700',
+                    ]"
+                    href="#"
+                    @mousedown.prevent
+                    @click.prevent="setMoreCategory(category.id)"
+                  >
+                    {{ category.name }}
+                  </a>
+                </div>
+              </div>
             </nav>
           </div>
-          
-          <div class="flex items-center sm:justify-end space-x-2 flex-1 max-sm:w-full">
-            <UButton class="bg-black/70 max-sm:hidden" to="/" >AdsyClub</UButton>
-            <UButton class="bg-black/70 max-sm:hidden" to="/business-network" >Adsy BN</UButton>
+
+          <div
+            class="flex items-center sm:justify-end space-x-2 flex-1 max-sm:w-full"
+          >
+            <UButton class="bg-black/70 max-sm:hidden" to="/">AdsyClub</UButton>
+            <UButton class="bg-black/70 max-sm:hidden" to="/business-network"
+              >Adsy BN</UButton
+            >
             <div class="relative max-sm:flex-1">
               <input
                 type="text"
@@ -160,10 +200,13 @@
     </header>
 
     <UContainer>
-      <div class="bg-primary text-white py-3 px-6 rounded-lg mb-8 shadow-md mt-3">
+      <div
+        class="bg-primary text-white py-3 px-6 rounded-lg mb-8 shadow-md mt-3"
+      >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <span class="font-bold text-sm sm:text-lg mr-4 border-r border-white/30 pr-4"
+            <span
+              class="font-bold text-sm sm:text-lg mr-4 border-r border-white/30 pr-4"
               >BREAKING NEWS</span
             >
           </div>
@@ -185,22 +228,19 @@
         </div>
       </div>
     </UContainer>
-</div>
-
+  </div>
 </template>
 
-
 <script setup>
-const {get} = useApi()
-const logo = ref({})
+const { get } = useApi();
+const logo = ref({});
 
 async function getLogo() {
-  const {data} = await get('/news-logo/')
-  logo.value = data
+  const { data } = await get("/news-logo/");
+  logo.value = data;
   console.log(data);
-  
 }
-await getLogo()
+await getLogo();
 import {
   SunIcon,
   MenuIcon,
@@ -225,6 +265,14 @@ import {
 
 // Navigation state
 const mobileMenuOpen = ref(false);
+const moreMenuOpen = ref(false);
+const toggleMoreCategories = () => {
+  moreMenuOpen.value = !moreMenuOpen.value;
+};
+const setMoreCategory = (categoryId) => {
+  setActiveCategory(categoryId);
+  moreMenuOpen.value = false;
+};
 
 // Search state
 const searchQuery = ref("");
@@ -261,17 +309,24 @@ const subscribeNewsletter = () => {
 };
 
 // Categories
-const categories = ref([
-  { id: "all", name: "All News" },
-  { id: "world", name: "World" },
-  { id: "politics", name: "Politics" },
-  { id: "business", name: "Business" },
-  { id: "technology", name: "Technology" },
-  { id: "science", name: "Science" },
-  { id: "health", name: "Health" },
-  { id: "sports", name: "Sports" },
-  { id: "entertainment", name: "Entertainment" },
-]);
+const categories = ref([]);
+
+async function getCategories() {
+  try {
+    const res = await get("/news/tags/");
+    if (res.data && res.data.results) {
+      categories.value = res.data.results.map((category) => ({
+        id: category.id,
+        name: category.tag,
+      }));
+    } else {
+      console.error("Unexpected response format:", res.data);
+    }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+await getCategories();
 
 const activeCategory = ref("all");
 const setActiveCategory = (categoryId) => {

@@ -7,7 +7,8 @@ from .views import (
     NewsPostTagList,
     NewsPostTagDetail,
     NewsMediaList,
-    NewsMediaDetail
+    NewsMediaDetail,
+    AllNewsPostTagList
 )
 
 urlpatterns = [
@@ -22,6 +23,7 @@ urlpatterns = [
     # Tags endpoints
     path('posts/<int:pk>/tags/', NewsPostTagList.as_view(), name='post-tags'),
     path('tags/<int:pk>/', NewsPostTagDetail.as_view(), name='tag-detail'),
+    path('tags/', AllNewsPostTagList.as_view(), name='all-tags'),  # New endpoint for all tags
     
     # Media endpoints
     path('media/', NewsMediaList.as_view(), name='media-list'),

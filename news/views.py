@@ -78,6 +78,12 @@ class NewsPostTagDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NewsPostTagSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+class AllNewsPostTagList(generics.ListAPIView):
+    queryset = NewsPostTag.objects.all().order_by('tag')
+    serializer_class = NewsPostTagSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = AdvancedPagination
+
 class NewsMediaList(generics.ListCreateAPIView):
     queryset = NewsMedia.objects.all()
     serializer_class = NewsMediaSerializer

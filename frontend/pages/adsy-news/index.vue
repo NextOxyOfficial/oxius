@@ -24,22 +24,20 @@
               <span class="ml-3 text-sm opacity-80">{{
                 latestArticle.date
               }}</span>
-              <span class="ml-3 text-sm opacity-80 flex items-center">
-                <ClockIcon class="h-4 w-4 mr-1" />
-                {{ latestArticle.readTime }} min read
-              </span>
             </div>
             <h2
               class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight"
             >
               <NuxtLink
                 :to="`/adsy-news/${latestArticle.slug}/`"
-                class="hover:text-primary transition-colors duration-200"
+                class="hover:text-primary transition-colors duration-200 line-clamp-2"
               >
                 {{ latestArticle.title }}
               </NuxtLink>
             </h2>
-            <p class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl">
+            <p
+              class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl line-clamp-2"
+            >
               {{ latestArticle.summary }}
             </p>
             <div class="flex items-center">
@@ -57,13 +55,13 @@
                   {{ latestArticle.authorTitle }}
                 </p>
               </div>
-              <button
-                @click="readArticle(latestArticle)"
+              <UButton
+                :to="`/adsy-news/${latestArticle.slug}/`"
                 class="ml-auto bg-white text-gray-900 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
               >
                 Read
                 <ArrowRightIcon class="h-4 w-4 ml-2" />
-              </button>
+              </UButton>
             </div>
           </div>
         </div>
@@ -220,7 +218,11 @@
                 :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
               >
                 <img
-                  :src="article.image"
+                  :src="
+                    article.post_media && article.post_media.length > 0
+                      ? article.post_media[0].image
+                      : '/static/frontend/images/placeholder.jpg'
+                  "
                   :alt="article.title"
                   class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
@@ -228,7 +230,7 @@
                   <span
                     class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
                   >
-                    All News
+                    News
                   </span>
                 </div>
               </div>
@@ -236,10 +238,10 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-6' : 'p-6']">
               <div class="flex items-center text-sm text-gray-500 mb-2">
                 <CalendarIcon class="h-4 w-4 mr-1" />
-                <span>{{ article.date }}</span>
+                <span>{{ formatDate(article.created_at) }}</span>
                 <span class="mx-2">•</span>
                 <ClockIcon class="h-4 w-4 mr-1" />
-                <span>{{ article.readTime }} min read</span>
+                <span>{{ calculateReadTime(article.content) }} min read</span>
               </div>
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
@@ -249,23 +251,30 @@
                 </h3>
               </NuxtLink>
               <p class="text-gray-600 mb-4 line-clamp-2">
-                {{ article.summary }}
+                {{ article.content.substring(0, 150) + "..." }}
               </p>
               <div class="flex justify-between items-center">
                 <div class="flex items-center">
                   <img
-                    :src="article.authorImage"
-                    :alt="article.author"
+                    :src="
+                      article.author_details?.image ||
+                      '/static/frontend/images/placeholder.jpg'
+                    "
+                    :alt="getAuthorName(article.author_details)"
                     class="h-8 w-8 rounded-full mr-2"
                   />
                   <span class="text-sm font-medium text-gray-700"
                     >Posted by:
-                    <span class="text-primary">{{ article.author }}</span></span
+                    <span class="text-primary">{{
+                      getAuthorName(article.author_details)
+                    }}</span></span
                   >
                 </div>
                 <div class="flex items-center text-gray-500">
                   <MessageSquareIcon class="h-4 w-4 mr-1" />
-                  <span class="text-sm">{{ article.comments.length }}</span>
+                  <span class="text-sm">{{
+                    article.post_comments ? article.post_comments.length : 0
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -273,17 +282,17 @@
         </div>
 
         <!-- Load More Button -->
-        <div class="mt-12 text-center">
+        <div v-if="hasMoreArticles" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
             class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+            :disabled="isLoading"
           >
-            Load More Articles
+            <span v-if="isLoading">Loading...</span>
+            <span v-else>Load More Articles</span>
           </button>
         </div>
       </div>
-
-      <!-- Article Detail View -->
 
       <!-- Trending Topics Section -->
       <div class="mt-16 bg-gray-100 rounded-xl p-3 sm:p-8">
@@ -672,13 +681,29 @@ const readArticle = (article) => {
   selectArticle(article);
 };
 
-// Load more articles (simulated)
-const loadMoreArticles = () => {
-  // In a real app, this would fetch more articles from an API
-  alert(
-    "In a real application, this would load more articles from the server."
-  );
-};
+// Pagination handling
+const currentPage = ref(1);
+const isLoading = ref(false);
+const hasMoreArticles = ref(true);
+
+// Load more articles
+async function loadMoreArticles() {
+  try {
+    isLoading.value = true;
+    currentPage.value++;
+    const res = await get(`/news/posts/?page=${currentPage.value}`);
+
+    if (res.data && res.data.results && res.data.results.length > 0) {
+      articles.value = [...articles.value, ...res.data.results];
+    } else {
+      hasMoreArticles.value = false;
+    }
+  } catch (error) {
+    console.error("Error loading more articles:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 // New comment form data
 const newComment = reactive({
@@ -702,6 +727,37 @@ const addComment = () => {
     // Reset form
     newComment.text = "";
   }
+};
+
+// Helper functions for article display
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const calculateReadTime = (content) => {
+  if (!content) return 1;
+  // Estimate read time based on content length (1 min per 1000 chars)
+  return Math.max(1, Math.ceil(content.length / 1000));
+};
+
+const getAuthorName = (authorDetails) => {
+  if (!authorDetails) return "Anonymous";
+
+  if (authorDetails.name) return authorDetails.name;
+
+  const firstName = authorDetails.first_name || "";
+  const lastName = authorDetails.last_name || "";
+
+  if (firstName || lastName) {
+    return `${firstName} ${lastName}`.trim();
+  }
+
+  return authorDetails.username || "Anonymous";
 };
 
 // Initialize on mount
