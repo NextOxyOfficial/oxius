@@ -21,7 +21,7 @@
     >
       <!-- Sidebar Header -->
       <div
-        class="h-16 mt-2flex items-center justify-between px-4 border-gray-100 relative"
+        class="h-12 mt-2flex items-center justify-between px-4 border-gray-100 relative"
       >
         <button
           v-if="cart.burgerMenu"
@@ -33,7 +33,7 @@
       </div>
 
       <!-- Sidebar Content (Scrollable) -->
-      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-7 -mt-12 sm:-mt-10">
+      <div class="flex-1 overflow-y-auto py-4 px-2 space-y-7 -mt-12 sm:-mt-10">
         <!-- Main Menu Section -->
         <div>
           <h3
