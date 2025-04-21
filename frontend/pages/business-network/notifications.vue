@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen mt-14 sm:mt-16 bg-gradient-to-b from-gray-50 to-white">
+    <div class="min-h-screen mt-16 sm:mt-16 bg-gradient-to-b from-gray-50 to-white">
       <!-- Header -->
       <header class="sticky sm:hidden top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
         <h1 class="text-xl font-semibold text-gray-800 bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent">
