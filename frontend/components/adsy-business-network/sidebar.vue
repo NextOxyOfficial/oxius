@@ -1,27 +1,27 @@
 <template>
-  <div>
+  <div class="rounded-t-sm">
     <!-- Mobile Overlay (shows when sidebar is open on mobile) -->
     <div
-      v-if="isMobile && isOpen"
+      v-if="isMobile && cart.burgerMenu"
       class="fixed inset-0 bg-black/50 z-40 lg:hidden"
-      @click="toggleSidebar"
+      @click="cart.toggleBurgerMenu()"
     ></div>
 
     <!-- Sidebar -->
     <aside
       :class="[
-        'fixed top-0 bottom-0 left-48 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ',
+        'sm:max-h-screen fixed sm:static top-14 bottom-0 pb-16 sm:pb-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out rounded-t-sm',
         isMobile
-          ? isOpen
+          ? cart.burgerMenu
             ? 'translate-x-0 w-72'
             : '-translate-x-full'
           : 'w-72',
-        'lg:translate-x-0',
+        '',
       ]"
     >
       <!-- Sidebar Header -->
       <div
-        class="h-16 flex items-center justify-between px-4 border-b border-gray-100 relative"
+        class="h-16 flex items-center justify-between px-4 border-gray-100 relative"
       >
         <div class="flex items-center">
           <div class="items-center hidden sm:flex">
@@ -40,15 +40,16 @@
           </div>
         </div>
         <button
+          v-if="cart.burgerMenu"
           class="fixed flex top-3 -right-10 lg:hidden h-8 w-8 items-center justify-center rounded-md bg-gray-200 text-gray-500"
-          @click="toggleSidebar"
+          @click="cart.toggleBurgerMenu()"
         >
           <X class="h-5 w-5" />
         </button>
       </div>
 
       <!-- Sidebar Content (Scrollable) -->
-      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-7">
+      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-7 -mt-12 sm:mt-0">
         <!-- Main Menu Section -->
         <div>
           <h3
@@ -460,7 +461,8 @@ const isMobile = ref(false);
 const currentProductIndex = ref(0);
 const currentNewsIndex = ref(0);
 const { get } = useApi();
-const logo = ref({});
+const logo = ref([]);
+const cart = useStoreCart();
 
 async function getLogo() {
   const { data } = await get("/bn-logo/");

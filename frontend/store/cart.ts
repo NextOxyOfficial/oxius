@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 export const useStoreCart = defineStore("cart", {
   state: () => ({
     products: [] as Array<Product>,
+    burgerMenu: false,
   }),
 
   getters: {
@@ -54,6 +55,9 @@ export const useStoreCart = defineStore("cart", {
     },
     clearCart() {
       this.products = [];
+    },
+    toggleBurgerMenu() {
+      this.burgerMenu = !this.burgerMenu;
     },
   },
 });
