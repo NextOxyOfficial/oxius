@@ -1,15 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination, CursorPagination
-from .models import NewsPost, NewsPostComment, NewsPostTag, NewsMedia
-from .serializers import (
-    NewsPostListSerializer, 
-    NewsPostDetailSerializer, 
-    NewsPostCommentSerializer, 
-    NewsPostTagSerializer,
-    NewsMediaSerializer
-)
+from rest_framework.pagination import *
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from .models import *
+from .serializers import *
 
 # Advanced pagination classes
 class AdvancedPagination(LimitOffsetPagination):
@@ -59,38 +54,84 @@ class NewsPostCommentDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NewsPostCommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-class NewsPostTagList(generics.ListCreateAPIView):
-    serializer_class = NewsPostTagSerializer
+
+class NewsCategoryList(generics.ListCreateAPIView):
+    queryset = NewsCategory.objects.all()
+    serializer_class = NewsCategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = AdvancedPagination
-    
+
+class NewsCategoryDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = NewsCategory.objects.all()
+    serializer_class = NewsCategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class TipsAndSuggestionListCreateView(generics.ListCreateAPIView):
+    serializer_class = TipsAndSuggestionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Allow any user to read
+    pagination_class = AdvancedPagination
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
     def get_queryset(self):
-        post_id = self.kwargs.get('pk')
-        return NewsPostTag.objects.filter(post_id=post_id)
+        return TipsAndSuggestion.objects.all()
     
     def perform_create(self, serializer):
-        post_id = self.kwargs.get('pk')
-        post = get_object_or_404(NewsPost, id=post_id)
-        serializer.save(post=post)
+        serializer.save(author=self.request.user)
 
-class NewsPostTagDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = NewsPostTag.objects.all()
-    serializer_class = NewsPostTagSerializer
+class TipsAndSuggestionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = TipsAndSuggestion.objects.all()
+    serializer_class = TipsAndSuggestionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    lookup_field = 'id'
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    
+    def get_object(self):
+        # Check if the lookup value is a valid slug
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs[lookup_url_kwarg]
+        filter_kwargs = {self.lookup_field: lookup_value}
+        
+        # Try to find by id first
+        obj = get_object_or_404(TipsAndSuggestion, **filter_kwargs)
+        self.check_object_permissions(self.request, obj)
+        return obj
+    
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        # Only allow author to update their own tips/suggestions
+        if instance.author == self.request.user:
+            serializer.save()
+        else:
+            return Response({"error": "You don't have permission to update this tip/suggestion."}, 
+                           status=status.HTTP_403_FORBIDDEN)
+    
+    def perform_destroy(self, instance):
+        # Only allow author to delete their own tips/suggestions
+        if instance.author == self.request.user:
+            instance.delete()
+        else:
+            return Response({"error": "You don't have permission to delete this tip/suggestion."}, 
+                           status=status.HTTP_403_FORBIDDEN)
 
-class AllNewsPostTagList(generics.ListAPIView):
-    queryset = NewsPostTag.objects.all().order_by('tag')
-    serializer_class = NewsPostTagSerializer
+class TipsAndSuggestionBySlugView(generics.RetrieveAPIView):
+    queryset = TipsAndSuggestion.objects.all()
+    serializer_class = TipsAndSuggestionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    pagination_class = AdvancedPagination
-
-class NewsMediaList(generics.ListCreateAPIView):
-    queryset = NewsMedia.objects.all()
-    serializer_class = NewsMediaSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    pagination_class = AdvancedPagination
-
-class NewsMediaDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = NewsMedia.objects.all()
-    serializer_class = NewsMediaSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    template_name = None
+    
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs[lookup_url_kwarg]
+        
+        # Try to find by slug
+        obj = get_object_or_404(TipsAndSuggestion, slug=lookup_value)
+        self.check_object_permissions(self.request, obj)
+        return obj
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
