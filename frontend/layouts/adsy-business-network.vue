@@ -1,7 +1,12 @@
 <template>
   <div class="font-AnekBangla">
     <AdsyBusinessNetworkHeader />
-    <slot />
+    <div
+      class="max-w-5xl w-full mx-auto gap-1 px-1 relative flex justify-center"
+    >
+      <AdsyBusinessNetworkSidebar />
+      <slot />
+    </div>
     <AdsyBusinessNetworkFooter />
     <UNotifications />
 

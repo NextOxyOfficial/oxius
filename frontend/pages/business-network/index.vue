@@ -1,11 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-16">
-    <div
-      class="max-w-5xl w-full mx-auto gap-1 px-1 relative flex justify-center"
-    >
-      <AdsyBusinessNetworkSidebar />
-      <BusinessNetworkPost />
-    </div>
+    <BusinessNetworkPost />
 
     <!-- Search Overlay -->
     <Teleport to="body">
