@@ -51,10 +51,9 @@
               >
                 {{ category.name }}
               </a>
-              <div class="relative" v-if="categories.length > 4">
+              <div class="relative">
                 <button
                   @click="toggleMoreCategories"
-                  @blur="moreMenuOpen = false"
                   class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
                 >
                   See More
@@ -62,7 +61,7 @@
                 </button>
                 <div
                   v-if="moreMenuOpen"
-                  class="absolute top-full right-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 min-w-[200px]"
+                  class="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 max-h-64 overflow-y-auto border border-gray-200"
                 >
                   <a
                     v-for="category in categories.slice(4)"
@@ -74,8 +73,7 @@
                         : 'text-gray-700',
                     ]"
                     href="#"
-                    @mousedown.prevent
-                    @click.prevent="setMoreCategory(category.id)"
+                    @click.prevent="setActiveCategory(category.id)"
                   >
                     {{ category.name }}
                   </a>
@@ -156,8 +154,8 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div v-if="mobileMenuOpen" class=" border-t border-gray-200">
-          <div class="px-2 pt-2 pb-3 space-y-1">
+        <div v-if="mobileMenuOpen" class="border-t border-gray-200">
+          <div class="px-2 pt-2 pb-3 space-y-1 max-h-64 overflow-y-auto">
             <a
               v-for="category in categories"
               :key="category.id"
@@ -175,6 +173,15 @@
             >
               {{ category.name }}
             </a>
+          </div>
+          <div class="px-2 pt-2 pb-3 space-y-1 max-h-64 overflow-y-auto">
+            <span
+              v-for="tag in tags"
+              :key="tag.id"
+              class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer"
+            >
+              #{{ tag.tag }}
+            </span>
           </div>
         </div>
       </div>
@@ -401,6 +408,22 @@ const weather = reactive({
   condition: "Partly Cloudy",
   icon: "cloud",
 });
+
+// Tags for mobile menu
+const tags = ref([]);
+
+async function getTags() {
+  try {
+    const res = await get("/news/tags/");
+    if (res.data && res.data.results) {
+      tags.value = res.data.results;
+    }
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+  }
+}
+
+await getTags();
 
 // Chat opening logic
 const openChat = () => {
