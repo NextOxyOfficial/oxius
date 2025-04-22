@@ -238,7 +238,7 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="text-md font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200"
+                  class=" font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200"
                 >
                   {{ article.title }}
                 </h3>
@@ -285,9 +285,24 @@
             <span v-else>Load More Articles</span>
           </button>
         </div>
+         <!-- Trending Topics Section -->
+      <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
+        <h2 class="text-xl font-semibold text-gray-700 mb-6">Trending Topics</h2>
+        <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3 ">
+          <a
+            v-for="(topic, index) in trendingTopics"
+            :key="index"
+            href="#"
+            class=" px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
+          >
+            <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
+            {{ topic }}
+          </a>
+        </div>
+      </div>
 
         <!-- Tips and Suggestions Section -->
-        <div class="mt-16 bg-gray-100 rounded-xl p-3 sm:p-8">
+        <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
           <h2 class="text-xl font-semibold text-gray-700 mb-6">Tips and Suggestions</h2>
           <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <div
@@ -295,7 +310,7 @@
               :key="index"
               class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col"
             >
-              <h3 class="text-lg font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2">
+              <h3 class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2">
                 {{ tip.title }}
               </h3>
               <p class="text-sm text-gray-500 line-clamp-3">
@@ -314,21 +329,7 @@
         </div>
       </div>
 
-      <!-- Trending Topics Section -->
-      <div class="mt-16 bg-gray-100 rounded-xl p-3 sm:p-8">
-        <h2 class="text-xl font-semibold text-gray-700 mb-6">Trending Topics</h2>
-        <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
-          <a
-            v-for="(topic, index) in trendingTopics"
-            :key="index"
-            href="#"
-            class="px-1 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
-          >
-            <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
-            {{ topic }}
-          </a>
-        </div>
-      </div>
+     
 
       <!-- Newsletter Section -->
       <div class="mt-16">

@@ -188,9 +188,9 @@
           <h2 class="text-2xl font-semibold mb-6 text-gray-700">
             Related Articles
           </h2>
-          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
             <div
-              v-for="relatedArticle in relatedArticles"
+              v-for="(relatedArticle, index) in relatedArticles.slice(0, 4)"
               :key="relatedArticle.id"
               class="bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
             >
@@ -209,7 +209,7 @@
               <div class="p-4">
                 <NuxtLink :to="`/adsy-news/${relatedArticle.slug}/`">
                   <h3
-                    class="font-semibold text-lg mb-2 hover:text-primary transition-colors"
+                    class="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2"
                   >
                     {{ relatedArticle.title }}
                   </h3>
@@ -232,6 +232,35 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Tips and Suggestions Section -->
+        <div class="mt-12 bg-gray-100 rounded-xl p-3 sm:p-8">
+          <h2 class="text-2xl font-semibold text-gray-700 mb-6">
+            Tips and Suggestions
+          </h2>
+          <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div
+              v-for="(tip, index) in visibleTips"
+              :key="index"
+              class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col"
+            >
+              <h3 class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2">
+                {{ tip.title }}
+              </h3>
+              <p class="text-sm text-gray-500 line-clamp-3">
+                {{ tip.description }}
+              </p>
+            </div>
+          </div>
+          <div v-if="visibleTips.length < tipsAndSuggestions.length" class="mt-6 text-center">
+            <button
+              @click="loadMoreTips"
+              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+            >
+              Load More
+            </button>
           </div>
         </div>
       </div>
@@ -444,6 +473,55 @@ function getAuthorName(authorDetails) {
 
   return authorDetails.username || "Anonymous";
 }
+
+// Tips and Suggestions data
+const tipsAndSuggestions = ref([
+  {
+    title: "How to Stay Productive While Working from Home",
+    description: "Discover practical tips to maintain productivity and focus while working remotely.",
+  },
+  {
+    title: "Top 5 Healthy Eating Habits",
+    description: "Learn about simple and effective habits to improve your diet and overall health.",
+  },
+  {
+    title: "Effective Time Management Strategies",
+    description: "Master the art of time management with these proven strategies.",
+  },
+  {
+    title: "How to Build a Morning Routine",
+    description: "Start your day right with a structured and effective morning routine.",
+  },
+  {
+    title: "The Benefits of Regular Exercise",
+    description: "Explore how regular exercise can improve your physical and mental health.",
+  },
+  {
+    title: "How to Manage Stress Effectively",
+    description: "Learn techniques to reduce stress and improve your mental well-being.",
+  },
+  {
+    title: "Tips for Better Sleep",
+    description: "Discover ways to improve your sleep quality and wake up refreshed.",
+  },
+]);
+
+// State for visible tips and load more functionality
+const visibleTips = ref([]);
+const tipsPerPage = ref(6);
+
+const loadMoreTips = () => {
+  const nextItems = tipsAndSuggestions.value.slice(
+    visibleTips.value.length,
+    visibleTips.value.length + tipsPerPage.value
+  );
+  visibleTips.value = [...visibleTips.value, ...nextItems];
+};
+
+// Initialize visible tips
+onMounted(() => {
+  loadMoreTips();
+});
 
 import {
   ArrowLeftIcon,
