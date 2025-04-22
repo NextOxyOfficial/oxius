@@ -15,8 +15,8 @@
       <div class="relative h-[350px]">
         <img
           :src="
-            article.post_media && article.post_media.length > 0
-              ? article.post_media[0].image
+            article.image
+              ? article.image
               : '/static/frontend/images/placeholder.jpg'
           "
           :alt="article.title"
@@ -192,9 +192,8 @@
               <div class="relative h-40 overflow-hidden">
                 <img
                   :src="
-                    relatedArticle.post_media &&
-                    relatedArticle.post_media.length > 0
-                      ? relatedArticle.post_media[0].image
+                    relatedArticle.image
+                      ? relatedArticle.image
                       : '/static/frontend/images/placeholder.jpg'
                   "
                   :alt="relatedArticle.title"
@@ -449,11 +448,6 @@ function shareArticle(platform) {
       break;
   }
 }
-
-// Chat opening logic
-const openChat = () => {
-  alert("Chat option opened!"); // Replace with actual chat opening logic
-};
 
 // Load the article data
 await getArticle();

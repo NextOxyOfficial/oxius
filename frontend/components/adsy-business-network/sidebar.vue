@@ -579,7 +579,7 @@ const hashtags = ref([]);
 async function fetchHashtags() {
   try {
     // Fetch trending hashtags from the news tags API
-    const response = await get("/news/tags/?limit=10");
+    const response = await get("/news/categories/?limit=10");
     if (response.data && response.data.results) {
       hashtags.value = response.data.results.map((tag) => ({
         tag: tag.tag,

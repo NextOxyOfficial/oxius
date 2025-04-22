@@ -545,10 +545,12 @@ const trendingTopics = ref([]);
 async function getTrendingTopics() {
   try {
     // Get all tags from the API
-    const res = await get("/news/tags/");
+    const res = await get("/news/categories/");
     if (res.data && Array.isArray(res.data.results)) {
       // Extract unique tags and take the first 7 (or fewer if there aren't 7)
-      const uniqueTags = [...new Set(res.data.results.map((tag) => tag.tag))];
+      const uniqueTags = [
+        ...new Set(res.data.results.map((category) => category.title)),
+      ];
       trendingTopics.value = uniqueTags.slice(0, 7);
     }
   } catch (error) {
@@ -608,6 +610,17 @@ const tipsAndSuggestions = ref([
   },
 ]);
 
+async function getTipsAndSuggestions() {
+  try {
+    const res = await get("/news/tips-suggestions/");
+    if (res.data && Array.isArray(res.data.results)) {
+      tipsAndSuggestions.value = res.data.results;
+    }
+  } catch (error) {
+    console.error("Error fetching tips and suggestions:", error);
+  }
+}
+await getTipsAndSuggestions();
 // State for visible tips and load more functionality
 const visibleTips = ref([]);
 const tipsPerPage = ref(6);
@@ -650,9 +663,7 @@ const formatArticleForDisplay = (article) => {
     readTime: article.content ? Math.ceil(article.content.length / 1000) : 1,
     author: getAuthorName(article.author_details),
     authorTitle: article.author_details?.user_type || "",
-    authorImage:
-      article.author_details?.image ||
-      "/static/frontend/images/placeholder.jpg",
+    authorImage: article.image || "/static/frontend/images/placeholder.jpg",
     comments: article.post_comments || [],
     summary: article.content
       ? article.content.substring(0, 150) + "..."

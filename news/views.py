@@ -60,11 +60,13 @@ class NewsCategoryList(generics.ListCreateAPIView):
     serializer_class = NewsCategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = AdvancedPagination
+    
 
 class NewsCategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = NewsCategory.objects.all()
     serializer_class = NewsCategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    lookup_field = 'slug'
 
 class TipsAndSuggestionListCreateView(generics.ListCreateAPIView):
     serializer_class = TipsAndSuggestionSerializer

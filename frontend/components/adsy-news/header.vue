@@ -58,7 +58,7 @@
               >
                 {{ category.name }}
               </a>
-              <div class="relative">
+              <div class="relative" v-if="categories.length > 4">
                 <button
                   @click="toggleMoreCategories"
                   class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
@@ -147,7 +147,7 @@
                     >
                       {{
                         result.post_tags && result.post_tags.length > 0
-                          ? result.post_tags[0].tag
+                          ? result.post_tags[0].title
                           : "News"
                       }}
                     </span>
@@ -193,7 +193,7 @@
               :key="tag.id"
               class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer"
             >
-              #{{ tag.tag }}
+              #{{ tag.title }}
             </span>
           </div>
         </div>
@@ -390,11 +390,11 @@ const categories = ref([]);
 
 async function getCategories() {
   try {
-    const res = await get("/news/tags/");
+    const res = await get("/news/categories/");
     if (res.data && res.data.results) {
       categories.value = res.data.results.map((category) => ({
         id: category.id,
-        name: category.tag,
+        name: category.title,
       }));
     } else {
       console.error("Unexpected response format:", res.data);
@@ -442,7 +442,7 @@ const tags = ref([]);
 
 async function getTags() {
   try {
-    const res = await get("/news/tags/");
+    const res = await get("/news/categories/");
     if (res.data && res.data.results) {
       tags.value = res.data.results;
     }
