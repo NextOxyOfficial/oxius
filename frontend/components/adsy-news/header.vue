@@ -5,7 +5,7 @@
         
         <!-- Main Navigation -->
         <div
-          class="flex flex-col sm:flex-row justify-between items-center px-4 py-6 sm:px-6 lg:px-8"
+          class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:py-6 sm:px-6 lg:px-8"
         >
           <NuxtLink to="/adsy-news" class="hidden sm:block">
             <NuxtImg
