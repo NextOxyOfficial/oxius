@@ -29,10 +29,17 @@
         <div
           class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
         >
-          <div class="flex items-center flex-1">
-            
-            
-
+          <NuxtLink to="/adsy-news" class="hidden sm:block">
+            <NuxtImg
+              v-if="logo[0]?.image"
+              :src="logo[0].image"
+              alt="Adsy News Logo"
+              width="150"
+              height="50"
+              class="h-8 sm:h-10 w-auto object-fit"
+            />
+          </NuxtLink>
+          <div class="flex items-center">
             <nav
               class="hidden md:ml-10 md:flex space-x-8"
               v-if="categories?.length > 0"
@@ -83,10 +90,10 @@
           </div>
 
           <div
-            class="flex items-center sm:justify-end space-x-2 flex-1 max-sm:w-full relative"
+            class="flex items-center sm:justify-end space-x-2 max-sm:w-full relative"
           >
             <div class="flex items-center justify-between w-full sm:w-auto">
-              <NuxtLink to="/adsy-news/" class="flex-shrink-0">
+              <NuxtLink to="/adsy-news" class="flex-shrink-0 sm:hidden block">
                 <NuxtImg
                   v-if="logo[0]?.image"
                   :src="logo[0].image"
@@ -98,7 +105,9 @@
               </NuxtLink>
               <div class="flex items-center space-x-2 ml-auto">
                 <UButton class="bg-black/70" to="/">AdsyClub</UButton>
-                <UButton class="bg-black/70" to="/business-network">Adsy BN</UButton>
+                <UButton class="bg-black/70" to="/business-network"
+                  >Adsy BN</UButton
+                >
                 <SearchIcon
                   class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
                   @click="toggleSearch"
@@ -126,7 +135,9 @@
                   class="p-3 hover:bg-gray-50 cursor-pointer"
                   @click="navigateToArticle(result)"
                 >
-                  <p class="text-sm font-medium text-gray-700">{{ result.title }}</p>
+                  <p class="text-sm font-medium text-gray-700">
+                    {{ result.title }}
+                  </p>
                   <p class="text-xs text-gray-500 mt-1 flex items-center">
                     <CalendarIcon class="h-3 w-3 mr-1" />
                     {{ formatDate(result.created_at) }}
@@ -143,7 +154,9 @@
                   </p>
                 </div>
                 <div
-                  v-if="searchResults.length === 0 && !isSearching && searchQuery"
+                  v-if="
+                    searchResults.length === 0 && !isSearching && searchQuery
+                  "
                   class="p-4 text-center text-gray-500"
                 >
                   No results found for "{{ searchQuery }}"

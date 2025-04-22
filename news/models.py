@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from base.models import *
+from tinymce import models as tinymce_models
 
 def slugify_bangla(text):
     slug = slugify(text)
@@ -41,9 +42,10 @@ class NewsPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news_posts')
     category = models.ManyToManyField(NewsCategory, related_name='news_posts')
     title = models.CharField(max_length=255)
-    content = models.TextField()
+    content = tinymce_models.HTMLField()
     image = models.ImageField(upload_to='news/images/', blank=True, null=True)
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

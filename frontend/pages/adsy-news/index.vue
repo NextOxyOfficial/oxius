@@ -35,11 +35,10 @@
                 {{ latestArticle.title }}
               </NuxtLink>
             </h2>
-            <p
+            <div
               class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl line-clamp-2"
-            >
-              {{ latestArticle.summary }}
-            </p>
+              v-html="latestArticle.summary"
+            ></div>
             <div class="flex items-center">
               <img
                 :src="latestArticle.authorImage"
@@ -209,11 +208,7 @@
                 :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
               >
                 <img
-                  :src="
-                    article.post_media && article.post_media.length > 0
-                      ? article.post_media[0].image
-                      : '/static/frontend/images/placeholder.jpg'
-                  "
+                  :src="article.image"
                   :alt="article.title"
                   class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
@@ -236,24 +231,23 @@
                   {{ article.title }}
                 </h3>
               </NuxtLink>
-              <p class="text-gray-600 mb-3 line-clamp-2">
-                {{ article.content.substring(0, 150) + "..." }}
-              </p>
+              <div
+                class="text-gray-600 mb-3 line-clamp-3"
+                v-html="article.content.substring(0, 150) + '...'"
+              ></div>
               <div class="flex justify-between items-center">
                 <div class="flex items-center">
                   <img
                     :src="
-                      article.author_details?.image ||
+                      article.authorImage ||
                       '/static/frontend/images/placeholder.jpg'
                     "
-                    :alt="getAuthorName(article.author_details)"
+                    :alt="article.author"
                     class="h-8 w-8 rounded-full mr-2"
                   />
                   <span class="text-sm font-medium text-gray-700"
                     >Posted by:
-                    <span class="text-primary">{{
-                      getAuthorName(article.author_details)
-                    }}</span></span
+                    <span class="text-primary">{{ article.author }}</span></span
                   >
                 </div>
                 <div class="flex items-center text-gray-500">

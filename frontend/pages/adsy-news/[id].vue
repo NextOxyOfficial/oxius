@@ -47,7 +47,7 @@
       </div>
 
       <div class="p-2 sm:p-6">
-        <div class="flex mb-8 border-b border-gray-200">
+        <div class="flex mb-8 border-b border-gray-200 w-full pb-2">
           <img
             :src="
               article.author_details?.image ||
@@ -56,36 +56,38 @@
             :alt="getAuthorName(article.author_details)"
             class="h-12 w-12 rounded-full mr-4 border-2 border-primary"
           />
-          <div>
-            <p class="font-medium text-gray-700">
-              Posted by:
-              <span class="text-primary">{{
-                getAuthorName(article.author_details)
-              }}</span>
-            </p>
-            <p class="text-sm text-gray-500">
+          <div class="w-full">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-gray-700">
+                Posted by:
+                <span class="text-primary">{{
+                  getAuthorName(article.author_details)
+                }}</span>
+              </span>
+              <div class="items-center flex space-x-3">
+                <button
+                  class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                  @click="shareArticle('twitter')"
+                >
+                  <TwitterIcon class="h-4 w-4" />
+                </button>
+                <button
+                  class="p-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
+                  @click="shareArticle('facebook')"
+                >
+                  <FacebookIcon class="h-4 w-4" />
+                </button>
+                <button
+                  class="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
+                  @click="shareArticle('copy')"
+                >
+                  <LinkIcon class="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <span class="text-sm text-gray-500 capitalize">
               {{ article.author_details?.user_type || "Contributor" }}
-            </p>
-          </div>
-          <div class="ml-auto items-center flex space-x-3">
-            <button
-              class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-              @click="shareArticle('twitter')"
-            >
-              <TwitterIcon class="h-4 w-4" />
-            </button>
-            <button
-              class="p-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
-              @click="shareArticle('facebook')"
-            >
-              <FacebookIcon class="h-4 w-4" />
-            </button>
-            <button
-              class="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
-              @click="shareArticle('copy')"
-            >
-              <LinkIcon class="h-4 w-4" />
-            </button>
+            </span>
           </div>
         </div>
 
@@ -306,6 +308,7 @@ async function getArticle() {
     if (res && res.data) {
       article.value = res.data;
       // After getting the article, fetch related articles
+      console.log(article.value);
       await getRelatedArticles();
     }
   } catch (error) {
