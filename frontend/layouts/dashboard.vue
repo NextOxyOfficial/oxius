@@ -1,18 +1,26 @@
 <script setup>
 const { login, jwtLogin, logout, user } = useAuth();
+const isLoading = ref(true);
 
-// onMounted(() => {
-//   setTimeout(() => {
-if (!useCookie("adsyclub-jwt").value) {
-  navigateTo("/auth/login/");
-} else {
-  jwtLogin();
-}
-//   }, 1000);
-// });
+// Use an immediately-invoked async function to handle auth
+const checkAuth = async () => {
+  try {
+    if (!useCookie("adsyclub-jwt").value) {
+      navigateTo("/auth/login/");
+    } else {
+      await jwtLogin();
+    }
+  } catch (error) {
+    console.error("Authentication error:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+checkAuth();
+
 useHead({
   title:
-    "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
+    "AdsyClub - Bangladesh's 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
 });
 </script>
 
@@ -21,19 +29,14 @@ useHead({
     <NuxtLoadingIndicator class="!opacity-[1]" />
     <section
       class="h-screen w-screen flex items-center justify-center fixed inset-0 z-[99999999] bg-white"
-      v-if="!user"
+      v-if="isLoading || !user"
     >
-      <!-- <UIcon
-        name="svg-spinners:bars-scale-middle"
-        dynamic
-        class="text-xl w-12 h-12 text-primary"
-      /> -->
       <CommonPreloader />
     </section>
 
-    <PublicHeader />
-    <slot />
-    <PublicFooter />
+    <PublicHeader v-if="!isLoading && user" />
+    <slot v-if="!isLoading && user" />
+    <PublicFooter v-if="!isLoading && user" />
 
     <UNotifications />
   </div>

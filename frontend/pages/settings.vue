@@ -529,12 +529,9 @@
 definePageMeta({
   layout: "dashboard",
 });
-
-// API & Auth
 const { get, post, put } = useApi();
 const { user } = useAuth();
 const toast = useToast();
-
 // State Management
 const activeTab = ref("profile");
 const userProfile = ref({});
@@ -547,7 +544,7 @@ const new_password = ref("");
 // Fetch user profile details
 async function getUserDetails() {
   try {
-    const res = await get(`/persons/${user.value.user.email}/`);
+    const res = await get(`/persons/${user.value?.user.email}/`);
     userProfile.value = res.data;
   } catch (error) {
     console.error("Error fetching user details:", error);
@@ -701,8 +698,5 @@ function deleteUpload() {
   userProfile.value.image = null;
 }
 
-// Load user data on component mount
-onMounted(() => {
-  getUserDetails();
-});
+getUserDetails();
 </script>

@@ -42,9 +42,8 @@
             <Menu class="h-3.5 w-3.5 mr-1.5" />
             <span>Menu</span>
           </h3>
-          <nav class="space-y-1">
+          <nav class="space-y-1" v-if="user?.user?.id">
             <NuxtLink
-              v-if="user?.user?.id"
               v-for="item in mainMenu"
               :key="item.path"
               :to="item.path"
@@ -73,8 +72,9 @@
                 {{ item.badge }}
               </div>
             </NuxtLink>
+          </nav>
+          <nav v-else>
             <NuxtLink
-              v-else
               v-for="(item, i) in mainMenu2"
               :key="i"
               :to="item.path"
