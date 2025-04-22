@@ -188,7 +188,7 @@
           <h2 class="text-2xl font-semibold mb-6 text-gray-700">
             Related Articles
           </h2>
-          <div class="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+          <div class="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
             <div
               v-for="(relatedArticle, index) in relatedArticles.slice(0, 4)"
               :key="relatedArticle.id"
@@ -462,16 +462,10 @@ function calculateReadTime(content) {
 function getAuthorName(authorDetails) {
   if (!authorDetails) return "Anonymous";
 
-  if (authorDetails.name) return authorDetails.name;
-
-  const firstName = authorDetails.first_name || "";
+  const firstName = authorDetails.first_name || "Anonymous";
   const lastName = authorDetails.last_name || "";
 
-  if (firstName || lastName) {
-    return `${firstName} ${lastName}`.trim();
-  }
-
-  return authorDetails.username || "Anonymous";
+  return `${firstName} ${lastName}`.trim();
 }
 
 // Tips and Suggestions data

@@ -100,20 +100,20 @@
                 <UButton class="bg-black/70" to="/">AdsyClub</UButton>
                 <UButton class="bg-black/70" to="/business-network">Adsy BN</UButton>
                 <SearchIcon
-                  class="h-6 w-6 text-gray-500 cursor-pointer"
+                  class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
                   @click="toggleSearch"
                 />
               </div>
             </div>
             <div
               v-if="isSearchVisible"
-              class="absolute top-full right-0 mt-2 bg-white rounded-md shadow-lg z-10 border border-gray-200 p-4 w-full sm:w-72"
+              class="absolute top-full right-0 mt-2 bg-white rounded-md shadow-lg z-10 border border-gray-200 p-4 w-full sm:w-72 search-dropdown"
             >
               <input
                 type="text"
                 placeholder="Search news..."
                 v-model="searchQuery"
-                class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-700"
+                class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-700 search-input"
                 @input="handleSearchInput"
               />
               <div
@@ -239,7 +239,7 @@ import {
   CloudRainIcon,
 } from "lucide-vue-next";
 
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, nextTick } from "vue";
 
 // Debounce utility function
 function debounce(func, wait) {
@@ -271,12 +271,28 @@ const isSearchVisible = ref(false);
 // Toggle search visibility
 const toggleSearch = () => {
   isSearchVisible.value = !isSearchVisible.value;
+
+  // Focus the search input when the search bar is made visible
+  if (isSearchVisible.value) {
+    nextTick(() => {
+      const searchInput = document.querySelector(".search-input");
+      if (searchInput) {
+        searchInput.focus();
+      }
+    });
+  }
 };
 
 // Close search dropdown when clicking outside
 const handleClickOutside = (event) => {
-  const searchDropdown = document.querySelector(".relative");
-  if (searchDropdown && !searchDropdown.contains(event.target)) {
+  const searchDropdown = document.querySelector(".search-dropdown");
+  const searchIcon = document.querySelector(".search-icon");
+  if (
+    searchDropdown &&
+    !searchDropdown.contains(event.target) &&
+    searchIcon &&
+    !searchIcon.contains(event.target)
+  ) {
     isSearchVisible.value = false;
   }
 };
@@ -291,7 +307,7 @@ onUnmounted(() => {
 
 // Perform search when query changes
 const performSearch = async () => {
-  if (!searchQuery.value) {
+  if (!searchQuery.value.trim()) {
     searchResults.value = [];
     return;
   }
@@ -300,13 +316,11 @@ const performSearch = async () => {
     isSearching.value = true;
     // Make API call to fetch search results
     const { data } = await get(
-      `/news/posts/?search=${encodeURIComponent(searchQuery.value)}`
+      `/news/posts/?search=${encodeURIComponent(searchQuery.value.trim())}`
     );
 
     if (data && data.results) {
       searchResults.value = data.results;
-    } else if (Array.isArray(data)) {
-      searchResults.value = data;
     } else {
       searchResults.value = [];
     }
@@ -329,7 +343,7 @@ const clearSearch = () => {
 
 // Function to handle input events
 const handleSearchInput = () => {
-  if (!searchQuery.value) {
+  if (!searchQuery.value.trim()) {
     searchResults.value = [];
     return;
   }
@@ -342,6 +356,7 @@ const navigateToArticle = (article) => {
   // Clear the search
   searchQuery.value = "";
   searchResults.value = [];
+  isSearchVisible.value = false;
 
   // Navigate to the article detail page
   router.push(`/adsy-news/${article.slug}/`);
