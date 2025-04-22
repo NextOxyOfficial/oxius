@@ -40,40 +40,34 @@
               {{ calculateReadTime(article.content) }} min read
             </span>
           </div>
-          <h1 class="text-3xl sm:text-4xl font-semibold mb-4 leading-tight">
+          <h1 class="text-2xl sm:text-3xl font-semibold mb-4 leading-tight">
             {{ article.title }}
           </h1>
         </div>
       </div>
 
       <div class="p-2 sm:p-6">
-        <div class="flex items-center mb-8 border-b border-gray-200 pb-6">
+        <div class="flex mb-8 border-b border-gray-200">
           <img
             :src="
               article.author_details?.image ||
               '/static/frontend/images/placeholder.jpg'
             "
-            :alt="
-              article.author_details
-                ? getAuthorName(article.author_details)
-                : 'Anonymous'
-            "
+            :alt="getAuthorName(article.author_details)"
             class="h-12 w-12 rounded-full mr-4 border-2 border-primary"
           />
           <div>
             <p class="font-medium text-gray-700">
               Posted by:
               <span class="text-primary">{{
-                article.author_details
-                  ? getAuthorName(article.author_details)
-                  : "Anonymous"
+                getAuthorName(article.author_details)
               }}</span>
             </p>
             <p class="text-sm text-gray-500">
-              {{ article.author_details?.user_type || "" }}
+              {{ article.author_details?.user_type || "Contributor" }}
             </p>
           </div>
-          <div class="ml-auto flex space-x-3">
+          <div class="ml-auto items-center flex space-x-3">
             <button
               class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
               @click="shareArticle('twitter')"
@@ -462,10 +456,11 @@ function calculateReadTime(content) {
 function getAuthorName(authorDetails) {
   if (!authorDetails) return "Anonymous";
 
-  const firstName = authorDetails.first_name || "Anonymous";
+  const firstName = authorDetails.first_name || "";
   const lastName = authorDetails.last_name || "";
 
-  return `${firstName} ${lastName}`.trim();
+  const fullName = `${firstName} ${lastName}`.trim();
+  return fullName || "Anonymous";
 }
 
 // Tips and Suggestions data

@@ -718,10 +718,11 @@ const trendingArticles = computed(() => {
 const getAuthorName = (authorDetails) => {
   if (!authorDetails) return "Anonymous";
 
-  const firstName = authorDetails.first_name || "Anonymous";
+  const firstName = authorDetails.first_name || "";
   const lastName = authorDetails.last_name || "";
 
-  return `${firstName} ${lastName}`.trim();
+  const fullName = `${firstName} ${lastName}`.trim();
+  return fullName || "Anonymous";
 };
 
 // Initialize on mount
