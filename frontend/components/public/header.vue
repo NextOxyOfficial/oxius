@@ -387,7 +387,7 @@
         <div v-if="!user" class="flex relative menu-container">
           <PublicTranslateHandler class="px-2 max-sm:hidden" />
           <UButton
-            to="/auth/login/"
+            to="/auth/login"
             label="Login/Register"
             color="gray"
             :ui="{
