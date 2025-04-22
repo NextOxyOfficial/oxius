@@ -246,9 +246,11 @@
             <p class="text-sm">
               <span class="text-red-500">*</span> 2.95% Charges applicable
             </p>
-
             <p v-if="errors?.insufficient" class="text-sm text-red-500">
               You do not have enough balance
+            </p>
+            <p v-if="errors?.min_withdrawal" class="text-sm text-red-500">
+              Minimum withdrawal amount is ৳200
             </p>
           </div>
           <div class="my-5">

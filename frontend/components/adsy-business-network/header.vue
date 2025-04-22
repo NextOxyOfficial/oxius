@@ -84,7 +84,7 @@
               </div>
             </div>
           </div>
-          <div class="flex gap-2 max-sm:hidden">
+          <div class="flex gap-2 ml-auto max-sm:hidden">
             <UButton to="/" class="bg-slate-700/80 max-sm:hidden"
               >AdsyClub</UButton
             >
@@ -123,49 +123,7 @@
           </div>
           <div v-else class="flex relative menu-container">
             <PublicTranslateHandler class="px-2 max-sm:hidden" />
-            <div class="mr-2" v-if="user && user.user">
-              <UButton
-                icon="i-ic:twotone-qr-code-scanner"
-                size="md"
-                :ui="{
-                  size: { md: 'text-xs sm:text-sm' },
-                  padding: { md: 'px-2.5 py-1.5 sm:px-3 sm:py-2' },
-                }"
-                color="primary"
-                variant="outline"
-                @click="showQr = !showQr"
-                block
-              />
-              <UModal
-                v-model="showQr"
-                :ui="{
-                  width: 'w-full sm:max-w-md',
-                  background: 'bg-slate-100',
-                }"
-              >
-                <div
-                  class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
-                >
-                  <UButton
-                    icon="i-heroicons-x-mark"
-                    size="md"
-                    color="primary"
-                    variant="solid"
-                    @click="showQr = false"
-                    class="absolute top-1 right-1 rounded-full"
-                  />
-
-                  <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
-                  <h3 class="text-xl font-semibold">Scan My QR Code</h3>
-                  <div class="border p-4 rounded-lg shadow-md bg-white">
-                    <NuxtImg
-                      class="w-[250px]"
-                      :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
-                    ></NuxtImg>
-                  </div>
-                </div>
-              </UModal>
-            </div>
+            
             <UButton
               size="sm"
               color="primary"

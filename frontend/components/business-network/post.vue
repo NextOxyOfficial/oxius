@@ -276,7 +276,7 @@
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg p-2">
                     <NuxtLink
-                      :to="`/profile/${comment.user.id}`"
+                      :to="`/business-network/profile/${comment.user.id}`"
                       class="text-sm font-medium hover:underline"
                     >
                       {{ comment.user.fullName }}
@@ -342,13 +342,7 @@
       </div>
     </div>
 
-    <!-- Create Post Button -->
-    <button
-      class="fixed bottom-24 right-4 lg:right-[22%] md:bottom-4 rounded-full h-14 w-14 shadow-lg bg-gradient-to-r from-blue-600 to-blue-600 transition-all duration-300 hover:scale-105 border-none z-40 flex items-center justify-center text-white"
-      @click="isCreatePostOpen = true"
-    >
-      <Plus class="h-6 w-6" />
-    </button>
+    
 
     <!-- Media Viewer -->
     <Teleport to="body">
@@ -479,7 +473,7 @@
                     <div class="bg-gray-50 rounded-lg p-2">
                       <div class="flex items-center justify-between">
                         <NuxtLink
-                          :to="`/profile/${comment.user.id}`"
+                          :to="`/business-network/profile/${comment.user.id}`"
                           class="text-sm font-medium hover:underline"
                         >
                           {{ comment.user.fullName }}
@@ -540,242 +534,7 @@
     </Teleport>
 
     <!-- Create Post Modal -->
-    <Teleport to="body">
-      <div
-        v-if="isCreatePostOpen"
-        class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-        @click="isCreatePostOpen = false"
-      >
-        <div
-          class="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl transform transition-all duration-300 scale-100 opacity-100"
-          @click.stop
-        >
-          <div
-            class="p-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-white to-gray-50"
-          >
-            <h2
-              class="text-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent"
-            >
-              Create Post
-            </h2>
-            <button
-              class="rounded-full hover:bg-gray-100 p-2"
-              @click="isCreatePostOpen = false"
-            >
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-
-          <div class="p-4 overflow-y-auto max-h-[calc(90vh-130px)]">
-            <div class="space-y-4">
-              <!-- Title input -->
-              <div class="relative group">
-                <input
-                  type="text"
-                  placeholder="Post title"
-                  class="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-transparent bg-gray-50 transition-all duration-200 group-hover:bg-white"
-                  v-model="createPostTitle"
-                />
-                <div
-                  class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"
-                ></div>
-              </div>
-
-              <!-- Content textarea -->
-              <div class="relative group">
-                <textarea
-                  placeholder="What's on your mind?"
-                  class="min-h-[180px] w-full resize-none border border-gray-200 bg-gray-50 transition-all duration-200 group-hover:bg-white focus:bg-white p-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  v-model="createPostContent"
-                ></textarea>
-                <div
-                  class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"
-                ></div>
-              </div>
-
-              <!-- Quick actions -->
-              <div
-                class="flex items-center gap-2 pt-2 border-t border-gray-100"
-              >
-                <button
-                  class="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="Add Image"
-                  @click="triggerFileInput"
-                >
-                  <ImageIcon class="h-5 w-5 text-gray-500" />
-                </button>
-
-                <div class="relative">
-                  <button
-                    class="p-2 rounded-full hover:bg-gray-100 transition-colors emoji-trigger"
-                    title="Add Emoji"
-                    @click.stop="showEmojiPicker = !showEmojiPicker"
-                  >
-                    <Smile class="h-5 w-5 text-gray-500" />
-                  </button>
-
-                  <div
-                    v-if="showEmojiPicker"
-                    class="absolute bottom-12 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 w-64"
-                  >
-                    <div class="grid grid-cols-8 gap-1">
-                      <button
-                        v-for="(emoji, index) in commonEmojis"
-                        :key="index"
-                        class="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-lg"
-                        @click="handleEmojiClick(emoji)"
-                      >
-                        {{ emoji }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Media preview -->
-              <div v-if="selectedMedia.length > 0" class="space-y-3">
-                <div class="grid grid-cols-4 gap-2">
-                  <div
-                    v-for="(file, index) in selectedMedia"
-                    :key="index"
-                    class="relative aspect-square bg-gray-100 rounded-md overflow-hidden group transition-all duration-200"
-                  >
-                    <img
-                      v-if="file.type.startsWith('image/')"
-                      :src="getFilePreview(file)"
-                      :alt="`Selected media ${index}`"
-                      class="object-cover w-full h-full"
-                    />
-                    <div v-else class="flex items-center justify-center h-full">
-                      <video
-                        :src="getFilePreview(file)"
-                        class="h-full w-full object-cover"
-                      ></video>
-                    </div>
-                    <button
-                      class="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      @click.stop="removeMedia(index)"
-                    >
-                      <X class="h-3 w-3 text-white" />
-                    </button>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <button
-                    class="border border-gray-200 rounded-md px-3 py-1 text-sm flex items-center gap-1 hover:bg-gray-50"
-                    @click.stop="triggerFileInput"
-                    :disabled="selectedMedia.length >= 14"
-                  >
-                    <Paperclip class="h-3 w-3" />
-                    Add More
-                  </button>
-                  <div class="text-sm text-gray-500">
-                    {{
-                      selectedMedia.filter((f) => f.type.startsWith("image/"))
-                        .length
-                    }}/12 images,
-                    {{
-                      selectedMedia.filter((f) => f.type.startsWith("video/"))
-                        .length
-                    }}/2 videos
-                  </div>
-                </div>
-              </div>
-
-              <!-- Categories section -->
-              <div class="space-y-3">
-                <h4 class="text-sm font-medium text-gray-700">Categories</h4>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="category in createPostCategories"
-                    :key="category"
-                    class="px-2 py-1 gap-1 group bg-gray-100 text-gray-700 text-sm rounded-full flex items-center"
-                  >
-                    {{ category }}
-                    <button
-                      @click="removeCategory(category)"
-                      class="ml-1 rounded-full hover:bg-gray-200 p-0.5 transition-colors"
-                    >
-                      <X
-                        class="h-3 w-3 text-gray-500 group-hover:text-gray-700"
-                      />
-                    </button>
-                  </span>
-                </div>
-
-                <div class="relative">
-                  <div class="flex gap-2">
-                    <div class="relative flex-1">
-                      <input
-                        type="text"
-                        placeholder="Add a category..."
-                        v-model="categoryInput"
-                        class="pl-8 pr-4 py-2 w-full border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                      />
-                      <Tag
-                        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                      />
-                    </div>
-                    <button
-                      class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                      @click="addCategory"
-                      :disabled="
-                        !categoryInput.trim() ||
-                        createPostCategories.includes(categoryInput.trim())
-                      "
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="p-4 border-t border-gray-100 flex justify-end bg-gradient-to-r from-gray-50 to-white"
-          >
-            <button
-              class="px-4 py-2 border border-gray-200 rounded-md mr-2 hover:bg-gray-50"
-              @click="isCreatePostOpen = false"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="
-                !createPostTitle.trim() ||
-                !createPostContent.trim() ||
-                isSubmitting
-              "
-              @click="handleCreatePost"
-              :class="[
-                'px-4 py-2 rounded-md text-white bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 transition-all duration-300',
-                (isSubmitting ||
-                  !createPostTitle.trim() ||
-                  !createPostContent.trim()) &&
-                  'opacity-80 cursor-not-allowed',
-              ]"
-            >
-              <span
-                v-if="isSubmitting"
-                class="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin inline-block"
-              ></span>
-              {{ isSubmitting ? "Posting..." : "Post" }}
-            </button>
-          </div>
-
-          <input
-            type="file"
-            ref="fileInputRef"
-            class="hidden"
-            multiple
-            accept="image/*,video/*"
-            @change="handleFileChange"
-          />
-        </div>
-      </div>
-    </Teleport>
+    <BusinessNetworkCreatePost :createPostContent="createPostContent" :createPostCategories="createPostCategories" :isSubmitting="isSubmitting" :isCreatePostOpen="isCreatePostOpen" :createPostTitle="createPostTitle"/>
 
     <!-- Likes Modal -->
     <Teleport to="body">
@@ -810,7 +569,7 @@
                 />
                 <div>
                   <NuxtLink
-                    :to="`/profile/${user.id}`"
+                    :to="`/business-network/profile/${user.id}`"
                     class="font-medium hover:underline"
                   >
                     {{ user.fullName }}
@@ -876,7 +635,7 @@
                 <div class="bg-gray-50 rounded-lg p-2">
                   <div class="flex items-center justify-between mb-1">
                     <NuxtLink
-                      :to="`/profile/${comment.user.id}`"
+                      :to="`/business-network/profile/${comment.user.id}`"
                       class="text-sm font-medium hover:underline"
                     >
                       {{ comment.user.fullName }}
@@ -966,7 +725,7 @@
                 />
                 <div>
                   <NuxtLink
-                    :to="`/profile/${user.id}`"
+                    :to="`/business-network/profile/${user.id}`"
                     class="font-medium hover:underline"
                   >
                     {{ user.fullName }}

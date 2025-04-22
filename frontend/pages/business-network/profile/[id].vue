@@ -22,13 +22,7 @@
                   <BadgeCheck class="h-4 w-4" />
                 </div>
               </div>
-              <button
-                v-if="user.isCurrentUser"
-                class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-colors"
-                @click="isEditPhotoOpen = true"
-              >
-                <Camera class="h-4 w-4" />
-              </button>
+              
             </div>
 
             <div
@@ -46,21 +40,7 @@
                 <p class="text-gray-500">@{{ user.username }}</p>
               </div>
               <div class="flex gap-2">
-                <template v-if="user.isCurrentUser">
-                  <button
-                    class="px-3 py-1.5 border border-gray-200 rounded-md text-sm flex items-center gap-1 hover:bg-gray-50"
-                    @click="isEditProfileOpen = true"
-                  >
-                    <Edit class="h-4 w-4" />
-                  </button>
-                  <button
-                    class="p-2 border border-gray-200 rounded-md hover:bg-gray-50"
-                  >
-                    <Settings class="h-4 w-4" />
-                  </button>
-                </template>
-                <template v-else>
-                  <button
+                <button
                     :class="[
                       'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
                       user.isFollowing
@@ -78,12 +58,6 @@
                       Follow
                     </template>
                   </button>
-                  <button
-                    class="p-2 border border-gray-200 rounded-md hover:bg-gray-50"
-                  >
-                    <Mail class="h-4 w-4" />
-                  </button>
-                </template>
               </div>
             </div>
           </div>
@@ -103,21 +77,8 @@
                 <p class="text-gray-500">@{{ user.username }}</p>
               </div>
               <div class="flex gap-2">
-                <template v-if="user.isCurrentUser">
-                  <button
-                    class="px-3 py-1.5 border border-gray-200 rounded-md text-sm flex items-center gap-1 hover:bg-gray-50"
-                    @click="isEditProfileOpen = true"
-                  >
-                    <Edit class="h-4 w-4" />
-                    Edit Profile
-                  </button>
-                  <button
-                    class="p-2 border border-gray-200 rounded-md hover:bg-gray-50"
-                  >
-                    <Settings class="h-4 w-4" />
-                  </button>
-                </template>
-                <template v-else>
+                
+                <template>
                   <button
                     :class="[
                       'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
@@ -230,8 +191,8 @@
           </div>
 
           <div class="py-4">
-            <div v-if="activeTab === 'posts'">
-              <BusinessNetworkPost />
+            <div v-if="activeTab === 'posts'" class="px-2">
+              <BusinessNetworkPost  />
             </div>
 
             <div v-else-if="activeTab === 'media'">

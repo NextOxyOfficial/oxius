@@ -21,4 +21,7 @@ urlpatterns = [
     path('tips-suggestions/', TipsAndSuggestionListCreateView.as_view(), name='tips-suggestions-list'),
     path('tips-suggestions/id/<str:id>/', TipsAndSuggestionDetailView.as_view(), name='tips-suggestions-detail'),
     re_path(r'^tips-suggestions/(?P<slug>[\w\-\u0980-\u09FF]+)/$', TipsAndSuggestionBySlugView.as_view(), name='tips-suggestions-by-slug'),
-]
+    
+    # Breaking News URLs
+    path('breaking-news/', BreakingNewsListView.as_view(), name='breaking-news-list'),
+    ]

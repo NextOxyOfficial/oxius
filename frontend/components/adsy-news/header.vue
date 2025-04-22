@@ -264,9 +264,9 @@
               <p
                 v-for="(news, index) in breakingNews"
                 :key="index"
-                class="ticker-item px-4"
+                class="ticker-item px-4 capitalize"
               >
-                {{ news }}
+                {{ news.title }}
               </p>
             </transition-group>
           </div>
@@ -463,7 +463,20 @@ const breakingNews = ref([
   "Major Economic Reform Bill Passes in Senate",
   "Scientists Discover Potential Cure for Rare Disease",
 ]);
-const currentTickerIndex = ref(0);
+
+async function getBreakingNews() {
+  try {
+    const res = await get("/news/breaking-news/");
+    if (res.data ) {
+      breakingNews.value = res.data.map((news) => ({title:news.title,description:news.description}));
+    } else {
+      console.error("Unexpected response format:", res.data);
+    }
+  } catch (error) {
+    console.error("Error fetching breaking news:", error);
+  }
+}
+await getBreakingNews();
 
 // Current date
 const currentDate = computed(() => {

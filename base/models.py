@@ -73,6 +73,10 @@ class User(AbstractUser):
   commission = models.DecimalField(max_digits=8, decimal_places=2, default=5.00)
   referral_code = models.CharField(max_length=10, unique=True, editable=False)
   nid_number = models.CharField(unique=True,null=True, blank=True,max_length=16)
+  profession = models.CharField(max_length=256,blank=True, default="")
+  company = models.CharField(max_length=256,blank=True, default="")
+  website = models.CharField(max_length=256,blank=True, default="")
+  
   #   subscription
   is_pro = models.BooleanField(default=False)
   pro_validity = models.DateTimeField(null=True, blank=True)
@@ -82,6 +86,7 @@ class User(AbstractUser):
   store_address = models.CharField(max_length=256,blank=True, default="")
   store_logo = models.ImageField(upload_to='images/', blank=True, null=True)
   store_banner = models.ImageField(upload_to='images/', blank=True, null=True)
+
   def __str__(self):
       return self.email
   def save(self, *args, **kwargs):

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import *
+from .models import NewsCategory, NewsPost, NewsPostComment, TipsAndSuggestion, BreakingNews
 # Register your models here.
 
 admin.site.register(NewsPost)
@@ -12,3 +12,9 @@ class TipsAndSuggestionAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description', 'author__username')
     list_filter = ('created_at', 'updated_at')
     readonly_fields = ('id', 'created_at', 'updated_at')
+
+@admin.register(BreakingNews)
+class BreakingNewsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'created_at', 'updated_at')
+    search_fields = ('title', 'description')
+    

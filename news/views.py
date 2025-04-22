@@ -3,6 +3,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.pagination import *
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import *
 from .serializers import *
 
@@ -147,3 +148,14 @@ class PostsByCategory(generics.ListAPIView):
         category_slug = self.kwargs.get('slug')
         category = get_object_or_404(NewsCategory, slug=category_slug)
         return NewsPost.objects.filter(category=category).order_by('-created_at')
+
+class BreakingNewsListView(generics.ListAPIView):
+    queryset = BreakingNews.objects.all()
+    serializer_class = BreakingNewsSerializer
+    permission_classes = [AllowAny]
+    
+class BreakingNewsCreateView(generics.CreateAPIView):
+    queryset = BreakingNews.objects.all()
+    serializer_class = BreakingNewsSerializer
+    permission_classes = [IsAuthenticated]
+    

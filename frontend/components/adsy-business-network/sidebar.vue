@@ -411,9 +411,9 @@
               v-else
               v-for="(user, index) in topContributors.slice(0, 2)"
               :key="index"
-              :href="`/profile/${user.id}`"
+              :href="`/business-network/profile/${user.id}`"
               class="flex items-center px-3 py-2 rounded-md hover:bg-gray-50 transition-colors"
-              @click="handleNavigation(`/profile/${user.id}`)"
+              @click="handleNavigation(`/business-network/profile/${user.id}`)"
             >
               <div class="relative">
                 <img
