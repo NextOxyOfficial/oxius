@@ -116,17 +116,11 @@
                   />
                   <div class="absolute top-0 left-0 m-2">
                     <span
+                      v-for="tag in article.tags"
+                      :key="tag"
                       class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
                     >
-                      All News
-                    </span>
-                  </div>
-                  <div class="absolute top-0 right-0 m-2">
-                    <span
-                      class="bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center"
-                    >
-                      <TrendingUpIcon class="h-3 w-3 mr-1" />
-                      Trending
+                      {{ tag }}
                     </span>
                   </div>
                 </div>
@@ -205,7 +199,7 @@
           ]"
         >
           <article
-            v-for="article in filteredArticles"
+            v-for="(article, index) in filteredArticles.slice(0, 12)"
             :key="article.id"
             :class="[
               'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
@@ -228,9 +222,11 @@
                 />
                 <div class="absolute top-0 left-0 m-3">
                   <span
+                    v-for="tag in article.tags"
+                    :key="tag"
                     class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
                   >
-                    News
+                    {{ tag }}
                   </span>
                 </div>
               </div>
@@ -238,12 +234,12 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class=" font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200"
+                  class="font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
                 >
                   {{ article.title }}
                 </h3>
               </NuxtLink>
-              <p class="text-gray-600 mb-4 line-clamp-2">
+              <p class="text-gray-600 mb-3 line-clamp-2">
                 {{ article.content.substring(0, 150) + "..." }}
               </p>
               <div class="flex justify-between items-center">
@@ -275,7 +271,7 @@
         </div>
 
         <!-- Load More Button -->
-        <div v-if="hasMoreArticles" class="mt-12 text-center">
+        <div v-if="filteredArticles.length > 12" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
             class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
@@ -654,6 +650,7 @@ const formatArticleForDisplay = (article) => {
     summary: article.content
       ? article.content.substring(0, 150) + "..."
       : "No content available",
+    tags: article.tags || [],
   };
 };
 
@@ -671,6 +668,7 @@ const latestArticle = computed(() => {
       authorImage: "/static/frontend/images/placeholder.jpg",
       summary: "No articles available at this moment.",
       comments: [],
+      tags: [],
     };
   }
 
@@ -687,7 +685,7 @@ const filteredArticles = computed(() => {
   if (articles.value.length === 0) return [];
 
   // Use all articles, don't exclude any
-  return articles.value.map((article) => article);
+  return articles.value.map((article) => formatArticleForDisplay(article));
 });
 
 // Trending articles (based on comment count)
@@ -707,16 +705,10 @@ const trendingArticles = computed(() => {
 const getAuthorName = (authorDetails) => {
   if (!authorDetails) return "Anonymous";
 
-  if (authorDetails.name) return authorDetails.name;
-
-  const firstName = authorDetails.first_name || "";
+  const firstName = authorDetails.first_name || "Anonymous";
   const lastName = authorDetails.last_name || "";
 
-  if (firstName || lastName) {
-    return `${firstName} ${lastName}`.trim();
-  }
-
-  return authorDetails.username || "Anonymous";
+  return `${firstName} ${lastName}`.trim();
 };
 
 // Initialize on mount
@@ -817,5 +809,21 @@ onUnmounted(() => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Ensure fixed height for article cards */
+article {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+article h3 {
+  min-height: 3rem; /* Adjust based on expected title height */
+}
+
+article p {
+  min-height: 4rem; /* Adjust based on expected description height */
 }
 </style>
