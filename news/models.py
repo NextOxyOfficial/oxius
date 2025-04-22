@@ -1,12 +1,13 @@
 from django.db import models
 from base.models import *
+from tinymce import models as tinymce_models
 
 class NewsPost(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news_posts')
     title = models.CharField(max_length=255)
-    content = models.TextField()
+    content = tinymce_models.HTMLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -35,11 +35,10 @@
                 {{ latestArticle.title }}
               </NuxtLink>
             </h2>
-            <p
+            <div
               class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl line-clamp-2"
-            >
-              {{ latestArticle.summary }}
-            </p>
+              v-html="latestArticle.summary"
+            ></div>
             <div class="flex items-center">
               <img
                 :src="latestArticle.authorImage"
@@ -236,9 +235,10 @@
                   {{ article.title }}
                 </h3>
               </NuxtLink>
-              <p class="text-gray-600 mb-3 line-clamp-2">
-                {{ article.content.substring(0, 150) + "..." }}
-              </p>
+              <div
+                class="text-gray-600 mb-3 line-clamp-2"
+                v-html="article.content.substring(0, 150) + '...'"
+              ></div>
               <div class="flex justify-between items-center">
                 <div class="flex items-center">
                   <img

@@ -22,6 +22,7 @@ from base.views import index
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
+    path('tinymce/', include('tinymce.urls')),
     path('api/', include('base.urls')),
     path('api/geo/', include('cities.urls')),
     path('api/', include('mobile_recharge.urls')),
