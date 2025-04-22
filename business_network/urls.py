@@ -1,20 +1,5 @@
 from django.urls import path
-from .views import (
-    BusinessNetworkPostListCreateView,
-    BusinessNetworkPostRetrieveUpdateDestroyView,
-    UserPostsListView,
-    BusinessNetworkMediaCreateView,
-    BusinessNetworkMediaDestroyView,
-    BusinessNetworkPostLikeCreateView,
-    BusinessNetworkPostLikeDestroyView,
-    BusinessNetworkPostFollowCreateView,
-    BusinessNetworkPostFollowDestroyView,
-    BusinessNetworkPostCommentListCreateView,
-    BusinessNetworkPostCommentRetrieveUpdateDestroyView,
-    BusinessNetworkPostTagListCreateView,
-    BusinessNetworkPostTagDestroyView,
-    BusinessNetworkPostSearchView
-)
+from .views import *
 
 urlpatterns = [
     # Post endpoints

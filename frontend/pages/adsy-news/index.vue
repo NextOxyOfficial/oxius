@@ -165,10 +165,7 @@
       </div>
 
       <!-- Category Title -->
-      <div
-        v-if="!selectedArticle"
-        class="flex justify-between items-center mb-8"
-      >
+      <div class="flex justify-between items-center mb-8">
         <h2 class="text-xl font-semibold text-gray-700">All News</h2>
         <div class="flex space-x-2">
           <button
@@ -190,7 +187,7 @@
       </div>
 
       <!-- Articles Grid/List -->
-      <div v-if="!selectedArticle">
+      <div>
         <div
           :class="[
             currentLayout === 'grid'
@@ -199,7 +196,7 @@
           ]"
         >
           <article
-            v-for="(article, index) in filteredArticles.slice(0, 12)"
+            v-for="article in filteredArticles.slice(0, 12)"
             :key="article.id"
             :class="[
               'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
@@ -281,32 +278,40 @@
             <span v-else>Load More Articles</span>
           </button>
         </div>
-         <!-- Trending Topics Section -->
-      <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-        <h2 class="text-xl font-semibold text-gray-700 mb-4">Trending Topics</h2>
-        <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3 ">
-          <a
-            v-for="(topic, index) in trendingTopics"
-            :key="index"
-            href="#"
-            class=" px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
-          >
-            <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
-            {{ topic }}
-          </a>
+        <!-- Trending Topics Section -->
+        <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
+          <h2 class="text-xl font-semibold text-gray-700 mb-4">
+            Trending Topics
+          </h2>
+          <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
+            <a
+              v-for="(topic, index) in trendingTopics"
+              :key="index"
+              href="#"
+              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
+            >
+              <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
+              {{ topic }}
+            </a>
+          </div>
         </div>
-      </div>
 
         <!-- Tips and Suggestions Section -->
         <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-6">Tips and Suggestions</h2>
-          <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <h2 class="text-xl font-semibold text-gray-700 mb-6">
+            Tips and Suggestions
+          </h2>
+          <div
+            class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+          >
             <div
               v-for="(tip, index) in visibleTips"
               :key="index"
               class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col"
             >
-              <h3 class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2">
+              <h3
+                class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
+              >
                 {{ tip.title }}
               </h3>
               <p class="text-sm text-gray-500 line-clamp-3">
@@ -314,7 +319,10 @@
               </p>
             </div>
           </div>
-          <div v-if="visibleTips.length < tipsAndSuggestions.length" class="mt-6 text-center">
+          <div
+            v-if="visibleTips.length < tipsAndSuggestions.length"
+            class="mt-6 text-center"
+          >
             <button
               @click="loadMoreTips"
               class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
@@ -324,8 +332,6 @@
           </div>
         </div>
       </div>
-
-     
 
       <!-- Newsletter Section -->
       <div class="mt-16">
@@ -573,31 +579,38 @@ getTrendingTopics();
 const tipsAndSuggestions = ref([
   {
     title: "How to Stay Productive While Working from Home",
-    description: "Discover practical tips to maintain productivity and focus while working remotely.",
+    description:
+      "Discover practical tips to maintain productivity and focus while working remotely.",
   },
   {
     title: "Top 5 Healthy Eating Habits",
-    description: "Learn about simple and effective habits to improve your diet and overall health.",
+    description:
+      "Learn about simple and effective habits to improve your diet and overall health.",
   },
   {
     title: "Effective Time Management Strategies",
-    description: "Master the art of time management with these proven strategies.",
+    description:
+      "Master the art of time management with these proven strategies.",
   },
   {
     title: "How to Build a Morning Routine",
-    description: "Start your day right with a structured and effective morning routine.",
+    description:
+      "Start your day right with a structured and effective morning routine.",
   },
   {
     title: "The Benefits of Regular Exercise",
-    description: "Explore how regular exercise can improve your physical and mental health.",
+    description:
+      "Explore how regular exercise can improve your physical and mental health.",
   },
   {
     title: "How to Manage Stress Effectively",
-    description: "Learn techniques to reduce stress and improve your mental well-being.",
+    description:
+      "Learn techniques to reduce stress and improve your mental well-being.",
   },
   {
     title: "Tips for Better Sleep",
-    description: "Discover ways to improve your sleep quality and wake up refreshed.",
+    description:
+      "Discover ways to improve your sleep quality and wake up refreshed.",
   },
 ]);
 

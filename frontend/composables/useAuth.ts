@@ -3,11 +3,15 @@ export function useAuth() {
   const baseURL = Api.baseURL;
   const user = useState<any>("user", () => null);
   // const { getUserDetails } = useStoreUser();
-  const notifs = useState<array>("notifs", () => []);
+  const notifs = useState<Array<any>>("notifs", () => []);
   const isAuthenticated = computed(() => user.value !== null);
   const jwt = useCookie("adsyclub-jwt");
 
   const jwtLogin = async () => {
+    if (!jwt.value) {
+      user.value = null;
+      return false;
+    }
     const { data, pending, error, refresh } = await useFetch<any>(
       baseURL + "/auth/validate-token/",
       {
@@ -20,6 +24,7 @@ export function useAuth() {
     );
     if (error.value) {
       console.log("JWT validation error:", error.value);
+      const jwt = useCookie("adsyclub-jwt");
       user.value = null;
       jwt.value = null;
       // navigateTo("/");

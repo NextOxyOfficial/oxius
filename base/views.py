@@ -1015,10 +1015,7 @@ def police_station(request):
     return Response(data=areas)
 
 
-# for frontend
 
-def index(request, **args):
-    return render(request, 'index.html')
 
 
 
@@ -2267,3 +2264,13 @@ class BNLogoView(generics.ListAPIView):
 class NewsLogoView(generics.ListAPIView):
     queryset = NewsLogo.objects.all().order_by('-created_at')
     serializer_class = NewsLogoSerializer
+
+
+
+
+
+
+# for frontend
+
+def index(request, **args):
+    return render(request, 'index.html')

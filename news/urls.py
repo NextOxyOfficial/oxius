@@ -1,15 +1,5 @@
 from django.urls import path
-from .views import (
-    NewsPostList,
-    NewsPostDetail,
-    NewsPostCommentList,
-    NewsPostCommentDetail,
-    NewsPostTagList,
-    NewsPostTagDetail,
-    NewsMediaList,
-    NewsMediaDetail,
-    AllNewsPostTagList
-)
+from .views import *
 
 urlpatterns = [
     # News Post endpoints
