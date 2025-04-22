@@ -2,28 +2,7 @@
   <div>
     <header class="sticky top-0 z-50 bg-white shadow-md">
       <div class="max-w-7xl mx-auto">
-        <!-- Top Bar -->
-        <div class="border-b border-gray-200">
-          <div
-            class="flex justify-between items-center px-4 py-2 sm:px-6 lg:px-8"
-          >
-            <div class="flex items-center space-x-4">
-              <span class="text-sm text-gray-500">{{ currentDate }}</span>
-              <div class="hidden sm:flex items-center text-sm text-gray-500">
-                <SunIcon
-                  v-if="weather.icon === 'sun'"
-                  class="h-4 w-4 mr-1 text-amber-500"
-                />
-                <CloudIcon
-                  v-else-if="weather.icon === 'cloud'"
-                  class="h-4 w-4 mr-1 text-gray-400"
-                />
-                <CloudRainIcon v-else class="h-4 w-4 mr-1 text-blue-500" />
-                {{ weather.temp }}°C | {{ weather.condition }}
-              </div>
-            </div>
-          </div>
-        </div>
+        
         <!-- Main Navigation -->
         <div
           class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
@@ -100,15 +79,17 @@
                   class="h-8 sm:h-10 w-auto object-fit"
                 />
               </NuxtLink>
-              <div class="flex items-center space-x-2 ml-auto">
-                <UButton class="bg-black/70" to="/">AdsyClub</UButton>
-                <UButton class="bg-black/70" to="/business-network"
-                  >Adsy BN</UButton
-                >
+              
+              <div class="flex items-center space-x-4 ml-auto">
                 <SearchIcon
                   class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
                   @click="toggleSearch"
                 />
+                <UButton class="bg-black/70" to="/">AdsyClub</UButton>
+                <UButton class="bg-black/70" to="/business-network"
+                  >Adsy BN</UButton
+                >
+                
               </div>
             </div>
             <div
