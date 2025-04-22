@@ -27,27 +27,11 @@
 
         <!-- Main Navigation -->
         <div
-          class="flex flex-col sm:flex-row gap-4 justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
+          class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
         >
           <div class="flex items-center flex-1">
-            <div class="flex-shrink-0">
-              <NuxtLink to="/adsy-news/">
-                <NuxtImg
-                  v-if="logo[0]?.image"
-                  :src="logo[0].image"
-                  alt="Adsy News Logo"
-                  width="150"
-                  height="50"
-                  class="h-8 mr-6 sm:h-10 w-auto object-fit"
-                />
-              </NuxtLink>
-            </div>
-            <div class="sm:hidden flex gap-1">
-              <UButton class="bg-black/70" to="/">AdsyClub</UButton>
-              <UButton class="bg-black/70" to="/business-network"
-                >Adsy BN</UButton
-              >
-            </div>
+            
+            
 
             <nav
               class="hidden md:ml-10 md:flex space-x-8"
@@ -101,79 +85,73 @@
           </div>
 
           <div
-            class="flex-1 items-center sm:justify-end space-x-2 max-sm:w-full">
-          <div class="flex gap-2 items-center justify-between">
-            <UButton class="bg-black/70 max-sm:hidden" to="/">AdsyClub</UButton>
-            <UButton class="bg-black/70 max-sm:hidden" to="/business-network">Adsy BN</UButton>
+            class="flex items-center sm:justify-end space-x-2 flex-1 max-sm:w-full relative"
+          >
+            <div class="flex items-center justify-between w-full sm:w-auto">
+              <NuxtLink to="/adsy-news/" class="flex-shrink-0">
+                <NuxtImg
+                  v-if="logo[0]?.image"
+                  :src="logo[0].image"
+                  alt="Adsy News Logo"
+                  width="150"
+                  height="50"
+                  class="h-8 sm:h-10 w-auto object-fit"
+                />
+              </NuxtLink>
+              <div class="flex items-center space-x-2 ml-auto">
+                <UButton class="bg-black/70" to="/">AdsyClub</UButton>
+                <UButton class="bg-black/70" to="/business-network">Adsy BN</UButton>
                 <SearchIcon
                   class="h-6 w-6 text-gray-500 cursor-pointer"
                   @click="toggleSearch"
                 />
-                <div
-                  v-if="isSearchVisible"
-                  class="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-lg z-10 border border-gray-200 p-4"
-                >
-                  <input
-                    type="text"
-                    placeholder="Search news..."
-                    v-model="searchQuery"
-                    class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-900"
-                    @input="handleSearchInput"
-                  />
-                  <button
-                    v-if="searchQuery"
-                    @click="clearSearch"
-                    class="absolute right-6 top-6"
-                  >
-                    <XIcon class="h-4 w-4 text-gray-500" />
-                  </button>
-                  <!-- Auto-loading search results -->
-                  <div
-                    v-if="searchQuery"
-                    class="mt-4 max-h-96 overflow-y-auto divide-y divide-gray-100"
-                  >
-                    <div
-                      v-for="result in searchResults"
-                      :key="result.id"
-                      class="p-3 hover:bg-gray-50 cursor-pointer"
-                      @click="navigateToArticle(result)"
-                    >
-                      <p class="text-sm font-medium text-gray-900">
-                        {{ result.title }}
-                      </p>
-                      <p class="text-xs text-gray-500 mt-1 flex items-center">
-                        <CalendarIcon class="h-3 w-3 mr-1" />
-                        {{ formatDate(result.created_at) }}
-                        <span class="mx-2">•</span>
-                        <span
-                          class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs"
-                        >
-                          {{
-                            result.post_tags && result.post_tags.length > 0
-                              ? result.post_tags[0].tag
-                              : "News"
-                          }}
-                        </span>
-                      </p>
-                    </div>
-                    <!-- No results message -->
-                    <div
-                      v-if="
-                        searchResults.length === 0 &&
-                        !isSearching &&
-                        searchQuery
-                      "
-                      class="p-4 text-center text-gray-500"
-                    >
-                      No results found for "{{ searchQuery }}"
-                    </div>
-                  </div>
-                </div>
-              
+              </div>
             </div>
-          
-            
-            
+            <div
+              v-if="isSearchVisible"
+              class="absolute top-full right-0 mt-2 bg-white rounded-md shadow-lg z-10 border border-gray-200 p-4 w-full sm:w-72"
+            >
+              <input
+                type="text"
+                placeholder="Search news..."
+                v-model="searchQuery"
+                class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-700"
+                @input="handleSearchInput"
+              />
+              <div
+                v-if="searchQuery"
+                class="mt-4 max-h-96 overflow-y-auto divide-y divide-gray-100"
+              >
+                <div
+                  v-for="result in searchResults"
+                  :key="result.id"
+                  class="p-3 hover:bg-gray-50 cursor-pointer"
+                  @click="navigateToArticle(result)"
+                >
+                  <p class="text-sm font-medium text-gray-700">{{ result.title }}</p>
+                  <p class="text-xs text-gray-500 mt-1 flex items-center">
+                    <CalendarIcon class="h-3 w-3 mr-1" />
+                    {{ formatDate(result.created_at) }}
+                    <span class="mx-2">•</span>
+                    <span
+                      class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs"
+                    >
+                      {{
+                        result.post_tags && result.post_tags.length > 0
+                          ? result.post_tags[0].tag
+                          : "News"
+                      }}
+                    </span>
+                  </p>
+                </div>
+                <div
+                  v-if="searchResults.length === 0 && !isSearching && searchQuery"
+                  class="p-4 text-center text-gray-500"
+                >
+                  No results found for "{{ searchQuery }}"
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -209,7 +187,7 @@
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <span
-              class="font-bold text-sm sm:text-lg mr-4 border-r border-white/30 pr-4"
+              class="font-semibold text-sm sm:text-lg mr-4 border-r border-white/30 pr-4"
               >BREAKING NEWS</span
             >
           </div>
@@ -254,6 +232,8 @@ import {
   CloudRainIcon,
 } from "lucide-vue-next";
 
+import { onMounted, onUnmounted } from "vue";
+
 // Debounce utility function
 function debounce(func, wait) {
   let timeout;
@@ -285,6 +265,22 @@ const isSearchVisible = ref(false);
 const toggleSearch = () => {
   isSearchVisible.value = !isSearchVisible.value;
 };
+
+// Close search dropdown when clicking outside
+const handleClickOutside = (event) => {
+  const searchDropdown = document.querySelector(".relative");
+  if (searchDropdown && !searchDropdown.contains(event.target)) {
+    isSearchVisible.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 
 // Perform search when query changes
 const performSearch = async () => {

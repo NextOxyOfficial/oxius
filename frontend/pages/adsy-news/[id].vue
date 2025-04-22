@@ -12,7 +12,7 @@
       v-if="article"
       class="bg-white rounded-xl shadow-lg overflow-hidden"
     >
-      <div class="relative h-[400px]">
+      <div class="relative h-[350px]">
         <img
           :src="
             article.post_media && article.post_media.length > 0
@@ -25,10 +25,10 @@
         <div
           class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"
         ></div>
-        <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
+        <div class="absolute bottom-0 left-0 right-0 p-2 sm:p-6 text-white">
           <div class="flex items-center mb-4">
             <span
-              class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
+              class="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full"
             >
               All News
             </span>
@@ -40,13 +40,13 @@
               {{ calculateReadTime(article.content) }} min read
             </span>
           </div>
-          <h1 class="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
+          <h1 class="text-3xl sm:text-4xl font-semibold mb-4 leading-tight">
             {{ article.title }}
           </h1>
         </div>
       </div>
 
-      <div class="p-6 sm:p-8">
+      <div class="p-2 sm:p-6">
         <div class="flex items-center mb-8 border-b border-gray-200 pb-6">
           <img
             :src="
@@ -61,7 +61,7 @@
             class="h-12 w-12 rounded-full mr-4 border-2 border-primary"
           />
           <div>
-            <p class="font-medium text-gray-900">
+            <p class="font-medium text-gray-700">
               Posted by:
               <span class="text-primary">{{
                 article.author_details
@@ -92,13 +92,7 @@
             >
               <LinkIcon class="h-4 w-4" />
             </button>
-            <button
-              class="p-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-colors"
-              @click="openChat"
-              @touchstart="openChat"
-            >
-              <SearchIcon class="h-4 w-4" @click="openChat" />
-            </button>
+            
           </div>
         </div>
 
@@ -119,7 +113,7 @@
 
         <!-- Comments Section -->
         <div class="border-t border-gray-200 pt-8">
-          <h2 class="text-2xl font-bold mb-6 text-gray-900">
+          <h2 class="text-2xl font-semibold mb-6 text-gray-700">
             Comments ({{
               article.post_comments ? article.post_comments.length : 0
             }})
@@ -133,7 +127,7 @@
                   rows="3"
                   placeholder="Write a comment..."
                   required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary bg-white text-gray-900"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary bg-white text-gray-700"
                 ></textarea>
                 <div class="mt-3 flex justify-end">
                   <button
@@ -159,7 +153,7 @@
                 <div class="flex items-start space-x-4">
                   <div class="flex-1">
                     <div class="flex justify-between mb-2">
-                      <h3 class="font-bold text-gray-900">
+                      <h3 class="font-semibold text-gray-700">
                         {{
                           comment.author_details
                             ? getAuthorName(comment.author_details)
@@ -191,7 +185,7 @@
           v-if="relatedArticles.length > 0"
           class="mt-12 border-t border-gray-200 pt-8"
         >
-          <h2 class="text-2xl font-bold mb-6 text-gray-900">
+          <h2 class="text-2xl font-semibold mb-6 text-gray-700">
             Related Articles
           </h2>
           <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -215,7 +209,7 @@
               <div class="p-4">
                 <NuxtLink :to="`/adsy-news/${relatedArticle.slug}/`">
                   <h3
-                    class="font-bold text-lg mb-2 hover:text-primary transition-colors"
+                    class="font-semibold text-lg mb-2 hover:text-primary transition-colors"
                   >
                     {{ relatedArticle.title }}
                   </h3>

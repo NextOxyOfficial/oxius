@@ -26,7 +26,7 @@
               }}</span>
             </div>
             <h2
-              class="text-xl sm:text-2xl md:text-4xl font-semibold mb-4 leading-tight"
+              class="text-xl sm:text-xl md:text-2xl font-semibold mb-4 leading-tight"
             >
               <NuxtLink
                 :to="`/adsy-news/${latestArticle.slug}/`"
@@ -322,7 +322,7 @@
             class="relative z-10 flex flex-col md:flex-row items-center justify-between"
           >
             <div class="mb-6 md:mb-0 md:mr-8">
-              <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2">
+              <h2 class="text-xl sm:text-xl font-semibold text-white mb-2">
                 Stay Updated
               </h2>
               <p class="text-white/80 max-w-md">
