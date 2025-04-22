@@ -18,7 +18,8 @@ class NewsPostCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsPostComment
         fields = '__all__'
-
+        read_only_fields = ['post', 'author']
+        
 class NewsPostListSerializer(serializers.ModelSerializer):
     author_details = UserSerializer(source='author', read_only=True)
     post_media = NewsMediaSerializer(many=True, read_only=True)
