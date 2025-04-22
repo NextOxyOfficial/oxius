@@ -1,21 +1,21 @@
-from django.urls import path
+from django.urls import path, re_path
 from .views import *
 
 urlpatterns = [
     # News Post endpoints
     path('posts/', NewsPostList.as_view(), name='post-list'),
-    path('posts/<slug:slug>/', NewsPostDetail.as_view(), name='post-detail'),
+    re_path(r'^posts/(?P<slug>[\w\-\u0980-\u09FF]+)/$', NewsPostDetail.as_view(), name='post-detail'),
     
     # Comments endpoints
     path('posts/<int:pk>/comments/', NewsPostCommentList.as_view(), name='post-comments'),
     path('comments/<int:pk>/', NewsPostCommentDetail.as_view(), name='comment-detail'),
     
-    # Tags endpoints
-    path('posts/<int:pk>/tags/', NewsPostTagList.as_view(), name='post-tags'),
-    path('tags/<int:pk>/', NewsPostTagDetail.as_view(), name='tag-detail'),
-    path('tags/', AllNewsPostTagList.as_view(), name='all-tags'),  # New endpoint for all tags
-    
     # Media endpoints
-    path('media/', NewsMediaList.as_view(), name='media-list'),
-    path('media/<int:pk>/', NewsMediaDetail.as_view(), name='media-detail'),
+    path('media/', NewsCategoryList.as_view(), name='media-list'),
+    path('media/<int:pk>/', NewsCategoryDetail.as_view(), name='media-detail'),
+    
+    # Tips and Suggestions URLs
+    path('tips-suggestions/', TipsAndSuggestionListCreateView.as_view(), name='tips-suggestions-list'),
+    path('tips-suggestions/id/<str:id>/', TipsAndSuggestionDetailView.as_view(), name='tips-suggestions-detail'),
+    re_path(r'^tips-suggestions/(?P<slug>[\w\-\u0980-\u09FF]+)/$', TipsAndSuggestionBySlugView.as_view(), name='tips-suggestions-by-slug'),
 ]

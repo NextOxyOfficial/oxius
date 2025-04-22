@@ -185,7 +185,7 @@
           </h2>
           <div class="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
             <div
-              v-for="(relatedArticle, index) in relatedArticles.slice(0, 4)"
+              v-for="relatedArticle in relatedArticles.slice(0, 4)"
               :key="relatedArticle.id"
               class="bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
             >
@@ -376,6 +376,7 @@ async function addComment() {
 
   try {
     const response = await post(`/news/posts/${article.value.id}/comments/`, {
+      post: article.value.id,
       content: newComment.value.content,
     });
 
@@ -391,11 +392,17 @@ async function addComment() {
       // Clear the comment form
       newComment.value.content = "";
 
-      toast.success("Comment posted successfully");
+      toast.add({
+        title: "Comment posted successfully",
+        color: "green",
+      });
     }
   } catch (error) {
     console.error("Error posting comment:", error);
-    toast.error("Failed to post comment. Please try again.");
+    toast.add({
+      title: "Failed to post comment. Please try again.",
+      color: "red",
+    });
   } finally {
     isSubmittingComment.value = false;
   }
@@ -427,11 +434,17 @@ function shareArticle(platform) {
       navigator.clipboard
         .writeText(url)
         .then(() => {
-          toast.success("Link copied to clipboard!");
+          toast.add({
+            title: "Link copied to clipboard!",
+            color: "green",
+          });
         })
         .catch((err) => {
           console.error("Failed to copy: ", err);
-          toast.error("Failed to copy link");
+          toast.add({
+            title: "Failed to copy link",
+            color: "red",
+          });
         });
       break;
   }
