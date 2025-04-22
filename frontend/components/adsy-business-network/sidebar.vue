@@ -46,7 +46,8 @@
             <NuxtLink
               v-for="item in mainMenu"
               :key="item.path"
-              :href="item.path"
+              :to="item.path"
+              @click="cart.toggleBurgerMenu()"
               :class="[
                 'flex items-center px-3 py-2.5 rounded-md transition-colors group',
                 item.path === route.path

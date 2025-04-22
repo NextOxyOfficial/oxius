@@ -4,20 +4,44 @@
   >
     <div v-if="user?.user?.id" class="flex justify-between items-center px-2">
       <NuxtLink
-        to="/business-network/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        to="/business-network"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/business-network'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <Clock class="h-6 w-6 mb-1 text-gray-500" />
+          <Clock
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/business-network'
+                ? 'text-blue-600'
+                : 'text-gray-500'
+            "
+          />
         </div>
         <span>Recent</span>
       </NuxtLink>
       <NuxtLink
         to="/business-network/notifications"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/business-network/notifications'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <Bell class="h-6 w-6 mb-1 text-gray-500" />
+          <Bell
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/business-network/notifications'
+                ? 'text-blue-600'
+                : 'text-gray-500'
+            "
+          />
           <span
             class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
           >
@@ -27,79 +51,158 @@
         <span>Notifications</span>
       </NuxtLink>
       <NuxtLink
-        to="/business-network/profile"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600"
+        :to="`/business-network/profile/${user?.user?.id}`"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === `/business-network/profile/${user?.user?.id}`
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <User class="h-6 w-6 mb-1 text-blue-600" />
+          <User
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === `/business-network/profile/${user?.user?.id}`
+                ? 'text-blue-600'
+                : 'text-gray-500'
+            "
+          />
         </div>
         <span>Profile</span>
       </NuxtLink>
       <NuxtLink
         to="/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <BarChart2 class="h-6 w-6 mb-1 text-gray-500" />
+          <BarChart2
+            class="h-6 w-6 mb-1"
+            :class="$route.path === '/' ? 'text-blue-600' : 'text-gray-500'"
+          />
         </div>
         <span>Adsy Club</span>
       </NuxtLink>
       <NuxtLink
-        to="/adsy-news/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        to="/adsy-news"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/adsy-news'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <Newspaper class="h-6 w-6 mb-1 text-gray-500" />
+          <Newspaper
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/adsy-news' ? 'text-blue-600' : 'text-gray-500'
+            "
+          />
         </div>
         <span>Adsy News</span>
       </NuxtLink>
     </div>
     <div v-else class="flex justify-between items-center px-2">
       <NuxtLink
-        to="/business-network/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        to="/business-network"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/business-network'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <Clock class="h-6 w-6 mb-1 text-gray-500" />
+          <Clock
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/business-network'
+                ? 'text-blue-600'
+                : 'text-gray-500'
+            "
+          />
         </div>
         <span>Recent</span>
       </NuxtLink>
       <NuxtLink
         to="/auth/login"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/auth/login'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <UIcon name="i-ic-sharp-person" class="h-6 w-6 mb-1 text-gray-500" />
+          <UIcon
+            name="i-ic-sharp-person"
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/auth/login' ? 'text-blue-600' : 'text-gray-500'
+            "
+          />
         </div>
         <span>Login</span>
       </NuxtLink>
       <NuxtLink
         to="/#micro-gigs"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/#micro-gigs'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
           <UIcon
             name="i-material-symbols-attach-money"
-            class="h-6 w-6 mb-1 text-blue-600"
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/#micro-gigs' ? 'text-blue-600' : 'text-gray-500'
+            "
           />
         </div>
         <span>Earn</span>
       </NuxtLink>
       <NuxtLink
         to="/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <BarChart2 class="h-6 w-6 mb-1 text-gray-500" />
+          <BarChart2
+            class="h-6 w-6 mb-1"
+            :class="$route.path === '/' ? 'text-blue-600' : 'text-gray-500'"
+          />
         </div>
         <span>Adsy Club</span>
       </NuxtLink>
       <NuxtLink
-        to="/adsy-news/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+        to="/adsy-news"
+        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        :class="
+          $route.path === '/adsy-news'
+            ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
+            : 'text-gray-500'
+        "
       >
         <div class="relative">
-          <Newspaper class="h-6 w-6 mb-1 text-gray-500" />
+          <Newspaper
+            class="h-6 w-6 mb-1"
+            :class="
+              $route.path === '/adsy-news' ? 'text-blue-600' : 'text-gray-500'
+            "
+          />
         </div>
         <span>Adsy News</span>
       </NuxtLink>

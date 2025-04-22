@@ -227,11 +227,11 @@
             icon: 'i-uil-mobile-vibrate',
           },
           {
-            to: '/business-network/',
+            to: '/business-network',
             icon: 'i-eos-icons:network',
           },
           {
-            to: '/adsy-news/',
+            to: '/adsy-news',
             icon: 'i-mdi:newspaper-variant-multiple-outline',
           },
         ]"
@@ -267,11 +267,11 @@
             icon: 'i-heroicons-shopping-bag',
           },
           {
-            to: '/business-network/',
+            to: '/business-network',
             icon: 'i-eos-icons-network',
           },
           {
-            to: '/adsy-news/',
+            to: '/adsy-news',
             icon: 'i-mdi-newspaper-variant-multiple-outline',
           },
         ]"
