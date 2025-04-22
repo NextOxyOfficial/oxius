@@ -24,7 +24,6 @@
             </div>
           </div>
         </div>
-
         <!-- Main Navigation -->
         <div
           class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
@@ -44,7 +43,7 @@
               class="hidden md:ml-10 md:flex space-x-8"
               v-if="categories?.length > 0"
             >
-              <a
+              <NuxtLink
                 v-for="category in categories.slice(0, 4)"
                 :key="category.id"
                 :class="[
@@ -53,11 +52,10 @@
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-gray-700',
                 ]"
-                href="#"
-                @click.prevent="setActiveCategory(category.id)"
+                :to="`/adsy-news/categories/${category.slug}/`"
               >
                 {{ category.name }}
-              </a>
+              </NuxtLink>
               <div class="relative" v-if="categories.length > 4">
                 <button
                   @click="toggleMoreCategories"
@@ -70,7 +68,7 @@
                   v-if="moreMenuOpen"
                   class="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 max-h-64 overflow-y-auto border border-gray-200"
                 >
-                  <a
+                  <NuxtLink
                     v-for="category in categories.slice(4)"
                     :key="category.id"
                     :class="[
@@ -79,11 +77,10 @@
                         ? 'text-primary'
                         : 'text-gray-700',
                     ]"
-                    href="#"
-                    @click.prevent="setActiveCategory(category.id)"
+                    :to="`/adsy-news/categories/${category.slug}/`"
                   >
                     {{ category.name }}
-                  </a>
+                  </NuxtLink>
                 </div>
               </div>
             </nav>
@@ -125,6 +122,7 @@
                 class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-700 search-input"
                 @input="handleSearchInput"
               />
+
               <div
                 v-if="searchQuery"
                 class="mt-4 max-h-96 overflow-y-auto divide-y divide-gray-100"
@@ -143,11 +141,11 @@
                     {{ formatDate(result.created_at) }}
                     <span class="mx-2">•</span>
                     <span
-                      class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs"
+                      class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs capitalize"
                     >
                       {{
-                        result.post_tags && result.post_tags.length > 0
-                          ? result.post_tags[0].title
+                        result.categories && result.categories.length > 0
+                          ? result.categories[0].title
                           : "News"
                       }}
                     </span>
@@ -165,7 +163,53 @@
             </div>
           </div>
         </div>
-
+        <div class="flex items-center px-6 pb-3 sm:hidden">
+          <nav
+            class="flex md:ml-10 md:hidden justify-between space-x-2"
+            v-if="categories?.length > 0"
+          >
+            <NuxtLink
+              v-for="category in categories.slice(0, 4)"
+              :key="category.id"
+              :class="[
+                'text-sm font-medium hover:text-primary transition-colors duration-200',
+                activeCategory === category.id
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-gray-700',
+              ]"
+              :to="`/adsy-news/categories/${category.slug}/`"
+            >
+              {{ category.name }}
+            </NuxtLink>
+            <div class="relative" v-if="categories.length > 4">
+              <button
+                @click="toggleMoreCategories"
+                class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+              >
+                See More
+                <UIcon name="i-heroicons-arrow-small-down-20-solid" />
+              </button>
+              <div
+                v-if="moreMenuOpen"
+                class="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 max-h-64 overflow-y-auto border border-gray-200"
+              >
+                <NuxtLink
+                  v-for="category in categories.slice(4)"
+                  :key="category.id"
+                  :class="[
+                    'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
+                    activeCategory === category.id
+                      ? 'text-primary'
+                      : 'text-gray-700',
+                  ]"
+                  :to="`/adsy-news/categories/${category.slug}/`"
+                >
+                  {{ category.name }}
+                </NuxtLink>
+              </div>
+            </div>
+          </nav>
+        </div>
         <!-- Mobile Menu -->
         <div v-if="mobileMenuOpen" class="border-t border-gray-200">
           <div class="px-2 pt-2 pb-3 space-y-1 max-h-64 overflow-y-auto">
@@ -395,6 +439,7 @@ async function getCategories() {
       categories.value = res.data.results.map((category) => ({
         id: category.id,
         name: category.title,
+        slug: category.slug,
       }));
     } else {
       console.error("Unexpected response format:", res.data);

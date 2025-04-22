@@ -1,71 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
-      <div class="mb-12">
-        <div
-          class="relative rounded-xl overflow-hidden shadow-xl sm:h-[430px] h-[400px] group"
-        >
-          <img
-            :src="latestArticle.image"
-            :alt="latestArticle.title"
-            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
-          ></div>
-          <div
-            class="absolute bottom-0 left-0 right-0 p-2 sm:p-4 md:p-10 text-white"
-          >
-            <div class="flex items-center mb-4">
-              <span
-                class="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full"
-                >LATEST NEWS</span
-              >
-              <span class="ml-3 text-sm opacity-80">{{
-                latestArticle.date
-              }}</span>
-            </div>
-            <h2
-              class="text-xl sm:text-xl md:text-2xl font-semibold mb-4 leading-tight"
-            >
-              <NuxtLink
-                :to="`/adsy-news/${latestArticle.slug}/`"
-                class="hover:text-primary transition-colors duration-200 line-clamp-2"
-              >
-                {{ latestArticle.title }}
-              </NuxtLink>
-            </h2>
-            <div
-              class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl line-clamp-2"
-              v-html="latestArticle.summary"
-            ></div>
-            <div class="flex items-center">
-              <img
-                :src="latestArticle.authorImage"
-                :alt="latestArticle.author"
-                class="h-10 w-10 rounded-full mr-3 border-2 border-white"
-              />
-              <div>
-                <p class="font-medium">
-                  Posted by:
-                  <span class="text-primary">{{ latestArticle.author }}</span>
-                </p>
-                <p class="text-sm opacity-80">
-                  {{ latestArticle.authorTitle }}
-                </p>
-              </div>
-              <UButton
-                :to="`/adsy-news/${latestArticle.slug}/`"
-                class="ml-auto bg-white text-gray-700 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
-              >
-                Read
-                <ArrowRightIcon class="h-4 w-4 ml-2" />
-              </UButton>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Trending News Carousel -->
       <div class="mb-12">
         <div class="flex justify-between items-center mb-6">
@@ -195,7 +130,7 @@
           ]"
         >
           <article
-            v-for="article in filteredArticles.slice(0, 12)"
+            v-for="article in articlesByCategory"
             :key="article.id"
             :class="[
               'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
@@ -239,7 +174,7 @@
                 <div class="flex items-center">
                   <img
                     :src="
-                      article.authorImage ||
+                      article.author_details.image ||
                       '/static/frontend/images/placeholder.jpg'
                     "
                     :alt="article.author"
@@ -247,13 +182,15 @@
                   />
                   <span class="text-sm font-medium text-gray-700"
                     >Posted by:
-                    <span class="text-primary">{{ article.author }}</span></span
+                    <span class="text-primary">{{
+                      article.author_details.name
+                    }}</span></span
                   >
                 </div>
                 <div class="flex items-center text-gray-500">
                   <MessageSquareIcon class="h-4 w-4 mr-1" />
                   <span class="text-sm">{{
-                    article.post_comments ? article.post_comments.length : 0
+                    article.comment_count ? article.comment_count : 0
                   }}</span>
                 </div>
               </div>
@@ -387,6 +324,7 @@ definePageMeta({
 });
 
 const { get, post } = useApi();
+const route = useRoute();
 
 import {
   ChevronLeftIcon,
@@ -401,6 +339,7 @@ import {
 
 // Articles state
 const articles = ref([]);
+const articlesByCategory = ref([]);
 const totalPages = ref(0);
 const isLoading = ref(false);
 const hasMoreArticles = ref(true);
@@ -455,7 +394,25 @@ async function getArticles(page = 1, append = false) {
     isLoading.value = false;
   }
 }
+async function getArticlesByCategory(page = 1, append = false) {
+  try {
+    isLoading.value = true;
+    const res = await get(
+      `/news/categories/${route.params.id}/posts/?page=${page}`
+    );
 
+    if (res.data) {
+      articlesByCategory.value = res.data.results || [];
+    }
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Load initial articles
+await getArticlesByCategory();
 // Load initial articles
 await getArticles();
 
@@ -480,11 +437,6 @@ const subscribeNewsletter = async () => {
   } catch (error) {
     console.error("Error subscribing to newsletter:", error);
   }
-};
-
-// Chat opening logic
-const openChat = () => {
-  alert("Chat option opened!"); // Replace with actual chat opening logic
 };
 
 // Trending News Carousel

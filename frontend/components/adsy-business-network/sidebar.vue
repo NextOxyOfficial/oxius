@@ -156,6 +156,7 @@
                 class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
               ></div>
             </div>
+
             <div
               v-else
               class="overflow-hidden rounded-lg border border-gray-200 shadow-sm"
@@ -178,8 +179,8 @@
                   <div class="aspect-[16/9] w-full bg-gray-100 relative">
                     <img
                       :src="
-                        news.post_media && news.post_media.length > 0
-                          ? news.post_media[0].image
+                        news.image
+                          ? news.image
                           : '/static/frontend/images/placeholder.jpg'
                       "
                       :alt="news.title"
@@ -823,19 +824,6 @@ const getProductImage = (product) => {
   }
 
   return "/static/frontend/images/placeholder.jpg";
-};
-
-// Calculate discount percentage
-const calculateDiscount = (salePrice, regularPrice) => {
-  if (!regularPrice || !salePrice) return 0;
-
-  const sale =
-    typeof salePrice === "string" ? parseFloat(salePrice) : salePrice;
-  const regular =
-    typeof regularPrice === "string" ? parseFloat(regularPrice) : regularPrice;
-
-  if (regular <= sale) return 0;
-  return Math.round(((regular - sale) / regular) * 100);
 };
 
 const pauseCarousel = () => {

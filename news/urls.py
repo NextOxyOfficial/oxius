@@ -14,6 +14,9 @@ urlpatterns = [
     path('categories/', NewsCategoryList.as_view(), name='category-list'),
     re_path(r'^categories/(?P<slug>[\w\-\u0980-\u09FF]+)/$', NewsCategoryDetail.as_view(), name='category-detail'),
     
+    # Posts by category endpoint
+    re_path(r'^categories/(?P<slug>[\w\-\u0980-\u09FF]+)/posts/$', PostsByCategory.as_view(), name='posts-by-category'),
+    
     # Tips and Suggestions URLs
     path('tips-suggestions/', TipsAndSuggestionListCreateView.as_view(), name='tips-suggestions-list'),
     path('tips-suggestions/id/<str:id>/', TipsAndSuggestionDetailView.as_view(), name='tips-suggestions-detail'),

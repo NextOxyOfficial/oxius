@@ -137,3 +137,13 @@ class TipsAndSuggestionBySlugView(generics.RetrieveAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+class PostsByCategory(generics.ListAPIView):
+    serializer_class = NewsPostListSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = AdvancedPagination
+    
+    def get_queryset(self):
+        category_slug = self.kwargs.get('slug')
+        category = get_object_or_404(NewsCategory, slug=category_slug)
+        return NewsPost.objects.filter(category=category).order_by('-created_at')
