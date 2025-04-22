@@ -101,102 +101,84 @@
           </div>
 
           <div
-            class="flex items-center sm:justify-end space-x-2 flex-1 max-sm:w-full"
-          >
+            class="flex-1 items-center sm:justify-end space-x-2 max-sm:w-full">
+          <div class="flex gap-2 items-center justify-between">
             <UButton class="bg-black/70 max-sm:hidden" to="/">AdsyClub</UButton>
-            <UButton class="bg-black/70 max-sm:hidden" to="/business-network"
-              >Adsy BN</UButton
-            >
-            <div class="relative max-sm:flex-1">
-              <input
-                type="text"
-                placeholder="Search news..."
-                v-model="searchQuery"
-                class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-900"
-                @input="handleSearchInput"
-              />
-              <SearchIcon
-                class="absolute left-3 top-2.5 h-4 w-4 text-gray-500"
-              />
-              <button
-                v-if="searchQuery"
-                @click="clearSearch"
-                class="absolute right-3 top-2.5"
-              >
-                <XIcon class="h-4 w-4 text-gray-500" />
-              </button>
-
-              <!-- Auto-loading search results -->
-              <div
-                v-if="searchQuery"
-                class="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-lg z-10 max-h-96 overflow-y-auto border border-gray-200"
-              >
-                <div class="p-3 border-b border-gray-200">
-                  <p class="text-sm text-gray-700">
-                    Search results for:
-                    <span class="font-medium">{{ searchQuery }}</span>
-                  </p>
-                </div>
-
-                <!-- Loading indicator -->
-                <div v-if="isSearching" class="p-4 text-center">
-                  <div
-                    class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"
-                  ></div>
-                  <p class="mt-2 text-sm text-gray-600">Searching...</p>
-                </div>
-
-                <!-- Results list -->
-                <div v-else class="divide-y divide-gray-100">
-                  <div
-                    v-for="result in searchResults"
-                    :key="result.id"
-                    class="p-3 hover:bg-gray-50 cursor-pointer"
-                    @click="navigateToArticle(result)"
+            <UButton class="bg-black/70 max-sm:hidden" to="/business-network">Adsy BN</UButton>
+                <SearchIcon
+                  class="h-6 w-6 text-gray-500 cursor-pointer"
+                  @click="toggleSearch"
+                />
+                <div
+                  v-if="isSearchVisible"
+                  class="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-lg z-10 border border-gray-200 p-4"
+                >
+                  <input
+                    type="text"
+                    placeholder="Search news..."
+                    v-model="searchQuery"
+                    class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-900"
+                    @input="handleSearchInput"
+                  />
+                  <button
+                    v-if="searchQuery"
+                    @click="clearSearch"
+                    class="absolute right-6 top-6"
                   >
-                    <p class="text-sm font-medium text-gray-900">
-                      {{ result.title }}
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1 flex items-center">
-                      <CalendarIcon class="h-3 w-3 mr-1" />
-                      {{ formatDate(result.created_at) }}
-                      <span class="mx-2">•</span>
-                      <span
-                        class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs"
-                      >
-                        {{
-                          result.post_tags && result.post_tags.length > 0
-                            ? result.post_tags[0].tag
-                            : "News"
-                        }}
-                      </span>
-                    </p>
-                  </div>
-
-                  <!-- No results message -->
+                    <XIcon class="h-4 w-4 text-gray-500" />
+                  </button>
+                  <!-- Auto-loading search results -->
                   <div
-                    v-if="
-                      searchResults.length === 0 && !isSearching && searchQuery
-                    "
-                    class="p-4 text-center text-gray-500"
+                    v-if="searchQuery"
+                    class="mt-4 max-h-96 overflow-y-auto divide-y divide-gray-100"
                   >
-                    No results found for "{{ searchQuery }}"
+                    <div
+                      v-for="result in searchResults"
+                      :key="result.id"
+                      class="p-3 hover:bg-gray-50 cursor-pointer"
+                      @click="navigateToArticle(result)"
+                    >
+                      <p class="text-sm font-medium text-gray-900">
+                        {{ result.title }}
+                      </p>
+                      <p class="text-xs text-gray-500 mt-1 flex items-center">
+                        <CalendarIcon class="h-3 w-3 mr-1" />
+                        {{ formatDate(result.created_at) }}
+                        <span class="mx-2">•</span>
+                        <span
+                          class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs"
+                        >
+                          {{
+                            result.post_tags && result.post_tags.length > 0
+                              ? result.post_tags[0].tag
+                              : "News"
+                          }}
+                        </span>
+                      </p>
+                    </div>
+                    <!-- No results message -->
+                    <div
+                      v-if="
+                        searchResults.length === 0 &&
+                        !isSearching &&
+                        searchQuery
+                      "
+                      class="p-4 text-center text-gray-500"
+                    >
+                      No results found for "{{ searchQuery }}"
+                    </div>
                   </div>
                 </div>
-              </div>
+              
             </div>
-            <button
-              @click="mobileMenuOpen = !mobileMenuOpen"
-              class="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
-            >
-              <MenuIcon v-if="!mobileMenuOpen" class="h-6 w-6" />
-              <XIcon v-else class="h-6 w-6" />
-            </button>
+          
+            
+            
           </div>
         </div>
 
         <!-- Mobile Menu -->
-        <div v-if="mobileMenuOpen" class="md:hidden border-t border-gray-200">
+        <div v-if="mobileMenuOpen" class=" border-t border-gray-200">
           <div class="px-2 pt-2 pb-3 space-y-1">
             <a
               v-for="category in categories"
@@ -297,6 +279,12 @@ const setMoreCategory = (categoryId) => {
 const searchQuery = ref("");
 const searchResults = ref([]);
 const isSearching = ref(false);
+const isSearchVisible = ref(false);
+
+// Toggle search visibility
+const toggleSearch = () => {
+  isSearchVisible.value = !isSearchVisible.value;
+};
 
 // Perform search when query changes
 const performSearch = async () => {
@@ -417,6 +405,11 @@ const weather = reactive({
   condition: "Partly Cloudy",
   icon: "cloud",
 });
+
+// Chat opening logic
+const openChat = () => {
+  alert("Chat option opened!"); // Replace with actual chat opening logic
+};
 </script>
 
 <style>

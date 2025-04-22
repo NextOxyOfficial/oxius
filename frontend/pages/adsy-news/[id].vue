@@ -92,6 +92,13 @@
             >
               <LinkIcon class="h-4 w-4" />
             </button>
+            <button
+              class="p-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-colors"
+              @click="openChat"
+              @touchstart="openChat"
+            >
+              <SearchIcon class="h-4 w-4" @click="openChat" />
+            </button>
           </div>
         </div>
 
@@ -404,6 +411,11 @@ function shareArticle(platform) {
   }
 }
 
+// Chat opening logic
+const openChat = () => {
+  alert("Chat option opened!"); // Replace with actual chat opening logic
+};
+
 // Load the article data
 await getArticle();
 
@@ -447,6 +459,7 @@ import {
   FacebookIcon,
   LinkIcon,
   MessageSquareIcon,
+  SearchIcon,
 } from "lucide-vue-next";
 </script>
 

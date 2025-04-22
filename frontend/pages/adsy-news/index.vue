@@ -3,7 +3,7 @@
     <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
       <div class="mb-12">
         <div
-          class="relative rounded-xl overflow-hidden shadow-xl h-[500px] group"
+          class="relative rounded-xl overflow-hidden shadow-xl sm:h-[430px] h-[400px] group"
         >
           <img
             :src="latestArticle.image"
@@ -14,11 +14,11 @@
             class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
           ></div>
           <div
-            class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-10 text-white"
+            class="absolute bottom-0 left-0 right-0 p-2 sm:p-4 md:p-10 text-white"
           >
             <div class="flex items-center mb-4">
               <span
-                class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full"
+                class="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full"
                 >LATEST NEWS</span
               >
               <span class="ml-3 text-sm opacity-80">{{
@@ -26,7 +26,7 @@
               }}</span>
             </div>
             <h2
-              class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight"
+              class="text-xl sm:text-2xl md:text-4xl font-semibold mb-4 leading-tight"
             >
               <NuxtLink
                 :to="`/adsy-news/${latestArticle.slug}/`"
@@ -57,7 +57,7 @@
               </div>
               <UButton
                 :to="`/adsy-news/${latestArticle.slug}/`"
-                class="ml-auto bg-white text-gray-900 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
+                class="ml-auto bg-white text-gray-700 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
               >
                 Read
                 <ArrowRightIcon class="h-4 w-4 ml-2" />
@@ -70,7 +70,7 @@
       <!-- Trending News Carousel -->
       <div class="mb-12">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Trending News</h2>
+          <h2 class="text-xl font-semibold text-gray-700">Trending News</h2>
           <div class="flex space-x-2">
             <button
               @click="prevTrending"
@@ -116,7 +116,7 @@
                   />
                   <div class="absolute top-0 left-0 m-2">
                     <span
-                      class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
+                      class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
                     >
                       All News
                     </span>
@@ -133,7 +133,7 @@
                 <div class="p-4">
                   <NuxtLink :to="`/adsy-news/${article.slug}/`">
                     <h3
-                      class="text-lg font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer line-clamp-2"
+                      class="text-lg font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
                     >
                       {{ article.title }}
                     </h3>
@@ -175,7 +175,7 @@
         v-if="!selectedArticle"
         class="flex justify-between items-center mb-8"
       >
-        <h2 class="text-2xl font-bold text-gray-900">All News</h2>
+        <h2 class="text-xl font-semibold text-gray-700">All News</h2>
         <div class="flex space-x-2">
           <button
             v-for="layout in layouts"
@@ -200,7 +200,7 @@
         <div
           :class="[
             currentLayout === 'grid'
-              ? 'grid gap-8 md:grid-cols-2 lg:grid-cols-3'
+              ? 'grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-4'
               : 'space-y-8',
           ]"
         >
@@ -228,17 +228,17 @@
                 />
                 <div class="absolute top-0 left-0 m-3">
                   <span
-                    class="bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded"
+                    class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
                   >
                     News
                   </span>
                 </div>
               </div>
             </div>
-            <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-6' : 'p-6']">
+            <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="text-xl font-bold mb-2 text-gray-900 hover:text-primary cursor-pointer transition-colors duration-200"
+                  class="text-md font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200"
                 >
                   {{ article.title }}
                 </h3>
@@ -289,7 +289,7 @@
 
       <!-- Trending Topics Section -->
       <div class="mt-16 bg-gray-100 rounded-xl p-3 sm:p-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Trending Topics</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mb-6">Trending Topics</h2>
         <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
           <a
             v-for="(topic, index) in trendingTopics"
@@ -322,7 +322,7 @@
             class="relative z-10 flex flex-col md:flex-row items-center justify-between"
           >
             <div class="mb-6 md:mb-0 md:mr-8">
-              <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2">
                 Stay Updated
               </h2>
               <p class="text-white/80 max-w-md">
@@ -372,6 +372,7 @@ import {
   LayoutGridIcon,
   LayoutListIcon,
   TrendingUpIcon,
+  SearchIcon,
 } from "lucide-vue-next";
 
 // Articles state
@@ -455,6 +456,11 @@ const subscribeNewsletter = async () => {
   } catch (error) {
     console.error("Error subscribing to newsletter:", error);
   }
+};
+
+// Chat opening logic
+const openChat = () => {
+  alert("Chat option opened!"); // Replace with actual chat opening logic
 };
 
 // Trending News Carousel
