@@ -243,17 +243,15 @@
                 <div class="flex items-center">
                   <img
                     :src="
-                      article.author_details?.image ||
+                      article.authorImage ||
                       '/static/frontend/images/placeholder.jpg'
                     "
-                    :alt="getAuthorName(article.author_details)"
+                    :alt="article.author"
                     class="h-8 w-8 rounded-full mr-2"
                   />
                   <span class="text-sm font-medium text-gray-700"
                     >Posted by:
-                    <span class="text-primary">{{
-                      getAuthorName(article.author_details)
-                    }}</span></span
+                    <span class="text-primary">{{ article.author }}</span></span
                   >
                 </div>
                 <div class="flex items-center text-gray-500">
