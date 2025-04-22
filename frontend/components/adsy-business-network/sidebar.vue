@@ -49,7 +49,7 @@
               :href="item.path"
               :class="[
                 'flex items-center px-3 py-2.5 rounded-md transition-colors group',
-                item.active
+                item.path === route.path
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-gray-50',
               ]"
@@ -58,7 +58,7 @@
                 :is="item.icon"
                 :class="[
                   'h-5 w-5 mr-3',
-                  item.active
+                  item.path === route.path
                     ? 'text-blue-600'
                     : 'text-gray-500 group-hover:text-gray-600',
                 ]"
@@ -457,6 +457,8 @@ const { user } = useAuth();
 const { get } = useApi();
 const logo = ref([]);
 const cart = useStoreCart();
+const route = useRoute();
+console.log(route.path);
 
 // Loading states
 const isLoadingNews = ref(true);
@@ -479,7 +481,7 @@ await getLogo();
 const mainMenu = [
   {
     label: "Recent",
-    path: "/business-network/",
+    path: "/business-network",
     icon: Home,
     active: true,
   },
@@ -491,7 +493,7 @@ const mainMenu = [
   },
   {
     label: "Notifications",
-    path: "business-network/notifications",
+    path: "/business-network/notifications",
     icon: Bell,
     badge: 5,
     active: false,
