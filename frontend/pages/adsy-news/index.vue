@@ -40,6 +40,7 @@
               v-html="latestArticle.summary"
             ></div>
             <div class="flex items-center">
+              {{ latestArticle }}
               <img
                 :src="latestArticle.authorImage"
                 :alt="latestArticle.author"
@@ -647,12 +648,9 @@ const formatArticleForDisplay = (article) => {
     slug: article.slug || "",
     title: article.title || "Untitled Article",
     content: article.content || "",
-    image:
-      article.post_media &&
-      article.post_media.length > 0 &&
-      article.post_media[0].image
-        ? article.post_media[0].image
-        : "/static/frontend/images/placeholder.jpg",
+    image: article.image
+      ? article.image
+      : "/static/frontend/images/placeholder.jpg",
     date: article.created_at
       ? new Date(article.created_at).toLocaleDateString("en-US", {
           year: "numeric",
@@ -663,7 +661,9 @@ const formatArticleForDisplay = (article) => {
     readTime: article.content ? Math.ceil(article.content.length / 1000) : 1,
     author: getAuthorName(article.author_details),
     authorTitle: article.author_details?.user_type || "",
-    authorImage: article.image || "/static/frontend/images/placeholder.jpg",
+    authorImage:
+      article.author_details?.image ||
+      "/static/frontend/images/placeholder.jpg",
     comments: article.post_comments || [],
     summary: article.content
       ? article.content.substring(0, 150) + "..."
@@ -674,6 +674,7 @@ const formatArticleForDisplay = (article) => {
 
 // Latest article (most recent by date)
 const latestArticle = computed(() => {
+  console.log("Latest article:", articles.value);
   if (articles.value.length === 0) {
     return {
       id: "",
