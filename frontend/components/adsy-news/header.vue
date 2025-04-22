@@ -47,7 +47,7 @@
                 v-for="category in categories.slice(0, 4)"
                 :key="category.id"
                 :class="[
-                  'text-sm font-medium hover:text-primary transition-colors duration-200',
+                  'text-lg font-medium hover:text-primary transition-colors duration-200',
                   activeCategory === category.id
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-gray-700',
@@ -59,7 +59,7 @@
               <div class="relative" v-if="categories.length > 4">
                 <button
                   @click="toggleMoreCategories"
-                  class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+                  class="flex items-center text-lg font-medium text-gray-700 hover:text-primary transition-colors duration-200"
                 >
                   See More
                   <UIcon name="i-heroicons-arrow-small-down-20-solid" />
@@ -172,7 +172,7 @@
               v-for="category in categories.slice(0, 4)"
               :key="category.id"
               :class="[
-                'text-sm font-medium hover:text-primary transition-colors duration-200',
+                'text-lg font-medium hover:text-primary transition-colors duration-200',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-700',
@@ -184,7 +184,7 @@
             <div class="relative" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-lg font-medium text-gray-700 hover:text-primary transition-colors duration-200"
               >
                 See More
                 <UIcon name="i-heroicons-arrow-small-down-20-solid" />
