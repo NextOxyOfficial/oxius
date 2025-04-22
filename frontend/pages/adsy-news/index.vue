@@ -200,7 +200,7 @@
         <div
           :class="[
             currentLayout === 'grid'
-              ? 'grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-4'
+              ? 'grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4'
               : 'space-y-8',
           ]"
         >
@@ -287,7 +287,7 @@
         </div>
          <!-- Trending Topics Section -->
       <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-        <h2 class="text-xl font-semibold text-gray-700 mb-6">Trending Topics</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Trending Topics</h2>
         <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3 ">
           <a
             v-for="(topic, index) in trendingTopics"
