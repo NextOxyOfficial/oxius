@@ -31,7 +31,8 @@
         >
           <NuxtLink to="/adsy-news" class="hidden sm:block">
             <NuxtImg
-              src="/gp-logo.png"
+              v-if="logo[0]?.image"
+              :src="logo[0].image"
               alt="Adsy News Logo"
               width="150"
               height="50"

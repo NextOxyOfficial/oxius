@@ -208,11 +208,7 @@
                 :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
               >
                 <img
-                  :src="
-                    article.post_media && article.post_media.length > 0
-                      ? article.post_media[0].image
-                      : '/static/frontend/images/placeholder.jpg'
-                  "
+                  :src="article.image"
                   :alt="article.title"
                   class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
@@ -236,7 +232,7 @@
                 </h3>
               </NuxtLink>
               <div
-                class="text-gray-600 mb-3 line-clamp-2"
+                class="text-gray-600 mb-3 line-clamp-3"
                 v-html="article.content.substring(0, 150) + '...'"
               ></div>
               <div class="flex justify-between items-center">
