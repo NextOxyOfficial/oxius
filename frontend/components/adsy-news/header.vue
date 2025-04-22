@@ -5,7 +5,7 @@
         
         <!-- Main Navigation -->
         <div
-          class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:px-6 lg:px-8"
+          class="flex flex-col sm:flex-row justify-between items-center px-4 pt-6 sm:px-6 lg:px-8"
         >
           <NuxtLink to="/adsy-news" class="hidden sm:block">
             <NuxtImg
@@ -144,7 +144,7 @@
             </div>
           </div>
         </div>
-        <div class="flex items-center px-6 pb-3 sm:hidden">
+        <div class="flex items-center px-6 pb-4 pt-2 sm:hidden">
           <nav
             class="flex md:ml-10 md:hidden justify-between space-x-2"
             v-if="categories?.length > 0"
