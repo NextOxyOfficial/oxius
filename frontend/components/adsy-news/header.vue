@@ -84,10 +84,18 @@
                   class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
                   @click="toggleSearch"
                 />
-                <UButton class="bg-black/70" to="/">AdsyClub</UButton>
-                <UButton class="bg-black/70" to="/business-network"
-                  >Adsy BN</UButton
-                >
+                <UButton
+                  icon="i-lucide-chart-no-axes-column"
+                  label="AdsyClub"
+                  to="/"
+                  class="bg-black/70"
+                />
+                <UButton
+                  icon="i-lucide-globe"
+                  label="Adsy BN"
+                  to="/business-network"
+                  class="bg-black/70"
+                />
               </div>
             </div>
             <div
