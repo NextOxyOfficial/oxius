@@ -10,17 +10,13 @@
               <div
                 class="relative h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-gray-100 shadow-md"
               >
+              
                 <img
                   :src="user?.image"
                   :alt="user?.name"
                   class="w-full h-full object-cover"
                 />
-                <div
-                  v-if="user?.kyc"
-                  class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white"
-                >
-                  <UIcon name="i-mdi-check-decagram" class="w-4 h-4" />
-                </div>
+               
               </div>
             </div>
 
@@ -209,7 +205,7 @@
 
           <div class="py-4">
             <div v-if="activeTab === 'posts'" class="px-2">
-              <BusinessNetworkPost />
+              <BusinessNetworkPost :posts="posts.results" :id="currentUser?.user?.id" />
             </div>
 
             <div v-else-if="activeTab === 'media'">
@@ -592,6 +588,7 @@ const { get } = useApi();
 const route = useRoute();
 
 const user = ref({});
+const posts = ref([]);
 
 async function fetchUser() {
   try {
@@ -603,6 +600,19 @@ async function fetchUser() {
   }
 }
 await fetchUser();
+
+async function fetchUserPosts() {
+  try {
+    const  res  = await get(`/bn/user/${route.params.id}/posts/`);
+    console.log(res,'user posts');
+    posts.value = res.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+await fetchUserPosts();
+
+
 // Sample user data
 const userData = {
   id: "user-current",
@@ -654,85 +664,7 @@ const tabs = [
   { label: "Saved", value: "saved" },
 ];
 
-// Sample posts data
-const generatePosts = (count) => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    title: `Business Strategy Update ${i + 1}: ${
-      [
-        "Market Analysis",
-        "Quarterly Report",
-        "Team Building",
-        "Product Launch",
-        "Industry Trends",
-      ][i % 5]
-    }`,
-    author: {
-      id: user.value.id,
-      fullName: user.value.name,
-      avatar: user.value.avatar,
-      verified: user.value.verified,
-    },
-    timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-    content: [
-      "Our latest market analysis shows significant growth opportunities in the APAC region. The consumer behavior data indicates a shift towards sustainable products, with a 27% increase in eco-friendly purchases over the last quarter.",
-      "The Q3 financial results exceeded expectations with a 15% revenue increase year-over-year. Our cost-cutting initiatives have resulted in a 7% reduction in operational expenses, improving our overall profit margins.",
-      "I'm excited to share that our team building workshop last week was a tremendous success. The cross-departmental collaboration exercises resulted in three innovative product ideas that we're now exploring further.",
-      "We're thrilled to announce that our new product line will launch on November 15th. The marketing campaign will begin next week, focusing on digital channels and influencer partnerships.",
-      "The latest industry report highlights a shift towards AI-powered solutions in our sector. Our R&D team has prepared a comprehensive analysis of how we can leverage these technologies to enhance our product offerings.",
-    ][i % 5],
-    likeCount: Math.floor(Math.random() * 50) + 5,
-    likedBy: [],
-    comments: Array.from({ length: Math.floor(Math.random() * 5) }, (_, j) => ({
-      id: `comment-${i}-${j}`,
-      user: {
-        id: `user-${j}`,
-        fullName: [
-          "Emma Johnson",
-          "Liam Smith",
-          "Olivia Williams",
-          "Noah Brown",
-          "Ava Jones",
-        ][j % 5],
-        avatar: `/images/placeholder.jpg?height=40&width=40`,
-      },
-      text: [
-        "Great insight! Thanks for sharing.",
-        "I completely agree with your analysis.",
-        "This is exactly what our team needed to hear.",
-        "Looking forward to discussing this further in our next meeting.",
-        "Could you elaborate more on the second point?",
-      ][j % 5],
-      timestamp: new Date(
-        Date.now() - Math.floor(Math.random() * 86400000 * 7)
-      ).toISOString(),
-    })),
-    media: Array.from({ length: Math.floor(Math.random() * 5) }, (_, j) => ({
-      id: `${i}-${j}`,
-      type: "image",
-      url: `/images/placeholder.jpg?height=300&width=400`,
-      thumbnail: `/images/placeholder.jpg?height=150&width=200`,
-      likeCount: Math.floor(Math.random() * 20),
-      isLiked: false,
-    })),
-    categories: [
-      ["Marketing", "Strategy"][Math.floor(Math.random() * 2)],
-      ["Leadership", "Technology", "Operations"][Math.floor(Math.random() * 3)],
-    ],
-    isLiked: false,
-    isSaved: false,
-    showDropdown: false,
-    showFullDescription: false,
-    commentText: "",
-  }));
-};
 
-const posts = ref(generatePosts(6));
-
-// Computed
-const allMedia = computed(() => {
-  return posts.value.flatMap((post) => post.media);
-});
 
 // Methods
 const toggleFollow = () => {

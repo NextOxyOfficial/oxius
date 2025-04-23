@@ -1,0 +1,73 @@
+{
+  "name": "AdsyClub - Bangladesh's 1st Social Business Network",
+  "short_name": "AdsyClub",
+  "description": "Earn Money, Connect with Society & Find the Services You Need!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/frontend/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/frontend/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/frontend/screenshots/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "AdsyClub Home Screen"
+    },
+    {
+      "src": "/static/frontend/screenshots/screenshot2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Earn Money with AdsyClub"
+    }
+  ],
+  "categories": ["social", "business", "finance"]
+}

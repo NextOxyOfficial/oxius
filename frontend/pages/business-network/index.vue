@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-16">
-    <BusinessNetworkPost />
+    <BusinessNetworkPost :posts="posts" :id="user?.user?.id" />
 
     <!-- Search Overlay -->
     <Teleport to="body">
@@ -155,6 +155,26 @@ import {
 // State
 const posts = ref([]);
 const loading = ref(false);
+const { get } = useApi(); 
+const {user} = useAuth();
+
+async function getPosts() {
+  loading.value = true;
+  try {
+    const response = await get("/bn/posts/");
+    posts.value = response.data.results;
+    console.log(posts.value);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+await getPosts();
+
+
+
 const page = ref(1);
 const isSearchOpen = ref(false);
 const searchQuery = ref("");
@@ -755,96 +775,9 @@ const handleFileChange = (e) => {
   selectedMedia.value = [...selectedMedia.value, ...validFiles];
 };
 
-const getFilePreview = (file) => {
-  return URL.createObjectURL(file);
-};
-
-const removeMedia = (index) => {
-  selectedMedia.value = selectedMedia.value.filter((_, i) => i !== index);
-};
-
-const handleEmojiClick = (emoji) => {
-  createPostContent.value += emoji;
-  showEmojiPicker.value = false;
-};
-
-const addCategory = () => {
-  if (
-    categoryInput.value.trim() &&
-    !createPostCategories.value.includes(categoryInput.value.trim())
-  ) {
-    createPostCategories.value.push(categoryInput.value.trim());
-    categoryInput.value = "";
-  }
-};
-
-const removeCategory = (category) => {
-  createPostCategories.value = createPostCategories.value.filter(
-    (c) => c !== category
-  );
-};
-
-const handleCreatePost = () => {
-  if (!createPostTitle.value.trim() || !createPostContent.value.trim()) return;
-
-  isSubmitting.value = true;
-
-  // Simulate post creation
-  setTimeout(() => {
-    // Create new post
-    const newPost = {
-      id: Date.now(),
-      title: createPostTitle.value,
-      author: {
-        id: "current-user",
-        fullName: "You",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
-        verified: false,
-      },
-      timestamp: new Date().toISOString(),
-      content: createPostContent.value,
-      likeCount: 0,
-      likedBy: [],
-      comments: [],
-      media: selectedMedia.value.map((file, index) => ({
-        id: `new-${Date.now()}-${index}`,
-        type: file.type.startsWith("image/") ? "image" : "video",
-        url: getFilePreview(file),
-        thumbnail: getFilePreview(file),
-        likeCount: 0,
-        isLiked: false,
-        comments: [],
-        likedBy: [],
-      })),
-      categories: createPostCategories.value,
-      isFollowing: false,
-      isLiked: false,
-      isSaved: false,
-      showDropdown: false,
-      showFullDescription: false,
-      showLikes: false,
-      showComments: false,
-      commentText: "",
-    };
-
-    // Add to posts
-    posts.value.unshift(newPost);
-
-    // Reset form
-    createPostTitle.value = "";
-    createPostContent.value = "";
-    selectedMedia.value = [];
-    createPostCategories.value = [];
-    categoryInput.value = "";
-    isSubmitting.value = false;
-    isCreatePostOpen.value = false;
-  }, 1500);
-};
 
 // Initialize
 onMounted(() => {
-  // Initialize posts
-  posts.value = generatePosts(1, 25);
 
   // Implement infinite scroll
   window.addEventListener("scroll", () => {

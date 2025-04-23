@@ -134,9 +134,16 @@ class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
                            status=status.HTTP_403_FORBIDDEN)
 
 # Like Views
-class BusinessNetworkPostLikeCreateView(generics.CreateAPIView):
+class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostLikeSerializer
-    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    # permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        if post_id:
+            return BusinessNetworkPostLike.objects.filter(post_id=post_id)
+        return BusinessNetworkPostLike.objects.none()
     
     def create(self, request, *args, **kwargs):
         post_id = kwargs.get('post_id')
@@ -164,9 +171,16 @@ class BusinessNetworkPostLikeDestroyView(generics.DestroyAPIView):
         return like
 
 # Follow Views
-class BusinessNetworkPostFollowCreateView(generics.CreateAPIView):
+class BusinessNetworkPostFollowCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostFollowSerializer
-    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    # permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        if post_id:
+            return BusinessNetworkPostFollow.objects.filter(post_id=post_id)
+        return BusinessNetworkPostFollow.objects.none()
     
     def create(self, request, *args, **kwargs):
         post_id = kwargs.get('post_id')
@@ -197,7 +211,7 @@ class BusinessNetworkPostFollowDestroyView(generics.DestroyAPIView):
 class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostCommentSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
@@ -207,6 +221,55 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
         post_id = self.kwargs.get('post_id')
         post = get_object_or_404(BusinessNetworkPost, pk=post_id)
         serializer.save(post=post, author=self.request.user)
+        
+    def create(self, request, *args, **kwargs):
+        content = request.data.get('content')
+        if not content or not content.strip():
+            return Response(
+                {"detail": "Comment content cannot be empty."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Fetch the post using the post_id from URL
+        post_id = self.kwargs.get('post_id')
+        try:
+            post = get_object_or_404(BusinessNetworkPost, pk=post_id)
+            post_author_id = post.author.id
+            
+            # Create data object with all required fields
+            data = {
+                'content': content,
+                'post': post_id,
+                'author': request.user.id
+            }
+            
+            # Create the serializer with our prepared data
+            serializer = self.get_serializer(data=data)
+            
+            # Validate but handle the validation ourselves
+            if not serializer.is_valid():
+                # If there are errors other than post and author, return them
+                errors = serializer.errors.copy()
+                errors.pop('post', None)
+                errors.pop('author', None)
+                if errors:
+                    return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Custom save to ensure post and author are set correctly
+            comment = serializer.save(post=post, author=request.user)
+            
+            # Include post author ID in the response
+            response_data = serializer.data
+            response_data['post_author_id'] = post_author_id
+            
+            headers = self.get_success_headers(serializer.data)
+            return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+            
+        except Exception as e:
+            return Response(
+                {"detail": f"Error creating comment: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class BusinessNetworkPostCommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BusinessNetworkPostCommentSerializer

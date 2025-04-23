@@ -4,6 +4,9 @@
     <slot />
     <PublicFooter />
     <UNotifications />
+    
+    <!-- PWA Installation Prompt -->
+    <PwaInstallPrompt />
 
     <div v-if="loader" class="fixed inset-0 z-[99999999] bg-white">
       <NuxtLoadingIndicator class="!opacity-[1]" />
@@ -25,6 +28,6 @@ onMounted(() => {
 });
 useHead({
   title:
-    "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
+    "AdsyClub – Bangladesh's 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
 });
 </script>

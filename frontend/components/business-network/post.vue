@@ -66,7 +66,7 @@
               </div>
 
               <div class="flex items-center gap-2">
-                <button
+                <button v-if="post?.author !== id"
                   :class="[
                     'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     post.isFollowing
@@ -138,7 +138,7 @@
 
             <!-- Post Title -->
             <NuxtLink
-              :to="`/post/${post.slug}`"
+              :to="`/business-network/posts/${post.slug}`"
               class="block text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
             >
               {{ post.title }}
@@ -315,7 +315,7 @@
               class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100"
             >
               <img
-                src="https://adsyclub.com/media/images/uploaded_image_lkQNPnN.png?height=24&width=24"
+                :src="user?.user?.image"
                 alt="Your avatar"
                 class="w-6 h-6 rounded-full"
               />
@@ -776,6 +776,17 @@
 </template>
 
 <script setup>
+defineProps({
+  posts: {
+    type: Array,
+    default: () => [],
+  },
+  id: {
+    type: String,
+    required: true,
+  },
+});
+
 import {
   Search,
   X,
@@ -806,12 +817,11 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
-const { get } = useApi();
+const {user} = useAuth()
+const {post} = useApi()
 
 // State
-const posts = ref([]);
 const loading = ref(false);
-const page = ref(1);
 const isSearchOpen = ref(false);
 
 const searchInputRef = ref(null);
@@ -833,147 +843,8 @@ const activeCommentsPost = ref(null);
 const activeMediaLikes = ref(null);
 const mediaLikedUsers = ref([]);
 
-async function getPosts() {
-  loading.value = true;
-  try {
-    const response = await get("/bn/posts/");
-    posts.value = response.data.results;
-    console.log(posts.value);
-  } catch (error) {
-    console.log(error);
-  } finally {
-    loading.value = false;
-  }
-}
 
-await getPosts();
 
-// Common emojis for quick access
-const commonEmojis = [
-  "😀",
-  "😃",
-  "😄",
-  "😁",
-  "😆",
-  "😅",
-  "🤣",
-  "😂",
-  "🙂",
-  "🙃",
-  "😉",
-  "😊",
-  "😇",
-  "🥰",
-  "😍",
-  "🤩",
-  "😘",
-  "😗",
-  "😚",
-  "😙",
-  "👍",
-  "👎",
-  "👏",
-  "🙌",
-  "🤝",
-  "👊",
-  "✌️",
-  "🤞",
-  "🤟",
-  "🤘",
-  "❤️",
-  "🧡",
-  "💛",
-  "💚",
-  "💙",
-  "💜",
-  "🖤",
-  "💔",
-  "❣️",
-  "💕",
-];
-
-// Sample user data with full names
-const users = Array.from({ length: 20 }, (_, i) => ({
-  id: `user-${i + 1}`,
-  fullName: [
-    "Emma Johnson",
-    "Liam Smith",
-    "Olivia Williams",
-    "Noah Brown",
-    "Ava Jones",
-    "Elijah Davis",
-    "Sophia Miller",
-    "James Wilson",
-    "Charlotte Moore",
-    "Benjamin Taylor",
-    "Amelia Anderson",
-    "Lucas Thomas",
-    "Mia Jackson",
-    "Mason White",
-    "Harper Harris",
-    "Ethan Martin",
-    "Evelyn Thompson",
-    "Alexander Garcia",
-    "Abigail Martinez",
-    "Michael Robinson",
-  ][i],
-  avatar: `/images/placeholder.jpg?height=40&width=40`,
-  isFollowing: Math.random() > 0.5,
-}));
-
-// Generate replies for comments
-const generateReplies = (commentId, count) => {
-  return Array.from({ length: count }, (_, i) => {
-    return {
-      id: `reply-${commentId}-${i}`,
-      user: users[Math.floor(Math.random() * users.length)],
-      text: [
-        "Thanks for your insight!",
-        "I agree with your point.",
-        "Let's discuss this further in our next meeting.",
-        "Great observation!",
-        "I've been thinking the same thing.",
-        "This is exactly what we need to focus on.",
-      ][Math.floor(Math.random() * 6)],
-      timestamp: new Date(
-        Date.now() - Math.floor(Math.random() * 86400000 * 3)
-      ).toISOString(),
-    };
-  });
-};
-
-// Sample comments with replies
-const generateComments = (postId, count) => {
-  return Array.from({ length: count }, (_, i) => {
-    const comment = {
-      id: `comment-${postId}-${i}`,
-      user: users[Math.floor(Math.random() * users.length)],
-      text: [
-        "Great insight! Thanks for sharing.",
-        "I completely agree with your analysis.",
-        "This is exactly what our team needed to hear.",
-        "Looking forward to discussing this further in our next meeting.",
-        "Could you elaborate more on the second point?",
-        "I've been thinking about this approach as well.",
-        "Have you considered the impact on our Q4 strategy?",
-        "This aligns perfectly with our company vision.",
-      ][Math.floor(Math.random() * 8)],
-      timestamp: new Date(
-        Date.now() - Math.floor(Math.random() * 86400000 * 7)
-      ).toISOString(),
-    };
-
-    // Add replies to some comments
-    if (Math.random() > 0.7) {
-      comment.replies = generateReplies(
-        comment.id,
-        Math.floor(Math.random() * 3) + 1
-      );
-    }
-
-    return comment;
-  });
-};
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -1005,8 +876,20 @@ const formatTimeAgo = (dateString) => {
 };
 
 // Toggle follow
-const toggleFollow = (post) => {
-  post.isFollowing = !post.isFollowing;
+const toggleFollow = async (currentPost) => {
+  try {
+    // Make API call to toggle follow
+    const response = await post(`/bn/posts/${currentPost.id}/follow/`, {user_id: user?.user?.id});
+    console.log("Follow response:", response);
+    // Update UI based on response
+    if (response && response.data) {
+      console.log("Follow toggled successfully:", response.data);
+    } else {
+      console.error("Failed to toggle follow:", response);
+    }
+  } catch (error) {
+    console.error("Error toggling follow:", error);
+  }
 };
 
 // Toggle user follow
@@ -1015,44 +898,71 @@ const toggleUserFollow = (user) => {
 };
 
 // Toggle like
-const toggleLike = (post) => {
-  post.isLiked = !post.isLiked;
-  post.likeCount += post.isLiked ? 1 : -1;
-
-  if (post.isLiked) {
-    post.likedBy.unshift({
-      id: "current-user",
-      fullName: "You",
-      avatar: "/images/placeholder.jpg?height=40&width=40",
-      isFollowing: false,
-    });
-  } else {
-    post.likedBy = post.likedBy.filter((user) => user.id !== "current-user");
+const toggleLike = async (currentPost) => {
+  try {
+    // Make API call to toggle like
+    const response = await post(`/bn/posts/${currentPost.id}/like/`, {user_id: user?.user?.id});
+    console.log("Like response:", response);
+    // Update UI based on response
+    if (response && response.data) {
+      console.log("Like toggled successfully:", response.data);
+    } else {
+      console.error("Failed to toggle like:", response);
+    }
+  } catch (error) {
+    console.error("Error toggling like:", error);
   }
 };
 
 // Toggle media like
-const toggleMediaLike = () => {
+const toggleMediaLike = async () => {
   if (!activeMedia.value) return;
 
-  activeMedia.value.isLiked = !activeMedia.value.isLiked;
-  activeMedia.value.likeCount += activeMedia.value.isLiked ? 1 : -1;
-
-  // Update likedBy array for the media
-  if (activeMedia.value.isLiked) {
-    if (!activeMedia.value.likedBy) {
-      activeMedia.value.likedBy = [];
+  try {
+    // Assuming media has a post_id and media_id
+    const postId = activePost.value?.id;
+    const mediaId = activeMedia.value?.id;
+    
+    if (!postId) {
+      console.error("Post ID not available for media like");
+      return;
     }
-    activeMedia.value.likedBy.unshift({
-      id: "current-user",
-      fullName: "You",
-      avatar: "/images/placeholder.jpg?height=40&width=40",
-      isFollowing: false,
+    
+    // Make API call to toggle media like (modify endpoint as needed)
+    const response = await $fetch(`/api/posts/${postId}/media/${mediaId}/like/`, {
+      method: 'POST',
+      body: {
+        user_id: user?.user?.id
+      }
     });
-  } else if (activeMedia.value.likedBy) {
-    activeMedia.value.likedBy = activeMedia.value.likedBy.filter(
-      (user) => user.id !== "current-user"
-    );
+    
+    // Update UI based on response
+    if (response && response.success) {
+      activeMedia.value.isLiked = !activeMedia.value.isLiked;
+      activeMedia.value.likeCount += activeMedia.value.isLiked ? 1 : -1;
+
+      // Update likedBy array for the media
+      if (activeMedia.value.isLiked) {
+        if (!activeMedia.value.likedBy) {
+          activeMedia.value.likedBy = [];
+        }
+        activeMedia.value.likedBy.unshift({
+          id: user?.user?.id || "current-user",
+          fullName: user?.user?.name || "You",
+          avatar: user?.user?.image || "/images/placeholder.jpg?height=40&width=40",
+          isFollowing: false,
+        });
+      } else if (activeMedia.value.likedBy) {
+        activeMedia.value.likedBy = activeMedia.value.likedBy.filter(
+          (u) => u.id !== (user?.user?.id || "current-user")
+        );
+      }
+    } else {
+      console.error("Failed to toggle media like:", response);
+    }
+  } catch (error) {
+    console.error("Error toggling media like:", error);
+    // You may want to show an error notification here
   }
 };
 
@@ -1123,25 +1033,44 @@ const openMediaLikesModal = () => {
 };
 
 // Add comment
-const addComment = (post) => {
-  if (!post.commentText.trim()) return;
+const addComment = async (currentPost) => {
+  if (!currentPost.commentText.trim()) return;
 
-  const newComment = {
-    id: `comment-${Date.now()}`,
-    user: {
-      id: "current-user",
-      fullName: "You",
-      avatar: "/images/placeholder.jpg?height=40&width=40",
-    },
-    text: post.commentText,
-    timestamp: new Date().toISOString(),
-  };
+  try {
+    // Make API call to add comment
+    const response = await post(`/bn/posts/${currentPost.id}/comments/`, {
+      user_id: user?.user?.id,
+      content: currentPost.commentText.trim()
+    });
+    
+    console.log("Comment response:", response);
+    
+    // Update UI based on response
+    if (response && response.data) {
+      const newComment = {
+        id: response.data.id || `comment-${Date.now()}`,
+        user: {
+          id: user?.user?.id || "current-user",
+          fullName: user?.user?.name || "You",
+          avatar: user?.user?.image || "/images/placeholder.jpg?height=40&width=40",
+        },
+        text: post.commentText.trim(),
+        timestamp: new Date().toISOString(),
+      };
 
-  post.comments.unshift(newComment);
-  post.commentText = "";
+      post.comments.unshift(newComment);
+      post.commentText = "";
 
-  if (activeCommentsPost.value === post) {
-    activeCommentsPost.value = { ...post };
+      if (activeCommentsPost.value === post) {
+        activeCommentsPost.value = { ...post };
+      }
+      
+      console.log("Comment added successfully:", response.data);
+    } else {
+      console.error("Failed to add comment:", response);
+    }
+  } catch (error) {
+    console.error("Error adding comment:", error);
   }
 };
 

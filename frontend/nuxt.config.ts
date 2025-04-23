@@ -37,14 +37,21 @@ export default defineNuxtConfig({
     buildAssetsDir: "/static/frontend/",
     head: {
       title:
-        "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
+        "AdsyClub – Bangladesh's 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
       meta: [
         {
           name: "description",
           content:
-            "AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
+            "AdsyClub – Bangladesh's 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
         },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
+        // PWA meta tags
+        { name: "theme-color", content: "#10b981" },
+        { name: "apple-mobile-web-app-capable", content: "yes" },
+        { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+        { name: "apple-mobile-web-app-title", content: "AdsyClub" },
+        { name: "mobile-web-app-capable", content: "yes" },
+        { name: "application-name", content: "AdsyClub" },
       ],
       link: [
         {
@@ -58,6 +65,31 @@ export default defineNuxtConfig({
           type: "image/png",
           href: "/static/frontend/favicon.png",
           sizes: "180x180",
+        },
+        // PWA manifest
+        {
+          rel: "manifest",
+          href: "/manifest.json",
+        },
+        // Apple touch icons
+        {
+          rel: "apple-touch-icon",
+          href: "/static/frontend/icons/icon-192x192.png",
+        },
+        {
+          rel: "apple-touch-icon",
+          sizes: "152x152",
+          href: "/static/frontend/icons/icon-152x152.png",
+        },
+        {
+          rel: "apple-touch-icon",
+          sizes: "180x180",
+          href: "/static/frontend/icons/icon-192x192.png",
+        },
+        {
+          rel: "apple-touch-startup-image",
+          href: "/static/frontend/icons/splash-640x1136.png",
+          media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
         },
       ],
     },
