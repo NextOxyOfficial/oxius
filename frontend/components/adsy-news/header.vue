@@ -80,7 +80,7 @@
                 />
               </NuxtLink>
               
-              <div class="flex items-center space-x-4 ml-auto">
+              <div class="flex items-center space-x-2 ml-auto">
                 <SearchIcon
                   class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
                   @click="toggleSearch"
@@ -146,14 +146,14 @@
         </div>
         <div class="flex items-center px-6 mb-4 mt-2 sm:hidden">
           <nav
-            class="flex md:ml-10 md:hidden justify-between space-x-2"
+            class="flex md:ml-10 md:hidden justify-between mb-2 space-x-2"
             v-if="categories?.length > 0"
           >
             <NuxtLink
               v-for="category in categories.slice(0, 4)"
               :key="category.id"
               :class="[
-                'text-lg font-medium hover:text-primary transition-colors duration-200',
+                'text-base sm:text-lg  font-medium hover:text-primary transition-colors duration-200',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-700',
