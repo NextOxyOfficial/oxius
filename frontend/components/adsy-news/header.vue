@@ -2,7 +2,6 @@
   <div>
     <header class="sticky top-0 z-50 bg-white shadow-md">
       <div class="max-w-7xl mx-auto">
-        
         <!-- Main Navigation -->
         <div
           class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:py-6 sm:px-6 lg:px-8"
@@ -79,7 +78,7 @@
                   class="h-8 sm:h-10 w-auto object-fit"
                 />
               </NuxtLink>
-              
+
               <div class="flex items-center space-x-4 ml-auto">
                 <SearchIcon
                   class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
@@ -89,7 +88,6 @@
                 <UButton class="bg-black/70" to="/business-network"
                   >Adsy BN</UButton
                 >
-                
               </div>
             </div>
             <div
@@ -448,8 +446,11 @@ const breakingNews = ref([
 async function getBreakingNews() {
   try {
     const res = await get("/news/breaking-news/");
-    if (res.data ) {
-      breakingNews.value = res.data.map((news) => ({title:news.title,description:news.description}));
+    if (res.data) {
+      breakingNews.value = res.data.map((news) => ({
+        title: news.title,
+        description: news.description,
+      }));
     } else {
       console.error("Unexpected response format:", res.data);
     }

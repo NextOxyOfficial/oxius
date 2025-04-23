@@ -105,7 +105,7 @@
             </div>
 
             <UButton
-              icon="i-lucide-globe"
+              icon="i-lucide-chart-no-axes-column"
               label="AdsyClub"
               to="/"
               class="bg-slate-700/80"
