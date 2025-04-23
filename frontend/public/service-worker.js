@@ -1,82 +1,168 @@
 // Service Worker for AdsyClub PWA
-const CACHE_NAME = "adsyclub-v1";
-const URLS_TO_CACHE = [
+const CACHE_VERSION = "adsyclub-v2"; // Incrementing cache version
+const STATIC_CACHE = `${CACHE_VERSION}-static`;
+const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
+const ASSETS_CACHE = `${CACHE_VERSION}-assets`;
+
+const STATIC_URLS_TO_CACHE = [
   "/",
   "/index.html",
   "/manifest.json",
   "/static/frontend/favicon.png",
-  // Add other essential resources you want to cache for offline use
+  // Add critical UI resources that should be available offline
 ];
 
-// Install event - cache essential assets
+const ASSETS_TO_CACHE = [
+  // Images and assets that make the site look good offline
+  "/static/frontend/icons/icon-192x192.png",
+  "/static/frontend/icons/icon-512x512.png",
+];
+
+// Install event - cache essential assets in different caches
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => {
-        console.log("Opened cache");
-        return cache.addAll(URLS_TO_CACHE);
-      })
-      .then(() => self.skipWaiting())
+    Promise.all([
+      // Cache static resources that are critical for the app shell
+      caches.open(STATIC_CACHE).then((cache) => {
+        console.log("Caching app shell resources");
+        return cache.addAll(STATIC_URLS_TO_CACHE);
+      }),
+
+      // Cache assets that improve the offline experience
+      caches.open(ASSETS_CACHE).then((cache) => {
+        console.log("Caching app assets");
+        return cache.addAll(ASSETS_TO_CACHE);
+      }),
+    ]).then(() => self.skipWaiting())
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
-  const cacheWhitelist = [CACHE_NAME];
+  const currentCaches = [STATIC_CACHE, DYNAMIC_CACHE, ASSETS_CACHE];
+
   event.waitUntil(
     caches
       .keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (!cacheWhitelist.includes(cacheName)) {
+            if (!currentCaches.includes(cacheName)) {
+              console.log("Deleting old cache:", cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
-      .then(() => self.clients.claim())
+      .then(() => {
+        console.log("Service Worker now controls all clients");
+        return self.clients.claim();
+      })
   );
 });
 
-// Fetch event - serve from cache, fall back to network
+// Helper function to determine if request should be cached
+const shouldCache = (url) => {
+  // Define patterns for URLs that should be cached
+  const cachePatterns = [
+    /\.(jpe?g|png|gif|svg|webp|ico)$/i, // Images
+    /\.(css|js)$/i, // Static assets
+    /^https:\/\/adsyclub\.com\//i, // Main domain content
+    /^https:\/\/api\.adsyclub\.com\//i, // API responses (if applicable)
+  ];
+
+  return cachePatterns.some((pattern) => pattern.test(url));
+};
+
+// Network-first strategy with cache fallback for dynamic content
+const networkFirst = async (request) => {
+  try {
+    const networkResponse = await fetch(request);
+
+    // If response is valid and should be cached, store in dynamic cache
+    if (networkResponse.ok && shouldCache(request.url)) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+
+    return networkResponse;
+  } catch (error) {
+    // If network fails, try from cache
+    const cachedResponse = await caches.match(request);
+
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    // If it's an HTML request, return the offline page
+    if (request.headers.get("Accept").includes("text/html")) {
+      return caches.match("/offline.html");
+    }
+
+    throw error;
+  }
+};
+
+// Cache-first strategy for static assets
+const cacheFirst = async (request) => {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  try {
+    const networkResponse = await fetch(request);
+
+    if (networkResponse.ok) {
+      const cache = await caches.open(ASSETS_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+
+    return networkResponse;
+  } catch (error) {
+    console.error("Cache-first fetch failed:", error);
+    throw error;
+  }
+};
+
+// Improved fetch event handling with different strategies
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Cache hit - return the response from cache
-      if (response) {
-        return response;
-      }
+  const url = new URL(event.request.url);
 
-      // Not in cache - fetch from network
-      return fetch(event.request).then((networkResponse) => {
-        // Don't cache if response is not valid
-        if (
-          !networkResponse ||
-          networkResponse.status !== 200 ||
-          networkResponse.type !== "basic"
-        ) {
-          return networkResponse;
-        }
+  // Skip non-GET requests
+  if (event.request.method !== "GET") {
+    return;
+  }
 
-        // Clone response as it can only be consumed once
-        const responseToCache = networkResponse.clone();
+  // Skip browser extensions and chrome-extension requests
+  if (url.protocol === "chrome-extension:") {
+    return;
+  }
 
-        // Add response to cache for future use
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+  // Use cache-first for static assets
+  if (
+    event.request.url.match(/\.(jpe?g|png|gif|svg|webp|ico|css|js)$/i) ||
+    event.request.url.includes("/static/")
+  ) {
+    event.respondWith(cacheFirst(event.request));
+    return;
+  }
 
-        return networkResponse;
-      });
-    })
-  );
+  // Use network-first for everything else (API calls, HTML pages)
+  event.respondWith(networkFirst(event.request));
 });
 
 // Handle push notifications when app is installed
 self.addEventListener("push", (event) => {
-  const data = event.data.json();
+  let data = { title: "New Notification", body: "Something new happened!" };
+
+  try {
+    if (event.data) {
+      data = event.data.json();
+    }
+  } catch (error) {
+    console.error("Error parsing push notification data:", error);
+  }
 
   const options = {
     body: data.body,
@@ -86,6 +172,12 @@ self.addEventListener("push", (event) => {
     data: {
       url: data.url || "/",
     },
+    actions: [
+      {
+        action: "open",
+        title: "View",
+      },
+    ],
   };
 
   event.waitUntil(self.registration.showNotification(data.title, options));
@@ -94,5 +186,21 @@ self.addEventListener("push", (event) => {
 // Handle notification click
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data.url));
+
+  if (event.action === "open" || !event.action) {
+    event.waitUntil(
+      clients.matchAll({ type: "window" }).then((windowClients) => {
+        // Check if there is already a window/tab open with the target URL
+        for (let client of windowClients) {
+          if (client.url === event.notification.data.url && "focus" in client) {
+            return client.focus();
+          }
+        }
+        // If not, open a new window
+        if (clients.openWindow) {
+          return clients.openWindow(event.notification.data.url);
+        }
+      })
+    );
+  }
 });

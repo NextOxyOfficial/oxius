@@ -3,21 +3,22 @@
     <Transition name="fade">
       <div
         v-if="showInstallPrompt"
-        class="fixed bottom-20 left-0 right-0 mx-auto w-[90%] max-w-md p-4 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50"
+        class="fixed bottom-6 sm:bottom-10 left-0 right-0 mx-auto w-[92%] max-w-md p-5 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[60] animate-bounce-gentle"
       >
-        <div class="flex items-start gap-3">
-          <!-- App Icon -->
-          <div class="flex-shrink-0">
+        <div class="flex items-start gap-4">
+          <!-- App Icon with pulse effect -->
+          <div class="flex-shrink-0 relative">
+            <div class="absolute inset-0 bg-primary-100 rounded-xl animate-pulse-slow opacity-70"></div>
             <img
               src="/static/frontend/favicon.png"
               alt="AdsyClub"
-              class="w-12 h-12 rounded-xl"
+              class="w-14 h-14 rounded-xl relative z-10"
             />
           </div>
 
           <!-- Content -->
           <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 dark:text-white">
+            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">
               {{ $t("add_to_home_screen") }}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
@@ -25,19 +26,22 @@
             </p>
             
             <!-- Buttons -->
-            <div class="flex gap-3 mt-3">
+            <div class="flex gap-3 mt-4">
               <UButton
-                size="sm"
+                size="md"
                 color="primary"
                 variant="solid"
                 @click="installPWA"
-                class="flex-1"
+                class="flex-1 relative overflow-hidden group"
               >
-                {{ $t("install") }}
-                <UIcon name="i-heroicons-arrow-down-tray" class="ml-1.5" />
+                <span class="relative z-10 flex items-center justify-center">
+                  {{ $t("install") }}
+                  <UIcon name="i-heroicons-arrow-down-tray" class="ml-1.5 group-hover:animate-bounce-once" />
+                </span>
+                <span class="absolute inset-0 bg-gradient-to-r from-primary-600/0 via-primary-400/30 to-primary-600/0 -translate-x-full group-hover:translate-x-full transition-all duration-700"></span>
               </UButton>
               <UButton
-                size="sm"
+                size="md"
                 color="gray"
                 variant="ghost"
                 @click="dismissPrompt"
@@ -51,19 +55,64 @@
           <!-- Close Button -->
           <button
             @click="dismissPrompt"
-            class="flex-shrink-0 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            class="flex-shrink-0 p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-transform hover:rotate-90 duration-300"
           >
             <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
           </button>
         </div>
       </div>
     </Transition>
+
+    <!-- iOS Instructions Modal -->
+    <UModal v-model="showIOSModal">
+      <UCard :ui="{ divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon name="i-heroicons-information-circle" class="text-primary w-5 h-5" />
+            <h3 class="text-lg font-medium">{{ $t("add_to_home_screen") }}</h3>
+          </div>
+        </template>
+
+        <div class="space-y-4 py-4">
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            {{ $t("ios_install_instructions") }}
+          </p>
+          
+          <div class="flex flex-col items-center gap-3 mt-2">
+            <div class="flex items-center gap-2 text-sm">
+              <UIcon name="i-heroicons-arrow-up-tray" class="text-blue-500 w-5 h-5" />
+              <span>{{ $t("tap_share_button") }}</span>
+            </div>
+            <img src="/frontend/images/pwa/ios-share.png" alt="iOS Share Button" class="h-12 rounded-md border border-gray-200" />
+            
+            <div class="flex items-center gap-2 text-sm mt-3">
+              <UIcon name="i-heroicons-plus" class="text-blue-500 w-5 h-5" />
+              <span>{{ $t("tap_add_to_home") }}</span>
+            </div>
+            <img src="/frontend/images/pwa/ios-add-home.png" alt="Add to Home Screen" class="h-12 rounded-md border border-gray-200" />
+          </div>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end">
+            <UButton
+              color="primary"
+              variant="solid" 
+              @click="showIOSModal = false"
+            >
+              {{ $t("got_it") }}
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
   </div>
 </template>
 
 <script setup>
 const { t } = useI18n();
 const showInstallPrompt = ref(false);
+const showIOSModal = ref(false);
 const deferredPrompt = ref(null);
 const hasPromptedUser = ref(false);
 
@@ -76,15 +125,22 @@ const checkDismissalState = () => {
       const dismissedTime = parseInt(lastDismissed);
       const currentTime = new Date().getTime();
       
-      // Show prompt again after 2 weeks (or your preferred timeframe)
-      const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000;
+      // Show prompt again after 3 days (reduced from 2 weeks for better engagement)
+      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
       
-      if (currentTime - dismissedTime < twoWeeksInMs) {
+      if (currentTime - dismissedTime < threeDaysInMs) {
         return true; // Still in cooldown period
       }
     }
   }
   return false;
+};
+
+// Check if the app is already in standalone mode (installed)
+const isInStandaloneMode = () => {
+  return (window.matchMedia('(display-mode: standalone)').matches) || 
+         (window.navigator.standalone) || 
+         document.referrer.includes('android-app://');
 };
 
 // Register service worker
@@ -102,6 +158,11 @@ const registerServiceWorker = async () => {
 // Event listener for the beforeinstallprompt event
 const setupInstallPrompt = () => {
   if (process.client) {
+    // Don't show prompt if already in standalone mode
+    if (isInStandaloneMode()) {
+      return;
+    }
+    
     window.addEventListener('beforeinstallprompt', (e) => {
       // Prevent the default browser prompt
       e.preventDefault();
@@ -113,7 +174,7 @@ const setupInstallPrompt = () => {
         if (!hasPromptedUser.value && !checkDismissalState()) {
           showInstallPrompt.value = true;
         }
-      }, 5000); // Wait 5 seconds before showing prompt
+      }, 3000); // Reduced to 3 seconds for better engagement
     });
     
     // Hide install prompt if app is already installed
@@ -122,12 +183,32 @@ const setupInstallPrompt = () => {
       showInstallPrompt.value = false;
       deferredPrompt.value = null;
       hasPromptedUser.value = true;
+      
+      // Show confirmation toast
+      const toast = useToast();
+      toast.add({
+        title: t('app_installed_successfully'),
+        description: t('app_installed_success_message'),
+        icon: 'i-heroicons-check-circle',
+        timeout: 5000,
+        color: 'green',
+      });
     });
+    
+    // Check if it's iOS - show iOS-specific prompt after a delay
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS && !checkDismissalState()) {
+      setTimeout(() => {
+        showInstallPrompt.value = true;
+      }, 3000);
+    }
   }
 };
 
 // Install the PWA
 const installPWA = async () => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  
   if (deferredPrompt.value) {
     try {
       // Show the browser install prompt
@@ -148,9 +229,10 @@ const installPWA = async () => {
       deferredPrompt.value = null;
       showInstallPrompt.value = false;
     }
-  } else {
+  } else if (isIOS) {
     // For iOS devices that don't support beforeinstallprompt
-    showIOSInstallInstructions();
+    showIOSModal.value = true;
+    showInstallPrompt.value = false;
   }
 };
 
@@ -161,24 +243,6 @@ const dismissPrompt = () => {
   // Store dismissal timestamp
   if (process.client) {
     localStorage.setItem('pwaPromptDismissed', new Date().getTime().toString());
-  }
-};
-
-// Special instructions for iOS devices
-const showIOSInstallInstructions = () => {
-  // Show a modal or toast with iOS installation instructions
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  
-  if (isIOS) {
-    // iOS-specific instructions using toast
-    const toast = useToast();
-    toast.add({
-      title: t('add_to_home_screen'),
-      description: t('ios_install_instructions'),
-      icon: 'i-heroicons-information-circle',
-      timeout: 8000,
-      color: 'blue',
-    });
   }
 };
 
@@ -207,5 +271,47 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(20px);
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite;
+}
+
+@keyframes bounce-once {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+.group-hover\:animate-bounce-once:hover {
+  animation: bounce-once 1s;
 }
 </style>
