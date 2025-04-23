@@ -21,7 +21,7 @@ from .serializers import *
 from .pagination import *
 
 def base64ToFile(base64_data):
-# Remove the prefix if it exists (e.g., "data:image/png;base64,")
+    # Remove the prefix if it exists (e.g., "data:image/png;base64,")
     if base64_data.startswith('data:image'):
         base64_data = base64_data.split('base64,')[1]
         
@@ -54,11 +54,10 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         post = serializer.save()
         
-            # Print or log the serializer errors
-            
-
+        # Print or log the serializer errors
+        
         if images_data:
-        # Handle both list of images and single image
+            # Handle both list of images and single image
             if not isinstance(images_data, list):
                 images_data = [images_data]
                     
@@ -117,9 +116,7 @@ class UserPostsListView(generics.ListAPIView):
 class BusinessNetworkMediaCreateView(generics.CreateAPIView):
     queryset = BusinessNetworkMedia.objects.all()
     serializer_class = BusinessNetworkMediaSerializer
-    permission_classes = [IsAuthenticated]  
-        
-    
+    permission_classes = [IsAuthenticated]
 
 class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
     queryset = BusinessNetworkMedia.objects.all()

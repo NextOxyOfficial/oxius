@@ -148,6 +148,10 @@ export default defineI18nConfig(() => ({
       not_now: "Not Now",
       got_it: "Okay",
       ios_install_instructions: "To install: tap the Share button, then 'Add to Home Screen'.",
+      tap_share_button: "Tap the Share button below",
+      tap_add_to_home: "Tap 'Add to Home Screen'",
+      app_installed_successfully: "App Installed Successfully!",
+      app_installed_success_message: "AdsyClub has been added to your home screen",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -294,6 +298,10 @@ export default defineI18nConfig(() => ({
       not_now: "এখন নয়",
       got_it: "ঠিক আছে",
       ios_install_instructions: "ইনস্টল করতে: শেয়ার বাটনে ক্লিক করুন, তারপর 'হোম স্ক্রিনে যোগ করুন' নির্বাচন করুন।",
+      tap_share_button: "নিচের শেয়ার বাটনে ক্লিক করুন",
+      tap_add_to_home: "হোম স্ক্রিনে যোগ করুন' এ ক্লিক করুন",
+      app_installed_successfully: "অ্যাপ সফলভাবে ইনস্টল হয়েছে!",
+      app_installed_success_message: "AdsyClub আপনার হোম স্ক্রিনে যোগ করা হয়েছে",
     },
   },
 }));
