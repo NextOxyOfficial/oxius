@@ -152,6 +152,8 @@ export default defineI18nConfig(() => ({
       tap_add_to_home: "Tap 'Add to Home Screen'",
       app_installed_successfully: "App Installed Successfully!",
       app_installed_success_message: "AdsyClub has been added to your home screen",
+      installation_not_supported: "Installation Not Supported",
+      installation_not_supported_message: "Your browser doesn't support automatic installation. Please add this website to your home screen manually using your browser's menu.",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -302,6 +304,8 @@ export default defineI18nConfig(() => ({
       tap_add_to_home: "হোম স্ক্রিনে যোগ করুন' এ ক্লিক করুন",
       app_installed_successfully: "অ্যাপ সফলভাবে ইনস্টল হয়েছে!",
       app_installed_success_message: "AdsyClub আপনার হোম স্ক্রিনে যোগ করা হয়েছে",
+      installation_not_supported: "ইনস্টলেশন সমর্থিত নয়",
+      installation_not_supported_message: "আপনার ব্রাউজার স্বয়ংক্রিয় ইনস্টলেশন সমর্থন করে না। অনুগ্রহ করে আপনার ব্রাউজার মেনু ব্যবহার করে ম্যানুয়ালি এই ওয়েবসাইটটি আপনার হোম স্ক্রিনে যোগ করুন।",
     },
   },
 }));

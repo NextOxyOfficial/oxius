@@ -2,11 +2,17 @@
   "name": "AdsyClub - Bangladesh's 1st Social Business Network",
   "short_name": "AdsyClub",
   "description": "Earn Money, Connect with Society & Find the Services You Need!",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#10b981",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "/static/frontend/favicon.png",
@@ -53,6 +59,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/static/frontend/icons/maskable-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
@@ -69,5 +81,34 @@
       "label": "Earn Money with AdsyClub"
     }
   ],
-  "categories": ["social", "business", "finance"]
+  "categories": ["social", "business", "finance"],
+  "shortcuts": [
+    {
+      "name": "My Profile",
+      "short_name": "Profile",
+      "description": "View and edit your profile",
+      "url": "/profile",
+      "icons": [
+        {
+          "src": "/static/frontend/icons/shortcut-profile.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Dashboard",
+      "short_name": "Dashboard",
+      "description": "Quick access to your dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/static/frontend/icons/shortcut-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "handle_links": "preferred"
 }

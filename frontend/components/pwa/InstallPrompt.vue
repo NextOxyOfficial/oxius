@@ -87,7 +87,7 @@
             
             <div class="flex items-center gap-2 text-sm mt-3">
               <UIcon name="i-heroicons-plus" class="text-blue-500 w-5 h-5" />
-              <span>{{ $t("add_to_home_screen") }}</span>
+              <span>{{ $t("tap_add_to_home") }}</span>
             </div>
             <img src="/frontend/images/pwa/ios-add-home.png" alt="Add to Home Screen" class="h-12 rounded-md border border-gray-200" />
           </div>
@@ -138,6 +138,7 @@ const checkDismissalState = () => {
 
 // Check if the app is already in standalone mode (installed)
 const isInStandaloneMode = () => {
+  if (!process.client) return false;
   return (window.matchMedia('(display-mode: standalone)').matches) || 
          (window.navigator.standalone) || 
          document.referrer.includes('android-app://');
@@ -145,10 +146,26 @@ const isInStandaloneMode = () => {
 
 // Register service worker
 const registerServiceWorker = async () => {
-  if ('serviceWorker' in navigator) {
+  if (process.client && 'serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js');
+      // Check if service worker was previously registered
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      if (registrations.length) {
+        console.log('Service worker is already registered');
+        return;
+      }
+      
+      // Register service worker
+      const registration = await navigator.serviceWorker.register('/service-worker.js', {
+        scope: '/'
+      });
       console.log('Service Worker registered with scope:', registration.scope);
+
+      // Force update to ensure the latest version is active
+      if (registration.active) {
+        registration.update();
+        console.log('Service Worker updated');
+      }
     } catch (error) {
       console.error('Service Worker registration failed:', error);
     }
@@ -160,10 +177,12 @@ const setupInstallPrompt = () => {
   if (process.client) {
     // Don't show prompt if already in standalone mode
     if (isInStandaloneMode()) {
+      console.log('App is already in standalone mode');
       return;
     }
     
     window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('beforeinstallprompt event fired');
       // Prevent the default browser prompt
       e.preventDefault();
       // Store the event for later use
@@ -198,6 +217,7 @@ const setupInstallPrompt = () => {
     // Check if it's iOS - show iOS-specific prompt after a delay
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIOS && !checkDismissalState()) {
+      console.log('iOS device detected, showing delayed prompt');
       setTimeout(() => {
         showInstallPrompt.value = true;
       }, 3000);
@@ -207,10 +227,12 @@ const setupInstallPrompt = () => {
 
 // Install the PWA
 const installPWA = async () => {
+  console.log('Install PWA button clicked');
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   
   if (deferredPrompt.value) {
     try {
+      console.log('Using stored beforeinstallprompt event');
       // Show the browser install prompt
       deferredPrompt.value.prompt();
       // Wait for user to respond
@@ -230,9 +252,21 @@ const installPWA = async () => {
       showInstallPrompt.value = false;
     }
   } else if (isIOS) {
+    console.log('iOS device detected, showing iOS installation modal');
     // For iOS devices that don't support beforeinstallprompt
     showIOSModal.value = true;
     showInstallPrompt.value = false;
+  } else {
+    console.log('No installation method available for this browser/device');
+    // Show a message for browsers that don't support Add to Home Screen
+    const toast = useToast();
+    toast.add({
+      title: t('installation_not_supported'),
+      description: t('installation_not_supported_message') || 'Your browser does not support automatic installation. Please add this website to your home screen manually.',
+      icon: 'i-heroicons-information-circle',
+      timeout: 5000,
+      color: 'blue',
+    });
   }
 };
 
@@ -246,9 +280,36 @@ const dismissPrompt = () => {
   }
 };
 
+// Debugging function to check PWA requirements
+const checkPwaRequirements = () => {
+  if (process.client) {
+    // Check HTTPS
+    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    console.log('Is secure context:', isSecure);
+    
+    // Check service worker support
+    const swSupported = 'serviceWorker' in navigator;
+    console.log('Service Worker supported:', swSupported);
+    
+    // Check manifest existence
+    fetch('/manifest.json')
+      .then(response => {
+        console.log('Manifest exists:', response.ok);
+        if (response.ok) return response.json();
+      })
+      .then(data => {
+        console.log('Manifest content:', data);
+      })
+      .catch(err => {
+        console.error('Error fetching manifest:', err);
+      });
+  }
+};
+
 onMounted(() => {
   // Only run on client-side
   if (process.client) {
+    checkPwaRequirements();
     registerServiceWorker();
     setupInstallPrompt();
     
