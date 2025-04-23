@@ -1,15 +1,36 @@
 from django.db import models
 from base.models import *
 
+class BusinessNetworkMedia(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    image = models.ImageField(upload_to='business_network/images/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if BusinessNetworkMedia.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+
 class BusinessNetworkPost(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_posts')
     title = models.CharField(max_length=255)
     content = models.TextField()
+    media = models.ManyToManyField(BusinessNetworkMedia, blank=True, related_name='business_network_posts')
+    is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
     def generate_id(self):
         from datetime import datetime
         import random
@@ -30,25 +51,7 @@ class BusinessNetworkPost(models.Model):
     def __str__(self):
         return f"Post {self.title} by {self.author.username}"
 
-class BusinessNetworkMedia(models.Model):
-    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
-    post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='post_media')
-    image = models.ImageField(upload_to='business_network/images/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMedia.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
-    
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.id = self.generate_id()
-        super().save(*args, **kwargs)
+
 
 class BusinessNetworkPostLike(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
