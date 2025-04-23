@@ -25,20 +25,20 @@
               </NuxtLink>
             </div>
           </div>
-          
+
           <!-- Desktop: Search icon positioned 3px left of AdsyClub button -->
           <div class="hidden sm:flex gap-2 items-center ml-auto">
             <div class="relative mr-3 search-button-container">
               <!-- Search Icon - Clickable to toggle dropdown -->
-              <button 
+              <button
                 class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
                 @click="toggleSearchDropdown"
               >
                 <SearchIcon class="h-5 w-5 text-gray-500" />
               </button>
-              
+
               <!-- Search Dropdown (only visible when toggleSearchDropdown is clicked) -->
-              <div 
+              <div
                 v-if="showSearchDropdown"
                 class="absolute top-full right-0 mt-2 bg-white rounded-md shadow-lg z-50 w-72 overflow-hidden border border-gray-200 search-dropdown-container"
               >
@@ -52,7 +52,9 @@
                       class="w-full pl-8 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-900 search-input"
                       ref="searchInput"
                     />
-                    <SearchIcon class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <SearchIcon
+                      class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+                    />
                     <button
                       v-if="searchQuery"
                       @click="clearSearch"
@@ -62,9 +64,12 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Search Results -->
-                <div v-if="searchQuery && searchResults.length > 0" class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                <div
+                  v-if="searchQuery && searchResults.length > 0"
+                  class="divide-y divide-gray-100 max-h-80 overflow-y-auto"
+                >
                   <div
                     v-for="result in limitedSearchResults"
                     :key="result.id"
@@ -83,7 +88,7 @@
                     </p>
                   </div>
                 </div>
-                
+
                 <!-- No Results Message -->
                 <div
                   v-if="searchQuery && searchResults.length === 0"
@@ -91,33 +96,40 @@
                 >
                   No results found for "{{ searchQuery }}"
                 </div>
-                
+
                 <!-- Empty State (when dropdown is first opened) -->
-                <div
-                  v-if="!searchQuery"
-                  class="p-4 text-center text-gray-500"
-                >
+                <div v-if="!searchQuery" class="p-4 text-center text-gray-500">
                   Type to start searching...
                 </div>
               </div>
             </div>
-            
-            <UButton to="/" class="bg-slate-700/80">AdsyClub</UButton>
-            <UButton to="/adsy-news" class="bg-slate-700/80">AdsyNews</UButton>
+
+            <UButton
+              icon="i-lucide-globe"
+              label="AdsyClub"
+              to="/"
+              class="bg-slate-700/80"
+            />
+            <UButton
+              icon="i-lucide-newspaper"
+              label="AdsyNews"
+              to="/adsy-news"
+              class="bg-slate-700/80"
+            />
           </div>
-          
+
           <div v-if="!user" class="flex relative menu-container">
             <!-- Mobile: Search icon positioned 2px left of Login/Register button -->
             <div class="sm:hidden relative mr-2 search-button-container">
-              <button 
+              <button
                 class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
                 @click="toggleSearchDropdown"
               >
                 <SearchIcon class="h-5 w-5 text-gray-500" />
               </button>
-              
+
               <!-- Mobile Search Dropdown with Fixed Positioning -->
-              <div 
+              <div
                 v-if="showSearchDropdown"
                 class="fixed left-0 right-0 top-16 mx-4 bg-white rounded-lg shadow-xl z-[99999] border border-gray-200 search-dropdown-container"
               >
@@ -131,7 +143,9 @@
                       class="w-full pl-8 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-900 search-input"
                       ref="mobileSearchInput"
                     />
-                    <SearchIcon class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <SearchIcon
+                      class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+                    />
                     <button
                       v-if="searchQuery"
                       @click="clearSearch"
@@ -141,9 +155,12 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Search Results -->
-                <div v-if="searchQuery && searchResults.length > 0" class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                <div
+                  v-if="searchQuery && searchResults.length > 0"
+                  class="divide-y divide-gray-100 max-h-64 overflow-y-auto"
+                >
                   <div
                     v-for="result in limitedSearchResults"
                     :key="result.id"
@@ -162,7 +179,7 @@
                     </p>
                   </div>
                 </div>
-                
+
                 <!-- No Results Message -->
                 <div
                   v-if="searchQuery && searchResults.length === 0"
@@ -170,17 +187,14 @@
                 >
                   No results found for "{{ searchQuery }}"
                 </div>
-                
+
                 <!-- Empty State (when dropdown is first opened) -->
-                <div
-                  v-if="!searchQuery"
-                  class="p-4 text-center text-gray-500"
-                >
+                <div v-if="!searchQuery" class="p-4 text-center text-gray-500">
                   Type to start searching...
                 </div>
               </div>
             </div>
-            
+
             <PublicTranslateHandler class="px-2 max-sm:hidden" />
             <UButton
               to="/auth/login"
@@ -209,19 +223,19 @@
               </template>
             </UButton>
           </div>
-          
+
           <div v-else class="flex relative menu-container">
             <!-- Mobile: Search icon for logged-in users -->
             <div class="sm:hidden relative mr-2 search-button-container">
-              <button 
+              <button
                 class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
                 @click="toggleSearchDropdown"
               >
                 <SearchIcon class="h-5 w-5 text-gray-500" />
               </button>
-              
+
               <!-- Mobile Search Dropdown (same as above) -->
-              <div 
+              <div
                 v-if="showSearchDropdown"
                 class="absolute top-full right-0 mt-2 bg-white rounded-md shadow-lg z-50 w-72 overflow-hidden border border-gray-200 search-dropdown-container"
               >
@@ -229,9 +243,9 @@
                 <!-- ... -->
               </div>
             </div>
-            
+
             <PublicTranslateHandler class="px-2 max-sm:hidden" />
-            
+
             <UButton
               size="sm"
               color="primary"
