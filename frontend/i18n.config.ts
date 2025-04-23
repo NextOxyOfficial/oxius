@@ -154,6 +154,15 @@ export default defineI18nConfig(() => ({
       app_installed_success_message: "AdsyClub has been added to your home screen",
       installation_not_supported: "Installation Not Supported",
       installation_not_supported_message: "Your browser doesn't support automatic installation. Please add this website to your home screen manually using your browser's menu.",
+      // New PWA installation translations
+      install_app: "Install App",
+      add_to_home: "Add to Home Screen",
+      ios_install_guide: "Follow these steps to install AdsyClub on your iOS device:",
+      tap_share_icon: "Tap the Share icon in the bottom menu",
+      scroll_and_tap: "Scroll down and tap",
+      add_to_home_screen: "Add to Home Screen",
+      tap_add: "Tap 'Add' in the top right corner",
+      got_it: "Got It",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -306,6 +315,15 @@ export default defineI18nConfig(() => ({
       app_installed_success_message: "AdsyClub আপনার হোম স্ক্রিনে যোগ করা হয়েছে",
       installation_not_supported: "ইনস্টলেশন সমর্থিত নয়",
       installation_not_supported_message: "আপনার ব্রাউজার স্বয়ংক্রিয় ইনস্টলেশন সমর্থন করে না। অনুগ্রহ করে আপনার ব্রাউজার মেনু ব্যবহার করে ম্যানুয়ালি এই ওয়েবসাইটটি আপনার হোম স্ক্রিনে যোগ করুন।",
+      // New PWA installation translations for Bangla
+      install_app: "অ্যাপ ইনস্টল",
+      add_to_home: "হোম স্ক্রিনে যোগ করুন",
+      ios_install_guide: "আপনার iOS ডিভাইসে AdsyClub ইনস্টল করতে এই পদক্ষেপগুলি অনুসরণ করুন:",
+      tap_share_icon: "নীচের মেনুতে শেয়ার আইকন ট্যাপ করুন",
+      scroll_and_tap: "নিচে স্ক্রোল করুন এবং ট্যাপ করুন",
+      add_to_home_screen: "হোম স্ক্রিনে যোগ করুন",
+      tap_add: "উপরের ডান কোণে 'যোগ করুন' ট্যাপ করুন",
+      got_it: "বুঝেছি",
     },
   },
 }));
