@@ -20,6 +20,26 @@ class BusinessNetworkMedia(models.Model):
             self.id = self.generate_id()
         super().save(*args, **kwargs)
 
+class BusinessNetworkPostTag(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    tag = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if BusinessNetworkPostTag.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+
 class BusinessNetworkPost(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
@@ -27,6 +47,7 @@ class BusinessNetworkPost(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     media = models.ManyToManyField(BusinessNetworkMedia, blank=True, related_name='business_network_posts')
+    tags = models.ManyToManyField(BusinessNetworkPostTag, blank=True, related_name='business_network_posts')
     is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -126,24 +147,5 @@ class BusinessNetworkPostComment(models.Model):
             self.id = self.generate_id()
         super().save(*args, **kwargs)
 
-class BusinessNetworkPostTag(models.Model):
-    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
-    post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='post_tags')
-    tag = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkPostTag.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
-    
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.id = self.generate_id()
-        super().save(*args, **kwargs)
 
