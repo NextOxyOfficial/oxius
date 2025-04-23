@@ -47,15 +47,31 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     
         
     def create(self, request, *args, **kwargs):
+        images_data = request.data.pop('images', None)
         serializer = self.get_serializer(data={'title':request.data['title'], 'content':request.data['content'], 'author':request.user.id})
-        try:
-            serializer.is_valid(raise_exception=True)
-        except ValidationError as e:
+        
+        serializer.is_valid(raise_exception=True)
+        post = serializer.save()
+        
             # Print or log the serializer errors
-            print(serializer.errors)  # or use logging
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
 
-        self.perform_create(serializer)
+        if images_data:
+        # Handle both list of images and single image
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+                    
+            for image_data in images_data:
+                try:
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # Process base64 image
+                        image_file = base64ToFile(image_data)
+                        post_media = BusinessNetworkMedia.objects.create(image=image_file)
+                        post.media.add(post_media)
+                except Exception as e:
+                    # Log error but continue processing
+                    print(f"Error processing image: {str(e)}")
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -96,35 +112,7 @@ class BusinessNetworkMediaCreateView(generics.CreateAPIView):
     serializer_class = BusinessNetworkMediaSerializer
     permission_classes = [IsAuthenticated]  
         
-    def create(self, request, *args, **kwargs):
-        post = get_object_or_404(BusinessNetworkPost, pk=self.kwargs.get('post_id'))
-        # Check if user is the post author
-        if post.author != self.request.user:
-            return Response({"detail": "You do not have permission to add media to this post."}, 
-                           status=status.HTTP_403_FORBIDDEN)
-        print(request.data)
-        images_data = request.data
-        # Process images if provided
-        if images_data:
-            # Handle both list of images and single image
-            if not isinstance(images_data, list):
-                images_data = [images_data]
-                
-            for image_data in images_data:
-                try:
-                    if isinstance(image_data, str) and image_data.startswith('data:image'):
-                        # Process base64 image
-                        image_file = base64ToFile(image_data)
-                        post_media = BusinessNetworkMedia.objects.create(image=image_file,post=post)
-                        serializer = self.get_serializer(post_media)
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-                except Exception as e:
-                    # Log error but continue processing
-                    print(f"Error processing image: {str(e)}")
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                
-        else:
-            return Response({"detail": "No images provided."}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
     queryset = BusinessNetworkMedia.objects.all()

@@ -74,11 +74,10 @@
                   >Post Content*</label
                 >
                 <div class="relative">
-                  <textarea
-                    placeholder="What's on your mind?"
-                    class="min-h-[180px] w-full resize-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-white transition-all duration-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <CommonEditor
                     v-model="form.content"
-                  ></textarea>
+                    @updateContent="updateContent"
+                  />
                   <div
                     class="absolute right-2 bottom-2 text-xs text-gray-400 flex items-center gap-1"
                   >
@@ -149,10 +148,7 @@
                 >
                   <span>Selected Media ({{ images.length }})</span>
                   <span class="text-xs text-gray-500">
-                    {{
-                      selectedMedia.filter((f) => f.type.startsWith("image/"))
-                        .length
-                    }}/12 images,
+                    {{ images.length }}/12 images,
                   </span>
                 </h4>
 
@@ -535,21 +531,23 @@ const removeCategory = (category) => {
   );
 };
 
+function updateContent(p) {
+  form.value.content = p;
+}
+
 async function handleCreatePost() {
   isSubmitting.value = true;
   try {
-    const { data } = await post("/bn/posts/", form.value);
+    const { data } = await post("/bn/posts/", {
+      ...form.value,
+      images: images.value,
+    });
     if (data) {
       form.value = {
         title: "",
         content: "",
       };
-      const postId = data.id;
-      const res = await post(`/bn/posts/${postId}/media/`, images);
-      if (res.data) {
-        console.log("Media uploaded successfully:", res.data);
-        images.value = [];
-      }
+      images.value = [];
     }
   } catch (error) {
     console.error("Error creating post:", error);
