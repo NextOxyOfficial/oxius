@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, permissions
@@ -5,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
+import base64
+from django.core.files.base import ContentFile
 
 from .models import (
     BusinessNetworkPost,
@@ -17,6 +20,24 @@ from .models import (
 from .serializers import *
 from .pagination import *
 
+def base64ToFile(base64_data):
+# Remove the prefix if it exists (e.g., "data:image/png;base64,")
+    if base64_data.startswith('data:image'):
+        base64_data = base64_data.split('base64,')[1]
+        
+    # Decode the Base64 string into bytes
+    file_data = base64.b64decode(base64_data)
+        
+    # Create a Django ContentFile object from the bytes
+    file = ContentFile(file_data)
+        
+    # You can create a filename, e.g., using the current timestamp or other logic
+    filename = "uploaded_image.png"  # Customize as needed
+        
+    # Save the file to the appropriate storage (e.g., media directory)
+    file.name = filename
+    return file
+
 # Post Views
 class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     queryset = BusinessNetworkPost.objects.all().order_by('-created_at')
@@ -24,8 +45,19 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     pagination_class = StandardResultsSetPagination
     permission_classes = [IsAuthenticated]
     
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data={'title':request.data['title'], 'content':request.data['content'], 'author':request.user.id})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            # Print or log the serializer errors
+            print(serializer.errors)  # or use logging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class BusinessNetworkPostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BusinessNetworkPost.objects.all()
@@ -62,15 +94,37 @@ class UserPostsListView(generics.ListAPIView):
 class BusinessNetworkMediaCreateView(generics.CreateAPIView):
     queryset = BusinessNetworkMedia.objects.all()
     serializer_class = BusinessNetworkMediaSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def perform_create(self, serializer):
+    permission_classes = [IsAuthenticated]  
+        
+    def create(self, request, *args, **kwargs):
         post = get_object_or_404(BusinessNetworkPost, pk=self.kwargs.get('post_id'))
         # Check if user is the post author
         if post.author != self.request.user:
             return Response({"detail": "You do not have permission to add media to this post."}, 
                            status=status.HTTP_403_FORBIDDEN)
-        serializer.save(post=post)
+        print(request.data)
+        images_data = request.data
+        # Process images if provided
+        if images_data:
+            # Handle both list of images and single image
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+                
+            for image_data in images_data:
+                try:
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # Process base64 image
+                        image_file = base64ToFile(image_data)
+                        post_media = BusinessNetworkMedia.objects.create(image=image_file,post=post)
+                        serializer = self.get_serializer(post_media)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    # Log error but continue processing
+                    print(f"Error processing image: {str(e)}")
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+        else:
+            return Response({"detail": "No images provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
     queryset = BusinessNetworkMedia.objects.all()

@@ -9,7 +9,7 @@ urlpatterns = [
     path('posts/search/', BusinessNetworkPostSearchView.as_view(), name='post-search'),
     
     # Media endpoints
-    path('posts/<str:post_id>/media/', BusinessNetworkMediaCreateView.as_view(), name='post-media-create'),
+    path('posts/<int:post_id>/media/', BusinessNetworkMediaCreateView.as_view(), name='post-media-create'),
     path('media/<str:pk>/', BusinessNetworkMediaDestroyView.as_view(), name='post-media-delete'),
     
     # Like endpoints
