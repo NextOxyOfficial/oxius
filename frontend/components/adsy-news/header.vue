@@ -5,7 +5,7 @@
         
         <!-- Main Navigation -->
         <div
-          class="flex flex-col sm:flex-row justify-between items-center px-4 py-4 sm:py-6 sm:px-6 lg:px-8"
+          class="flex flex-col sm:flex-row justify-between items-center px-4 sm:py-4 pt-4 pb-2 sm:py-6 sm:px-6 lg:px-8"
         >
           <NuxtLink to="/adsy-news" class="hidden sm:block">
             <NuxtImg
@@ -40,7 +40,7 @@
                   @click="toggleMoreCategories"
                   class="flex items-center text-lg font-medium text-gray-700 hover:text-primary transition-colors duration-200"
                 >
-                  See More
+                  More
                   <UIcon name="i-heroicons-arrow-small-down-20-solid" />
                 </button>
                 <div
