@@ -485,6 +485,49 @@
                     />
                   </div>
                 </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      <div class="flex items-center gap-1">Profession</div>
+                    </label>
+                    <UInput
+                      type="text"
+                      size="md"
+                      color="white"
+                      placeholder="Enter your profession"
+                      v-model="userProfile.profession"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      <div class="flex items-center gap-1">Company Name</div>
+                    </label>
+                    <UInput
+                      type="text"
+                      size="md"
+                      color="white"
+                      placeholder="Enter your company name"
+                      v-model="userProfile.company"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      <div class="flex items-center gap-1">Website</div>
+                    </label>
+                    <UInput
+                      type="text"
+                      size="md"
+                      color="white"
+                      placeholder="Enter your website"
+                      v-model="userProfile.website"
+                      class="w-full"
+                    />
+                  </div>
+                </div>
               </div>
 
               <!-- About Me -->
