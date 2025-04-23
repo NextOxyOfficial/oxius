@@ -87,7 +87,7 @@
             
             <div class="flex items-center gap-2 text-sm mt-3">
               <UIcon name="i-heroicons-plus" class="text-blue-500 w-5 h-5" />
-              <span>{{ $t("tap_add_to_home") }}</span>
+              <span>{{ $t("add_to_home_screen") }}</span>
             </div>
             <img src="/frontend/images/pwa/ios-add-home.png" alt="Add to Home Screen" class="h-12 rounded-md border border-gray-200" />
           </div>

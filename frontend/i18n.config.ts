@@ -146,6 +146,7 @@ export default defineI18nConfig(() => ({
       install_app_message: "Install our app for faster access and better experience, even when offline!",
       install: "Install App",
       not_now: "Not Now",
+      got_it: "Okay",
       ios_install_instructions: "To install: tap the Share button, then 'Add to Home Screen'.",
     },
     bn: {
@@ -291,6 +292,7 @@ export default defineI18nConfig(() => ({
       install_app_message: "দ্রুত অ্যাক্সেস এবং অফলাইনে ব্যবহার করতে আমাদের অ্যাপ ইনস্টল করুন!",
       install: "অ্যাপ ইনস্টল",
       not_now: "এখন নয়",
+      got_it: "ঠিক আছে",
       ios_install_instructions: "ইনস্টল করতে: শেয়ার বাটনে ক্লিক করুন, তারপর 'হোম স্ক্রিনে যোগ করুন' নির্বাচন করুন।",
     },
   },
