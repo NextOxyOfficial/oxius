@@ -290,6 +290,11 @@ def update_nid(request):
         status=status.HTTP_400_BAD_REQUEST
     )
 
+class PersonRetrieveView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+    lookup_field = 'id'
 
 
 class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

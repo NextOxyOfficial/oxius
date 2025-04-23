@@ -541,6 +541,7 @@ async function handleCreatePost() {
     const { data } = await post("/bn/posts/", {
       ...form.value,
       images: images.value,
+      tags: createPostCategories.value,
     });
     if (data) {
       form.value = {

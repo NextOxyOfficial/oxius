@@ -50,7 +50,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     post_media = BusinessNetworkMediaSerializer(many=True, read_only=True)
     post_likes = serializers.SerializerMethodField()
     post_comments = BusinessNetworkPostCommentSerializer(many=True, read_only=True)
-    post_tags = BusinessNetworkPostTagSerializer(many=True, read_only=True)
+    post_tags = BusinessNetworkPostTagSerializer(many=True, read_only=True,source='tags')
     post_followers = BusinessNetworkPostFollowSerializer(many=True, read_only=True)
     like_count = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()

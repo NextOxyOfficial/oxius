@@ -251,26 +251,21 @@
               <Hash class="h-3.5 w-3.5 mr-1.5" />
               <span>Trending Hashtags</span>
             </div>
-            <a
-              href="/hashtags"
+            <div
               class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center"
-              @click="handleNavigation('/hashtags')"
             >
               <span>Top 100</span>
               <ChevronRight class="h-3 w-3 ml-0.5" />
-            </a>
+            </div>
           </h3>
           <div class="flex flex-wrap gap-2 px-3">
-            <a
-              v-for="tag in hashtags"
-              :key="tag.tag"
-              :href="`/hashtag/${tag.tag}`"
+            <p
+              v-for="tag in tags"
+              :key="tag.id"
               class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-              @click="handleNavigation(`/hashtag/${tag.tag}`)"
             >
               <span>#{{ tag.tag }}</span>
-              <span class="ml-1 text-gray-500">{{ tag.count }}</span>
-            </a>
+            </p>
           </div>
         </div>
 
@@ -492,6 +487,7 @@ const logo = ref([]);
 const cart = useStoreCart();
 const route = useRoute();
 console.log(route.path);
+const tags = ref([]);
 
 // Loading states
 const isLoadingNews = ref(true);
@@ -509,6 +505,18 @@ async function getLogo() {
 }
 
 await getLogo();
+
+async function getTags() {
+  try {
+    const response = await get("/bn/tags/");
+    tags.value = response.data;
+    console.log(tags.value);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+await getTags();
 
 // Main Menu Items
 const mainMenu = [

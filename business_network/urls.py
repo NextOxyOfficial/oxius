@@ -25,6 +25,6 @@ urlpatterns = [
     path('comments/<str:pk>/', BusinessNetworkPostCommentRetrieveUpdateDestroyView.as_view(), name='comment-detail'),
     
     # Tag endpoints
-    path('posts/<str:post_id>/tags/', BusinessNetworkPostTagListCreateView.as_view(), name='post-tags'),
+    path('tags/', BusinessNetworkPostTagListCreateView.as_view(), name='post-tags'),
     path('tags/<str:pk>/', BusinessNetworkPostTagDestroyView.as_view(), name='tag-delete'),
 ]

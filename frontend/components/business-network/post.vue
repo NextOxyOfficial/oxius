@@ -17,37 +17,50 @@
           <div class="p-3">
             <!-- Post Header -->
             <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-3 flex-1">
                 <div class="relative">
                   <img
-                    :src="post.author.avatar"
-                    :alt="post.author.fullName"
+                    :src="post?.author_details?.image"
+                    :alt="post?.author_details?.name"
                     class="w-8 h-8 rounded-full"
                   />
-                  <div
-                    v-if="post.author.verified"
-                    class="absolute -right-0.5 -bottom-0.5 bg-blue-500 text-white rounded-full p-0.5"
-                  >
-                    <Check class="h-2.5 w-2.5" />
-                  </div>
                 </div>
-                <div>
+                <div class="flex-1">
                   <NuxtLink
-                    :to="`/business-network/profile/${post.author.id}`"
-                    class="font-medium text-gray-900 text-sm hover:underline flex items-center gap-1"
+                    :to="`/business-network/profile/${post.author}`"
+                    class="font-medium text-gray-900 text-sm hover:cursor-pointer flex gap-1 w-full"
                   >
-                    {{ post.author.fullName }}
-                    <div v-if="post.author.verified" class="text-blue-500">
-                      <Check class="h-3.5 w-3.5" />
+                    <p class="">
+                      {{ post?.author_details?.name }}
+                    </p>
+                    <div
+                      v-if="post?.author_details?.kyc"
+                      class="text-blue-500 flex items-center"
+                    >
+                      <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
+                      <span
+                        v-if="post?.author_details?.is_pro"
+                        class="text-2xs px-1 py-0.5 font-medium"
+                      >
+                        <div class="flex items-center gap-0.5">
+                          <UIcon
+                            name="i-heroicons-shield-check"
+                            class="size-4 text-indigo-700 font-semibold"
+                          />
+                          <span class="text-xs font-semibold text-indigo-700"
+                            >Pro</span
+                          >
+                        </div>
+                      </span>
                     </div>
                   </NuxtLink>
                   <p
                     class="text-xs font-semibold bg-white py-0.5 text-slate-500"
                   >
-                    Writer
+                    {{ post?.author_details?.profession }}
                   </p>
                   <p class="text-xs text-gray-500">
-                    {{ formatTimeAgo(post.timestamp) }}
+                    {{ formatTimeAgo(post?.created_at) }}
                   </p>
                 </div>
               </div>
@@ -125,38 +138,37 @@
 
             <!-- Post Title -->
             <NuxtLink
-              :to="`/post/${post.id}`"
+              :to="`/post/${post.slug}`"
               class="block text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
             >
               {{ post.title }}
             </NuxtLink>
 
-            <!-- Categories -->
+            <!-- Tags -->
             <div
-              v-if="post.categories && post.categories.length > 0"
+              v-if="post?.post_tags?.length > 0"
               class="flex flex-wrap gap-1 mb-2"
             >
               <span
-                v-for="(category, idx) in post.categories"
+                v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
                 class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
               >
-                {{ category }}
+                #{{ tag.tag }}
               </span>
             </div>
 
             <!-- Post Content -->
-            <div class="mb-2">
+            <div class="mb-2 min-w-full">
               <p
                 :class="[
                   'text-sm text-gray-700',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
-              >
-                {{ post.content }}
-              </p>
+                v-html="post.content"
+              ></p>
               <button
-                v-if="post.content.length > 160"
+                v-if="post?.content?.length > 160"
                 class="text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
@@ -165,7 +177,7 @@
             </div>
 
             <!-- Media Gallery -->
-            <div v-if="post.media.length > 0" class="mb-3">
+            <div v-if="post?.media?.length > 0" class="mb-3">
               <div class="grid grid-cols-4 gap-1">
                 <div
                   v-for="(media, mediaIndex) in post.media.slice(0, 8)"
@@ -195,7 +207,7 @@
                     class="absolute inset-0 bg-black/50 flex items-center justify-center"
                   >
                     <span class="text-white font-medium text-sm"
-                      >+{{ post.media.length - 8 }}</span
+                      >+{{ post?.media?.length - 8 }}</span
                     >
                   </div>
                 </div>
@@ -234,7 +246,7 @@
                 >
                   <MessageCircle class="h-4 w-4 text-gray-500" />
                   <span class="text-sm text-gray-600"
-                    >{{ post.comments.length }} comments</span
+                    >{{ post?.comments?.length }} comments</span
                   >
                 </button>
                 <button
@@ -262,7 +274,7 @@
             </div>
 
             <!-- Comments Preview -->
-            <div v-if="post.comments.length > 0" class="space-y-2">
+            <div v-if="post?.comments?.length > 0" class="space-y-2">
               <div
                 v-for="comment in post.comments.slice(0, 2)"
                 :key="comment.id"
@@ -290,11 +302,11 @@
               </div>
 
               <button
-                v-if="post.comments.length > 2"
+                v-if="post?.comments?.length > 2"
                 class="text-sm text-blue-600 font-medium mt-1"
                 @click="openCommentsModal(post)"
               >
-                See all {{ post.comments.length }} comments
+                See all {{ post?.comments?.length }} comments
               </button>
             </div>
 
@@ -335,14 +347,12 @@
       </div>
 
       <div
-        v-if="!loading && posts.length === 0"
+        v-if="!loading && posts?.length === 0"
         class="flex flex-col items-center justify-center py-12 text-center"
       >
         <p class="text-gray-500 mb-2">No posts available</p>
       </div>
     </div>
-
-    
 
     <!-- Media Viewer -->
     <Teleport to="body">
@@ -534,7 +544,13 @@
     </Teleport>
 
     <!-- Create Post Modal -->
-    <BusinessNetworkCreatePost :createPostContent="createPostContent" :createPostCategories="createPostCategories" :isSubmitting="isSubmitting" :isCreatePostOpen="isCreatePostOpen" :createPostTitle="createPostTitle"/>
+    <BusinessNetworkCreatePost
+      :createPostContent="createPostContent"
+      :createPostCategories="createPostCategories"
+      :isSubmitting="isSubmitting"
+      :isCreatePostOpen="isCreatePostOpen"
+      :createPostTitle="createPostTitle"
+    />
 
     <!-- Likes Modal -->
     <Teleport to="body">
@@ -790,6 +806,7 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
+const { get } = useApi();
 
 // State
 const posts = ref([]);
@@ -815,6 +832,21 @@ const activeLikesPost = ref(null);
 const activeCommentsPost = ref(null);
 const activeMediaLikes = ref(null);
 const mediaLikedUsers = ref([]);
+
+async function getPosts() {
+  loading.value = true;
+  try {
+    const response = await get("/bn/posts/");
+    posts.value = response.data.results;
+    console.log(posts.value);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+await getPosts();
 
 // Common emojis for quick access
 const commonEmojis = [
@@ -941,121 +973,6 @@ const generateComments = (postId, count) => {
 
     return comment;
   });
-};
-
-// Generate posts
-const generatePosts = (start, count) => {
-  const categories = [
-    "Marketing",
-    "Finance",
-    "Operations",
-    "Leadership",
-    "Technology",
-    "HR",
-    "Sales",
-    "Strategy",
-  ];
-
-  return Array.from({ length: count }, (_, i) => {
-    const postId = start + i;
-    const likeCount = Math.floor(Math.random() * 30);
-    const commentCount = Math.floor(Math.random() * 15);
-    const mediaCount = Math.floor(Math.random() * 14) + 1;
-
-    // Assign 1-2 random categories to each post
-    const numCategories = Math.floor(Math.random() * 2) + 1;
-    const postCategories = Array.from(
-      { length: numCategories },
-      () => categories[Math.floor(Math.random() * categories.length)]
-    ).filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
-
-    // Generate random likes
-    const likedBy = Array.from({ length: likeCount }, () => {
-      const user = { ...users[Math.floor(Math.random() * users.length)] };
-      user.isFollowing = Math.random() > 0.5;
-      return user;
-    });
-
-    // Generate random comments
-    const comments = generateComments(postId, commentCount);
-
-    // Generate media with likes and comments
-    const media = Array.from({ length: mediaCount }, (_, j) => {
-      const mediaLikeCount = Math.floor(Math.random() * 20);
-      const mediaCommentCount = Math.floor(Math.random() * 10);
-
-      // Generate liked users for media
-      const mediaLikedBy = Array.from({ length: mediaLikeCount }, () => {
-        const user = { ...users[Math.floor(Math.random() * users.length)] };
-        user.isFollowing = Math.random() > 0.5;
-        return user;
-      });
-
-      return {
-        id: `${postId}-${j}`,
-        type: j < 12 ? "image" : "video",
-        url:
-          j < 12
-            ? `/images/placeholder.jpg?height=300&width=400`
-            : "https://example.com/video.mp4",
-        thumbnail: `/images/placeholder.jpg?height=150&width=200`,
-        likeCount: mediaLikeCount,
-        isLiked: false,
-        comments: generateComments(`${postId}-${j}`, mediaCommentCount),
-        likedBy: mediaLikedBy,
-      };
-    }).slice(0, 14);
-
-    return {
-      id: postId,
-      title: `Business Strategy Update ${postId}: ${
-        [
-          "Market Analysis",
-          "Quarterly Report",
-          "Team Building",
-          "Product Launch",
-          "Industry Trends",
-        ][Math.floor(Math.random() * 5)]
-      }`,
-      author: users[Math.floor(Math.random() * users.length)],
-      timestamp: new Date(Date.now() - postId * 3600000).toISOString(),
-      content: [
-        "Our latest market analysis shows significant growth opportunities in the APAC region. The consumer behavior data indicates a shift towards sustainable products, with a 27% increase in eco-friendly purchases over the last quarter. This trend is particularly strong among the 25-34 demographic, suggesting we should adjust our marketing strategy accordingly.",
-        "The Q3 financial results exceeded expectations with a 15% revenue increase year-over-year. Our cost-cutting initiatives have resulted in a 7% reduction in operational expenses, improving our overall profit margins. The board has approved the expansion plan for the European market, with implementation scheduled to begin next month.",
-        "I'm excited to share that our team building workshop last week was a tremendous success. The cross-departmental collaboration exercises resulted in three innovative product ideas that we're now exploring further. The feedback from participants was overwhelmingly positive, with 92% reporting improved communication with colleagues from other departments.",
-        "We're thrilled to announce that our new product line will launch on November 15th. The marketing campaign will begin next week, focusing on digital channels and influencer partnerships. Early focus group testing shows a 85% positive response rate, significantly higher than our previous launches.",
-        "The latest industry report highlights a shift towards AI-powered solutions in our sector. Our R&D team has prepared a comprehensive analysis of how we can leverage these technologies to enhance our product offerings. I've attached the full report for those interested in the technical details.",
-      ][Math.floor(Math.random() * 5)],
-      likeCount,
-      likedBy,
-      comments,
-      media,
-      categories: postCategories,
-      isFollowing: Math.random() > 0.5,
-      isLiked: false,
-      isSaved: false,
-      showDropdown: false,
-      showFullDescription: false,
-      showLikes: false,
-      showComments: false,
-      commentText: "",
-    };
-  });
-};
-
-// Load more posts
-const loadMorePosts = () => {
-  if (loading.value) return;
-
-  loading.value = true;
-
-  // Simulate API call with timeout
-  setTimeout(() => {
-    const newPosts = generatePosts(page.value * 25 + 1, 25);
-    posts.value = [...posts.value, ...newPosts];
-    page.value++;
-    loading.value = false;
-  }, 1000);
 };
 
 // Format time ago
@@ -1356,68 +1273,8 @@ const removeCategory = (category) => {
   );
 };
 
-const handleCreatePost = () => {
-  if (!createPostTitle.value.trim() || !createPostContent.value.trim()) return;
-
-  isSubmitting.value = true;
-
-  // Simulate post creation
-  setTimeout(() => {
-    // Create new post
-    const newPost = {
-      id: Date.now(),
-      title: createPostTitle.value,
-      author: {
-        id: "current-user",
-        fullName: "You",
-        avatar: "/images/placeholder.jpg?height=40&width=40",
-        verified: false,
-      },
-      timestamp: new Date().toISOString(),
-      content: createPostContent.value,
-      likeCount: 0,
-      likedBy: [],
-      comments: [],
-      media: selectedMedia.value.map((file, index) => ({
-        id: `new-${Date.now()}-${index}`,
-        type: file.type.startsWith("image/") ? "image" : "video",
-        url: getFilePreview(file),
-        thumbnail: getFilePreview(file),
-        likeCount: 0,
-        isLiked: false,
-        comments: [],
-        likedBy: [],
-      })),
-      categories: createPostCategories.value,
-      isFollowing: false,
-      isLiked: false,
-      isSaved: false,
-      showDropdown: false,
-      showFullDescription: false,
-      showLikes: false,
-      showComments: false,
-      commentText: "",
-    };
-
-    // Add to posts
-    posts.value.unshift(newPost);
-
-    // Reset form
-    createPostTitle.value = "";
-    createPostContent.value = "";
-    selectedMedia.value = [];
-    createPostCategories.value = [];
-    categoryInput.value = "";
-    isSubmitting.value = false;
-    isCreatePostOpen.value = false;
-  }, 1500);
-};
-
 // Initialize
 onMounted(() => {
-  // Initialize posts
-  posts.value = generatePosts(1, 25);
-
   // Implement infinite scroll
   window.addEventListener("scroll", () => {
     if (

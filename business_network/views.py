@@ -48,6 +48,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         
     def create(self, request, *args, **kwargs):
         images_data = request.data.pop('images', None)
+        tags_data = request.data.pop('tags', None)
         serializer = self.get_serializer(data={'title':request.data['title'], 'content':request.data['content'], 'author':request.user.id})
         
         serializer.is_valid(raise_exception=True)
@@ -71,6 +72,12 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 except Exception as e:
                     # Log error but continue processing
                     print(f"Error processing image: {str(e)}")
+                    
+        if tags_data:
+            if tags_data and isinstance(tags_data, list):
+                for tag_data in tags_data:
+                    tag, created = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
+                    post.tags.add(tag)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -226,21 +233,9 @@ class BusinessNetworkPostCommentRetrieveUpdateDestroyView(generics.RetrieveUpdat
 
 # Tag Views
 class BusinessNetworkPostTagListCreateView(generics.ListCreateAPIView):
+    queryset = BusinessNetworkPostTag.objects.all()
     serializer_class = BusinessNetworkPostTagSerializer
-    permission_classes = [IsAuthenticated]
     
-    def get_queryset(self):
-        post_id = self.kwargs.get('post_id')
-        return BusinessNetworkPostTag.objects.filter(post__id=post_id)
-    
-    def perform_create(self, serializer):
-        post_id = self.kwargs.get('post_id')
-        post = get_object_or_404(BusinessNetworkPost, pk=post_id)
-        # Only post author can add tags
-        if post.author != self.request.user:
-            return Response({"detail": "Only the post author can add tags."}, 
-                          status=status.HTTP_403_FORBIDDEN)
-        serializer.save(post=post)
 
 class BusinessNetworkPostTagDestroyView(generics.DestroyAPIView):
     queryset = BusinessNetworkPostTag.objects.all()

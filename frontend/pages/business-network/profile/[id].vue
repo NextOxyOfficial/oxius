@@ -11,18 +11,17 @@
                 class="relative h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-gray-100 shadow-md"
               >
                 <img
-                  :src="user.avatar"
-                  :alt="user.name"
+                  :src="user?.image"
+                  :alt="user?.name"
                   class="w-full h-full object-cover"
                 />
                 <div
-                  v-if="user.verified"
+                  v-if="user?.kyc"
                   class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white"
                 >
-                  <BadgeCheck class="h-4 w-4" />
+                  <UIcon name="i-mdi-check-decagram" class="w-4 h-4" />
                 </div>
               </div>
-              
             </div>
 
             <div
@@ -30,34 +29,35 @@
             >
               <div>
                 <h1 class="text-2xl font-bold flex items-center gap-1">
-                  {{ user.name }}
-                  <BadgeCheck
-                    v-if="user.verified"
-                    class="h-5 w-5 text-blue-500"
+                  {{ user?.name }}
+                  <UIcon
+                    v-if="user?.kyc"
+                    name="i-mdi-check-decagram"
+                    class="w-5 h-5 text-blue-600"
                   />
                 </h1>
-                <UBadge class="bg-gray-100 text-slate-500">Writer</UBadge>
-                <p class="text-gray-500">@{{ user.username }}</p>
+                <p class="text-slate-500">{{ user?.profession }}</p>
+                <p class="text-gray-500">@{{ user?.username }}</p>
               </div>
               <div class="flex gap-2">
                 <button
-                    :class="[
-                      'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
-                      user.isFollowing
-                        ? 'border border-gray-200 hover:bg-gray-50'
-                        : 'bg-blue-600 text-white hover:bg-blue-700',
-                    ]"
-                    @click="toggleFollow"
-                  >
-                    <template v-if="user.isFollowing">
-                      <Check class="h-4 w-4" />
-                      Following
-                    </template>
-                    <template v-else>
-                      <UserPlus class="h-4 w-4" />
-                      Follow
-                    </template>
-                  </button>
+                  :class="[
+                    'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
+                    user?.isFollowing
+                      ? 'border border-gray-200 hover:bg-gray-50'
+                      : 'bg-blue-600 text-white hover:bg-blue-700',
+                  ]"
+                  @click="toggleFollow"
+                >
+                  <template v-if="user?.isFollowing">
+                    <Check class="h-4 w-4" />
+                    Following
+                  </template>
+                  <template v-else>
+                    <UserPlus class="h-4 w-4" />
+                    Follow
+                  </template>
+                </button>
               </div>
             </div>
           </div>
@@ -68,27 +68,40 @@
             >
               <div>
                 <h1 class="text-2xl font-bold flex items-center gap-1">
-                  {{ user.name }}
-                  <BadgeCheck
-                    v-if="user.verified"
-                    class="h-5 w-5 text-blue-500"
+                  {{ user?.name }}
+                  <span
+                    v-if="user?.is_pro"
+                    class="text-2xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
+                  >
+                    <div class="flex items-center gap-1">
+                      <UIcon
+                        name="i-heroicons-shield-check"
+                        class="size-4 text-white"
+                      />
+                      <span class="text-xs">Pro</span>
+                    </div>
+                  </span>
+                  <UIcon
+                    v-if="user?.kyc"
+                    name="i-mdi-check-decagram"
+                    class="w-5 h-5 text-blue-600"
                   />
                 </h1>
-                <p class="text-gray-500">@{{ user.username }}</p>
+                <p class="text-slate-500">{{ user?.profession }}</p>
+                <p class="text-gray-500">@{{ user?.username }}</p>
               </div>
               <div class="flex gap-2">
-                
                 <template>
                   <button
                     :class="[
                       'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
-                      user.isFollowing
+                      user?.isFollowing
                         ? 'border border-gray-200 hover:bg-gray-50'
                         : 'bg-blue-600 text-white hover:bg-blue-700',
                     ]"
                     @click="toggleFollow"
                   >
-                    <template v-if="user.isFollowing">
+                    <template v-if="user?.isFollowing">
                       <Check class="h-4 w-4" />
                       Following
                     </template>
@@ -105,65 +118,69 @@
                 </template>
               </div>
             </div>
-
-            <p class="mt-4 text-gray-700">{{ user.bio }}</p>
-
+            <div class="flex flex-col mt-1 gap-1">
+              <span class="text-gray-700">About Me:</span>
+              <span class="text-sm text-gray-500">{{ user?.about }}</span>
+            </div>
             <div
               class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500"
             >
-              <div v-if="user.location" class="flex items-center gap-1">
+              <div
+                v-if="user?.city || user?.state"
+                class="flex items-center gap-1"
+              >
                 <MapPin class="h-4 w-4" />
-                <span>{{ user.location }}</span>
+                <span>{{ user?.city }}, </span><span> {{ user?.state }}</span>
               </div>
-              <div v-if="user.company" class="flex items-center gap-1">
+              <div v-if="user?.company" class="flex items-center gap-1">
                 <Briefcase class="h-4 w-4" />
-                <span>{{ user.company }}</span>
+                <span>{{ user?.company }}</span>
               </div>
               <div class="flex items-center gap-1">
                 <Calendar class="h-4 w-4" />
-                <span>Joined {{ user.joinedDate }}</span>
+                <span>Joined {{ formatTimeAgo(user?.date_joined) }}</span>
               </div>
-              <div v-if="user.website" class="flex items-center gap-1">
+              <div v-if="user?.website" class="flex items-center gap-1">
                 <LinkIcon class="h-4 w-4" />
                 <a
-                  :href="user.website"
+                  :href="user?.website"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="text-blue-600 hover:underline"
                 >
-                  {{ user.website.replace(/^https?:\/\//, "") }}
+                  {{ user?.website?.replace(/^https?:\/\//, "") }}
                 </a>
               </div>
               <div
-                v-if="user.email && user.isCurrentUser"
+                v-if="user?.email && currentUser?.user?.email"
                 class="flex items-center gap-1"
               >
                 <Mail class="h-4 w-4" />
-                <span>{{ user.email }}</span>
+                <span>{{ user?.email }}</span>
               </div>
               <div
-                v-if="user.phone && user.isCurrentUser"
+                v-if="user?.phone && currentUser?.user?.phone"
                 class="flex items-center gap-1"
               >
                 <Phone class="h-4 w-4" />
-                <span>{{ user.phone }}</span>
+                <span>{{ user?.phone }}</span>
               </div>
             </div>
 
-            <div class="mt-4 flex gap-4 text-sm">
+            <!-- <div class="mt-4 flex gap-4 text-sm">
               <div>
                 <span class="font-semibold">{{
-                  user.followers.toLocaleString()
+                  user?.followers.toLocaleString()
                 }}</span>
                 <span class="text-gray-500"> Followers</span>
               </div>
               <div>
                 <span class="font-semibold">{{
-                  user.following.toLocaleString()
+                  user?.following.toLocaleString()
                 }}</span>
                 <span class="text-gray-500"> Following</span>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -192,7 +209,7 @@
 
           <div class="py-4">
             <div v-if="activeTab === 'posts'" class="px-2">
-              <BusinessNetworkPost  />
+              <BusinessNetworkPost />
             </div>
 
             <div v-else-if="activeTab === 'media'">
@@ -534,6 +551,7 @@
 definePageMeta({
   layout: "adsy-business-network",
 });
+
 import {
   Camera,
   Edit,
@@ -569,6 +587,22 @@ import {
   ChevronRight,
 } from "lucide-vue-next";
 
+const { user: currentUser } = useAuth();
+const { get } = useApi();
+const route = useRoute();
+
+const user = ref({});
+
+async function fetchUser() {
+  try {
+    const { data } = await get(`/user/${route.params.id}/`);
+    user.value = data;
+    console.log(user.value);
+  } catch (error) {
+    console.error(error);
+  }
+}
+await fetchUser();
 // Sample user data
 const userData = {
   id: "user-current",
@@ -591,7 +625,7 @@ const userData = {
 };
 
 // State
-const user = ref(userData);
+
 const viewMode = ref("list");
 const activeTab = ref("posts");
 const isEditProfileOpen = ref(false);
