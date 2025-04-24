@@ -4,9 +4,6 @@
     <slot />
     <PublicFooter />
     <UNotifications />
-    
-    <!-- PWA Installation Button - More reliable implementation -->
-    <InstallButton />
 
     <div v-if="loader" class="fixed inset-0 z-[99999999] bg-white">
       <NuxtLoadingIndicator class="!opacity-[1]" />
