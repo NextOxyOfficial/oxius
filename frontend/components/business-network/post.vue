@@ -436,16 +436,16 @@
 
           <div class="flex-1 overflow-hidden relative">
             <div
-              v-if="activeMedia.type === 'image'"
+              v-if="activeMedia.type === 'image' || !activeMedia.type"
               class="relative h-[45vh] w-full"
             >
               <img
-                :src="activeMedia.url"
+                :src="activeMedia.image"
                 alt="Media preview"
                 class="w-full h-full object-contain"
               />
               <a
-                :href="activeMedia.url"
+                :href="activeMedia.image"
                 :download="`media-${activeMedia.id}`"
                 class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
                 @click.stop
@@ -453,14 +453,14 @@
                 <Download class="h-5 w-5" />
               </a>
             </div>
-            <div v-else class="relative">
+            <div v-else-if="activeMedia.type === 'video'" class="relative">
               <video
-                :src="activeMedia.url"
+                :src="activeMedia.url || activeMedia.video"
                 controls
                 class="w-full h-auto max-h-[45vh]"
               ></video>
               <a
-                :href="activeMedia.url"
+                :href="activeMedia.url || activeMedia.video"
                 :download="`video-${activeMedia.id}`"
                 class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
                 @click.stop
@@ -468,26 +468,26 @@
                 <Download class="h-5 w-5" />
               </a>
             </div>
+          </div>
 
-            <!-- Media navigation -->
-            <div v-if="activePost && activePost.media.length > 1">
-              <button
-                class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
-                @click.stop="navigateMedia('prev')"
-              >
-                <ChevronLeft class="h-5 w-5" />
-              </button>
-              <button
-                class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
-                @click.stop="navigateMedia('next')"
-              >
-                <ChevronRight class="h-5 w-5" />
-              </button>
-              <div
-                class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm"
-              >
-                {{ activeMediaIndex + 1 }} / {{ activePost.media.length }}
-              </div>
+          <!-- Media navigation -->
+          <div v-if="activePost && activePost.post_media.length > 1">
+            <button
+              class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
+              @click.stop="navigateMedia('prev')"
+            >
+              <ChevronLeft class="h-5 w-5" />
+            </button>
+            <button
+              class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
+              @click.stop="navigateMedia('next')"
+            >
+              <ChevronRight class="h-5 w-5" />
+            </button>
+            <div
+              class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm"
+            >
+              {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
             </div>
           </div>
 
@@ -1471,7 +1471,7 @@ const addMediaComment = () => {
 const openMedia = (post, index) => {
   activePost.value = post;
   activeMediaIndex.value = index;
-  activeMedia.value = post.media[index];
+  activeMedia.value = post.post_media[index];
 };
 
 // Navigate media
@@ -1479,7 +1479,7 @@ const navigateMedia = (direction) => {
   if (!activePost.value || !activeMedia.value) return;
 
   const currentIndex = activeMediaIndex.value;
-  const totalMedia = activePost.value.media.length;
+  const totalMedia = activePost.value.post_media.length;
 
   if (direction === "prev") {
     activeMediaIndex.value = (currentIndex - 1 + totalMedia) % totalMedia;
@@ -1487,7 +1487,7 @@ const navigateMedia = (direction) => {
     activeMediaIndex.value = (currentIndex + 1) % totalMedia;
   }
 
-  activeMedia.value = activePost.value.media[activeMediaIndex.value];
+  activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
 };
 
 // Create post functions
@@ -1611,3 +1611,5 @@ onMounted(() => {
   }
 }
 </style>
+```
+
