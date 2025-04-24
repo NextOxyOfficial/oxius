@@ -179,13 +179,7 @@
 
             <!-- Media Gallery -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
-              <div
-                class="grid gap-1"
-                :class="{
-                  'grid-cols-3': window.innerWidth >= 768, /* 3 columns for larger screens */
-                  'grid-cols-2': window.innerWidth < 768, /* 2 columns for smaller screens */
-                }"
-              >
+              <div class="grid gap-1 grid-cols-2 md:grid-cols-3">
                 <div
                   v-for="(media, mediaIndex) in post.post_media.slice(0, 6)" <!-- Limit to 6 media items -->
                   :key="media.id"

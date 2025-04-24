@@ -618,6 +618,42 @@ const showStickyButton = ref(true);
 const formDirty = ref(false);
 const originalProfile = ref({});
 const lastScrollPosition = ref(0);
+const activeToasts = ref(new Set()); // Track active toast messages
+
+// Improved toast function to prevent duplicates and ensure timeouts
+function showToast(title, description, color, timeout = 5000) {
+  // Create a unique key for this toast message
+  const messageKey = `${title}:${description}`;
+  
+  // Check if this exact toast is already showing
+  if (activeToasts.value.has(messageKey)) {
+    return; // Skip showing duplicate toast
+  }
+  
+  // Add to active toasts set
+  activeToasts.value.add(messageKey);
+  
+  // Show the toast with guaranteed timeout
+  const toastId = toast.add({
+    title,
+    description,
+    color,
+    timeout: timeout, // Default 5 seconds unless specified otherwise
+    onClose: () => {
+      activeToasts.value.delete(messageKey); // Remove from active toasts
+    }
+  });
+  
+  // Safety mechanism: ensure toast is removed after timeout + 1s buffer
+  if (timeout > 0) {
+    setTimeout(() => {
+      toast.remove(toastId);
+      activeToasts.value.delete(messageKey);
+    }, timeout + 1000);
+  }
+  
+  return toastId;
+}
 
 // Add scroll detection
 function handleScroll() {
@@ -666,11 +702,7 @@ async function getUserDetails() {
     formDirty.value = false;
   } catch (error) {
     console.error("Error fetching user details:", error);
-    toast.add({
-      title: "Error",
-      description: "Failed to load profile data",
-      color: "red",
-    });
+    showToast("Error", "Failed to load profile data", "red");
   }
 }
 
@@ -683,11 +715,7 @@ const handleFormSuccess = () => {
 // Handle password change
 async function handlePasswordChange() {
   if (!old_password.value || !new_password.value) {
-    toast.add({
-      title: "Error",
-      description: "Both password fields are required",
-      color: "red",
-    });
+    showToast("Error", "Both password fields are required", "red");
     return;
   }
 
@@ -700,20 +728,12 @@ async function handlePasswordChange() {
     });
 
     if (data) {
-      toast.add({
-        title: "Success",
-        description: data.message || "Password successfully changed",
-        color: "green",
-      });
+      showToast("Success", data.message || "Password successfully changed", "green");
       old_password.value = "";
       new_password.value = "";
     }
   } catch (error) {
-    toast.add({
-      title: "Error",
-      description: error.response?.data?.message || "Failed to change password",
-      color: "red",
-    });
+    showToast("Error", error.response?.data?.message || "Failed to change password", "red");
     console.error(error);
   } finally {
     passwordLoading.value = false;
@@ -757,11 +777,7 @@ async function handleForm() {
     const res = await put(`/persons/update/${profileData.email}/`, dataToSend);
 
     if (res.data?.data?.email) {
-      toast.add({
-        title: "Success",
-        description: "Profile updated successfully",
-        color: "green",
-      });
+      showToast("Success", "Profile updated successfully", "green");
       // Update the profile with the returned data
       userProfile.value = res.data.data;
       errors.value = {};
@@ -772,21 +788,17 @@ async function handleForm() {
       await getUserDetails();
     } else {
       errors.value = res?.error?.data?.errors || {};
-      toast.add({
-        title: "Error",
-        description: "Failed to update profile",
-        color: "red",
-      });
+      showToast("Error", "Failed to update profile", "red");
     }
   } catch (error) {
     console.error("Profile update error:", error);
     // More detailed error message
-    toast.add({
-      title: "Error",
-      description: error.response?.data?.message || 
-                  "Profile update failed. Check your internet connection or try again.",
-      color: "red",
-    });
+    showToast(
+      "Error", 
+      error.response?.data?.message || 
+      "Profile update failed. Check your internet connection or try again.",
+      "red"
+    );
   } finally {
     isLoading.value = false;
   }
@@ -801,32 +813,28 @@ function handleFileUpload(event, field) {
   
   // More thorough validation
   if (!file.type.match(/^image\/(jpeg|png|gif|webp|bmp)$/i)) {
-    toast.add({
-      title: "Invalid File Type",
-      description: "Please select a valid image file (JPEG, PNG, GIF)",
-      color: "red",
-    });
+    showToast("Invalid File Type", "Please select a valid image file (JPEG, PNG, GIF)", "red");
     return;
   }
 
   // More reasonable size limit with clear message
   const maxSize = 1 * 1024 * 1024; // 1MB
   if (file.size > maxSize) {
-    toast.add({
-      title: "File Too Large",
-      description: `Image must be smaller than 1MB. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
-      color: "red",
-    });
+    showToast(
+      "File Too Large",
+      `Image must be smaller than 1MB. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
+      "red"
+    );
     return;
   }
 
   // Show loading state
-  const loadingToast = toast.add({
-    title: "Processing Image",
-    description: "Please wait while we process your image...",
-    color: "blue",
-    timeout: 0,
-  });
+  const loadingToast = showToast(
+    "Processing Image",
+    "Please wait while we process your image...",
+    "blue",
+    0 // No timeout for loading toast
+  );
 
   const reader = new FileReader();
 
@@ -836,15 +844,12 @@ function handleFileUpload(event, field) {
     img.onload = function() {
       // Remove the loading toast
       toast.remove(loadingToast);
+      activeToasts.value.delete("Processing Image:Please wait while we process your image...");
 
       // If image is already small enough, use as is
       if (reader.result.length <= maxSize) {
         userProfile.value.image = reader.result;
-        toast.add({
-          title: "Image Ready",
-          description: "Your image has been prepared for upload",
-          color: "green",
-        });
+        showToast("Image Ready", "Your image has been prepared for upload", "green");
         return;
       }
 
@@ -884,23 +889,16 @@ function handleFileUpload(event, field) {
       // Update the profile image
       userProfile.value.image = resizedImage;
       
-      toast.add({
-        title: "Image Ready",
-        description: "Your image has been resized and is ready for upload",
-        color: "green",
-      });
+      showToast("Image Ready", "Your image has been resized and is ready for upload", "green");
     };
     img.src = reader.result;
   };
 
   reader.onerror = (error) => {
     toast.remove(loadingToast);
+    activeToasts.value.delete("Processing Image:Please wait while we process your image...");
     console.error("Error reading file:", error);
-    toast.add({
-      title: "Error",
-      description: "Failed to process the image file",
-      color: "red",
-    });
+    showToast("Error", "Failed to process the image file", "red");
   };
 
   reader.readAsDataURL(file);
@@ -914,11 +912,7 @@ function deleteUpload() {
   // Mark form as dirty to enable the save button
   formDirty.value = true;
   
-  toast.add({
-    title: "Image Removed",
-    description: "Your profile image has been removed locally. Click Save Profile to confirm changes.",
-    color: "blue",
-  });
+  showToast("Image Removed", "Your profile image has been removed locally. Click Save Profile to confirm changes.", "blue");
 }
 
 // Add event listeners when component is mounted
@@ -938,5 +932,17 @@ getUserDetails();
 /* Add these styles for smooth transition */
 .translate-y-full {
   transform: translateY(100%);
+}
+
+/* Ensure toast doesn't overlap with sticky button on mobile */
+:global(.u-toast-container) {
+  bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important;
+  z-index: 60;
+}
+
+@media (min-width: 640px) {
+  :global(.u-toast-container) {
+    bottom: calc(3.5rem + env(safe-area-inset-bottom)) !important;
+  }
 }
 </style>
