@@ -379,6 +379,8 @@
                   v-model="post.commentText"
                   @keyup.enter="addComment(post)"
                   @focus="post.showCommentInput = true"
+                  @input="handleCommentInput($event, post)"
+                  @keydown="handleMentionKeydown($event, post)"
                 />
                 <div v-if="post.commentText" class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
                   <button
@@ -805,14 +807,41 @@
                 class="w-6 h-6 rounded-full"
               />
               <div class="flex-1 relative">
+                <!-- Update the comments modal input -->
                 <input
                   type="text"
                   placeholder="Add a comment..."
                   class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                   v-model="activeCommentsPost.commentText"
-                  @keyup.enter="addComment(activeCommentsPost)"
+                  @input="handleCommentInput($event, activeCommentsPost)"
+                  @keydown="handleMentionKeydown($event, activeCommentsPost)"
+                  @keyup.enter="!showMentions && addComment(activeCommentsPost)"
                   @click.stop
                 />
+                <!-- Add mention dropdown in modal too -->
+                <div
+                  v-if="showMentions && mentionSuggestions.length > 0 && activeCommentsPost === mentionInputPosition?.post"
+                  class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-48 overflow-y-auto"
+                >
+                  <div class="py-1">
+                    <div
+                      v-for="(user, index) in mentionSuggestions"
+                      :key="user.id"
+                      @click="selectMention(user, activeCommentsPost)"
+                      :class="[
+                        'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
+                        index === activeMentionIndex ? 'bg-gray-100' : ''
+                      ]"
+                    >
+                      <img
+                        :src="user.image"
+                        :alt="user.name"
+                        class="w-6 h-6 rounded-full mr-2"
+                      />
+                      <span class="text-sm font-medium">{{ user.name }}</span>
+                    </div>
+                  </div>
+                </div>
                 <button
                   v-if="activeCommentsPost.commentText"
                   class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600"
@@ -995,6 +1024,13 @@ const mediaLikedUsers = ref([]);
 const commentToDelete = ref(null);
 const postWithCommentToDelete = ref(null);
 const commentsContainerRef = ref(null);
+
+// Add these to your existing refs
+const mentionSearchText = ref("");
+const mentionSuggestions = ref([]);
+const showMentions = ref(false);
+const mentionInputPosition = ref(null);
+const activeMentionIndex = ref(0);
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -1299,6 +1335,15 @@ const addComment = async (currentPost) => {
     }
   };
   
+  // Format mentions in the content if any
+  const formattedContent = commentText.replace(
+    /@(\w+)/g, 
+    '<span class="text-blue-600">@$1</span>'
+  );
+
+  // Update the tempComment with formatted content
+  tempComment.content = formattedContent;
+  
   // Add to UI immediately
   if (!currentPost.post_comments) {
     currentPost.post_comments = [];
@@ -1572,6 +1617,127 @@ const removeCategory = (category) => {
   );
 };
 
+// Detect @ mentions while typing
+const handleCommentInput = (e, currentPost) => {
+  const input = e.target;
+  const text = input.value;
+  const cursorPosition = input.selectionStart;
+  
+  // Check if we're typing a mention
+  const textBeforeCursor = text.slice(0, cursorPosition);
+  const mentionMatch = textBeforeCursor.match(/(?:^|\s)@(\w*)$/);
+  
+  if (mentionMatch) {
+    // Extract the search text after @
+    const searchText = mentionMatch[1].toLowerCase();
+    mentionSearchText.value = searchText;
+    
+    // Calculate dropdown position based on @ symbol
+    const atIndex = textBeforeCursor.lastIndexOf('@');
+    const textBeforeAt = textBeforeCursor.slice(0, atIndex);
+    const linePosition = textBeforeAt.split('\n').length - 1;
+    
+    // Search for users matching the text
+    searchMentionUsers(searchText);
+    
+    // Show mention dropdown
+    showMentions.value = true;
+    activeMentionIndex.value = 0;
+    
+    // Store input element for positioning dropdown
+    mentionInputPosition.value = input;
+  } else {
+    // Hide mentions when not typing @
+    showMentions.value = false;
+  }
+};
+
+// Function to search for users
+const searchMentionUsers = async (searchText) => {
+  try {
+    // Replace with your actual user search API
+    const response = await post(`/bn/users/search/`, {
+      search: searchText,
+      limit: 5
+    });
+    
+    if (response?.data) {
+      mentionSuggestions.value = response.data;
+    } else {
+      // Fallback to mock data for testing
+      mentionSuggestions.value = [
+        { id: 1, name: "John Smith", image: "https://via.placeholder.com/40" },
+        { id: 2, name: "Jane Doe", image: "https://via.placeholder.com/40" },
+        { id: 3, name: "James Brown", image: "https://via.placeholder.com/40" }
+      ].filter(user => 
+        user.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+  } catch (error) {
+    console.error("Error searching users:", error);
+    mentionSuggestions.value = [];
+  }
+};
+
+// Function to select a mentioned user
+const selectMention = (user, currentPost) => {
+  if (!mentionInputPosition.value) return;
+  
+  const input = mentionInputPosition.value;
+  const text = input.value;
+  const cursorPosition = input.selectionStart;
+  
+  // Find the start of the mention
+  const textBeforeCursor = text.slice(0, cursorPosition);
+  const atIndex = textBeforeCursor.lastIndexOf('@');
+  
+  // Replace the @searchText with the selected user
+  const newText = text.slice(0, atIndex) + 
+                 `@${user.name.replace(/\s+/g, '')} ` + 
+                 text.slice(cursorPosition);
+  
+  // Update the input value
+  currentPost.commentText = newText;
+  
+  // Close the mentions dropdown
+  showMentions.value = false;
+  
+  // Move cursor after the inserted mention
+  nextTick(() => {
+    const newPosition = atIndex + user.name.replace(/\s+/g, '').length + 2; // +2 for @ and space
+    input.setSelectionRange(newPosition, newPosition);
+    input.focus();
+  });
+};
+
+// Handle keyboard navigation in mentions dropdown
+const handleMentionKeydown = (e, currentPost) => {
+  if (!showMentions.value || mentionSuggestions.value.length === 0) return;
+  
+  // Arrow down
+  if (e.key === 'ArrowDown') {
+    e.preventDefault(); // Prevent cursor movement
+    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+  }
+  
+  // Arrow up
+  else if (e.key === 'ArrowUp') {
+    e.preventDefault(); // Prevent cursor movement
+    activeMentionIndex.value = (activeMentionIndex.value - 1 + mentionSuggestions.value.length) % mentionSuggestions.value.length;
+  }
+  
+  // Enter or Tab to select
+  else if ((e.key === 'Enter' || e.key === 'Tab') && showMentions.value) {
+    e.preventDefault();
+    selectMention(mentionSuggestions.value[activeMentionIndex.value], currentPost);
+  }
+  
+  // Escape to cancel
+  else if (e.key === 'Escape') {
+    showMentions.value = false;
+  }
+};
+
 // Initialize
 onMounted(() => {
   // Implement infinite scroll
@@ -1611,5 +1777,4 @@ onMounted(() => {
   }
 }
 </style>
-```
 
