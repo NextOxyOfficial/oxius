@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-2 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
     <div class="max-w-3xl mx-auto relative z-10 sm:px-0">
       <!-- Professional Profile Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">

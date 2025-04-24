@@ -22,7 +22,7 @@
                   <img
                     :src="post?.author_details?.image"
                     :alt="post?.author_details?.name"
-                    class="size-10 rounded-full"
+                    class="size-12 rounded-full"
                   />
                 </div>
                 <div class="flex-1">
@@ -307,7 +307,7 @@
                 <img
                   :src="comment.author_details?.image"
                   :alt="comment.author_details?.name"
-                  class="size-8 rounded-full mt-0.5"
+                  class="size-9 rounded-full mt-0.5"
                 />
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg pt-1 px-2">
@@ -385,7 +385,7 @@
               <img
                 :src="user?.user?.image"
                 alt="Your avatar"
-                class="size-7 rounded-full"
+                class="size-8 rounded-full"
               />
               <!-- Update the comment input -->
               <div class="flex-1 relative">
