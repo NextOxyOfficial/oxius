@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class="p-3">
+          <div class="p-3 sm:p-5 sm:p-6">
             <!-- Post Header -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center space-x-3 flex-1">
@@ -567,7 +567,7 @@
           @click.stop
         >
           <div
-            class="p-3 border-b border-gray-200 flex items-center justify-between"
+            class="p-3 sm:p-5 border-b border-gray-200 flex items-center justify-between"
           >
             <h3 class="font-semibold">Liked by</h3>
             <button @click="activeLikesPost = null">
@@ -578,7 +578,7 @@
             <div
               v-for="user in activeLikesPost.post_likes"
               :key="user.id"
-              class="flex items-center justify-between p-3 border-b border-gray-100"
+              class="flex items-center justify-between p-3 sm:p-5 border-b border-gray-100"
             >
               <div class="flex items-center space-x-3">
                 <img
@@ -634,14 +634,14 @@
           @click.stop
         >
           <div
-            class="p-3 border-b border-gray-200 flex items-center justify-between"
+            class="p-3 sm:p-5 border-b border-gray-200 flex items-center justify-between"
           >
             <h3 class="font-semibold">Comments</h3>
             <button @click="activeCommentsPost = null">
               <X class="h-5 w-5" />
             </button>
           </div>
-          <div class="overflow-y-auto max-h-[60vh] p-3 space-y-3">
+          <div class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3">
             <div
               v-for="comment in activeCommentsPost.post_comments"
               :key="comment.id"
@@ -684,7 +684,7 @@
               </div>
             </div>
           </div>
-          <div class="p-3 border-t border-gray-200">
+          <div class="p-3 sm:p-5 border-t border-gray-200">
             <div class="flex items-center gap-2">
               <img
                 :src="user.user.image"
@@ -697,6 +697,7 @@
                   placeholder="Add a comment..."
                   class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                   v-model="activeCommentsPost.commentText"
+                  @keyup.enter="addComment(activeCommentsPost)"
                   @click.stop
                 />
                 <button
@@ -725,7 +726,7 @@
           @click.stop
         >
           <div
-            class="p-3 border-b border-gray-200 flex items-center justify-between"
+            class="p-3 sm:p-5 border-b border-gray-200 flex items-center justify-between"
           >
             <h3 class="font-semibold">Liked by</h3>
             <button @click="activeMediaLikes = null">
@@ -736,7 +737,7 @@
             <div
               v-for="(user, index) in mediaLikedUsers"
               :key="index"
-              class="flex items-center justify-between p-3 border-b border-gray-100"
+              class="flex items-center justify-between p-3 sm:p-5 border-b border-gray-100"
             >
               <div class="flex items-center space-x-3">
                 <img
@@ -903,27 +904,75 @@ const toggleUserFollow = (user) => {
 
 // Toggle like
 const toggleLike = async (currentPost) => {
-  if (
-    currentPost.post_likes?.find((like) => like.user === user.value?.user?.id)
-  ) {
-    try {
-      const { status } = await del(`/bn/posts/${currentPost.id}/unlike/`);
-      if (status === "success") {
-        refreshNuxtData();
+  // Store the original state to revert in case of API error
+  const wasLiked = currentPost.post_likes?.some(like => like.user === user.value?.user?.id);
+  
+  try {
+    if (wasLiked) {
+      // Optimistically update UI first
+      currentPost.post_likes = currentPost.post_likes.filter(
+        like => like.user !== user.value?.user?.id
+      );
+      
+      // Then make API call
+      const response = await del(`/bn/posts/${currentPost.id}/unlike/`);
+      
+      // Check if API call failed (no need to check status property)
+      if (!response) {
+        // Revert UI if API fails
+        if (!currentPost.post_likes.some(like => like.user === user.value?.user?.id)) {
+          currentPost.post_likes.push({
+            user: user.value?.user?.id,
+            user_details: {
+              name: user.value?.user?.name,
+              image: user.value?.user?.image
+            }
+          });
+        }
       }
-    } catch (error) {
-      console.error("Error toggling unlike:", error);
-    }
-  } else {
-    try {
-      // Make API call to toggle like
+    } else {
+      // Optimistically update UI first
+      if (!currentPost.post_likes) {
+        currentPost.post_likes = [];
+      }
+      
+      currentPost.post_likes.push({
+        user: user.value?.user?.id,
+        user_details: {
+          name: user.value?.user?.name,
+          image: user.value?.user?.image
+        }
+      });
+      
+      // Then make API call
       const response = await post(`/bn/posts/${currentPost.id}/like/`);
-      // Update UI based on response
-      if (response.data) {
-        await nextTick();
+      if (!response) {
+        // Revert UI if API fails
+        currentPost.post_likes = currentPost.post_likes.filter(
+          like => like.user !== user.value?.user?.id
+        );
       }
-    } catch (error) {
-      console.error("Error toggling like:", error);
+    }
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    
+    // Revert UI on error
+    if (wasLiked) {
+      // Re-add like if we were removing it
+      if (!currentPost.post_likes.some(like => like.user === user.value?.user?.id)) {
+        currentPost.post_likes.push({
+          user: user.value?.user?.id,
+          user_details: {
+            name: user.value?.user?.name,
+            image: user.value?.user?.image
+          }
+        });
+      }
+    } else {
+      // Remove like if we were adding it
+      currentPost.post_likes = currentPost.post_likes.filter(
+        like => like.user !== user.value?.user?.id
+      );
     }
   }
 };
@@ -1052,22 +1101,62 @@ const openMediaLikesModal = () => {
 
 // Add comment
 const addComment = async (currentPost) => {
-  if (!currentPost.commentText.trim()) return;
-
+  if (!currentPost.commentText?.trim()) return;
+  
+  const commentText = currentPost.commentText.trim();
+  
+  // Create a temporary comment to show immediately
+  const tempComment = {
+    id: `temp-${Date.now()}`,
+    author: user.value?.user?.id,
+    content: commentText,
+    created_at: new Date().toISOString(),
+    author_details: {
+      name: user.value?.user?.name,
+      image: user.value?.user?.image
+    },
+    // Add any other properties needed
+    user: { // For the follow/unfollow functionality in comments modal
+      isFollowing: false
+    }
+  };
+  
+  // Add to UI immediately
+  if (!currentPost.post_comments) {
+    currentPost.post_comments = [];
+  }
+  
+  // Add to beginning of array for newest first
+  currentPost.post_comments.unshift(tempComment);
+  
+  // Clear input field
+  currentPost.commentText = "";
+  
   try {
     // Make API call to add comment
     const response = await post(`/bn/posts/${currentPost.id}/comments/`, {
-      content: currentPost.commentText.trim(),
+      content: commentText,
     });
 
-    // Update UI based on response
+    // If successful, replace temp comment with real one from API
     if (response.data) {
-      currentPost.commentText = "";
-      console.log("Comment response:", response);
+      const index = currentPost.post_comments.findIndex(c => c.id === tempComment.id);
+      if (index !== -1) {
+        // Replace with actual comment data from API
+        currentPost.post_comments[index] = response.data;
+      }
     } else {
+      // Remove temp comment if API failed
+      currentPost.post_comments = currentPost.post_comments.filter(
+        comment => comment.id !== tempComment.id
+      );
       console.error("Failed to add comment:", response);
     }
   } catch (error) {
+    // Remove temp comment on error
+    currentPost.post_comments = currentPost.post_comments.filter(
+      comment => comment.id !== tempComment.id
+    );
     console.error("Error adding comment:", error);
   }
 };
