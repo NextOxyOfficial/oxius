@@ -11,410 +11,415 @@
         }"
       >
         <!-- Post Card -->
-        <div
-          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
+        <div 
+          :id="`post-${post.id}`"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow mb-4 transition-all duration-300"
         >
-          <div class="p-3 sm:p-5 sm:p-6">
-            <!-- Post Header -->
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center space-x-3 flex-1">
-                <div class="relative">
-                  <img
-                    :src="post?.author_details?.image"
-                    :alt="post?.author_details?.name"
-                    class="w-8 h-8 rounded-full"
-                  />
-                </div>
-                <div class="flex-1">
-                  <NuxtLink
-                    :to="`/business-network/profile/${post.author}`"
-                    class="font-medium text-gray-900 text-sm hover:cursor-pointer flex gap-1 w-full"
-                  >
-                    <p class="">
-                      {{ post?.author_details?.name }}
-                    </p>
-                    <div
-                      v-if="post?.author_details?.kyc"
-                      class="text-blue-500 flex items-center"
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
+          >
+            <div class="p-3 sm:p-5 sm:p-6">
+              <!-- Post Header -->
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center space-x-3 flex-1">
+                  <div class="relative">
+                    <img
+                      :src="post?.author_details?.image"
+                      :alt="post?.author_details?.name"
+                      class="w-8 h-8 rounded-full"
+                    />
+                  </div>
+                  <div class="flex-1">
+                    <NuxtLink
+                      :to="`/business-network/profile/${post.author}`"
+                      class="font-medium text-gray-900 text-sm hover:cursor-pointer flex gap-1 w-full"
                     >
-                      <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
-                      <span
-                        v-if="post?.author_details?.is_pro"
-                        class="text-2xs px-1 py-0.5 font-medium"
+                      <p class="">
+                        {{ post?.author_details?.name }}
+                      </p>
+                      <div
+                        v-if="post?.author_details?.kyc"
+                        class="text-blue-500 flex items-center"
                       >
-                        <div class="flex items-center gap-0.5">
-                          <UIcon
-                            name="i-heroicons-shield-check"
-                            class="size-4 text-indigo-700 font-semibold"
-                          />
-                          <span class="text-xs font-semibold text-indigo-700"
-                            >Pro</span
-                          >
-                        </div>
-                      </span>
-                    </div>
-                  </NuxtLink>
-                  <p
-                    class="text-xs font-semibold bg-white py-0.5 text-slate-500"
-                  >
-                    {{ post?.author_details?.profession }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    {{ formatTimeAgo(post?.created_at) }}
-                  </p>
+                        <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
+                        <span
+                          v-if="post?.author_details?.is_pro"
+                          class="text-2xs px-1 py-0.5 font-medium"
+                        >
+                          <div class="flex items-center gap-0.5">
+                            <UIcon
+                              name="i-heroicons-shield-check"
+                              class="size-4 text-indigo-700 font-semibold"
+                            />
+                            <span class="text-xs font-semibold text-indigo-700"
+                              >Pro</span
+                            >
+                          </div>
+                        </span>
+                      </div>
+                    </NuxtLink>
+                    <p
+                      class="text-xs font-semibold bg-white py-0.5 text-slate-500"
+                    >
+                      {{ post?.author_details?.profession }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ formatTimeAgo(post?.created_at) }}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div class="flex items-center gap-2">
-                <button
-                  v-if="post?.author !== id"
-                  :class="[
-                    'text-sm h-7 rounded-full px-3 flex items-center gap-1',
-                    post.isFollowing
-                      ? 'border border-gray-200 text-gray-700'
-                      : 'bg-blue-600 text-white',
-                  ]"
-                  @click="toggleFollow(post)"
-                >
-                  <component
-                    :is="post.isFollowing ? Check : UserPlus"
-                    class="h-3 w-3"
-                  />
-                  {{ post.isFollowing ? "Following" : "Follow" }}
-                </button>
-
-                <div class="relative">
+                <div class="flex items-center gap-2">
                   <button
-                    class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
-                    @click="toggleDropdown(post)"
+                    v-if="post?.author !== id"
+                    :class="[
+                      'text-sm h-7 rounded-full px-3 flex items-center gap-1',
+                      post.isFollowing
+                        ? 'border border-gray-200 text-gray-700'
+                        : 'bg-blue-600 text-white',
+                    ]"
+                    @click="toggleFollow(post)"
                   >
-                    <MoreHorizontal class="h-4 w-4" />
+                    <component
+                      :is="post.isFollowing ? Check : UserPlus"
+                      class="h-3 w-3"
+                    />
+                    {{ post.isFollowing ? "Following" : "Follow" }}
                   </button>
 
-                  <!-- Dropdown Menu -->
-                  <div
-                    v-if="post.showDropdown"
-                    class="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
-                  >
-                    <div class="py-1">
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        @click="toggleSave(post)"
-                      >
-                        <Bookmark
-                          :class="[
-                            'h-4 w-4 mr-2',
-                            post.isSaved ? 'text-blue-600 fill-blue-600' : '',
-                          ]"
-                        />
-                        {{ post.isSaved ? "Unsave post" : "Save post" }}
-                      </button>
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        @click="copyLink(post)"
-                      >
-                        <Link2 class="h-4 w-4 mr-2" />
-                        Copy link
-                      </button>
-                      <hr class="my-1 border-gray-200" />
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <UserX class="h-4 w-4 mr-2" />
-                        Unfollow @{{
-                          post.author.fullName.toLowerCase().replace(/\s+/g, "")
-                        }}
-                      </button>
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <Flag class="h-4 w-4 mr-2" />
-                        Report post
-                      </button>
+                  <div class="relative">
+                    <button
+                      class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                      @click="toggleDropdown(post)"
+                    >
+                      <MoreHorizontal class="h-4 w-4" />
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div
+                      v-if="post.showDropdown"
+                      class="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+                    >
+                      <div class="py-1">
+                        <button
+                          class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          @click="toggleSave(post)"
+                        >
+                          <Bookmark
+                            :class="[
+                              'h-4 w-4 mr-2',
+                              post.isSaved ? 'text-blue-600 fill-blue-600' : '',
+                            ]"
+                          />
+                          {{ post.isSaved ? "Unsave post" : "Save post" }}
+                        </button>
+                        <button
+                          class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          @click="copyLink(post)"
+                        >
+                          <Link2 class="h-4 w-4 mr-2" />
+                          Copy link
+                        </button>
+                        <hr class="my-1 border-gray-200" />
+                        <button
+                          class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <UserX class="h-4 w-4 mr-2" />
+                          Unfollow @{{
+                            post.author.fullName.toLowerCase().replace(/\s+/g, "")
+                          }}
+                        </button>
+                        <button
+                          class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <Flag class="h-4 w-4 mr-2" />
+                          Report post
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Post Title -->
-            <NuxtLink
-              :to="`/business-network/posts/${post.slug}`"
-              class="block text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
-            >
-              {{ post.title }}
-            </NuxtLink>
-
-            <!-- Tags -->
-            <div
-              v-if="post?.post_tags?.length > 0"
-              class="flex flex-wrap gap-1 mb-2"
-            >
-              <span
-                v-for="(tag, idx) in post?.post_tags"
-                :key="idx"
-                class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+              <!-- Post Title -->
+              <NuxtLink
+                :to="`/business-network/posts/${post.slug}`"
+                class="block text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
               >
-                #{{ tag.tag }}
-              </span>
-            </div>
+                {{ post.title }}
+              </NuxtLink>
 
-            <!-- Post Content -->
-            <div class="mb-2 min-w-full">
-              <p
-                :class="[
-                  'text-sm text-gray-700',
-                  !post.showFullDescription && 'line-clamp-4',
-                ]"
-                v-html="post.content"
-              ></p>
-              <button
-                v-if="post?.content?.length > 160"
-                class="text-sm text-blue-600 font-medium mt-1"
-                @click="toggleDescription(post)"
+              <!-- Tags -->
+              <div
+                v-if="post?.post_tags?.length > 0"
+                class="flex flex-wrap gap-1 mb-2"
               >
-                {{ post.showFullDescription ? "Read less" : "Read more" }}
-              </button>
-            </div>
-
-            <!-- Media Gallery -->
-            <div v-if="post?.post_media?.length > 0" class="mb-3">
-              <div class="grid grid-cols-4 gap-1">
-                <div
-                  v-for="(media, mediaIndex) in post.post_media.slice(0, 8)"
-                  :key="media.id"
-                  class="relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 transition-transform hover:scale-[1.02]"
-                  @click="openMedia(post, mediaIndex)"
+                <span
+                  v-for="(tag, idx) in post?.post_tags"
+                  :key="idx"
+                  class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
                 >
-                  <img
-                    :src="media.image"
-                    :alt="`Media ${mediaIndex + 1}`"
-                    class="h-full w-full object-cover"
-                  />
+                  #{{ tag.tag }}
+                </span>
+              </div>
+
+              <!-- Post Content -->
+              <div class="mb-2 min-w-full">
+                <p
+                  :class="[
+                    'text-sm text-gray-700',
+                    !post.showFullDescription && 'line-clamp-4',
+                  ]"
+                  v-html="post.content"
+                ></p>
+                <button
+                  v-if="post?.content?.length > 160"
+                  class="text-sm text-blue-600 font-medium mt-1"
+                  @click="toggleDescription(post)"
+                >
+                  {{ post.showFullDescription ? "Read less" : "Read more" }}
+                </button>
+              </div>
+
+              <!-- Media Gallery -->
+              <div v-if="post?.post_media?.length > 0" class="mb-3">
+                <div class="grid grid-cols-4 gap-1">
                   <div
-                    v-if="media.type === 'video'"
-                    class="absolute inset-0 flex items-center justify-center"
+                    v-for="(media, mediaIndex) in post.post_media.slice(0, 8)"
+                    :key="media.id"
+                    class="relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 transition-transform hover:scale-[1.02]"
+                    @click="openMedia(post, mediaIndex)"
                   >
+                    <img
+                      :src="media.image"
+                      :alt="`Media ${mediaIndex + 1}`"
+                      class="h-full w-full object-cover"
+                    />
                     <div
-                      class="h-4 w-4 rounded-full bg-black/50 flex items-center justify-center"
+                      v-if="media.type === 'video'"
+                      class="absolute inset-0 flex items-center justify-center"
                     >
                       <div
-                        class="h-0 w-0 border-y-2 border-y-transparent border-l-3 border-l-white ml-0.5"
-                      ></div>
+                        class="h-4 w-4 rounded-full bg-black/50 flex items-center justify-center"
+                      >
+                        <div
+                          class="h-0 w-0 border-y-2 border-y-transparent border-l-3 border-l-white ml-0.5"
+                        ></div>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    v-if="mediaIndex === 7 && post.post_media.length > 8"
-                    class="absolute inset-0 bg-black/50 flex items-center justify-center"
-                  >
-                    <span class="text-white font-medium text-sm"
-                      >+{{ post?.post_media?.length - 8 }}</span
+                    <div
+                      v-if="mediaIndex === 7 && post.post_media.length > 8"
+                      class="absolute inset-0 bg-black/50 flex items-center justify-center"
                     >
+                      <span class="text-white font-medium text-sm"
+                        >+{{ post?.post_media?.length - 8 }}</span
+                      >
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Post Actions -->
-            <div
-              class="flex items-center justify-between pt-2 border-t border-gray-100 mb-3"
-            >
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-1">
-                  <!-- Update like button with loading state -->
-                  <button
-                    class="p-1 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
-                    @click="toggleLike(post)"
-                    :disabled="post.isLikeLoading"
-                  >
-                    <div
-                      v-if="post.isLikeLoading"
-                      class="animate-pulse h-4 w-4"
+              <!-- Post Actions -->
+              <div
+                class="flex items-center justify-between pt-2 border-t border-gray-100 mb-3"
+              >
+                <div class="flex items-center space-x-4">
+                  <div class="flex items-center space-x-1">
+                    <!-- Update like button with loading state -->
+                    <button
+                      class="p-1 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      @click="toggleLike(post)"
+                      :disabled="post.isLikeLoading"
                     >
-                      <Loader2 class="h-4 w-4 text-gray-400 animate-spin" />
-                    </div>
-                    <Heart
-                      v-else
+                      <div
+                        v-if="post.isLikeLoading"
+                        class="animate-pulse h-4 w-4"
+                      >
+                        <Loader2 class="h-4 w-4 text-gray-400 animate-spin" />
+                      </div>
+                      <Heart
+                        v-else
+                        :class="[
+                          'h-4 w-4',
+                          post.post_likes?.find(
+                            (like) => like.user === user?.user?.id
+                          )
+                            ? 'text-red-500 fill-red-500'
+                            : 'text-gray-500',
+                        ]"
+                      />
+                    </button>
+                    <button
+                      class="text-sm text-gray-600 hover:underline"
+                      @click="openLikesModal(post)"
+                    >
+                      {{ post?.post_likes?.length }} likes
+                    </button>
+                  </div>
+                  <button
+                    class="flex items-center space-x-1"
+                    @click="openCommentsModal(post)"
+                  >
+                    <MessageCircle class="h-4 w-4 text-gray-500" />
+                    <span class="text-sm text-gray-600"
+                      >{{ post?.post_comments?.length }} comments</span
+                    >
+                  </button>
+                  <button
+                    class="flex items-center space-x-1"
+                    @click="sharePost(post)"
+                  >
+                    <Share2 class="h-4 w-4 text-gray-500" />
+                    <span class="text-sm text-gray-600">Share</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1"
+                    @click="toggleSave(post)"
+                  >
+                    <Bookmark
                       :class="[
                         'h-4 w-4',
-                        post.post_likes?.find(
-                          (like) => like.user === user?.user?.id
-                        )
-                          ? 'text-red-500 fill-red-500'
+                        post.isSaved
+                          ? 'text-blue-600 fill-blue-600'
                           : 'text-gray-500',
                       ]"
                     />
-                  </button>
-                  <button
-                    class="text-sm text-gray-600 hover:underline"
-                    @click="openLikesModal(post)"
-                  >
-                    {{ post?.post_likes?.length }} likes
+                    <span class="text-sm text-gray-600">Save</span>
                   </button>
                 </div>
+              </div>
+
+              <!-- Comments Preview -->
+              <div v-if="post?.post_comments?.length > 0" class="space-y-2">
+                <!-- See all comments button moved to the top -->
                 <button
-                  class="flex items-center space-x-1"
+                  v-if="post?.post_comments?.length > 3"
+                  class="text-sm text-blue-600 font-medium"
                   @click="openCommentsModal(post)"
                 >
-                  <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600"
-                    >{{ post?.post_comments?.length }} comments</span
-                  >
+                  See all {{ post?.post_comments?.length }} comments
                 </button>
-                <button
-                  class="flex items-center space-x-1"
-                  @click="sharePost(post)"
+
+                <!-- Comments in reverse order (oldest first, newest last) -->
+                <div
+                  v-for="comment in [...post.post_comments].slice(0, 3).reverse()"
+                  :key="comment.id"
+                  class="flex items-start space-x-2"
                 >
-                  <Share2 class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600">Share</span>
-                </button>
-                <button
-                  class="flex items-center space-x-1"
-                  @click="toggleSave(post)"
-                >
-                  <Bookmark
-                    :class="[
-                      'h-4 w-4',
-                      post.isSaved
-                        ? 'text-blue-600 fill-blue-600'
-                        : 'text-gray-500',
-                    ]"
+                  <img
+                    :src="comment.author_details?.image"
+                    :alt="comment.author_details?.name"
+                    class="w-5 h-5 rounded-full mt-0.5"
                   />
-                  <span class="text-sm text-gray-600">Save</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Comments Preview -->
-            <div v-if="post?.post_comments?.length > 0" class="space-y-2">
-              <!-- See all comments button moved to the top -->
-              <button
-                v-if="post?.post_comments?.length > 3"
-                class="text-sm text-blue-600 font-medium"
-                @click="openCommentsModal(post)"
-              >
-                See all {{ post?.post_comments?.length }} comments
-              </button>
-
-              <!-- Comments in reverse order (oldest first, newest last) -->
-              <div
-                v-for="comment in [...post.post_comments].slice(0, 3).reverse()"
-                :key="comment.id"
-                class="flex items-start space-x-2"
-              >
-                <img
-                  :src="comment.author_details?.image"
-                  :alt="comment.author_details?.name"
-                  class="w-5 h-5 rounded-full mt-0.5"
-                />
-                <div class="flex-1">
-                  <div class="bg-gray-50 rounded-lg p-2">
-                    <div class="flex items-center justify-between mb-0.5">
-                      <NuxtLink
-                        :to="`/business-network/profile/${comment.author}`"
-                        class="text-sm font-medium hover:underline"
-                      >
-                        {{ comment.author_details?.name }}
-                      </NuxtLink>
-                      <!-- Comment Actions (Edit/Delete) -->
-                      <div
-                        v-if="comment.author === user?.user?.id"
-                        class="flex items-center space-x-1"
-                      >
-                        <button
-                          @click="editComment(post, comment)"
-                          class="p-0.5 text-gray-500 hover:text-blue-600"
+                  <div class="flex-1">
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <div class="flex items-center justify-between mb-0.5">
+                        <NuxtLink
+                          :to="`/business-network/profile/${comment.author}`"
+                          class="text-sm font-medium hover:underline"
                         >
-                          <UIcon
-                            name="i-heroicons-pencil-square"
-                            class="size-3.5"
-                          />
-                        </button>
-                        <button
-                          @click="deleteComment(post, comment)"
-                          class="p-0.5 text-gray-500 hover:text-red-600"
+                          {{ comment.author_details?.name }}
+                        </NuxtLink>
+                        <!-- Comment Actions (Edit/Delete) -->
+                        <div
+                          v-if="comment.author === user?.user?.id"
+                          class="flex items-center space-x-1"
                         >
-                          <UIcon name="i-heroicons-trash" class="size-3.5" />
-                        </button>
+                          <button
+                            @click="editComment(post, comment)"
+                            class="p-0.5 text-gray-500 hover:text-blue-600"
+                          >
+                            <UIcon
+                              name="i-heroicons-pencil-square"
+                              class="size-3.5"
+                            />
+                          </button>
+                          <button
+                            @click="deleteComment(post, comment)"
+                            class="p-0.5 text-gray-500 hover:text-red-600"
+                          >
+                            <UIcon name="i-heroicons-trash" class="size-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <!-- Comment Content -->
-                    <div v-if="comment.isEditing">
-                      <textarea
-                        :id="`comment-edit-${comment.id}`"
-                        v-model="comment.editText"
-                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                        rows="2"
-                      ></textarea>
-                      <div class="flex justify-end space-x-2 mt-1">
-                        <button
-                          @click="cancelEditComment(comment)"
-                          class="text-xs text-gray-500 hover:underline"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          @click="saveEditComment(post, comment)"
-                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
-                          :disabled="
-                            !comment.editText?.trim() ||
-                            comment.editText === comment.content ||
-                            comment.isSaving
-                          "
-                        >
-                          <span v-if="comment.isSaving">Saving...</span>
-                          <span v-else>Save</span>
-                        </button>
+                      <!-- Comment Content -->
+                      <div v-if="comment.isEditing">
+                        <textarea
+                          :id="`comment-edit-${comment.id}`"
+                          v-model="comment.editText"
+                          class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                          rows="2"
+                        ></textarea>
+                        <div class="flex justify-end space-x-2 mt-1">
+                          <button
+                            @click="cancelEditComment(comment)"
+                            class="text-xs text-gray-500 hover:underline"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            @click="saveEditComment(post, comment)"
+                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                            :disabled="
+                              !comment.editText?.trim() ||
+                              comment.editText === comment.content ||
+                              comment.isSaving
+                            "
+                          >
+                            <span v-if="comment.isSaving">Saving...</span>
+                            <span v-else>Save</span>
+                          </button>
+                        </div>
                       </div>
+                      <p v-else class="text-sm">{{ comment?.content }}</p>
                     </div>
-                    <p v-else class="text-sm">{{ comment?.content }}</p>
+                    <span class="text-sm text-gray-500 mt-1 inline-block">
+                      {{ formatTimeAgo(comment?.created_at) }}
+                    </span>
                   </div>
-                  <span class="text-sm text-gray-500 mt-1 inline-block">
-                    {{ formatTimeAgo(comment?.created_at) }}
-                  </span>
                 </div>
               </div>
-            </div>
 
-            <!-- Add Comment Input -->
-            <div
-              class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100"
-            >
-              <img
-                :src="user?.user?.image"
-                alt="Your avatar"
-                class="w-6 h-6 rounded-full"
-              />
-              <!-- Update the comment input -->
-              <div class="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
-                  v-model="post.commentText"
-                  @keyup.enter="addComment(post)"
-                  @focus="post.showCommentInput = true"
-                  @input="handleCommentInput($event, post)"
-                  @keydown="handleMentionKeydown($event, post)"
+              <!-- Add Comment Input -->
+              <div
+                class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100"
+              >
+                <img
+                  :src="user?.user?.image"
+                  alt="Your avatar"
+                  class="w-6 h-6 rounded-full"
                 />
-                <div
-                  v-if="post.commentText"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1"
-                >
-                  <button
-                    class="p-1 text-gray-400 hover:text-gray-500 transition-colors"
-                    @click="post.commentText = ''"
-                    aria-label="Clear comment"
+                <!-- Update the comment input -->
+                <div class="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
+                    v-model="post.commentText"
+                    @keyup.enter="addComment(post)"
+                    @focus="post.showCommentInput = true"
+                    @input="handleCommentInput($event, post)"
+                    @keydown="handleMentionKeydown($event, post)"
+                  />
+                  <div
+                    v-if="post.commentText"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1"
                   >
-                    <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-                  </button>
-                  <button
-                    class="p-1 text-blue-600 hover:text-blue-700 transition-colors"
-                    @click="addComment(post)"
-                    aria-label="Post comment"
-                  >
-                    <Send class="h-4 w-4" />
-                  </button>
+                    <button
+                      class="p-1 text-gray-400 hover:text-gray-500 transition-colors"
+                      @click="post.commentText = ''"
+                      aria-label="Clear comment"
+                    >
+                      <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+                    </button>
+                    <button
+                      class="p-1 text-blue-600 hover:text-blue-700 transition-colors"
+                      @click="addComment(post)"
+                      aria-label="Post comment"
+                    >
+                      <Send class="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

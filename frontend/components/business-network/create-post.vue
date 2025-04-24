@@ -522,6 +522,8 @@ import {
   Upload
 } from "lucide-vue-next";
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
+import { useEventBus } from '@/composables/useEventBus'; // Make sure this import path is correct
+import { useRouter, useRoute } from 'vue-router';
 
 // Auth and API
 const { post, get } = useApi();
@@ -922,7 +924,32 @@ async function handleCreatePost() {
       
       // IMPORTANT: Emit the event with the complete post data for immediate display
       emit('post-created', data);
-   
+      
+      // Use event bus for better cross-component communication
+      const eventBus = useEventBus();
+      eventBus.emit('post-created', data);
+      
+      // Redirect to profile if we're not already there
+      const router = useRouter();
+      const route = useRoute();
+      const { user } = auth;
+      
+      if (route.path !== `/business-network/profile/${user.value?.user?.id}`) {
+        // Navigate to profile page
+        router.push(`/business-network/profile/${user.value?.user?.id}`);
+      } else {
+        // Already on profile, scroll to the new post after it renders
+        nextTick(() => {
+          setTimeout(() => {
+            const newPostElement = document.getElementById(`post-${data.id}`);
+            if (newPostElement) {
+              newPostElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Add highlight animation to make the new post stand out
+              newPostElement.classList.add('highlight-new-post');
+            }
+          }, 500); // Small timeout to ensure DOM is updated
+        });
+      }
     }
   } catch (error) {
     console.error("Error creating post:", error);

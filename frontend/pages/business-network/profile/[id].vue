@@ -350,10 +350,12 @@ import {
   ChevronRight,
 } from "lucide-vue-next";
 
+import { useEventBus } from '@/composables/useEventBus'; 
+const router = useRouter();
+const route = useRoute();
 
 const { user: currentUser } = useAuth();
 const { get, post } = useApi();
-const route = useRoute();
 
 const user = ref({});
 const posts = ref([]);
@@ -398,6 +400,17 @@ async function fetchUserPosts() {
   }
 }
 await fetchUserPosts();
+
+const refreshPosts = async () => {
+  try {
+    const response = await get(`/bn/posts/?author=${route.params.id}`);
+    if (response && response.data) {
+      posts.value = response.data; // Update the posts array
+    }
+  } catch (error) {
+    console.error('Error refreshing posts:', error);
+  }
+};
 
 const viewMode = ref("list");
 const activeTab = ref("posts");
@@ -620,11 +633,35 @@ const handleNewPost = (newPost) => {
 
 // Add event listeners
 onMounted(() => {
-  // Your existing code...
+  const eventBus = useEventBus();
   
-
+  eventBus.on('post-created', (newPost) => {
+    // Only update if this is the author's profile
+    if (newPost.author?.id === route.params.id) {
+      // Add the new post to the beginning of the array
+      if (posts.value?.results && Array.isArray(posts.value.results)) {
+        posts.value.results.unshift(newPost);
+      }
+      
+      // Scroll to the new post after it renders
+      nextTick(() => {
+        setTimeout(() => {
+          const newPostElement = document.getElementById(`post-${newPost.id}`);
+          if (newPostElement) {
+            newPostElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add highlight animation
+            newPostElement.classList.add('highlight-new-post');
+          }
+        }, 500);
+      });
+    }
+  });
+  
+  // Clean up event listener
+  onUnmounted(() => {
+    eventBus.off('post-created');
+  });
 });
-
 
 </script>
 
@@ -659,5 +696,15 @@ onMounted(() => {
   white-space: nowrap;
   margin-top: 0.25rem;
   animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes highlightPost {
+  0% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); transform: scale(1); }
+  50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); transform: scale(1.02); }
+  100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); transform: scale(1); }
+}
+
+.highlight-new-post {
+  animation: highlightPost 1.5s ease-out;
 }
 </style>
