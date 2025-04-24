@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class="p-3 sm:p-5 sm:p-6">
+          <div class="p-5">
             <!-- Post Header -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center space-x-3 flex-1">
@@ -22,13 +22,13 @@
                   <img
                     :src="post?.author_details?.image"
                     :alt="post?.author_details?.name"
-                    class="w-8 h-8 rounded-full"
+                    class="size-10 rounded-full"
                   />
                 </div>
                 <div class="flex-1">
                   <NuxtLink
                     :to="`/business-network/profile/${post.author}`"
-                    class="font-medium text-gray-900 text-sm hover:cursor-pointer flex gap-1 w-full"
+                    class="font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
                   >
                     <p class="">
                       {{ post?.author_details?.name }}
@@ -179,9 +179,15 @@
 
             <!-- Media Gallery -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
-              <div class="grid grid-cols-4 gap-1">
+              <div
+                class="grid gap-1"
+                :class="{
+                  'grid-cols-3': window.innerWidth >= 768, /* 3 columns for larger screens */
+                  'grid-cols-2': window.innerWidth < 768, /* 2 columns for smaller screens */
+                }"
+              >
                 <div
-                  v-for="(media, mediaIndex) in post.post_media.slice(0, 8)"
+                  v-for="(media, mediaIndex) in post.post_media.slice(0, 6)" <!-- Limit to 6 media items -->
                   :key="media.id"
                   class="relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 transition-transform hover:scale-[1.02]"
                   @click="openMedia(post, mediaIndex)"
@@ -204,11 +210,11 @@
                     </div>
                   </div>
                   <div
-                    v-if="mediaIndex === 7 && post.post_media.length > 8"
+                    v-if="mediaIndex === 5 && post.post_media.length > 6"
                     class="absolute inset-0 bg-black/50 flex items-center justify-center"
                   >
                     <span class="text-white font-medium text-sm"
-                      >+{{ post?.post_media?.length - 8 }}</span
+                      >+{{ post?.post_media?.length - 6 }}</span
                     >
                   </div>
                 </div>
@@ -305,10 +311,10 @@
                 <img
                   :src="comment.author_details?.image"
                   :alt="comment.author_details?.name"
-                  class="w-5 h-5 rounded-full mt-0.5"
+                  class="size-8 rounded-full mt-0.5"
                 />
                 <div class="flex-1">
-                  <div class="bg-gray-50 rounded-lg p-2">
+                  <div class="bg-gray-50 rounded-lg pt-1 px-2">
                     <div class="flex items-center justify-between mb-0.5">
                       <NuxtLink
                         :to="`/business-network/profile/${comment.author}`"
@@ -383,7 +389,7 @@
               <img
                 :src="user?.user?.image"
                 alt="Your avatar"
-                class="w-6 h-6 rounded-full"
+                class="size-7 rounded-full"
               />
               <!-- Update the comment input -->
               <div class="flex-1 relative">
