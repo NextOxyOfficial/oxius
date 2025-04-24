@@ -28,7 +28,7 @@
                 :class="[
                   'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
                   user?.isFollowing
-                    ? 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                    ? 'border border-gray-200 hover:bg-gray-50 text-gray-800'
                     : 'bg-blue-600 hover:bg-blue-700 text-white',
                 ]"
                 :disabled="followLoading"
@@ -46,7 +46,7 @@
               </button>
               <button
                 v-if="!isCurrentUserProfile"
-                class="p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-700 transition-colors"
+                class="p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-800 transition-colors"
                 aria-label="Message"
               >
                 <Mail class="h-3.5 w-3.5" />
@@ -122,7 +122,7 @@
                     :class="[
                       'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
                       user?.isFollowing
-                        ? 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                        ? 'border border-gray-200 hover:bg-gray-50 text-gray-800'
                         : 'bg-blue-600 hover:bg-blue-700 text-white',
                     ]"
                     :disabled="followLoading"
@@ -140,7 +140,7 @@
                   </button>
                   <button
                     v-if="!isCurrentUserProfile"
-                    class="ml-2 p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-700 transition-colors"
+                    class="ml-2 p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-800 transition-colors"
                     aria-label="Message"
                   >
                     <Mail class="h-3.5 w-3.5" />
@@ -268,7 +268,7 @@
               class="px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
               :class="activeTab === tab.value
                 ? 'text-blue-600 border-blue-600'
-                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'"
+                : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300'"
               @click="activeTab = tab.value"
             >
               {{ tab.label }}

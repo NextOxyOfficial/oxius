@@ -54,7 +54,7 @@
                 :class="
                   selectedCategories.includes(category)
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                 "
                 @click="toggleCategory(category)"
               >

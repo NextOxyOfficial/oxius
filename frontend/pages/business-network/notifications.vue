@@ -128,7 +128,7 @@
                   </div>
 
                   <!-- Notification message -->
-                  <p class="text-sm text-gray-700">
+                  <p class="text-sm text-gray-800">
                     {{ notification.message }}
                     <span v-if="notification.postTitle" class="font-medium">{{
                       notification.postTitle
@@ -165,7 +165,7 @@
                       notification.type === 'follow' &&
                       notification.user.isFollowing
                     "
-                    class="text-xs h-7 rounded-full px-3 border border-gray-200 text-gray-700 flex items-center gap-1"
+                    class="text-xs h-7 rounded-full px-3 border border-gray-200 text-gray-800 flex items-center gap-1"
                     @click.stop="unfollowUser(notification.user)"
                   >
                     <Check class="h-3 w-3" />
@@ -201,7 +201,7 @@
               View post
             </button>
             <button
-              class="text-xs text-gray-500 hover:text-gray-700"
+              class="text-xs text-gray-500 hover:text-gray-800"
               @click.stop="removeNotification(notification)"
             >
               Remove

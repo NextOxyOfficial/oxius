@@ -71,7 +71,7 @@
                   :class="[
                     'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     post.isFollowing
-                      ? 'border border-gray-200 text-gray-700'
+                      ? 'border border-gray-200 text-gray-800'
                       : 'bg-blue-600 text-white',
                   ]"
                   @click="toggleFollow(post)"
@@ -98,7 +98,7 @@
                   >
                     <div class="py-1">
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                         @click="toggleSave(post)"
                       >
                         <Bookmark
@@ -110,7 +110,7 @@
                         {{ post.isSaved ? "Unsave post" : "Save post" }}
                       </button>
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                         @click="copyLink(post)"
                       >
                         <Link2 class="h-4 w-4 mr-2" />
@@ -118,7 +118,7 @@
                       </button>
                       <hr class="my-1 border-gray-200" />
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                       >
                         <UserX class="h-4 w-4 mr-2" />
                         Unfollow @{{
@@ -126,7 +126,7 @@
                         }}
                       </button>
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                       >
                         <Flag class="h-4 w-4 mr-2" />
                         Report post
@@ -163,7 +163,7 @@
             <div class="mb-2 min-w-full">
               <p
                 :class="[
-                  'text-sm text-gray-700',
+                  'text-sm text-gray-800',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="post.content"
@@ -577,7 +577,7 @@
                           :class="[
                             'text-sm h-5 rounded-full px-2 flex items-center',
                             comment.user.isFollowing
-                              ? 'border border-gray-200 text-gray-700'
+                              ? 'border border-gray-200 text-gray-800'
                               : 'bg-blue-600 text-white',
                           ]"
                           @click.stop="toggleUserFollow(comment.user)"
@@ -689,7 +689,7 @@
                 :class="[
                   'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
-                    ? 'border border-gray-200 text-gray-700'
+                    ? 'border border-gray-200 text-gray-800'
                     : 'bg-blue-600 text-white',
                 ]"
                 @click.stop="toggleUserFollow(user)"
@@ -759,7 +759,7 @@
                         :class="[
                           'text-sm h-5 rounded-full px-2 flex items-center',
                           comment.user?.isFollowing
-                            ? 'border border-gray-200 text-gray-700'
+                            ? 'border border-gray-200 text-gray-800'
                             : 'bg-blue-600 text-white',
                         ]"
                         @click.stop="toggleUserFollow(comment.user)"
@@ -938,7 +938,7 @@
                 :class="[
                   'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
-                    ? 'border border-gray-200 text-gray-700'
+                    ? 'border border-gray-200 text-gray-800'
                     : 'bg-blue-600 text-white',
                 ]"
                 @click.stop="toggleUserFollow(user)"
@@ -971,7 +971,7 @@
           <div class="flex justify-end space-x-2">
             <button
               @click="commentToDelete = null"
-              class="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
+              class="px-4 py-2 border border-gray-200 text-gray-800 rounded-lg hover:bg-gray-50"
             >
               Cancel
             </button>
