@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class="p-3 sm:p-5 sm:p-6">
+          <div class="p-4 sm:p-5 sm:p-6">
             <!-- Post Header -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center space-x-3 flex-1">
@@ -567,7 +567,7 @@
           @click.stop
         >
           <div
-            class="p-3 sm:p-5 border-b border-gray-200 flex items-center justify-between"
+            class="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between"
           >
             <h3 class="font-semibold">Liked by</h3>
             <button @click="activeLikesPost = null">
@@ -578,7 +578,7 @@
             <div
               v-for="user in activeLikesPost.post_likes"
               :key="user.id"
-              class="flex items-center justify-between p-3 sm:p-5 border-b border-gray-100"
+              class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100"
             >
               <div class="flex items-center space-x-3">
                 <img
@@ -634,14 +634,14 @@
           @click.stop
         >
           <div
-            class="p-3 sm:p-5 border-b border-gray-200 flex items-center justify-between"
+            class="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between"
           >
             <h3 class="font-semibold">Comments</h3>
             <button @click="activeCommentsPost = null">
               <X class="h-5 w-5" />
             </button>
           </div>
-          <div class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3">
+          <div class="overflow-y-auto max-h-[60vh] p-4 sm:p-5 space-y-3">
             <div
               v-for="comment in activeCommentsPost.post_comments"
               :key="comment.id"
@@ -684,7 +684,7 @@
               </div>
             </div>
           </div>
-          <div class="p-3 sm:p-5 border-t border-gray-200">
+          <div class="p-4 sm:p-5 border-t border-gray-200">
             <div class="flex items-center gap-2">
               <img
                 :src="user.user.image"
@@ -726,7 +726,7 @@
           @click.stop
         >
           <div
-            class="p-3 sm:p-5 border-b border-gray-200 flex items-center justify-between"
+            class="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between"
           >
             <h3 class="font-semibold">Liked by</h3>
             <button @click="activeMediaLikes = null">
@@ -737,7 +737,7 @@
             <div
               v-for="(user, index) in mediaLikedUsers"
               :key="index"
-              class="flex items-center justify-between p-3 sm:p-5 border-b border-gray-100"
+              class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100"
             >
               <div class="flex items-center space-x-3">
                 <img
