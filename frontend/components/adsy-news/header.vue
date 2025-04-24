@@ -32,7 +32,7 @@
                 'text-base font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-700',
+                  : 'text-gray-800',
               ]"
               :to="`/adsy-news/categories/${category.slug}/`"
             >
@@ -41,7 +41,7 @@
             <div class="relative" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-base font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-1"
+                class="flex items-center text-base font-medium text-gray-800 hover:text-primary transition-colors duration-200 py-1"
               >
                 More
                 <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
@@ -58,7 +58,7 @@
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
                     activeCategory === category.id
                       ? 'text-primary'
-                      : 'text-gray-700',
+                      : 'text-gray-800',
                   ]"
                   :to="`/adsy-news/categories/${category.slug}/`"
                 >
@@ -85,13 +85,7 @@
               class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all"
               aria-label="Go to AdsyClub"
             >
-              <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none">
-                <path d="M3 21V3H21V21H3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M9 9.01L9.01 8.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M9 15.01L9.01 14.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M15 9.01L15.01 8.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M15 15.01L15.01 14.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <BarChartBig class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>AdsyClub</span>
             </NuxtLink>
             
@@ -100,12 +94,7 @@
               class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all"
               aria-label="Go to Business Network"
             >
-              <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none">
-                <path d="M3.05493 11.5C3.27195 9.95555 4.16342 8.56693 5.50004 7.69231L12 4L18.5 7.69231C19.8366 8.56693 20.7281 9.95555 20.9451 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M12 4V2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M21 12V20H3V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M15 20V14H9V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <Globe class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>Adsy BN</span>
             </NuxtLink>
           </div>
@@ -124,7 +113,7 @@
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1 flex-shrink-0',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-700',
+                  : 'text-gray-800',
               ]"
               :to="`/adsy-news/categories/${category.slug}/`"
             >
@@ -133,7 +122,7 @@
             <button
               v-if="categories.length > 6"
               @click="toggleMoreCategories"
-              class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 flex-shrink-0"
+              class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200 flex-shrink-0"
             >
               More
               <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
@@ -160,7 +149,7 @@
               type="text"
               placeholder="Search news articles..."
               v-model="searchQuery"
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-700"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-800"
               @input="handleSearchInput"
               ref="searchInputRef"
             />
@@ -262,6 +251,8 @@ import {
   CalendarIcon,
   CloudIcon,
   CloudRainIcon,
+  Globe,        // Added for Business Network
+  BarChartBig   // Added for AdsyClub
 } from "lucide-vue-next";
 
 import { onMounted, onUnmounted, nextTick } from "vue";
