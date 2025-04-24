@@ -1029,7 +1029,7 @@ import {
   UserX,
 } from "lucide-vue-next";
 const { user } = useAuth();
-const { post, del, put } = useApi();
+const { post, del, put, get } = useApi();
 
 // State
 const loading = ref(false);
@@ -1797,6 +1797,23 @@ const handleMentionKeydown = (e, currentPost) => {
     showMentions.value = false;
   }
 };
+
+// Add a method to refresh posts
+const refreshPosts = async () => {
+  try {
+    const response = await get("/bn/posts/");
+    posts.value = response.data.results;
+  } catch (error) {
+    console.error("Failed to refresh posts:", error);
+  }
+};
+
+// Expose the method to parent components
+defineExpose({ refreshPosts });
+
+
+
+
 
 // Initialize
 onMounted(() => {

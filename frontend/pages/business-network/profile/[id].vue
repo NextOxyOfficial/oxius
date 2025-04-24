@@ -351,6 +351,7 @@ import {
   ChevronRight,
 } from "lucide-vue-next";
 
+
 const { user: currentUser } = useAuth();
 const { get, post } = useApi();
 const route = useRoute();
@@ -609,6 +610,23 @@ const navigateMedia = (direction) => {
 
   activeMedia.value = activePost.value.media[activeMediaIndex.value];
 };
+
+// Add handler for new posts
+const handleNewPost = (newPost) => {
+  // Only add to this profile's posts if the author is the profile owner
+  if (newPost.author?.id === route.params.id) {
+    posts.value.results = [newPost, ...posts.value.results];
+  }
+};
+
+// Add event listeners
+onMounted(() => {
+  // Your existing code...
+  
+
+});
+
+
 </script>
 
 <style scoped>

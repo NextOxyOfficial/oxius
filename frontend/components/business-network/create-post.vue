@@ -36,6 +36,7 @@
               v-if="isCreatePostOpen"
               class="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl"
               @click.stop
+              ref="modalRef"
             >
               <!-- Modal Header -->
               <div
@@ -57,7 +58,7 @@
                 </button>
               </div>
 
-              <div class="p-4 overflow-y-auto max-h-[calc(90vh-130px)] hide-scrollbar">
+              <div class="p-2 pb-6 overflow-y-auto max-h-[calc(90vh-130px)] hide-scrollbar">
                 <div class="space-y-5">
                   <!-- Form feedback alerts -->
                   <Transition
@@ -126,8 +127,9 @@
                     </div>
                   </div>
 
-                  <!-- Media upload area - Enhanced with drop zone -->
+                  <!-- Media upload area - CONDITIONALLY DISPLAYED when no images are uploaded -->
                   <div 
+                    v-if="images.length === 0"
                     class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4 transition-all hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
                     @dragover.prevent="isDragging = true"
                     @dragleave.prevent="isDragging = false"
@@ -214,7 +216,7 @@
                             @click.stop="removeMedia(index)"
                             aria-label="Remove image"
                           >
-                            <X class="h-3 w-3" />
+                            <X class="h-3 w-3 text-white" />
                           </button>
                         </div>
 
@@ -233,8 +235,8 @@
                     </div>
                   </Transition>
 
-                  <!-- Hashtags section with autocomplete -->
-                  <div class="space-y-2">
+                  <!-- Hashtags section with autocomplete and popular tags -->
+                  <div class="space-y-2 mb-5"><!-- Added mb-5 for the extra space -->
                     <h4
                       class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
                     >
@@ -283,7 +285,7 @@
                             class="pl-8 pr-4 py-2 w-full border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-900 dark:text-white"
                             @keydown.enter.prevent="addCategory"
                             @input="searchHashtags"
-                            @focus="searchHashtags"
+                            @focus="onHashtagInputFocus"
                             @keydown.down.prevent="selectNextSuggestion"
                             @keydown.up.prevent="selectPrevSuggestion"
                           />
@@ -301,21 +303,45 @@
                             leave-to-class="opacity-0 -translate-y-2"
                           >
                             <div 
-                              v-if="hashtagSuggestions.length > 0 && categoryInput && showSuggestions"
+                              v-if="(hashtagSuggestions.length > 0 || popularHashtags.length > 0) && showSuggestions"
                               class="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 shadow-lg z-10 hide-scrollbar"
                             >
-                              <div
-                                v-for="(tag, index) in hashtagSuggestions"
-                                :key="tag.id"
-                                @click="selectHashtagSuggestion(tag.tag)"
-                                :class="[
-                                  'px-3 py-2 flex items-center gap-2 cursor-pointer transition-colors',
-                                  selectedSuggestionIndex === index ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                                ]"
-                              >
-                                <Hash class="h-3.5 w-3.5 text-blue-500" />
-                                <span class="text-sm">{{ tag.tag }}</span>
-                                <span class="text-xs text-gray-500 ml-auto">{{ tag.count }} posts</span>
+                              <!-- Search results section -->
+                              <div v-if="hashtagSuggestions.length > 0">
+                                <div class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                  Search Results
+                                </div>
+                                <div
+                                  v-for="(tag, index) in hashtagSuggestions"
+                                  :key="tag.id"
+                                  @click="selectHashtagSuggestion(tag.tag)"
+                                  :class="[
+                                    'px-3 py-2 flex items-center gap-2 cursor-pointer transition-colors',
+                                    selectedSuggestionIndex === index ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                                  ]"
+                                >
+                                  <Hash class="h-3.5 w-3.5 text-blue-500" />
+                                  <span class="text-sm">{{ tag.tag }}</span>
+                                  <span class="text-xs text-gray-500 ml-auto">{{ tag.count }} posts</span>
+                                </div>
+                              </div>
+                              
+                              <!-- Popular hashtags section -->
+                              <div v-if="popularHashtags.length > 0">
+                                <div class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                  Popular Hashtags
+                                </div>
+                                <div class="flex flex-wrap gap-2 p-3">
+                                  <button
+                                    v-for="(tag, index) in popularHashtags"
+                                    :key="index"
+                                    @click="selectHashtagSuggestion(tag.tag)"
+                                    class="px-2 py-1 bg-gray-100 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/20 rounded-full text-xs text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1"
+                                  >
+                                    <Hash class="h-3 w-3 text-blue-500" />
+                                    {{ tag.tag }}
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </Transition>
@@ -376,6 +402,38 @@
               />
             </div>
           </Transition>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Success Toast Notification -->
+    <Teleport to="body">
+      <Transition 
+        enter-active-class="transition duration-300 ease-out" 
+        enter-from-class="opacity-0 translate-y-4" 
+        enter-to-class="opacity-100 translate-y-0" 
+        leave-active-class="transition duration-200 ease-in" 
+        leave-from-class="opacity-100 translate-y-0" 
+        leave-to-class="opacity-0 translate-y-4"
+      >
+        <div 
+          v-if="showSuccessToast"
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 shadow-lg rounded-lg px-4 py-3 flex items-center gap-3 z-[10001] min-w-[280px] max-w-sm animate-bounce-once"
+        >
+          <div class="p-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm">
+            <CheckCircle class="h-5 w-5" />
+          </div>
+          <div>
+            <p class="font-medium text-green-800">Post published!</p>
+            <p class="text-sm text-green-600">Your post was successfully created</p>
+          </div>
+          <button 
+            class="ml-auto p-1 text-green-700 hover:bg-green-100 rounded-full"
+            @click="showSuccessToast = false"
+            aria-label="Close notification"
+          >
+            <X class="h-4 w-4" />
+          </button>
         </div>
       </Transition>
     </Teleport>
@@ -442,38 +500,6 @@
         </div>
       </Transition>
     </Teleport>
-    
-    <!-- Success Toast Notification -->
-    <Teleport to="body">
-      <Transition 
-        enter-active-class="transition duration-300 ease-out" 
-        enter-from-class="opacity-0 translate-y-4" 
-        enter-to-class="opacity-100 translate-y-0" 
-        leave-active-class="transition duration-200 ease-in" 
-        leave-from-class="opacity-100 translate-y-0" 
-        leave-to-class="opacity-0 translate-y-4"
-      >
-        <div 
-          v-if="showSuccessToast"
-          class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 shadow-lg rounded-lg px-4 py-3 flex items-center gap-3 z-[10001] min-w-[280px] max-w-sm animate-bounce-once"
-        >
-          <div class="p-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm">
-            <CheckCircle class="h-5 w-5" />
-          </div>
-          <div>
-            <p class="font-medium text-green-800">Post published!</p>
-            <p class="text-sm text-green-600">Your post was successfully created</p>
-          </div>
-          <button 
-            class="ml-auto p-1 text-green-700 hover:bg-green-100 rounded-full"
-            @click="showSuccessToast = false"
-            aria-label="Close notification"
-          >
-            <X class="h-4 w-4" />
-          </button>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
@@ -499,6 +525,8 @@ import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
 
 // Auth and API
 const { post, get } = useApi();
+const auth = useAuth();
+const emit = defineEmits(['post-created']);
 
 // Form data
 const form = ref({
@@ -524,14 +552,8 @@ const showSuccessToast = ref(false);
 const isDragging = ref(false);
 const showSuggestions = ref(false);
 const hashtagSuggestions = ref([]);
+const popularHashtags = ref([]);
 const selectedSuggestionIndex = ref(-1);
-
-// Common emojis for quick access
-const commonEmojis = [
-  "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃", 
-  "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "👍", "👎", "👏", 
-  "🙌", "🤝", "👊", "✌️", "❤️", "🧡", "💛", "💚", "💙", "💜"
-];
 
 // Computed properties
 const canAddMoreMedia = computed(() => images.value.length < 12);
@@ -548,21 +570,22 @@ const openCreatePostModal = () => {
   isCreatePostOpen.value = true;
   nextTick(() => {
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    fetchPopularHashtags(); // Get popular hashtags when opening modal
   });
 };
 
 const closeModalWithConfirm = () => {
   if (hasUnsavedChanges.value) {
-    showConfirmClose.value = true;
+    showConfirmClose.value = true; // Show confirmation dialog
   } else {
-    isCreatePostOpen.value = false;
+    isCreatePostOpen.value = false; // Close modal directly if no changes
     document.body.style.overflow = ''; // Restore scrolling
   }
 };
 
 const discardChanges = () => {
-  showConfirmClose.value = false;
-  isCreatePostOpen.value = false;
+  showConfirmClose.value = false; // Hide confirmation dialog
+  isCreatePostOpen.value = false; // Close the main modal
   resetForm();
   document.body.style.overflow = ''; // Restore scrolling
 };
@@ -768,15 +791,13 @@ function updateContent(p) {
 async function searchHashtags() {
   if (!categoryInput.value.trim()) {
     hashtagSuggestions.value = [];
-    showSuggestions.value = false;
+    // Still show popular hashtags if no search term
+    showSuggestions.value = popularHashtags.value.length > 0;
     return;
   }
 
   try {
     const { data } = await get(`/news/categories/search/?q=${categoryInput.value.trim()}`);
-    
-    // Fallback if the endpoint above doesn't work - replace with the appropriate endpoint
-    // const { data } = await get(`/news/categories/?search=${categoryInput.value.trim()}`);
     
     if (data && Array.isArray(data.results)) {
       hashtagSuggestions.value = data.results.map(tag => ({
@@ -785,19 +806,59 @@ async function searchHashtags() {
         count: tag.posts_count || 0
       })).slice(0, 5); // Take top 5 results
       
-      showSuggestions.value = hashtagSuggestions.value.length > 0;
+      showSuggestions.value = true;
     } else {
       hashtagSuggestions.value = [];
-      showSuggestions.value = false;
+      // Still show popular tags if no search results
+      showSuggestions.value = popularHashtags.value.length > 0;
     }
     
     selectedSuggestionIndex.value = -1;
   } catch (error) {
     console.error("Error fetching hashtag suggestions:", error);
     hashtagSuggestions.value = [];
-    showSuggestions.value = false;
+    // Still show popular tags even if search fails
+    showSuggestions.value = popularHashtags.value.length > 0;
   }
 }
+
+// Fetch popular hashtags
+const fetchPopularHashtags = async () => {
+  try {
+    const { data } = await get('/news/categories/popular/?limit=8');
+    
+    if (data && Array.isArray(data.results)) {
+      popularHashtags.value = data.results.map(tag => ({
+        id: tag.id,
+        tag: tag.tag,
+        count: tag.posts_count || 0
+      }));
+    } else if (data && Array.isArray(data)) {
+      // Alternative format
+      popularHashtags.value = data.map(tag => ({
+        id: tag.id || 0,
+        tag: tag.tag || tag.name,
+        count: tag.posts_count || tag.count || 0
+      }));
+    } else {
+      popularHashtags.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching popular hashtags:", error);
+    popularHashtags.value = [];
+  }
+};
+
+// Handler for when hashtag input is focused
+const onHashtagInputFocus = () => {
+  showSuggestions.value = true;
+  // Show popular tags initially if no search input
+  if (!categoryInput.value.trim() && popularHashtags.value.length === 0) {
+    fetchPopularHashtags();
+  } else {
+    searchHashtags();
+  }
+};
 
 // Navigate suggestions with keyboard
 const selectNextSuggestion = () => {
@@ -838,6 +899,7 @@ async function handleCreatePost() {
   isSubmitting.value = true;
   
   try {
+    // Post to the API
     const { data } = await post("/bn/posts/", {
       ...form.value,
       images: images.value,
@@ -857,6 +919,10 @@ async function handleCreatePost() {
       setTimeout(() => {
         showSuccessToast.value = false;
       }, 5000);
+      
+      // IMPORTANT: Emit the event with the complete post data for immediate display
+      emit('post-created', data);
+   
     }
   } catch (error) {
     console.error("Error creating post:", error);
@@ -865,6 +931,29 @@ async function handleCreatePost() {
     isSubmitting.value = false;
   }
 }
+
+// Refresh posts using JWT without page reload
+const refreshPostsWithJWT = async () => {
+  try {
+    // Get the current JWT token
+    const token = auth.getToken();
+    
+    if (!token) {
+      console.error("No JWT token available for refresh");
+      return;
+    }
+    
+ 
+    
+    // Optionally, you can also directly fetch new posts here
+    // const response = await get('/bn/posts/', {
+    //   headers: { Authorization: `Bearer ${token}` }
+    // });
+    // Do something with the refreshed posts
+  } catch (error) {
+    console.error("Error refreshing posts with JWT:", error);
+  }
+};
 
 // Hide suggestions when clicking outside
 const vClickOutside = {
@@ -924,6 +1013,9 @@ onMounted(() => {
   };
   
   document.addEventListener('keydown', handleEscape);
+  
+  // Fetch popular hashtags
+  fetchPopularHashtags();
   
   // Clean up
   onUnmounted(() => {

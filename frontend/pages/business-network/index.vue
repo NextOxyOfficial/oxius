@@ -1,6 +1,10 @@
 <template>
   <div class="mx-auto px-2 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
+    <!-- Add the event listener here -->
     <BusinessNetworkPost :posts="posts" :id="user?.user?.id" />
+    
+    <!-- Add the create post component with event listener -->
+    <BusinessNetworkCreatePost @post-created="handleNewPost" />
 
     <!-- Search Overlay -->
     <Teleport to="body">
@@ -151,6 +155,7 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
+
 
 // State
 const posts = ref([]);
@@ -773,6 +778,12 @@ const handleFileChange = (e) => {
   selectedMedia.value = [...selectedMedia.value, ...validFiles];
 };
 
+// Add this function to handle the new post
+const handleNewPost = (newPost) => {
+  // Add the new post to the beginning of the posts array for immediate display
+  posts.value = [newPost, ...posts.value];
+};
+
 // Initialize
 onMounted(() => {
   // Implement infinite scroll
@@ -793,7 +804,10 @@ onMounted(() => {
       });
     }
   });
+
 });
+
+
 </script>
 
 <style scoped>
