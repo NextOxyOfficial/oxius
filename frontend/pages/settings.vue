@@ -25,13 +25,20 @@
             />
             <div
               v-else
-              class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl font-bold border-4 border-white shadow-md"
+              class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 border-4 border-white shadow-md overflow-hidden"
             >
-              {{ userProfile.first_name ? userProfile.first_name.charAt(0) : ""
-              }}{{
-                userProfile.last_name ? userProfile.last_name.charAt(0) : ""
-              }}
+              <!-- Better profile icon fallback -->
+              <UIcon 
+                v-if="!(userProfile.first_name || userProfile.last_name)" 
+                name="i-heroicons-user" 
+                class="w-10 h-10" 
+              />
+              <span v-else class="text-xl font-bold">
+                {{ userProfile.first_name ? userProfile.first_name.charAt(0) : "" }}
+                {{ userProfile.last_name ? userProfile.last_name.charAt(0) : "" }}
+              </span>
             </div>
+            <!-- Verification badge remains unchanged -->
             <div
               v-if="user.user.kyc"
               class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm"
@@ -238,7 +245,7 @@
               </h2>
             </div>
 
-            <form @submit.prevent="handleForm" class="space-y-6">
+            <form id="profileForm" @submit.prevent="handleForm" class="space-y-6">
               <!-- Profile Image Upload -->
               <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
                 <label class="block text-base font-medium text-gray-700 mb-3"
@@ -261,8 +268,14 @@
                       <UIcon name="i-heroicons-trash" class="w-4 h-4" />
                     </button>
                   </div>
+                  <!-- Image placeholder when no image -->
+                  <div v-else class="relative">
+                    <div class="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center border-2 border-white shadow overflow-hidden">
+                      <UIcon name="i-heroicons-user" class="w-12 h-12 text-emerald-300" />
+                    </div>
+                  </div>
 
-                  <!-- Upload button -->
+                  <!-- Upload button - keep unchanged -->
                   <div class="relative">
                     <input
                       type="file"
@@ -277,9 +290,7 @@
                         name="i-heroicons-camera"
                         class="w-6 h-6 text-emerald-500"
                       />
-                      <span class="text-xs text-emerald-600 font-medium"
-                        >Upload</span
-                      >
+                      <span class="text-xs text-emerald-600 font-medium">Upload</span>
                     </div>
                   </div>
                 </div>
@@ -544,26 +555,44 @@
                   placeholder="Please provide information about your self, profession and services so that public can read about you and find interest"
                 />
               </div>
-
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
-                  :disabled="isLoading"
-                >
-                  <UIcon
-                    v-if="isLoading"
-                    name="i-heroicons-arrow-path"
-                    class="animate-spin"
-                  />
-                  <UIcon v-else name="i-heroicons-check" />
-                  Save Profile
-                </button>
-              </div>
             </form>
           </div>
         </div>
       </UContainer>
+
+      <!-- Sticky Save Button -->
+      <div 
+        v-if="activeTab === 'profile'" 
+        class="fixed bottom-0 left-0 right-0 bg-white bg-opacity-95 shadow-lg border-t border-gray-100 backdrop-blur-sm transition-all duration-300 z-50 mb-16 sm:mb-0"
+        :class="{ 'translate-y-full': !showStickyButton }"
+      >
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="text-sm text-gray-500">
+            <span v-if="formDirty" class="flex items-center gap-1">
+              <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+              Profile has unsaved changes
+            </span>
+          </div>
+          <button
+            type="submit"
+            form="profileForm"
+            class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
+            :disabled="isLoading || !formDirty"
+          >
+            <UIcon
+              v-if="isLoading"
+              name="i-heroicons-arrow-path"
+              class="animate-spin"
+            />
+            <UIcon v-else name="i-heroicons-check" />
+            Save Profile
+          </button>
+        </div>
+      </div>
+
+      <div class="h-24 sm:h-16" v-if="activeTab === 'profile'">
+        <!-- Increased spacer to prevent content from being hidden behind the sticky button and mobile menu -->
+      </div>
     </div>
   </PublicSection>
 </template>
@@ -584,11 +613,57 @@ const passwordLoading = ref(false);
 const old_password = ref("");
 const new_password = ref("");
 
+// Add these new state variables
+const showStickyButton = ref(true);
+const formDirty = ref(false);
+const originalProfile = ref({});
+const lastScrollPosition = ref(0);
+
+// Add scroll detection
+function handleScroll() {
+  // Show/hide button based on scroll direction
+  const currentScrollPosition = window.scrollY;
+  
+  if (currentScrollPosition < 100) {
+    // Always show at the top of the page
+    showStickyButton.value = true;
+  } else if (currentScrollPosition < lastScrollPosition.value) {
+    // Scrolling up - show the button
+    showStickyButton.value = true;
+  } else if (currentScrollPosition > lastScrollPosition.value) {
+    // Scrolling down - hide the button
+    showStickyButton.value = false;
+  }
+  
+  lastScrollPosition.value = currentScrollPosition;
+}
+
+// Track form changes
+function checkFormChanges() {
+  if (!originalProfile.value || Object.keys(originalProfile.value).length === 0) {
+    return;
+  }
+
+  // Compare current form with original values
+  const currentValues = JSON.stringify(userProfile.value);
+  const originalValues = JSON.stringify(originalProfile.value);
+  
+  formDirty.value = currentValues !== originalValues;
+}
+
+// Watch for profile changes
+watch(userProfile, () => {
+  checkFormChanges();
+}, { deep: true });
+
 // Fetch user profile details
 async function getUserDetails() {
   try {
     const res = await get(`/persons/${user.value?.user.email}/`);
     userProfile.value = res.data;
+    // Store original state for comparison
+    originalProfile.value = JSON.parse(JSON.stringify(res.data));
+    formDirty.value = false;
   } catch (error) {
     console.error("Error fetching user details:", error);
     toast.add({
@@ -598,6 +673,12 @@ async function getUserDetails() {
     });
   }
 }
+
+// After successful form submission, update original profile
+const handleFormSuccess = () => {
+  originalProfile.value = JSON.parse(JSON.stringify(userProfile.value));
+  formDirty.value = false;
+};
 
 // Handle password change
 async function handlePasswordChange() {
@@ -641,39 +722,56 @@ async function handlePasswordChange() {
 
 // Handle profile update
 async function handleForm() {
-  const { groups, user_permissions, image, nid, refer, ...rest } =
-    userProfile.value;
-  rest.name = userProfile.value.first_name + " " + userProfile.value.last_name;
-
-  // Handle image properly
-  if (typeof image === "string") {
-    if (image.includes("data:image")) {
-      rest.image = image;
-    } else {
-      console.log("Image type is string; omitting from request.");
-    }
-  } else if (image === null) {
-    console.log("Image is null; omitting from request.");
-  } else {
-    rest.image = image;
-  }
-
   isLoading.value = true;
-
+  
   try {
-    const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
+    // Create a copy of the profile data
+    const profileData = { ...userProfile.value };
+    
+    // Set the name properly
+    profileData.name = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+    
+    // Remove properties that shouldn't be sent to the API
+    const { groups, user_permissions, nid, refer, ...dataToSend } = profileData;
+    
+    // Handle image more explicitly
+    if (typeof profileData.image === 'string') {
+      if (profileData.image.includes('data:image')) {
+        // This is a new image upload as base64
+        dataToSend.image = profileData.image;
+      } else if (profileData.image.includes('http')) {
+        // This is an existing image URL - don't include it in the update
+        delete dataToSend.image;
+      }
+    } else {
+      // Explicitly set image to empty string for removal
+      // Some APIs handle null differently than empty string, so try both approaches
+      dataToSend.image = "";
+    }
+
+    console.log('Sending profile update with image type:', 
+                dataToSend.image ? 
+                (typeof dataToSend.image === 'string' ? 'string' : typeof dataToSend.image) : 
+                'empty');
+
+    const res = await put(`/persons/update/${profileData.email}/`, dataToSend);
 
     if (res.data?.data?.email) {
       toast.add({
         title: "Success",
-        description: res.data?.message || "Profile updated successfully",
+        description: "Profile updated successfully",
         color: "green",
       });
-      res.data.data.image = res.data.data.image ? res.data.data.image : null;
+      // Update the profile with the returned data
       userProfile.value = res.data.data;
       errors.value = {};
+      // Mark form as clean after successful submission
+      handleFormSuccess();
+      
+      // Refresh profile data to ensure we get the latest from the server
+      await getUserDetails();
     } else {
-      errors.value = res?.error?.data.errors;
+      errors.value = res?.error?.data?.errors || {};
       toast.add({
         title: "Error",
         description: "Failed to update profile",
@@ -681,9 +779,12 @@ async function handleForm() {
       });
     }
   } catch (error) {
+    console.error("Profile update error:", error);
+    // More detailed error message
     toast.add({
       title: "Error",
-      description: error.toString(),
+      description: error.response?.data?.message || 
+                  "Profile update failed. Check your internet connection or try again.",
       color: "red",
     });
   } finally {
@@ -697,38 +798,107 @@ function handleFileUpload(event, field) {
   if (!files.length) return;
 
   const file = files[0];
-
-  // Validate file type
-  if (!file.type.match("image.*")) {
+  
+  // More thorough validation
+  if (!file.type.match(/^image\/(jpeg|png|gif|webp|bmp)$/i)) {
     toast.add({
-      title: "Error",
-      description: "Please select an image file",
+      title: "Invalid File Type",
+      description: "Please select a valid image file (JPEG, PNG, GIF)",
       color: "red",
     });
     return;
   }
 
-  // Validate file size (2MB max)
-  if (file.size > 2 * 1024 * 1024) {
+  // More reasonable size limit with clear message
+  const maxSize = 1 * 1024 * 1024; // 1MB
+  if (file.size > maxSize) {
     toast.add({
-      title: "Error",
-      description: "Image size should be less than 2MB",
+      title: "File Too Large",
+      description: `Image must be smaller than 1MB. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
       color: "red",
     });
     return;
   }
+
+  // Show loading state
+  const loadingToast = toast.add({
+    title: "Processing Image",
+    description: "Please wait while we process your image...",
+    color: "blue",
+    timeout: 0,
+  });
 
   const reader = new FileReader();
 
   reader.onload = () => {
-    userProfile.value.image = reader.result;
+    // Resize the image if needed
+    const img = new Image();
+    img.onload = function() {
+      // Remove the loading toast
+      toast.remove(loadingToast);
+
+      // If image is already small enough, use as is
+      if (reader.result.length <= maxSize) {
+        userProfile.value.image = reader.result;
+        toast.add({
+          title: "Image Ready",
+          description: "Your image has been prepared for upload",
+          color: "green",
+        });
+        return;
+      }
+
+      // Otherwise, resize the image
+      const MAX_WIDTH = 800;
+      const MAX_HEIGHT = 800;
+      
+      let width = img.width;
+      let height = img.height;
+      
+      // Calculate new dimensions
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+      
+      // Create canvas to resize image
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw image at new size
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Get resized image as base64 string
+      const quality = 0.8; // Good balance between size and quality
+      const resizedImage = canvas.toDataURL('image/jpeg', quality);
+      
+      // Update the profile image
+      userProfile.value.image = resizedImage;
+      
+      toast.add({
+        title: "Image Ready",
+        description: "Your image has been resized and is ready for upload",
+        color: "green",
+      });
+    };
+    img.src = reader.result;
   };
 
   reader.onerror = (error) => {
+    toast.remove(loadingToast);
     console.error("Error reading file:", error);
     toast.add({
       title: "Error",
-      description: "Failed to read the image file",
+      description: "Failed to process the image file",
       color: "red",
     });
   };
@@ -738,8 +908,35 @@ function handleFileUpload(event, field) {
 
 // Handle profile image removal
 function deleteUpload() {
+  // Mark as explicitly null to ensure the API recognizes it's being removed
   userProfile.value.image = null;
+  
+  // Mark form as dirty to enable the save button
+  formDirty.value = true;
+  
+  toast.add({
+    title: "Image Removed",
+    description: "Your profile image has been removed locally. Click Save Profile to confirm changes.",
+    color: "blue",
+  });
 }
+
+// Add event listeners when component is mounted
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+// Clean up event listeners when component is unmounted
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 
 getUserDetails();
 </script>
+
+<style scoped>
+/* Add these styles for smooth transition */
+.translate-y-full {
+  transform: translateY(100%);
+}
+</style>

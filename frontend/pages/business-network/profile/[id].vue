@@ -9,11 +9,14 @@
             <div>
               <h1 class="text-xl font-bold flex items-center gap-1.5">
                 {{ user?.name }}
-                <UIcon
-                  v-if="user?.kyc"
-                  name="i-mdi-check-decagram"
-                  class="w-4 h-4 text-blue-600"
-                />
+                <div class="relative inline-flex tooltip-container">
+                  <UIcon
+                    v-if="user?.kyc"
+                    name="i-mdi-check-decagram"
+                    class="w-4 h-4 text-blue-600"
+                  />
+                  <div class="tooltip-content">Verified</div>
+                </div>
               </h1>
               <!-- Move these elements under the name in mobile view -->
               <p class="text-sm font-medium text-slate-600 mb-0.5">{{ user?.profession }}</p>
@@ -98,12 +101,15 @@
                         <span class="text-2xs">Pro</span>
                       </div>
                     </span>
-                    <UIcon
-                      v-if="user?.kyc"
-                      name="i-mdi-check-decagram"
-                      class="w-4 h-4 text-blue-600"
-                      data-tooltip="Verified"
-                    />
+                    <div class="relative inline-flex tooltip-container">
+                      <UIcon
+                        v-if="user?.kyc"
+                        name="i-mdi-check-decagram"
+                        class="w-4 h-4 text-blue-600"
+                        data-tooltip="Verified"
+                      />
+                      <div class="tooltip-content">Verified</div>
+                    </div>
                   </div>
                   <p class="text-sm font-medium text-slate-600 mb-0.5">{{ user?.profession }}</p>
                   <p class="text-xs text-gray-500">@{{ user?.username }}</p>
@@ -666,6 +672,36 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Replace your existing tooltip CSS with this */
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip-content {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  z-index: 10;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+  pointer-events: none;
+  width: max-content;
+}
+
+.tooltip-container:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Your existing styles... */
 .border-l-3 {
   border-left-width: 3px;
 }
@@ -681,6 +717,8 @@ onMounted(() => {
   }
 }
 
+/* Remove or comment out the old tooltip CSS */
+/* 
 [data-tooltip]:hover::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -697,6 +735,7 @@ onMounted(() => {
   margin-top: 0.25rem;
   animation: fadeIn 0.2s ease-out forwards;
 }
+*/
 
 @keyframes highlightPost {
   0% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); transform: scale(1); }
