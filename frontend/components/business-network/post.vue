@@ -179,9 +179,11 @@
 
             <!-- Media Gallery -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
+              <!-- Grid layout: 2 columns on mobile, 3 columns on desktop -->
               <div class="grid gap-1 grid-cols-2 md:grid-cols-3">
+                <!-- Limit to 6 media items total -->
                 <div
-                  v-for="(media, mediaIndex) in post.post_media.slice(0, 6)" <!-- Limit to 6 media items -->
+                  v-for="(media, mediaIndex) in post.post_media.slice(0, 6)"
                   :key="media.id"
                   class="relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 transition-transform hover:scale-[1.02]"
                   @click="openMedia(post, mediaIndex)"
