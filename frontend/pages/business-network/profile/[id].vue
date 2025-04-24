@@ -140,7 +140,7 @@
               <!-- Mobile User Details -->
               <div class="flex flex-col sm:hidden mb-2">
                 <p class="text-sm font-medium text-slate-600">{{ user?.profession }}</p>
-                <p class="text-xs text-gray-500">@{{ user?.username }}</p>
+                <p class="text-xs text-gray-500">@{{ user?.slug }}</p>
               </div>
               
               <!-- User Stats (Desktop) -->
