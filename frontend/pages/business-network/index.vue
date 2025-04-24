@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-16">
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-16 flex-1">
     <BusinessNetworkPost :posts="posts" :id="user?.user?.id" />
 
     <!-- Search Overlay -->
@@ -155,8 +155,8 @@ import {
 // State
 const posts = ref([]);
 const loading = ref(false);
-const { get } = useApi(); 
-const {user} = useAuth();
+const { get } = useApi();
+const { user } = useAuth();
 
 async function getPosts() {
   loading.value = true;
@@ -172,8 +172,6 @@ async function getPosts() {
 }
 
 await getPosts();
-
-
 
 const page = ref(1);
 const isSearchOpen = ref(false);
@@ -775,10 +773,8 @@ const handleFileChange = (e) => {
   selectedMedia.value = [...selectedMedia.value, ...validFiles];
 };
 
-
 // Initialize
 onMounted(() => {
-
   // Implement infinite scroll
   window.addEventListener("scroll", () => {
     if (

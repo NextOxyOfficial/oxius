@@ -75,7 +75,7 @@ export function useApi() {
   };
 
   const del = async (endpoint: string) => {
-    const { data, pending, error, refresh } = await useFetch<any>(
+    const { data, pending, error, status, refresh } = await useFetch<any>(
       baseURL + endpoint,
       {
         headers: head.value,

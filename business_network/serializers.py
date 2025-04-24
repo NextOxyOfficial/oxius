@@ -47,7 +47,7 @@ class BusinessNetworkPostFollowSerializer(serializers.ModelSerializer):
 
 class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     author_details = UserSerializer(source='author', read_only=True)
-    post_media = BusinessNetworkMediaSerializer(many=True, read_only=True)
+    post_media = BusinessNetworkMediaSerializer(source='media',many=True, read_only=True)
     post_likes = serializers.SerializerMethodField()
     post_comments = BusinessNetworkPostCommentSerializer(many=True, read_only=True)
     post_tags = BusinessNetworkPostTagSerializer(many=True, read_only=True,source='tags')

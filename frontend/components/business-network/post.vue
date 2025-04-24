@@ -66,7 +66,8 @@
               </div>
 
               <div class="flex items-center gap-2">
-                <button v-if="post?.author !== id"
+                <button
+                  v-if="post?.author !== id"
                   :class="[
                     'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     post.isFollowing
@@ -177,16 +178,16 @@
             </div>
 
             <!-- Media Gallery -->
-            <div v-if="post?.media?.length > 0" class="mb-3">
+            <div v-if="post?.post_media?.length > 0" class="mb-3">
               <div class="grid grid-cols-4 gap-1">
                 <div
-                  v-for="(media, mediaIndex) in post.media.slice(0, 8)"
+                  v-for="(media, mediaIndex) in post.post_media.slice(0, 8)"
                   :key="media.id"
                   class="relative aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-100 transition-transform hover:scale-[1.02]"
                   @click="openMedia(post, mediaIndex)"
                 >
                   <img
-                    :src="media.thumbnail"
+                    :src="media.image"
                     :alt="`Media ${mediaIndex + 1}`"
                     class="h-full w-full object-cover"
                   />
@@ -203,11 +204,11 @@
                     </div>
                   </div>
                   <div
-                    v-if="mediaIndex === 7 && post.media.length > 8"
+                    v-if="mediaIndex === 7 && post.post_media.length > 8"
                     class="absolute inset-0 bg-black/50 flex items-center justify-center"
                   >
                     <span class="text-white font-medium text-sm"
-                      >+{{ post?.media?.length - 8 }}</span
+                      >+{{ post?.post_media?.length - 8 }}</span
                     >
                   </div>
                 </div>
@@ -227,7 +228,9 @@
                     <Heart
                       :class="[
                         'h-4 w-4',
-                        post.isLiked
+                        post.post_likes?.find(
+                          (like) => like.user === user?.user?.id
+                        )
                           ? 'text-red-500 fill-red-500'
                           : 'text-gray-500',
                       ]"
@@ -237,7 +240,7 @@
                     class="text-sm text-gray-600 hover:underline"
                     @click="openLikesModal(post)"
                   >
-                    {{ post.likeCount }} likes
+                    {{ post?.post_likes?.length }} likes
                   </button>
                 </div>
                 <button
@@ -246,7 +249,7 @@
                 >
                   <MessageCircle class="h-4 w-4 text-gray-500" />
                   <span class="text-sm text-gray-600"
-                    >{{ post?.comments?.length }} comments</span
+                    >{{ post?.post_comments?.length }} comments</span
                   >
                 </button>
                 <button
@@ -274,39 +277,39 @@
             </div>
 
             <!-- Comments Preview -->
-            <div v-if="post?.comments?.length > 0" class="space-y-2">
+            <div v-if="post?.post_comments?.length > 0" class="space-y-2">
               <div
-                v-for="comment in post.comments.slice(0, 2)"
+                v-for="comment in post.post_comments.slice(0, 2)"
                 :key="comment.id"
                 class="flex items-start space-x-2"
               >
                 <img
-                  :src="comment.user.avatar"
-                  :alt="comment.user.fullName"
+                  :src="comment.author_details?.image"
+                  :alt="comment.author_details?.name"
                   class="w-5 h-5 rounded-full mt-0.5"
                 />
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg p-2">
                     <NuxtLink
-                      :to="`/business-network/profile/${comment.user.id}`"
+                      :to="`/business-network/profile/${comment.author}`"
                       class="text-sm font-medium hover:underline"
                     >
-                      {{ comment.user.fullName }}
+                      {{ comment.author_details?.name }}
                     </NuxtLink>
-                    <p class="text-sm">{{ comment.text }}</p>
+                    <p class="text-sm">{{ comment?.content }}</p>
                   </div>
                   <span class="text-sm text-gray-500 mt-1 inline-block">
-                    {{ formatTimeAgo(comment.timestamp) }}
+                    {{ formatTimeAgo(comment?.created_at) }}
                   </span>
                 </div>
               </div>
 
               <button
-                v-if="post?.comments?.length > 2"
+                v-if="post?.post_comments?.length > 2"
                 class="text-sm text-blue-600 font-medium mt-1"
                 @click="openCommentsModal(post)"
               >
-                See all {{ post?.comments?.length }} comments
+                See all {{ post?.post_comments?.length }} comments
               </button>
             </div>
 
@@ -573,25 +576,27 @@
           </div>
           <div class="overflow-y-auto max-h-[60vh]">
             <div
-              v-for="user in activeLikesPost.likedBy"
+              v-for="user in activeLikesPost.post_likes"
               :key="user.id"
               class="flex items-center justify-between p-3 border-b border-gray-100"
             >
               <div class="flex items-center space-x-3">
                 <img
-                  :src="user.avatar"
-                  :alt="user.fullName"
+                  :src="user.user_details.image"
+                  :alt="user.user_details.name"
                   class="w-10 h-10 rounded-full"
                 />
                 <div>
                   <NuxtLink
-                    :to="`/business-network/profile/${user.id}`"
+                    :to="`/business-network/profile/${user.user}`"
                     class="font-medium hover:underline"
                   >
-                    {{ user.fullName }}
+                    {{ user.user_details.name }}
                   </NuxtLink>
                   <p class="text-sm text-gray-500">
-                    @{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}
+                    @{{
+                      user.user_details.name.toLowerCase().replace(/\s+/g, "")
+                    }}
                   </p>
                 </div>
               </div>
@@ -638,26 +643,26 @@
           </div>
           <div class="overflow-y-auto max-h-[60vh] p-3 space-y-3">
             <div
-              v-for="comment in activeCommentsPost.comments"
+              v-for="comment in activeCommentsPost.post_comments"
               :key="comment.id"
               class="flex items-start space-x-2"
             >
               <img
-                :src="comment.user.avatar"
-                :alt="comment.user.fullName"
+                :src="comment.author_details?.image"
+                :alt="comment.author_details?.name"
                 class="w-8 h-8 rounded-full mt-0.5"
               />
               <div class="flex-1">
                 <div class="bg-gray-50 rounded-lg p-2">
                   <div class="flex items-center justify-between mb-1">
                     <NuxtLink
-                      :to="`/business-network/profile/${comment.user.id}`"
+                      :to="`/business-network/profile/${comment?.author}`"
                       class="text-sm font-medium hover:underline"
                     >
-                      {{ comment.user.fullName }}
+                      {{ comment.author_details.name }}
                     </NuxtLink>
                     <button
-                      v-if="comment.user.id !== 'current-user'"
+                      v-if="comment.author !== user.user.id"
                       :class="[
                         'text-sm h-5 rounded-full px-2 flex items-center',
                         comment.user.isFollowing
@@ -669,11 +674,11 @@
                       {{ comment.user.isFollowing ? "Following" : "Follow" }}
                     </button>
                   </div>
-                  <p class="text-sm">{{ comment.text }}</p>
+                  <p class="text-sm">{{ comment.content }}</p>
                 </div>
                 <div class="flex items-center mt-1 space-x-3">
                   <span class="text-sm text-gray-500">{{
-                    formatTimeAgo(comment.timestamp)
+                    formatTimeAgo(comment.created_at)
                   }}</span>
                 </div>
               </div>
@@ -682,8 +687,8 @@
           <div class="p-3 border-t border-gray-200">
             <div class="flex items-center gap-2">
               <img
-                src="https://adsyclub.com/media/images/uploaded_image_lkQNPnN.png?height=24&width=24"
-                alt="Your avatar"
+                :src="user.user.image"
+                :alt="user.user.name"
                 class="w-6 h-6 rounded-full"
               />
               <div class="flex-1 relative">
@@ -776,7 +781,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   posts: {
     type: Array,
     default: () => [],
@@ -817,8 +822,8 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
-const {user} = useAuth()
-const {post} = useApi()
+const { user } = useAuth();
+const { post, del } = useApi();
 
 // State
 const loading = ref(false);
@@ -842,9 +847,6 @@ const activeLikesPost = ref(null);
 const activeCommentsPost = ref(null);
 const activeMediaLikes = ref(null);
 const mediaLikedUsers = ref([]);
-
-
-
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -879,7 +881,9 @@ const formatTimeAgo = (dateString) => {
 const toggleFollow = async (currentPost) => {
   try {
     // Make API call to toggle follow
-    const response = await post(`/bn/posts/${currentPost.id}/follow/`, {user_id: user?.user?.id});
+    const response = await post(`/bn/posts/${currentPost.id}/follow/`, {
+      user_id: user?.user?.id,
+    });
     console.log("Follow response:", response);
     // Update UI based on response
     if (response && response.data) {
@@ -899,18 +903,28 @@ const toggleUserFollow = (user) => {
 
 // Toggle like
 const toggleLike = async (currentPost) => {
-  try {
-    // Make API call to toggle like
-    const response = await post(`/bn/posts/${currentPost.id}/like/`, {user_id: user?.user?.id});
-    console.log("Like response:", response);
-    // Update UI based on response
-    if (response && response.data) {
-      console.log("Like toggled successfully:", response.data);
-    } else {
-      console.error("Failed to toggle like:", response);
+  if (
+    currentPost.post_likes?.find((like) => like.user === user.value?.user?.id)
+  ) {
+    try {
+      const { status } = await del(`/bn/posts/${currentPost.id}/unlike/`);
+      if (status === "success") {
+        refreshNuxtData();
+      }
+    } catch (error) {
+      console.error("Error toggling unlike:", error);
     }
-  } catch (error) {
-    console.error("Error toggling like:", error);
+  } else {
+    try {
+      // Make API call to toggle like
+      const response = await post(`/bn/posts/${currentPost.id}/like/`);
+      // Update UI based on response
+      if (response.data) {
+        await nextTick();
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
   }
 };
 
@@ -922,20 +936,23 @@ const toggleMediaLike = async () => {
     // Assuming media has a post_id and media_id
     const postId = activePost.value?.id;
     const mediaId = activeMedia.value?.id;
-    
+
     if (!postId) {
       console.error("Post ID not available for media like");
       return;
     }
-    
+
     // Make API call to toggle media like (modify endpoint as needed)
-    const response = await $fetch(`/api/posts/${postId}/media/${mediaId}/like/`, {
-      method: 'POST',
-      body: {
-        user_id: user?.user?.id
+    const response = await $fetch(
+      `/api/posts/${postId}/media/${mediaId}/like/`,
+      {
+        method: "POST",
+        body: {
+          user_id: user?.user?.id,
+        },
       }
-    });
-    
+    );
+
     // Update UI based on response
     if (response && response.success) {
       activeMedia.value.isLiked = !activeMedia.value.isLiked;
@@ -949,7 +966,8 @@ const toggleMediaLike = async () => {
         activeMedia.value.likedBy.unshift({
           id: user?.user?.id || "current-user",
           fullName: user?.user?.name || "You",
-          avatar: user?.user?.image || "/images/placeholder.jpg?height=40&width=40",
+          avatar:
+            user?.user?.image || "/images/placeholder.jpg?height=40&width=40",
           isFollowing: false,
         });
       } else if (activeMedia.value.likedBy) {
@@ -1039,33 +1057,13 @@ const addComment = async (currentPost) => {
   try {
     // Make API call to add comment
     const response = await post(`/bn/posts/${currentPost.id}/comments/`, {
-      user_id: user?.user?.id,
-      content: currentPost.commentText.trim()
+      content: currentPost.commentText.trim(),
     });
-    
-    console.log("Comment response:", response);
-    
+
     // Update UI based on response
-    if (response && response.data) {
-      const newComment = {
-        id: response.data.id || `comment-${Date.now()}`,
-        user: {
-          id: user?.user?.id || "current-user",
-          fullName: user?.user?.name || "You",
-          avatar: user?.user?.image || "/images/placeholder.jpg?height=40&width=40",
-        },
-        text: post.commentText.trim(),
-        timestamp: new Date().toISOString(),
-      };
-
-      post.comments.unshift(newComment);
-      post.commentText = "";
-
-      if (activeCommentsPost.value === post) {
-        activeCommentsPost.value = { ...post };
-      }
-      
-      console.log("Comment added successfully:", response.data);
+    if (response.data) {
+      currentPost.commentText = "";
+      console.log("Comment response:", response);
     } else {
       console.error("Failed to add comment:", response);
     }
@@ -1210,7 +1208,7 @@ onMounted(() => {
       window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
       !loading.value
     ) {
-      loadMorePosts();
+      // loadMorePosts();
     }
   });
 
