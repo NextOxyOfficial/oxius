@@ -276,20 +276,14 @@
           >
             <div class="flex items-center">
               <ShoppingBag class="h-3.5 w-3.5 mr-1.5" />
-              <span>Featured Products</span>
+              <span>Featured Product</span>
             </div>
             <div class="flex space-x-1">
               <button
                 class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"
-                @click="prevProduct"
+                @click="changeRandomProduct"
               >
-                <ChevronLeft class="h-3 w-3" />
-              </button>
-              <button
-                class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"
-                @click="nextProduct"
-              >
-                <ChevronRight class="h-3 w-3" />
+                <RefreshCw class="h-3 w-3" />
               </button>
             </div>
           </h3>
@@ -304,73 +298,51 @@
             </div>
             <div
               v-else
-              class="overflow-hidden rounded-lg border border-gray-200 shadow-sm"
+              class="rounded-lg border border-gray-200 shadow-sm overflow-hidden"
             >
-              <div
-                class="transition-transform duration-300 ease-in-out flex"
-                :style="{
-                  transform: `translateX(-${currentProductIndex * 100}%)`,
-                }"
+              <a
+                v-if="displayProduct"
+                :href="`/product-details/${displayProduct.slug}`"
+                class="block w-full h-full"
+                @click="handleNavigation(`/product-details/${displayProduct.slug}`)"
               >
-                <a
-                  v-for="(product, index) in products"
-                  :key="index"
-                  :href="`/product-details/${product.slug}`"
-                  class="w-full flex-shrink-0"
-                  @click="handleNavigation(`/product-details/${product.slug}`)"
-                >
-                  <div class="aspect-video w-full bg-gray-100 relative">
-                    <img
-                      :src="getProductImage(product)"
-                      :alt="product.name"
-                      class="w-full h-full object-cover"
-                    />
-                    <div
-                      class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3"
-                    >
-                      <div class="flex items-center justify-between mb-1">
-                        <span class="text-white text-xs font-bold"
-                          >৳
-                          {{
-                            product.sale_price &&
-                            parseFloat(product.sale_price) > 0
-                              ? product.sale_price
-                              : product.regular_price
-                          }}
-                        </span>
-                        <span
-                          v-if="
-                            product.sale_price &&
-                            parseFloat(product.sale_price) > 0 &&
-                            product.regular_price &&
-                            parseFloat(product.sale_price) <
-                              parseFloat(product.regular_price)
-                          "
-                          class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-sm"
-                          >{{ product.regular_price }} % OFF</span
-                        >
-                      </div>
-                      <h4 class="text-white text-sm font-medium line-clamp-1">
-                        {{ product.name }}
-                      </h4>
+                <div class="aspect-video w-full bg-gray-100 relative">
+                  <img
+                    :src="getProductImage(displayProduct)"
+                    :alt="displayProduct.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3"
+                  >
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-white text-xs font-bold"
+                        >৳
+                        {{
+                          displayProduct.sale_price &&
+                          parseFloat(displayProduct.sale_price) > 0
+                            ? displayProduct.sale_price
+                            : displayProduct.regular_price
+                        }}
+                      </span>
+                      <span
+                        v-if="
+                          displayProduct.sale_price &&
+                          parseFloat(displayProduct.sale_price) > 0 &&
+                          displayProduct.regular_price &&
+                          parseFloat(displayProduct.sale_price) <
+                            parseFloat(displayProduct.regular_price)
+                        "
+                        class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-sm"
+                        >{{ calculateDiscount(displayProduct) }}% OFF</span
+                      >
                     </div>
+                    <h4 class="text-white text-sm font-medium line-clamp-1">
+                      {{ displayProduct.name }}
+                    </h4>
                   </div>
-                </a>
-              </div>
-            </div>
-            <!-- Dots indicator -->
-            <div class="flex justify-center mt-2 space-x-1">
-              <button
-                v-for="(_, index) in products"
-                :key="index"
-                @click="currentProductIndex = index"
-                :class="[
-                  'h-1.5 rounded-full transition-all',
-                  currentProductIndex === index
-                    ? 'w-4 bg-blue-600'
-                    : 'w-1.5 bg-gray-300',
-                ]"
-              ></button>
+                </div>
+              </a>
             </div>
           </div>
         </div>
@@ -474,6 +446,7 @@ import {
   Users,
   FileText,
   Trophy,
+  RefreshCw,
 } from "lucide-vue-next";
 
 // State
@@ -488,6 +461,8 @@ const cart = useStoreCart();
 const route = useRoute();
 console.log(route.path);
 const tags = ref([]);
+const displayProduct = ref(null);
+const allProducts = ref([]); // Store all fetched products
 
 // Loading states
 const isLoadingNews = ref(true);
@@ -651,12 +626,10 @@ async function fetchHashtags() {
 }
 
 // Products
-const products = ref([]);
-
 async function fetchProducts() {
   isLoadingProducts.value = true;
   try {
-    // Fetch featured products from the eShop API with a higher limit to allow random selection
+    // Fetch featured products from the eShop API
     const response = await get("/all-products/?limit=20&is_featured=true");
 
     let productList = [];
@@ -670,32 +643,52 @@ async function fetchProducts() {
       productList = response.data;
     }
 
-    // Get random 5 items or all items if less than 5
+    // Store all products
+    allProducts.value = productList;
+    
+    // Set a random product to display
     if (productList.length > 0) {
-      const randomProducts = [];
-      const itemsToShow = Math.min(5, productList.length);
-      const usedIndices = new Set();
-
-      while (randomProducts.length < itemsToShow) {
-        const randomIndex = Math.floor(Math.random() * productList.length);
-        if (!usedIndices.has(randomIndex)) {
-          randomProducts.push(productList[randomIndex]);
-          usedIndices.add(randomIndex);
-        }
-      }
-
-      products.value = randomProducts;
+      const randomIndex = Math.floor(Math.random() * productList.length);
+      displayProduct.value = productList[randomIndex];
     } else {
       console.warn("No products found");
-      products.value = [];
+      displayProduct.value = null;
     }
   } catch (error) {
     console.error("Error fetching products:", error);
-    products.value = [];
+    displayProduct.value = null;
   } finally {
     isLoadingProducts.value = false;
   }
 }
+
+// Add a function to display a new random product
+const changeRandomProduct = () => {
+  if (allProducts.value.length === 0) return;
+  
+  const currentIndex = allProducts.value.findIndex(
+    p => p.id === displayProduct.value?.id
+  );
+  
+  let newIndex;
+  do {
+    newIndex = Math.floor(Math.random() * allProducts.value.length);
+  } while (newIndex === currentIndex && allProducts.value.length > 1);
+  
+  displayProduct.value = allProducts.value[newIndex];
+};
+
+// Calculate discount percent
+const calculateDiscount = (product) => {
+  if (!product.sale_price || !product.regular_price) return 0;
+  
+  const regular = parseFloat(product.regular_price);
+  const sale = parseFloat(product.sale_price);
+  
+  if (regular <= 0 || sale <= 0) return 0;
+  
+  return Math.round(((regular - sale) / regular) * 100);
+};
 
 // Top Contributors
 const topContributors = ref([]);
@@ -719,16 +712,22 @@ async function fetchTopContributors() {
       console.warn("Unexpected contributors response format:", response.data);
       // Fallback to dummy data if API is not available yet
       topContributors.value = [
-        { id: 1, name: "John Doe", avatar: null, posts: 25, followers: 120 },
-        { id: 2, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
+      { id: 1, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
+      { id: 2, name: "John Doe", avatar: null, posts: 25, followers: 120 },
+      { id: 3, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
+      { id: 4, name: "John Doe", avatar: null, posts: 25, followers: 120 },
+      { id: 5, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
       ];
     }
   } catch (error) {
     console.error("Error fetching contributors:", error);
     // Fallback to dummy data
     topContributors.value = [
-      { id: 1, name: "John Doe", avatar: null, posts: 25, followers: 120 },
-      { id: 2, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
+    { id: 1, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
+      { id: 2, name: "John Doe", avatar: null, posts: 25, followers: 120 },
+      { id: 3, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
+      { id: 4, name: "John Doe", avatar: null, posts: 25, followers: 120 },
+      { id: 5, name: "Jane Smith", avatar: null, posts: 18, followers: 85 },
     ];
   } finally {
     isLoadingContributors.value = false;
@@ -863,10 +862,10 @@ onMounted(async () => {
     fetchTopContributors(),
   ]);
 
-  // Auto-rotate products every 5 seconds
+  // Auto-change product every 10 seconds
   const productInterval = setInterval(() => {
-    nextProduct();
-  }, 5000);
+    changeRandomProduct();
+  }, 10000);
 
   // Auto-rotate news every 7 seconds
   newsInterval = setInterval(() => {
@@ -883,26 +882,18 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Ensure smooth scrolling */
+/* Hide scrollbars but maintain scrolling functionality */
 .overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 .overflow-y-auto::-webkit-scrollbar {
-  width: 4px;
+  display: none; /* Chrome, Safari and Opera */
+  width: 0;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 20px;
-}
-
-/* Line clamp for text truncation */
+/* Ensure the rest of your styles remain */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;

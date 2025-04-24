@@ -1,545 +1,313 @@
 <template>
   <div class="min-h-screen bg-gray-50 mt-14">
-    <div class="max-w-3xl mx-auto relative z-10 pt-3">
-      <div
-        class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6"
-      >
-        <div class="flex flex-col md:flex-row sm:gap-6">
-          <div class="relative flex gap-4">
-            <div class="flex relative">
-              <div
-                class="relative h-32 w-32 rounded-full border-4 border-white overflow-hidden bg-gray-100 shadow-md"
+    <div class="max-w-3xl mx-auto relative z-10 pt-3 px-3 sm:px-0">
+      <!-- Professional Profile Card -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="p-4 sm:p-5">
+          <!-- Mobile Profile Header (Mobile Only) -->
+          <div class="flex sm:hidden items-center justify-between mb-4">
+            <h1 class="text-xl font-bold flex items-center gap-1.5">
+              {{ user?.name }}
+              <UIcon
+                v-if="user?.kyc"
+                name="i-mdi-check-decagram"
+                class="w-4 h-4 text-blue-600"
+              />
+            </h1>
+            <div class="flex gap-2">
+              <button
+                v-if="!isCurrentUserProfile"
+                :class="[
+                  'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
+                  user?.isFollowing
+                    ? 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white',
+                ]"
+                :disabled="followLoading"
+                @click="toggleFollow"
               >
-              
-                <img
-                  :src="user?.image"
-                  :alt="user?.name"
-                  class="w-full h-full object-cover"
-                />
-               
-              </div>
-            </div>
-
-            <div
-              class="flex sm:hidden flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-            >
-              <div>
-                <h1 class="text-2xl font-bold flex items-center gap-1">
-                  {{ user?.name }}
-                  <UIcon
-                    v-if="user?.kyc"
-                    name="i-mdi-check-decagram"
-                    class="w-5 h-5 text-blue-600"
-                  />
-                </h1>
-                <p class="text-slate-500">{{ user?.profession }}</p>
-                <p class="text-gray-500">@{{ user?.username }}</p>
-              </div>
-              <div class="flex gap-2">
-                <button
-                  :class="[
-                    'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
-                    user?.isFollowing
-                      ? 'border border-gray-200 hover:bg-gray-50'
-                      : 'bg-blue-600 text-white hover:bg-blue-700',
-                  ]"
-                  @click="toggleFollow"
-                >
-                  <template v-if="user?.isFollowing">
-                    <Check class="h-4 w-4" />
-                    Following
-                  </template>
-                  <template v-else>
-                    <UserPlus class="h-4 w-4" />
-                    Follow
-                  </template>
-                </button>
-              </div>
+                <div v-if="followLoading" class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                <template v-else-if="user?.isFollowing">
+                  <Check class="h-3 w-3" />
+                  Following
+                </template>
+                <template v-else>
+                  <UserPlus class="h-3 w-3" />
+                  Follow
+                </template>
+              </button>
+              <button
+                v-if="!isCurrentUserProfile"
+                class="p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-700 transition-colors"
+                aria-label="Message"
+              >
+                <Mail class="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
-
-          <div class="flex-1">
-            <div
-              class="hidden sm:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-            >
-              <div>
-                <h1 class="text-2xl font-bold flex items-center gap-1">
-                  {{ user?.name }}
-                  <span
-                    v-if="user?.is_pro"
-                    class="text-2xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
-                  >
-                    <div class="flex items-center gap-1">
-                      <UIcon
-                        name="i-heroicons-shield-check"
-                        class="size-4 text-white"
-                      />
-                      <span class="text-xs">Pro</span>
-                    </div>
-                  </span>
-                  <UIcon
-                    v-if="user?.kyc"
-                    name="i-mdi-check-decagram"
-                    class="w-5 h-5 text-blue-600"
+          
+          <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+            <!-- Profile Picture and Mobile Stats -->
+            <div class="flex flex-col items-center sm:items-start">
+              <div class="relative">
+                <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-2 border-white shadow-md bg-white overflow-hidden">
+                  <img
+                    :src="user?.image || '/static/frontend/images/placeholder.jpg'"
+                    :alt="user?.name"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
                   />
-                </h1>
-                <p class="text-slate-500">{{ user?.profession }}</p>
-                <p class="text-gray-500">@{{ user?.username }}</p>
+                </div>
               </div>
-              <div class="flex gap-2">
-                <template>
+              
+              <!-- User Stats for Mobile -->
+              <div class="flex w-full justify-center sm:hidden mt-3 space-x-4">
+                <div class="text-center">
+                  <div class="text-sm font-semibold">{{ user?.post_count || 0 }}</div>
+                  <div class="text-xs text-gray-500">Posts</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-sm font-semibold">{{ user?.followers_count || 0 }}</div>
+                  <div class="text-xs text-gray-500">Followers</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-sm font-semibold">{{ user?.following_count || 0 }}</div>
+                  <div class="text-xs text-gray-500">Following</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- User Info -->
+            <div class="flex-1 mt-2 sm:mt-0">
+              <!-- Desktop Header (Hidden on Mobile) -->
+              <div class="hidden sm:flex sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div class="flex items-center flex-wrap gap-1.5">
+                    <h1 class="text-xl font-bold">{{ user?.name }}</h1>
+                    <span
+                      v-if="user?.is_pro"
+                      class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm"
+                    >
+                      <div class="flex items-center gap-1">
+                        <UIcon name="i-heroicons-shield-check" class="size-3" />
+                        <span class="text-2xs">Pro</span>
+                      </div>
+                    </span>
+                    <UIcon
+                      v-if="user?.kyc"
+                      name="i-mdi-check-decagram"
+                      class="w-4 h-4 text-blue-600"
+                      data-tooltip="Verified"
+                    />
+                  </div>
+                  <p class="text-sm font-medium text-slate-600 mb-0.5">{{ user?.profession }}</p>
+                  <p class="text-xs text-gray-500">@{{ user?.username }}</p>
+                </div>
+                
+                <!-- Action buttons (Desktop) -->
+                <div class="hidden sm:flex">
                   <button
+                    v-if="!isCurrentUserProfile"
                     :class="[
-                      'px-3 py-1.5 rounded-md text-sm flex items-center gap-1',
+                      'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
                       user?.isFollowing
-                        ? 'border border-gray-200 hover:bg-gray-50'
-                        : 'bg-blue-600 text-white hover:bg-blue-700',
+                        ? 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white',
                     ]"
+                    :disabled="followLoading"
                     @click="toggleFollow"
                   >
-                    <template v-if="user?.isFollowing">
-                      <Check class="h-4 w-4" />
+                    <div v-if="followLoading" class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                    <template v-else-if="user?.isFollowing">
+                      <Check class="h-3 w-3" />
                       Following
                     </template>
                     <template v-else>
-                      <UserPlus class="h-4 w-4" />
+                      <UserPlus class="h-3 w-3" />
                       Follow
                     </template>
                   </button>
                   <button
-                    class="p-2 border border-gray-200 rounded-md hover:bg-gray-50"
+                    v-if="!isCurrentUserProfile"
+                    class="ml-2 p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-700 transition-colors"
+                    aria-label="Message"
                   >
-                    <Mail class="h-4 w-4" />
+                    <Mail class="h-3.5 w-3.5" />
                   </button>
-                </template>
+                </div>
+              </div>
+              
+              <!-- Mobile User Details -->
+              <div class="flex flex-col sm:hidden mb-2">
+                <p class="text-sm font-medium text-slate-600">{{ user?.profession }}</p>
+                <p class="text-xs text-gray-500">@{{ user?.username }}</p>
+              </div>
+              
+              <!-- User Stats (Desktop) -->
+              <div class="hidden sm:flex items-center mt-3 mb-3 border-b border-gray-100 pb-3">
+                <div class="flex items-center gap-4 text-sm">
+                  <div class="flex items-center">
+                    <span class="font-semibold">{{ user?.post_count || 0 }}</span>
+                    <span class="text-gray-500 ml-1">Posts</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="font-semibold">{{ user?.followers_count || 0 }}</span>
+                    <span class="text-gray-500 ml-1">Followers</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="font-semibold">{{ user?.following_count || 0 }}</span>
+                    <span class="text-gray-500 ml-1">Following</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Bio -->
+              <div class="mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                <p v-if="user?.about" class="text-sm text-gray-600 mb-3">{{ user?.about }}</p>
+              </div>
+              
+              <!-- Contact Info & Social Media -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div v-if="user?.city || user?.state" class="flex items-center gap-1.5">
+                  <MapPin class="h-3.5 w-3.5 text-gray-500" />
+                  <span class="text-gray-600 text-sm truncate">
+                    {{ [user?.city, user?.state].filter(Boolean).join(', ') }}
+                  </span>
+                </div>
+                <div v-if="user?.company" class="flex items-center gap-1.5">
+                  <Briefcase class="h-3.5 w-3.5 text-gray-500" />
+                  <span class="text-gray-600 text-sm truncate">{{ user?.company }}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <Calendar class="h-3.5 w-3.5 text-gray-500" />
+                  <span class="text-gray-600 text-sm">Joined {{ formatTimeAgo(user?.date_joined) }}</span>
+                </div>
+                <div v-if="user?.email && (currentUser?.user?.id === user?.id || user?.show_email)" class="flex items-center gap-1.5">
+                  <Mail class="h-3.5 w-3.5 text-gray-500" />
+                  <span class="text-gray-600 text-sm truncate">{{ user?.email }}</span>
+                </div>
+                <div v-if="user?.phone && (currentUser?.user?.id === user?.id || user?.show_phone)" class="flex items-center gap-1.5">
+                  <Phone class="h-3.5 w-3.5 text-gray-500" />
+                  <span class="text-gray-600 text-sm truncate">{{ user?.phone }}</span>
+                </div>
+              </div>
+              
+              <!-- Social Media Links -->
+              <div class="mt-3 pt-3 border-t border-gray-100">
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+                  <a 
+                    v-if="user?.website" 
+                    :href="user?.website"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-xs truncate"
+                  >
+                    <LinkIcon class="h-3.5 w-3.5 flex-shrink-0" />
+                    <span class="truncate">{{ user?.website?.replace(/^https?:\/\//, "") }}</span>
+                  </a>
+                  <a 
+                    v-if="user?.facebook_url" 
+                    :href="user?.facebook_url"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700"
+                  >
+                    <UIcon name="i-mdi-facebook" class="size-4 flex-shrink-0" />
+                    <span class="text-xs">Facebook</span>
+                  </a>
+                  <a 
+                    v-if="user?.whatsapp" 
+                    :href="`https://wa.me/${user?.whatsapp}`"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1.5 text-green-600 hover:text-green-700"
+                  >
+                    <UIcon name="i-mdi-whatsapp" class="size-4 flex-shrink-0" />
+                    <span class="text-xs">WhatsApp</span>
+                  </a>
+                  <a 
+                    v-if="user?.linkedin_url" 
+                    :href="user?.linkedin_url"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1.5 text-blue-700 hover:text-blue-800"
+                  >
+                    <UIcon name="i-mdi-linkedin" class="size-4 flex-shrink-0" />
+                    <span class="text-xs">LinkedIn</span>
+                  </a>
+                  <a 
+                    v-if="user?.twitter_url" 
+                    :href="user?.twitter_url"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1.5 text-blue-400 hover:text-blue-500"
+                  >
+                    <UIcon name="i-mdi-twitter" class="size-4 flex-shrink-0" />
+                    <span class="text-xs">Twitter</span>
+                  </a>
+                </div>
               </div>
             </div>
-            <div class="flex flex-col mt-1 gap-1">
-              <span class="text-gray-700">About Me:</span>
-              <span class="text-sm text-gray-500">{{ user?.about }}</span>
-            </div>
-            <div
-              class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500"
-            >
-              <div
-                v-if="user?.city || user?.state"
-                class="flex items-center gap-1"
-              >
-                <MapPin class="h-4 w-4" />
-                <span>{{ user?.city }}, </span><span> {{ user?.state }}</span>
-              </div>
-              <div v-if="user?.company" class="flex items-center gap-1">
-                <Briefcase class="h-4 w-4" />
-                <span>{{ user?.company }}</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <Calendar class="h-4 w-4" />
-                <span>Joined {{ formatTimeAgo(user?.date_joined) }}</span>
-              </div>
-              <div v-if="user?.website" class="flex items-center gap-1">
-                <LinkIcon class="h-4 w-4" />
-                <a
-                  :href="user?.website"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-blue-600 hover:underline"
-                >
-                  {{ user?.website?.replace(/^https?:\/\//, "") }}
-                </a>
-              </div>
-              <div
-                v-if="user?.email && currentUser?.user?.email"
-                class="flex items-center gap-1"
-              >
-                <Mail class="h-4 w-4" />
-                <span>{{ user?.email }}</span>
-              </div>
-              <div
-                v-if="user?.phone && currentUser?.user?.phone"
-                class="flex items-center gap-1"
-              >
-                <Phone class="h-4 w-4" />
-                <span>{{ user?.phone }}</span>
-              </div>
-            </div>
-
-            <!-- <div class="mt-4 flex gap-4 text-sm">
-              <div>
-                <span class="font-semibold">{{
-                  user?.followers.toLocaleString()
-                }}</span>
-                <span class="text-gray-500"> Followers</span>
-              </div>
-              <div>
-                <span class="font-semibold">{{
-                  user?.following.toLocaleString()
-                }}</span>
-                <span class="text-gray-500"> Following</span>
-              </div>
-            </div> -->
           </div>
         </div>
       </div>
 
-      <div class="mt-6">
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div
-            class="flex items-center justify-between p-4 border-b border-gray-200"
-          >
-            <div class="flex">
-              <button
-                v-for="tab in tabs"
-                :key="tab.value"
-                class="px-4 py-2 text-sm font-medium"
-                :class="
-                  activeTab === tab.value
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                "
-                @click="activeTab = tab.value"
+      <!-- Tabs Section -->
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <!-- Scrollable Tabs for Mobile -->
+        <div class="overflow-x-auto scrollbar-hide">
+          <div class="flex items-center border-b border-gray-200 min-w-max">
+            <button
+              v-for="tab in tabs"
+              :key="tab.value"
+              class="px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+              :class="activeTab === tab.value
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'"
+              @click="activeTab = tab.value"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </div>
+        
+        <div class="py-4">
+          <div v-if="activeTab === 'posts'" class="px-2">
+            <BusinessNetworkPost :posts="posts.results" :id="currentUser?.user?.id" />
+          </div>
+
+          <div v-else-if="activeTab === 'media'">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2">
+              <div
+                v-for="(media, index) in allMedia"
+                :key="index"
+                class="aspect-square bg-gray-100 rounded overflow-hidden group cursor-pointer"
               >
-                {{ tab.label }}
-              </button>
+                <img
+                  :src="media.thumbnail"
+                  :alt="`Media ${index + 1}`"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
             </div>
           </div>
 
-          <div class="py-4">
-            <div v-if="activeTab === 'posts'" class="px-2">
-              <BusinessNetworkPost :posts="posts.results" :id="currentUser?.user?.id" />
+          <div v-else-if="activeTab === 'likes'" class="px-4 py-6">
+            <div class="text-center">
+              <h3 class="text-base font-medium text-gray-900">No liked posts yet</h3>
+              <p class="text-sm text-gray-500 mt-1">Posts liked by this user will appear here.</p>
             </div>
+          </div>
 
-            <div v-else-if="activeTab === 'media'">
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                <div
-                  v-for="(media, index) in allMedia"
-                  :key="index"
-                  class="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group"
-                >
-                  <img
-                    :src="media.thumbnail"
-                    :alt="`Media ${index + 1}`"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div v-else-if="activeTab === 'likes'">
-              <div class="text-center py-12">
-                <h3 class="text-lg font-medium text-gray-900">
-                  No liked posts yet
-                </h3>
-                <p class="text-gray-500 mt-1">
-                  Posts you like will appear here.
-                </p>
-              </div>
-            </div>
-
-            <div v-else-if="activeTab === 'saved'">
-              <div class="text-center py-12">
-                <h3 class="text-lg font-medium text-gray-900">
-                  No saved posts yet
-                </h3>
-                <p class="text-gray-500 mt-1">
-                  Posts you save will appear here.
-                </p>
-              </div>
+          <div v-else-if="activeTab === 'saved'" class="px-4 py-6">
+            <div class="text-center">
+              <h3 class="text-base font-medium text-gray-900">No saved posts yet</h3>
+              <p class="text-sm text-gray-500 mt-1">Posts saved by this user will appear here.</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <Teleport to="body">
-      <div
-        v-if="isEditProfileOpen"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="isEditProfileOpen = false"
-      >
-        <div
-          class="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-hidden"
-          @click.stop
-        >
-          <div
-            class="p-4 border-b border-gray-200 flex items-center justify-between"
-          >
-            <h3 class="font-semibold">Edit Profile</h3>
-            <button @click="isEditProfileOpen = false">
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-          <div class="p-4 overflow-y-auto max-h-[calc(90vh-130px)]">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Name</label
-                >
-                <input
-                  type="text"
-                  v-model="profileForm.name"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Bio</label
-                >
-                <textarea
-                  v-model="profileForm.bio"
-                  rows="3"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                ></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Location</label
-                >
-                <input
-                  type="text"
-                  v-model="profileForm.location"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Company</label
-                >
-                <input
-                  type="text"
-                  v-model="profileForm.company"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Website</label
-                >
-                <input
-                  type="text"
-                  v-model="profileForm.website"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Email</label
-                >
-                <input
-                  type="email"
-                  v-model="profileForm.email"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Phone</label
-                >
-                <input
-                  type="text"
-                  v-model="profileForm.phone"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-            </div>
-          </div>
-          <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
-            <button
-              class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-              @click="isEditProfileOpen = false"
-            >
-              Cancel
-            </button>
-            <button
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              @click="updateProfile"
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <Teleport to="body">
-      <div
-        v-if="isEditPhotoOpen"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="isEditPhotoOpen = false"
-      >
-        <div class="bg-white rounded-lg max-w-md w-full" @click.stop>
-          <div
-            class="p-4 border-b border-gray-200 flex items-center justify-between"
-          >
-            <h3 class="font-semibold">Update Profile Picture</h3>
-            <button @click="isEditPhotoOpen = false">
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-          <div class="p-4">
-            <div
-              class="relative h-40 w-40 mx-auto rounded-full overflow-hidden bg-gray-100 mb-4"
-            >
-              <img
-                :src="user.avatar"
-                alt="Current profile picture"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div class="flex flex-col gap-2">
-              <button
-                class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-                @click="triggerProfilePhotoInput"
-              >
-                <Upload class="h-4 w-4" />
-                Upload New Photo
-              </button>
-              <button
-                class="w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
-              >
-                <Trash2 class="h-4 w-4 text-red-500" />
-                Remove Photo
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <Teleport to="body">
-      <div
-        v-if="isEditCoverOpen"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="isEditCoverOpen = false"
-      >
-        <div class="bg-white rounded-lg max-w-md w-full" @click.stop>
-          <div
-            class="p-4 border-b border-gray-200 flex items-center justify-between"
-          >
-            <h3 class="font-semibold">Update Cover Photo</h3>
-            <button @click="isEditCoverOpen = false">
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-          <div class="p-4">
-            <div
-              class="relative aspect-[3/1] w-full bg-gray-100 rounded-md overflow-hidden mb-4"
-            >
-              <img
-                :src="user.coverPhoto"
-                alt="Current cover photo"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div class="flex flex-col gap-2">
-              <button
-                class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-                @click="triggerCoverPhotoInput"
-              >
-                <Upload class="h-4 w-4" />
-                Upload New Cover Photo
-              </button>
-              <button
-                class="w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
-              >
-                <Trash2 class="h-4 w-4 text-red-500" />
-                Remove Cover Photo
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <Teleport to="body">
-      <div
-        v-if="activeMedia"
-        class="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4"
-        @click="activeMedia = null"
-      >
-        <div
-          class="relative max-w-3xl w-full max-h-[80vh] bg-white rounded-lg overflow-hidden flex flex-col"
-          @click.stop
-        >
-          <button
-            class="absolute right-2 top-2 z-10 p-1 rounded-full bg-black/50 text-white"
-            @click="activeMedia = null"
-          >
-            <X class="h-6 w-6" />
-          </button>
-
-          <div class="flex-1 overflow-hidden relative">
-            <div
-              v-if="activeMedia.type === 'image'"
-              class="relative h-[45vh] w-full"
-            >
-              <img
-                :src="activeMedia.url"
-                alt="Media preview"
-                class="w-full h-full object-contain"
-              />
-              <a
-                :href="activeMedia.url"
-                :download="`media-${activeMedia.id}`"
-                class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-                @click.stop
-              >
-                <Download class="h-5 w-5" />
-              </a>
-            </div>
-            <div v-else class="relative">
-              <video
-                :src="activeMedia.url"
-                controls
-                class="w-full h-auto max-h-[45vh]"
-              ></video>
-              <a
-                :href="activeMedia.url"
-                :download="`video-${activeMedia.id}`"
-                class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-                @click.stop
-              >
-                <Download class="h-5 w-5" />
-              </a>
-            </div>
-
-            <div v-if="activePost && activePost.media.length > 1">
-              <button
-                class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
-                @click.stop="navigateMedia('prev')"
-              >
-                <ChevronLeft class="h-5 w-5" />
-              </button>
-              <button
-                class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
-                @click.stop="navigateMedia('next')"
-              >
-                <ChevronRight class="h-5 w-5" />
-              </button>
-              <div
-                class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-xs"
-              >
-                {{ activeMediaIndex + 1 }} / {{ activePost.media.length }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <input
-      type="file"
-      ref="profilePhotoInputRef"
-      class="hidden"
-      accept="image/*"
-      @change="handleProfilePhotoChange"
-    />
-    <input
-      type="file"
-      ref="coverPhotoInputRef"
-      class="hidden"
-      accept="image/*"
-      @change="handleCoverPhotoChange"
-    />
   </div>
 </template>
 
@@ -584,16 +352,35 @@ import {
 } from "lucide-vue-next";
 
 const { user: currentUser } = useAuth();
-const { get } = useApi();
+const { get, post } = useApi();
 const route = useRoute();
 
 const user = ref({});
 const posts = ref([]);
 
+const isCurrentUserProfile = computed(() => {
+  return currentUser.value?.user?.id === route.params.id;
+});
+
+const followLoading = ref(false);
+
+// Add social media properties to your fetchUser function
 async function fetchUser() {
   try {
     const { data } = await get(`/user/${route.params.id}/`);
-    user.value = data;
+    user.value = {
+      ...data,
+      // Ensure these properties exist with defaults
+      followers_count: data.followers_count || 0,
+      following_count: data.following_count || 0,
+      post_count: data.post_count || 0,
+      // Social media fields
+      facebook_url: data.facebook_url || null,
+      whatsapp: data.whatsapp || null,
+      linkedin_url: data.linkedin_url || null,
+      twitter_url: data.twitter_url || null,
+      // Other properties are preserved
+    };
     console.log(user.value);
   } catch (error) {
     console.error(error);
@@ -611,30 +398,6 @@ async function fetchUserPosts() {
   }
 }
 await fetchUserPosts();
-
-
-// Sample user data
-const userData = {
-  id: "user-current",
-  name: "Alex Morgan",
-  username: "alexmorgan",
-  avatar: "/static/frontend/images/placeholder.jpg?height=150&width=150",
-  coverPhoto: "/static/frontend/images/placeholder.jpg?height=400&width=1200",
-  bio: "Director of Marketing | Helping businesses grow through strategic digital marketing | Speaker | Writer | Coffee enthusiast",
-  location: "San Francisco, CA",
-  company: "TechGrowth Partners",
-  joinedDate: "January 2020",
-  website: "https://alexmorgan.com",
-  email: "alex.morgan@example.com",
-  phone: "+1 (555) 123-4567",
-  followers: 1248,
-  following: 365,
-  isFollowing: false,
-  isCurrentUser: true,
-  verified: true,
-};
-
-// State
 
 const viewMode = ref("list");
 const activeTab = ref("posts");
@@ -656,7 +419,6 @@ const activeMedia = ref(null);
 const activePost = ref(null);
 const activeMediaIndex = ref(0);
 
-// Tabs
 const tabs = [
   { label: "Posts", value: "posts" },
   { label: "Media", value: "media" },
@@ -664,12 +426,31 @@ const tabs = [
   { label: "Saved", value: "saved" },
 ];
 
-
-
-// Methods
-const toggleFollow = () => {
-  user.value.isFollowing = !user.value.isFollowing;
-  user.value.followers += user.value.isFollowing ? 1 : -1;
+const toggleFollow = async () => {
+  if (followLoading.value) return;
+  followLoading.value = true;
+  
+  try {
+    const wasFollowing = user.value.isFollowing;
+    
+    user.value.isFollowing = !user.value.isFollowing;
+    user.value.followers_count = (user.value.followers_count || 0) + (user.value.isFollowing ? 1 : -1);
+    
+    const endpoint = `/bn/users/${route.params.id}/${wasFollowing ? 'unfollow' : 'follow'}/`;
+    const { data } = await post(endpoint);
+    
+    if (!data) {
+      user.value.isFollowing = wasFollowing;
+      user.value.followers_count = (user.value.followers_count || 0) + (wasFollowing ? 1 : -1);
+      console.error("Failed to update follow status");
+    }
+  } catch (error) {
+    console.error("Error toggling follow:", error);
+    user.value.isFollowing = !user.value.isFollowing;
+    user.value.followers_count = (user.value.followers_count || 0) + (user.value.isFollowing ? 1 : -1);
+  } finally {
+    followLoading.value = false;
+  }
 };
 
 const updateProfile = () => {
@@ -698,8 +479,6 @@ const triggerCoverPhotoInput = () => {
 const handleProfilePhotoChange = (e) => {
   const file = e.target.files?.[0];
   if (file) {
-    // In a real app, you would upload the file to a server
-    // For now, we'll just simulate a successful upload
     setTimeout(() => {
       alert("Profile photo updated successfully");
       isEditPhotoOpen.value = false;
@@ -710,8 +489,6 @@ const handleProfilePhotoChange = (e) => {
 const handleCoverPhotoChange = (e) => {
   const file = e.target.files?.[0];
   if (file) {
-    // In a real app, you would upload the file to a server
-    // For now, we'll just simulate a successful upload
     setTimeout(() => {
       alert("Cover photo updated successfully");
       isEditCoverOpen.value = false;
@@ -719,7 +496,6 @@ const handleCoverPhotoChange = (e) => {
   }
 };
 
-// Format time ago
 const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
@@ -748,21 +524,17 @@ const formatTimeAgo = (dateString) => {
   return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
 };
 
-// Toggle like
 const toggleLike = (post) => {
   post.isLiked = !post.isLiked;
   post.likeCount += post.isLiked ? 1 : -1;
 };
 
-// Toggle save
 const toggleSave = (post) => {
   post.isSaved = !post.isSaved;
   post.showDropdown = false;
 };
 
-// Toggle dropdown
 const toggleDropdown = (post) => {
-  // Close all other dropdowns first
   posts.value.forEach((p) => {
     if (p.id !== post.id) p.showDropdown = false;
   });
@@ -770,12 +542,10 @@ const toggleDropdown = (post) => {
   post.showDropdown = !post.showDropdown;
 };
 
-// Toggle description
 const toggleDescription = (post) => {
   post.showFullDescription = !post.showFullDescription;
 };
 
-// Copy link
 const copyLink = (post) => {
   const postUrl = `${window.location.origin}/post/${post.id}`;
   navigator.clipboard.writeText(postUrl);
@@ -783,7 +553,6 @@ const copyLink = (post) => {
   post.showDropdown = false;
 };
 
-// Share post
 const sharePost = (post) => {
   const postUrl = `${window.location.origin}/post/${post.id}`;
 
@@ -802,7 +571,6 @@ const sharePost = (post) => {
   }
 };
 
-// Add comment
 const addComment = (post) => {
   if (!post.commentText.trim()) return;
 
@@ -821,14 +589,12 @@ const addComment = (post) => {
   post.commentText = "";
 };
 
-// Open media
 const openMedia = (post, index) => {
   activePost.value = post;
   activeMediaIndex.value = index;
   activeMedia.value = post.media[index];
 };
 
-// Navigate media
 const navigateMedia = (direction) => {
   if (!activePost.value || !activeMedia.value) return;
 
@@ -848,5 +614,33 @@ const navigateMedia = (direction) => {
 <style scoped>
 .border-l-3 {
   border-left-width: 3px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  z-index: 10;
+  white-space: nowrap;
+  margin-top: 0.25rem;
+  animation: fadeIn 0.2s ease-out forwards;
 }
 </style>
