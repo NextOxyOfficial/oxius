@@ -4,162 +4,32 @@
       <div class="max-w-7xl mx-auto">
         <!-- Main Navigation -->
         <div
-          class="flex flex-col sm:flex-row justify-between items-center px-4 sm:py-4 pt-4 pb-2 sm:py-6 sm:px-6 lg:px-8"
+          class="flex flex-col sm:flex-row justify-between items-center px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
         >
-          <NuxtLink to="/adsy-news" class="hidden sm:block">
-            <NuxtImg
-              v-if="logo[0]?.image"
-              :src="logo[0].image"
-              alt="Adsy News Logo"
-              width="150"
-              height="50"
-              class="h-8 sm:h-10 w-auto object-fit"
-            />
-          </NuxtLink>
-          <div class="flex items-center">
-            <nav
-              class="hidden md:ml-10 md:flex space-x-8"
-              v-if="categories?.length > 0"
-            >
-              <NuxtLink
-                v-for="category in categories.slice(0, 4)"
-                :key="category.id"
-                :class="[
-                  'text-lg font-medium hover:text-primary transition-colors duration-200',
-                  activeCategory === category.id
-                    ? 'text-primary border-b-2 border-primary'
-                    : 'text-gray-700',
-                ]"
-                :to="`/adsy-news/categories/${category.slug}/`"
-              >
-                {{ category.name }}
-              </NuxtLink>
-              <div class="relative" v-if="categories.length > 4">
-                <button
-                  @click="toggleMoreCategories"
-                  class="flex items-center text-lg font-medium text-gray-700 hover:text-primary transition-colors duration-200"
-                >
-                  More
-                  <UIcon name="i-heroicons-arrow-small-down-20-solid" />
-                </button>
-                <div
-                  v-if="moreMenuOpen"
-                  class="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 max-h-64 overflow-y-auto border border-gray-200"
-                >
-                  <NuxtLink
-                    v-for="category in categories.slice(4)"
-                    :key="category.id"
-                    :class="[
-                      'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
-                      activeCategory === category.id
-                        ? 'text-primary'
-                        : 'text-gray-700',
-                    ]"
-                    :to="`/adsy-news/categories/${category.slug}/`"
-                  >
-                    {{ category.name }}
-                  </NuxtLink>
-                </div>
-              </div>
-            </nav>
-          </div>
-
-          <div
-            class="flex items-center sm:justify-end space-x-2 max-sm:w-full relative"
-          >
-            <div class="flex items-center justify-between w-full sm:w-auto">
-              <NuxtLink to="/adsy-news" class="flex-shrink-0 sm:hidden block">
-                <NuxtImg
-                  v-if="logo[0]?.image"
-                  :src="logo[0].image"
-                  alt="Adsy News Logo"
-                  width="150"
-                  height="50"
-                  class="h-8 sm:h-10 w-auto object-fit"
-                />
-              </NuxtLink>
-
-              <div class="flex items-center space-x-2 ml-auto">
-                <SearchIcon
-                  class="h-6 w-6 text-gray-500 cursor-pointer search-icon"
-                  @click="toggleSearch"
-                />
-                <UButton
-                  icon="i-lucide-chart-no-axes-column"
-                  label="AdsyClub"
-                  to="/"
-                  class="bg-black/70"
-                />
-                <UButton
-                  icon="i-lucide-globe"
-                  label="Adsy BN"
-                  to="/business-network"
-                  class="bg-black/70"
-                />
-              </div>
-            </div>
-            <div
-              v-if="isSearchVisible"
-              class="absolute top-full right-0 mt-2 bg-white rounded-md shadow-lg z-10 border border-gray-200 p-4 w-full sm:w-72 search-dropdown"
-            >
-              <input
-                type="text"
-                placeholder="Search news..."
-                v-model="searchQuery"
-                class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-100 text-gray-700 search-input"
-                @input="handleSearchInput"
+          <!-- Logo - Always visible, different alignment on mobile vs desktop -->
+          <div class="flex items-center justify-between w-full sm:w-auto sm:justify-start mb-3 sm:mb-0">
+            <NuxtLink to="/adsy-news" class="flex-shrink-0">
+              <NuxtImg
+                v-if="logo[0]?.image"
+                :src="logo[0].image"
+                alt="Adsy News Logo"
+                width="150"
+                height="50"
+                class="h-7 sm:h-9 w-auto object-contain"
               />
-
-              <div
-                v-if="searchQuery"
-                class="mt-4 max-h-96 overflow-y-auto divide-y divide-gray-100"
-              >
-                <div
-                  v-for="result in searchResults"
-                  :key="result.id"
-                  class="p-3 hover:bg-gray-50 cursor-pointer"
-                  @click="navigateToArticle(result)"
-                >
-                  <p class="text-sm font-medium text-gray-700">
-                    {{ result.title }}
-                  </p>
-                  <p class="text-xs text-gray-500 mt-1 flex items-center">
-                    <CalendarIcon class="h-3 w-3 mr-1" />
-                    {{ formatDate(result.created_at) }}
-                    <span class="mx-2">•</span>
-                    <span
-                      class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs capitalize"
-                    >
-                      {{
-                        result.categories && result.categories.length > 0
-                          ? result.categories[0].title
-                          : "News"
-                      }}
-                    </span>
-                  </p>
-                </div>
-                <div
-                  v-if="
-                    searchResults.length === 0 && !isSearching && searchQuery
-                  "
-                  class="p-4 text-center text-gray-500"
-                >
-                  No results found for "{{ searchQuery }}"
-                </div>
-              </div>
-            </div>
+            </NuxtLink>
           </div>
-        </div>
-        <div class="flex items-center px-6 mb-4 mt-2 sm:hidden">
+
+          <!-- Desktop Nav Categories -->
           <nav
-            class="flex md:ml-10 md:hidden justify-between mb-2 space-x-2"
+            class="hidden md:flex md:flex-1 md:justify-center space-x-6 lg:space-x-8"
             v-if="categories?.length > 0"
           >
             <NuxtLink
               v-for="category in categories.slice(0, 4)"
               :key="category.id"
               :class="[
-                'text-base sm:text-lg  font-medium hover:text-primary transition-colors duration-200',
+                'text-base font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-700',
@@ -171,14 +41,15 @@
             <div class="relative" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-lg font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-base font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-1"
               >
-                See More
-                <UIcon name="i-heroicons-arrow-small-down-20-solid" />
+                More
+                <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
               </button>
               <div
                 v-if="moreMenuOpen"
-                class="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-md py-2 z-50 max-h-64 overflow-y-auto border border-gray-200"
+                class="absolute top-full right-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
+                v-click-outside="() => (moreMenuOpen = false)"
               >
                 <NuxtLink
                   v-for="category in categories.slice(4)"
@@ -196,51 +67,162 @@
               </div>
             </div>
           </nav>
+
+          <!-- Right side actions - MODIFIED FOR MOBILE -->
+          <div class="flex items-center justify-end space-x-1.5 sm:space-x-3 mt-0 sm:mt-0 w-full sm:w-auto">
+            <!-- Search icon - VISIBLE ON ALL DEVICES -->
+            <button
+              @click="toggleSearch"
+              class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+              aria-label="Search"
+            >
+              <SearchIcon class="h-5 w-5" />
+            </button>
+            
+            <!-- Navigation Buttons - SHOWING TEXT ON ALL DEVICES -->
+            <NuxtLink
+              to="/"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all"
+              aria-label="Go to AdsyClub"
+            >
+              <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none">
+                <path d="M3 21V3H21V21H3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M9 9.01L9.01 8.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M9 15.01L9.01 14.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M15 9.01L15.01 8.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M15 15.01L15.01 14.999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>AdsyClub</span>
+            </NuxtLink>
+            
+            <NuxtLink
+              to="/business-network"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all"
+              aria-label="Go to Business Network"
+            >
+              <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none">
+                <path d="M3.05493 11.5C3.27195 9.95555 4.16342 8.56693 5.50004 7.69231L12 4L18.5 7.69231C19.8366 8.56693 20.7281 9.95555 20.9451 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 4V2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M21 12V20H3V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M15 20V14H9V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>Adsy BN</span>
+            </NuxtLink>
+          </div>
         </div>
-        <!-- Mobile Menu -->
-        <div v-if="mobileMenuOpen" class="border-t border-gray-200">
-          <div class="px-2 pt-2 pb-3 space-y-1 max-h-64 overflow-y-auto">
-            <a
-              v-for="category in categories"
+        
+        <!-- Mobile Category Nav - KEPT FOR HORIZONTAL SCROLLING -->
+        <div class="px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-hide">
+          <nav
+            class="flex md:hidden pb-3 mt-1 space-x-4 whitespace-nowrap"
+            v-if="categories?.length > 0"
+          >
+            <NuxtLink
+              v-for="category in categories.slice(0, 6)"
               :key="category.id"
               :class="[
-                'block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200',
+                'text-sm font-medium hover:text-primary transition-colors duration-200 py-1 flex-shrink-0',
                 activeCategory === category.id
-                  ? 'text-primary bg-gray-100'
+                  ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-700',
               ]"
-              href="#"
-              @click.prevent="
-                setActiveCategory(category.id);
-                mobileMenuOpen = false;
-              "
+              :to="`/adsy-news/categories/${category.slug}/`"
             >
               {{ category.name }}
-            </a>
-          </div>
-          <div class="px-2 pt-2 pb-3 space-y-1 max-h-64 overflow-y-auto">
-            <span
-              v-for="tag in tags"
-              :key="tag.id"
-              class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer"
+            </NuxtLink>
+            <button
+              v-if="categories.length > 6"
+              @click="toggleMoreCategories"
+              class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 flex-shrink-0"
             >
-              #{{ tag.title }}
-            </span>
-          </div>
+              More
+              <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
+            </button>
+          </nav>
         </div>
       </div>
     </header>
 
-    <UContainer>
-      <div
-        class="bg-primary text-white py-3 px-6 rounded-lg mb-8 shadow-md mt-3"
+    <!-- Search Overlay -->
+    <div
+      v-if="isSearchVisible"
+      class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4 sm:px-0"
+      @click="isSearchVisible = false"
+    >
+      <div 
+        class="bg-white rounded-lg shadow-xl w-full max-w-lg transform transition-all duration-300 overflow-hidden"
+        @click.stop
       >
+        <div class="p-4 border-b border-gray-100">
+          <div class="relative">
+            <SearchIcon class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search news articles..."
+              v-model="searchQuery"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-700"
+              @input="handleSearchInput"
+              ref="searchInputRef"
+            />
+            <button 
+              v-if="searchQuery" 
+              @click="clearSearch"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <XIcon class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <div v-if="searchQuery" class="divide-y divide-gray-100 max-h-[60vh] overflow-y-auto">
+          <div
+            v-for="result in searchResults"
+            :key="result.id"
+            class="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+            @click="navigateToArticle(result)"
+          >
+            <p class="font-medium text-gray-800 line-clamp-2 mb-1">{{ result.title }}</p>
+            <div class="flex items-center text-xs text-gray-500">
+              <CalendarIcon class="h-3 w-3 mr-1" />
+              {{ formatDate(result.created_at) }}
+              <span class="mx-2">•</span>
+              <span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs capitalize">
+                {{ result.categories && result.categories.length > 0 ? result.categories[0].title : "News" }}
+              </span>
+            </div>
+          </div>
+          
+          <div
+            v-if="searchResults.length === 0 && !isSearching && searchQuery"
+            class="p-6 text-center text-gray-500"
+          >
+            <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <p class="mt-4">No results found for "{{ searchQuery }}"</p>
+            <p class="text-sm mt-2">Try using different keywords or check spelling</p>
+          </div>
+          
+          <div v-if="isSearching" class="p-6 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <p class="mt-4 text-gray-500">Searching...</p>
+          </div>
+        </div>
+        
+        <div v-if="!searchQuery" class="p-6 text-center text-gray-500">
+          <SearchIcon class="mx-auto h-8 w-8 text-gray-300 mb-2" />
+          <p>Type to start searching</p>
+          <p class="text-xs mt-1">Press ESC to close</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breaking News Ticker -->
+    <UContainer>
+      <div class="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg shadow-md mt-3 mb-6 sm:mb-8">
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <span
-              class="font-semibold text-sm sm:text-lg mr-4 border-r border-white/30 pr-4"
-              >BREAKING NEWS</span
-            >
+            <span class="font-semibold text-xs sm:text-base mr-3 sm:mr-4 border-r border-white/30 pr-3 sm:pr-4">BREAKING</span>
           </div>
           <div class="overflow-hidden relative w-full">
             <transition-group
@@ -251,7 +233,7 @@
               <p
                 v-for="(news, index) in breakingNews"
                 :key="index"
-                class="ticker-item px-4 capitalize"
+                class="ticker-item px-4 capitalize text-sm sm:text-base"
               >
                 {{ news.title }}
               </p>
@@ -275,7 +257,6 @@ await getLogo();
 
 import {
   SunIcon,
-  MenuIcon,
   XIcon,
   SearchIcon,
   CalendarIcon,
@@ -296,7 +277,6 @@ function debounce(func, wait) {
 }
 
 // Navigation state
-const mobileMenuOpen = ref(false);
 const moreMenuOpen = ref(false);
 const toggleMoreCategories = () => {
   moreMenuOpen.value = !moreMenuOpen.value;
@@ -312,17 +292,17 @@ const searchResults = ref([]);
 const isSearching = ref(false);
 const isSearchVisible = ref(false);
 
-// Toggle search visibility
+// Add search input ref for focusing
+const searchInputRef = ref(null);
+
+// Update toggle search to focus input
 const toggleSearch = () => {
   isSearchVisible.value = !isSearchVisible.value;
 
   // Focus the search input when the search bar is made visible
   if (isSearchVisible.value) {
     nextTick(() => {
-      const searchInput = document.querySelector(".search-input");
-      if (searchInput) {
-        searchInput.focus();
-      }
+      searchInputRef.value?.focus();
     });
   }
 };
@@ -341,12 +321,22 @@ const handleClickOutside = (event) => {
   }
 };
 
+// Add keyboard event listener for ESC key
 onMounted(() => {
+  // Don't remove your existing event listener
   document.addEventListener("click", handleClickOutside);
+  
+  // Add keyboard listener
+  document.addEventListener("keydown", (e) => {
+    if (e.key === 'Escape' && isSearchVisible.value) {
+      isSearchVisible.value = false;
+    }
+  });
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener("keydown", handleEscKey);
 });
 
 // Perform search when query changes
@@ -440,7 +430,6 @@ await getCategories();
 const activeCategory = ref("all");
 const setActiveCategory = (categoryId) => {
   activeCategory.value = categoryId;
-  mobileMenuOpen.value = false;
 };
 
 // Breaking news ticker
@@ -505,6 +494,21 @@ await getTags();
 const openChat = () => {
   alert("Chat option opened!"); // Replace with actual chat opening logic
 };
+
+// Add this to implement click outside behavior
+const vClickOutside = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event);
+      }
+    };
+    document.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el.clickOutsideEvent);
+  },
+};
 </script>
 
 <style>
@@ -545,6 +549,16 @@ const openChat = () => {
   border-color: var(--color-primary);
 }
 
+/* Hide scrollbar but maintain functionality */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
 /* Ticker animation */
 .ticker-container {
   animation: ticker 20s linear infinite;
@@ -568,6 +582,7 @@ const openChat = () => {
 .comment-list-leave-active {
   transition: all 0.5s ease;
 }
+
 .comment-list-enter-from,
 .comment-list-leave-to {
   opacity: 0;
