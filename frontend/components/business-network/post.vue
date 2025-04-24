@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class="p-4 sm:p-5 sm:p-6">
+          <div class="p-3 sm:p-5 sm:p-6">
             <!-- Post Header -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center space-x-3 flex-1">
