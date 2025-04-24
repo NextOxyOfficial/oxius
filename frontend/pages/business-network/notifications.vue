@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen mt-16 sm:mt-16 bg-gradient-to-b from-gray-50 to-white"
+    class="min-h-screen mt-16 sm:mt-16 bg-gradient-to-b from-gray-50 to-white flex-1"
   >
     <!-- Header -->
     <header

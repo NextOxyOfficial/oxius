@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white mt-16 flex-1">
+  <div class="mx-auto px-2 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
     <BusinessNetworkPost :posts="posts" :id="user?.user?.id" />
 
     <!-- Search Overlay -->

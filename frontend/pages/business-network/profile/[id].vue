@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50 mt-14">
-    <div class="max-w-3xl mx-auto relative z-10 pt-3 px-3 sm:px-0">
+  <div class="mx-auto px-2 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
+    <div class="max-w-3xl mx-auto relative z-10 sm:px-0">
       <!-- Professional Profile Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="p-4 sm:p-5">

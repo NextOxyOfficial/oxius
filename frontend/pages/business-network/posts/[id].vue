@@ -1,5 +1,5 @@
 <template>
-    <UContainer class="mt-16">
+    <UContainer class="mt-16 flex-1 ">
         <BusinessNetworkPost :posts="posts" :id="user?.user?.id" />
     </UContainer>
 </template>
