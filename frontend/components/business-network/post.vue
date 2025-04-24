@@ -279,7 +279,7 @@
             <!-- Comments Preview -->
             <div v-if="post?.post_comments?.length > 0" class="space-y-2">
               <div
-                v-for="comment in post.post_comments.slice(0, 2)"
+                v-for="comment in post.post_comments.slice(0, 3)"
                 :key="comment.id"
                 class="flex items-start space-x-2"
               >
@@ -290,13 +290,52 @@
                 />
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg p-2">
-                    <NuxtLink
-                      :to="`/business-network/profile/${comment.author}`"
-                      class="text-sm font-medium hover:underline"
-                    >
-                      {{ comment.author_details?.name }}
-                    </NuxtLink>
-                    <p class="text-sm">{{ comment?.content }}</p>
+                    <div class="flex items-center justify-between mb-0.5">
+                      <NuxtLink
+                        :to="`/business-network/profile/${comment.author}`"
+                        class="text-sm font-medium hover:underline"
+                      >
+                        {{ comment.author_details?.name }}
+                      </NuxtLink>
+                      <!-- Comment Actions (Edit/Delete) -->
+                      <div v-if="comment.author === user?.user?.id" class="flex items-center space-x-1">
+                        <button 
+                          @click="editComment(post, comment)" 
+                          class="p-0.5 text-gray-500 hover:text-blue-600"
+                        >
+                          <UIcon name="i-heroicons-pencil-square" class="size-3.5" />
+                        </button>
+                        <button 
+                          @click="deleteComment(post, comment)" 
+                          class="p-0.5 text-gray-500 hover:text-red-600"
+                        >
+                          <UIcon name="i-heroicons-trash" class="size-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <!-- Comment Content -->
+                    <div v-if="comment.isEditing">
+                      <textarea
+                        v-model="comment.editText"
+                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                        rows="2"
+                      ></textarea>
+                      <div class="flex justify-end space-x-2 mt-1">
+                        <button
+                          @click="cancelEditComment(comment)"
+                          class="text-xs text-gray-500 hover:underline"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          @click="saveEditComment(post, comment)"
+                          class="text-xs text-blue-600 font-medium hover:underline"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                    <p v-else class="text-sm">{{ comment?.content }}</p>
                   </div>
                   <span class="text-sm text-gray-500 mt-1 inline-block">
                     {{ formatTimeAgo(comment?.created_at) }}
@@ -305,7 +344,7 @@
               </div>
 
               <button
-                v-if="post?.post_comments?.length > 2"
+                v-if="post?.post_comments?.length > 3"
                 class="text-sm text-blue-600 font-medium mt-1"
                 @click="openCommentsModal(post)"
               >
@@ -641,7 +680,7 @@
               <X class="h-5 w-5" />
             </button>
           </div>
-          <div class="overflow-y-auto max-h-[60vh] p-4 sm:p-5 space-y-3">
+          <div class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3">
             <div
               v-for="comment in activeCommentsPost.post_comments"
               :key="comment.id"
@@ -661,20 +700,61 @@
                     >
                       {{ comment.author_details.name }}
                     </NuxtLink>
-                    <button
-                      v-if="comment.author !== user.user.id"
-                      :class="[
-                        'text-sm h-5 rounded-full px-2 flex items-center',
-                        comment.user.isFollowing
-                          ? 'border border-gray-200 text-gray-700'
-                          : 'bg-blue-600 text-white',
-                      ]"
-                      @click.stop="toggleUserFollow(comment.user)"
-                    >
-                      {{ comment.user.isFollowing ? "Following" : "Follow" }}
-                    </button>
+                    <!-- Comment Actions for owner -->
+                    <div class="flex items-center space-x-1">
+                      <button
+                        v-if="comment.author !== user?.user?.id"
+                        :class="[
+                          'text-sm h-5 rounded-full px-2 flex items-center',
+                          comment.user?.isFollowing
+                            ? 'border border-gray-200 text-gray-700'
+                            : 'bg-blue-600 text-white',
+                        ]"
+                        @click.stop="toggleUserFollow(comment.user)"
+                      >
+                        {{ comment.user?.isFollowing ? "Following" : "Follow" }}
+                      </button>
+                      
+                      <!-- Edit/Delete buttons -->
+                      <div v-if="comment.author === user?.user?.id" class="flex items-center">
+                        <button 
+                          @click="editComment(activeCommentsPost, comment)" 
+                          class="p-0.5 text-gray-500 hover:text-blue-600"
+                        >
+                          <UIcon name="i-heroicons-pencil-square" class="size-4" />
+                        </button>
+                        <button 
+                          @click="deleteComment(activeCommentsPost, comment)" 
+                          class="p-0.5 text-gray-500 hover:text-red-600"
+                        >
+                          <UIcon name="i-heroicons-trash" class="size-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <p class="text-sm">{{ comment.content }}</p>
+                  <!-- Editable comment content -->
+                  <div v-if="comment.isEditing">
+                    <textarea
+                      v-model="comment.editText"
+                      class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                      rows="2"
+                    ></textarea>
+                    <div class="flex justify-end space-x-2 mt-1">
+                      <button
+                        @click="cancelEditComment(comment)"
+                        class="text-xs text-gray-500 hover:underline"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        @click="saveEditComment(activeCommentsPost, comment)"
+                        class="text-xs text-blue-600 font-medium hover:underline"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                  <p v-else class="text-sm">{{ comment.content }}</p>
                 </div>
                 <div class="flex items-center mt-1 space-x-3">
                   <span class="text-sm text-gray-500">{{
@@ -778,6 +858,37 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Delete Comment Modal -->
+    <Teleport to="body">
+      <div
+        v-if="commentToDelete"
+        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        @click="commentToDelete = null"
+      >
+        <div
+          class="bg-white rounded-lg max-w-sm w-full p-4"
+          @click.stop
+        >
+          <h3 class="text-lg font-semibold mb-2">Delete Comment</h3>
+          <p class="text-gray-600 mb-4">Are you sure you want to delete this comment? This action cannot be undone.</p>
+          <div class="flex justify-end space-x-2">
+            <button
+              @click="commentToDelete = null"
+              class="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDeleteComment()"
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -848,6 +959,8 @@ const activeLikesPost = ref(null);
 const activeCommentsPost = ref(null);
 const activeMediaLikes = ref(null);
 const mediaLikedUsers = ref([]);
+const commentToDelete = ref(null);
+const postWithCommentToDelete = ref(null);
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -904,6 +1017,13 @@ const toggleUserFollow = (user) => {
 
 // Toggle like
 const toggleLike = async (currentPost) => {
+  // Check if user is logged in
+  if (!user?.value?.user?.id) {
+    // Handle not logged in case - maybe show login prompt
+    console.error("User not logged in");
+    return;
+  }
+  
   // Store the original state to revert in case of API error
   const wasLiked = currentPost.post_likes?.some(like => like.user === user.value?.user?.id);
   
@@ -1101,22 +1221,28 @@ const openMediaLikesModal = () => {
 
 // Add comment
 const addComment = async (currentPost) => {
-  if (!currentPost.commentText?.trim()) return;
+  // Check if user is logged in
+  if (!user?.value?.user?.id) {
+    console.error("User not logged in");
+    return;
+  }
+  
+  if (!currentPost?.commentText?.trim()) return;
   
   const commentText = currentPost.commentText.trim();
   
   // Create a temporary comment to show immediately
   const tempComment = {
     id: `temp-${Date.now()}`,
-    author: user.value?.user?.id,
+    author: user.value.user.id,
     content: commentText,
     created_at: new Date().toISOString(),
     author_details: {
-      name: user.value?.user?.name,
-      image: user.value?.user?.image
+      name: user.value.user.name,
+      image: user.value.user.image
     },
-    // Add any other properties needed
-    user: { // For the follow/unfollow functionality in comments modal
+    // Add needed properties for UI
+    user: {
       isFollowing: false
     }
   };
@@ -1158,6 +1284,91 @@ const addComment = async (currentPost) => {
       comment => comment.id !== tempComment.id
     );
     console.error("Error adding comment:", error);
+  }
+};
+
+// Edit comment
+const editComment = (post, comment) => {
+  if (!post || !comment || !user?.value?.user?.id) return;
+  
+  // Set editing mode and store original text for cancellation
+  comment.isEditing = true;
+  comment.editText = comment.content;
+};
+
+// Cancel comment edit
+const cancelEditComment = (comment) => {
+  comment.isEditing = false;
+  comment.editText = null;
+};
+
+// Save edited comment
+const saveEditComment = async (currentPost, comment) => {
+  if (!comment.editText?.trim() || comment.editText === comment.content) {
+    cancelEditComment(comment);
+    return;
+  }
+  
+  const originalContent = comment.content;
+  
+  try {
+    // Optimistically update UI
+    comment.content = comment.editText.trim();
+    comment.isEditing = false;
+    
+    // Make API call to update comment
+    const response = await post(`/bn/posts/${currentPost.id}/comments/${comment.id}/update/`, {
+      content: comment.editText.trim()
+    });
+    
+    if (!response || !response.data) {
+      // Revert on failure
+      comment.content = originalContent;
+      console.error("Failed to update comment");
+    }
+  } catch (error) {
+    // Revert on error
+    comment.content = originalContent;
+    console.error("Error updating comment:", error);
+  }
+};
+
+// Delete comment
+const deleteComment = (post, comment) => {
+  if (!post || !comment || !user?.value?.user?.id) return;
+  
+  commentToDelete.value = comment;
+  postWithCommentToDelete.value = post;
+};
+
+const confirmDeleteComment = async () => {
+  if (!commentToDelete.value || !postWithCommentToDelete.value || !user?.value?.user?.id) return;
+  
+  const comment = commentToDelete.value;
+  const post = postWithCommentToDelete.value;
+  
+  try {
+    // Close modal first
+    commentToDelete.value = null;
+    postWithCommentToDelete.value = null;
+    
+    // Make API call to delete comment
+    const response = await del(`/bn/posts/${post.id}/comments/${comment.id}/`);
+    
+    // On success, remove from UI
+    if (response) {
+      // Update the UI by filtering out the deleted comment
+      post.post_comments = post.post_comments.filter(c => c.id !== comment.id);
+      console.log("Comment deleted successfully");
+    } else {
+      console.error("Failed to delete comment - API returned no response");
+    }
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    
+    // Show error notification (optional)
+    // You might want to add a toast notification system
+    // toast.error('Failed to delete comment. Please try again.');
   }
 };
 
