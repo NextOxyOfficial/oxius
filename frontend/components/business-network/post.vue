@@ -221,16 +221,20 @@
             >
               <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-1">
+                  <!-- Update like button with loading state -->
                   <button
-                    class="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    class="p-1 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
                     @click="toggleLike(post)"
+                    :disabled="post.isLikeLoading"
                   >
+                    <div v-if="post.isLikeLoading" class="animate-pulse h-4 w-4">
+                      <Loader2 class="h-4 w-4 text-gray-400 animate-spin" />
+                    </div>
                     <Heart
+                      v-else
                       :class="[
                         'h-4 w-4',
-                        post.post_likes?.find(
-                          (like) => like.user === user?.user?.id
-                        )
+                        post.post_likes?.find((like) => like.user === user?.user?.id)
                           ? 'text-red-500 fill-red-500'
                           : 'text-gray-500',
                       ]"
@@ -326,6 +330,7 @@
                     <!-- Comment Content -->
                     <div v-if="comment.isEditing">
                       <textarea
+                        :id="`comment-edit-${comment.id}`"
                         v-model="comment.editText"
                         class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                         rows="2"
@@ -339,9 +344,11 @@
                         </button>
                         <button
                           @click="saveEditComment(post, comment)"
-                          class="text-xs text-blue-600 font-medium hover:underline"
+                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                          :disabled="!comment.editText?.trim() || comment.editText === comment.content || comment.isSaving"
                         >
-                          Save
+                          <span v-if="comment.isSaving">Saving...</span>
+                          <span v-else>Save</span>
                         </button>
                       </div>
                     </div>
@@ -363,21 +370,32 @@
                 alt="Your avatar"
                 class="w-6 h-6 rounded-full"
               />
+              <!-- Update the comment input -->
               <div class="flex-1 relative">
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
                   v-model="post.commentText"
                   @keyup.enter="addComment(post)"
+                  @focus="post.showCommentInput = true"
                 />
-                <button
-                  v-if="post.commentText"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600"
-                  @click="addComment(post)"
-                >
-                  <Send class="h-5 w-5" />
-                </button>
+                <div v-if="post.commentText" class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+                  <button
+                    class="p-1 text-gray-400 hover:text-gray-500 transition-colors"
+                    @click="post.commentText = ''"
+                    aria-label="Clear comment"
+                  >
+                    <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+                  </button>
+                  <button
+                    class="p-1 text-blue-600 hover:text-blue-700 transition-colors"
+                    @click="addComment(post)"
+                    aria-label="Post comment"
+                  >
+                    <Send class="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -747,6 +765,7 @@
                   <!-- Editable comment content -->
                   <div v-if="comment.isEditing">
                     <textarea
+                      :id="`comment-edit-${comment.id}`"
                       v-model="comment.editText"
                       class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                       rows="2"
@@ -760,9 +779,11 @@
                       </button>
                       <button
                         @click="saveEditComment(activeCommentsPost, comment)"
-                        class="text-xs text-blue-600 font-medium hover:underline"
+                        class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                        :disabled="!comment.editText?.trim() || comment.editText === comment.content || comment.isSaving"
                       >
-                        Save
+                        <span v-if="comment.isSaving">Saving...</span>
+                        <span v-else>Save</span>
                       </button>
                     </div>
                   </div>
@@ -1032,10 +1053,13 @@ const toggleUserFollow = (user) => {
 const toggleLike = async (currentPost) => {
   // Check if user is logged in
   if (!user?.value?.user?.id) {
-    // Handle not logged in case - maybe show login prompt
-    console.error("User not logged in");
+    showNotification("Please log in to like posts", "error");
     return;
   }
+  
+  // Prevent multiple clicks
+  if (currentPost.isLikeLoading) return;
+  currentPost.isLikeLoading = true;
   
   // Store the original state to revert in case of API error
   const wasLiked = currentPost.post_likes?.some(like => like.user === user.value?.user?.id);
@@ -1107,6 +1131,9 @@ const toggleLike = async (currentPost) => {
         like => like.user !== user.value?.user?.id
       );
     }
+    showNotification("Failed to update like", "error");
+  } finally {
+    currentPost.isLikeLoading = false;
   }
 };
 
@@ -1326,6 +1353,14 @@ const editComment = (post, comment) => {
   // Set editing mode and store original text for cancellation
   comment.isEditing = true;
   comment.editText = comment.content;
+  
+  // Focus on textarea after Vue updates the DOM
+  nextTick(() => {
+    const textarea = document.querySelector(`#comment-edit-${comment.id}`);
+    if (textarea) {
+      textarea.focus();
+    }
+  });
 };
 
 // Cancel comment edit
@@ -1341,6 +1376,8 @@ const saveEditComment = async (currentPost, comment) => {
     return;
   }
   
+  // Add saving state
+  comment.isSaving = true;
   const originalContent = comment.content;
   
   try {
@@ -1362,6 +1399,9 @@ const saveEditComment = async (currentPost, comment) => {
     // Revert on error
     comment.content = originalContent;
     console.error("Error updating comment:", error);
+  } finally {
+    // Always reset the saving state
+    comment.isSaving = false;
   }
 };
 
