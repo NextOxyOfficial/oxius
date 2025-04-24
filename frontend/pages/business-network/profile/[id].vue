@@ -83,7 +83,7 @@
             </div>
             
             <!-- User Info -->
-            <div class="flex-1 mt-2 sm:mt-0">
+            <div class="flex-1">
               <!-- Desktop Header (Hidden on Mobile) -->
               <div class="hidden sm:flex sm:flex-row sm:items-start sm:justify-between">
                 <div>

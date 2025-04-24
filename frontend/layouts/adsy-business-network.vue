@@ -2,7 +2,7 @@
   <div class="font-AnekBangla">
     <AdsyBusinessNetworkHeader />
     <div
-      class="max-w-5xl w-full mx-auto gap-1 px-1 relative flex justify-center"
+      class="max-w-5xl w-full mx-auto relative flex justify-center"
     >
       <AdsyBusinessNetworkSidebar />
       <slot />
