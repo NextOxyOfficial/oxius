@@ -227,14 +227,19 @@
                     @click="toggleLike(post)"
                     :disabled="post.isLikeLoading"
                   >
-                    <div v-if="post.isLikeLoading" class="animate-pulse h-4 w-4">
+                    <div
+                      v-if="post.isLikeLoading"
+                      class="animate-pulse h-4 w-4"
+                    >
                       <Loader2 class="h-4 w-4 text-gray-400 animate-spin" />
                     </div>
                     <Heart
                       v-else
                       :class="[
                         'h-4 w-4',
-                        post.post_likes?.find((like) => like.user === user?.user?.id)
+                        post.post_likes?.find(
+                          (like) => like.user === user?.user?.id
+                        )
                           ? 'text-red-500 fill-red-500'
                           : 'text-gray-500',
                       ]"
@@ -312,15 +317,21 @@
                         {{ comment.author_details?.name }}
                       </NuxtLink>
                       <!-- Comment Actions (Edit/Delete) -->
-                      <div v-if="comment.author === user?.user?.id" class="flex items-center space-x-1">
-                        <button 
-                          @click="editComment(post, comment)" 
+                      <div
+                        v-if="comment.author === user?.user?.id"
+                        class="flex items-center space-x-1"
+                      >
+                        <button
+                          @click="editComment(post, comment)"
                           class="p-0.5 text-gray-500 hover:text-blue-600"
                         >
-                          <UIcon name="i-heroicons-pencil-square" class="size-3.5" />
+                          <UIcon
+                            name="i-heroicons-pencil-square"
+                            class="size-3.5"
+                          />
                         </button>
-                        <button 
-                          @click="deleteComment(post, comment)" 
+                        <button
+                          @click="deleteComment(post, comment)"
                           class="p-0.5 text-gray-500 hover:text-red-600"
                         >
                           <UIcon name="i-heroicons-trash" class="size-3.5" />
@@ -345,7 +356,11 @@
                         <button
                           @click="saveEditComment(post, comment)"
                           class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
-                          :disabled="!comment.editText?.trim() || comment.editText === comment.content || comment.isSaving"
+                          :disabled="
+                            !comment.editText?.trim() ||
+                            comment.editText === comment.content ||
+                            comment.isSaving
+                          "
                         >
                           <span v-if="comment.isSaving">Saving...</span>
                           <span v-else>Save</span>
@@ -382,7 +397,10 @@
                   @input="handleCommentInput($event, post)"
                   @keydown="handleMentionKeydown($event, post)"
                 />
-                <div v-if="post.commentText" class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+                <div
+                  v-if="post.commentText"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1"
+                >
                   <button
                     class="p-1 text-gray-400 hover:text-gray-500 transition-colors"
                     @click="post.commentText = ''"
@@ -627,16 +645,16 @@
           class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden"
           @click.stop
         >
-          <div
-            class="p-4 sm:p-5 border-b border-gray-200"
-          >
+          <div class="p-4 sm:p-5 border-b border-gray-200">
             <div class="flex items-center justify-between mb-1">
               <h3 class="font-semibold">Liked by</h3>
               <button @click="activeLikesPost = null">
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-600 truncate">{{ activeLikesPost.title }}</p>
+            <p class="text-sm text-gray-600 truncate">
+              {{ activeLikesPost.title }}
+            </p>
           </div>
           <div class="overflow-y-auto max-h-[60vh]">
             <div
@@ -697,16 +715,16 @@
           class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden"
           @click.stop
         >
-          <div
-            class="p-4 sm:p-5 border-b border-gray-200"
-          >
+          <div class="p-4 sm:p-5 border-b border-gray-200">
             <div class="flex items-center justify-between mb-1">
               <h3 class="font-semibold">Comments</h3>
               <button @click="activeCommentsPost = null">
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-600 truncate">{{ activeCommentsPost.title }}</p>
+            <p class="text-sm text-gray-600 truncate">
+              {{ activeCommentsPost.title }}
+            </p>
           </div>
           <div
             ref="commentsContainerRef"
@@ -746,17 +764,23 @@
                       >
                         {{ comment.user?.isFollowing ? "Following" : "Follow" }}
                       </button>
-                      
+
                       <!-- Edit/Delete buttons -->
-                      <div v-if="comment.author === user?.user?.id" class="flex items-center">
-                        <button 
-                          @click="editComment(activeCommentsPost, comment)" 
+                      <div
+                        v-if="comment.author === user?.user?.id"
+                        class="flex items-center"
+                      >
+                        <button
+                          @click="editComment(activeCommentsPost, comment)"
                           class="p-0.5 text-gray-500 hover:text-blue-600"
                         >
-                          <UIcon name="i-heroicons-pencil-square" class="size-4" />
+                          <UIcon
+                            name="i-heroicons-pencil-square"
+                            class="size-4"
+                          />
                         </button>
-                        <button 
-                          @click="deleteComment(activeCommentsPost, comment)" 
+                        <button
+                          @click="deleteComment(activeCommentsPost, comment)"
                           class="p-0.5 text-gray-500 hover:text-red-600"
                         >
                           <UIcon name="i-heroicons-trash" class="size-4" />
@@ -782,7 +806,11 @@
                       <button
                         @click="saveEditComment(activeCommentsPost, comment)"
                         class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
-                        :disabled="!comment.editText?.trim() || comment.editText === comment.content || comment.isSaving"
+                        :disabled="
+                          !comment.editText?.trim() ||
+                          comment.editText === comment.content ||
+                          comment.isSaving
+                        "
                       >
                         <span v-if="comment.isSaving">Saving...</span>
                         <span v-else>Save</span>
@@ -820,7 +848,11 @@
                 />
                 <!-- Add mention dropdown in modal too -->
                 <div
-                  v-if="showMentions && mentionSuggestions.length > 0 && activeCommentsPost === mentionInputPosition?.post"
+                  v-if="
+                    showMentions &&
+                    mentionSuggestions.length > 0 &&
+                    activeCommentsPost === mentionInputPosition?.post
+                  "
                   class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-48 overflow-y-auto"
                 >
                   <div class="py-1">
@@ -830,7 +862,7 @@
                       @click="selectMention(user, activeCommentsPost)"
                       :class="[
                         'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
-                        index === activeMentionIndex ? 'bg-gray-100' : ''
+                        index === activeMentionIndex ? 'bg-gray-100' : '',
                       ]"
                     >
                       <img
@@ -928,12 +960,12 @@
         class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
         @click="commentToDelete = null"
       >
-        <div
-          class="bg-white rounded-lg max-w-sm w-full p-4"
-          @click.stop
-        >
+        <div class="bg-white rounded-lg max-w-sm w-full p-4" @click.stop>
           <h3 class="text-lg font-semibold mb-2">Delete Comment</h3>
-          <p class="text-gray-600 mb-4">Are you sure you want to delete this comment? This action cannot be undone.</p>
+          <p class="text-gray-600 mb-4">
+            Are you sure you want to delete this comment? This action cannot be
+            undone.
+          </p>
           <div class="flex justify-end space-x-2">
             <button
               @click="commentToDelete = null"
@@ -997,7 +1029,7 @@ import {
   UserX,
 } from "lucide-vue-next";
 const { user } = useAuth();
-const { post, del } = useApi();
+const { post, del, put } = useApi();
 
 // State
 const loading = ref(false);
@@ -1092,34 +1124,40 @@ const toggleLike = async (currentPost) => {
     showNotification("Please log in to like posts", "error");
     return;
   }
-  
+
   // Prevent multiple clicks
   if (currentPost.isLikeLoading) return;
   currentPost.isLikeLoading = true;
-  
+
   // Store the original state to revert in case of API error
-  const wasLiked = currentPost.post_likes?.some(like => like.user === user.value?.user?.id);
-  
+  const wasLiked = currentPost.post_likes?.some(
+    (like) => like.user === user.value?.user?.id
+  );
+
   try {
     if (wasLiked) {
       // Optimistically update UI first
       currentPost.post_likes = currentPost.post_likes.filter(
-        like => like.user !== user.value?.user?.id
+        (like) => like.user !== user.value?.user?.id
       );
-      
+
       // Then make API call
       const response = await del(`/bn/posts/${currentPost.id}/unlike/`);
-      
+
       // Check if API call failed (no need to check status property)
       if (!response) {
         // Revert UI if API fails
-        if (!currentPost.post_likes.some(like => like.user === user.value?.user?.id)) {
+        if (
+          !currentPost.post_likes.some(
+            (like) => like.user === user.value?.user?.id
+          )
+        ) {
           currentPost.post_likes.push({
             user: user.value?.user?.id,
             user_details: {
               name: user.value?.user?.name,
-              image: user.value?.user?.image
-            }
+              image: user.value?.user?.image,
+            },
           });
         }
       }
@@ -1128,43 +1166,47 @@ const toggleLike = async (currentPost) => {
       if (!currentPost.post_likes) {
         currentPost.post_likes = [];
       }
-      
+
       currentPost.post_likes.push({
         user: user.value?.user?.id,
         user_details: {
           name: user.value?.user?.name,
-          image: user.value?.user?.image
-        }
+          image: user.value?.user?.image,
+        },
       });
-      
+
       // Then make API call
       const response = await post(`/bn/posts/${currentPost.id}/like/`);
       if (!response) {
         // Revert UI if API fails
         currentPost.post_likes = currentPost.post_likes.filter(
-          like => like.user !== user.value?.user?.id
+          (like) => like.user !== user.value?.user?.id
         );
       }
     }
   } catch (error) {
     console.error("Error toggling like:", error);
-    
+
     // Revert UI on error
     if (wasLiked) {
       // Re-add like if we were removing it
-      if (!currentPost.post_likes.some(like => like.user === user.value?.user?.id)) {
+      if (
+        !currentPost.post_likes.some(
+          (like) => like.user === user.value?.user?.id
+        )
+      ) {
         currentPost.post_likes.push({
           user: user.value?.user?.id,
           user_details: {
             name: user.value?.user?.name,
-            image: user.value?.user?.image
-          }
+            image: user.value?.user?.image,
+          },
         });
       }
     } else {
       // Remove like if we were adding it
       currentPost.post_likes = currentPost.post_likes.filter(
-        like => like.user !== user.value?.user?.id
+        (like) => like.user !== user.value?.user?.id
       );
     }
     showNotification("Failed to update like", "error");
@@ -1260,7 +1302,7 @@ const copyLink = (post) => {
 
 // Share post
 const sharePost = (post) => {
-  const postUrl = `${window.location.origin}/post/${post.id}`;
+  const postUrl = `${window.location.origin}/post/${post.slug}`;
 
   if (navigator.share && navigator.canShare) {
     navigator
@@ -1285,7 +1327,7 @@ const openLikesModal = (post) => {
 // Open comments modal
 const openCommentsModal = (post) => {
   activeCommentsPost.value = post;
-  
+
   // Wait for DOM update then scroll to bottom
   nextTick(() => {
     scrollToLatestComment();
@@ -1295,7 +1337,8 @@ const openCommentsModal = (post) => {
 // Scroll to latest comment
 const scrollToLatestComment = () => {
   if (commentsContainerRef.value) {
-    commentsContainerRef.value.scrollTop = commentsContainerRef.value.scrollHeight;
+    commentsContainerRef.value.scrollTop =
+      commentsContainerRef.value.scrollHeight;
   }
 };
 
@@ -1314,11 +1357,11 @@ const addComment = async (currentPost) => {
     console.error("User not logged in");
     return;
   }
-  
+
   if (!currentPost?.commentText?.trim()) return;
-  
+
   const commentText = currentPost.commentText.trim();
-  
+
   // Create a temporary comment to show immediately
   const tempComment = {
     id: `temp-${Date.now()}`,
@@ -1327,41 +1370,41 @@ const addComment = async (currentPost) => {
     created_at: new Date().toISOString(),
     author_details: {
       name: user.value.user.name,
-      image: user.value.user.image
+      image: user.value.user.image,
     },
     // Add needed properties for UI
     user: {
-      isFollowing: false
-    }
+      isFollowing: false,
+    },
   };
-  
+
   // Format mentions in the content if any
   const formattedContent = commentText.replace(
-    /@(\w+)/g, 
+    /@(\w+)/g,
     '<span class="text-blue-600">@$1</span>'
   );
 
   // Update the tempComment with formatted content
   tempComment.content = formattedContent;
-  
+
   // Add to UI immediately
   if (!currentPost.post_comments) {
     currentPost.post_comments = [];
   }
-  
+
   // Add to beginning of array for newest first
   currentPost.post_comments.unshift(tempComment);
-  
+
   // Clear input field
   currentPost.commentText = "";
-  
+
   // Scroll to the latest comment if in modal view
   if (currentPost === activeCommentsPost.value) {
     nextTick(() => {
       scrollToLatestComment();
     });
   }
-  
+
   try {
     // Make API call to add comment
     const response = await post(`/bn/posts/${currentPost.id}/comments/`, {
@@ -1370,7 +1413,9 @@ const addComment = async (currentPost) => {
 
     // If successful, replace temp comment with real one from API
     if (response.data) {
-      const index = currentPost.post_comments.findIndex(c => c.id === tempComment.id);
+      const index = currentPost.post_comments.findIndex(
+        (c) => c.id === tempComment.id
+      );
       if (index !== -1) {
         // Replace with actual comment data from API
         currentPost.post_comments[index] = response.data;
@@ -1378,14 +1423,14 @@ const addComment = async (currentPost) => {
     } else {
       // Remove temp comment if API failed
       currentPost.post_comments = currentPost.post_comments.filter(
-        comment => comment.id !== tempComment.id
+        (comment) => comment.id !== tempComment.id
       );
       console.error("Failed to add comment:", response);
     }
   } catch (error) {
     // Remove temp comment on error
     currentPost.post_comments = currentPost.post_comments.filter(
-      comment => comment.id !== tempComment.id
+      (comment) => comment.id !== tempComment.id
     );
     console.error("Error adding comment:", error);
   }
@@ -1394,11 +1439,11 @@ const addComment = async (currentPost) => {
 // Edit comment
 const editComment = (post, comment) => {
   if (!post || !comment || !user?.value?.user?.id) return;
-  
+
   // Set editing mode and store original text for cancellation
   comment.isEditing = true;
   comment.editText = comment.content;
-  
+
   // Focus on textarea after Vue updates the DOM
   nextTick(() => {
     const textarea = document.querySelector(`#comment-edit-${comment.id}`);
@@ -1420,21 +1465,22 @@ const saveEditComment = async (currentPost, comment) => {
     cancelEditComment(comment);
     return;
   }
-  
+
   // Add saving state
   comment.isSaving = true;
   const originalContent = comment.content;
-  
+
   try {
     // Optimistically update UI
     comment.content = comment.editText.trim();
     comment.isEditing = false;
-    
+
     // Make API call to update comment
-    const response = await post(`/bn/posts/${currentPost.id}/comments/${comment.id}/update/`, {
-      content: comment.editText.trim()
+    const response = await put(`/bn/comments/${comment.id}/`, {
+      ...comment,
+      content: comment.editText.trim(),
     });
-    
+
     if (!response || !response.data) {
       // Revert on failure
       comment.content = originalContent;
@@ -1453,36 +1499,43 @@ const saveEditComment = async (currentPost, comment) => {
 // Delete comment
 const deleteComment = (post, comment) => {
   if (!post || !comment || !user?.value?.user?.id) return;
-  
+
   commentToDelete.value = comment;
   postWithCommentToDelete.value = post;
 };
 
 const confirmDeleteComment = async () => {
-  if (!commentToDelete.value || !postWithCommentToDelete.value || !user?.value?.user?.id) return;
-  
+  if (
+    !commentToDelete.value ||
+    !postWithCommentToDelete.value ||
+    !user?.value?.user?.id
+  )
+    return;
+
   const comment = commentToDelete.value;
   const post = postWithCommentToDelete.value;
-  
+
   try {
     // Close modal first
     commentToDelete.value = null;
     postWithCommentToDelete.value = null;
-    
+
     // Make API call to delete comment
-    const response = await del(`/bn/posts/${post.id}/comments/${comment.id}/`);
-    
+    const response = await del(`/bn/comments/${comment.id}/`);
+
     // On success, remove from UI
     if (response) {
       // Update the UI by filtering out the deleted comment
-      post.post_comments = post.post_comments.filter(c => c.id !== comment.id);
+      post.post_comments = post.post_comments.filter(
+        (c) => c.id !== comment.id
+      );
       console.log("Comment deleted successfully");
     } else {
       console.error("Failed to delete comment - API returned no response");
     }
   } catch (error) {
     console.error("Error deleting comment:", error);
-    
+
     // Show error notification (optional)
     // You might want to add a toast notification system
     // toast.error('Failed to delete comment. Please try again.');
@@ -1622,28 +1675,28 @@ const handleCommentInput = (e, currentPost) => {
   const input = e.target;
   const text = input.value;
   const cursorPosition = input.selectionStart;
-  
+
   // Check if we're typing a mention
   const textBeforeCursor = text.slice(0, cursorPosition);
   const mentionMatch = textBeforeCursor.match(/(?:^|\s)@(\w*)$/);
-  
+
   if (mentionMatch) {
     // Extract the search text after @
     const searchText = mentionMatch[1].toLowerCase();
     mentionSearchText.value = searchText;
-    
+
     // Calculate dropdown position based on @ symbol
-    const atIndex = textBeforeCursor.lastIndexOf('@');
+    const atIndex = textBeforeCursor.lastIndexOf("@");
     const textBeforeAt = textBeforeCursor.slice(0, atIndex);
-    const linePosition = textBeforeAt.split('\n').length - 1;
-    
+    const linePosition = textBeforeAt.split("\n").length - 1;
+
     // Search for users matching the text
     searchMentionUsers(searchText);
-    
+
     // Show mention dropdown
     showMentions.value = true;
     activeMentionIndex.value = 0;
-    
+
     // Store input element for positioning dropdown
     mentionInputPosition.value = input;
   } else {
@@ -1658,9 +1711,9 @@ const searchMentionUsers = async (searchText) => {
     // Replace with your actual user search API
     const response = await post(`/bn/users/search/`, {
       search: searchText,
-      limit: 5
+      limit: 5,
     });
-    
+
     if (response?.data) {
       mentionSuggestions.value = response.data;
     } else {
@@ -1668,8 +1721,8 @@ const searchMentionUsers = async (searchText) => {
       mentionSuggestions.value = [
         { id: 1, name: "John Smith", image: "https://via.placeholder.com/40" },
         { id: 2, name: "Jane Doe", image: "https://via.placeholder.com/40" },
-        { id: 3, name: "James Brown", image: "https://via.placeholder.com/40" }
-      ].filter(user => 
+        { id: 3, name: "James Brown", image: "https://via.placeholder.com/40" },
+      ].filter((user) =>
         user.name.toLowerCase().includes(searchText.toLowerCase())
       );
     }
@@ -1682,29 +1735,30 @@ const searchMentionUsers = async (searchText) => {
 // Function to select a mentioned user
 const selectMention = (user, currentPost) => {
   if (!mentionInputPosition.value) return;
-  
+
   const input = mentionInputPosition.value;
   const text = input.value;
   const cursorPosition = input.selectionStart;
-  
+
   // Find the start of the mention
   const textBeforeCursor = text.slice(0, cursorPosition);
-  const atIndex = textBeforeCursor.lastIndexOf('@');
-  
+  const atIndex = textBeforeCursor.lastIndexOf("@");
+
   // Replace the @searchText with the selected user
-  const newText = text.slice(0, atIndex) + 
-                 `@${user.name.replace(/\s+/g, '')} ` + 
-                 text.slice(cursorPosition);
-  
+  const newText =
+    text.slice(0, atIndex) +
+    `@${user.name.replace(/\s+/g, "")} ` +
+    text.slice(cursorPosition);
+
   // Update the input value
   currentPost.commentText = newText;
-  
+
   // Close the mentions dropdown
   showMentions.value = false;
-  
+
   // Move cursor after the inserted mention
   nextTick(() => {
-    const newPosition = atIndex + user.name.replace(/\s+/g, '').length + 2; // +2 for @ and space
+    const newPosition = atIndex + user.name.replace(/\s+/g, "").length + 2; // +2 for @ and space
     input.setSelectionRange(newPosition, newPosition);
     input.focus();
   });
@@ -1713,27 +1767,33 @@ const selectMention = (user, currentPost) => {
 // Handle keyboard navigation in mentions dropdown
 const handleMentionKeydown = (e, currentPost) => {
   if (!showMentions.value || mentionSuggestions.value.length === 0) return;
-  
+
   // Arrow down
-  if (e.key === 'ArrowDown') {
+  if (e.key === "ArrowDown") {
     e.preventDefault(); // Prevent cursor movement
-    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+    activeMentionIndex.value =
+      (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
   }
-  
+
   // Arrow up
-  else if (e.key === 'ArrowUp') {
+  else if (e.key === "ArrowUp") {
     e.preventDefault(); // Prevent cursor movement
-    activeMentionIndex.value = (activeMentionIndex.value - 1 + mentionSuggestions.value.length) % mentionSuggestions.value.length;
+    activeMentionIndex.value =
+      (activeMentionIndex.value - 1 + mentionSuggestions.value.length) %
+      mentionSuggestions.value.length;
   }
-  
+
   // Enter or Tab to select
-  else if ((e.key === 'Enter' || e.key === 'Tab') && showMentions.value) {
+  else if ((e.key === "Enter" || e.key === "Tab") && showMentions.value) {
     e.preventDefault();
-    selectMention(mentionSuggestions.value[activeMentionIndex.value], currentPost);
+    selectMention(
+      mentionSuggestions.value[activeMentionIndex.value],
+      currentPost
+    );
   }
-  
+
   // Escape to cancel
-  else if (e.key === 'Escape') {
+  else if (e.key === "Escape") {
     showMentions.value = false;
   }
 };
@@ -1777,4 +1837,3 @@ onMounted(() => {
   }
 }
 </style>
-
