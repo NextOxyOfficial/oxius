@@ -278,8 +278,18 @@
 
             <!-- Comments Preview -->
             <div v-if="post?.post_comments?.length > 0" class="space-y-2">
+              <!-- See all comments button moved to the top -->
+              <button
+                v-if="post?.post_comments?.length > 3"
+                class="text-sm text-blue-600 font-medium"
+                @click="openCommentsModal(post)"
+              >
+                See all {{ post?.post_comments?.length }} comments
+              </button>
+
+              <!-- Comments in reverse order (oldest first, newest last) -->
               <div
-                v-for="comment in post.post_comments.slice(0, 3)"
+                v-for="comment in [...post.post_comments].slice(0, 3).reverse()"
                 :key="comment.id"
                 class="flex items-start space-x-2"
               >
@@ -342,14 +352,6 @@
                   </span>
                 </div>
               </div>
-
-              <button
-                v-if="post?.post_comments?.length > 3"
-                class="text-sm text-blue-600 font-medium mt-1"
-                @click="openCommentsModal(post)"
-              >
-                See all {{ post?.post_comments?.length }} comments
-              </button>
             </div>
 
             <!-- Add Comment Input -->
@@ -606,12 +608,15 @@
           @click.stop
         >
           <div
-            class="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between"
+            class="p-4 sm:p-5 border-b border-gray-200"
           >
-            <h3 class="font-semibold">Liked by</h3>
-            <button @click="activeLikesPost = null">
-              <X class="h-5 w-5" />
-            </button>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-semibold">Liked by</h3>
+              <button @click="activeLikesPost = null">
+                <X class="h-5 w-5" />
+              </button>
+            </div>
+            <p class="text-sm text-gray-600 truncate">{{ activeLikesPost.title }}</p>
           </div>
           <div class="overflow-y-auto max-h-[60vh]">
             <div
@@ -673,16 +678,23 @@
           @click.stop
         >
           <div
-            class="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between"
+            class="p-4 sm:p-5 border-b border-gray-200"
           >
-            <h3 class="font-semibold">Comments</h3>
-            <button @click="activeCommentsPost = null">
-              <X class="h-5 w-5" />
-            </button>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-semibold">Comments</h3>
+              <button @click="activeCommentsPost = null">
+                <X class="h-5 w-5" />
+              </button>
+            </div>
+            <p class="text-sm text-gray-600 truncate">{{ activeCommentsPost.title }}</p>
           </div>
-          <div class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3">
+          <div
+            ref="commentsContainerRef"
+            class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3"
+          >
+            <!-- Display comments with oldest first and newest last -->
             <div
-              v-for="comment in activeCommentsPost.post_comments"
+              v-for="comment in [...activeCommentsPost.post_comments].reverse()"
               :key="comment.id"
               class="flex items-start space-x-2"
             >
@@ -961,6 +973,7 @@ const activeMediaLikes = ref(null);
 const mediaLikedUsers = ref([]);
 const commentToDelete = ref(null);
 const postWithCommentToDelete = ref(null);
+const commentsContainerRef = ref(null);
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -1209,6 +1222,18 @@ const openLikesModal = (post) => {
 // Open comments modal
 const openCommentsModal = (post) => {
   activeCommentsPost.value = post;
+  
+  // Wait for DOM update then scroll to bottom
+  nextTick(() => {
+    scrollToLatestComment();
+  });
+};
+
+// Scroll to latest comment
+const scrollToLatestComment = () => {
+  if (commentsContainerRef.value) {
+    commentsContainerRef.value.scrollTop = commentsContainerRef.value.scrollHeight;
+  }
 };
 
 // Open media likes modal
@@ -1257,6 +1282,13 @@ const addComment = async (currentPost) => {
   
   // Clear input field
   currentPost.commentText = "";
+  
+  // Scroll to the latest comment if in modal view
+  if (currentPost === activeCommentsPost.value) {
+    nextTick(() => {
+      scrollToLatestComment();
+    });
+  }
   
   try {
     // Make API call to add comment
