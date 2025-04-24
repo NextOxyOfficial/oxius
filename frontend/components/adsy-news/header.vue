@@ -2,34 +2,30 @@
   <div>
     <header class="sticky top-0 z-50 bg-white shadow-md">
       <div class="max-w-7xl mx-auto">
-        <!-- Main Navigation -->
-        <div
-          class="flex flex-col sm:flex-row justify-between items-center px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
-        >
-          <!-- Logo - Always visible, different alignment on mobile vs desktop -->
-          <div class="flex items-center justify-between w-full sm:w-auto sm:justify-start mb-3 sm:mb-0">
-            <NuxtLink to="/adsy-news" class="flex-shrink-0">
-              <NuxtImg
-                v-if="logo[0]?.image"
-                :src="logo[0].image"
-                alt="Adsy News Logo"
-                width="150"
-                height="50"
-                class="h-7 sm:h-9 w-auto object-contain"
-              />
-            </NuxtLink>
-          </div>
+        <!-- Main Navigation - REVISED LAYOUT -->
+        <div class="flex items-center justify-between px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8">
+          <!-- Logo - Now in the same row -->
+          <NuxtLink to="/adsy-news" class="flex-shrink-0 mr-3">
+            <NuxtImg
+              v-if="logo[0]?.image"
+              :src="logo[0].image"
+              alt="Adsy News Logo"
+              width="120"
+              height="40"
+              class="h-6 sm:h-8 w-auto object-contain"
+            />
+          </NuxtLink>
 
-          <!-- Desktop Nav Categories -->
+          <!-- Desktop Nav Categories - Middle section -->
           <nav
-            class="hidden md:flex md:flex-1 md:justify-center space-x-6 lg:space-x-8"
+            class="hidden md:flex flex-1 justify-center space-x-4 lg:space-x-8"
             v-if="categories?.length > 0"
           >
             <NuxtLink
               v-for="category in categories.slice(0, 4)"
               :key="category.id"
               :class="[
-                'text-base font-medium hover:text-primary transition-colors duration-200 py-1',
+                'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-800',
@@ -41,11 +37,12 @@
             <div class="relative" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-base font-medium text-gray-800 hover:text-primary transition-colors duration-200 py-1"
+                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200 py-1"
               >
                 More
                 <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
               </button>
+              <!-- More menu dropdown - unchanged -->
               <div
                 v-if="moreMenuOpen"
                 class="absolute top-full right-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
@@ -68,9 +65,9 @@
             </div>
           </nav>
 
-          <!-- Right side actions - MODIFIED FOR MOBILE -->
-          <div class="flex items-center justify-end space-x-1.5 sm:space-x-3 mt-0 sm:mt-0 w-full sm:w-auto">
-            <!-- Search icon - VISIBLE ON ALL DEVICES -->
+          <!-- Right side actions - search and buttons -->
+          <div class="flex items-center space-x-1.5 sm:space-x-3">
+            <!-- Search icon -->
             <button
               @click="toggleSearch"
               class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
@@ -79,7 +76,7 @@
               <SearchIcon class="h-5 w-5" />
             </button>
             
-            <!-- Navigation Buttons - SHOWING TEXT ON ALL DEVICES -->
+            <!-- Navigation Buttons -->
             <NuxtLink
               to="/"
               class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all"
