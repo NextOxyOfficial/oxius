@@ -50,7 +50,7 @@
             <!-- Profile Picture and Mobile Stats -->
             <div class="flex flex-col items-center sm:items-start">
               <div class="relative">
-                <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-2 border-white shadow-md bg-white overflow-hidden">
+                <div class="size-32 sm:size-36 rounded-full border-2 border-white shadow-md bg-white overflow-hidden">
                   <img
                     :src="user?.image || '/static/frontend/images/placeholder.jpg'"
                     :alt="user?.name"
@@ -63,16 +63,16 @@
               <!-- User Stats for Mobile -->
               <div class="flex w-full justify-center sm:hidden mt-3 space-x-4">
                 <div class="text-center">
-                  <div class="text-sm font-semibold">{{ user?.post_count || 0 }}</div>
-                  <div class="text-xs text-gray-500">Posts</div>
+                  <div class="text-md font-semibold">{{ user?.post_count || 0 }}</div>
+                  <div class="text-sm text-gray-500">Posts</div>
                 </div>
                 <div class="text-center">
-                  <div class="text-sm font-semibold">{{ user?.followers_count || 0 }}</div>
-                  <div class="text-xs text-gray-500">Followers</div>
+                  <div class="text-md font-semibold">{{ user?.followers_count || 0 }}</div>
+                  <div class="text-sm text-gray-500">Followers</div>
                 </div>
                 <div class="text-center">
-                  <div class="text-sm font-semibold">{{ user?.following_count || 0 }}</div>
-                  <div class="text-xs text-gray-500">Following</div>
+                  <div class="text-md font-semibold">{{ user?.following_count || 0 }}</div>
+                  <div class="text-sm text-gray-500">Following</div>
                 </div>
               </div>
             </div>
