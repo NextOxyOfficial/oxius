@@ -6,14 +6,19 @@
         <div class="p-4 sm:p-5">
           <!-- Mobile Profile Header (Mobile Only) -->
           <div class="flex sm:hidden items-center justify-between mb-4">
-            <h1 class="text-xl font-bold flex items-center gap-1.5">
-              {{ user?.name }}
-              <UIcon
-                v-if="user?.kyc"
-                name="i-mdi-check-decagram"
-                class="w-4 h-4 text-blue-600"
-              />
-            </h1>
+            <div>
+              <h1 class="text-xl font-bold flex items-center gap-1.5">
+                {{ user?.name }}
+                <UIcon
+                  v-if="user?.kyc"
+                  name="i-mdi-check-decagram"
+                  class="w-4 h-4 text-blue-600"
+                />
+              </h1>
+              <!-- Move these elements under the name in mobile view -->
+              <p class="text-sm font-medium text-slate-600 mb-0.5">{{ user?.profession }}</p>
+              <p class="text-xs text-gray-500">@{{ user?.username }}</p>
+            </div>
             <div class="flex gap-2">
               <button
                 v-if="!isCurrentUserProfile"
@@ -135,12 +140,6 @@
                     <Mail class="h-3.5 w-3.5" />
                   </button>
                 </div>
-              </div>
-              
-              <!-- Mobile User Details -->
-              <div class="flex flex-col sm:hidden mb-2">
-                <p class="text-sm font-medium text-slate-600">{{ user?.profession }}</p>
-                <p class="text-xs text-gray-500">@{{ user?.slug }}</p>
               </div>
               
               <!-- User Stats (Desktop) -->
