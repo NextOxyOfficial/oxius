@@ -4,7 +4,7 @@
       <div class="max-w-5xl mx-auto px-3 sm:px-4">
         <div class="flex items-center justify-between h-16 sm:h-18">
           <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
-          <div class="flex items-center gap-3 sm:gap-5">
+          <div class="flex items-center sm:gap-5">
             <!-- Sidebar Toggle Button - MOBILE ONLY -->
             <button 
               @click="cart.toggleBurgerMenu()" 

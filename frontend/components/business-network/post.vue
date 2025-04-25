@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class="p-5">
+          <div class="px-4 py-5">
             <!-- Post Header -->
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center space-x-3 flex-1">
@@ -22,7 +22,7 @@
                   <img
                     :src="post?.author_details?.image"
                     :alt="post?.author_details?.name"
-                    class="size-12 rounded-full"
+                    class="size-14 rounded-full"
                   />
                 </div>
                 <div class="flex-1">
@@ -307,11 +307,11 @@
                 <img
                   :src="comment.author_details?.image"
                   :alt="comment.author_details?.name"
-                  class="size-9 rounded-full mt-0.5"
+                  class="size-10 rounded-full mt-0.5"
                 />
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg pt-1 px-2">
-                    <div class="flex items-center justify-between mb-0.5">
+                    <div class="flex items-center justify-between">
                       <NuxtLink
                         :to="`/business-network/profile/${comment.author}`"
                         class="text-sm font-medium hover:underline"
@@ -385,7 +385,7 @@
               <img
                 :src="user?.user?.image"
                 alt="Your avatar"
-                class="size-8 rounded-full"
+                class="size-10 rounded-full"
               />
               <!-- Update the comment input -->
               <div class="flex-1 relative">
