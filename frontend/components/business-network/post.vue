@@ -307,37 +307,64 @@
                 <img
                   :src="comment.author_details?.image"
                   :alt="comment.author_details?.name"
-                  class="size-10 rounded-full mt-0.5"
+                  class="size-9 rounded-full mt-0.5"
                 />
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg pt-1 px-2">
                     <div class="flex items-center justify-between">
-                      <NuxtLink
-                        :to="`/business-network/profile/${comment.author}`"
-                        class="text-sm font-medium hover:underline"
-                      >
-                        {{ comment.author_details?.name }}
-                      </NuxtLink>
-                      <!-- Comment Actions (Edit/Delete) -->
-                      <div
-                        v-if="comment.author === user?.user?.id"
-                        class="flex items-center space-x-1"
-                      >
-                        <button
-                          @click="editComment(post, comment)"
-                          class="p-0.5 text-gray-500 hover:text-blue-600"
+                      <div class="flex items-center gap-1.5">
+                        <NuxtLink
+                          :to="`/business-network/profile/${comment.author}`"
+                          class="text-sm font-medium hover:underline"
                         >
-                          <UIcon
-                            name="i-heroicons-pencil-square"
-                            class="size-3.5"
+                          {{ comment.author_details?.name }}
+                        </NuxtLink>
+                        <!-- Verified Badge -->
+                        <div
+                          v-if="comment.author_details?.kyc"
+                          class="text-blue-500 flex items-center"
+                        >
+                          <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                        </div>
+                      </div>
+                      
+                      <div class="flex items-center gap-1">
+                        <!-- Follow Icon (not button) -->
+                        <button 
+                          v-if="comment.author !== user?.user?.id"
+                          class="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                          @click.stop="toggleUserFollow(comment)"
+                        >
+                          <component
+                            :is="comment.isFollowing ? Check : UserPlus"
+                            :class="[
+                              'size-4',
+                              comment.isFollowing ? 'text-blue-600' : 'text-gray-500'
+                            ]"
                           />
                         </button>
-                        <button
-                          @click="deleteComment(post, comment)"
-                          class="p-0.5 text-gray-500 hover:text-red-600"
+                        
+                        <!-- Comment Actions (Edit/Delete) -->
+                        <div
+                          v-if="comment.author === user?.user?.id"
+                          class="flex items-center space-x-1"
                         >
-                          <UIcon name="i-heroicons-trash" class="size-3.5" />
-                        </button>
+                          <button
+                            @click="editComment(post, comment)"
+                            class="p-0.5 text-gray-500 hover:text-blue-600"
+                          >
+                            <UIcon
+                              name="i-heroicons-pencil-square"
+                              class="size-3.5"
+                            />
+                          </button>
+                          <button
+                            @click="deleteComment(post, comment)"
+                            class="p-0.5 text-gray-500 hover:text-red-600"
+                          >
+                            <UIcon name="i-heroicons-trash" class="size-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <!-- Comment Content -->
@@ -385,7 +412,7 @@
               <img
                 :src="user?.user?.image"
                 alt="Your avatar"
-                class="size-10 rounded-full"
+                class="size-9 rounded-full"
               />
               <!-- Update the comment input -->
               <div class="flex-1 relative">
@@ -566,25 +593,35 @@
                   <div class="flex-1">
                     <div class="bg-gray-50 rounded-lg p-2">
                       <div class="flex items-center justify-between">
-                        <NuxtLink
-                          :to="`/business-network/profile/${comment.user.id}`"
-                          class="text-sm font-medium hover:underline"
-                        >
-                          {{ comment.user.fullName }}
-                        </NuxtLink>
+                        <div class="flex items-center gap-1.5">
+                          <NuxtLink
+                            :to="`/business-network/profile/${comment.user.id}`"
+                            class="text-sm font-medium hover:underline"
+                          >
+                            {{ comment.user.fullName }}
+                          </NuxtLink>
+                          <!-- Verified Badge -->
+                          <div
+                            v-if="comment.user.kyc"
+                            class="text-blue-500 flex items-center"
+                          >
+                            <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                          </div>
+                        </div>
+                        
+                        <!-- Follow Icon -->
                         <button
                           v-if="comment.user.id !== 'current-user'"
-                          :class="[
-                            'text-sm h-5 rounded-full px-2 flex items-center',
-                            comment.user.isFollowing
-                              ? 'border border-gray-200 text-gray-800'
-                              : 'bg-blue-600 text-white',
-                          ]"
+                          class="p-1 rounded-full hover:bg-gray-100 transition-colors"
                           @click.stop="toggleUserFollow(comment.user)"
                         >
-                          {{
-                            comment.user.isFollowing ? "Following" : "Follow"
-                          }}
+                          <component
+                            :is="comment.user.isFollowing ? Check : UserPlus"
+                            :class="[
+                              'size-4',
+                              comment.user.isFollowing ? 'text-blue-600' : 'text-gray-500'
+                            ]"
+                          />
                         </button>
                       </div>
                       <p class="text-sm mt-1">{{ comment.text }}</p>
@@ -746,25 +783,37 @@
               <div class="flex-1">
                 <div class="bg-gray-50 rounded-lg p-2">
                   <div class="flex items-center justify-between mb-1">
-                    <NuxtLink
-                      :to="`/business-network/profile/${comment?.author}`"
-                      class="text-sm font-medium hover:underline"
-                    >
-                      {{ comment.author_details.name }}
-                    </NuxtLink>
+                    <div class="flex items-center gap-1.5">
+                      <NuxtLink
+                        :to="`/business-network/profile/${comment?.author}`"
+                        class="text-sm font-medium hover:underline"
+                      >
+                        {{ comment.author_details.name }}
+                      </NuxtLink>
+                      <!-- Verified Badge -->
+                      <div
+                        v-if="comment.author_details?.kyc"
+                        class="text-blue-500 flex items-center"
+                      >
+                        <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                      </div>
+                    </div>
+                    
                     <!-- Comment Actions for owner -->
-                    <div class="flex items-center space-x-1">
+                    <div class="flex items-center gap-1">
+                      <!-- Follow Icon -->
                       <button
                         v-if="comment.author !== user?.user?.id"
-                        :class="[
-                          'text-sm h-5 rounded-full px-2 flex items-center',
-                          comment.user?.isFollowing
-                            ? 'border border-gray-200 text-gray-800'
-                            : 'bg-blue-600 text-white',
-                        ]"
-                        @click.stop="toggleUserFollow(comment.user)"
+                        class="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                        @click.stop="toggleUserFollow(comment)"
                       >
-                        {{ comment.user?.isFollowing ? "Following" : "Follow" }}
+                        <component
+                          :is="comment.isFollowing ? Check : UserPlus"
+                          :class="[
+                            'size-4',
+                            comment.isFollowing ? 'text-blue-600' : 'text-gray-500'
+                          ]"
+                        />
                       </button>
 
                       <!-- Edit/Delete buttons -->
