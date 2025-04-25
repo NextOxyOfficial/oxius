@@ -58,7 +58,7 @@
             <!-- Profile Picture and Mobile Stats -->
             <div class="flex flex-col items-center sm:items-start">
               <div class="relative">
-                <div class="size-32 sm:size-36 rounded-full border-2 border-white shadow-md bg-white overflow-hidden">
+                <div class="size-36 rounded-full border-2 border-white shadow-md bg-white overflow-hidden">
                   <img
                     :src="user?.image || '/static/frontend/images/placeholder.jpg'"
                     :alt="user?.name"
