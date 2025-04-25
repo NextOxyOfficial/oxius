@@ -19,11 +19,13 @@
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center space-x-3 flex-1">
                 <div class="relative">
-                  <img
-                    :src="post?.author_details?.image"
-                    :alt="post?.author_details?.name"
-                    class="size-14 rounded-full"
-                  />
+                  <NuxtLink :to="`/business-network/profile/${post.author}`">
+                    <img
+                      :src="post?.author_details?.image"
+                      :alt="post?.author_details?.name"
+                      class="size-14 rounded-full cursor-pointer"
+                    />
+                  </NuxtLink>
                 </div>
                 <div class="flex-1">
                   <NuxtLink
@@ -304,86 +306,90 @@
                 :key="comment.id"
                 class="flex items-start space-x-2"
               >
-                <img
-                  :src="comment.author_details?.image"
-                  :alt="comment.author_details?.name"
-                  class="size-10 rounded-full mt-0.5"
-                />
-                <div class="flex-1">
-                  <div class="bg-gray-50 rounded-lg pt-1 px-2">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-1.5">
-                        <NuxtLink
-                          :to="`/business-network/profile/${comment.author}`"
-                          class="text-sm font-medium hover:underline"
-                        >
-                          {{ comment.author_details?.name }}
-                        </NuxtLink>
-                        <!-- Verified Badge -->
+                <div class="flex items-start space-x-2">
+                  <NuxtLink :to="`/business-network/profile/${comment?.author}`">
+                    <img
+                      :src="comment.author_details?.image"
+                      :alt="comment.author_details?.name"
+                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer"
+                    />
+                  </NuxtLink>
+                  <div class="flex-1">
+                    <div class="bg-gray-50 rounded-lg pt-1 px-2">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                          <NuxtLink
+                            :to="`/business-network/profile/${comment.author}`"
+                            class="text-sm font-medium hover:underline"
+                          >
+                            {{ comment.author_details?.name }}
+                          </NuxtLink>
+                          <!-- Verified Badge -->
+                          <div
+                            v-if="comment.author_details?.kyc"
+                            class="text-blue-500 flex items-center"
+                          >
+                            <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                          </div>
+                        </div>
+                        
+                        <!-- Only edit/delete buttons for comment owner -->
                         <div
-                          v-if="comment.author_details?.kyc"
-                          class="text-blue-500 flex items-center"
+                          v-if="comment.author === user?.user?.id"
+                          class="flex items-center space-x-1"
                         >
-                          <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                          <button
+                            @click="editComment(post, comment)"
+                            class="p-0.5 text-gray-500 hover:text-blue-600"
+                          >
+                            <UIcon
+                              name="i-heroicons-pencil-square"
+                              class="size-3.5"
+                            />
+                          </button>
+                          <button
+                            @click="deleteComment(post, comment)"
+                            class="p-0.5 text-gray-500 hover:text-red-600"
+                          >
+                            <UIcon name="i-heroicons-trash" class="size-3.5" />
+                          </button>
                         </div>
                       </div>
-                      
-                      <!-- Only edit/delete buttons for comment owner -->
-                      <div
-                        v-if="comment.author === user?.user?.id"
-                        class="flex items-center space-x-1"
-                      >
-                        <button
-                          @click="editComment(post, comment)"
-                          class="p-0.5 text-gray-500 hover:text-blue-600"
-                        >
-                          <UIcon
-                            name="i-heroicons-pencil-square"
-                            class="size-3.5"
-                          />
-                        </button>
-                        <button
-                          @click="deleteComment(post, comment)"
-                          class="p-0.5 text-gray-500 hover:text-red-600"
-                        >
-                          <UIcon name="i-heroicons-trash" class="size-3.5" />
-                        </button>
+                      <!-- Comment Content -->
+                      <div v-if="comment.isEditing">
+                        <textarea
+                          :id="`comment-edit-${comment.id}`"
+                          v-model="comment.editText"
+                          class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                          rows="2"
+                        ></textarea>
+                        <div class="flex justify-end space-x-2 mt-1">
+                          <button
+                            @click="cancelEditComment(comment)"
+                            class="text-xs text-gray-500 hover:underline"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            @click="saveEditComment(post, comment)"
+                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                            :disabled="
+                              !comment.editText?.trim() ||
+                              comment.editText === comment.content ||
+                              comment.isSaving
+                            "
+                          >
+                            <span v-if="comment.isSaving">Saving...</span>
+                            <span v-else>Save</span>
+                          </button>
+                        </div>
                       </div>
+                      <p v-else class="text-sm">{{ comment?.content }}</p>
                     </div>
-                    <!-- Comment Content -->
-                    <div v-if="comment.isEditing">
-                      <textarea
-                        :id="`comment-edit-${comment.id}`"
-                        v-model="comment.editText"
-                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                        rows="2"
-                      ></textarea>
-                      <div class="flex justify-end space-x-2 mt-1">
-                        <button
-                          @click="cancelEditComment(comment)"
-                          class="text-xs text-gray-500 hover:underline"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          @click="saveEditComment(post, comment)"
-                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
-                          :disabled="
-                            !comment.editText?.trim() ||
-                            comment.editText === comment.content ||
-                            comment.isSaving
-                          "
-                        >
-                          <span v-if="comment.isSaving">Saving...</span>
-                          <span v-else>Save</span>
-                        </button>
-                      </div>
-                    </div>
-                    <p v-else class="text-sm">{{ comment?.content }}</p>
+                    <span class="text-sm text-gray-500 mt-1 inline-block">
+                      {{ formatTimeAgo(comment?.created_at) }}
+                    </span>
                   </div>
-                  <span class="text-sm text-gray-500 mt-1 inline-block">
-                    {{ formatTimeAgo(comment?.created_at) }}
-                  </span>
                 </div>
               </div>
             </div>
@@ -568,36 +574,40 @@
                   :key="comment.id"
                   class="flex items-start space-x-2"
                 >
-                  <img
-                    :src="comment.user.avatar"
-                    alt="User"
-                    class="w-6 h-6 rounded-full"
-                  />
-                  <div class="flex-1">
-                    <div class="bg-gray-50 rounded-lg p-2">
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-1.5">
-                          <NuxtLink
-                            :to="`/business-network/profile/${comment.user.id}`"
-                            class="text-sm font-medium hover:underline"
-                          >
-                            {{ comment.user.fullName }}
-                          </NuxtLink>
-                          <!-- Verified Badge -->
-                          <div
-                            v-if="comment.user.kyc"
-                            class="text-blue-500 flex items-center"
-                          >
-                            <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                  <div class="flex items-start space-x-2">
+                    <NuxtLink :to="`/business-network/profile/${comment.user.id}`">
+                      <img
+                        :src="comment.user.avatar"
+                        alt="User"
+                        class="w-6 h-6 rounded-full cursor-pointer"
+                      />
+                    </NuxtLink>
+                    <div class="flex-1">
+                      <div class="bg-gray-50 rounded-lg p-2">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-1.5">
+                            <NuxtLink
+                              :to="`/business-network/profile/${comment.user.id}`"
+                              class="text-sm font-medium hover:underline"
+                            >
+                              {{ comment.user.fullName }}
+                            </NuxtLink>
+                            <!-- Verified Badge -->
+                            <div
+                              v-if="comment.user.kyc"
+                              class="text-blue-500 flex items-center"
+                            >
+                              <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                            </div>
                           </div>
                         </div>
+                        <p class="text-sm mt-1">{{ comment.text }}</p>
                       </div>
-                      <p class="text-sm mt-1">{{ comment.text }}</p>
-                    </div>
-                    <div class="flex items-center mt-1 space-x-3">
-                      <span class="text-sm text-gray-500">{{
-                        formatTimeAgo(comment.timestamp)
-                      }}</span>
+                      <div class="flex items-center mt-1 space-x-3">
+                        <span class="text-sm text-gray-500">{{
+                          formatTimeAgo(comment.timestamp)
+                        }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -670,11 +680,13 @@
               class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100"
             >
               <div class="flex items-center space-x-3">
-                <img
-                  :src="user.user_details.image"
-                  :alt="user.user_details.name"
-                  class="w-10 h-10 rounded-full"
-                />
+                <NuxtLink :to="`/business-network/profile/${user.user}`">
+                  <img
+                    :src="user.user_details.image"
+                    :alt="user.user_details.name"
+                    class="w-10 h-10 rounded-full cursor-pointer"
+                  />
+                </NuxtLink>
                 <div>
                   <NuxtLink
                     :to="`/business-network/profile/${user.user}`"
@@ -743,87 +755,91 @@
               :key="comment.id"
               class="flex items-start space-x-2"
             >
-              <img
-                :src="comment.author_details?.image"
-                :alt="comment.author_details?.name"
-                class="w-8 h-8 rounded-full mt-0.5"
-              />
-              <div class="flex-1">
-                <div class="bg-gray-50 rounded-lg p-2">
-                  <div class="flex items-center justify-between mb-1">
-                    <div class="flex items-center gap-1.5">
-                      <NuxtLink
-                        :to="`/business-network/profile/${comment?.author}`"
-                        class="text-sm font-medium hover:underline"
-                      >
-                        {{ comment.author_details.name }}
-                      </NuxtLink>
-                      <!-- Verified Badge -->
+              <div class="flex items-start space-x-2">
+                <NuxtLink :to="`/business-network/profile/${comment?.author}`">
+                  <img
+                    :src="comment.author_details?.image"
+                    :alt="comment.author_details?.name"
+                    class="w-8 h-8 rounded-full mt-0.5 cursor-pointer"
+                  />
+                </NuxtLink>
+                <div class="flex-1">
+                  <div class="bg-gray-50 rounded-lg p-2">
+                    <div class="flex items-center justify-between mb-1">
+                      <div class="flex items-center gap-1.5">
+                        <NuxtLink
+                          :to="`/business-network/profile/${comment?.author}`"
+                          class="text-sm font-medium hover:underline"
+                        >
+                          {{ comment.author_details.name }}
+                        </NuxtLink>
+                        <!-- Verified Badge -->
+                        <div
+                          v-if="comment.author_details?.kyc"
+                          class="text-blue-500 flex items-center"
+                        >
+                          <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                        </div>
+                      </div>
+                      
+                      <!-- Only edit/delete buttons for comment owner -->
                       <div
-                        v-if="comment.author_details?.kyc"
-                        class="text-blue-500 flex items-center"
+                        v-if="comment.author === user?.user?.id"
+                        class="flex items-center space-x-1"
                       >
-                        <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                        <button
+                          @click="editComment(activeCommentsPost, comment)"
+                          class="p-0.5 text-gray-500 hover:text-blue-600"
+                        >
+                          <UIcon
+                            name="i-heroicons-pencil-square"
+                            class="size-4"
+                          />
+                        </button>
+                        <button
+                          @click="deleteComment(activeCommentsPost, comment)"
+                          class="p-0.5 text-gray-500 hover:text-red-600"
+                        >
+                          <UIcon name="i-heroicons-trash" class="size-4" />
+                        </button>
                       </div>
                     </div>
-                    
-                    <!-- Only edit/delete buttons for comment owner -->
-                    <div
-                      v-if="comment.author === user?.user?.id"
-                      class="flex items-center space-x-1"
-                    >
-                      <button
-                        @click="editComment(activeCommentsPost, comment)"
-                        class="p-0.5 text-gray-500 hover:text-blue-600"
-                      >
-                        <UIcon
-                          name="i-heroicons-pencil-square"
-                          class="size-4"
-                        />
-                      </button>
-                      <button
-                        @click="deleteComment(activeCommentsPost, comment)"
-                        class="p-0.5 text-gray-500 hover:text-red-600"
-                      >
-                        <UIcon name="i-heroicons-trash" class="size-4" />
-                      </button>
+                    <!-- Editable comment content -->
+                    <div v-if="comment.isEditing">
+                      <textarea
+                        :id="`comment-edit-${comment.id}`"
+                        v-model="comment.editText"
+                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                        rows="2"
+                      ></textarea>
+                      <div class="flex justify-end space-x-2 mt-1">
+                        <button
+                          @click="cancelEditComment(comment)"
+                          class="text-xs text-gray-500 hover:underline"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          @click="saveEditComment(activeCommentsPost, comment)"
+                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                          :disabled="
+                            !comment.editText?.trim() ||
+                            comment.editText === comment.content ||
+                            comment.isSaving
+                          "
+                        >
+                          <span v-if="comment.isSaving">Saving...</span>
+                          <span v-else>Save</span>
+                        </button>
+                      </div>
                     </div>
+                    <p v-else class="text-sm">{{ comment.content }}</p>
                   </div>
-                  <!-- Editable comment content -->
-                  <div v-if="comment.isEditing">
-                    <textarea
-                      :id="`comment-edit-${comment.id}`"
-                      v-model="comment.editText"
-                      class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                      rows="2"
-                    ></textarea>
-                    <div class="flex justify-end space-x-2 mt-1">
-                      <button
-                        @click="cancelEditComment(comment)"
-                        class="text-xs text-gray-500 hover:underline"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        @click="saveEditComment(activeCommentsPost, comment)"
-                        class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
-                        :disabled="
-                          !comment.editText?.trim() ||
-                          comment.editText === comment.content ||
-                          comment.isSaving
-                        "
-                      >
-                        <span v-if="comment.isSaving">Saving...</span>
-                        <span v-else>Save</span>
-                      </button>
-                    </div>
+                  <div class="flex items-center mt-1 space-x-3">
+                    <span class="text-sm text-gray-500">{{
+                      formatTimeAgo(comment.created_at)
+                    }}</span>
                   </div>
-                  <p v-else class="text-sm">{{ comment.content }}</p>
-                </div>
-                <div class="flex items-center mt-1 space-x-3">
-                  <span class="text-sm text-gray-500">{{
-                    formatTimeAgo(comment.created_at)
-                  }}</span>
                 </div>
               </div>
             </div>
