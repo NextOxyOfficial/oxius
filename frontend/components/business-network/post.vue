@@ -307,7 +307,7 @@
                 <img
                   :src="comment.author_details?.image"
                   :alt="comment.author_details?.name"
-                  class="size-9 rounded-full mt-0.5"
+                  class="size-10 rounded-full mt-0.5"
                 />
                 <div class="flex-1">
                   <div class="bg-gray-50 rounded-lg pt-1 px-2">
@@ -328,43 +328,26 @@
                         </div>
                       </div>
                       
-                      <div class="flex items-center gap-1">
-                        <!-- Follow Icon (not button) -->
-                        <button 
-                          v-if="comment.author !== user?.user?.id"
-                          class="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                          @click.stop="toggleUserFollow(comment)"
+                      <!-- Only edit/delete buttons for comment owner -->
+                      <div
+                        v-if="comment.author === user?.user?.id"
+                        class="flex items-center space-x-1"
+                      >
+                        <button
+                          @click="editComment(post, comment)"
+                          class="p-0.5 text-gray-500 hover:text-blue-600"
                         >
-                          <component
-                            :is="comment.isFollowing ? Check : UserPlus"
-                            :class="[
-                              'size-4',
-                              comment.isFollowing ? 'text-blue-600' : 'text-gray-500'
-                            ]"
+                          <UIcon
+                            name="i-heroicons-pencil-square"
+                            class="size-3.5"
                           />
                         </button>
-                        
-                        <!-- Comment Actions (Edit/Delete) -->
-                        <div
-                          v-if="comment.author === user?.user?.id"
-                          class="flex items-center space-x-1"
+                        <button
+                          @click="deleteComment(post, comment)"
+                          class="p-0.5 text-gray-500 hover:text-red-600"
                         >
-                          <button
-                            @click="editComment(post, comment)"
-                            class="p-0.5 text-gray-500 hover:text-blue-600"
-                          >
-                            <UIcon
-                              name="i-heroicons-pencil-square"
-                              class="size-3.5"
-                            />
-                          </button>
-                          <button
-                            @click="deleteComment(post, comment)"
-                            class="p-0.5 text-gray-500 hover:text-red-600"
-                          >
-                            <UIcon name="i-heroicons-trash" class="size-3.5" />
-                          </button>
-                        </div>
+                          <UIcon name="i-heroicons-trash" class="size-3.5" />
+                        </button>
                       </div>
                     </div>
                     <!-- Comment Content -->
@@ -608,21 +591,6 @@
                             <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
                           </div>
                         </div>
-                        
-                        <!-- Follow Icon -->
-                        <button
-                          v-if="comment.user.id !== 'current-user'"
-                          class="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                          @click.stop="toggleUserFollow(comment.user)"
-                        >
-                          <component
-                            :is="comment.user.isFollowing ? Check : UserPlus"
-                            :class="[
-                              'size-4',
-                              comment.user.isFollowing ? 'text-blue-600' : 'text-gray-500'
-                            ]"
-                          />
-                        </button>
                       </div>
                       <p class="text-sm mt-1">{{ comment.text }}</p>
                     </div>
@@ -799,44 +767,26 @@
                       </div>
                     </div>
                     
-                    <!-- Comment Actions for owner -->
-                    <div class="flex items-center gap-1">
-                      <!-- Follow Icon -->
+                    <!-- Only edit/delete buttons for comment owner -->
+                    <div
+                      v-if="comment.author === user?.user?.id"
+                      class="flex items-center space-x-1"
+                    >
                       <button
-                        v-if="comment.author !== user?.user?.id"
-                        class="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                        @click.stop="toggleUserFollow(comment)"
+                        @click="editComment(activeCommentsPost, comment)"
+                        class="p-0.5 text-gray-500 hover:text-blue-600"
                       >
-                        <component
-                          :is="comment.isFollowing ? Check : UserPlus"
-                          :class="[
-                            'size-4',
-                            comment.isFollowing ? 'text-blue-600' : 'text-gray-500'
-                          ]"
+                        <UIcon
+                          name="i-heroicons-pencil-square"
+                          class="size-4"
                         />
                       </button>
-
-                      <!-- Edit/Delete buttons -->
-                      <div
-                        v-if="comment.author === user?.user?.id"
-                        class="flex items-center"
+                      <button
+                        @click="deleteComment(activeCommentsPost, comment)"
+                        class="p-0.5 text-gray-500 hover:text-red-600"
                       >
-                        <button
-                          @click="editComment(activeCommentsPost, comment)"
-                          class="p-0.5 text-gray-500 hover:text-blue-600"
-                        >
-                          <UIcon
-                            name="i-heroicons-pencil-square"
-                            class="size-4"
-                          />
-                        </button>
-                        <button
-                          @click="deleteComment(activeCommentsPost, comment)"
-                          class="p-0.5 text-gray-500 hover:text-red-600"
-                        >
-                          <UIcon name="i-heroicons-trash" class="size-4" />
-                        </button>
-                      </div>
+                        <UIcon name="i-heroicons-trash" class="size-4" />
+                      </button>
                     </div>
                   </div>
                   <!-- Editable comment content -->
