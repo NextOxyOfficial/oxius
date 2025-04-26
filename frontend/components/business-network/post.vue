@@ -12,7 +12,7 @@
       >
         <!-- Post Card -->
         <div
-          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
+          class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300"
         >
           <div class="px-4 py-5">
             <!-- Post Header -->
@@ -317,7 +317,7 @@
                   <div class="flex-1">
                     <div class="bg-gray-50 rounded-lg pt-1 px-2">
                       <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1">
                           <NuxtLink
                             :to="`/business-network/profile/${comment.author}`"
                             class="text-sm font-medium hover:underline"
@@ -336,7 +336,7 @@
                         <!-- Only edit/delete buttons for comment owner -->
                         <div
                           v-if="comment.author === user?.user?.id"
-                          class="flex items-center space-x-1"
+                          class="flex items-center pl-3"
                         >
                           <button
                             @click="editComment(post, comment)"
@@ -349,9 +349,11 @@
                           </button>
                           <button
                             @click="deleteComment(post, comment)"
-                            class="p-0.5 text-gray-500 hover:text-red-600"
+                            class="p-0.5 text-gray-500 hover:text-red-600 flex items-center"
+                            :disabled="comment.isDeleting"
                           >
-                            <UIcon name="i-heroicons-trash" class="size-3.5" />
+                            <Loader2 v-if="comment.isDeleting" class="h-4 w-4 animate-spin text-red-500" />
+                            <UIcon v-else name="i-heroicons-trash" class="size-3.5" />
                           </button>
                         </div>
                       </div>
@@ -372,13 +374,14 @@
                           </button>
                           <button
                             @click="saveEditComment(post, comment)"
-                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                             :disabled="
                               !comment.editText?.trim() ||
                               comment.editText === comment.content ||
                               comment.isSaving
                             "
                           >
+                            <Loader2 v-if="comment.isSaving" class="h-3 w-3 animate-spin" />
                             <span v-if="comment.isSaving">Saving...</span>
                             <span v-else>Save</span>
                           </button>
@@ -798,9 +801,11 @@
                         </button>
                         <button
                           @click="deleteComment(activeCommentsPost, comment)"
-                          class="p-0.5 text-gray-500 hover:text-red-600"
+                          class="p-0.5 text-gray-500 hover:text-red-600 flex items-center"
+                          :disabled="comment.isDeleting"
                         >
-                          <UIcon name="i-heroicons-trash" class="size-4" />
+                          <Loader2 v-if="comment.isDeleting" class="h-4 w-4 animate-spin text-red-500" />
+                          <UIcon v-else name="i-heroicons-trash" class="size-4" />
                         </button>
                       </div>
                     </div>
@@ -821,13 +826,14 @@
                         </button>
                         <button
                           @click="saveEditComment(activeCommentsPost, comment)"
-                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                           :disabled="
                             !comment.editText?.trim() ||
                             comment.editText === comment.content ||
                             comment.isSaving
                           "
                         >
+                          <Loader2 v-if="comment.isSaving" class="h-3 w-3 animate-spin" />
                           <span v-if="comment.isSaving">Saving...</span>
                           <span v-else>Save</span>
                         </button>
@@ -893,10 +899,12 @@
                 </div>
                 <button
                   v-if="activeCommentsPost.commentText"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
                   @click.stop="addComment(activeCommentsPost)"
+                  :disabled="activeCommentsPost.isCommentLoading"
                 >
-                  <Send class="h-3 w-3" />
+                  <Loader2 v-if="activeCommentsPost.isCommentLoading" class="h-3 w-3 animate-spin" />
+                  <Send v-else class="h-3 w-3" />
                 </button>
               </div>
             </div>
@@ -1377,6 +1385,9 @@ const addComment = async (currentPost) => {
 
   if (!currentPost?.commentText?.trim()) return;
 
+  // Set loading state
+  currentPost.isCommentLoading = true;
+  
   const commentText = currentPost.commentText.trim();
 
   // Create a temporary comment to show immediately
@@ -1437,12 +1448,30 @@ const addComment = async (currentPost) => {
         // Replace with actual comment data from API
         currentPost.post_comments[index] = response.data;
       }
+      
+      // Show success toast
+      useToast().add({
+        title: 'Success',
+        description: 'Comment posted successfully',
+        color: 'green',
+        icon: 'i-heroicons-check-circle',
+        timeout: 3000
+      });
     } else {
       // Remove temp comment if API failed
       currentPost.post_comments = currentPost.post_comments.filter(
         (comment) => comment.id !== tempComment.id
       );
       console.error("Failed to add comment:", response);
+      
+      // Show error toast
+      useToast().add({
+        title: 'Error',
+        description: 'Failed to post comment',
+        color: 'red',
+        icon: 'i-heroicons-x-circle',
+        timeout: 3000
+      });
     }
   } catch (error) {
     // Remove temp comment on error
@@ -1450,6 +1479,18 @@ const addComment = async (currentPost) => {
       (comment) => comment.id !== tempComment.id
     );
     console.error("Error adding comment:", error);
+    
+    // Show error toast
+    useToast().add({
+      title: 'Error',
+      description: 'Failed to post comment: ' + (error.message || 'Unknown error'),
+      color: 'red',
+      icon: 'i-heroicons-x-circle',
+      timeout: 5000
+    });
+  } finally {
+    // Reset loading state
+    currentPost.isCommentLoading = false;
   }
 };
 
@@ -1502,11 +1543,36 @@ const saveEditComment = async (currentPost, comment) => {
       // Revert on failure
       comment.content = originalContent;
       console.error("Failed to update comment");
+      // Show error toast
+      useToast().add({
+        title: 'Error',
+        description: 'Failed to update comment',
+        color: 'red',
+        icon: 'i-heroicons-x-circle',
+        timeout: 3000
+      });
+    } else {
+      // Show success toast
+      useToast().add({
+        title: 'Success',
+        description: 'Comment updated successfully',
+        color: 'green',
+        icon: 'i-heroicons-check-circle',
+        timeout: 3000
+      });
     }
   } catch (error) {
     // Revert on error
     comment.content = originalContent;
     console.error("Error updating comment:", error);
+    // Show error toast
+    useToast().add({
+      title: 'Error',
+      description: 'Failed to update comment: ' + (error.message || 'Unknown error'),
+      color: 'red',
+      icon: 'i-heroicons-x-circle',
+      timeout: 5000
+    });
   } finally {
     // Always reset the saving state
     comment.isSaving = false;
@@ -1531,6 +1597,9 @@ const confirmDeleteComment = async () => {
 
   const comment = commentToDelete.value;
   const post = postWithCommentToDelete.value;
+  
+  // Set loading state
+  comment.isDeleting = true;
 
   try {
     // Close modal first
@@ -1547,15 +1616,43 @@ const confirmDeleteComment = async () => {
         (c) => c.id !== comment.id
       );
       console.log("Comment deleted successfully");
+      
+      // Show success toast
+      useToast().add({
+        title: 'Success',
+        description: 'Comment deleted successfully',
+        color: 'green',
+        icon: 'i-heroicons-check-circle',
+        timeout: 3000
+      });
     } else {
       console.error("Failed to delete comment - API returned no response");
+      
+      // Show error toast
+      useToast().add({
+        title: 'Error',
+        description: 'Failed to delete comment',
+        color: 'red',
+        icon: 'i-heroicons-x-circle',
+        timeout: 3000
+      });
     }
   } catch (error) {
     console.error("Error deleting comment:", error);
-
-    // Show error notification (optional)
-    // You might want to add a toast notification system
-    // toast.error('Failed to delete comment. Please try again.');
+    
+    // Show error toast
+    useToast().add({
+      title: 'Error',
+      description: 'Failed to delete comment: ' + (error.message || 'Unknown error'),
+      color: 'red',
+      icon: 'i-heroicons-x-circle',
+      timeout: 5000
+    });
+  } finally {
+    // Reset loading state if the comment still exists
+    if (comment) {
+      comment.isDeleting = false;
+    }
   }
 };
 
