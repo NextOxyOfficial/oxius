@@ -30,7 +30,7 @@
                 <div class="flex-1">
                   <NuxtLink
                     :to="`/business-network/profile/${post.author}`"
-                    class="font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
+                    class="text-base font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
                   >
                     <p class="">
                       {{ post?.author_details?.name }}
@@ -42,7 +42,7 @@
                       <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
                       <span
                         v-if="post?.author_details?.is_pro"
-                        class="text-2xs px-1 py-0.5 font-medium"
+                        class="text-2xs px-1 pb-0.5 font-medium"
                       >
                         <div class="flex items-center gap-0.5">
                           <UIcon
@@ -57,11 +57,11 @@
                     </div>
                   </NuxtLink>
                   <p
-                    class="text-md font-semibold bg-white py-0.5 text-slate-500"
+                    class="text-md font-semibold bg-white pb-0.5 text-slate-500"
                   >
                     {{ post?.author_details?.profession }}
                   </p>
-                  <p class="text-md text-gray-500">
+                  <p class="text-sm text-gray-500">
                     {{ formatTimeAgo(post?.created_at) }}
                   </p>
                 </div>
@@ -155,7 +155,7 @@
               <span
                 v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
-                class="text-md bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                class="text-md bg-gray-100 text-gray-600 px-2 pb-0.5 rounded-full"
               >
                 #{{ tag.tag }}
               </span>
@@ -348,7 +348,7 @@
             <div
               class="flex items-center justify-between pt-2 border-t border-gray-100 mb-3"
             >
-              <div class="flex items-center space-x-4">
+              <div class="text-sm flex items-center space-x-4">
                 <div class="flex items-center space-x-1">
                   <!-- Update like button with loading state -->
                   <button
@@ -586,23 +586,21 @@
         <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
           <div class="relative">
-            <!-- Carousel Container for Mobile -->
-            <div class="carousel flex overflow-x-auto pb-4 snap-x snap-mandatory">
-              <div 
-                v-for="(product, productIndex) in shuffledProducts"
-                :key="productIndex"
-                class="flex-shrink-0 w-[80%] sm:w-[45%] px-1 snap-start"
-              >
+            <!-- Carousel Container for Mobile (2 products) -->
+            <div class="sm:hidden">
+              <div class="grid grid-cols-2 gap-2">
                 <ProductCard
+                  v-for="(product, productIndex) in shuffledProducts.slice(0, 2)"
+                  :key="productIndex"
                   :product="product"
                 />
               </div>
             </div>
 
-            <!-- Grid Layout for Desktop -->
-            <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
+            <!-- Grid Layout for Desktop (3 products) -->
+            <div class="hidden sm:grid sm:grid-cols-3 gap-4">
               <ProductCard
-                v-for="(product, productIndex) in shuffledProducts"
+                v-for="(product, productIndex) in shuffledProducts.slice(0, 3)"
                 :key="productIndex"
                 :product="product"
               />
