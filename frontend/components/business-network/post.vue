@@ -587,12 +587,12 @@
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
           <div class="relative">
             <!-- Carousel Container for Mobile -->
-            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
+            <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
               <ProductCard
-                v-for="(product, productIndex) in shuffledProducts"
+                v-for="(product, productIndex) in shuffledProducts.slice(0, 2)"
                 :key="productIndex"
                 :product="product"
-                class="flex-shrink-0 w-1/2"
+                class="flex-shrink-0 w-[49%]"
               />
             </div>
 
@@ -2200,24 +2200,23 @@ onMounted(() => {
 
 .sponsored-products-section {
   background-color: #f9f9f9;
-  padding: 20px;
+  padding: 15px;
   margin: 0 auto; /* Center the section */
   border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.08);
   margin-top: 20px;
-  max-width: 1200px; /* Fit to screen with a max width */
+  width: 100%; /* Use 100% width instead of max-width */
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
-.grid {
-  display: grid;
-}
-
-.grid-cols-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.gap-4 {
-  gap: 1rem;
+/* Hide scrollbar for mobile screens and ensure no overflow */
+.carousel {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-bottom: 5px; /* Add padding to avoid cut-off shadows */
 }
 
 /* Center images in the media gallery */
