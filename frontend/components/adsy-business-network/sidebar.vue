@@ -119,10 +119,15 @@
               @click="isCreateWorkspaceModalOpen = true"
               class="flex items-center px-4 py-3 rounded-lg transition-colors group bg-blue-50 hover:bg-blue-100 text-blue-600"
             >
-              <Plus class="h-5 w-5 mr-3 text-blue-500 group-hover:text-blue-600" />
+              <Plus
+                class="h-5 w-5 mr-3 text-blue-500 group-hover:text-blue-600"
+              />
               <span class="text-sm font-medium">Create Workspace</span>
             </button>
-            <div v-if="workspaces.length === 0" class="px-4 py-3 text-gray-500 text-center">
+            <div
+              v-if="workspaces?.length === 0"
+              class="px-4 py-3 text-gray-500 text-center"
+            >
               No workspaces available.
             </div>
             <!-- <NuxtLink
@@ -384,7 +389,9 @@
                 v-if="displayProduct"
                 :href="`/product-details/${displayProduct.slug}`"
                 class="block w-full h-full"
-                @click="handleNavigation(`/product-details/${displayProduct.slug}`)"
+                @click="
+                  handleNavigation(`/product-details/${displayProduct.slug}`)
+                "
               >
                 <div class="aspect-video w-full bg-gray-100 relative">
                   <img
@@ -529,7 +536,6 @@ import {
   RefreshCw,
   Plus,
 } from "lucide-vue-next";
-
 
 // State
 const isOpen = ref(false);
@@ -824,28 +830,28 @@ async function fetchProducts() {
 // Add a function to display a new random product
 const changeRandomProduct = () => {
   if (allProducts.value.length === 0) return;
-  
+
   const currentIndex = allProducts.value.findIndex(
-    p => p.id === displayProduct.value?.id
+    (p) => p.id === displayProduct.value?.id
   );
-  
+
   let newIndex;
   do {
     newIndex = Math.floor(Math.random() * allProducts.value.length);
   } while (newIndex === currentIndex && allProducts.value.length > 1);
-  
+
   displayProduct.value = allProducts.value[newIndex];
 };
 
 // Calculate discount percent
 const calculateDiscount = (product) => {
   if (!product.sale_price || !product.regular_price) return 0;
-  
+
   const regular = parseFloat(product.regular_price);
   const sale = parseFloat(product.sale_price);
-  
+
   if (regular <= 0 || sale <= 0) return 0;
-  
+
   return Math.round(((regular - sale) / regular) * 100);
 };
 

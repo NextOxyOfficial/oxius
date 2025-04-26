@@ -182,15 +182,17 @@
             <!-- Media Gallery with Professional Layout -->
             <!-- Increased height for 2-column layouts -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
-              <div 
+              <div
                 class="relative overflow-hidden rounded-lg"
                 :class="{
                   'grid gap-1': post.post_media.length > 1,
-      'grid-cols-2': post.post_media.length === 2 || post.post_media.length >= 4,
-      'grid-rows-2': post.post_media.length >= 4,
-      'h-[320px] sm:h-[400px]': post.post_media.length === 1,
-      'h-[280px] sm:h-[380px]': post.post_media.length >= 2 && post.post_media.length <= 3,
-      'h-[400px] sm:h-[480px]': post.post_media.length >= 4
+                  'grid-cols-2':
+                    post.post_media.length === 2 || post.post_media.length >= 4,
+                  'grid-rows-2': post.post_media.length >= 4,
+                  'h-[320px] sm:h-[400px]': post.post_media.length === 1,
+                  'h-[280px] sm:h-[380px]':
+                    post.post_media.length >= 2 && post.post_media.length <= 3,
+                  'h-[400px] sm:h-[480px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
@@ -208,13 +210,17 @@
                       v-if="post.post_media[0].type === 'video'"
                       class="absolute inset-0 flex items-center justify-center"
                     >
-                      <div class="h-12 w-12 rounded-full bg-black/50 flex items-center justify-center">
-                        <div class="h-0 w-0 border-y-8 border-y-transparent border-l-12 border-l-white ml-1"></div>
+                      <div
+                        class="h-12 w-12 rounded-full bg-black/50 flex items-center justify-center"
+                      >
+                        <div
+                          class="h-0 w-0 border-y-8 border-y-transparent border-l-12 border-l-white ml-1"
+                        ></div>
                       </div>
                     </div>
                   </div>
                 </template>
-                
+
                 <!-- Two Images Layout -->
                 <template v-else-if="post.post_media.length === 2">
                   <div
@@ -232,13 +238,17 @@
                       v-if="media.type === 'video'"
                       class="absolute inset-0 flex items-center justify-center"
                     >
-                      <div class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center">
-                        <div class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"></div>
+                      <div
+                        class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center"
+                      >
+                        <div
+                          class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"
+                        ></div>
                       </div>
                     </div>
                   </div>
                 </template>
-                
+
                 <!-- Three Images Layout -->
                 <template v-else-if="post.post_media.length === 3">
                   <!-- First image - large, full width -->
@@ -255,17 +265,18 @@
                       v-if="post.post_media[0].type === 'video'"
                       class="absolute inset-0 flex items-center justify-center"
                     >
-                      <div class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center">
-                        <div class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"></div>
+                      <div
+                        class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center"
+                      >
+                        <div
+                          class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"
+                        ></div>
                       </div>
                     </div>
                   </div>
-                  
+
                   <!-- Second and third images - side by side -->
-                  <div
-                    class="grid grid-cols-2 gap-1"
-                    style="height: 200px;"
-                  >
+                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
@@ -281,14 +292,18 @@
                         v-if="media.type === 'video'"
                         class="absolute inset-0 flex items-center justify-center"
                       >
-                        <div class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center">
-                          <div class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"></div>
+                        <div
+                          class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center"
+                        >
+                          <div
+                            class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"
+                          ></div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </template>
-                
+
                 <!-- Four or more images - Grid Layout -->
                 <template v-else>
                   <div
@@ -306,17 +321,23 @@
                       v-if="media.type === 'video'"
                       class="absolute inset-0 flex items-center justify-center"
                     >
-                      <div class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center">
-                        <div class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"></div>
+                      <div
+                        class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center"
+                      >
+                        <div
+                          class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"
+                        ></div>
                       </div>
                     </div>
-                    
+
                     <!-- Show +X more overlay on the 4th image if there are more than 4 -->
                     <div
                       v-if="mediaIndex === 3 && post.post_media.length > 4"
                       class="absolute inset-0 bg-black/60 flex items-center justify-center"
                     >
-                      <span class="text-white font-medium text-lg">+{{ post.post_media.length - 4 }}</span>
+                      <span class="text-white font-medium text-lg"
+                        >+{{ post.post_media.length - 4 }}</span
+                      >
                     </div>
                   </div>
                 </template>
@@ -411,7 +432,9 @@
                 class="flex items-start space-x-2"
               >
                 <div class="flex items-start space-x-2">
-                  <NuxtLink :to="`/business-network/profile/${comment?.author}`">
+                  <NuxtLink
+                    :to="`/business-network/profile/${comment?.author}`"
+                  >
                     <img
                       :src="comment.author_details?.image"
                       :alt="comment.author_details?.name"
@@ -433,10 +456,13 @@
                             v-if="comment.author_details?.kyc"
                             class="text-blue-500 flex items-center"
                           >
-                            <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                            <UIcon
+                              name="i-mdi-check-decagram"
+                              class="w-3 h-3"
+                            />
                           </div>
                         </div>
-                        
+
                         <!-- Only edit/delete buttons for comment owner -->
                         <div
                           v-if="comment.author === user?.user?.id"
@@ -456,8 +482,15 @@
                             class="p-0.5 text-gray-500 hover:text-red-600 flex items-center"
                             :disabled="comment.isDeleting"
                           >
-                            <Loader2 v-if="comment.isDeleting" class="h-4 w-4 animate-spin text-red-500" />
-                            <UIcon v-else name="i-heroicons-trash" class="size-3.5" />
+                            <Loader2
+                              v-if="comment.isDeleting"
+                              class="h-4 w-4 animate-spin text-red-500"
+                            />
+                            <UIcon
+                              v-else
+                              name="i-heroicons-trash"
+                              class="size-3.5"
+                            />
                           </button>
                         </div>
                       </div>
@@ -485,7 +518,10 @@
                               comment.isSaving
                             "
                           >
-                            <Loader2 v-if="comment.isSaving" class="h-3 w-3 animate-spin" />
+                            <Loader2
+                              v-if="comment.isSaving"
+                              class="h-3 w-3 animate-spin"
+                            />
                             <span v-if="comment.isSaving">Saving...</span>
                             <span v-else>Save</span>
                           </button>
@@ -547,29 +583,17 @@
         </div>
 
         <!-- Sponsored Products Section -->
-        <div v-if="shouldShowSponsoredProducts(index)" class="mt-6">
-          <h3 class="text-lg font-semibold mb-4">Sponsored Products</h3>
-          <div
-            :class="{
-              'grid grid-cols-2 gap-4': isMobile,
-              'grid grid-cols-3 gap-6': !isMobile,
-            }"
-          >
-            <div
-              v-for="product in sponsoredProducts"
-              :key="product.id"
-              class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200"
-            >
-              <img
-                :src="product.image"
-                :alt="product.name"
-                class="w-full h-40 object-cover"
-              />
-              <div class="p-4">
-                <h4 class="text-sm font-medium text-gray-800">{{ product.name }}</h4>
-                <p class="text-sm text-gray-600">{{ product.price }}</p>
-              </div>
-            </div>
+        <div
+          v-if="(index + 1) % randomInterval === 0"
+          class="sponsored-products-section"
+        >
+          <h2 class="font-semibold text-gray-700 mb-4">Sponsored Products</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <ProductCard
+              v-for="(product, productIndex) in shuffledProducts"
+              :key="productIndex"
+              :product="product"
+            />
           </div>
         </div>
       </div>
@@ -709,7 +733,9 @@
                   class="flex items-start space-x-2"
                 >
                   <div class="flex items-start space-x-2">
-                    <NuxtLink :to="`/business-network/profile/${comment.user.id}`">
+                    <NuxtLink
+                      :to="`/business-network/profile/${comment.user.id}`"
+                    >
                       <img
                         :src="comment.user.avatar"
                         alt="User"
@@ -731,7 +757,10 @@
                               v-if="comment.user.kyc"
                               class="text-blue-500 flex items-center"
                             >
-                              <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                              <UIcon
+                                name="i-mdi-check-decagram"
+                                class="w-3 h-3"
+                              />
                             </div>
                           </div>
                         </div>
@@ -915,7 +944,7 @@
                           <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
                         </div>
                       </div>
-                      
+
                       <!-- Only edit/delete buttons for comment owner -->
                       <div
                         v-if="comment.author === user?.user?.id"
@@ -935,8 +964,15 @@
                           class="p-0.5 text-gray-500 hover:text-red-600 flex items-center"
                           :disabled="comment.isDeleting"
                         >
-                          <Loader2 v-if="comment.isDeleting" class="h-4 w-4 animate-spin text-red-500" />
-                          <UIcon v-else name="i-heroicons-trash" class="size-4" />
+                          <Loader2
+                            v-if="comment.isDeleting"
+                            class="h-4 w-4 animate-spin text-red-500"
+                          />
+                          <UIcon
+                            v-else
+                            name="i-heroicons-trash"
+                            class="size-4"
+                          />
                         </button>
                       </div>
                     </div>
@@ -964,7 +1000,10 @@
                             comment.isSaving
                           "
                         >
-                          <Loader2 v-if="comment.isSaving" class="h-3 w-3 animate-spin" />
+                          <Loader2
+                            v-if="comment.isSaving"
+                            class="h-3 w-3 animate-spin"
+                          />
                           <span v-if="comment.isSaving">Saving...</span>
                           <span v-else>Save</span>
                         </button>
@@ -1034,7 +1073,10 @@
                   @click.stop="addComment(activeCommentsPost)"
                   :disabled="activeCommentsPost.isCommentLoading"
                 >
-                  <Loader2 v-if="activeCommentsPost.isCommentLoading" class="h-3 w-3 animate-spin" />
+                  <Loader2
+                    v-if="activeCommentsPost.isCommentLoading"
+                    class="h-3 w-3 animate-spin"
+                  />
                   <Send v-else class="h-3 w-3" />
                 </button>
               </div>
@@ -1189,6 +1231,7 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
+import ProductCard from "@/components/common/product-card.vue";
 const { user } = useAuth();
 const { post, del, put, get } = useApi();
 
@@ -1226,25 +1269,27 @@ const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
 
 // Sponsored Products
-const SPONSORED_PRODUCT_INTERVAL = 6;
-const isMobile = ref(window.innerWidth <= 768);
-
-// Update isMobile on window resize
-window.addEventListener('resize', () => {
-  isMobile.value = window.innerWidth <= 768;
-});
-
-// Sponsored products data (example)
-const sponsoredProducts = [
-  { id: 1, name: 'Product 1', image: '/path/to/image1.jpg', price: '৳500' },
-  { id: 2, name: 'Product 2', image: '/path/to/image2.jpg', price: '৳700' },
-  { id: 3, name: 'Product 3', image: '/path/to/image3.jpg', price: '৳900' },
+const products = [
+  { id: 1, name: "Product 1", sale_price: 100, regular_price: 150 },
+  { id: 2, name: "Product 2", sale_price: 200, regular_price: 250 },
+  { id: 3, name: "Product 3", sale_price: 300, regular_price: 350 },
+  { id: 4, name: "Product 4", sale_price: 400, regular_price: 450 },
+  { id: 5, name: "Product 5", sale_price: 500, regular_price: 550 },
 ];
 
-// Function to determine if a sponsored product section should be shown
-const shouldShowSponsoredProducts = (index) => {
-  return (index + 1) % SPONSORED_PRODUCT_INTERVAL === 0;
-};
+const shuffledProducts = ref([]);
+const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
+
+function shuffleArray(array) {
+  return array
+    .map((item) => ({ item, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ item }) => item);
+}
+
+onMounted(() => {
+  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display 3 random products for desktop, 2 for mobile
+});
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -1544,7 +1589,7 @@ const addComment = async (currentPost) => {
 
   // Set loading state
   currentPost.isCommentLoading = true;
-  
+
   const commentText = currentPost.commentText.trim();
 
   // Create a temporary comment to show immediately
@@ -1605,14 +1650,14 @@ const addComment = async (currentPost) => {
         // Replace with actual comment data from API
         currentPost.post_comments[index] = response.data;
       }
-      
+
       // Show success toast
       useToast().add({
-        title: 'Success',
-        description: 'Comment posted successfully',
-        color: 'green',
-        icon: 'i-heroicons-check-circle',
-        timeout: 3000
+        title: "Success",
+        description: "Comment posted successfully",
+        color: "green",
+        icon: "i-heroicons-check-circle",
+        timeout: 3000,
       });
     } else {
       // Remove temp comment if API failed
@@ -1620,14 +1665,14 @@ const addComment = async (currentPost) => {
         (comment) => comment.id !== tempComment.id
       );
       console.error("Failed to add comment:", response);
-      
+
       // Show error toast
       useToast().add({
-        title: 'Error',
-        description: 'Failed to post comment',
-        color: 'red',
-        icon: 'i-heroicons-x-circle',
-        timeout: 3000
+        title: "Error",
+        description: "Failed to post comment",
+        color: "red",
+        icon: "i-heroicons-x-circle",
+        timeout: 3000,
       });
     }
   } catch (error) {
@@ -1636,14 +1681,15 @@ const addComment = async (currentPost) => {
       (comment) => comment.id !== tempComment.id
     );
     console.error("Error adding comment:", error);
-    
+
     // Show error toast
     useToast().add({
-      title: 'Error',
-      description: 'Failed to post comment: ' + (error.message || 'Unknown error'),
-      color: 'red',
-      icon: 'i-heroicons-x-circle',
-      timeout: 5000
+      title: "Error",
+      description:
+        "Failed to post comment: " + (error.message || "Unknown error"),
+      color: "red",
+      icon: "i-heroicons-x-circle",
+      timeout: 5000,
     });
   } finally {
     // Reset loading state
@@ -1702,20 +1748,20 @@ const saveEditComment = async (currentPost, comment) => {
       console.error("Failed to update comment");
       // Show error toast
       useToast().add({
-        title: 'Error',
-        description: 'Failed to update comment',
-        color: 'red',
-        icon: 'i-heroicons-x-circle',
-        timeout: 3000
+        title: "Error",
+        description: "Failed to update comment",
+        color: "red",
+        icon: "i-heroicons-x-circle",
+        timeout: 3000,
       });
     } else {
       // Show success toast
       useToast().add({
-        title: 'Success',
-        description: 'Comment updated successfully',
-        color: 'green',
-        icon: 'i-heroicons-check-circle',
-        timeout: 3000
+        title: "Success",
+        description: "Comment updated successfully",
+        color: "green",
+        icon: "i-heroicons-check-circle",
+        timeout: 3000,
       });
     }
   } catch (error) {
@@ -1724,11 +1770,12 @@ const saveEditComment = async (currentPost, comment) => {
     console.error("Error updating comment:", error);
     // Show error toast
     useToast().add({
-      title: 'Error',
-      description: 'Failed to update comment: ' + (error.message || 'Unknown error'),
-      color: 'red',
-      icon: 'i-heroicons-x-circle',
-      timeout: 5000
+      title: "Error",
+      description:
+        "Failed to update comment: " + (error.message || "Unknown error"),
+      color: "red",
+      icon: "i-heroicons-x-circle",
+      timeout: 5000,
     });
   } finally {
     // Always reset the saving state
@@ -1754,7 +1801,7 @@ const confirmDeleteComment = async () => {
 
   const comment = commentToDelete.value;
   const post = postWithCommentToDelete.value;
-  
+
   // Set loading state
   comment.isDeleting = true;
 
@@ -1773,37 +1820,38 @@ const confirmDeleteComment = async () => {
         (c) => c.id !== comment.id
       );
       console.log("Comment deleted successfully");
-      
+
       // Show success toast
       useToast().add({
-        title: 'Success',
-        description: 'Comment deleted successfully',
-        color: 'green',
-        icon: 'i-heroicons-check-circle',
-        timeout: 3000
+        title: "Success",
+        description: "Comment deleted successfully",
+        color: "green",
+        icon: "i-heroicons-check-circle",
+        timeout: 3000,
       });
     } else {
       console.error("Failed to delete comment - API returned no response");
-      
+
       // Show error toast
       useToast().add({
-        title: 'Error',
-        description: 'Failed to delete comment',
-        color: 'red',
-        icon: 'i-heroicons-x-circle',
-        timeout: 3000
+        title: "Error",
+        description: "Failed to delete comment",
+        color: "red",
+        icon: "i-heroicons-x-circle",
+        timeout: 3000,
       });
     }
   } catch (error) {
     console.error("Error deleting comment:", error);
-    
+
     // Show error toast
     useToast().add({
-      title: 'Error',
-      description: 'Failed to delete comment: ' + (error.message || 'Unknown error'),
-      color: 'red',
-      icon: 'i-heroicons-x-circle',
-      timeout: 5000
+      title: "Error",
+      description:
+        "Failed to delete comment: " + (error.message || "Unknown error"),
+      color: "red",
+      icon: "i-heroicons-x-circle",
+      timeout: 5000,
     });
   } finally {
     // Reset loading state if the comment still exists
@@ -2082,10 +2130,6 @@ const refreshPosts = async () => {
 // Expose the method to parent components
 defineExpose({ refreshPosts });
 
-
-
-
-
 // Initialize
 onMounted(() => {
   // Implement infinite scroll
@@ -2123,5 +2167,13 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.sponsored-products-section {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 </style>
