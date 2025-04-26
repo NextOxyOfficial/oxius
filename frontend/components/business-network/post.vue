@@ -1279,26 +1279,45 @@ const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
 
 // Sponsored Products
-const products = [
-  { id: 1, name: "Product 1", sale_price: 100, regular_price: 150 },
-  { id: 2, name: "Product 2", sale_price: 200, regular_price: 250 },
-  { id: 3, name: "Product 3", sale_price: 300, regular_price: 350 },
-  { id: 4, name: "Product 4", sale_price: 400, regular_price: 450 },
-  { id: 5, name: "Product 5", sale_price: 500, regular_price: 550 },
-];
-
+const allProducts = ref([]);
 const shuffledProducts = ref([]);
+const isLoadingProducts = ref(false);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
 
-function shuffleArray(array) {
-  return array
-    .map((item) => ({ item, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ item }) => item);
+// Function to fetch products from API
+async function fetchProducts() {
+  isLoadingProducts.value = true;
+  try {
+    const { data } = await get('/all-products/');
+    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
+      allProducts.value = Array.isArray(data) ? data : data.results;
+      getRandomProducts();
+    } else {
+      console.error('Unexpected product data format:', data);
+      allProducts.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    allProducts.value = [];
+  } finally {
+    isLoadingProducts.value = false;
+  }
 }
 
+// Function to get random products
+function getRandomProducts() {
+  if (allProducts.value.length === 0) {
+    shuffledProducts.value = [];
+    return;
+  }
+  
+  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
+  shuffledProducts.value = shuffled.slice(0, 3); // Always display exactly 3 random products
+}
+
+// Fetch products when component is mounted
 onMounted(() => {
-  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display exactly 3 random products
+  fetchProducts();
 });
 
 // Format time ago
