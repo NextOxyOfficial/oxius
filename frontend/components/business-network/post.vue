@@ -186,11 +186,11 @@
                 class="relative overflow-hidden rounded-lg"
                 :class="{
                   'grid gap-1': post.post_media.length > 1,
-                  'grid-cols-2': post.post_media.length === 2 || post.post_media.length >= 4,
-                  'grid-rows-2': post.post_media.length >= 4,
-                  'h-[320px] sm:h-[400px]': post.post_media.length === 1,
-                  'h-[320px] sm:h-[400px]': post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-[620px] sm:h-[750px]': post.post_media.length >= 4
+      'grid-cols-2': post.post_media.length === 2 || post.post_media.length >= 4,
+      'grid-rows-2': post.post_media.length >= 4,
+      'h-[320px] sm:h-[400px]': post.post_media.length === 1,
+      'h-[280px] sm:h-[380px]': post.post_media.length >= 2 && post.post_media.length <= 3,
+      'h-[400px] sm:h-[480px]': post.post_media.length >= 4
                 }"
               >
                 <!-- Single Image Layout -->
