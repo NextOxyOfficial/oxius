@@ -4,19 +4,25 @@
     <button
       class="fixed bottom-24 right-4 lg:right-[22%] md:bottom-4 rounded-full h-14 w-14 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 hover:scale-105 border-none z-40 flex items-center justify-center text-white group"
       @click="openCreatePostModal"
+      v-if="user?.user?.id"
     >
-      <Plus class="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
-      <span class="absolute opacity-0 group-hover:opacity-100 right-16 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap transition-opacity duration-200">Create Post</span>
+      <Plus
+        class="h-6 w-6 group-hover:rotate-90 transition-transform duration-300"
+      />
+      <span
+        class="absolute opacity-0 group-hover:opacity-100 right-16 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap transition-opacity duration-200"
+        >Create Post</span
+      >
     </button>
 
     <!-- Create Post Modal -->
     <Teleport to="body">
-      <Transition 
-        enter-active-class="transition ease-out duration-300" 
-        enter-from-class="opacity-0" 
-        enter-to-class="opacity-100" 
-        leave-active-class="transition ease-in duration-200" 
-        leave-from-class="opacity-100" 
+      <Transition
+        enter-active-class="transition ease-out duration-300"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition ease-in duration-200"
+        leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
         <div
@@ -24,12 +30,12 @@
           class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300"
           @click="closeModalWithConfirm"
         >
-          <Transition 
-            enter-active-class="transition ease-out duration-300" 
-            enter-from-class="opacity-0 scale-95 translate-y-4" 
-            enter-to-class="opacity-100 scale-100 translate-y-0" 
-            leave-active-class="transition ease-in duration-200" 
-            leave-from-class="opacity-100 scale-100 translate-y-0" 
+          <Transition
+            enter-active-class="transition ease-out duration-300"
+            enter-from-class="opacity-0 scale-95 translate-y-4"
+            enter-to-class="opacity-100 scale-100 translate-y-0"
+            leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100 scale-100 translate-y-0"
             leave-to-class="opacity-0 scale-95 translate-y-4"
           >
             <div
@@ -45,7 +51,9 @@
                 <h2
                   class="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2"
                 >
-                  <div class="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 p-1.5 shadow-sm">
+                  <div
+                    class="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 p-1.5 shadow-sm"
+                  >
                     <Edit3 class="h-4 w-4 text-white" />
                   </div>
                   Create Post
@@ -58,7 +66,9 @@
                 </button>
               </div>
 
-              <div class="p-2 pb-6 overflow-y-auto max-h-[calc(90vh-130px)] hide-scrollbar">
+              <div
+                class="p-2 pb-6 overflow-y-auto max-h-[calc(90vh-130px)] hide-scrollbar"
+              >
                 <div class="space-y-5">
                   <!-- Form feedback alerts -->
                   <Transition
@@ -94,9 +104,13 @@
                         v-model="form.title"
                         maxlength="255"
                       />
-                      <span 
+                      <span
                         class="absolute right-3 bottom-3 text-xs px-1.5 py-0.5 rounded-full transition-all duration-200"
-                        :class="form.title.length > 200 ? 'bg-amber-100 text-amber-700' : 'text-gray-400'"
+                        :class="
+                          form.title.length > 200
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'text-gray-400'
+                        "
                       >
                         {{ form.title.length }}/255
                       </span>
@@ -121,32 +135,52 @@
                       <div
                         class="absolute right-2 bottom-2 text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded-full shadow-sm border border-gray-100 dark:border-gray-700"
                       >
-                        <span :class="form.content.length > 5000 ? 'text-amber-500' : 'text-gray-400'">{{ form.content.length }}</span>
+                        <span
+                          :class="
+                            form.content.length > 5000
+                              ? 'text-amber-500'
+                              : 'text-gray-400'
+                          "
+                          >{{ form.content.length }}</span
+                        >
                         <span class="text-gray-400"> characters</span>
                       </div>
                     </div>
                   </div>
 
                   <!-- Media upload area - CONDITIONALLY DISPLAYED when no images are uploaded -->
-                  <div 
+                  <div
                     v-if="images.length === 0"
                     class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4 transition-all hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
                     @dragover.prevent="isDragging = true"
                     @dragleave.prevent="isDragging = false"
                     @drop.prevent="handleFileDrop"
-                    :class="{'bg-blue-50/80 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500': isDragging}"
+                    :class="{
+                      'bg-blue-50/80 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500':
+                        isDragging,
+                    }"
                   >
                     <div class="text-center">
-                      <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 mb-3">
-                        <ImageIcon class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <div
+                        class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 mb-3"
+                      >
+                        <ImageIcon
+                          class="h-6 w-6 text-blue-600 dark:text-blue-400"
+                        />
                       </div>
-                      <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {{ isDragging ? 'Drop your images here' : 'Drag images here or click to select' }}
+                      <p
+                        class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        {{
+                          isDragging
+                            ? "Drop your images here"
+                            : "Drag images here or click to select"
+                        }}
                       </p>
                       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Select up to 12 images (PNG, JPG, JPEG)
                       </p>
-                      <button 
+                      <button
                         @click.stop="triggerFileInput"
                         class="mt-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-all duration-200 hover:shadow-md flex items-center gap-1.5 mx-auto"
                       >
@@ -165,22 +199,31 @@
                     leave-from-class="opacity-100 max-h-[1000px]"
                     leave-to-class="opacity-0 max-h-0"
                   >
-                    <div v-if="images.length > 0" class="space-y-3 overflow-hidden">
+                    <div
+                      v-if="images.length > 0"
+                      class="space-y-3 overflow-hidden"
+                    >
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <h4
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                        >
                           <ImageIcon class="h-4 w-4 text-blue-500" />
                           <span>Selected Media</span>
                         </h4>
                         <div class="flex items-center gap-2">
-                          <span 
+                          <span
                             class="text-xs px-2 py-0.5 rounded-full"
-                            :class="images.length > 9 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'"
+                            :class="
+                              images.length > 9
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-gray-100 text-gray-600'
+                            "
                           >
                             {{ images.length }}/12
                           </span>
-                          <button 
+                          <button
                             v-if="images.length > 0"
-                            @click="clearAllImages" 
+                            @click="clearAllImages"
                             class="text-xs px-2 py-0.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                           >
                             Clear All
@@ -206,11 +249,15 @@
                             :alt="`Selected media ${index + 1}`"
                             class="object-cover w-full h-full"
                           />
-                          
-                          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                            <span class="text-white text-xs truncate w-full">Image {{ index + 1 }}</span>
+
+                          <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2"
+                          >
+                            <span class="text-white text-xs truncate w-full"
+                              >Image {{ index + 1 }}</span
+                            >
                           </div>
-                          
+
                           <button
                             class="absolute top-1 right-1 bg-black/50 hover:bg-black/70 rounded-full p-1.5 media-delete-btn"
                             @click.stop="removeMedia(index)"
@@ -226,17 +273,23 @@
                           @click.stop="triggerFileInput"
                           class="aspect-square border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex flex-col items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors hover:border-blue-400 dark:hover:border-blue-500 group"
                         >
-                          <div class="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-125 transition-transform">
+                          <div
+                            class="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-125 transition-transform"
+                          >
                             <Plus class="h-5 w-5" />
                           </div>
-                          <span class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 transition-colors">Add More</span>
+                          <span
+                            class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 transition-colors"
+                            >Add More</span
+                          >
                         </button>
                       </div>
                     </div>
                   </Transition>
 
                   <!-- Hashtags section with autocomplete and popular tags -->
-                  <div class="space-y-2 mb-5"><!-- Added mb-5 for the extra space -->
+                  <div class="space-y-2 mb-5">
+                    <!-- Added mb-5 for the extra space -->
                     <h4
                       class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
                     >
@@ -292,7 +345,7 @@
                           <Hash
                             class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
                           />
-                          
+
                           <!-- Hashtag Suggestions Dropdown -->
                           <Transition
                             enter-active-class="transition ease-out duration-200"
@@ -302,13 +355,19 @@
                             leave-from-class="opacity-100 translate-y-0"
                             leave-to-class="opacity-0 -translate-y-2"
                           >
-                            <div 
-                              v-if="(hashtagSuggestions.length > 0 || popularHashtags.length > 0) && showSuggestions"
+                            <div
+                              v-if="
+                                (hashtagSuggestions.length > 0 ||
+                                  popularHashtags.length > 0) &&
+                                showSuggestions
+                              "
                               class="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 shadow-lg z-10 hide-scrollbar"
                             >
                               <!-- Search results section -->
                               <div v-if="hashtagSuggestions.length > 0">
-                                <div class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                <div
+                                  class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700"
+                                >
                                   Search Results
                                 </div>
                                 <div
@@ -317,18 +376,24 @@
                                   @click="selectHashtagSuggestion(tag.tag)"
                                   :class="[
                                     'px-3 py-2 flex items-center gap-2 cursor-pointer transition-colors',
-                                    selectedSuggestionIndex === index ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    selectedSuggestionIndex === index
+                                      ? 'bg-blue-50 dark:bg-blue-900/20'
+                                      : 'hover:bg-gray-50 dark:hover:bg-gray-800',
                                   ]"
                                 >
                                   <Hash class="h-3.5 w-3.5 text-blue-500" />
                                   <span class="text-sm">{{ tag.tag }}</span>
-                                  <span class="text-xs text-gray-500 ml-auto">{{ tag.count }} posts</span>
+                                  <span class="text-xs text-gray-500 ml-auto"
+                                    >{{ tag.count }} posts</span
+                                  >
                                 </div>
                               </div>
-                              
+
                               <!-- Popular hashtags section -->
                               <div v-if="popularHashtags.length > 0">
-                                <div class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                <div
+                                  class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700"
+                                >
                                   Popular Hashtags
                                 </div>
                                 <div class="flex flex-wrap gap-2 p-3">
@@ -380,9 +445,11 @@
                   @click="handleCreatePost"
                   :class="[
                     'px-4 py-2 rounded-md text-white transition-all duration-300 flex items-center gap-2 shadow-sm',
-                    isSubmitting ? 'bg-indigo-600 cursor-not-allowed' :
-                    !form.title.trim() || !form.content.trim() ? 'bg-gray-400 cursor-not-allowed' :
-                    'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md'
+                    isSubmitting
+                      ? 'bg-indigo-600 cursor-not-allowed'
+                      : !form.title.trim() || !form.content.trim()
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md',
                   ]"
                 >
                   <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
@@ -408,26 +475,30 @@
 
     <!-- Success Toast Notification -->
     <Teleport to="body">
-      <Transition 
-        enter-active-class="transition duration-300 ease-out" 
-        enter-from-class="opacity-0 translate-y-4" 
-        enter-to-class="opacity-100 translate-y-0" 
-        leave-active-class="transition duration-200 ease-in" 
-        leave-from-class="opacity-100 translate-y-0" 
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 translate-y-4"
       >
-        <div 
+        <div
           v-if="showSuccessToast"
           class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 shadow-lg rounded-lg px-4 py-3 flex items-center gap-3 z-[10001] min-w-[280px] max-w-sm animate-bounce-once"
         >
-          <div class="p-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm">
+          <div
+            class="p-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm"
+          >
             <CheckCircle class="h-5 w-5" />
           </div>
           <div>
             <p class="font-medium text-green-800">Post published!</p>
-            <p class="text-sm text-green-600">Your post was successfully created</p>
+            <p class="text-sm text-green-600">
+              Your post was successfully created
+            </p>
           </div>
-          <button 
+          <button
             class="ml-auto p-1 text-green-700 hover:bg-green-100 rounded-full"
             @click="showSuccessToast = false"
             aria-label="Close notification"
@@ -440,12 +511,12 @@
 
     <!-- Confirmation Modal -->
     <Teleport to="body">
-      <Transition 
-        enter-active-class="transition duration-200 ease-out" 
-        enter-from-class="opacity-0" 
-        enter-to-class="opacity-100" 
-        leave-active-class="transition duration-150 ease-in" 
-        leave-from-class="opacity-100" 
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
         <div
@@ -453,12 +524,12 @@
           class="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
           @click="showConfirmClose = false"
         >
-          <Transition 
-            enter-active-class="transition duration-300 ease-out" 
-            enter-from-class="opacity-0 scale-95" 
-            enter-to-class="opacity-100 scale-100" 
-            leave-active-class="transition duration-200 ease-in" 
-            leave-from-class="opacity-100 scale-100" 
+          <Transition
+            enter-active-class="transition duration-300 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-200 ease-in"
+            leave-from-class="opacity-100 scale-100"
             leave-to-class="opacity-0 scale-95"
           >
             <div
@@ -467,16 +538,20 @@
               @click.stop
             >
               <div class="flex items-start mb-4">
-                <div class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3">
-                  <AlertTriangle class="h-5 w-5 text-amber-600 dark:text-amber-500" />  
+                <div
+                  class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3"
+                >
+                  <AlertTriangle
+                    class="h-5 w-5 text-amber-600 dark:text-amber-500"
+                  />
                 </div>
                 <div>
                   <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                     Discard changes?
                   </h3>
                   <p class="text-gray-600 dark:text-gray-300 mt-1.5">
-                    You have unsaved changes. Are you sure you want to discard your
-                    post?
+                    You have unsaved changes. Are you sure you want to discard
+                    your post?
                   </p>
                 </div>
               </div>
@@ -519,16 +594,17 @@ import {
   AlertTriangle,
   Trash2,
   CheckCircle,
-  Upload
+  Upload,
 } from "lucide-vue-next";
-import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
-import { useEventBus } from '@/composables/useEventBus'; // Make sure this import path is correct
-import { useRouter, useRoute } from 'vue-router';
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from "vue";
+import { useEventBus } from "@/composables/useEventBus"; // Make sure this import path is correct
+import { useRouter, useRoute } from "vue-router";
 
+const { user } = useAuth();
 // Auth and API
 const { post, get } = useApi();
 const auth = useAuth();
-const emit = defineEmits(['post-created']);
+const emit = defineEmits(["post-created"]);
 
 // Form data
 const form = ref({
@@ -560,18 +636,19 @@ const selectedSuggestionIndex = ref(-1);
 // Computed properties
 const canAddMoreMedia = computed(() => images.value.length < 12);
 
-const hasUnsavedChanges = computed(() =>
-  form.value.title.trim() ||
-  form.value.content.trim() ||
-  images.value.length > 0 ||
-  createPostCategories.value.length > 0
+const hasUnsavedChanges = computed(
+  () =>
+    form.value.title.trim() ||
+    form.value.content.trim() ||
+    images.value.length > 0 ||
+    createPostCategories.value.length > 0
 );
 
 // Methods
 const openCreatePostModal = () => {
   isCreatePostOpen.value = true;
   nextTick(() => {
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
     fetchPopularHashtags(); // Get popular hashtags when opening modal
   });
 };
@@ -581,7 +658,7 @@ const closeModalWithConfirm = () => {
     showConfirmClose.value = true; // Show confirmation dialog
   } else {
     isCreatePostOpen.value = false; // Close modal directly if no changes
-    document.body.style.overflow = ''; // Restore scrolling
+    document.body.style.overflow = ""; // Restore scrolling
   }
 };
 
@@ -589,7 +666,7 @@ const discardChanges = () => {
   showConfirmClose.value = false; // Hide confirmation dialog
   isCreatePostOpen.value = false; // Close the main modal
   resetForm();
-  document.body.style.overflow = ''; // Restore scrolling
+  document.body.style.overflow = ""; // Restore scrolling
 };
 
 const resetForm = () => {
@@ -629,33 +706,35 @@ const handleEmojiClick = (emoji) => {
 // Enhanced file upload handling for multiple files
 const handleFileUpload = async (event) => {
   const files = Array.from(event.target.files);
-  
+
   if (!files || files.length === 0) return;
-  
+
   // Check if adding these files would exceed the limit
   if (images.value.length + files.length > 12) {
-    formError.value = `You can only upload up to 12 images (${12 - images.value.length} remaining)`;
+    formError.value = `You can only upload up to 12 images (${
+      12 - images.value.length
+    } remaining)`;
     setTimeout(() => {
       formError.value = "";
     }, 3000);
     return;
   }
-  
+
   isUploading.value = true;
   uploadError.value = "";
-  
+
   try {
     // Process each file
     for (const file of files) {
       if (!file.type.startsWith("image/")) {
         continue; // Skip non-image files
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         uploadError.value = "Some images exceed 5MB and were skipped";
         continue; // Skip large files
       }
-      
+
       // Process image
       await processImage(file);
     }
@@ -664,7 +743,7 @@ const handleFileUpload = async (event) => {
     uploadError.value = "Error processing some images";
   } finally {
     isUploading.value = false;
-    
+
     // Reset file input
     if (event.target) {
       event.target.value = null;
@@ -675,29 +754,31 @@ const handleFileUpload = async (event) => {
 // Handle file drop for drag & drop functionality
 const handleFileDrop = (event) => {
   isDragging.value = false;
-  
+
   // Get the dropped files
   const files = Array.from(event.dataTransfer.files);
-  
+
   // Filter to only include images
-  const imageFiles = files.filter(file => file.type.startsWith("image/"));
-  
+  const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
   if (imageFiles.length === 0) return;
-  
+
   // Check if adding these files would exceed the limit
   if (images.value.length + imageFiles.length > 12) {
-    formError.value = `You can only upload up to 12 images (${12 - images.value.length} remaining)`;
+    formError.value = `You can only upload up to 12 images (${
+      12 - images.value.length
+    } remaining)`;
     setTimeout(() => {
       formError.value = "";
     }, 3000);
     return;
   }
-  
+
   isUploading.value = true;
-  
+
   // Process each image
-  Promise.all(imageFiles.map(file => processImage(file)))
-    .catch(error => {
+  Promise.all(imageFiles.map((file) => processImage(file)))
+    .catch((error) => {
       console.error("File drop error:", error);
       uploadError.value = "Error processing some images";
     })
@@ -710,10 +791,10 @@ const handleFileDrop = (event) => {
 const processImage = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       const img = new Image();
-      
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
         let width = img.width;
@@ -738,7 +819,7 @@ const processImage = (file) => {
         ctx.drawImage(img, 0, 0, width, height);
 
         const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
-        
+
         // Add to images array with animation delay for staggered effect
         setTimeout(() => {
           images.value.push(compressedDataUrl);
@@ -799,22 +880,26 @@ async function searchHashtags() {
   }
 
   try {
-    const { data } = await get(`/news/categories/search/?q=${categoryInput.value.trim()}`);
-    
+    const { data } = await get(
+      `/news/categories/search/?q=${categoryInput.value.trim()}`
+    );
+
     if (data && Array.isArray(data.results)) {
-      hashtagSuggestions.value = data.results.map(tag => ({
-        id: tag.id,
-        tag: tag.tag,
-        count: tag.posts_count || 0
-      })).slice(0, 5); // Take top 5 results
-      
+      hashtagSuggestions.value = data.results
+        .map((tag) => ({
+          id: tag.id,
+          tag: tag.tag,
+          count: tag.posts_count || 0,
+        }))
+        .slice(0, 5); // Take top 5 results
+
       showSuggestions.value = true;
     } else {
       hashtagSuggestions.value = [];
       // Still show popular tags if no search results
       showSuggestions.value = popularHashtags.value.length > 0;
     }
-    
+
     selectedSuggestionIndex.value = -1;
   } catch (error) {
     console.error("Error fetching hashtag suggestions:", error);
@@ -827,20 +912,20 @@ async function searchHashtags() {
 // Fetch popular hashtags
 const fetchPopularHashtags = async () => {
   try {
-    const { data } = await get('/news/categories/popular/?limit=8');
-    
+    const { data } = await get("/news/categories/popular/?limit=8");
+
     if (data && Array.isArray(data.results)) {
-      popularHashtags.value = data.results.map(tag => ({
+      popularHashtags.value = data.results.map((tag) => ({
         id: tag.id,
         tag: tag.tag,
-        count: tag.posts_count || 0
+        count: tag.posts_count || 0,
       }));
     } else if (data && Array.isArray(data)) {
       // Alternative format
-      popularHashtags.value = data.map(tag => ({
+      popularHashtags.value = data.map((tag) => ({
         id: tag.id || 0,
         tag: tag.tag || tag.name,
-        count: tag.posts_count || tag.count || 0
+        count: tag.posts_count || tag.count || 0,
       }));
     } else {
       popularHashtags.value = [];
@@ -865,7 +950,7 @@ const onHashtagInputFocus = () => {
 // Navigate suggestions with keyboard
 const selectNextSuggestion = () => {
   if (hashtagSuggestions.value.length === 0) return;
-  
+
   if (selectedSuggestionIndex.value < hashtagSuggestions.value.length - 1) {
     selectedSuggestionIndex.value++;
   } else {
@@ -875,7 +960,7 @@ const selectNextSuggestion = () => {
 
 const selectPrevSuggestion = () => {
   if (hashtagSuggestions.value.length === 0) return;
-  
+
   if (selectedSuggestionIndex.value > 0) {
     selectedSuggestionIndex.value--;
   } else {
@@ -888,7 +973,7 @@ const selectHashtagSuggestion = (tag) => {
   if (tag && !createPostCategories.value.includes(tag)) {
     createPostCategories.value.push(tag);
   }
-  
+
   // Clear the input and suggestions
   categoryInput.value = "";
   hashtagSuggestions.value = [];
@@ -897,9 +982,9 @@ const selectHashtagSuggestion = (tag) => {
 
 // Create post with enhanced success handling
 async function handleCreatePost() {
-  formError.value = '';
+  formError.value = "";
   isSubmitting.value = true;
-  
+
   try {
     // Post to the API
     const { data } = await post("/bn/posts/", {
@@ -907,33 +992,33 @@ async function handleCreatePost() {
       images: images.value,
       tags: createPostCategories.value,
     });
-    
+
     if (data) {
       // Reset form
       resetForm();
-      
+
       // Close modal
       isCreatePostOpen.value = false;
-      document.body.style.overflow = '';
-      
+      document.body.style.overflow = "";
+
       // Show success toast notification
       showSuccessToast.value = true;
       setTimeout(() => {
         showSuccessToast.value = false;
       }, 5000);
-      
+
       // IMPORTANT: Emit the event with the complete post data for immediate display
-      emit('post-created', data);
-      
+      emit("post-created", data);
+
       // Use event bus for better cross-component communication
       const eventBus = useEventBus();
-      eventBus.emit('post-created', data);
-      
+      eventBus.emit("post-created", data);
+
       // Redirect to profile if we're not already there
       const router = useRouter();
       const route = useRoute();
       const { user } = auth;
-      
+
       if (route.path !== `/business-network/profile/${user.value?.user?.id}`) {
         // Navigate to profile page
         router.push(`/business-network/profile/${user.value?.user?.id}`);
@@ -943,9 +1028,12 @@ async function handleCreatePost() {
           setTimeout(() => {
             const newPostElement = document.getElementById(`post-${data.id}`);
             if (newPostElement) {
-              newPostElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              newPostElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
               // Add highlight animation to make the new post stand out
-              newPostElement.classList.add('highlight-new-post');
+              newPostElement.classList.add("highlight-new-post");
             }
           }, 500); // Small timeout to ensure DOM is updated
         });
@@ -953,7 +1041,9 @@ async function handleCreatePost() {
     }
   } catch (error) {
     console.error("Error creating post:", error);
-    formError.value = error.response?.data?.message || "Failed to create post. Please try again.";
+    formError.value =
+      error.response?.data?.message ||
+      "Failed to create post. Please try again.";
   } finally {
     isSubmitting.value = false;
   }
@@ -964,14 +1054,12 @@ const refreshPostsWithJWT = async () => {
   try {
     // Get the current JWT token
     const token = auth.getToken();
-    
+
     if (!token) {
       console.error("No JWT token available for refresh");
       return;
     }
-    
- 
-    
+
     // Optionally, you can also directly fetch new posts here
     // const response = await get('/bn/posts/', {
     //   headers: { Authorization: `Bearer ${token}` }
@@ -998,37 +1086,40 @@ const vClickOutside = {
 };
 
 // Hide suggestions when clicking outside hashtag input
-watch(() => categoryInput.value, (newVal) => {
-  if (!newVal) {
-    setTimeout(() => {
-      showSuggestions.value = false;
-    }, 200);
+watch(
+  () => categoryInput.value,
+  (newVal) => {
+    if (!newVal) {
+      setTimeout(() => {
+        showSuggestions.value = false;
+      }, 200);
+    }
   }
-});
+);
 
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener("click", (event) => {
     // Close hashtag suggestions when clicking outside
     const hashtagInput = event.target.closest('input[ref="hashtagInputRef"]');
-    const suggestionsDropdown = event.target.closest('.hashtag-suggestions');
-    
+    const suggestionsDropdown = event.target.closest(".hashtag-suggestions");
+
     if (!hashtagInput && !suggestionsDropdown && showSuggestions.value) {
       showSuggestions.value = false;
     }
-    
+
     // Close emoji picker when clicking outside
     const emojiTrigger = event.target.closest(".emoji-trigger");
     const emojiPicker = event.target.closest(".emoji-picker");
-    
+
     if (!emojiTrigger && !emojiPicker && showEmojiPicker.value) {
       showEmojiPicker.value = false;
     }
   });
-  
+
   // Handle escape key
   const handleEscape = (e) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       if (showEmojiPicker.value) {
         showEmojiPicker.value = false;
       } else if (showSuggestions.value) {
@@ -1038,16 +1129,16 @@ onMounted(() => {
       }
     }
   };
-  
-  document.addEventListener('keydown', handleEscape);
-  
+
+  document.addEventListener("keydown", handleEscape);
+
   // Fetch popular hashtags
   fetchPopularHashtags();
-  
+
   // Clean up
   onUnmounted(() => {
-    document.removeEventListener('keydown', handleEscape);
-    document.body.style.overflow = '';
+    document.removeEventListener("keydown", handleEscape);
+    document.body.style.overflow = "";
   });
 });
 </script>
@@ -1076,24 +1167,49 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 @keyframes bounce-once {
-  0%, 100% { transform: translateY(0) translateX(-50%); }
-  40% { transform: translateY(-20px) translateX(-50%); }
-  60% { transform: translateY(-10px) translateX(-50%); }
+  0%,
+  100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  40% {
+    transform: translateY(-20px) translateX(-50%);
+  }
+  60% {
+    transform: translateY(-10px) translateX(-50%);
+  }
 }
 
 .animate-shake {
-  animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+  animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 .animate-bounce-once {
@@ -1109,14 +1225,14 @@ onMounted(() => {
 
 .media-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .media-card:hover::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 50%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -1164,7 +1280,9 @@ onMounted(() => {
 }
 
 /* Smooth transitions */
-input, textarea, button {
+input,
+textarea,
+button {
   transition: all 0.2s ease-in-out;
 }
 </style>

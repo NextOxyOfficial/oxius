@@ -43,7 +43,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     queryset = BusinessNetworkPost.objects.all().order_by('-created_at')
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
         
     def create(self, request, *args, **kwargs):
