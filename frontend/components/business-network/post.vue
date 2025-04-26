@@ -225,7 +225,7 @@
                   <div
                     v-for="(media, mediaIndex) in post.post_media.slice(0, 2)"
                     :key="media.id"
-                    class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative w-full h-full aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, mediaIndex)"
                   >
                     <img
@@ -233,18 +233,6 @@
                       :alt="`Media ${mediaIndex + 1}`"
                       class="h-full w-full object-cover"
                     />
-                    <div
-                      v-if="media.type === 'video'"
-                      class="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div
-                        class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"
-                        ></div>
-                      </div>
-                    </div>
                   </div>
                 </template>
 
@@ -252,7 +240,7 @@
                 <template v-else-if="post.post_media.length === 3">
                   <!-- First image - large, full width -->
                   <div
-                    class="relative col-span-2 h-[240px] sm:h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative col-span-2 h-auto aspect-[3/2] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
@@ -275,11 +263,11 @@
                   </div>
 
                   <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
+                  <div class="grid grid-cols-2 gap-1 h-auto">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
-                      class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                      class="relative aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                       @click="openMedia(post, mediaIndex + 1)"
                     >
                       <img
@@ -287,18 +275,6 @@
                         :alt="`Media ${mediaIndex + 2}`"
                         class="h-full w-full object-cover"
                       />
-                      <div
-                        v-if="media.type === 'video'"
-                        class="absolute inset-0 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center"
-                        >
-                          <div
-                            class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"
-                          ></div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </template>
