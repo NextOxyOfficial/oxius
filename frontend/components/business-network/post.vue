@@ -30,7 +30,7 @@
                 <div class="flex-1">
                   <NuxtLink
                     :to="`/business-network/profile/${post.author}`"
-                    class="text-base font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
+                    class="font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
                   >
                     <p class="">
                       {{ post?.author_details?.name }}
@@ -42,14 +42,14 @@
                       <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
                       <span
                         v-if="post?.author_details?.is_pro"
-                        class="text-2xs px-1 pb-0.5 font-medium"
+                        class="text-2xs px-1 py-0.5 font-medium"
                       >
                         <div class="flex items-center gap-0.5">
                           <UIcon
                             name="i-heroicons-shield-check"
                             class="size-4 text-indigo-700 font-semibold"
                           />
-                          <span class="text-md font-semibold text-indigo-700"
+                          <span class="text-xs font-semibold text-indigo-700"
                             >Pro</span
                           >
                         </div>
@@ -57,11 +57,11 @@
                     </div>
                   </NuxtLink>
                   <p
-                    class="text-md font-semibold bg-white pb-0.5 text-slate-500"
+                    class="text-xs font-semibold bg-white py-0.5 text-slate-500"
                   >
                     {{ post?.author_details?.profession }}
                   </p>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-xs text-gray-500">
                     {{ formatTimeAgo(post?.created_at) }}
                   </p>
                 </div>
@@ -71,7 +71,7 @@
                 <button
                   v-if="post?.author !== id"
                   :class="[
-                    'text-md h-7 rounded-full px-3 flex items-center gap-1',
+                    'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     post.isFollowing
                       ? 'border border-gray-200 text-gray-800'
                       : 'bg-blue-600 text-white',
@@ -100,7 +100,7 @@
                   >
                     <div class="py-1">
                       <button
-                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                         @click="toggleSave(post)"
                       >
                         <Bookmark
@@ -112,7 +112,7 @@
                         {{ post.isSaved ? "Unsave post" : "Save post" }}
                       </button>
                       <button
-                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                         @click="copyLink(post)"
                       >
                         <Link2 class="h-4 w-4 mr-2" />
@@ -120,7 +120,7 @@
                       </button>
                       <hr class="my-1 border-gray-200" />
                       <button
-                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                       >
                         <UserX class="h-4 w-4 mr-2" />
                         Unfollow @{{
@@ -128,7 +128,7 @@
                         }}
                       </button>
                       <button
-                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                       >
                         <Flag class="h-4 w-4 mr-2" />
                         Report post
@@ -155,7 +155,7 @@
               <span
                 v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
-                class="text-md bg-gray-100 text-gray-600 px-2 pb-0.5 rounded-full"
+                class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
               >
                 #{{ tag.tag }}
               </span>
@@ -165,14 +165,14 @@
             <div class="mb-2 min-w-full">
               <p
                 :class="[
-                  'text-md text-gray-800',
+                  'text-sm text-gray-800',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="post.content"
               ></p>
               <button
                 v-if="post?.content?.length > 160"
-                class="text-md text-blue-600 font-medium mt-1"
+                class="text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
                 {{ post.showFullDescription ? "Read less" : "Read more" }}
@@ -276,7 +276,7 @@
                   </div>
 
                   <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1" style="height: 300px">
+                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
@@ -348,7 +348,7 @@
             <div
               class="flex items-center justify-between pt-2 border-t border-gray-100 mb-3"
             >
-              <div class="text-sm flex items-center space-x-4">
+              <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-1">
                   <!-- Update like button with loading state -->
                   <button
@@ -375,7 +375,7 @@
                     />
                   </button>
                   <button
-                    class="text-md text-gray-600 hover:underline"
+                    class="text-sm text-gray-600 hover:underline"
                     @click="openLikesModal(post)"
                   >
                     {{ post?.post_likes?.length }} likes
@@ -386,7 +386,7 @@
                   @click="openCommentsModal(post)"
                 >
                   <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-md text-gray-600"
+                  <span class="text-sm text-gray-600"
                     >{{ post?.post_comments?.length }} comments</span
                   >
                 </button>
@@ -395,7 +395,7 @@
                   @click="sharePost(post)"
                 >
                   <Share2 class="h-4 w-4 text-gray-500" />
-                  <span class="text-md text-gray-600">Share</span>
+                  <span class="text-sm text-gray-600">Share</span>
                 </button>
                 <button
                   class="flex items-center space-x-1"
@@ -409,7 +409,7 @@
                         : 'text-gray-500',
                     ]"
                   />
-                  <span class="text-md text-gray-600">Save</span>
+                  <span class="text-sm text-gray-600">Save</span>
                 </button>
               </div>
             </div>
@@ -419,7 +419,7 @@
               <!-- See all comments button moved to the top -->
               <button
                 v-if="post?.post_comments?.length > 3"
-                class="text-md text-blue-600 font-medium"
+                class="text-sm text-blue-600 font-medium"
                 @click="openCommentsModal(post)"
               >
                 See all {{ post?.post_comments?.length }} comments
@@ -447,7 +447,7 @@
                         <div class="flex items-center gap-1">
                           <NuxtLink
                             :to="`/business-network/profile/${comment.author}`"
-                            class="text-md font-medium hover:underline"
+                            class="text-sm font-medium hover:underline"
                           >
                             {{ comment.author_details?.name }}
                           </NuxtLink>
@@ -499,19 +499,19 @@
                         <textarea
                           :id="`comment-edit-${comment.id}`"
                           v-model="comment.editText"
-                          class="w-full text-md p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                          class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                           rows="2"
                         ></textarea>
                         <div class="flex justify-end space-x-2 mt-1">
                           <button
                             @click="cancelEditComment(comment)"
-                            class="text-md text-gray-500 hover:underline"
+                            class="text-xs text-gray-500 hover:underline"
                           >
                             Cancel
                           </button>
                           <button
                             @click="saveEditComment(post, comment)"
-                            class="text-md bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                             :disabled="
                               !comment.editText?.trim() ||
                               comment.editText === comment.content ||
@@ -527,7 +527,7 @@
                           </button>
                         </div>
                       </div>
-                      <p v-else class="text-md">{{ comment?.content }}</p>
+                      <p v-else class="text-sm">{{ comment?.content }}</p>
                     </div>
                     <span class="text-sm text-gray-500 mt-1 inline-block">
                       {{ formatTimeAgo(comment?.created_at) }}
@@ -551,7 +551,7 @@
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-md py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
+                  class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
                   v-model="post.commentText"
                   @keyup.enter="addComment(post)"
                   @focus="post.showCommentInput = true"
@@ -585,31 +585,22 @@
         <!-- Sponsored Products Section -->
         <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
-          <div v-if="isProductsLoading" class="flex justify-center py-6">
-            <div class="h-6 w-6 animate-spin text-blue-600">
-              <Loader2 />
-            </div>
-          </div>
-          <div v-else-if="productError" class="text-center text-gray-500">
-            {{ productError }}
-          </div>
-          <div v-else class="relative">
-            <!-- Carousel Container for Mobile (2 products) -->
-            <div class="sm:hidden">
-              <div class="grid grid-cols-2 gap-3">
-                <ProductCard
-                  v-for="(product, productIndex) in displayProducts.slice(0, 2)"
-                  :key="product.id"
-                  :product="product"
-                />
-              </div>
+          <div class="relative">
+            <!-- Carousel Container for Mobile -->
+            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
+              <ProductCard
+                v-for="(product, productIndex) in shuffledProducts"
+                :key="productIndex"
+                :product="product"
+                class="flex-shrink-0 w-1/2"
+              />
             </div>
 
-            <!-- Grid Layout for Desktop (3 products) -->
-            <div class="hidden sm:grid sm:grid-cols-3 gap-4">
+            <!-- Grid Layout for Desktop -->
+            <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
               <ProductCard
-                v-for="(product, productIndex) in displayProducts.slice(0, 3)"
-                :key="product.id"
+                v-for="(product, productIndex) in shuffledProducts"
+                :key="productIndex"
                 :product="product"
               />
             </div>
@@ -700,7 +691,7 @@
               <ChevronRight class="h-5 w-5" />
             </button>
             <div
-              class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-md"
+              class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm"
             >
               {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
             </div>
@@ -724,7 +715,7 @@
                     />
                   </button>
                   <button
-                    class="text-md text-gray-600 hover:underline"
+                    class="text-sm text-gray-600 hover:underline"
                     @click.stop="openMediaLikesModal"
                   >
                     {{ activeMedia.likeCount }} likes
@@ -732,7 +723,7 @@
                 </div>
                 <div class="flex items-center space-x-1">
                   <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-md text-gray-600">
+                  <span class="text-sm text-gray-600">
                     {{ activeMedia.comments?.length || 0 }} comments
                   </span>
                 </div>
@@ -744,7 +735,7 @@
               v-if="activeMedia.comments && activeMedia.comments.length > 0"
               class="max-h-[20vh] overflow-y-auto mb-3"
             >
-              <h4 class="text-md font-medium text-gray-500 mb-2">Comments</h4>
+              <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
               <div class="space-y-2">
                 <div
                   v-for="comment in activeMedia.comments"
@@ -767,7 +758,7 @@
                           <div class="flex items-center gap-1.5">
                             <NuxtLink
                               :to="`/business-network/profile/${comment.user.id}`"
-                              class="text-md font-medium hover:underline"
+                              class="text-sm font-medium hover:underline"
                             >
                               {{ comment.user.fullName }}
                             </NuxtLink>
@@ -783,7 +774,7 @@
                             </div>
                           </div>
                         </div>
-                        <p class="text-md mt-1">{{ comment.text }}</p>
+                        <p class="text-sm mt-1">{{ comment.text }}</p>
                       </div>
                       <div class="flex items-center mt-1 space-x-3">
                         <span class="text-sm text-gray-500">{{
@@ -806,7 +797,7 @@
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-md py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                   v-model="mediaCommentText"
                   @click.stop
                 />
@@ -851,7 +842,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-md text-gray-600 truncate">
+            <p class="text-sm text-gray-600 truncate">
               {{ activeLikesPost.title }}
             </p>
           </div>
@@ -876,7 +867,7 @@
                   >
                     {{ user.user_details.name }}
                   </NuxtLink>
-                  <p class="text-md text-gray-500">
+                  <p class="text-sm text-gray-500">
                     @{{
                       user.user_details.name.toLowerCase().replace(/\s+/g, "")
                     }}
@@ -886,7 +877,7 @@
               <button
                 v-if="user.id !== 'current-user'"
                 :class="[
-                  'text-md h-7 rounded-full px-3 flex items-center gap-1',
+                  'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
                     ? 'border border-gray-200 text-gray-800'
                     : 'bg-blue-600 text-white',
@@ -923,7 +914,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-md text-gray-600 truncate">
+            <p class="text-sm text-gray-600 truncate">
               {{ activeCommentsPost.title }}
             </p>
           </div>
@@ -951,7 +942,7 @@
                       <div class="flex items-center gap-1.5">
                         <NuxtLink
                           :to="`/business-network/profile/${comment?.author}`"
-                          class="text-md font-medium hover:underline"
+                          class="text-sm font-medium hover:underline"
                         >
                           {{ comment.author_details.name }}
                         </NuxtLink>
@@ -1000,19 +991,19 @@
                       <textarea
                         :id="`comment-edit-${comment.id}`"
                         v-model="comment.editText"
-                        class="w-full text-md p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                         rows="2"
                       ></textarea>
                       <div class="flex justify-end space-x-2 mt-1">
                         <button
                           @click="cancelEditComment(comment)"
-                          class="text-md text-gray-500 hover:underline"
+                          class="text-xs text-gray-500 hover:underline"
                         >
                           Cancel
                         </button>
                         <button
                           @click="saveEditComment(activeCommentsPost, comment)"
-                          class="text-md bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                           :disabled="
                             !comment.editText?.trim() ||
                             comment.editText === comment.content ||
@@ -1028,7 +1019,7 @@
                         </button>
                       </div>
                     </div>
-                    <p v-else class="text-md">{{ comment.content }}</p>
+                    <p v-else class="text-sm">{{ comment.content }}</p>
                   </div>
                   <div class="flex items-center mt-1 space-x-3">
                     <span class="text-sm text-gray-500">{{
@@ -1051,7 +1042,7 @@
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-md py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                   v-model="activeCommentsPost.commentText"
                   @input="handleCommentInput($event, activeCommentsPost)"
                   @keydown="handleMentionKeydown($event, activeCommentsPost)"
@@ -1080,9 +1071,9 @@
                       <img
                         :src="user.image"
                         :alt="user.name"
-                        class="w-6 h-6 rounded-full mr-2"
+                        class="w-7 h-7 rounded-full mr-2"
                       />
-                      <span class="text-md font-medium">{{ user.name }}</span>
+                      <span class="text-sm font-medium">{{ user.name }}</span>
                     </div>
                   </div>
                 </div>
@@ -1094,7 +1085,7 @@
                 >
                   <Loader2
                     v-if="activeCommentsPost.isCommentLoading"
-                    class="h-3 w-3 animate-spin"
+                    class="h-5 w-5 animate-spin"
                   />
                   <Send v-else class="h-3 w-3" />
                 </button>
@@ -1143,7 +1134,7 @@
                   >
                     {{ user.fullName }}
                   </NuxtLink>
-                  <p class="text-md text-gray-500">
+                  <p class="text-sm text-gray-500">
                     @{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}
                   </p>
                 </div>
@@ -1151,7 +1142,7 @@
               <button
                 v-if="user.id !== 'current-user'"
                 :class="[
-                  'text-md h-7 rounded-full px-3 flex items-center gap-1',
+                  'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
                     ? 'border border-gray-200 text-gray-800'
                     : 'bg-blue-600 text-white',
@@ -1288,66 +1279,45 @@ const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
 
 // Sponsored Products
-const products = ref([]);
-const displayProducts = ref([]);
+const allProducts = ref([]);
+const shuffledProducts = ref([]);
+const isLoadingProducts = ref(false);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
-const isProductsLoading = ref(false);
-const productError = ref(null);
 
-function shuffleArray(array) {
-  return [...array]  // Create a copy to avoid mutating the original
-    .map((item) => ({ item, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ item }) => item);
+// Function to fetch products from API
+async function fetchProducts() {
+  isLoadingProducts.value = true;
+  try {
+    const { data } = await get('/all-products/');
+    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
+      allProducts.value = Array.isArray(data) ? data : data.results;
+      getRandomProducts();
+    } else {
+      console.error('Unexpected product data format:', data);
+      allProducts.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    allProducts.value = [];
+  } finally {
+    isLoadingProducts.value = false;
+  }
 }
 
-// Enhanced product fetching with better error handling and logging
-const fetchSponsoredProducts = async () => {
-  isProductsLoading.value = true;
-  productError.value = null;
-  
-  try {
-    console.log("Fetching sponsored products from database...");
-    
-    // First try to get featured products
-    const response = await get("/products/featured/");
-    
-    if (response?.data?.results && response.data.results.length > 0) {
-      console.log("Found featured products:", response.data.results.length);
-      const randomProducts = shuffleArray(response.data.results);
-      displayProducts.value = randomProducts;
-      isProductsLoading.value = false;
-      return;
-    }
-    
-    // If no featured products, get regular products
-    console.log("No featured products found, trying regular products...");
-    const allProductsResponse = await get("/products/");
-    
-    if (allProductsResponse?.data?.results && allProductsResponse.data.results.length > 0) {
-      console.log("Found regular products:", allProductsResponse.data.results.length);
-      const randomProducts = shuffleArray(allProductsResponse.data.results);
-      displayProducts.value = randomProducts;
-      isProductsLoading.value = false;
-      return;
-    }
-    
-    // No products found
-    console.log("No products found in database");
-    productError.value = "No products available at this time";
-    displayProducts.value = [];
-    
-  } catch (error) {
-    console.error("Error fetching sponsored products:", error);
-    productError.value = "Failed to load products";
-    displayProducts.value = [];
-  } finally {
-    isProductsLoading.value = false;
+// Function to get random products
+function getRandomProducts() {
+  if (allProducts.value.length === 0) {
+    shuffledProducts.value = [];
+    return;
   }
-};
+  
+  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
+  shuffledProducts.value = shuffled.slice(0, 3); // Always display exactly 3 random products
+}
 
+// Fetch products when component is mounted
 onMounted(() => {
-  fetchSponsoredProducts();
+  fetchProducts();
 });
 
 // Format time ago
@@ -2231,9 +2201,11 @@ onMounted(() => {
 .sponsored-products-section {
   background-color: #f9f9f9;
   padding: 20px;
+  margin: 0 auto; /* Center the section */
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 10px;
+  margin-top: 20px;
+  max-width: 1200px; /* Fit to screen with a max width */
 }
 
 .grid {
@@ -2246,5 +2218,23 @@ onMounted(() => {
 
 .gap-4 {
   gap: 1rem;
+}
+
+/* Center images in the media gallery */
+.media-gallery img {
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Hide scrollbar for mobile screens */
+.carousel {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.carousel::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 </style>
