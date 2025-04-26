@@ -190,7 +190,7 @@
                   'grid-rows-2': post.post_media.length >= 4,
                   'h-[320px] sm:h-[400px]': post.post_media.length === 1,
                   'h-[320px] sm:h-[400px]': post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-[400px] sm:h-[480px]': post.post_media.length >= 4
+                  'h-[620px] sm:h-[750px]': post.post_media.length >= 4
                 }"
               >
                 <!-- Single Image Layout -->
