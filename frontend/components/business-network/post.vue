@@ -545,6 +545,33 @@
             </div>
           </div>
         </div>
+
+        <!-- Sponsored Products Section -->
+        <div v-if="shouldShowSponsoredProducts(index)" class="mt-6">
+          <h3 class="text-lg font-semibold mb-4">Sponsored Products</h3>
+          <div
+            :class="{
+              'grid grid-cols-2 gap-4': isMobile,
+              'grid grid-cols-3 gap-6': !isMobile,
+            }"
+          >
+            <div
+              v-for="product in sponsoredProducts"
+              :key="product.id"
+              class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200"
+            >
+              <img
+                :src="product.image"
+                :alt="product.name"
+                class="w-full h-40 object-cover"
+              />
+              <div class="p-4">
+                <h4 class="text-sm font-medium text-gray-800">{{ product.name }}</h4>
+                <p class="text-sm text-gray-600">{{ product.price }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="loading" class="flex justify-center py-6">
@@ -1197,6 +1224,27 @@ const mentionSuggestions = ref([]);
 const showMentions = ref(false);
 const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
+
+// Sponsored Products
+const SPONSORED_PRODUCT_INTERVAL = 6;
+const isMobile = ref(window.innerWidth <= 768);
+
+// Update isMobile on window resize
+window.addEventListener('resize', () => {
+  isMobile.value = window.innerWidth <= 768;
+});
+
+// Sponsored products data (example)
+const sponsoredProducts = [
+  { id: 1, name: 'Product 1', image: '/path/to/image1.jpg', price: '৳500' },
+  { id: 2, name: 'Product 2', image: '/path/to/image2.jpg', price: '৳700' },
+  { id: 3, name: 'Product 3', image: '/path/to/image3.jpg', price: '৳900' },
+];
+
+// Function to determine if a sponsored product section should be shown
+const shouldShowSponsoredProducts = (index) => {
+  return (index + 1) % SPONSORED_PRODUCT_INTERVAL === 0;
+};
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
