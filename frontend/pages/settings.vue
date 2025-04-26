@@ -28,14 +28,18 @@
               class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 border-4 border-white shadow-md overflow-hidden"
             >
               <!-- Better profile icon fallback -->
-              <UIcon 
-                v-if="!(userProfile.first_name || userProfile.last_name)" 
-                name="i-heroicons-user" 
-                class="w-10 h-10" 
+              <UIcon
+                v-if="!(userProfile.first_name || userProfile.last_name)"
+                name="i-heroicons-user"
+                class="w-10 h-10"
               />
               <span v-else class="text-xl font-bold">
-                {{ userProfile.first_name ? userProfile.first_name.charAt(0) : "" }}
-                {{ userProfile.last_name ? userProfile.last_name.charAt(0) : "" }}
+                {{
+                  userProfile.first_name ? userProfile.first_name.charAt(0) : ""
+                }}
+                {{
+                  userProfile.last_name ? userProfile.last_name.charAt(0) : ""
+                }}
               </span>
             </div>
             <!-- Verification badge remains unchanged -->
@@ -245,7 +249,11 @@
               </h2>
             </div>
 
-            <form id="profileForm" @submit.prevent="handleForm" class="space-y-6">
+            <form
+              id="profileForm"
+              @submit.prevent="handleForm"
+              class="space-y-6"
+            >
               <!-- Profile Image Upload -->
               <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
                 <label class="block text-base font-medium text-gray-700 mb-3"
@@ -262,7 +270,7 @@
                     <button
                       type="button"
                       class="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-sm text-red-500 hover:bg-red-50 transition-colors"
-                      @click="deleteUpload()"
+                      @click="showDeleteConfirmModal = true"
                       aria-label="Remove profile image"
                     >
                       <UIcon name="i-heroicons-trash" class="w-4 h-4" />
@@ -270,8 +278,13 @@
                   </div>
                   <!-- Image placeholder when no image -->
                   <div v-else class="relative">
-                    <div class="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center border-2 border-white shadow overflow-hidden">
-                      <UIcon name="i-heroicons-user" class="w-12 h-12 text-emerald-300" />
+                    <div
+                      class="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center border-2 border-white shadow overflow-hidden"
+                    >
+                      <UIcon
+                        name="i-heroicons-user"
+                        class="w-12 h-12 text-emerald-300"
+                      />
                     </div>
                   </div>
 
@@ -290,7 +303,9 @@
                         name="i-heroicons-camera"
                         class="w-6 h-6 text-emerald-500"
                       />
-                      <span class="text-xs text-emerald-600 font-medium">Upload</span>
+                      <span class="text-xs text-emerald-600 font-medium"
+                        >Upload</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -561,12 +576,14 @@
       </UContainer>
 
       <!-- Sticky Save Button -->
-      <div 
-        v-if="activeTab === 'profile'" 
+      <div
+        v-if="activeTab === 'profile'"
         class="fixed bottom-0 left-0 right-0 bg-white bg-opacity-95 shadow-lg border-t border-gray-100 backdrop-blur-sm transition-all duration-300 z-50 mb-16 sm:mb-0"
         :class="{ 'translate-y-full': !showStickyButton }"
       >
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div
+          class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between"
+        >
           <div class="text-sm text-gray-500">
             <span v-if="formDirty" class="flex items-center gap-1">
               <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
@@ -594,6 +611,80 @@
         <!-- Increased spacer to prevent content from being hidden behind the sticky button and mobile menu -->
       </div>
     </div>
+    <div
+      v-if="showDeleteConfirmModal"
+      class="fixed inset-0 z-10 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+      >
+        <div
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+          aria-hidden="true"
+          @click="showDeleteConfirmModal = false"
+        ></div>
+        <span
+          class="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+          >&#8203;</span
+        >
+        <div
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+        >
+          <div
+            class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"
+          ></div>
+          <div
+            class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
+          >
+            <h3
+              class="text-xl font-semibold text-gray-900 flex items-center"
+              id="modal-title"
+            >
+              <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
+              Confirm Deletion
+            </h3>
+            <button
+              @click="showDeleteConfirmModal = false"
+              class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+            >
+              <X class="h-6 w-6" />
+            </button>
+          </div>
+          <div class="px-6 py-4">
+            <p class="text-gray-700">
+              Are you sure you want to delete profile image?
+            </p>
+          </div>
+          <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+            <button
+              @click="deleteUpload()"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
+              :disabled="isProcessing"
+            >
+              <span v-if="!isProcessing" class="flex items-center">
+                <Trash2 class="h-4 w-4 mr-1.5" />
+                Delete
+              </span>
+              <span v-else class="flex items-center">
+                <Loader2 class="h-4 w-4 mr-1.5 animate-spin" />
+                Deleting...
+              </span>
+            </button>
+            <button
+              @click="showDeleteConfirmModal = false"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+            >
+              <X class="h-4 w-4 mr-1.5" />
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </PublicSection>
 </template>
 
@@ -601,10 +692,13 @@
 definePageMeta({
   layout: "dashboard",
 });
+import { Trash2, X, AlertTriangle, Loader2 } from "lucide-vue-next";
 const { get, post, put } = useApi();
 const { user } = useAuth();
 const toast = useToast();
 // State Management
+const showDeleteConfirmModal = ref(false);
+const isProcessing = ref(false);
 const activeTab = ref("profile");
 const userProfile = ref({});
 const errors = ref({});
@@ -624,15 +718,15 @@ const activeToasts = ref(new Set()); // Track active toast messages
 function showToast(title, description, color, timeout = 5000) {
   // Create a unique key for this toast message
   const messageKey = `${title}:${description}`;
-  
+
   // Check if this exact toast is already showing
   if (activeToasts.value.has(messageKey)) {
     return; // Skip showing duplicate toast
   }
-  
+
   // Add to active toasts set
   activeToasts.value.add(messageKey);
-  
+
   // Show the toast with guaranteed timeout
   const toastId = toast.add({
     title,
@@ -641,9 +735,9 @@ function showToast(title, description, color, timeout = 5000) {
     timeout: timeout, // Default 5 seconds unless specified otherwise
     onClose: () => {
       activeToasts.value.delete(messageKey); // Remove from active toasts
-    }
+    },
   });
-  
+
   // Safety mechanism: ensure toast is removed after timeout + 1s buffer
   if (timeout > 0) {
     setTimeout(() => {
@@ -651,7 +745,7 @@ function showToast(title, description, color, timeout = 5000) {
       activeToasts.value.delete(messageKey);
     }, timeout + 1000);
   }
-  
+
   return toastId;
 }
 
@@ -659,7 +753,7 @@ function showToast(title, description, color, timeout = 5000) {
 function handleScroll() {
   // Show/hide button based on scroll direction
   const currentScrollPosition = window.scrollY;
-  
+
   if (currentScrollPosition < 100) {
     // Always show at the top of the page
     showStickyButton.value = true;
@@ -670,27 +764,34 @@ function handleScroll() {
     // Scrolling down - hide the button
     showStickyButton.value = false;
   }
-  
+
   lastScrollPosition.value = currentScrollPosition;
 }
 
 // Track form changes
 function checkFormChanges() {
-  if (!originalProfile.value || Object.keys(originalProfile.value).length === 0) {
+  if (
+    !originalProfile.value ||
+    Object.keys(originalProfile.value).length === 0
+  ) {
     return;
   }
 
   // Compare current form with original values
   const currentValues = JSON.stringify(userProfile.value);
   const originalValues = JSON.stringify(originalProfile.value);
-  
+
   formDirty.value = currentValues !== originalValues;
 }
 
 // Watch for profile changes
-watch(userProfile, () => {
-  checkFormChanges();
-}, { deep: true });
+watch(
+  userProfile,
+  () => {
+    checkFormChanges();
+  },
+  { deep: true }
+);
 
 // Fetch user profile details
 async function getUserDetails() {
@@ -728,12 +829,20 @@ async function handlePasswordChange() {
     });
 
     if (data) {
-      showToast("Success", data.message || "Password successfully changed", "green");
+      showToast(
+        "Success",
+        data.message || "Password successfully changed",
+        "green"
+      );
       old_password.value = "";
       new_password.value = "";
     }
   } catch (error) {
-    showToast("Error", error.response?.data?.message || "Failed to change password", "red");
+    showToast(
+      "Error",
+      error.response?.data?.message || "Failed to change password",
+      "red"
+    );
     console.error(error);
   } finally {
     passwordLoading.value = false;
@@ -743,23 +852,25 @@ async function handlePasswordChange() {
 // Handle profile update
 async function handleForm() {
   isLoading.value = true;
-  
+
   try {
     // Create a copy of the profile data
     const profileData = { ...userProfile.value };
-    
+
     // Set the name properly
-    profileData.name = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
-    
+    profileData.name = `${profileData.first_name || ""} ${
+      profileData.last_name || ""
+    }`.trim();
+
     // Remove properties that shouldn't be sent to the API
     const { groups, user_permissions, nid, refer, ...dataToSend } = profileData;
-    
+
     // Handle image more explicitly
-    if (typeof profileData.image === 'string') {
-      if (profileData.image.includes('data:image')) {
+    if (typeof profileData.image === "string") {
+      if (profileData.image.includes("data:image")) {
         // This is a new image upload as base64
         dataToSend.image = profileData.image;
-      } else if (profileData.image.includes('http')) {
+      } else if (profileData.image.includes("http")) {
         // This is an existing image URL - don't include it in the update
         delete dataToSend.image;
       }
@@ -769,10 +880,14 @@ async function handleForm() {
       dataToSend.image = "";
     }
 
-    console.log('Sending profile update with image type:', 
-                dataToSend.image ? 
-                (typeof dataToSend.image === 'string' ? 'string' : typeof dataToSend.image) : 
-                'empty');
+    console.log(
+      "Sending profile update with image type:",
+      dataToSend.image
+        ? typeof dataToSend.image === "string"
+          ? "string"
+          : typeof dataToSend.image
+        : "empty"
+    );
 
     const res = await put(`/persons/update/${profileData.email}/`, dataToSend);
 
@@ -783,7 +898,7 @@ async function handleForm() {
       errors.value = {};
       // Mark form as clean after successful submission
       handleFormSuccess();
-      
+
       // Refresh profile data to ensure we get the latest from the server
       await getUserDetails();
     } else {
@@ -794,9 +909,9 @@ async function handleForm() {
     console.error("Profile update error:", error);
     // More detailed error message
     showToast(
-      "Error", 
-      error.response?.data?.message || 
-      "Profile update failed. Check your internet connection or try again.",
+      "Error",
+      error.response?.data?.message ||
+        "Profile update failed. Check your internet connection or try again.",
       "red"
     );
   } finally {
@@ -810,10 +925,14 @@ function handleFileUpload(event, field) {
   if (!files.length) return;
 
   const file = files[0];
-  
+
   // More thorough validation
   if (!file.type.match(/^image\/(jpeg|png|gif|webp|bmp)$/i)) {
-    showToast("Invalid File Type", "Please select a valid image file (JPEG, PNG, GIF)", "red");
+    showToast(
+      "Invalid File Type",
+      "Please select a valid image file (JPEG, PNG, GIF)",
+      "red"
+    );
     return;
   }
 
@@ -822,7 +941,10 @@ function handleFileUpload(event, field) {
   if (file.size > maxSize) {
     showToast(
       "File Too Large",
-      `Image must be smaller than 1MB. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
+      `Image must be smaller than 1MB. Current size: ${(
+        file.size /
+        (1024 * 1024)
+      ).toFixed(1)}MB`,
       "red"
     );
     return;
@@ -841,25 +963,31 @@ function handleFileUpload(event, field) {
   reader.onload = () => {
     // Resize the image if needed
     const img = new Image();
-    img.onload = function() {
+    img.onload = function () {
       // Remove the loading toast
       toast.remove(loadingToast);
-      activeToasts.value.delete("Processing Image:Please wait while we process your image...");
+      activeToasts.value.delete(
+        "Processing Image:Please wait while we process your image..."
+      );
 
       // If image is already small enough, use as is
       if (reader.result.length <= maxSize) {
         userProfile.value.image = reader.result;
-        showToast("Image Ready", "Your image has been prepared for upload", "green");
+        showToast(
+          "Image Ready",
+          "Your image has been prepared for upload",
+          "green"
+        );
         return;
       }
 
       // Otherwise, resize the image
       const MAX_WIDTH = 800;
       const MAX_HEIGHT = 800;
-      
+
       let width = img.width;
       let height = img.height;
-      
+
       // Calculate new dimensions
       if (width > height) {
         if (width > MAX_WIDTH) {
@@ -872,31 +1000,37 @@ function handleFileUpload(event, field) {
           height = MAX_HEIGHT;
         }
       }
-      
+
       // Create canvas to resize image
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      
+
       // Draw image at new size
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
-      
+
       // Get resized image as base64 string
       const quality = 0.8; // Good balance between size and quality
-      const resizedImage = canvas.toDataURL('image/jpeg', quality);
-      
+      const resizedImage = canvas.toDataURL("image/jpeg", quality);
+
       // Update the profile image
       userProfile.value.image = resizedImage;
-      
-      showToast("Image Ready", "Your image has been resized and is ready for upload", "green");
+
+      showToast(
+        "Image Ready",
+        "Your image has been resized and is ready for upload",
+        "green"
+      );
     };
     img.src = reader.result;
   };
 
   reader.onerror = (error) => {
     toast.remove(loadingToast);
-    activeToasts.value.delete("Processing Image:Please wait while we process your image...");
+    activeToasts.value.delete(
+      "Processing Image:Please wait while we process your image..."
+    );
     console.error("Error reading file:", error);
     showToast("Error", "Failed to process the image file", "red");
   };
@@ -905,24 +1039,35 @@ function handleFileUpload(event, field) {
 }
 
 // Handle profile image removal
-function deleteUpload() {
+async function deleteUpload() {
   // Mark as explicitly null to ensure the API recognizes it's being removed
   userProfile.value.image = null;
-  
+
   // Mark form as dirty to enable the save button
   formDirty.value = true;
-  
-  showToast("Image Removed", "Your profile image has been removed locally. Click Save Profile to confirm changes.", "blue");
+  isProcessing.value = true;
+  try {
+    const res = await post(`/persons/${user.value.user.email}/delete_image/`);
+    if (res.data) {
+      showToast("Success", "Image removed successfully", "green");
+      showDeleteConfirmModal.value = false;
+    }
+  } catch (error) {
+    console.error("Error removing image:", error);
+    showToast("Error", "Failed to remove image", "red");
+  } finally {
+    isProcessing.value = false;
+  }
 }
 
 // Add event listeners when component is mounted
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
+  window.addEventListener("scroll", handleScroll);
 });
 
 // Clean up event listeners when component is unmounted
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener("scroll", handleScroll);
 });
 
 getUserDetails();

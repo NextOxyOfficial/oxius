@@ -307,6 +307,27 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             raise NotFound({"error": f"No person found with email: {email}"})
+        
+
+class PersonImageDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, email):
+        try:
+            user = User.objects.get(email=email)
+
+            if user.image:
+                user.image.delete(save=False)
+                user.image = None
+                user.save()
+                return Response({"detail": "User image deleted successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "User has no image to delete."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except User.DoesNotExist:
+            raise NotFound({"error": f"No person found with email: {email}"})
+
+
 @api_view(['GET'])
 def get_user_with_identifier(request, identifier):
     print(identifier)
