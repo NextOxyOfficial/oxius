@@ -188,16 +188,16 @@
                   'grid-cols-2':
                     post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
-                  'h-auto max-w-auto max-h-[200px] sm:max-h-[400px]': post.post_media.length === 1,
-                  'h-auto max-w-auto max-h-[180px] sm:max-h-[520px]':
+                  'h-auto max-w-auto max-h-[240px] sm:max-h-[400px]': post.post_media.length === 1,
+                  'h-auto max-w-auto max-h-[200px] sm:max-h-[480px]':
                     post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-auto max-w-auto max-h-[240px] sm:max-h-[520px]': post.post_media.length >= 4,
+                  'h-auto max-w-auto max-h-[380px] sm:max-h-[480px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
                 <template v-if="post.post_media.length === 1">
                   <div
-                    class="relative w-full h-full max-h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative w-full h-full max-h-[240px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
@@ -252,7 +252,7 @@
                 <template v-else-if="post.post_media.length === 3">
                   <!-- First image - large, full width -->
                   <div
-                    class="relative col-span-2 h-[240px] sm:h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative col-span-2 h-[240px] sm:h-[280px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
@@ -275,7 +275,7 @@
                   </div>
 
                   <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
+                  <div class="grid grid-cols-2 gap-1" style="height: 240px">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
