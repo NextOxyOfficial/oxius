@@ -582,7 +582,29 @@
         </div>
 
         <!-- Sponsored Products Section -->
-        
+        <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
+          <div class="relative">
+            <!-- Carousel Container for Mobile -->
+            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
+              <ProductCard
+                v-for="(product, productIndex) in shuffledProducts"
+                :key="productIndex"
+                :product="product"
+                class="flex-shrink-0 w-1/2"
+              />
+            </div>
+
+            <!-- Grid Layout for Desktop -->
+            <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
+              <ProductCard
+                v-for="(product, productIndex) in shuffledProducts"
+                :key="productIndex"
+                :product="product"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="loading" class="flex justify-center py-6">
