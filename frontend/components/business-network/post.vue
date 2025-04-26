@@ -180,6 +180,7 @@
             </div>
 
             <!-- Media Gallery with Professional Layout -->
+            <!-- Increased height for 2-column layouts -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
               <div 
                 class="relative overflow-hidden rounded-lg"
@@ -188,8 +189,8 @@
                   'grid-cols-2': post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
                   'h-[320px] sm:h-[400px]': post.post_media.length === 1,
-                  'h-[240px] sm:h-[320px]': post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-[360px] sm:h-[420px]': post.post_media.length >= 4
+                  'h-[320px] sm:h-[400px]': post.post_media.length >= 2 && post.post_media.length <= 3,
+                  'h-[400px] sm:h-[480px]': post.post_media.length >= 4
                 }"
               >
                 <!-- Single Image Layout -->
@@ -1110,6 +1111,11 @@
 </template>
 
 <script setup>
+// Media height settings:
+// - Single image: h-[320px] sm:h-[400px]
+// - Two or three images: h-[280px] sm:h-[380px] (INCREASED HEIGHT)
+// - Four+ images: h-[400px] sm:h-[480px] (INCREASED HEIGHT)
+
 const props = defineProps({
   posts: {
     type: Array,
