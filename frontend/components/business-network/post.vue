@@ -189,9 +189,9 @@
                     post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
                   'h-auto max-h-[320px] sm:max-h-[400px]': post.post_media.length === 1,
-                  'h-auto max-h-[520px] sm:max-h-[520px]':
+                  'h-auto max-h-[280px] sm:max-h-[480px]':
                     post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-auto max-h-[380px] sm:max-h-[520px]': post.post_media.length >= 4,
+                  'h-auto max-h-[340px] sm:max-h-[480px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
