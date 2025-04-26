@@ -547,29 +547,14 @@
         </div>
 
         <!-- Sponsored Products Section -->
-        <div v-if="shouldShowSponsoredProducts(index)" class="mt-6">
-          <h3 class="text-lg font-semibold mb-4">Sponsored Products</h3>
-          <div
-            :class="{
-              'grid grid-cols-2 gap-4': isMobile,
-              'grid grid-cols-3 gap-6': !isMobile,
-            }"
-          >
-            <div
-              v-for="product in sponsoredProducts"
-              :key="product.id"
-              class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200"
-            >
-              <img
-                :src="product.image"
-                :alt="product.name"
-                class="w-full h-40 object-cover"
-              />
-              <div class="p-4">
-                <h4 class="text-sm font-medium text-gray-800">{{ product.name }}</h4>
-                <p class="text-sm text-gray-600">{{ product.price }}</p>
-              </div>
-            </div>
+        <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
+          <h2 class=" font-semibold text-gray-700 mb-4">Sponsored Products</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <ProductCard
+              v-for="(product, productIndex) in shuffledProducts"
+              :key="productIndex"
+              :product="product"
+            />
           </div>
         </div>
       </div>
@@ -1189,6 +1174,7 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
+import ProductCard from '@/components/common/product-card.vue';
 const { user } = useAuth();
 const { post, del, put, get } = useApi();
 
@@ -1226,25 +1212,27 @@ const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
 
 // Sponsored Products
-const SPONSORED_PRODUCT_INTERVAL = 6;
-const isMobile = ref(window.innerWidth <= 768);
-
-// Update isMobile on window resize
-window.addEventListener('resize', () => {
-  isMobile.value = window.innerWidth <= 768;
-});
-
-// Sponsored products data (example)
-const sponsoredProducts = [
-  { id: 1, name: 'Product 1', image: '/path/to/image1.jpg', price: '৳500' },
-  { id: 2, name: 'Product 2', image: '/path/to/image2.jpg', price: '৳700' },
-  { id: 3, name: 'Product 3', image: '/path/to/image3.jpg', price: '৳900' },
+const products = [
+  { id: 1, name: 'Product 1', sale_price: 100, regular_price: 150 },
+  { id: 2, name: 'Product 2', sale_price: 200, regular_price: 250 },
+  { id: 3, name: 'Product 3', sale_price: 300, regular_price: 350 },
+  { id: 4, name: 'Product 4', sale_price: 400, regular_price: 450 },
+  { id: 5, name: 'Product 5', sale_price: 500, regular_price: 550 },
 ];
 
-// Function to determine if a sponsored product section should be shown
-const shouldShowSponsoredProducts = (index) => {
-  return (index + 1) % SPONSORED_PRODUCT_INTERVAL === 0;
-};
+const shuffledProducts = ref([]);
+const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
+
+function shuffleArray(array) {
+  return array
+    .map((item) => ({ item, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ item }) => item);
+}
+
+onMounted(() => {
+  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display 3 random products for desktop, 2 for mobile
+});
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -2082,10 +2070,6 @@ const refreshPosts = async () => {
 // Expose the method to parent components
 defineExpose({ refreshPosts });
 
-
-
-
-
 // Initialize
 onMounted(() => {
   // Implement infinite scroll
@@ -2123,5 +2107,13 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.sponsored-products-section {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 </style>
