@@ -125,7 +125,7 @@
             <div v-if="workspaces.length === 0" class="px-4 py-3 text-gray-500 text-center">
               No workspaces available.
             </div>
-            <NuxtLink
+            <!-- <NuxtLink
               v-for="workspace in workspaces"
               :key="workspace.id"
               :to="`/business-network/workspace/${workspace.id}`"
@@ -134,7 +134,7 @@
               @click="navigateToWorkspace(workspace.id)"
             >
               <span class="text-sm font-medium">{{ workspace.name }}</span>
-            </NuxtLink>
+            </NuxtLink> -->
           </nav>
         </div>
 
