@@ -188,16 +188,16 @@
                   'grid-cols-2':
                     post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
-                  'h-auto max-h-[320px] sm:max-h-[400px]': post.post_media.length === 1,
-                  'h-auto max-h-[280px] sm:max-h-[480px]':
+                  'w-full h-auto max-h-[min(320px,_80vw)] sm:max-h-[400px]': post.post_media.length === 1,
+                  'w-full h-auto max-h-[min(280px,_70vw)] sm:max-h-[420px]':
                     post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-auto max-h-[340px] sm:max-h-[480px]': post.post_media.length >= 4,
+                  'w-full h-auto max-h-[min(340px,_85vw)] sm:max-h-[420px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
                 <template v-if="post.post_media.length === 1">
                   <div
-                    class="relative w-full h-full max-h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative w-full h-auto cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
