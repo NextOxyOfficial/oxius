@@ -185,20 +185,25 @@
                 class="relative overflow-hidden rounded-lg"
                 :class="{
                   'grid gap-1': post.post_media.length > 1,
-                  'grid-cols-2': post.post_media.length === 2 || post.post_media.length >= 4,
+                  'grid-cols-2':
+                    post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
+                  'h-auto max-w-auto max-h-[200px] sm:max-h-[400px]': post.post_media.length === 1,
+                  'h-auto max-w-auto max-h-[180px] sm:max-h-[520px]':
+                    post.post_media.length >= 2 && post.post_media.length <= 3,
+                  'h-auto max-w-auto max-h-[240px] sm:max-h-[520px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
                 <template v-if="post.post_media.length === 1">
                   <div
-                    class="relative w-full h-auto aspect-[3/2] max-h-[min(320px,_80vw)] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative w-full h-full max-h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
                       :src="post.post_media[0].image"
                       alt="Media"
-                      class="h-full w-full object-contain mx-auto"
+                      class="h-full w-full object-contain"
                     />
                     <div
                       v-if="post.post_media[0].type === 'video'"
@@ -220,7 +225,7 @@
                   <div
                     v-for="(media, mediaIndex) in post.post_media.slice(0, 2)"
                     :key="media.id"
-                    class="relative aspect-square h-auto max-h-[min(280px,_70vw)] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, mediaIndex)"
                   >
                     <img
@@ -247,7 +252,7 @@
                 <template v-else-if="post.post_media.length === 3">
                   <!-- First image - large, full width -->
                   <div
-                    class="relative col-span-2 h-auto aspect-[3/2] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative col-span-2 h-[240px] sm:h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
@@ -270,11 +275,11 @@
                   </div>
 
                   <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1 h-auto">
+                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
-                      class="relative aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                      class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                       @click="openMedia(post, mediaIndex + 1)"
                     >
                       <img
@@ -303,7 +308,7 @@
                   <div
                     v-for="(media, mediaIndex) in post.post_media.slice(0, 4)"
                     :key="media.id"
-                    class="relative aspect-square max-h-[min(340px,_85vw)] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, mediaIndex)"
                   >
                     <img
@@ -581,12 +586,12 @@
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
           <div class="relative">
             <!-- Carousel Container for Mobile -->
-            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden pb-2 snap-x snap-mandatory scroll-smooth">
+            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
               <ProductCard
                 v-for="(product, productIndex) in shuffledProducts"
                 :key="productIndex"
                 :product="product"
-                class="flex-shrink-0 w-[45%] snap-start"
+                class="flex-shrink-0 w-1/2"
               />
             </div>
 
