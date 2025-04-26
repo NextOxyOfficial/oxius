@@ -263,22 +263,27 @@
                   
                   <!-- Second and third images - side by side -->
                   <div
-                    v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
-                    :key="media.id"
-                    class="relative h-[95px] sm:h-[115px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
-                    @click="openMedia(post, mediaIndex + 1)"
+                    class="grid grid-cols-2 gap-1"
+                    style="height: 200px;"
                   >
-                    <img
-                      :src="media.image"
-                      :alt="`Media ${mediaIndex + 2}`"
-                      class="h-full w-full object-cover"
-                    />
                     <div
-                      v-if="media.type === 'video'"
-                      class="absolute inset-0 flex items-center justify-center"
+                      v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
+                      :key="media.id"
+                      class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                      @click="openMedia(post, mediaIndex + 1)"
                     >
-                      <div class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center">
-                        <div class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"></div>
+                      <img
+                        :src="media.image"
+                        :alt="`Media ${mediaIndex + 2}`"
+                        class="h-full w-full object-cover"
+                      />
+                      <div
+                        v-if="media.type === 'video'"
+                        class="absolute inset-0 flex items-center justify-center"
+                      >
+                        <div class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center">
+                          <div class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
