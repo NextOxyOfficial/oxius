@@ -597,7 +597,7 @@
             </div>
 
             <!-- Grid Layout for Desktop -->
-            <div class="hidden sm:grid sm:grid-cols-3 gap-4">
+            <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
               <ProductCard
                 v-for="(product, productIndex) in shuffledProducts"
                 :key="productIndex"
@@ -1071,7 +1071,7 @@
                       <img
                         :src="user.image"
                         :alt="user.name"
-                        class="w-6 h-6 rounded-full mr-2"
+                        class="w-7 h-7 rounded-full mr-2"
                       />
                       <span class="text-sm font-medium">{{ user.name }}</span>
                     </div>
@@ -1085,7 +1085,7 @@
                 >
                   <Loader2
                     v-if="activeCommentsPost.isCommentLoading"
-                    class="h-3 w-3 animate-spin"
+                    class="h-5 w-5 animate-spin"
                   />
                   <Send v-else class="h-3 w-3" />
                 </button>
@@ -2182,9 +2182,11 @@ onMounted(() => {
 .sponsored-products-section {
   background-color: #f9f9f9;
   padding: 20px;
+  margin: 0 auto; /* Center the section */
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 2px;
+  margin-top: 20px;
+  max-width: 1200px; /* Fit to screen with a max width */
 }
 
 .grid {
