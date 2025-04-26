@@ -252,20 +252,19 @@
             >
               <span
                 v-if="user?.user?.is_pro"
-                class="text-xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
+                class="text-xs px-0.5 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
               >
                 <div class="flex items-center gap-1">
                   <UIcon
                     name="i-heroicons-shield-check"
-                    class="size-4 text-white"
+                    class="size-3 text-white"
                   />
-                  <span class="text-xs">Pro</span>
                 </div>
               </span>
               <UIcon
                 v-if="user?.user?.kyc"
                 name="mdi:check-decagram"
-                class="w-5 h-5 text-blue-600"
+                class="w-4 h-4 text-blue-600"
               />
               <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
 
@@ -420,7 +419,7 @@
                           >
                         </div>
                         <span
-                          class="text-xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
+                          class="text-xs px-1 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
                         >
                           <div class="flex items-center gap-1">
                             <UIcon
