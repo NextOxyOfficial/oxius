@@ -863,7 +863,15 @@ async function handleForm() {
     }`.trim();
 
     // Remove properties that shouldn't be sent to the API
-    const { groups, user_permissions, nid, refer, ...dataToSend } = profileData;
+    const {
+      groups,
+      user_permissions,
+      nid,
+      refer,
+      store_logo,
+      store_banner,
+      ...dataToSend
+    } = profileData;
 
     // Handle image more explicitly
     if (typeof profileData.image === "string") {
