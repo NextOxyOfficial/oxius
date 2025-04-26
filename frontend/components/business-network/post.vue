@@ -529,7 +529,7 @@
                       </div>
                       <p v-else class="text-md">{{ comment?.content }}</p>
                     </div>
-                    <span class="text-md text-gray-500 mt-1 inline-block">
+                    <span class="text-sm text-gray-500 mt-1 inline-block">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
                   </div>
@@ -585,13 +585,21 @@
         <!-- Sponsored Products Section -->
         <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
-          <div class="relative">
+          <div v-if="isProductsLoading" class="flex justify-center py-6">
+            <div class="h-6 w-6 animate-spin text-blue-600">
+              <Loader2 />
+            </div>
+          </div>
+          <div v-else-if="productError" class="text-center text-gray-500">
+            {{ productError }}
+          </div>
+          <div v-else class="relative">
             <!-- Carousel Container for Mobile (2 products) -->
             <div class="sm:hidden">
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-3">
                 <ProductCard
-                  v-for="(product, productIndex) in shuffledProducts.slice(0, 2)"
-                  :key="productIndex"
+                  v-for="(product, productIndex) in displayProducts.slice(0, 2)"
+                  :key="product.id"
                   :product="product"
                 />
               </div>
@@ -600,8 +608,8 @@
             <!-- Grid Layout for Desktop (3 products) -->
             <div class="hidden sm:grid sm:grid-cols-3 gap-4">
               <ProductCard
-                v-for="(product, productIndex) in shuffledProducts.slice(0, 3)"
-                :key="productIndex"
+                v-for="(product, productIndex) in displayProducts.slice(0, 3)"
+                :key="product.id"
                 :product="product"
               />
             </div>
@@ -778,7 +786,7 @@
                         <p class="text-md mt-1">{{ comment.text }}</p>
                       </div>
                       <div class="flex items-center mt-1 space-x-3">
-                        <span class="text-md text-gray-500">{{
+                        <span class="text-sm text-gray-500">{{
                           formatTimeAgo(comment.timestamp)
                         }}</span>
                       </div>
@@ -1023,7 +1031,7 @@
                     <p v-else class="text-md">{{ comment.content }}</p>
                   </div>
                   <div class="flex items-center mt-1 space-x-3">
-                    <span class="text-md text-gray-500">{{
+                    <span class="text-sm text-gray-500">{{
                       formatTimeAgo(comment.created_at)
                     }}</span>
                   </div>
@@ -1280,26 +1288,66 @@ const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
 
 // Sponsored Products
-const products = [
-  { id: 1, name: "Product 1", sale_price: 100, regular_price: 150 },
-  { id: 2, name: "Product 2", sale_price: 200, regular_price: 250 },
-  { id: 3, name: "Product 3", sale_price: 300, regular_price: 350 },
-  { id: 4, name: "Product 4", sale_price: 400, regular_price: 450 },
-  { id: 5, name: "Product 5", sale_price: 500, regular_price: 550 },
-];
-
-const shuffledProducts = ref([]);
+const products = ref([]);
+const displayProducts = ref([]);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
+const isProductsLoading = ref(false);
+const productError = ref(null);
 
 function shuffleArray(array) {
-  return array
+  return [...array]  // Create a copy to avoid mutating the original
     .map((item) => ({ item, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map(({ item }) => item);
 }
 
+// Enhanced product fetching with better error handling and logging
+const fetchSponsoredProducts = async () => {
+  isProductsLoading.value = true;
+  productError.value = null;
+  
+  try {
+    console.log("Fetching sponsored products from database...");
+    
+    // First try to get featured products
+    const response = await get("/products/featured/");
+    
+    if (response?.data?.results && response.data.results.length > 0) {
+      console.log("Found featured products:", response.data.results.length);
+      const randomProducts = shuffleArray(response.data.results);
+      displayProducts.value = randomProducts;
+      isProductsLoading.value = false;
+      return;
+    }
+    
+    // If no featured products, get regular products
+    console.log("No featured products found, trying regular products...");
+    const allProductsResponse = await get("/products/");
+    
+    if (allProductsResponse?.data?.results && allProductsResponse.data.results.length > 0) {
+      console.log("Found regular products:", allProductsResponse.data.results.length);
+      const randomProducts = shuffleArray(allProductsResponse.data.results);
+      displayProducts.value = randomProducts;
+      isProductsLoading.value = false;
+      return;
+    }
+    
+    // No products found
+    console.log("No products found in database");
+    productError.value = "No products available at this time";
+    displayProducts.value = [];
+    
+  } catch (error) {
+    console.error("Error fetching sponsored products:", error);
+    productError.value = "Failed to load products";
+    displayProducts.value = [];
+  } finally {
+    isProductsLoading.value = false;
+  }
+};
+
 onMounted(() => {
-  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display exactly 3 random products
+  fetchSponsoredProducts();
 });
 
 // Format time ago
