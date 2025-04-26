@@ -188,7 +188,7 @@
                   'grid-cols-2':
                     post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
-                  'h-auto max-h-[300px] sm:max-h-[400px]': post.post_media.length === 1,
+                  'h-auto max-h-[280px] sm:max-h-[400px]': post.post_media.length === 1,
                   'h-auto max-h-[200px] sm:max-h-[480px]':
                     post.post_media.length >= 2 && post.post_media.length <= 3,
                   'h-auto max-h-[280px] sm:max-h-[500px]': post.post_media.length >= 4,
