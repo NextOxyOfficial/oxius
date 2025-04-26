@@ -2,7 +2,7 @@
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
     <!-- Add the event listener here -->
     <BusinessNetworkPost :posts="posts" :id="user?.user?.id" />
-    
+
     <!-- Add the create post component with event listener -->
     <BusinessNetworkCreatePost @post-created="handleNewPost" />
 
@@ -155,7 +155,6 @@ import {
   Tag,
   UserX,
 } from "lucide-vue-next";
-
 
 // State
 const posts = ref([]);
@@ -804,10 +803,7 @@ onMounted(() => {
       });
     }
   });
-
 });
-
-
 </script>
 
 <style scoped>
