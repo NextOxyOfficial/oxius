@@ -2208,4 +2208,14 @@ onMounted(() => {
   display: block;
   margin: 0 auto;
 }
+
+/* Hide scrollbar for mobile screens */
+.carousel {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.carousel::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
 </style>
