@@ -44,7 +44,7 @@ export default defineNuxtConfig({
           content:
             "AdsyClub – Bangladesh's 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
         },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
         // PWA meta tags
         { name: "theme-color", content: "#10b981" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
