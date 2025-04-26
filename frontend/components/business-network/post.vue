@@ -2198,4 +2198,12 @@ onMounted(() => {
 .gap-4 {
   gap: 1rem;
 }
+
+/* Center images in the media gallery */
+.media-gallery img {
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  margin: 0 auto;
+}
 </style>
