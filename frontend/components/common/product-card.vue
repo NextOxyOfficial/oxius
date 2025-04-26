@@ -130,7 +130,7 @@
             <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1 px-2 py-1.5 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
+              class="premium-buy-button flex items-center justify-center gap-1 px-1.5 py-1 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
               @click="addToCart(product, quantity)"
             >
               <!-- Gradient backgrounds -->

@@ -583,17 +583,27 @@
         </div>
 
         <!-- Sponsored Products Section -->
-        <div
-          v-if="(index + 1) % randomInterval === 0"
-          class="sponsored-products-section"
-        >
-          <h2 class="font-semibold text-gray-700 mb-4">Sponsored Products</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <ProductCard
-              v-for="(product, productIndex) in shuffledProducts"
-              :key="productIndex"
-              :product="product"
-            />
+        <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
+          <div class="relative">
+            <!-- Carousel Container for Mobile -->
+            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
+              <ProductCard
+                v-for="(product, productIndex) in shuffledProducts"
+                :key="productIndex"
+                :product="product"
+                class="flex-shrink-0 w-1/2"
+              />
+            </div>
+
+            <!-- Grid Layout for Desktop -->
+            <div class="hidden sm:grid sm:grid-cols-3 gap-4">
+              <ProductCard
+                v-for="(product, productIndex) in shuffledProducts"
+                :key="productIndex"
+                :product="product"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1288,7 +1298,7 @@ function shuffleArray(array) {
 }
 
 onMounted(() => {
-  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display 3 random products for desktop, 2 for mobile
+  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display exactly 3 random products
 });
 
 // Format time ago
@@ -2174,6 +2184,18 @@ onMounted(() => {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  margin-top: 2px;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 </style>
