@@ -714,8 +714,8 @@ const originalProfile = ref({});
 const lastScrollPosition = ref(0);
 const activeToasts = ref(new Set()); // Track active toast messages
 
-// Improved toast function to prevent duplicates and ensure timeouts
-function showToast(title, description, color, timeout = 5000) {
+// Updated toast function to ensure it automatically disappears
+function showToast(title, description, color, timeout = 3000) {
   // Create a unique key for this toast message
   const messageKey = `${title}:${description}`;
 
@@ -944,27 +944,16 @@ function handleFileUpload(event, field) {
     return;
   }
 
-  // More reasonable size limit with clear message
-  const maxSize = 1 * 1024 * 1024; // 1MB
+  // Updated the file size limit to 10 MB
+  const maxSize = 10 * 1024 * 1024; // 10MB
   if (file.size > maxSize) {
     showToast(
       "File Too Large",
-      `Image must be smaller than 1MB. Current size: ${(
-        file.size /
-        (1024 * 1024)
-      ).toFixed(1)}MB`,
+      `Image must be smaller than 10MB. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
       "red"
     );
     return;
   }
-
-  // Show loading state
-  const loadingToast = showToast(
-    "Processing Image",
-    "Please wait while we process your image...",
-    "blue",
-    0 // No timeout for loading toast
-  );
 
   const reader = new FileReader();
 
@@ -972,12 +961,6 @@ function handleFileUpload(event, field) {
     // Resize the image if needed
     const img = new Image();
     img.onload = function () {
-      // Remove the loading toast
-      toast.remove(loadingToast);
-      activeToasts.value.delete(
-        "Processing Image:Please wait while we process your image..."
-      );
-
       // If image is already small enough, use as is
       if (reader.result.length <= maxSize) {
         userProfile.value.image = reader.result;
@@ -1035,10 +1018,6 @@ function handleFileUpload(event, field) {
   };
 
   reader.onerror = (error) => {
-    toast.remove(loadingToast);
-    activeToasts.value.delete(
-      "Processing Image:Please wait while we process your image..."
-    );
     console.error("Error reading file:", error);
     showToast("Error", "Failed to process the image file", "red");
   };
