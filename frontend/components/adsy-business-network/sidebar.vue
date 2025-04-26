@@ -269,6 +269,34 @@
           </div>
         </div>
 
+        <!-- Workspaces Section -->
+        <div>
+          <h3
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center"
+          >
+            <Hash class="h-3.5 w-3.5 mr-1.5" />
+            <span>Workspaces</span>
+          </h3>
+          <nav class="space-y-1">
+            <NuxtLink
+              to="/create-workspace"
+              class="flex items-center px-3 py-2.5 rounded-md transition-colors group text-gray-700 hover:bg-gray-50"
+            >
+              <Plus class="h-5 w-5 mr-3 text-gray-500 group-hover:text-gray-600" />
+              <span class="text-sm font-medium">Create Workspace</span>
+            </NuxtLink>
+            <NuxtLink
+              v-for="workspace in workspaces"
+              :key="workspace.id"
+              :to="`/workspace/${workspace.id}`"
+              class="flex items-center px-3 py-2.5 rounded-md transition-colors group"
+              :class="workspace.active ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'"
+            >
+              <span class="text-sm font-medium">#{{ workspace.name }}</span>
+            </NuxtLink>
+          </nav>
+        </div>
+
         <!-- Products Slider -->
         <div>
           <h3
@@ -447,6 +475,7 @@ import {
   FileText,
   Trophy,
   RefreshCw,
+  Plus,
 } from "lucide-vue-next";
 
 // State
@@ -463,6 +492,7 @@ console.log(route.path);
 const tags = ref([]);
 const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
+const workspaces = ref([]); // Store workspaces
 
 // Loading states
 const isLoadingNews = ref(true);
@@ -622,6 +652,17 @@ async function fetchHashtags() {
   } catch (error) {
     console.error("Error fetching hashtags:", error);
     hashtags.value = [];
+  }
+}
+
+// Workspaces
+async function fetchWorkspaces() {
+  try {
+    const response = await get("/workspaces/");
+    workspaces.value = response.data;
+  } catch (error) {
+    console.error("Error fetching workspaces:", error);
+    workspaces.value = [];
   }
 }
 
@@ -858,6 +899,7 @@ onMounted(async () => {
   await Promise.all([
     fetchNewsItems(),
     fetchHashtags(),
+    fetchWorkspaces(),
     fetchProducts(),
     fetchTopContributors(),
   ]);

@@ -243,7 +243,7 @@
                 <template v-else-if="post.post_media.length === 3">
                   <!-- First image - large, full width -->
                   <div
-                    class="relative col-span-2 h-[140px] sm:h-[200px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative col-span-2 h-[240px] sm:h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img

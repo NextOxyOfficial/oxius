@@ -109,4 +109,5 @@ export default defineNuxtConfig({
   image: {
     dir: "/static/frontend/",
   },
+  pages: true, // Enable file-based routing
 });
