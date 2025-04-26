@@ -257,7 +257,7 @@
                 <div class="flex items-center gap-1">
                   <UIcon
                     name="i-heroicons-shield-check"
-                    class="size-3 text-white"
+                    class="size-4 text-white"
                   />
                 </div>
               </span>
