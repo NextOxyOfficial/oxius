@@ -180,7 +180,6 @@
             </div>
 
             <!-- Media Gallery with Professional Layout -->
-            <!-- Increased height for 2-column layouts -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
               <div
                 class="relative overflow-hidden rounded-lg"
@@ -189,22 +188,22 @@
                   'grid-cols-2':
                     post.post_media.length === 2 || post.post_media.length >= 4,
                   'grid-rows-2': post.post_media.length >= 4,
-                  'h-[320px] sm:h-[400px]': post.post_media.length === 1,
-                  'h-[280px] sm:h-[500px]':
+                  'h-auto max-h-[320px] sm:max-h-[400px]': post.post_media.length === 1,
+                  'h-auto max-h-[520px] sm:max-h-[520px]':
                     post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-[400px] sm:h-[500px]': post.post_media.length >= 4,
+                  'h-auto max-h-[380px] sm:max-h-[520px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
                 <template v-if="post.post_media.length === 1">
                   <div
-                    class="relative w-full h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative w-full h-full max-h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
                       :src="post.post_media[0].image"
                       alt="Media"
-                      class="h-full w-full object-cover"
+                      class="h-full w-full object-contain"
                     />
                     <div
                       v-if="post.post_media[0].type === 'video'"
@@ -587,12 +586,12 @@
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
           <div class="relative">
             <!-- Carousel Container for Mobile -->
-            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
+            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden pb-2 snap-x snap-mandatory scroll-smooth">
               <ProductCard
                 v-for="(product, productIndex) in shuffledProducts"
                 :key="productIndex"
                 :product="product"
-                class="flex-shrink-0 w-1/2"
+                class="flex-shrink-0 w-[45%] snap-start"
               />
             </div>
 
