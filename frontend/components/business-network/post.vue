@@ -180,26 +180,31 @@
             </div>
 
             <!-- Media Gallery with Professional Layout -->
+            <!-- Increased height for 2-column layouts -->
             <div v-if="post?.post_media?.length > 0" class="mb-3">
               <div
-                class="relative overflow-hidden rounded-lg w-full"
+                class="relative overflow-hidden rounded-lg"
                 :class="{
                   'grid gap-1': post.post_media.length > 1,
-                  'grid-cols-2': post.post_media.length === 2 || post.post_media.length >= 4,
-                  'grid-rows-2': post.post_media.length >= 4
+                  'grid-cols-2':
+                    post.post_media.length === 2 || post.post_media.length >= 4,
+                  'grid-rows-2': post.post_media.length >= 4,
+                  'h-[320px] sm:h-[400px]': post.post_media.length === 1,
+                  'h-[280px] sm:h-[500px]':
+                    post.post_media.length >= 2 && post.post_media.length <= 3,
+                  'h-[400px] sm:h-[500px]': post.post_media.length >= 4,
                 }"
               >
                 <!-- Single Image Layout -->
                 <template v-if="post.post_media.length === 1">
                   <div
-                    class="relative w-full aspect-[16/9] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative w-full h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
                       :src="post.post_media[0].image"
                       alt="Media"
-                      class="h-full w-full object-contain"
-                      loading="lazy"
+                      class="h-full w-full object-cover"
                     />
                     <div
                       v-if="post.post_media[0].type === 'video'"
@@ -221,14 +226,13 @@
                   <div
                     v-for="(media, mediaIndex) in post.post_media.slice(0, 2)"
                     :key="media.id"
-                    class="relative aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, mediaIndex)"
                   >
                     <img
                       :src="media.image"
                       :alt="`Media ${mediaIndex + 1}`"
                       class="h-full w-full object-cover"
-                      loading="lazy"
                     />
                     <div
                       v-if="media.type === 'video'"
@@ -249,14 +253,13 @@
                 <template v-else-if="post.post_media.length === 3">
                   <!-- First image - large, full width -->
                   <div
-                    class="relative col-span-2 aspect-video cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                    class="relative col-span-2 h-[240px] sm:h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                     @click="openMedia(post, 0)"
                   >
                     <img
                       :src="post.post_media[0].image"
                       :alt="'Media 1'"
                       class="h-full w-full object-cover"
-                      loading="lazy"
                     />
                     <div
                       v-if="post.post_media[0].type === 'video'"
@@ -273,18 +276,17 @@
                   </div>
 
                   <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1">
+                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
-                      class="relative aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
+                      class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
                       @click="openMedia(post, mediaIndex + 1)"
                     >
                       <img
                         :src="media.image"
                         :alt="`Media ${mediaIndex + 2}`"
                         class="h-full w-full object-cover"
-                        loading="lazy"
                       />
                       <div
                         v-if="media.type === 'video'"
@@ -314,7 +316,6 @@
                       :src="media.image"
                       :alt="`Media ${mediaIndex + 1}`"
                       class="h-full w-full object-cover"
-                      loading="lazy"
                     />
                     <div
                       v-if="media.type === 'video'"
@@ -586,13 +587,16 @@
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
           <div class="relative">
             <!-- Carousel Container for Mobile -->
-            <div class="carousel flex overflow-x-auto gap-2 my-2 sm:hidden">
-              <ProductCard
+            <div class="carousel flex overflow-x-auto pb-4 snap-x snap-mandatory">
+              <div 
                 v-for="(product, productIndex) in shuffledProducts"
                 :key="productIndex"
-                :product="product"
-                class="flex-shrink-0 w-1/2"
-              />
+                class="flex-shrink-0 w-[80%] sm:w-[45%] px-2 snap-start"
+              >
+                <ProductCard
+                  :product="product"
+                />
+              </div>
             </div>
 
             <!-- Grid Layout for Desktop -->
@@ -1070,7 +1074,7 @@
                       <img
                         :src="user.image"
                         :alt="user.name"
-                        class="w-7 h-7 rounded-full mr-2"
+                        class="w-6 h-6 rounded-full mr-2"
                       />
                       <span class="text-sm font-medium">{{ user.name }}</span>
                     </div>
@@ -1084,7 +1088,7 @@
                 >
                   <Loader2
                     v-if="activeCommentsPost.isCommentLoading"
-                    class="h-5 w-5 animate-spin"
+                    class="h-3 w-3 animate-spin"
                   />
                   <Send v-else class="h-3 w-3" />
                 </button>
@@ -1278,45 +1282,26 @@ const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
 
 // Sponsored Products
-const allProducts = ref([]);
+const products = [
+  { id: 1, name: "Product 1", sale_price: 100, regular_price: 150 },
+  { id: 2, name: "Product 2", sale_price: 200, regular_price: 250 },
+  { id: 3, name: "Product 3", sale_price: 300, regular_price: 350 },
+  { id: 4, name: "Product 4", sale_price: 400, regular_price: 450 },
+  { id: 5, name: "Product 5", sale_price: 500, regular_price: 550 },
+];
+
 const shuffledProducts = ref([]);
-const isLoadingProducts = ref(false);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
 
-// Function to fetch products from API
-async function fetchProducts() {
-  isLoadingProducts.value = true;
-  try {
-    const { data } = await get('/all-products/');
-    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
-      allProducts.value = Array.isArray(data) ? data : data.results;
-      getRandomProducts();
-    } else {
-      console.error('Unexpected product data format:', data);
-      allProducts.value = [];
-    }
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    allProducts.value = [];
-  } finally {
-    isLoadingProducts.value = false;
-  }
+function shuffleArray(array) {
+  return array
+    .map((item) => ({ item, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ item }) => item);
 }
 
-// Function to get random products
-function getRandomProducts() {
-  if (allProducts.value.length === 0) {
-    shuffledProducts.value = [];
-    return;
-  }
-  
-  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
-  shuffledProducts.value = shuffled.slice(0, 3); // Always display exactly 3 random products
-}
-
-// Fetch products when component is mounted
 onMounted(() => {
-  fetchProducts();
+  shuffledProducts.value = shuffleArray(products).slice(0, 3); // Display exactly 3 random products
 });
 
 // Format time ago
@@ -2200,11 +2185,9 @@ onMounted(() => {
 .sponsored-products-section {
   background-color: #f9f9f9;
   padding: 20px;
-  margin: 0 auto; /* Center the section */
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  max-width: 1200px; /* Fit to screen with a max width */
+  margin-top: 10px;
 }
 
 .grid {
@@ -2217,23 +2200,5 @@ onMounted(() => {
 
 .gap-4 {
   gap: 1rem;
-}
-
-/* Center images in the media gallery */
-.media-gallery img {
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  margin: 0 auto;
-}
-
-/* Hide scrollbar for mobile screens */
-.carousel {
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
-}
-
-.carousel::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
 }
 </style>
