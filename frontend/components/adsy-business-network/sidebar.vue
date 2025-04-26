@@ -34,6 +34,82 @@
 
       <!-- Sidebar Content (Scrollable) -->
       <div class="flex-1 overflow-y-auto py-4 px-2 space-y-7 -mt-12 sm:-mt-10">
+        <!-- Workspaces Section -->
+        <div>
+          <h3
+            class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center"
+          >
+            <Hash class="h-3.5 w-3.5 mr-1.5" />
+            <span>Workspaces</span>
+          </h3>
+          <nav class="space-y-1">
+            <button
+              @click="isCreateWorkspaceModalOpen = true"
+              class="flex items-center px-3 py-2.5 rounded-md transition-colors group text-gray-700 hover:bg-gray-50"
+            >
+              <Plus class="h-5 w-5 mr-3 text-gray-500 group-hover:text-gray-600" />
+              <span class="text-sm font-medium">Create Workspace</span>
+            </button>
+            <NuxtLink
+              v-for="workspace in workspaces"
+              :key="workspace.id"
+              :to="`/workspace/${workspace.id}`"
+              class="flex items-center px-3 py-2.5 rounded-md transition-colors group"
+              :class="workspace.active ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'"
+            >
+              <span class="text-sm font-medium">#{{ workspace.name }}</span>
+            </NuxtLink>
+          </nav>
+        </div>
+
+        <!-- Create Workspace Modal -->
+        <Teleport to="body">
+          <div
+            v-if="isCreateWorkspaceModalOpen"
+            class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+            @click="isCreateWorkspaceModalOpen = false"
+          >
+            <div
+              class="bg-white rounded-lg max-w-md w-full p-6"
+              @click.stop
+            >
+              <h3 class="text-lg font-semibold mb-4">Create Workspace</h3>
+              <form @submit.prevent="createWorkspace">
+                <div class="mb-4">
+                  <label
+                    for="workspaceName"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Workspace Name
+                  </label>
+                  <input
+                    id="workspaceName"
+                    v-model="newWorkspaceName"
+                    type="text"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                    placeholder="Enter workspace name"
+                  />
+                </div>
+                <div class="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    @click="isCreateWorkspaceModalOpen = false"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </Teleport>
+
         <!-- Main Menu Section -->
         <div>
           <h3
@@ -269,34 +345,6 @@
           </div>
         </div>
 
-        <!-- Workspaces Section -->
-        <div>
-          <h3
-            class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center"
-          >
-            <Hash class="h-3.5 w-3.5 mr-1.5" />
-            <span>Workspaces</span>
-          </h3>
-          <nav class="space-y-1">
-            <NuxtLink
-              to="/create-workspace"
-              class="flex items-center px-3 py-2.5 rounded-md transition-colors group text-gray-700 hover:bg-gray-50"
-            >
-              <Plus class="h-5 w-5 mr-3 text-gray-500 group-hover:text-gray-600" />
-              <span class="text-sm font-medium">Create Workspace</span>
-            </NuxtLink>
-            <NuxtLink
-              v-for="workspace in workspaces"
-              :key="workspace.id"
-              :to="`/workspace/${workspace.id}`"
-              class="flex items-center px-3 py-2.5 rounded-md transition-colors group"
-              :class="workspace.active ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'"
-            >
-              <span class="text-sm font-medium">#{{ workspace.name }}</span>
-            </NuxtLink>
-          </nav>
-        </div>
-
         <!-- Products Slider -->
         <div>
           <h3
@@ -493,6 +541,8 @@ const tags = ref([]);
 const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
 const workspaces = ref([]); // Store workspaces
+const isCreateWorkspaceModalOpen = ref(false);
+const newWorkspaceName = ref(""); // Store new workspace name
 
 // Loading states
 const isLoadingNews = ref(true);
@@ -663,6 +713,20 @@ async function fetchWorkspaces() {
   } catch (error) {
     console.error("Error fetching workspaces:", error);
     workspaces.value = [];
+  }
+}
+
+// Create Workspace
+async function createWorkspace() {
+  try {
+    const response = await get("/create-workspace/", {
+      name: newWorkspaceName.value,
+    });
+    workspaces.value.push(response.data);
+    isCreateWorkspaceModalOpen.value = false;
+    newWorkspaceName.value = "";
+  } catch (error) {
+    console.error("Error creating workspace:", error);
   }
 }
 
