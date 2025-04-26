@@ -589,8 +589,8 @@
             <!-- Carousel Container for Mobile -->
             <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
               <ProductCard
-                v-for="(product, productIndex) in shuffledProducts.slice(0, 2)"
-                :key="productIndex"
+                v-for="(product, productIndex) in getRandomProducts(2)"
+                :key="`mobile-${product.id || productIndex}`"
                 :product="product"
                 class="flex-shrink-0 w-[49%]"
               />
@@ -599,8 +599,8 @@
             <!-- Grid Layout for Desktop -->
             <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
               <ProductCard
-                v-for="(product, productIndex) in shuffledProducts"
-                :key="productIndex"
+                v-for="(product, productIndex) in getRandomProducts(3)"
+                :key="`desktop-${product.id || productIndex}`"
                 :product="product"
               />
             </div>
@@ -1305,14 +1305,13 @@ async function fetchProducts() {
 }
 
 // Function to get random products
-function getRandomProducts() {
+function getRandomProducts(count) {
   if (allProducts.value.length === 0) {
-    shuffledProducts.value = [];
-    return;
+    return [];
   }
   
   const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
-  shuffledProducts.value = shuffled.slice(0, 3); // Always display exactly 3 random products
+  return shuffled.slice(0, count); // Return exactly 'count' random products
 }
 
 // Fetch products when component is mounted
