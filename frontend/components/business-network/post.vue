@@ -203,7 +203,7 @@
                     <img
                       :src="post.post_media[0].image"
                       alt="Media"
-                      class="h-full w-full object-contain"
+                      class="w-full h-auto max-h-[300px] mx-auto object-contain"
                     />
                     <div
                       v-if="post.post_media[0].type === 'video'"
