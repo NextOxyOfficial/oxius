@@ -49,7 +49,7 @@
                             name="i-heroicons-shield-check"
                             class="size-4 text-indigo-700 font-semibold"
                           />
-                          <span class="text-xs font-semibold text-indigo-700"
+                          <span class="text-md font-semibold text-indigo-700"
                             >Pro</span
                           >
                         </div>
@@ -57,11 +57,11 @@
                     </div>
                   </NuxtLink>
                   <p
-                    class="text-xs font-semibold bg-white py-0.5 text-slate-500"
+                    class="text-md font-semibold bg-white py-0.5 text-slate-500"
                   >
                     {{ post?.author_details?.profession }}
                   </p>
-                  <p class="text-xs text-gray-500">
+                  <p class="text-md text-gray-500">
                     {{ formatTimeAgo(post?.created_at) }}
                   </p>
                 </div>
@@ -71,7 +71,7 @@
                 <button
                   v-if="post?.author !== id"
                   :class="[
-                    'text-sm h-7 rounded-full px-3 flex items-center gap-1',
+                    'text-md h-7 rounded-full px-3 flex items-center gap-1',
                     post.isFollowing
                       ? 'border border-gray-200 text-gray-800'
                       : 'bg-blue-600 text-white',
@@ -100,7 +100,7 @@
                   >
                     <div class="py-1">
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
                         @click="toggleSave(post)"
                       >
                         <Bookmark
@@ -112,7 +112,7 @@
                         {{ post.isSaved ? "Unsave post" : "Save post" }}
                       </button>
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
                         @click="copyLink(post)"
                       >
                         <Link2 class="h-4 w-4 mr-2" />
@@ -120,7 +120,7 @@
                       </button>
                       <hr class="my-1 border-gray-200" />
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
                       >
                         <UserX class="h-4 w-4 mr-2" />
                         Unfollow @{{
@@ -128,7 +128,7 @@
                         }}
                       </button>
                       <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                        class="flex items-center w-full px-4 py-2 text-md text-gray-800 hover:bg-gray-100"
                       >
                         <Flag class="h-4 w-4 mr-2" />
                         Report post
@@ -155,7 +155,7 @@
               <span
                 v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
-                class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                class="text-md bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
               >
                 #{{ tag.tag }}
               </span>
@@ -165,14 +165,14 @@
             <div class="mb-2 min-w-full">
               <p
                 :class="[
-                  'text-sm text-gray-800',
+                  'text-md text-gray-800',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="post.content"
               ></p>
               <button
                 v-if="post?.content?.length > 160"
-                class="text-sm text-blue-600 font-medium mt-1"
+                class="text-md text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
                 {{ post.showFullDescription ? "Read less" : "Read more" }}
@@ -276,7 +276,7 @@
                   </div>
 
                   <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
+                  <div class="grid grid-cols-2 gap-1" style="height: 300px">
                     <div
                       v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
                       :key="media.id"
@@ -375,7 +375,7 @@
                     />
                   </button>
                   <button
-                    class="text-sm text-gray-600 hover:underline"
+                    class="text-md text-gray-600 hover:underline"
                     @click="openLikesModal(post)"
                   >
                     {{ post?.post_likes?.length }} likes
@@ -386,7 +386,7 @@
                   @click="openCommentsModal(post)"
                 >
                   <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600"
+                  <span class="text-md text-gray-600"
                     >{{ post?.post_comments?.length }} comments</span
                   >
                 </button>
@@ -395,7 +395,7 @@
                   @click="sharePost(post)"
                 >
                   <Share2 class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600">Share</span>
+                  <span class="text-md text-gray-600">Share</span>
                 </button>
                 <button
                   class="flex items-center space-x-1"
@@ -409,7 +409,7 @@
                         : 'text-gray-500',
                     ]"
                   />
-                  <span class="text-sm text-gray-600">Save</span>
+                  <span class="text-md text-gray-600">Save</span>
                 </button>
               </div>
             </div>
@@ -419,7 +419,7 @@
               <!-- See all comments button moved to the top -->
               <button
                 v-if="post?.post_comments?.length > 3"
-                class="text-sm text-blue-600 font-medium"
+                class="text-md text-blue-600 font-medium"
                 @click="openCommentsModal(post)"
               >
                 See all {{ post?.post_comments?.length }} comments
@@ -447,7 +447,7 @@
                         <div class="flex items-center gap-1">
                           <NuxtLink
                             :to="`/business-network/profile/${comment.author}`"
-                            class="text-sm font-medium hover:underline"
+                            class="text-md font-medium hover:underline"
                           >
                             {{ comment.author_details?.name }}
                           </NuxtLink>
@@ -499,19 +499,19 @@
                         <textarea
                           :id="`comment-edit-${comment.id}`"
                           v-model="comment.editText"
-                          class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                          class="w-full text-md p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                           rows="2"
                         ></textarea>
                         <div class="flex justify-end space-x-2 mt-1">
                           <button
                             @click="cancelEditComment(comment)"
-                            class="text-xs text-gray-500 hover:underline"
+                            class="text-md text-gray-500 hover:underline"
                           >
                             Cancel
                           </button>
                           <button
                             @click="saveEditComment(post, comment)"
-                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                            class="text-md bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                             :disabled="
                               !comment.editText?.trim() ||
                               comment.editText === comment.content ||
@@ -527,9 +527,9 @@
                           </button>
                         </div>
                       </div>
-                      <p v-else class="text-sm">{{ comment?.content }}</p>
+                      <p v-else class="text-md">{{ comment?.content }}</p>
                     </div>
-                    <span class="text-sm text-gray-500 mt-1 inline-block">
+                    <span class="text-md text-gray-500 mt-1 inline-block">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
                   </div>
@@ -551,7 +551,7 @@
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
+                  class="w-full text-md py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
                   v-model="post.commentText"
                   @keyup.enter="addComment(post)"
                   @focus="post.showCommentInput = true"
@@ -591,7 +591,7 @@
               <div 
                 v-for="(product, productIndex) in shuffledProducts"
                 :key="productIndex"
-                class="flex-shrink-0 w-[80%] sm:w-[45%] px-2 snap-start"
+                class="flex-shrink-0 w-[80%] sm:w-[45%] px-1 snap-start"
               >
                 <ProductCard
                   :product="product"
@@ -694,7 +694,7 @@
               <ChevronRight class="h-5 w-5" />
             </button>
             <div
-              class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm"
+              class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-md"
             >
               {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
             </div>
@@ -718,7 +718,7 @@
                     />
                   </button>
                   <button
-                    class="text-sm text-gray-600 hover:underline"
+                    class="text-md text-gray-600 hover:underline"
                     @click.stop="openMediaLikesModal"
                   >
                     {{ activeMedia.likeCount }} likes
@@ -726,7 +726,7 @@
                 </div>
                 <div class="flex items-center space-x-1">
                   <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600">
+                  <span class="text-md text-gray-600">
                     {{ activeMedia.comments?.length || 0 }} comments
                   </span>
                 </div>
@@ -738,7 +738,7 @@
               v-if="activeMedia.comments && activeMedia.comments.length > 0"
               class="max-h-[20vh] overflow-y-auto mb-3"
             >
-              <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
+              <h4 class="text-md font-medium text-gray-500 mb-2">Comments</h4>
               <div class="space-y-2">
                 <div
                   v-for="comment in activeMedia.comments"
@@ -761,7 +761,7 @@
                           <div class="flex items-center gap-1.5">
                             <NuxtLink
                               :to="`/business-network/profile/${comment.user.id}`"
-                              class="text-sm font-medium hover:underline"
+                              class="text-md font-medium hover:underline"
                             >
                               {{ comment.user.fullName }}
                             </NuxtLink>
@@ -777,10 +777,10 @@
                             </div>
                           </div>
                         </div>
-                        <p class="text-sm mt-1">{{ comment.text }}</p>
+                        <p class="text-md mt-1">{{ comment.text }}</p>
                       </div>
                       <div class="flex items-center mt-1 space-x-3">
-                        <span class="text-sm text-gray-500">{{
+                        <span class="text-md text-gray-500">{{
                           formatTimeAgo(comment.timestamp)
                         }}</span>
                       </div>
@@ -800,7 +800,7 @@
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  class="w-full text-md py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                   v-model="mediaCommentText"
                   @click.stop
                 />
@@ -845,7 +845,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-600 truncate">
+            <p class="text-md text-gray-600 truncate">
               {{ activeLikesPost.title }}
             </p>
           </div>
@@ -870,7 +870,7 @@
                   >
                     {{ user.user_details.name }}
                   </NuxtLink>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-md text-gray-500">
                     @{{
                       user.user_details.name.toLowerCase().replace(/\s+/g, "")
                     }}
@@ -880,7 +880,7 @@
               <button
                 v-if="user.id !== 'current-user'"
                 :class="[
-                  'text-sm h-7 rounded-full px-3 flex items-center gap-1',
+                  'text-md h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
                     ? 'border border-gray-200 text-gray-800'
                     : 'bg-blue-600 text-white',
@@ -917,7 +917,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-600 truncate">
+            <p class="text-md text-gray-600 truncate">
               {{ activeCommentsPost.title }}
             </p>
           </div>
@@ -945,7 +945,7 @@
                       <div class="flex items-center gap-1.5">
                         <NuxtLink
                           :to="`/business-network/profile/${comment?.author}`"
-                          class="text-sm font-medium hover:underline"
+                          class="text-md font-medium hover:underline"
                         >
                           {{ comment.author_details.name }}
                         </NuxtLink>
@@ -994,19 +994,19 @@
                       <textarea
                         :id="`comment-edit-${comment.id}`"
                         v-model="comment.editText"
-                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                        class="w-full text-md p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                         rows="2"
                       ></textarea>
                       <div class="flex justify-end space-x-2 mt-1">
                         <button
                           @click="cancelEditComment(comment)"
-                          class="text-xs text-gray-500 hover:underline"
+                          class="text-md text-gray-500 hover:underline"
                         >
                           Cancel
                         </button>
                         <button
                           @click="saveEditComment(activeCommentsPost, comment)"
-                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                          class="text-md bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                           :disabled="
                             !comment.editText?.trim() ||
                             comment.editText === comment.content ||
@@ -1022,10 +1022,10 @@
                         </button>
                       </div>
                     </div>
-                    <p v-else class="text-sm">{{ comment.content }}</p>
+                    <p v-else class="text-md">{{ comment.content }}</p>
                   </div>
                   <div class="flex items-center mt-1 space-x-3">
-                    <span class="text-sm text-gray-500">{{
+                    <span class="text-md text-gray-500">{{
                       formatTimeAgo(comment.created_at)
                     }}</span>
                   </div>
@@ -1045,7 +1045,7 @@
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  class="w-full text-md py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                   v-model="activeCommentsPost.commentText"
                   @input="handleCommentInput($event, activeCommentsPost)"
                   @keydown="handleMentionKeydown($event, activeCommentsPost)"
@@ -1076,7 +1076,7 @@
                         :alt="user.name"
                         class="w-6 h-6 rounded-full mr-2"
                       />
-                      <span class="text-sm font-medium">{{ user.name }}</span>
+                      <span class="text-md font-medium">{{ user.name }}</span>
                     </div>
                   </div>
                 </div>
@@ -1137,7 +1137,7 @@
                   >
                     {{ user.fullName }}
                   </NuxtLink>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-md text-gray-500">
                     @{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}
                   </p>
                 </div>
@@ -1145,7 +1145,7 @@
               <button
                 v-if="user.id !== 'current-user'"
                 :class="[
-                  'text-sm h-7 rounded-full px-3 flex items-center gap-1',
+                  'text-md h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
                     ? 'border border-gray-200 text-gray-800'
                     : 'bg-blue-600 text-white',
