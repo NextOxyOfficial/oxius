@@ -97,54 +97,57 @@
           </div>
         </div>
         
-        <!-- Mobile Category Nav - FIXED FOR DROPDOWN MENU -->
-        <div class="px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+        <!-- Mobile Category Nav - CENTERED WITH FIXED DROPDOWN -->
+        <div class="px-4 sm:px-6 lg:px-8">
           <nav
-            class="flex md:hidden pb-3 mt-1 space-x-4 whitespace-nowrap"
+            class="flex md:hidden pb-3 mt-1 justify-center"
             v-if="categories?.length > 0"
           >
-            <NuxtLink
-              v-for="category in categories.slice(0, 4)"
-              :key="category.id"
-              :class="[
-                'text-sm font-medium hover:text-primary transition-colors duration-200 py-1 flex-shrink-0',
-                activeCategory === category.id
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-800',
-              ]"
-              :to="`/adsy-news/categories/${category.slug}/`"
-            >
-              {{ category.name }}
-            </NuxtLink>
-            <div class="relative" v-if="categories.length > 4">
-              <button
-                @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200 flex-shrink-0"
-                aria-label="More categories"
+            <div class="flex space-x-4 overflow-x-auto scrollbar-hide">
+              <NuxtLink
+                v-for="category in categories.slice(0, 4)"
+                :key="category.id"
+                :class="[
+                  'text-sm font-medium hover:text-primary transition-colors duration-200 py-1 flex-shrink-0',
+                  activeCategory === category.id
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-gray-800',
+                ]"
+                :to="`/adsy-news/categories/${category.slug}/`"
               >
-                More
-                <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
-              </button>
-              <!-- Mobile dropdown menu -->
-              <div
-                v-if="moreMenuOpen"
-                class="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 max-h-60 overflow-y-auto border border-gray-200"
-                v-click-outside="() => (moreMenuOpen = false)"
-              >
-                <NuxtLink
-                  v-for="category in categories.slice(4)"
-                  :key="category.id"
-                  :class="[
-                    'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
-                    activeCategory === category.id
-                      ? 'text-primary'
-                      : 'text-gray-800',
-                  ]"
-                  :to="`/adsy-news/categories/${category.slug}/`"
-                  @click="moreMenuOpen = false"
+                {{ category.name }}
+              </NuxtLink>
+              <div class="relative flex-shrink-0" v-if="categories.length > 4">
+                <button
+                  @click="toggleMoreCategories"
+                  class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
+                  aria-label="More categories"
                 >
-                  {{ category.name }}
-                </NuxtLink>
+                  More
+                  <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
+                </button>
+                <!-- Mobile dropdown menu with fixed positioning -->
+                <div
+                  v-if="moreMenuOpen"
+                  class="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 max-h-60 overflow-y-auto border border-gray-200"
+                  v-click-outside="() => (moreMenuOpen = false)"
+                  style="min-width: 150px;"
+                >
+                  <NuxtLink
+                    v-for="category in categories.slice(4)"
+                    :key="category.id"
+                    :class="[
+                      'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
+                      activeCategory === category.id
+                        ? 'text-primary'
+                        : 'text-gray-800',
+                    ]"
+                    :to="`/adsy-news/categories/${category.slug}/`"
+                    @click="moreMenuOpen = false"
+                  >
+                    {{ category.name }}
+                  </NuxtLink>
+                </div>
               </div>
             </div>
           </nav>
