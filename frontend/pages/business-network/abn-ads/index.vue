@@ -6,17 +6,17 @@
         <div class=" mx-auto px-4">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center space-x-4">
-              <div class="text-lg font-medium text-emerald-500">AdPanel</div>
+              <div class="text-lg font-medium text-emerald-500">ABN Ads Panel</div>
               <div class="hidden md:flex space-x-3">
                 <button
-                  class="px-4 py-1.5 text-sm font-medium transition-colors border rounded-full"
+                  class="px-4 py-1.5 text-sm font-medium transition-colors border rounded-md"
                   :class="activeTab === 'my-ads' ? 'border-emerald-500 text-emerald-500' : 'border-gray-300 text-gray-700 hover:border-gray-400'"
                   @click="activeTab = 'my-ads'"
                 >
                   My Ads
                 </button>
                 <button
-                  class="px-4 py-1.5 text-sm font-medium transition-colors border rounded-full"
+                  class="px-4 py-1.5 text-sm font-medium transition-colors border rounded-md"
                   :class="activeTab === 'abn-ads' ? 'border-emerald-500 text-emerald-500' : 'border-gray-300 text-gray-700 hover:border-gray-400'"
                   @click="activeTab = 'abn-ads'"
                 >
@@ -26,12 +26,12 @@
             </div>
             <div class="flex items-center space-x-3">
               <!-- Account Balance -->
-              <div class="hidden md:flex items-center px-3 py-1.5 bg-gray-100 text-sm rounded-full">
+              <div class="hidden md:flex items-center px-3 py-1.5 bg-gray-100 text-sm rounded-md">
                 <span class="text-gray-600 mr-1">Balance:</span>
                 <span class="font-bold" :class="isLowBalance ? 'text-red-500' : 'text-emerald-500'">
                   ৳{{ accountBalance }}
                 </span>
-                <span v-if="isLowBalance" class="ml-1 text-xs text-red-500 font-medium">Low!</span>
+                <span v-if="isLowBalance" class="ml-1 text-sm text-red-500 font-medium">Low!</span>
               </div>
             </div>
           </div>
@@ -60,7 +60,7 @@
               Your account balance is low (৳{{ accountBalance }}). Please recharge to continue posting ads.
             </span>
           </div>
-          <button class="text-xs font-medium bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-full transition-colors">
+          <button class="text-sm font-medium bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-md transition-colors">
             Recharge Now
           </button>
         </div>
@@ -69,7 +69,7 @@
           <!-- Main Content - Ads List -->
           <div class="w-full lg:w-2/3 space-y-5">
             <!-- Date Filter - Moved here from top navigation -->
-            <div class="bg-white rounded-lg shadow-sm p-4 mb-2">
+            <div class="bg-white rounded-md shadow-sm p-4 mb-2">
               <h2 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -81,20 +81,20 @@
                   <input
                     type="date"
                     v-model="dateFilter.from"
-                    class="px-3 py-1.5 text-xs border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                    class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
                   />
                 </div>
-                <span class="text-xs text-gray-500">to</span>
+                <span class="text-sm text-gray-500">to</span>
                 <div class="relative">
                   <input
                     type="date"
                     v-model="dateFilter.to"
-                    class="px-3 py-1.5 text-xs border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                    class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
                   />
                 </div>
                 <button
                   @click="applyDateFilter"
-                  class="px-3 py-1.5 text-xs border border-gray-300 hover:bg-gray-100 transition-colors rounded-full"
+                  class="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-100 transition-colors rounded-md"
                 >
                   Apply
                 </button>
@@ -102,7 +102,7 @@
             </div>
   
             <!-- Performance Report -->
-            <div class="bg-white rounded-lg shadow-sm p-4 mb-5">
+            <div class="bg-white rounded-md shadow-sm p-4 mb-5">
               <h2 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -113,24 +113,25 @@
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div class="bg-blue-50 rounded-md p-2 text-center">
                   <div class="text-lg font-bold text-blue-600">{{ totalViews }}</div>
-                  <div class="text-xs text-gray-600">Total Views</div>
+                  <div class="text-sm text-gray-600">Total Views</div>
                 </div>
                 <div class="bg-green-50 rounded-md p-2 text-center">
                   <div class="text-lg font-bold text-green-600">{{ totalClicks }}</div>
-                  <div class="text-xs text-gray-600">Total Clicks</div>
+                  <div class="text-sm text-gray-600">Total Clicks</div>
                 </div>
                 <div class="bg-amber-50 rounded-md p-2 text-center">
                   <div class="text-lg font-bold text-amber-600">{{ postedAds.length }}</div>
-                  <div class="text-xs text-gray-600">Active Ads</div>
+                  <div class="text-sm text-gray-600">Active Ads</div>
                 </div>
               </div>
             </div>
-  
+  <div class="flex gap-4  justify-between items-center mb-4">
+    
             <!-- Create Ad Button - Moved below performance report -->
-            <div class="flex justify-center mb-4">
+            <div class="flex justify-center pl-4">
               <button
                 @click="showCreateAdModal = true"
-                class="flex items-center text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-full px-3 py-1 border border-emerald-500 text-xs"
+                class="flex items-center text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-md px-3 py-2 border border-emerald-500 text-sm"
                 :disabled="isLoading"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,16 +163,17 @@
             </div>
   
             <!-- Mobile Account Balance -->
-            <div class="md:hidden flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm rounded-full mb-4 w-fit mx-auto">
+            <div class="md:hidden flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm rounded-md  w-fit mx-auto">
               <span class="text-gray-600 mr-1">Balance:</span>
               <span class="font-bold" :class="isLowBalance ? 'text-red-500' : 'text-emerald-500'">
                 ৳{{ accountBalance }}
               </span>
-              <span v-if="isLowBalance" class="ml-1 text-xs text-red-500 font-medium">Low!</span>
+              <span v-if="isLowBalance" class="ml-1 text-sm text-red-500 font-medium">Low!</span>
             </div>
+  </div>
   
             <!-- Empty State -->
-            <div v-if="postedAds.length === 0" class="text-center py-12 bg-white rounded-lg shadow-sm">
+            <div v-if="postedAds.length === 0" class="text-center py-12 bg-white rounded-md shadow-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-12 w-12 mx-auto text-gray-400 mb-3"
@@ -189,7 +191,7 @@
               <p class="text-gray-500 text-sm">No ads posted yet</p>
               <button
                 @click="showCreateAdModal = true"
-                class="mt-3 flex items-center mx-auto text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-full px-3 py-1 border border-emerald-500 text-xs"
+                class="mt-3 flex items-center mx-auto text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-md px-3 py-1 border border-emerald-500 text-sm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -202,7 +204,7 @@
             <div 
               v-for="(ad, index) in postedAds" 
               :key="index" 
-              class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              class="bg-white rounded-md shadow-sm overflow-hidden hover:shadow-md transition-shadow"
             >
               <div class="flex flex-col md:flex-row">
                 <!-- Ad Image -->
@@ -215,13 +217,13 @@
                     class="h-full w-full object-cover"
                   />
                   <div v-else class="h-full w-full bg-gray-200 flex items-center justify-center">
-                    <p class="text-gray-500 text-xs">No image</p>
+                    <p class="text-gray-500 text-sm">No image</p>
                   </div>
                   
                   <!-- Image count indicator -->
                   <div 
                     v-if="ad.images && ad.images.length > 1" 
-                    class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
+                    class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-sm px-2 py-1 rounded-md"
                   >
                     {{ ad.images.length }} images
                   </div>
@@ -233,21 +235,21 @@
                     <div>
                       <h3 class="font-medium text-base mb-1 line-clamp-2">{{ ad.title }}</h3>
                       <div class="flex flex-wrap items-center gap-2 mb-2">
-                        <span v-if="ad.category && ad.category !== 'none'" class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full text-xs">
+                        <span v-if="ad.category && ad.category !== 'none'" class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm">
                           {{ ad.category }}
                         </span>
-                        <span class="text-gray-500 text-xs">Bangladesh</span>
+                        <span class="text-gray-500 text-sm">Bangladesh</span>
                         <span
-                          class="px-2 py-0.5 rounded-full text-xs"
+                          class="px-2 py-0.5 rounded-md text-sm"
                           :class="getStatusClass(ad.status)"
                         >
                           {{ getStatusText(ad.status) }}
                         </span>
                         <div class="flex flex-wrap gap-1">
-                          <span v-if="ad.gender" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                          <span v-if="ad.gender" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm">
                             {{ ad.gender === 'male' ? 'Male' : 'Female' }}
                           </span>
-                          <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                          <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm">
                             Age: {{ ad.ageRange[0] }}-{{ ad.ageRange[1] }}
                           </span>
                         </div>
@@ -255,10 +257,10 @@
                     </div>
                   </div>
   
-                  <p class="text-gray-700 mb-3 text-xs line-clamp-3">{{ ad.description }}</p>
+                  <p class="text-gray-700 mb-3 text-sm line-clamp-3">{{ ad.description }}</p>
   
                   <!-- Ad Metrics -->
-                  <div class="flex flex-wrap items-center gap-4 mb-2 text-xs text-gray-600">
+                  <div class="flex flex-wrap items-center gap-4 mb-2 text-sm text-gray-600">
                     <div class="flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -288,67 +290,67 @@
   
                   <div class="flex justify-between items-center pt-2 border-t border-gray-100">
                     <div class="flex items-center">
-                      <span class="text-xs text-gray-600 mr-2">Contact:</span>
+                      <span class="text-sm text-gray-600 mr-2">Contact:</span>
                       <div v-if="ad.adType && ad.adType !== 'none'" class="flex items-center">
                         <!-- Website -->
                         <template v-if="ad.adType === 'website'">
-                          <a :href="ad.contactInfo" target="_blank" class="text-xs text-blue-600 flex items-center hover:underline">
+                          <a :href="ad.contactInfo" target="_blank" class="text-sm text-blue-600 flex items-center hover:underline">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>
                             {{ ad.contactInfo }}
                           </a>
-                          <a :href="ad.contactInfo" target="_blank" class="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full hover:bg-blue-200 transition-colors">
+                          <a :href="ad.contactInfo" target="_blank" class="ml-2 text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md hover:bg-blue-200 transition-colors">
                             Visit
                           </a>
                         </template>
                         
                         <!-- WhatsApp -->
                         <template v-else-if="ad.adType === 'whatsapp'">
-                          <a :href="`https://wa.me/${ad.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="text-xs text-green-600 flex items-center hover:underline">
+                          <a :href="`https://wa.me/${ad.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="text-sm text-green-600 flex items-center hover:underline">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
                             {{ ad.contactInfo }}
                           </a>
-                          <a :href="`https://wa.me/${ad.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200 transition-colors">
+                          <a :href="`https://wa.me/${ad.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="ml-2 text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-md hover:bg-green-200 transition-colors">
                             WhatsApp
                           </a>
                         </template>
                         
                         <!-- Phone -->
                         <template v-else-if="ad.adType === 'phone'">
-                          <a :href="`tel:${ad.contactInfo}`" class="text-xs text-gray-600 flex items-center hover:underline">
+                          <a :href="`tel:${ad.contactInfo}`" class="text-sm text-gray-600 flex items-center hover:underline">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
                             {{ ad.contactInfo }}
                           </a>
-                          <a :href="`tel:${ad.contactInfo}`" class="ml-2 text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full hover:bg-gray-200 transition-colors">
+                          <a :href="`tel:${ad.contactInfo}`" class="ml-2 text-sm bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors">
                             Call
                           </a>
                         </template>
                         
                         <!-- Email -->
                         <template v-else-if="ad.adType === 'email'">
-                          <a :href="`mailto:${ad.contactInfo}`" class="text-xs text-purple-600 flex items-center hover:underline">
+                          <a :href="`mailto:${ad.contactInfo}`" class="text-sm text-purple-600 flex items-center hover:underline">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                             {{ ad.contactInfo }}
                           </a>
-                          <a :href="`mailto:${ad.contactInfo}`" class="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full hover:bg-purple-200 transition-colors">
+                          <a :href="`mailto:${ad.contactInfo}`" class="ml-2 text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md hover:bg-purple-200 transition-colors">
                             Email
                           </a>
                         </template>
                       </div>
-                      <span v-else class="text-xs text-gray-500">None</span>
+                      <span v-else class="text-sm text-gray-500">None</span>
                     </div>
                     
                     <div class="flex space-x-1">
                       <button
                         @click="previewAd(ad)"
-                        class="p-1 text-emerald-600 hover:bg-emerald-50 border border-gray-200 rounded-full"
+                        class="p-1 text-emerald-600 hover:bg-emerald-50 border border-gray-200 rounded-md"
                         title="Preview Ad"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -358,7 +360,7 @@
                       </button>
                       <button
                         @click="toggleAdStatus(index)"
-                        class="p-1 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-full"
+                        class="p-1 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-md"
                         :title="ad.status === 'active' ? 'Pause Ad' : 'Activate Ad'"
                         :disabled="ad.status === 'review'"
                       >
@@ -375,7 +377,7 @@
                       </button>
                       <button
                         @click="editAd(index)"
-                        class="p-1 text-blue-600 hover:bg-blue-50 border border-gray-200 rounded-full"
+                        class="p-1 text-blue-600 hover:bg-blue-50 border border-gray-200 rounded-md"
                         title="Edit Ad"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -384,7 +386,7 @@
                       </button>
                       <button
                         @click="showDeleteConfirmation(index)"
-                        class="p-1 text-red-600 hover:bg-red-50 border border-gray-200 rounded-full"
+                        class="p-1 text-red-600 hover:bg-red-50 border border-gray-200 rounded-md"
                         title="Delete Ad"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -400,13 +402,13 @@
             <!-- Pagination -->
             <div class="flex justify-center mt-6">
               <nav class="flex items-center space-x-1">
-                <button class="px-2 py-1 text-xs border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-full">
+                <button class="px-2 py-1 text-sm border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-md">
                   Previous
                 </button>
-                <button class="px-2 py-1 text-xs bg-emerald-500 text-white rounded-full">1</button>
-                <button class="px-2 py-1 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">2</button>
-                <button class="px-2 py-1 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">3</button>
-                <button class="px-2 py-1 text-xs border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-full">
+                <button class="px-2 py-1 text-sm bg-emerald-500 text-white rounded-md">1</button>
+                <button class="px-2 py-1 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md">2</button>
+                <button class="px-2 py-1 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md">3</button>
+                <button class="px-2 py-1 text-sm border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-md">
                   Next
                 </button>
               </nav>
@@ -416,7 +418,7 @@
           <!-- Right Sidebar - Tutorials and Tips -->
           <div class="w-full lg:w-1/3 space-y-5">
             <!-- Tutorial Videos Section -->
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-md shadow-sm p-4">
               <h2 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -448,13 +450,13 @@
                     ></iframe>
                   </div>
                   <div class="p-2">
-                    <h3 class="text-xs font-medium text-gray-800">{{ video.title }}</h3>
-                    <p class="text-xs text-gray-500">{{ video.duration }}</p>
+                    <h3 class="text-sm font-medium text-gray-800">{{ video.title }}</h3>
+                    <p class="text-sm text-gray-500">{{ video.duration }}</p>
                   </div>
                 </div>
               </div>
   
-              <button class="w-full mt-3 px-4 py-1.5 text-xs border border-emerald-500 text-emerald-500 font-medium hover:bg-emerald-500 hover:text-white transition-colors flex justify-center items-center rounded-full">
+              <button class="w-full mt-3 px-4 py-1.5 text-sm border border-emerald-500 text-emerald-500 font-medium hover:bg-emerald-500 hover:text-white transition-colors flex justify-center items-center rounded-md">
                 <span class="mr-1">View All Tutorials</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -463,7 +465,7 @@
             </div>
   
             <!-- Tips Section -->
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-md shadow-sm p-4">
               <h2 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -484,14 +486,14 @@
   
               <div class="space-y-2">
                 <div v-for="(tip, idx) in adTips" :key="idx" class="border-l-[3px] border-emerald-100 pl-2 py-1">
-                  <h3 class="text-xs font-medium text-gray-800">{{ tip.title }}</h3>
-                  <p class="text-xs text-gray-600">{{ tip.description }}</p>
+                  <h3 class="text-sm font-medium text-gray-800">{{ tip.title }}</h3>
+                  <p class="text-sm text-gray-600">{{ tip.description }}</p>
                 </div>
               </div>
             </div>
   
             <!-- Useful Steps Section -->
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-md shadow-sm p-4">
               <h2 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -506,10 +508,10 @@
               </h2>
   
               <div class="space-y-2">
-                <button class="w-full border border-gray-200 rounded-full p-2 hover:border-emerald-500 transition-colors text-left">
+                <button class="w-full border border-gray-200 rounded-md p-2 hover:border-emerald-500 transition-colors text-left">
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
-                      <div class="h-8 w-8 bg-emerald-100 rounded-full flex items-center justify-center mr-2">
+                      <div class="h-8 w-8 bg-emerald-100 rounded-md flex items-center justify-center mr-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           class="h-4 w-4 text-emerald-500"
@@ -526,8 +528,8 @@
                         </svg>
                       </div>
                       <div>
-                        <div class="text-xs font-medium">Pro Package</div>
-                        <div class="text-xs text-gray-500">৳149/month or ৳1499/year</div>
+                        <div class="text-sm font-medium">Pro Package</div>
+                        <div class="text-sm text-gray-500">৳149/month or ৳1499/year</div>
                       </div>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -536,10 +538,10 @@
                   </div>
                 </button>
   
-                <button class="w-full border border-gray-200 rounded-full p-2 hover:border-emerald-500 transition-colors text-left">
+                <button class="w-full border border-gray-200 rounded-md p-2 hover:border-emerald-500 transition-colors text-left">
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
-                      <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                      <div class="h-8 w-8 bg-blue-100 rounded-md flex items-center justify-center mr-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           class="h-4 w-4 text-blue-600"
@@ -556,8 +558,8 @@
                         </svg>
                       </div>
                       <div>
-                        <div class="text-xs font-medium">Sell Products on eShop</div>
-                        <div class="text-xs text-gray-500">Expand your business online</div>
+                        <div class="text-sm font-medium">Sell Products on eShop</div>
+                        <div class="text-sm text-gray-500">Expand your business online</div>
                       </div>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -566,10 +568,10 @@
                   </div>
                 </button>
   
-                <button class="w-full border border-gray-200 rounded-full p-2 hover:border-emerald-500 transition-colors text-left">
+                <button class="w-full border border-gray-200 rounded-md p-2 hover:border-emerald-500 transition-colors text-left">
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
-                      <div class="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                      <div class="h-8 w-8 bg-green-100 rounded-md flex items-center justify-center mr-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           class="h-4 w-4 text-green-600"
@@ -586,8 +588,8 @@
                         </svg>
                       </div>
                       <div>
-                        <div class="text-xs font-medium">Create Community Workspace</div>
-                        <div class="text-xs text-gray-500">Connect with others on ABN</div>
+                        <div class="text-sm font-medium">Create Community Workspace</div>
+                        <div class="text-sm text-gray-500">Connect with others on ABN</div>
                       </div>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -602,10 +604,10 @@
   
         <!-- Create Ad Modal -->
         <div v-if="showCreateAdModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-5 max-h-[70vh] overflow-y-auto">
+          <div class="bg-white rounded-md shadow-xl w-full max-w-4xl p-5 max-h-[70vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-900">{{ editingAdIndex !== null ? 'Edit Ad' : 'Create New Ad' }}</h3>
-              <button @click="closeCreateAdModal" class="text-gray-400 hover:text-gray-500 rounded-full">
+              <button @click="closeCreateAdModal" class="text-gray-400 hover:text-gray-500 rounded-md">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -618,14 +620,14 @@
                 <form @submit.prevent="handleAdSubmit" class="space-y-4">
                   <!-- Ad Title -->
                   <div>
-                    <label for="title" class="block text-xs font-medium text-gray-700">
+                    <label for="title" class="block text-sm font-medium text-gray-700">
                       Ad Title
                     </label>
                     <input
                       type="text"
                       id="title"
                       v-model="adForm.title"
-                      class="mt-1 block w-full px-3 py-2 text-xs border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="Enter a descriptive title"
                       required
                     />
@@ -633,13 +635,13 @@
   
                   <!-- Category -->
                   <div>
-                    <label for="category" class="block text-xs font-medium text-gray-700">
+                    <label for="category" class="block text-sm font-medium text-gray-700">
                       Category
                     </label>
                     <select
                       id="category"
                       v-model="adForm.category"
-                      class="mt-1 block w-full px-3 py-2 text-xs border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="none">None</option>
                       <option value="electronics">Electronics</option>
@@ -655,42 +657,42 @@
   
                   <!-- Gender -->
                   <div>
-                    <label class="block text-xs font-medium text-gray-700">Gender</label>
+                    <label class="block text-sm font-medium text-gray-700">Gender</label>
                     <div class="mt-1 flex space-x-4">
                       <label class="inline-flex items-center">
                         <input type="radio" v-model="adForm.gender" value="male" class="form-radio text-emerald-500" />
-                        <span class="ml-2 text-xs text-gray-700">Male</span>
+                        <span class="ml-2 text-sm text-gray-700">Male</span>
                       </label>
                       <label class="inline-flex items-center">
                         <input type="radio" v-model="adForm.gender" value="female" class="form-radio text-emerald-500" />
-                        <span class="ml-2 text-xs text-gray-700">Female</span>
+                        <span class="ml-2 text-sm text-gray-700">Female</span>
                       </label>
                       <label class="inline-flex items-center">
                         <input type="radio" v-model="adForm.gender" value="" class="form-radio text-emerald-500" />
-                        <span class="ml-2 text-xs text-gray-700">Not specified</span>
+                        <span class="ml-2 text-sm text-gray-700">Not specified</span>
                       </label>
                     </div>
                   </div>
   
                   <!-- Age Range -->
                   <div>
-                    <label class="block text-xs font-medium text-gray-700">
+                    <label class="block text-sm font-medium text-gray-700">
                       Age Range
                     </label>
                     <div class="mt-2 px-2">
                       <div class="flex justify-between mb-1">
-                        <span class="text-xs text-gray-600">{{ adForm.ageRange[0] }} years</span>
-                        <span class="text-xs text-gray-600">{{ adForm.ageRange[1] }} years</span>
+                        <span class="text-sm text-gray-600">{{ adForm.ageRange[0] }} years</span>
+                        <span class="text-sm text-gray-600">{{ adForm.ageRange[1] }} years</span>
                       </div>
-                      <div class="relative h-1 bg-gray-200 rounded-full">
+                      <div class="relative h-1 bg-gray-200 rounded-md">
                         <!-- Track -->
-                        <div class="absolute h-1 bg-emerald-500 rounded-full" 
+                        <div class="absolute h-1 bg-emerald-500 rounded-md" 
                              :style="{ left: (adForm.ageRange[0] - 13) / 87 * 100 + '%', right: 100 - (adForm.ageRange[1] - 13) / 87 * 100 + '%' }"></div>
                         
                         <!-- Min handle -->
                         <button 
                           type="button"
-                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-full shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           :style="{ left: (adForm.ageRange[0] - 13) / 87 * 100 + '%' }"
                           @mousedown="startDrag('min')"
                           @touchstart="startDrag('min')"
@@ -699,7 +701,7 @@
                         <!-- Max handle -->
                         <button 
                           type="button"
-                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-full shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           :style="{ left: (adForm.ageRange[1] - 13) / 87 * 100 + '%' }"
                           @mousedown="startDrag('max')"
                           @touchstart="startDrag('max')"
@@ -718,29 +720,29 @@
   
                   <!-- Country -->
                   <div>
-                    <label for="country" class="block text-xs font-medium text-gray-700">
+                    <label for="country" class="block text-sm font-medium text-gray-700">
                       Country
                     </label>
                     <select
                       id="country"
                       v-model="adForm.country"
-                      class="mt-1 block w-full px-3 py-2 text-xs border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       disabled
                     >
                       <option value="bangladesh">Bangladesh</option>
                     </select>
-                    <p class="mt-1 text-xs text-gray-500">Currently only available in Bangladesh</p>
+                    <p class="mt-1 text-sm text-gray-500">Currently only available in Bangladesh</p>
                   </div>
   
                   <!-- Ad Type -->
                   <div>
-                    <label for="adType" class="block text-xs font-medium text-gray-700">
+                    <label for="adType" class="block text-sm font-medium text-gray-700">
                       Ad Type
                     </label>
                     <select
                       id="adType"
                       v-model="adForm.adType"
-                      class="mt-1 block w-full px-3 py-2 text-xs border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="none">None</option>
                       <option value="website">Click to Website</option>
@@ -752,14 +754,14 @@
   
                   <!-- Contact Info based on Ad Type -->
                   <div v-if="adForm.adType && adForm.adType !== 'none'">
-                    <label :for="`${adForm.adType}Contact`" class="block text-xs font-medium text-gray-700">
+                    <label :for="`${adForm.adType}Contact`" class="block text-sm font-medium text-gray-700">
                       {{ adTypeLabels[adForm.adType] }}
                     </label>
                     <input
                       :type="adTypeInputTypes[adForm.adType]"
                       :id="`${adForm.adType}Contact`"
                       v-model="adForm.contactInfo"
-                      class="mt-1 block w-full px-3 py-2 text-xs border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       :placeholder="adTypePlaceholders[adForm.adType]"
                       required
                     />
@@ -767,7 +769,7 @@
   
                   <!-- Description -->
                   <div>
-                    <label for="description" class="block text-xs font-medium text-gray-700">
+                    <label for="description" class="block text-sm font-medium text-gray-700">
                       Description
                     </label>
                     <textarea
@@ -775,16 +777,16 @@
                       v-model="adForm.description"
                       rows="3"
                       maxlength="150"
-                      class="mt-1 block w-full px-3 py-2 text-xs border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="Describe your product or service in detail (max 150 characters)"
                       required
                     ></textarea>
-                    <p class="mt-1 text-xs text-gray-500">{{ adForm.description.length }}/150 characters</p>
+                    <p class="mt-1 text-sm text-gray-500">{{ adForm.description.length }}/150 characters</p>
                   </div>
   
                   <!-- Multiple Image Upload -->
                   <div>
-                    <label class="block text-xs font-medium text-gray-700">Images (up to 4)</label>
+                    <label class="block text-sm font-medium text-gray-700">Images (up to 4)</label>
                     <div class="mt-1">
                       <!-- Image preview grid -->
                       <div v-if="adForm.images && adForm.images.length > 0" class="grid grid-cols-2 gap-2 mb-2">
@@ -793,7 +795,7 @@
                           <button
                             type="button"
                             @click="removeImage(idx)"
-                            class="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm"
+                            class="absolute top-1 right-1 bg-white rounded-md p-1 shadow-sm"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -805,7 +807,7 @@
                       <!-- Upload button -->
                       <label 
                         v-if="adForm.images.length < 4" 
-                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
                       >
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                           <svg
@@ -822,20 +824,20 @@
                               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                             />
                           </svg>
-                          <p class="mt-1 text-xs text-gray-500">Click to upload image</p>
-                          <p class="text-xs text-gray-500">PNG, JPG up to 5MB ({{ adForm.images.length }}/4)</p>
+                          <p class="mt-1 text-sm text-gray-500">Click to upload image</p>
+                          <p class="text-sm text-gray-500">PNG, JPG up to 5MB ({{ adForm.images.length }}/4)</p>
                         </div>
                         <input type="file" class="hidden" accept="image/*" @change="handleImageUpload" />
                       </label>
                       
                       <!-- Max images message -->
-                      <p v-else class="text-xs text-amber-600 mt-1">Maximum of 4 images reached</p>
+                      <p v-else class="text-sm text-amber-600 mt-1">Maximum of 4 images reached</p>
                     </div>
                   </div>
   
                   <!-- Ad Budget -->
                   <div>
-                    <label for="budget" class="block text-xs font-medium text-gray-700">
+                    <label for="budget" class="block text-sm font-medium text-gray-700">
                       Ad Budget (৳)
                     </label>
                     <div class="mt-1 relative">
@@ -843,14 +845,14 @@
                         type="number"
                         id="budget"
                         v-model.number="adForm.budget"
-                        class="block w-full px-3 py-2 text-xs border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder="Enter ad budget"
                         min="200"
                         required
                       />
                       <div class="mt-1 flex justify-between">
-                        <p class="text-xs text-gray-500">Your account balance: <span class="font-medium">৳{{ accountBalance }}</span></p>
-                        <p class="text-xs text-amber-600">Minimum budget: ৳200</p>
+                        <p class="text-sm text-gray-500">Your account balance: <span class="font-medium">৳{{ accountBalance }}</span></p>
+                        <p class="text-sm text-amber-600">Minimum budget: ৳200</p>
                       </div>
                       <div class="mt-2 p-2 bg-blue-50 rounded-md">
                         <div v-if="isCalculatingViews" class="flex items-center justify-center py-1">
@@ -858,9 +860,9 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          <span class="ml-2 text-xs text-blue-700 font-medium">Calculating...</span>
+                          <span class="ml-2 text-sm text-blue-700 font-medium">Calculating...</span>
                         </div>
-                        <p v-else class="text-xs text-blue-700 font-medium">
+                        <p v-else class="text-sm text-blue-700 font-medium">
                           Estimated Views: {{ calculatedViews }}
                         </p>
                       </div>
@@ -871,20 +873,20 @@
                     <button
                       type="button"
                       @click="previewAdFromForm"
-                      class="px-3 py-1.5 text-xs border border-gray-300 rounded-full shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                     >
                       Preview
                     </button>
                     <button
                       type="button"
                       @click="closeCreateAdModal"
-                      class="px-3 py-1.5 text-xs border border-gray-300 rounded-full shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      class="px-3 py-1.5 text-xs border border-transparent rounded-full shadow-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 flex items-center"
+                      class="px-3 py-1.5 text-sm border border-transparent rounded-md shadow-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 flex items-center"
                       :disabled="isSubmitting"
                     >
                       <svg
@@ -917,20 +919,20 @@
               <!-- Right side - Ad Preview -->
               <div class="w-full md:w-1/2 mt-5 md:mt-0">
                 <div class="border rounded-md p-4 bg-gray-50">
-                  <h4 class="text-xs font-medium text-gray-700 mb-2">Ad Preview</h4>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Ad Preview</h4>
                   <div class="bg-white rounded-md shadow-sm overflow-hidden">
                     <!-- Ad Image Preview -->
                     <div class="h-48 bg-gray-200 relative">
                       <!-- Show first image if available -->
                       <img v-if="adForm.images && adForm.images.length > 0" :src="adForm.images[0]" alt="Ad preview" class="h-full w-full object-cover" />
                       <div v-else class="h-full w-full flex items-center justify-center">
-                        <p class="text-xs text-gray-500">No image uploaded</p>
+                        <p class="text-sm text-gray-500">No image uploaded</p>
                       </div>
                       
                       <!-- Image count indicator -->
                       <div 
                         v-if="adForm.images && adForm.images.length > 1" 
-                        class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full"
+                        class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-sm px-2 py-1 rounded-md"
                       >
                         {{ adForm.images.length }} images
                       </div>
@@ -940,59 +942,59 @@
                     <div class="p-3">
                       <h3 class="font-medium text-sm mb-1 line-clamp-2">{{ adForm.title || "Ad Title" }}</h3>
                       <div class="flex flex-wrap items-center gap-2 mb-2">
-                        <span v-if="adForm.category && adForm.category !== 'none'" class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full text-xs">
+                        <span v-if="adForm.category && adForm.category !== 'none'" class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm">
                           {{ adForm.category }}
                         </span>
-                        <span class="text-gray-500 text-xs">Bangladesh</span>
+                        <span class="text-gray-500 text-sm">Bangladesh</span>
                         <div class="flex flex-wrap gap-2">
-                          <span v-if="adForm.gender" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                          <span v-if="adForm.gender" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm">
                             {{ adForm.gender === 'male' ? 'Male' : 'Female' }}
                           </span>
-                          <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                          <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm">
                             Age: {{ adForm.ageRange[0] }}-{{ adForm.ageRange[1] }}
                           </span>
                         </div>
                       </div>
   
-                      <p class="text-gray-700 mb-3 text-xs line-clamp-3">
+                      <p class="text-gray-700 mb-3 text-sm line-clamp-3">
                         {{ adForm.description || "Your ad description will appear here. Make sure it is clear and concise." }}
                       </p>
   
                       <!-- Ad Type Preview -->
                       <div class="mt-2">
-                        <div v-if="adForm.adType === 'website'" class="flex items-center text-xs text-blue-600">
+                        <div v-if="adForm.adType === 'website'" class="flex items-center text-sm text-blue-600">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                           </svg>
                           <span>{{ adForm.contactInfo || "https://example.com" }}</span>
-                          <a v-if="adForm.contactInfo" :href="adForm.contactInfo" target="_blank" class="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full hover:bg-blue-200 transition-colors">
+                          <a v-if="adForm.contactInfo" :href="adForm.contactInfo" target="_blank" class="ml-2 text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md hover:bg-blue-200 transition-colors">
                             Visit
                           </a>
                         </div>
-                        <div v-else-if="adForm.adType === 'whatsapp'" class="flex items-center text-xs text-green-600">
+                        <div v-else-if="adForm.adType === 'whatsapp'" class="flex items-center text-sm text-green-600">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
                           <span>{{ adForm.contactInfo || "+880 1234567890" }}</span>
-                          <a v-if="adForm.contactInfo" :href="`https://wa.me/${adForm.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200 transition-colors">
+                          <a v-if="adForm.contactInfo" :href="`https://wa.me/${adForm.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="ml-2 text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-md hover:bg-green-200 transition-colors">
                             WhatsApp
                           </a>
                         </div>
-                        <div v-else-if="adForm.adType === 'phone'" class="flex items-center text-xs text-gray-600">
+                        <div v-else-if="adForm.adType === 'phone'" class="flex items-center text-sm text-gray-600">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
                           <span>{{ adForm.contactInfo || "+880 1234567890" }}</span>
-                          <a v-if="adForm.contactInfo" :href="`tel:${adForm.contactInfo}`" class="ml-2 text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full hover:bg-gray-200 transition-colors">
+                          <a v-if="adForm.contactInfo" :href="`tel:${adForm.contactInfo}`" class="ml-2 text-sm bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors">
                             Call
                           </a>
                         </div>
-                        <div v-else-if="adForm.adType === 'email'" class="flex items-center text-xs text-purple-600">
+                        <div v-else-if="adForm.adType === 'email'" class="flex items-center text-sm text-purple-600">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
                           <span>{{ adForm.contactInfo || "example@email.com" }}</span>
-                          <a v-if="adForm.contactInfo" :href="`mailto:${adForm.contactInfo}`" target="_blank" class="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full hover:bg-purple-200 transition-colors">
+                          <a v-if="adForm.contactInfo" :href="`mailto:${adForm.contactInfo}`" target="_blank" class="ml-2 text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md hover:bg-purple-200 transition-colors">
                             Email
                           </a>
                         </div>
@@ -1000,8 +1002,8 @@
   
                       <!-- Budget and Views -->
                       <div class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center">
-                        <span class="text-xs text-gray-600">Budget: ৳{{ adForm.budget || "0" }}</span>
-                        <span class="text-xs text-emerald-500">
+                        <span class="text-sm text-gray-600">Budget: ৳{{ adForm.budget || "0" }}</span>
+                        <span class="text-sm text-emerald-500">
                           Est. Views: {{ calculatedViews }}
                         </span>
                       </div>
@@ -1009,8 +1011,8 @@
                   </div>
   
                   <div class="mt-4">
-                    <h5 class="text-xs font-medium text-gray-700 mb-2">Tips for Better Performance</h5>
-                    <ul class="text-xs text-gray-600 space-y-1 pl-4 list-disc">
+                    <h5 class="text-sm font-medium text-gray-700 mb-2">Tips for Better Performance</h5>
+                    <ul class="text-sm text-gray-600 space-y-1 pl-4 list-disc">
                       <li>Use high-quality images that clearly show your product/service</li>
                       <li>Keep your title concise and include keywords</li>
                       <li>Highlight key benefits in your description</li>
@@ -1025,7 +1027,7 @@
   
         <!-- Delete Confirmation Modal -->
         <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+          <div class="bg-white rounded-md shadow-xl w-full max-w-md p-6">
             <div class="text-center mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1049,7 +1051,7 @@
             <div class="flex justify-center space-x-3">
               <button
                 @click="confirmDelete"
-                class="px-4 py-1.5 text-xs border border-red-600 bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center rounded-full"
+                class="px-4 py-1.5 text-sm border border-red-600 bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center rounded-md"
                 :disabled="isDeleting"
               >
                 <svg
@@ -1070,7 +1072,7 @@
               </button>
               <button
                 @click="cancelDelete"
-                class="px-4 py-1.5 text-xs border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors rounded-full"
+                class="px-4 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors rounded-md"
                 :disabled="isDeleting"
               >
                 Cancel
@@ -1081,10 +1083,10 @@
   
         <!-- Ad Preview Modal -->
         <div v-if="showPreviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
+          <div class="bg-white rounded-md shadow-xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-900">Ad Preview</h3>
-              <button @click="showPreviewModal = false" class="text-gray-400 hover:text-gray-500 rounded-full">
+              <button @click="showPreviewModal = false" class="text-gray-400 hover:text-gray-500 rounded-md">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -1102,7 +1104,7 @@
                   <button 
                     v-if="previewAdData.images.length > 1" 
                     @click="prevImage" 
-                    class="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full p-1"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-md p-1"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -1111,7 +1113,7 @@
                   <button 
                     v-if="previewAdData.images.length > 1" 
                     @click="nextImage" 
-                    class="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full p-1"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-md p-1"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -1119,12 +1121,12 @@
                   </button>
                   
                   <!-- Image counter -->
-                  <div v-if="previewAdData.images.length > 1" class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
+                  <div v-if="previewAdData.images.length > 1" class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-sm px-2 py-1 rounded-md">
                     {{ currentImageIndex + 1 }}/{{ previewAdData.images.length }}
                   </div>
                 </div>
                 <div v-else class="h-full w-full flex items-center justify-center">
-                  <p class="text-gray-500 text-xs">No image uploaded</p>
+                  <p class="text-gray-500 text-sm">No image uploaded</p>
                 </div>
               </div>
   
@@ -1132,67 +1134,67 @@
               <div class="p-4">
                 <h3 class="font-medium text-sm mb-2">{{ previewAdData.title || "Ad Title" }}</h3>
                 <div class="flex flex-wrap items-center gap-2 mb-2">
-                  <span v-if="previewAdData.category && previewAdData.category !== 'none'" class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full text-xs">
+                  <span v-if="previewAdData.category && previewAdData.category !== 'none'" class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm">
                     {{ previewAdData.category }}
                   </span>
-                  <span class="text-gray-500 text-xs">Bangladesh</span>
+                  <span class="text-gray-500 text-sm">Bangladesh</span>
                   <span
-                    class="px-2 py-0.5 rounded-full text-xs"
+                    class="px-2 py-0.5 rounded-md text-sm"
                     :class="getStatusClass(previewAdData.status)"
                   >
                     {{ getStatusText(previewAdData.status) }}
                   </span>
                   <div class="flex flex-wrap gap-2">
-                    <span v-if="previewAdData.gender" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                    <span v-if="previewAdData.gender" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm">
                       {{ previewAdData.gender === 'male' ? 'Male' : 'Female' }}
                     </span>
-                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm">
                       Age: {{ previewAdData.ageRange[0] }}-{{ previewAdData.ageRange[1] }}
                     </span>
                   </div>
                 </div>
   
-                <p class="text-gray-700 mb-4 text-xs">
+                <p class="text-gray-700 mb-4 text-sm">
                   {{ previewAdData.description || "Your ad description will appear here. Make sure it is clear and concise." }}
                 </p>
   
                 <!-- Ad Type Preview with Icons -->
                 <div class="mt-3">
                   <div v-if="previewAdData.adType === 'website'" class="flex items-center">
-                    <a :href="previewAdData.contactInfo" target="_blank" class="text-xs text-blue-600 hover:underline mr-2">
+                    <a :href="previewAdData.contactInfo" target="_blank" class="text-sm text-blue-600 hover:underline mr-2">
                       {{ previewAdData.contactInfo }}
                     </a>
-                    <a :href="previewAdData.contactInfo" target="_blank" class="rounded-full bg-blue-100 text-blue-700 p-2 hover:bg-blue-200 transition-colors">
+                    <a :href="previewAdData.contactInfo" target="_blank" class="rounded-md bg-blue-100 text-blue-700 p-2 hover:bg-blue-200 transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
                   </div>
                   <div v-else-if="previewAdData.adType === 'whatsapp'" class="flex items-center">
-                    <span class="text-xs text-green-600 mr-2">{{ previewAdData.contactInfo }}</span>
-                    <a :href="`https://wa.me/${previewAdData.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="rounded-full bg-green-100 text-green-700 p-2 hover:bg-green-200 transition-colors">
+                    <span class="text-sm text-green-600 mr-2">{{ previewAdData.contactInfo }}</span>
+                    <a :href="`https://wa.me/${previewAdData.contactInfo.replace(/[^0-9]/g, '')}`" target="_blank" class="rounded-md bg-green-100 text-green-700 p-2 hover:bg-green-200 transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>
                     </a>
                   </div>
                   <div v-else-if="previewAdData.adType === 'phone'" class="flex items-center">
-                    <span class="text-xs text-gray-600 mr-2">{{ previewAdData.contactInfo }}</span>
-                    <a :href="`tel:${previewAdData.contactInfo}`" class="rounded-full bg-gray-100 text-gray-700 p-2 hover:bg-gray-200 transition-colors">
+                    <span class="text-sm text-gray-600 mr-2">{{ previewAdData.contactInfo }}</span>
+                    <a :href="`tel:${previewAdData.contactInfo}`" class="rounded-md bg-gray-100 text-gray-700 p-2 hover:bg-gray-200 transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </a>
                   </div>
                   <div v-else-if="previewAdData.adType === 'email'" class="flex items-center">
-                    <span class="text-xs text-purple-600 mr-2">{{ previewAdData.contactInfo }}</span>
-                    <a :href="`mailto:${previewAdData.contactInfo}`" class="rounded-full bg-purple-100 text-purple-700 p-2 hover:bg-purple-200 transition-colors">
+                    <span class="text-sm text-purple-600 mr-2">{{ previewAdData.contactInfo }}</span>
+                    <a :href="`mailto:${previewAdData.contactInfo}`" class="rounded-md bg-purple-100 text-purple-700 p-2 hover:bg-purple-200 transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </a>
                   </div>
-                  <div v-else class="text-xs text-gray-500">
+                  <div v-else class="text-sm text-gray-500">
                     No contact information provided
                   </div>
                 </div>
@@ -1202,7 +1204,7 @@
             <div class="mt-4 flex justify-end">
               <button
                 @click="showPreviewModal = false"
-                class="px-4 py-2 text-xs border border-gray-300 rounded-full shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
               >
                 Close Preview
               </button>
@@ -1284,7 +1286,7 @@
         
         // Set a timeout to simulate calculation (2 seconds)
         setTimeout(() => {
-          const baseRate = Math.random() * (4.2 - 3.5) + 3.5; // Random between 3.5 and 4.2
+          const baseRate = Math.random() * (6.2 - 7.1) + 3.5; 
           calculatedViews.value = Math.round(newValue * baseRate);
           isCalculatingViews.value = false
         }, 2000)

@@ -49,7 +49,7 @@
                 v-click-outside="() => (moreMenuOpen = false)"
               >
                 <NuxtLink
-                  v-for="category in categories.slice(4)"
+                  v-for="category in categories.slice(5)"
                   :key="category.id"
                   :class="[
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
@@ -104,7 +104,7 @@
             v-if="categories?.length > 0"
           >
             <NuxtLink
-              v-for="category in categories.slice(0, 6)"
+              v-for="category in categories.slice(0, 4)"
               :key="category.id"
               :class="[
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1 flex-shrink-0',
