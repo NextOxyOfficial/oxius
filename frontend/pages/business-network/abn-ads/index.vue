@@ -641,7 +641,7 @@
                     <select
                       id="category"
                       v-model="adForm.category"
-                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="none">None</option>
                       <option value="electronics">Electronics</option>
@@ -726,7 +726,7 @@
                     <select
                       id="country"
                       v-model="adForm.country"
-                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       disabled
                     >
                       <option value="bangladesh">Bangladesh</option>
@@ -742,7 +742,7 @@
                     <select
                       id="adType"
                       v-model="adForm.adType"
-                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     >
                       <option value="none">None</option>
                       <option value="website">Click to Website</option>
@@ -777,7 +777,7 @@
                       v-model="adForm.description"
                       rows="3"
                       maxlength="150"
-                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="Describe your product or service in detail (max 150 characters)"
                       required
                     ></textarea>
