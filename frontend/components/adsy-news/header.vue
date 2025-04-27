@@ -4,7 +4,7 @@
       <div class="max-w-7xl mx-auto">
         <!-- Main Navigation - REVISED LAYOUT -->
         <div class="flex items-center justify-between px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8">
-          <!-- Logo - Now in the same row -->
+          <!-- Logo - Now in the same row with increased size -->
           <NuxtLink to="/adsy-news" class="flex-shrink-0 mr-3">
             <NuxtImg
               v-if="logo[0]?.image"
@@ -12,7 +12,7 @@
               alt="Adsy News Logo"
               width="120"
               height="40"
-              class="h-6 sm:h-8 w-auto object-contain"
+              class="h-7 sm:h-9 w-auto object-contain" 
             />
           </NuxtLink>
 
@@ -97,8 +97,8 @@
           </div>
         </div>
         
-        <!-- Mobile Category Nav - KEPT FOR HORIZONTAL SCROLLING -->
-        <div class="px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-hide">
+        <!-- Mobile Category Nav - FIXED FOR DROPDOWN MENU -->
+        <div class="px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <nav
             class="flex md:hidden pb-3 mt-1 space-x-4 whitespace-nowrap"
             v-if="categories?.length > 0"
@@ -116,14 +116,37 @@
             >
               {{ category.name }}
             </NuxtLink>
-            <button
-              v-if="categories.length > 6"
-              @click="toggleMoreCategories"
-              class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200 flex-shrink-0"
-            >
-              More
-              <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
-            </button>
+            <div class="relative" v-if="categories.length > 4">
+              <button
+                @click="toggleMoreCategories"
+                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200 flex-shrink-0"
+                aria-label="More categories"
+              >
+                More
+                <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
+              </button>
+              <!-- Mobile dropdown menu -->
+              <div
+                v-if="moreMenuOpen"
+                class="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 max-h-60 overflow-y-auto border border-gray-200"
+                v-click-outside="() => (moreMenuOpen = false)"
+              >
+                <NuxtLink
+                  v-for="category in categories.slice(4)"
+                  :key="category.id"
+                  :class="[
+                    'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
+                    activeCategory === category.id
+                      ? 'text-primary'
+                      : 'text-gray-800',
+                  ]"
+                  :to="`/adsy-news/categories/${category.slug}/`"
+                  @click="moreMenuOpen = false"
+                >
+                  {{ category.name }}
+                </NuxtLink>
+              </div>
+            </div>
           </nav>
         </div>
       </div>
