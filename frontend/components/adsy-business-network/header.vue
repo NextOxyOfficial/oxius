@@ -492,6 +492,31 @@
                     <NuxtLink
                       v-for="(link, index) in [
                         {
+                          label:
+                            $route.path === '/business-network'
+                              ? 'AdsyClub'
+                              : t('business_network'),
+                          to:
+                            $route.path === '/business-network'
+                              ? '/'
+                              : '/business-network',
+                          icon:
+                            $route.path === '/business-network'
+                              ? 'i-lucide-chart-bar-big'
+                              : 'i-eos-icons-network',
+                          color: 'text-orange-600 dark:text-orange-400',
+                          bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
+                          border: 'border-orange-200 dark:border-orange-800/30',
+                        },
+                        {
+                          label: t('adsy_news'),
+                          to: '/adsy-news',
+                          icon: 'i-mdi-newspaper-variant-multiple-outline',
+                          color: 'text-purple-600 dark:text-purple-400',
+                          bg: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10',
+                          border: 'border-purple-200 dark:border-purple-800/30',
+                        },
+                        {
                           label: t('ad'),
                           to: '/my-classified-services/',
                           icon: 'i-heroicons-megaphone',
@@ -518,22 +543,7 @@
                             text: t('pro'),
                           },
                         },
-                        {
-                          label: t('business_network'),
-                          to: '/business-network',
-                          icon: 'i-eos-icons-network',
-                          color: 'text-orange-600 dark:text-orange-400',
-                          bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
-                          border: 'border-orange-200 dark:border-orange-800/30',
-                        },
-                        {
-                          label: t('adsy_news'),
-                          to: '/adsy-news',
-                          icon: 'i-mdi-newspaper-variant-multiple-outline',
-                          color: 'text-purple-600 dark:text-purple-400',
-                          bg: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10',
-                          border: 'border-purple-200 dark:border-purple-800/30',
-                        },
+
                         {
                           label: $t('transaction'),
                           to: '/deposit-withdraw',
