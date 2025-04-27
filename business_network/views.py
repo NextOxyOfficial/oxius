@@ -332,3 +332,11 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
             queryset = queryset.filter(post_tags__tag__icontains=tag)
         
         return queryset.order_by('-created_at').distinct()
+
+
+class BusinessNetworkWorkspaceListCreateView(generics.ListCreateAPIView):
+    queryset = BusinessNetworkWorkspace.objects.all()
+    serializer_class = BusinessNetworkWorkspaceSerializer
+    permission_classes = [IsAuthenticated]
+
+    

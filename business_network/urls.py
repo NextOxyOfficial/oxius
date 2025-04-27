@@ -27,4 +27,7 @@ urlpatterns = [
     # Tag endpoints
     path('tags/', BusinessNetworkPostTagListCreateView.as_view(), name='post-tags'),
     path('tags/<str:pk>/', BusinessNetworkPostTagDestroyView.as_view(), name='tag-delete'),
+
+    # business_network_workspace endpoints
+    path('workspaces/', BusinessNetworkWorkspaceListCreateView.as_view(), name='workspace-list-create'),
 ]

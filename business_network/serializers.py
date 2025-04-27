@@ -5,7 +5,8 @@ from .models import (
     BusinessNetworkPostLike, 
     BusinessNetworkPostFollow,
     BusinessNetworkPostComment,
-    BusinessNetworkPostTag
+    BusinessNetworkPostTag,
+    BusinessNetworkWorkspace
 )
 from base.serializers import UserSerializer
 
@@ -78,3 +79,9 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     
     def get_follower_count(self, obj):
         return obj.post_followers.count()
+
+class BusinessNetworkWorkspaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessNetworkWorkspace
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']

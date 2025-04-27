@@ -130,16 +130,20 @@
             >
               No workspaces available.
             </div>
-            <!-- <NuxtLink
+            <NuxtLink
               v-for="workspace in workspaces"
               :key="workspace.id"
               :to="`/business-network/workspace/${workspace.id}`"
               class="flex items-center px-4 py-3 rounded-lg transition-colors group"
-              :class="workspace.active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'"
+              :class="
+                workspace.active
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              "
               @click="navigateToWorkspace(workspace.id)"
             >
               <span class="text-sm font-medium">{{ workspace.name }}</span>
-            </NuxtLink> -->
+            </NuxtLink>
           </nav>
         </div>
 
@@ -213,7 +217,12 @@
             </NuxtLink>
           </div>
         </div>
-        <UButton label="Promote on ABN" variant="outline" block to="/business-network/abn-ads"/>
+        <UButton
+          label="Promote on ABN"
+          variant="outline"
+          block
+          to="/business-network/abn-ads"
+        />
         <!-- Adsy News Section -->
         <div>
           <h3
@@ -543,7 +552,7 @@ const isMobile = ref(false);
 const currentProductIndex = ref(0);
 const currentNewsIndex = ref(0);
 const { user } = useAuth();
-const { get } = useApi();
+const { get, post } = useApi();
 const logo = ref([]);
 const cart = useStoreCart();
 const route = useRoute();
@@ -551,13 +560,7 @@ console.log(route.path);
 const tags = ref([]);
 const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
-const workspaces = ref([
-  { id: 1, name: "#Marketing Team", active: false },
-  { id: 2, name: "#Development Team", active: false },
-  { id: 3, name: "#Design Team", active: false },
-  { id: 4, name: "#Sales Team", active: false },
-  { id: 5, name: "#HR Team", active: false },
-]); // Predefined workspaces with # prefix
+const workspaces = ref([]); // Predefined workspaces with # prefix
 const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
 
@@ -766,7 +769,7 @@ async function fetchHashtags() {
 // Workspaces
 async function fetchWorkspaces() {
   try {
-    const response = await get("/workspaces/");
+    const response = await get("/bn/workspaces/");
     workspaces.value = response.data;
   } catch (error) {
     console.error("Error fetching workspaces:", error);
@@ -775,25 +778,29 @@ async function fetchWorkspaces() {
 }
 
 // Create Workspace
-function createWorkspace() {
+async function createWorkspace() {
   if (!newWorkspaceName.value.trim()) {
-    toast.error("Workspace name cannot be empty");
+    toast.add({ title: "Workspace name cannot be empty" });
     return;
   }
 
-  // Add the new workspace to the list
-  workspaces.value.push({
-    id: workspaces.value.length + 1,
-    name: newWorkspaceName.value,
-    active: false,
-  });
+  if (!user.value) {
+    toast.add({ title: "Please login to create a workspace" });
+    return;
+  }
 
-  // Close the modal and reset the input
-  isCreateWorkspaceModalOpen.value = false;
-  newWorkspaceName.value = "";
-
-  // Show a success toast notification
-  toast.success("Workspace created successfully!");
+  try {
+    const response = await post("/bn/workspaces/", {
+      name: newWorkspaceName.value,
+    });
+    if (response.data) {
+      await fetchWorkspaces();
+      toast.add({ title: "Workspace created successfully!" });
+      newWorkspaceName.value = "";
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 // Products

@@ -8,4 +8,5 @@ admin.site.register(BusinessNetworkPostComment)
 admin.site.register(BusinessNetworkPostLike)
 admin.site.register(BusinessNetworkPostFollow)
 admin.site.register(BusinessNetworkPostTag)
+admin.site.register(BusinessNetworkWorkspace)
 
