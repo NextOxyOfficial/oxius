@@ -22,7 +22,7 @@
             v-if="categories?.length > 0"
           >
             <NuxtLink
-              v-for="category in categories.slice(0, 4)"
+              v-for="category in categories.slice(0, 6)"
               :key="category.id"
               :class="[
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
@@ -34,10 +34,10 @@
             >
               {{ category.name }}
             </NuxtLink>
-            <div class="relative" v-if="categories.length > 4">
+            <div class="relative mt-1" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200 py-1"
+                class="flex  items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
               >
                 More
                 <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
@@ -49,7 +49,7 @@
                 v-click-outside="() => (moreMenuOpen = false)"
               >
                 <NuxtLink
-                  v-for="category in categories.slice(5)"
+                  v-for="category in categories.slice(4)"
                   :key="category.id"
                   :class="[
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
@@ -98,7 +98,7 @@
         </div>
         
         <!-- Mobile Category Nav - CENTERED WITH FIXED DROPDOWN -->
-        <div class="px-4 sm:px-6 lg:px-8">
+        <div class="px-4 sm:px-6 lg:px-8 ">
           <nav
             class="flex md:hidden pb-3 mt-1 justify-center"
             v-if="categories?.length > 0"
@@ -117,7 +117,7 @@
               >
                 {{ category.name }}
               </NuxtLink>
-              <div class="relative flex-shrink-0" v-if="categories.length > 4">
+              <div class="relative flex-shrink-0 pt-1" v-if="categories.length > 4">
                 <button
                   @click="toggleMoreCategories"
                   class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
