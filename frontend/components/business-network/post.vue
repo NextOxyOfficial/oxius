@@ -470,7 +470,7 @@
                         >
                           <button
                             @click="editComment(post, comment)"
-                            class="p-0.5 text-gray-500 hover:text-blue-600"
+                            class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
                           >
                             <UIcon
                               name="i-heroicons-pencil-square"
@@ -479,7 +479,7 @@
                           </button>
                           <button
                             @click="deleteComment(post, comment)"
-                            class="p-0.5 text-gray-500 hover:text-red-600 flex items-center"
+                            class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
                             :disabled="comment.isDeleting"
                           >
                             <Loader2
@@ -962,7 +962,7 @@
                       >
                         <button
                           @click="editComment(activeCommentsPost, comment)"
-                          class="p-0.5 text-gray-500 hover:text-blue-600"
+                          class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
                         >
                           <UIcon
                             name="i-heroicons-pencil-square"
@@ -971,7 +971,7 @@
                         </button>
                         <button
                           @click="deleteComment(activeCommentsPost, comment)"
-                          class="p-0.5 text-gray-500 hover:text-red-600 flex items-center"
+                          class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
                           :disabled="comment.isDeleting"
                         >
                           <Loader2
