@@ -292,7 +292,7 @@ def update_nid(request):
 
 class PersonRetrieveView(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     lookup_field = 'id'
 

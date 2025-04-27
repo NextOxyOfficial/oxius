@@ -6,7 +6,8 @@ from .models import (
     BusinessNetworkPostFollow,
     BusinessNetworkPostComment,
     BusinessNetworkPostTag,
-    BusinessNetworkWorkspace
+    BusinessNetworkWorkspace,
+    BusinessNetworkFollowerModel
 )
 from base.serializers import UserSerializer
 
@@ -83,5 +84,13 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
 class BusinessNetworkWorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessNetworkWorkspace
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+        
+class BusinessNetworkFollwerSerializer(serializers.ModelSerializer):
+    follower_details = UserSerializer(source='follower', read_only=True)
+    following_details = UserSerializer(source='following', read_only=True)
+    class Meta:
+        model = BusinessNetworkFollowerModel
         fields = '__all__'
         read_only_fields = ['id', 'created_at']

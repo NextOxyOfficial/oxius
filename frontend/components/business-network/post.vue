@@ -69,7 +69,7 @@
 
               <div class="flex items-center gap-2">
                 <button
-                  v-if="post?.author !== id"
+                  v-if="post?.author && user && post.author !== user.user.id"
                   :class="[
                     'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                     post.isFollowing
@@ -124,7 +124,9 @@
                       >
                         <UserX class="h-4 w-4 mr-2" />
                         Unfollow @{{
-                          post.author.fullName.toLowerCase().replace(/\s+/g, "")
+                          post.author_details.name
+                            .toLowerCase()
+                            .replace(/\s+/g, "")
                         }}
                       </button>
                       <button
@@ -540,6 +542,7 @@
             <!-- Add Comment Input -->
             <div
               class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100"
+              v-if="user"
             >
               <img
                 :src="user?.user?.image"
@@ -583,11 +586,18 @@
         </div>
 
         <!-- Sponsored Products Section -->
-        <div v-if="(index + 1) % randomInterval === 0" class="sponsored-products-section">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
+        <div
+          v-if="(index + 1) % randomInterval === 0"
+          class="sponsored-products-section"
+        >
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">
+            Sponsored Products
+          </h2>
           <div class="relative">
             <!-- Carousel Container for Mobile -->
-            <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
+            <div
+              class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden"
+            >
               <ProductCard
                 v-for="(product, productIndex) in getRandomProducts(2)"
                 :key="`mobile-${product.id || productIndex}`"
@@ -787,9 +797,9 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div v-if="user" class="flex items-center gap-2">
               <img
-                src="https://adsyclub.com/media/images/uploaded_image_lkQNPnN.png?height=24&width=24"
+                :src="user?.user?.image"
                 alt="Your avatar"
                 class="w-6 h-6 rounded-full"
               />
@@ -875,7 +885,7 @@
                 </div>
               </div>
               <button
-                v-if="user.id !== 'current-user'"
+                v-if="user"
                 :class="[
                   'text-sm h-7 rounded-full px-3 flex items-center gap-1',
                   user.isFollowing
@@ -1123,8 +1133,8 @@
             >
               <div class="flex items-center space-x-3">
                 <img
-                  :src="user.avatar"
-                  :alt="user.fullName"
+                  :src="user.image"
+                  :alt="user.name"
                   class="w-10 h-10 rounded-full"
                 />
                 <div>
@@ -1283,21 +1293,25 @@ const allProducts = ref([]);
 const shuffledProducts = ref([]);
 const isLoadingProducts = ref(false);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
+const toast = useToast();
 
 // Function to fetch products from API
 async function fetchProducts() {
   isLoadingProducts.value = true;
   try {
-    const { data } = await get('/all-products/');
-    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
+    const { data } = await get("/all-products/");
+    if (
+      data &&
+      (Array.isArray(data) || (data.results && Array.isArray(data.results)))
+    ) {
       allProducts.value = Array.isArray(data) ? data : data.results;
       getRandomProducts();
     } else {
-      console.error('Unexpected product data format:', data);
+      console.error("Unexpected product data format:", data);
       allProducts.value = [];
     }
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     allProducts.value = [];
   } finally {
     isLoadingProducts.value = false;
@@ -1309,7 +1323,7 @@ function getRandomProducts(count) {
   if (allProducts.value.length === 0) {
     return [];
   }
-  
+
   const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count); // Return exactly 'count' random products
 }
@@ -1376,7 +1390,7 @@ const toggleUserFollow = (user) => {
 const toggleLike = async (currentPost) => {
   // Check if user is logged in
   if (!user?.value?.user?.id) {
-    showNotification("Please log in to like posts", "error");
+    toast.add({ title: "Please login to like posts" });
     return;
   }
 
@@ -1473,7 +1487,10 @@ const toggleLike = async (currentPost) => {
 // Toggle media like
 const toggleMediaLike = async () => {
   if (!activeMedia.value) return;
-
+  if (!user.value) {
+    toast.add({ title: "Please login to like posts" });
+    return;
+  }
   try {
     // Assuming media has a post_id and media_id
     const postId = activePost.value?.id;
@@ -1535,7 +1552,7 @@ const toggleSave = (post) => {
 // Toggle dropdown
 const toggleDropdown = (post) => {
   // Close all other dropdowns first
-  posts.value.forEach((p) => {
+  props.posts.forEach((p) => {
     if (p.id !== post.id) p.showDropdown = false;
   });
 

@@ -30,4 +30,7 @@ urlpatterns = [
 
     # business_network_workspace endpoints
     path('workspaces/', BusinessNetworkWorkspaceListCreateView.as_view(), name='workspace-list-create'),
+    
+    # user follow endpoints
+    path('users/<uuid:user_id>/follow/', UserFollowCreateView.as_view(), name='user-follow'),
 ]

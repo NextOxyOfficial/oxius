@@ -140,9 +140,8 @@
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
               "
-              @click="navigateToWorkspace(workspace.id)"
             >
-              <span class="text-sm font-medium">{{ workspace.name }}</span>
+              <span class="text-sm font-medium">#{{ workspace.name }}</span>
             </NuxtLink>
           </nav>
         </div>
@@ -592,25 +591,6 @@ const checkMobile = () => {
     document.body.style.overflow = "";
   }
 };
-
-// Updated navigateToWorkspace to close sidebar on mobile after navigation
-function navigateToWorkspace(workspaceId) {
-  const workspace = workspaces.value.find((w) => w.id === workspaceId);
-  if (workspace) {
-    workspace.active = true;
-    workspaces.value.forEach((w) => {
-      if (w.id !== workspaceId) w.active = false;
-    });
-    router.push(`/workspace/${workspaceId}`); // Navigate to workspace.vue
-
-    // Close sidebar on mobile
-    if (isMobile.value) {
-      isOpen.value = false;
-      cart.burgerMenu = false;
-      document.body.style.overflow = "";
-    }
-  }
-}
 
 // Loading states
 const isLoadingNews = ref(true);

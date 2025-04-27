@@ -15,7 +15,8 @@ from .models import (
     BusinessNetworkPostLike,
     BusinessNetworkPostFollow,
     BusinessNetworkPostComment,
-    BusinessNetworkPostTag
+    BusinessNetworkPostTag,
+BusinessNetworkFollowerModel
 )
 from .serializers import *
 from .pagination import *
@@ -106,7 +107,7 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestro
 class UserPostsListView(generics.ListAPIView):
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
@@ -339,4 +340,19 @@ class BusinessNetworkWorkspaceListCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkWorkspaceSerializer
     permission_classes = [IsAuthenticated]
 
+
+class UserFollowCreateView(generics.CreateAPIView):
+    queryset = BusinessNetworkFollowerModel.objects.all()
+    serializer_class = BusinessNetworkFollwerSerializer
+    permission_classes = [IsAuthenticated]
     
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data={"follower": request.user.id, "following": self.kwargs.get("user_id")})
+            
+        if not serializer.is_valid():
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
