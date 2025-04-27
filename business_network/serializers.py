@@ -1,15 +1,8 @@
 from rest_framework import serializers
-from .models import (
-    BusinessNetworkPost, 
-    BusinessNetworkMedia, 
-    BusinessNetworkPostLike, 
-    BusinessNetworkPostFollow,
-    BusinessNetworkPostComment,
-    BusinessNetworkPostTag,
-    BusinessNetworkWorkspace,
-    BusinessNetworkFollowerModel
-)
+from .models import *
 from base.serializers import UserSerializer
+
+
 
 class BusinessNetworkPostTagSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,11 +18,31 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'post', 'author', 'author_details', 'content', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+class BusinessNetworkMediaLikeSerializer(serializers.ModelSerializer):
+    user_details = UserSerializer(source='user', read_only=True)
+    
+    class Meta:
+        model = BusinessNetworkMediaLike
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+
+class BusinessNetworkMediaCommentSerializer(serializers.ModelSerializer):
+    author_details = UserSerializer(source='author', read_only=True)
+    
+    class Meta:
+        model = BusinessNetworkMediaComment
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']        
+
 class BusinessNetworkMediaSerializer(serializers.ModelSerializer):
+    media_likes = BusinessNetworkMediaLikeSerializer(many=True, read_only=True)
+    media_comments = BusinessNetworkMediaCommentSerializer(many=True, read_only=True)
     class Meta:
         model = BusinessNetworkMedia
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+
+
 
 class BusinessNetworkPostLikeSerializer(serializers.ModelSerializer):
     user_details = UserSerializer(source='user', read_only=True)
@@ -87,10 +100,21 @@ class BusinessNetworkWorkspaceSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
         
-class BusinessNetworkFollwerSerializer(serializers.ModelSerializer):
+class BusinessNetworkFollowerSerializer(serializers.ModelSerializer):
     follower_details = UserSerializer(source='follower', read_only=True)
     following_details = UserSerializer(source='following', read_only=True)
     class Meta:
         model = BusinessNetworkFollowerModel
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+
+class AbnAdsPanelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AbnAdsPanel
+        fields = [
+            'id', 'title', 'description', 'category', 
+            'media', 'gender', 'min_age', 'max_age', 
+            'country', 'ad_type', 'ad_budgert', 
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']

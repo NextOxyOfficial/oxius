@@ -33,4 +33,16 @@ urlpatterns = [
     
     # user follow endpoints
     path('users/<uuid:user_id>/follow/', UserFollowCreateView.as_view(), name='user-follow'),
+
+    # media like endpoints
+    path('media/<str:media_id>/like/', BusinessNetworkMediaLikeCreateView.as_view(), name='media-like'),
+    path('media/<str:media_id>/unlike/', BusinessNetworkMediaLikeDestroyView.as_view(), name='media-unlike'),
+
+    # media comment endpoints
+    path('media/<str:media_id>/comments/', BusinessNetworkMediaCommentListCreateView.as_view(), name='media-comments'),
+    path('media/comments/<str:pk>/', BusinessNetworkMediaCommentRetrieveUpdateDestroyView.as_view(), name='media-comment-detail'),
+    # abn-ads endpoints
+    path('abn-ads-panels/', AbnAdsPanelListCreateView.as_view(), name='abn-ads-panel-list-create'),
+    path('abn-ads-panels/<str:pk>/', AbnAdsPanelRetrieveUpdateDestroyView.as_view(), name='abn-ads-panel-detail'),
+    path('abn-ads-panels/filter/', AbnAdsPanelFilterView.as_view(), name='abn-ads-panel-filter'),
 ]

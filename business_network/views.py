@@ -343,7 +343,7 @@ class BusinessNetworkWorkspaceListCreateView(generics.ListCreateAPIView):
 
 class UserFollowCreateView(generics.CreateAPIView):
     queryset = BusinessNetworkFollowerModel.objects.all()
-    serializer_class = BusinessNetworkFollwerSerializer
+    serializer_class = BusinessNetworkFollowerSerializer
     permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
@@ -356,3 +356,209 @@ class UserFollowCreateView(generics.CreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
+    serializer_class = BusinessNetworkMediaLikeSerializer
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        media_id = self.kwargs.get('media_id')
+        if media_id:
+            return BusinessNetworkMediaLike.objects.filter(media_id=media_id)
+        return BusinessNetworkMediaLike.objects.none()
+    
+    def create(self, request, *args, **kwargs):
+        media_id = kwargs.get('media_id')
+        media = get_object_or_404(BusinessNetworkMedia, pk=media_id)
+        
+        # Check if user has already liked the media
+        if BusinessNetworkMediaLike.objects.filter(media=media, user=request.user).exists():
+            return Response(
+                {"detail": "You have already liked this media."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        like = BusinessNetworkMediaLike(media=media, user=request.user)
+        like.save()
+        serializer = self.get_serializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class BusinessNetworkMediaLikeDestroyView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        media_id = self.kwargs.get('media_id')
+        media = get_object_or_404(BusinessNetworkMedia, pk=media_id)
+        like = get_object_or_404(BusinessNetworkMediaLike, media=media, user=self.request.user)
+        return like
+    
+class BusinessNetworkMediaCommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = BusinessNetworkMediaCommentSerializer
+    permission_classes = [IsAuthenticated]
+    #pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        media_id = self.kwargs.get('media_id')
+        return BusinessNetworkMediaComment.objects.filter(media__id=media_id).order_by('-created_at')
+    
+    def perform_create(self, serializer):
+        media_id = self.kwargs.get('media_id')
+        media = get_object_or_404(BusinessNetworkMedia, pk=media_id)
+        serializer.save(media=media, author=self.request.user)
+        
+    def create(self, request, *args, **kwargs):
+        content = request.data.get('content')
+        if not content or not content.strip():
+            return Response(
+                {"detail": "Comment content cannot be empty."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            media_id = self.kwargs.get('media_id')
+            media = get_object_or_404(BusinessNetworkMedia, pk=media_id)
+            
+            data = {
+                'content': content,
+                'media': media_id,
+                'author': request.user.id
+            }
+            
+            serializer = self.get_serializer(data=data)
+            
+            if not serializer.is_valid():
+                # Log all errors for debugging
+                print(f"Serializer validation errors: {serializer.errors}")
+                
+                # Filter out media and author errors if they exist
+                errors = serializer.errors.copy()
+                errors.pop('media', None)
+                errors.pop('author', None)
+                
+                # Return all original errors for better debugging
+                if errors:
+                    return Response({
+                        "detail": "Validation errors in comment data",
+                        "errors": errors,
+                        "all_errors": serializer.errors  # Include all errors for debugging
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            comment = serializer.save(media=media, author=request.user)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            
+        except Exception as e:
+            import traceback
+            print(f"Error creating comment: {str(e)}")
+            print(traceback.format_exc())  # Print stack trace for debugging
+            return Response(
+                {"detail": f"Error creating comment: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+
+        
+
+class BusinessNetworkMediaCommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = BusinessNetworkMediaCommentSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return BusinessNetworkMediaComment.objects.all()
+    
+    def perform_update(self, serializer):
+        # Only allow comment author to update
+        if serializer.instance.author == self.request.user:
+            serializer.save()
+        else:
+            return Response({"detail": "You do not have permission to edit this comment."}, 
+                           status=status.HTTP_403_FORBIDDEN)
+    
+    def perform_destroy(self, instance):
+        # Allow comment author or media author to delete
+        if instance.author == self.request.user or instance.media.author == self.request.user:
+            instance.delete()
+        else:
+            return Response({"detail": "You do not have permission to delete this comment."}, 
+                           status=status.HTTP_403_FORBIDDEN)
+        
+
+class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
+    queryset = AbnAdsPanel.objects.all()
+    serializer_class = AbnAdsPanelSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        queryset = AbnAdsPanel.objects.all().order_by('-created_at')
+        
+        # Filter by category if provided
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category__id=category)
+        
+        # Filter by gender if provided
+        gender = self.request.query_params.get('gender', None)
+        if gender:
+            queryset = queryset.filter(gender=gender)
+            
+        # Filter by country if provided
+        country = self.request.query_params.get('country', None)
+        if country:
+            queryset = queryset.filter(country=country)
+            
+        # Filter by ad_type if provided
+        ad_type = self.request.query_params.get('ad_type', None)
+        if ad_type:
+            queryset = queryset.filter(ad_type=ad_type)
+            
+        return queryset
+    
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = AbnAdsPanel.objects.all()
+    serializer_class = AbnAdsPanelSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_update(self, serializer):
+        serializer.save()
+    
+    def perform_destroy(self, instance):
+        instance.delete()
+
+class AbnAdsPanelFilterView(generics.ListAPIView):
+    serializer_class = AbnAdsPanelSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        
+        queryset = AbnAdsPanel.objects.all().order_by('-created_at')
+        
+        # Get user demographic data
+        user_age = self.request.query_params.get('age', None)
+        user_gender = self.request.query_params.get('gender', None)
+        user_country = self.request.query_params.get('country', None)
+        
+        # Apply demographic filters
+        if user_age:
+            user_age = int(user_age)
+            queryset = queryset.filter(
+                models.Q(min_age__isnull=True) | models.Q(min_age__lte=user_age),
+                models.Q(max_age__isnull=True) | models.Q(max_age__gte=user_age)
+            )
+            
+        if user_gender:
+            queryset = queryset.filter(
+                models.Q(gender=user_gender) | models.Q(gender='other')
+            )
+            
+        if user_country:
+            queryset = queryset.filter(country=user_country)
+            
+        return queryset

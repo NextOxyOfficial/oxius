@@ -716,9 +716,11 @@
                     @click.stop="toggleMediaLike"
                   >
                     <Heart
-                      :class="[
+                    :class="[
                         'h-4 w-4',
-                        activeMedia.isLiked
+                        activeMedia.media_likes?.find(
+                          (like) => like.user === user?.user?.id
+                        )
                           ? 'text-red-500 fill-red-500'
                           : 'text-gray-500',
                       ]"
@@ -728,36 +730,36 @@
                     class="text-sm text-gray-600 hover:underline"
                     @click.stop="openMediaLikesModal"
                   >
-                    {{ activeMedia.likeCount }} likes
+                    {{ activeMedia.media_likes?.length }} likes
                   </button>
                 </div>
                 <div class="flex items-center space-x-1">
                   <MessageCircle class="h-4 w-4 text-gray-500" />
                   <span class="text-sm text-gray-600">
-                    {{ activeMedia.comments?.length || 0 }} comments
+                    {{ activeMedia.media_comments?.length || 0 }} comments
                   </span>
                 </div>
               </div>
             </div>
-
             <!-- Media comments -->
             <div
-              v-if="activeMedia.comments && activeMedia.comments.length > 0"
+              v-if="activeMedia.media_comments && activeMedia.media_comments.length > 0"
               class="max-h-[20vh] overflow-y-auto mb-3"
             >
               <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
               <div class="space-y-2">
                 <div
-                  v-for="comment in activeMedia.comments"
+                  v-for="comment in activeMedia.media_comments"
                   :key="comment.id"
                   class="flex items-start space-x-2"
                 >
                   <div class="flex items-start space-x-2">
                     <NuxtLink
-                      :to="`/business-network/profile/${comment.user.id}`"
+                      :to="`/business-network/profile/${comment.author_details.id}`"
                     >
                       <img
-                        :src="comment.user.avatar"
+                        v-if="comment.author_details.image"
+                        :src="comment.author_details.image"
                         alt="User"
                         class="w-6 h-6 rounded-full cursor-pointer"
                       />
@@ -767,14 +769,14 @@
                         <div class="flex items-center justify-between">
                           <div class="flex items-center gap-1.5">
                             <NuxtLink
-                              :to="`/business-network/profile/${comment.user.id}`"
+                              :to="`/business-network/profile/${comment.author_details.id}`"
                               class="text-sm font-medium hover:underline"
                             >
-                              {{ comment.user.fullName }}
+                              {{ comment.author_details.name }}
                             </NuxtLink>
                             <!-- Verified Badge -->
                             <div
-                              v-if="comment.user.kyc"
+                              v-if="comment.author_details.kyc"
                               class="text-blue-500 flex items-center"
                             >
                               <UIcon
@@ -784,11 +786,11 @@
                             </div>
                           </div>
                         </div>
-                        <p class="text-sm mt-1">{{ comment.text }}</p>
+                        <p class="text-sm mt-1">{{ comment.content }}</p>
                       </div>
                       <div class="flex items-center mt-1 space-x-3">
                         <span class="text-sm text-gray-500">{{
-                          formatTimeAgo(comment.timestamp)
+                          formatTimeAgo(comment.created_at)
                         }}</span>
                       </div>
                     </div>
@@ -1488,58 +1490,121 @@ const toggleLike = async (currentPost) => {
 const toggleMediaLike = async () => {
   if (!activeMedia.value) return;
   if (!user.value) {
-    toast.add({ title: "Please login to like posts" });
+    toast.add({ title: "Please login to like media" });
     return;
   }
+
+  // Prevent multiple clicks
+  if (activeMedia.value.isLikeLoading) return;
+  activeMedia.value.isLikeLoading = true;
+
+  // Store the original state to revert in case of API error
+  const wasLiked = activeMedia.value.media_likes?.some(
+    (like) => like.user === user.value?.user?.id
+  );
+
   try {
-    // Assuming media has a post_id and media_id
-    const postId = activePost.value?.id;
-    const mediaId = activeMedia.value?.id;
+    if (wasLiked) {
+      // Optimistically update UI first
+      activeMedia.value.media_likes = activeMedia.value.media_likes.filter(
+        (like) => like.user !== user.value?.user?.id
+      );
 
-    if (!postId) {
-      console.error("Post ID not available for media like");
-      return;
-    }
+      // Then make API call
+      const response = await del(`/bn/media/${activeMedia.value.id}/unlike/`);
 
-    // Make API call to toggle media like (modify endpoint as needed)
-    const response = await $fetch(
-      `/api/posts/${postId}/media/${mediaId}/like/`,
-      {
-        method: "POST",
-        body: {
-          user_id: user?.user?.id,
-        },
-      }
-    );
-
-    // Update UI based on response
-    if (response && response.success) {
-      activeMedia.value.isLiked = !activeMedia.value.isLiked;
-      activeMedia.value.likeCount += activeMedia.value.isLiked ? 1 : -1;
-
-      // Update likedBy array for the media
-      if (activeMedia.value.isLiked) {
-        if (!activeMedia.value.likedBy) {
-          activeMedia.value.likedBy = [];
+      // Check if API call failed
+      if (!response) {
+        // Revert UI if API fails
+        if (!activeMedia.value.media_likes.some(
+          (like) => like.user === user.value?.user?.id
+        )) {
+          activeMedia.value.media_likes.push({
+            user: user.value?.user?.id,
+            user_details: {
+              name: user.value?.user?.name,
+              image: user.value?.user?.image,
+            }
+          });
         }
-        activeMedia.value.likedBy.unshift({
-          id: user?.user?.id || "current-user",
-          fullName: user?.user?.name || "You",
-          avatar:
-            user?.user?.image || "/images/placeholder.jpg?height=40&width=40",
-          isFollowing: false,
-        });
-      } else if (activeMedia.value.likedBy) {
+      }
+
+      // Update likedBy array if used for UI
+      if (activeMedia.value.likedBy) {
         activeMedia.value.likedBy = activeMedia.value.likedBy.filter(
-          (u) => u.id !== (user?.user?.id || "current-user")
+          (u) => u.id !== (user.value?.user?.id || "current-user")
         );
       }
     } else {
-      console.error("Failed to toggle media like:", response);
+      // Optimistically update UI first
+      if (!activeMedia.value.media_likes) {
+        activeMedia.value.media_likes = [];
+      }
+
+      activeMedia.value.media_likes.push({
+        user: user.value?.user?.id,
+        user_details: {
+          name: user.value?.user?.name,
+          image: user.value?.user?.image,
+        }
+      });
+
+      // Then make API call
+      const response = await post(`/bn/media/${activeMedia.value.id}/like/`);
+
+      // Check if API call failed
+      if (!response) {
+        // Revert UI if API fails
+        activeMedia.value.media_likes = activeMedia.value.media_likes.filter(
+          (like) => like.user !== user.value?.user?.id
+        );
+      }
+
+      // Update likedBy array if used for UI
+      if (!activeMedia.value.likedBy) {
+        activeMedia.value.likedBy = [];
+      }
+
+      activeMedia.value.likedBy?.unshift({
+        id: user.value?.user?.id || "current-user",
+        fullName: user.value?.user?.name || "You",
+        avatar: user.value?.user?.image || "/images/placeholder.jpg?height=40&width=40",
+        isFollowing: false,
+      });
     }
   } catch (error) {
     console.error("Error toggling media like:", error);
-    // You may want to show an error notification here
+    
+    // Revert UI on error
+    if (wasLiked) {
+      // Re-add like if we were removing it
+      if (!activeMedia.value.media_likes.some(
+        (like) => like.user === user.value?.user?.id
+      )) {
+        activeMedia.value.media_likes.push({
+          user: user.value?.user?.id,
+          user_details: {
+            name: user.value?.user?.name,
+            image: user.value?.user?.image,
+          }
+        });
+      }
+    } else {
+      // Remove like if we were adding it
+      activeMedia.value.media_likes = activeMedia.value.media_likes.filter(
+        (like) => like.user !== user.value?.user?.id
+      );
+    }
+    
+    // Show error notification
+    toast.add({ 
+      title: "Error", 
+      description: "Failed to update like", 
+      color: "red" 
+    });
+  } finally {
+    // Reset loading state
+    activeMedia.value.isLikeLoading = false;
   }
 };
 
@@ -1907,26 +1972,248 @@ const confirmDeleteComment = async () => {
 };
 
 // Add media comment
-const addMediaComment = () => {
-  if (!mediaCommentText.value.trim() || !activeMedia.value) return;
-
-  const newComment = {
-    id: `media-comment-${Date.now()}`,
-    user: {
-      id: "current-user",
-      fullName: "You",
-      avatar: "/images/placeholder.jpg?height=40&width=40",
-    },
-    text: mediaCommentText.value,
-    timestamp: new Date().toISOString(),
-  };
-
-  if (!activeMedia.value.comments) {
-    activeMedia.value.comments = [];
+const addMediaComment = async () => {
+  // Check if user is logged in
+  if (!user?.value?.user?.id || !activeMedia.value) {
+    toast.add({ title: "Please login to comment" });
+    return;
   }
 
-  activeMedia.value.comments.unshift(newComment);
+  if (!mediaCommentText.value.trim()) return;
+
+  // Store comment text and clear input immediately for better UX
+  const commentText = mediaCommentText.value.trim();
   mediaCommentText.value = "";
+
+  // Create a temporary comment to show immediately
+  const tempComment = {
+    id: `temp-${Date.now()}`,
+    author: user.value.user.id,
+    content: commentText,
+    created_at: new Date().toISOString(),
+    author_details: {
+      name: user.value.user.name,
+      image: user.value.user.image,
+    },
+    isDeleting: false,
+  };
+
+  // Add to UI immediately
+  if (!activeMedia.value.media_comments) {
+    activeMedia.value.media_comments = [];
+  }
+
+  activeMedia.value.media_comments.unshift(tempComment);
+
+  try {
+    // Make API call to add comment
+    const response = await post(`/bn/media/${activeMedia.value.id}/comments/`, {
+      content: commentText,
+    });
+    
+
+    // If successful, replace temp comment with real one from API
+    if (response.data) {
+      const index = activeMedia.value.media_comments.findIndex(
+        (c) => c.id === tempComment.id
+      );
+      if (index !== -1) {
+        // Replace with actual comment data from API
+        activeMedia.value.media_comments[index] = response.data;
+      }
+
+      // Show success toast
+      toast.add({
+        title: "Comment posted",
+        color: "green",
+        icon: "i-heroicons-check-circle",
+        timeout: 3000,
+      });
+    } else {
+      // Remove temp comment if API failed
+      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
+        (comment) => comment.id !== tempComment.id
+      );
+      
+      // Show error toast
+      toast.add({
+        title: "Error",
+        description: "Failed to post comment",
+        color: "red",
+        icon: "i-heroicons-x-circle",
+        timeout: 3000,
+      });
+    }
+  } catch (error) {
+    console.error("Error adding media comment:", error);
+    
+    // Remove temp comment on error
+    activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
+      (comment) => comment.id !== tempComment.id
+    );
+    
+    // Show error toast
+    toast.add({
+      title: "Error",
+      description: "Failed to post comment: " + (error.message || "Unknown error"),
+      color: "red",
+      icon: "i-heroicons-x-circle",
+      timeout: 5000,
+    });
+  }
+};
+
+// Edit media comment
+const editMediaComment = (comment) => {
+  if (!comment || !user?.value?.user?.id) return;
+
+  // Set editing mode and store original text for cancellation
+  comment.isEditing = true;
+  comment.editText = comment.content;
+
+  // Focus on textarea after Vue updates the DOM
+  nextTick(() => {
+    const textarea = document.querySelector(`#media-comment-edit-${comment.id}`);
+    if (textarea) {
+      textarea.focus();
+    }
+  });
+};
+
+// Cancel media comment edit
+const cancelMediaCommentEdit = (comment) => {
+  comment.isEditing = false;
+  comment.editText = null;
+};
+
+// Save edited media comment
+const saveMediaCommentEdit = async (comment) => {
+  if (!comment.editText?.trim() || comment.editText === comment.content) {
+    cancelMediaCommentEdit(comment);
+    return;
+  }
+
+  // Add saving state
+  comment.isSaving = true;
+  const originalContent = comment.content;
+
+  try {
+    // Optimistically update UI
+    comment.content = comment.editText.trim();
+    comment.isEditing = false;
+
+    // Make API call to update comment
+    const response = await put(`/bn/media/comments/${comment.id}/`, {
+      ...comment,
+      content: comment.editText.trim(),
+    });
+
+    if (!response || !response.data) {
+      // Revert on failure
+      comment.content = originalContent;
+      
+      // Show error toast
+      toast.add({
+        title: "Error",
+        description: "Failed to update comment",
+        color: "red",
+        icon: "i-heroicons-x-circle",
+        timeout: 3000,
+      });
+    } else {
+      // Show success toast
+      toast.add({
+        title: "Success",
+        description: "Comment updated successfully",
+        color: "green",
+        icon: "i-heroicons-check-circle",
+        timeout: 3000,
+      });
+    }
+  } catch (error) {
+    // Revert on error
+    comment.content = originalContent;
+    console.error("Error updating media comment:", error);
+    
+    // Show error toast
+    toast.add({
+      title: "Error",
+      description: "Failed to update comment: " + (error.message || "Unknown error"),
+      color: "red",
+      icon: "i-heroicons-x-circle",
+      timeout: 5000,
+    });
+  } finally {
+    // Always reset the saving state
+    comment.isSaving = false;
+  }
+};
+
+// Delete media comment
+const deleteMediaComment = (comment) => {
+  if (!comment || !user?.value?.user?.id) return;
+  
+  // Set the comment to delete
+  mediaCommentToDelete.value = comment;
+};
+
+// Confirm delete media comment
+const confirmDeleteMediaComment = async () => {
+  if (!mediaCommentToDelete.value || !activeMedia.value) return;
+  
+  const comment = mediaCommentToDelete.value;
+  
+  // Set loading state
+  comment.isDeleting = true;
+  
+  try {
+    // Close modal first
+    mediaCommentToDelete.value = null;
+    
+    // Make API call to delete comment
+    const response = await del(`/bn/media/comments/${comment.id}/`);
+    
+    if (response) {
+      // Update the UI by filtering out the deleted comment
+      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
+        (c) => c.id !== comment.id
+      );
+      
+      // Show success toast
+      toast.add({
+        title: "Success",
+        description: "Comment deleted successfully",
+        color: "green",
+        icon: "i-heroicons-check-circle",
+        timeout: 3000,
+      });
+    } else {
+      // Show error toast
+      toast.add({
+        title: "Error",
+        description: "Failed to delete comment",
+        color: "red",
+        icon: "i-heroicons-x-circle",
+        timeout: 3000,
+      });
+    }
+  } catch (error) {
+    console.error("Error deleting media comment:", error);
+    
+    // Show error toast
+    toast.add({
+      title: "Error",
+      description: "Failed to delete comment: " + (error.message || "Unknown error"),
+      color: "red",
+      icon: "i-heroicons-x-circle",
+      timeout: 5000,
+    });
+  } finally {
+    // Reset loading state if the comment still exists
+    if (comment) {
+      comment.isDeleting = false;
+    }
+  }
 };
 
 // Open media
