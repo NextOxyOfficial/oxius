@@ -17,10 +17,10 @@
           >
             <div class="relative">
               <div
-                class="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-full blur-[1px]"
+                class="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg blur-[1px]"
               ></div>
               <div
-                class="relative px-3 py-1 bg-gradient-to-r from-red-500 to-rose-600 rounded-full text-white text-xs font-semibold flex items-center"
+                class="relative px-3 py-1 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg text-white text-xs font-semibold flex items-center"
               >
                 <UIcon name="i-heroicons-bolt" class="size-3 mr-1" />
                 <span
@@ -50,12 +50,12 @@
           <div class="absolute inset-0 z-10 flex items-center justify-center">
             <button
               @click="openProductModal(product)"
-              class="quick-view-btn px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-full transform opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-lg flex items-center"
+              class="quick-view-btn px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-lg transform opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 shadow-lg flex items-center"
             >
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
               <div
-                class="absolute inset-0 rounded-full bg-gradient-to-r from-primary-500/10 to-primary-600/20 animate-pulse-subtle"
+                class="absolute inset-0 rounded-lg bg-gradient-to-r from-primary-500/10 to-primary-600/20 animate-pulse-subtle"
               ></div>
             </button>
           </div>
@@ -72,7 +72,7 @@
             class="text-primary-500 dark:text-primary-400 text-sm mb-1.5 inline-flex items-center gap-1 hover:text-primary-600 transition-colors"
           >
             <div
-              class="flex items-center justify-center size-4 bg-primary-50 dark:bg-primary-900/20 rounded-full"
+              class="flex items-center justify-center size-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg"
             >
               <UIcon
                 name="i-material-symbols-storefront-outline-rounded"
@@ -130,7 +130,7 @@
             <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1 px-1.5 py-1 font-medium text-white rounded-full relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
+              class="premium-buy-button flex items-center justify-center gap-1 px-1.5  font-medium text-white rounded-lg relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
               @click="addToCart(product, quantity)"
             >
               <!-- Gradient backgrounds -->
@@ -143,10 +143,10 @@
 
               <!-- Glow effect -->
               <span
-                class="absolute inset-0 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-500"
+                class="absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-500"
               >
                 <span
-                  class="absolute inset-0 rounded-full bg-primary-400 blur-xl opacity-30"
+                  class="absolute inset-0 rounded-lg bg-primary-400 blur-xl opacity-30"
                 ></span>
               </span>
 
@@ -212,10 +212,10 @@
 
             <!-- Decorative blobs -->
             <div
-              class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
+              class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-lg filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
             ></div>
             <div
-              class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-full filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
+              class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-lg filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
             ></div>
           </div>
         </div>

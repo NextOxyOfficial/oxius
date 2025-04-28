@@ -7,12 +7,17 @@
       <div
         class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative"
       >
-        <div class="text-white">
-          <div class="flex items-center justify-between">
-            <h1 class="text-3xl font-bold">MindForce</h1>
+        <div class="text-white w-full">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full">
+            <div>
+              <h1 class="text-3xl font-bold">MindForce</h1>
+              <p class="text-blue-100 mt-1">
+                Collaborative problem-solving network
+              </p>
+            </div>
             <button
               @click="openCreateModal"
-              class="mt-6 md:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               :disabled="isCreating"
             >
               <span v-if="isCreating" class="flex items-center">
@@ -43,14 +48,6 @@
               </span>
             </button>
           </div>
-
-          <p class="text-blue-100 mt-1">
-            Collaborative problem-solving network
-          </p>
-          <p class="text-blue-200 mt-2 max-w-2xl text-sm">
-            Connect with experts, solve complex problems together, and build
-            valuable relationships in your professional journey.
-          </p>
         </div>
       </div>
 
@@ -83,15 +80,15 @@
     >
       <!-- Tabs -->
       <div
-        class="flex flex-col sm:flex-row justify-between items-center px-5 py-4 border-b border-gray-100"
+        class="flex flex-col sm:flex-row justify-between items-center px-5 py-4 border-b border-gray-100 gap-4"
       >
-        <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm flex-1">
+        <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm w-full sm:w-auto">
           <button
             v-for="tab in tabs"
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-4 py-2 text-xs  font-medium transition-all duration-200 ease-in-out',
+              'relative px-4 py-2 text-xs font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -101,7 +98,7 @@
           </button>
         </div>
 
-        <div class="flex items-center mt-3 sm:mt-0 w-full sm:w-auto">
+        <div class="w-full sm:w-64 md:w-80">
           <div class="relative w-full">
             <Search class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <svg
@@ -136,7 +133,7 @@
         </div>
       </div>
 
-      <div class="p-5">
+      <div class="px-2 py-3">
         <!-- Active Problems Tab -->
         <div v-if="activeTab === 'active'" class="space-y-4">
           <!-- Skeleton loading state -->
@@ -144,7 +141,7 @@
             <div
               v-for="i in 3"
               :key="i"
-              class="bg-white border border-gray-100 rounded-lg p-5 animate-pulse"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 animate-pulse"
             >
               <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center">
@@ -171,7 +168,7 @@
             <div
               v-for="problem in activeProblems"
               :key="problem.id"
-              class="bg-white border border-gray-100 rounded-lg p-5 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
               @click="openProblemDetail(problem)"
             >
               <!-- Highlight effect on hover that doesn't obscure text -->
@@ -306,7 +303,7 @@
             <div
               v-for="i in 3"
               :key="i"
-              class="bg-white border border-gray-100 rounded-lg p-5 animate-pulse"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 animate-pulse"
             >
               <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center">
@@ -335,7 +332,7 @@
             <div
               v-for="problem in solvedProblems"
               :key="problem.id"
-              class="bg-white border border-gray-100 rounded-lg p-5 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
               @click="openProblemDetail(problem)"
             >
               <!-- Highlight effect on hover that doesn't obscure text -->
@@ -469,7 +466,7 @@
             <div
               v-for="problem in myProblems"
               :key="problem.id"
-              class="bg-white border border-gray-100 rounded-lg p-5 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
               @click="openProblemDetail(problem)"
             >
               <!-- Highlight effect on hover that doesn't obscure text -->
@@ -821,7 +818,7 @@
               </div>
             </div>
 
-            <div class="flex justify-end gap-3 mt-8">
+            <div class="flex justify-end gap-3 mt-6 mb-8">
               <button
                 @click="isCreateModalOpen = false"
                 class="inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
@@ -1068,7 +1065,7 @@
                   v-for="comment in selectedProblem?.comments"
                   :key="comment.id"
                   :class="[
-                    'p-5 rounded-lg transition-all',
+                    'px-2 py-3 rounded-lg transition-all',
                     comment.isSolution
                       ? 'bg-green-50 border border-green-100 shadow-sm'
                       : 'bg-gray-50 hover:bg-gray-100',
