@@ -563,7 +563,6 @@ class BusinessNetworkMindforceCategoryListView(generics.ListAPIView):
 
 
 class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
-    queryset = BusinessNetworkMindforce.objects.all()
     serializer_class = BusinessNetworkMindforceSerializer
 
     def get_queryset(self):
@@ -574,10 +573,14 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
         if category:
             queryset = queryset.filter(category__id=category)
             
+        return queryset
+            
     def get_permissions(self):
         if self.request.method == 'POST':
             return [IsAuthenticated()]
-        return [AllowAny()]
+        else:
+            return [AllowAny()]
+        
         
     def create(self, request, *args, **kwargs):
         images_data = request.data.pop('images', None)
@@ -585,7 +588,9 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
                                          {'title':request.data['title'],
                                           'description':request.data['description'],
                                           'category':request.data['category'],
-                                          'user':request.user.id
+                                          'user':request.user.id,
+                                          'payment_option':request.data['payment_option'],
+                                          'payment_amount':request.data['payment_amount'],
                                           }
                                          )
                 
@@ -603,7 +608,7 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
                         # Process base64 image
                         image_file = base64ToFile(image_data)
                         mindforce_media = BusinessNetworkMindforceMedia.objects.create(image=image_file)
-                        post.media.add(mindforce_media)
+                        mindforce.media.add(mindforce_media)
                 except Exception as e:
                     # Log error but continue processing
                     print(f"Error processing image: {str(e)}")

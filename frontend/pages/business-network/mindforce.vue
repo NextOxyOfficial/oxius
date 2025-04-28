@@ -8,7 +8,42 @@
         class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative"
       >
         <div class="text-white">
-          <h1 class="text-3xl font-bold">MindForce</h1>
+          <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold">MindForce</h1>
+            <button
+              @click="openCreateModal"
+              class="mt-6 md:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              :disabled="isCreating"
+            >
+              <span v-if="isCreating" class="flex items-center">
+                <svg
+                  class="animate-spin -ml-1 mr-2 h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Loading...
+              </span>
+              <span v-else class="flex items-center">
+                <Plus class="h-4 w-4 mr-2" /> Post a Problem
+              </span>
+            </button>
+          </div>
+
           <p class="text-blue-100 mt-1">
             Collaborative problem-solving network
           </p>
@@ -17,38 +52,6 @@
             valuable relationships in your professional journey.
           </p>
         </div>
-        <button
-          @click="openCreateModal"
-          class="mt-6 md:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-          :disabled="isCreating"
-        >
-          <span v-if="isCreating" class="flex items-center">
-            <svg
-              class="animate-spin -ml-1 mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Loading...
-          </span>
-          <span v-else class="flex items-center">
-            <Plus class="h-4 w-4 mr-2" /> Post a Problem
-          </span>
-        </button>
       </div>
 
       <!-- Decorative elements -->
@@ -164,7 +167,7 @@
             </div>
           </div>
 
-          <div v-else-if="activeProblems.length > 0" class="space-y-4">
+          <div v-else-if="activeProblems?.length > 0" class="space-y-4">
             <div
               v-for="problem in activeProblems"
               :key="problem.id"
@@ -182,33 +185,42 @@
                     class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
-                      :src="problem.author.avatar || '/placeholder.svg'"
-                      :alt="problem.author.name"
+                      :src="problem?.user_details?.images || '/placeholder.svg'"
+                      :alt="problem?.user_details?.name"
                       class="h-full w-full object-cover"
                     />
                   </div>
                   <div class="ml-3">
-                    <p class="text-sm font-medium">{{ problem.author.name }}</p>
-                    <p class="text-xs text-gray-500">{{ problem.createdAt }}</p>
+                    <p class="text-sm font-medium">
+                      {{ problem?.user_details?.name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ formatTimeAgo(problem?.created_at) }}
+                    </p>
                   </div>
                 </div>
                 <div>
                   <span
-                    v-if="problem.isPaid"
+                    v-if="problem?.payment_option === 'paid'"
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
-                    <DollarSign class="h-3 w-3 mr-1" />
                     {{
-                      problem.paymentAmount > 0
-                        ? `$${problem.paymentAmount}`
-                        : "Paid Help"
+                      problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
                     }}
+                    <span
+                      v-if="problem?.payment_amount > 0"
+                      class="inline-flex items-center"
+                    >
+                      <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
+                      {{ problem?.payment_amount }}
+                    </span>
+                    &nbsp;for help!
                   </span>
                   <span
                     v-else
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
-                    I need free help
+                    I need free help!
                   </span>
                 </div>
               </div>
@@ -217,30 +229,30 @@
               <span
                 class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
-                {{ problem.category }}
+                {{ problem?.category_details?.name }}
               </span>
 
               <h3
-                class="text-base font-medium text-gray-900 hover:text-blue-700 transition-colors line-clamp-2"
+                class="text-base font-medium text-gray-900 hover:text-blue-700 transition-colors"
               >
-                {{ problem.title }}
+                {{ problem?.title }}
               </h3>
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
                   <span class="text-xs text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
-                    {{ problem.comments.length }} comments
+                    {{ problem?.comments?.length }} Advices
                   </span>
 
                   <span class="text-xs text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
-                    {{ problem.views }} views
+                    {{ problem?.views }} views
                   </span>
                 </div>
 
                 <span
-                  v-if="problem.status === 'Solved'"
+                  v-if="problem?.status === 'solved'"
                   class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
@@ -318,7 +330,7 @@
             </div>
           </div>
 
-          <div v-else-if="solvedProblems.length > 0" class="space-y-4">
+          <div v-else-if="solvedProblems?.length > 0" class="space-y-4">
             <!-- same card layout as active problems but with solved styling -->
             <div
               v-for="problem in solvedProblems"
@@ -337,25 +349,29 @@
                     class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
-                      :src="problem.author.avatar || '/placeholder.svg'"
-                      :alt="problem.author.name"
+                      :src="problem?.user_details?.image || '/placeholder.svg'"
+                      :alt="problem?.user_details?.name"
                       class="h-full w-full object-cover"
                     />
                   </div>
                   <div class="ml-3">
-                    <p class="text-sm font-medium">{{ problem.author.name }}</p>
-                    <p class="text-xs text-gray-500">{{ problem.createdAt }}</p>
+                    <p class="text-sm font-medium">
+                      {{ problem?.user_details?.name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ formatTimeAgo(problem?.created_at) }}
+                    </p>
                   </div>
                 </div>
                 <div>
                   <span
-                    v-if="problem.isPaid"
+                    v-if="problem.payment_amount > 0"
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     <DollarSign class="h-3 w-3 mr-1" />
                     {{
-                      problem.paymentAmount > 0
-                        ? `$${problem.paymentAmount}`
+                      problem.payment_amount > 0
+                        ? `$${problem.payment_amount}`
                         : "Paid Help"
                     }}
                   </span>
@@ -371,28 +387,28 @@
               <span
                 class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
-                {{ problem.category }}
+                {{ problem?.category_details?.name }}
               </span>
 
               <h3
                 class="text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2"
               >
-                {{ problem.title }}
+                {{ problem?.title }}
               </h3>
 
               <!-- Problem Photos (if any) -->
               <div
-                v-if="problem.photos && problem.photos.length > 0"
+                v-if="problem?.media && problem?.media?.length > 0"
                 class="mt-4 grid grid-cols-1 gap-2"
               >
                 <div
-                  v-for="(photo, index) in problem.photos"
+                  v-for="(photo, index) in problem?.media"
                   :key="index"
                   class="relative rounded-lg overflow-hidden cursor-pointer"
                   @click="openPhotoViewer(index)"
                 >
                   <img
-                    :src="photo.url"
+                    :src="photo?.image"
                     alt="Problem illustration"
                     class="w-full h-24 object-cover"
                   />
@@ -403,12 +419,12 @@
                 <div class="flex items-center space-x-4">
                   <span class="text-xs text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
-                    {{ problem.comments.length }} comments
+                    {{ problem.comments?.length }} Advices
                   </span>
 
                   <span class="text-xs text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
-                    {{ problem.views }} views
+                    {{ problem?.views }} views
                   </span>
                 </div>
 
@@ -449,7 +465,7 @@
         <!-- My Problems Tab -->
         <div v-if="activeTab === 'my-problems'" class="space-y-4">
           <!-- Similar structure to other tabs with appropriate styling -->
-          <div v-if="myProblems.length > 0" class="space-y-4">
+          <div v-if="myProblems?.length > 0" class="space-y-4">
             <div
               v-for="problem in myProblems"
               :key="problem.id"
@@ -467,25 +483,29 @@
                     class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
-                      :src="problem.author.avatar || '/placeholder.svg'"
-                      :alt="problem.author.name"
+                      :src="problem?.user_details?.image || '/placeholder.svg'"
+                      :alt="problem?.user_details?.name"
                       class="h-full w-full object-cover"
                     />
                   </div>
                   <div class="ml-3">
-                    <p class="text-sm font-medium">{{ problem.author.name }}</p>
-                    <p class="text-xs text-gray-500">{{ problem.createdAt }}</p>
+                    <p class="text-sm font-medium">
+                      {{ problem?.user_details?.name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ problem?.created_at }}
+                    </p>
                   </div>
                 </div>
                 <div>
                   <span
-                    v-if="problem.isPaid"
+                    v-if="problem.payment_option === 'paid'"
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     <DollarSign class="h-3 w-3 mr-1" />
                     {{
-                      problem.paymentAmount > 0
-                        ? `$${problem.paymentAmount}`
+                      problem.payment_amount > 0
+                        ? `$${problem.payment_amount}`
                         : "Paid Help"
                     }}
                   </span>
@@ -501,28 +521,28 @@
               <span
                 class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
-                {{ problem.category }}
+                {{ problem?.category_details?.name }}
               </span>
 
               <h3
                 class="text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
               >
-                {{ problem.title }}
+                {{ problem?.title }}
               </h3>
 
               <!-- Problem Photos (if any) -->
               <div
-                v-if="problem.photos && problem.photos.length > 0"
+                v-if="problem?.media && problem?.media?.length > 0"
                 class="mt-4 grid grid-cols-1 gap-2"
               >
                 <div
-                  v-for="(photo, index) in problem.photos"
+                  v-for="(photo, index) in problem?.media"
                   :key="index"
                   class="relative rounded-lg overflow-hidden cursor-pointer"
                   @click="openPhotoViewer(index)"
                 >
                   <img
-                    :src="photo.url"
+                    :src="photo.image"
                     alt="Problem illustration"
                     class="w-full h-24 object-cover"
                   />
@@ -533,17 +553,17 @@
                 <div class="flex items-center space-x-4">
                   <span class="text-xs text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
-                    {{ problem.comments.length }} comments
+                    {{ problem?.comments?.length }} Advices
                   </span>
 
                   <span class="text-xs text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
-                    {{ problem.views }} views
+                    {{ problem?.views }} views
                   </span>
                 </div>
 
                 <span
-                  v-if="problem.status === 'Solved'"
+                  v-if="problem.status === 'solved'"
                   class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
@@ -664,19 +684,19 @@
                 >
                   <span>Photos (Optional)</span>
                   <span class="text-xs text-gray-500"
-                    >{{ createForm.images.length }}/4 photos</span
+                    >{{ createForm.images?.length }}/4 photos</span
                   >
                 </label>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <!-- Existing photos -->
                   <div
-                    v-for="(photo, index) in createForm.images"
+                    v-for="(photo, index) in createForm?.images"
                     :key="index"
                     class="relative aspect-square rounded-lg border border-gray-200 overflow-hidden"
                   >
                     <img
-                      :src="photo.url"
+                      :src="photo"
                       alt="Problem photo"
                       class="w-full h-full object-cover"
                     />
@@ -716,8 +736,12 @@
                   class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
                 >
                   <option value="" disabled>Select a category</option>
-                  <option v-for="cat in categories" :key="cat" :value="cat">
-                    {{ cat }}
+                  <option
+                    v-for="cat in categories"
+                    :key="cat.id"
+                    :value="cat.id"
+                  >
+                    {{ cat.name }}
                   </option>
                 </select>
               </div>
@@ -728,10 +752,10 @@
                 >
                 <div class="grid grid-cols-2 gap-3 mt-1">
                   <div
-                    @click="createForm.paymentOption = 'free'"
+                    @click="createForm.payment_option = 'free'"
                     :class="[
                       'flex items-center space-x-2 p-3 rounded-lg border cursor-pointer transition-all',
-                      createForm.paymentOption === 'free'
+                      createForm.payment_option === 'free'
                         ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-400'
                         : 'border-gray-200 hover:bg-gray-50',
                     ]"
@@ -740,7 +764,7 @@
                       type="radio"
                       id="free"
                       value="free"
-                      v-model="createForm.paymentOption"
+                      v-model="createForm.payment_option"
                       class="h-4 w-4 border-blue-500 text-blue-600 focus:ring-blue-500"
                     />
                     <label for="free" class="text-sm cursor-pointer"
@@ -748,10 +772,10 @@
                     >
                   </div>
                   <div
-                    @click="createForm.paymentOption = 'paid'"
+                    @click="createForm.payment_option = 'paid'"
                     :class="[
                       'flex items-center space-x-2 p-3 rounded-lg border cursor-pointer transition-all',
-                      createForm.paymentOption === 'paid'
+                      createForm.payment_option === 'paid'
                         ? 'bg-green-50 border-green-200 ring-1 ring-green-400'
                         : 'border-gray-200 hover:bg-gray-50',
                     ]"
@@ -760,7 +784,7 @@
                       type="radio"
                       id="paid"
                       value="paid"
-                      v-model="createForm.paymentOption"
+                      v-model="createForm.payment_option"
                       class="h-4 w-4 border-green-500 text-green-600 focus:ring-green-500"
                     />
                     <label for="paid" class="text-sm cursor-pointer"
@@ -770,7 +794,10 @@
                 </div>
               </div>
 
-              <div v-if="createForm.paymentOption === 'paid'" class="space-y-2">
+              <div
+                v-if="createForm.payment_option === 'paid'"
+                class="space-y-2"
+              >
                 <label
                   for="paymentAmount"
                   class="text-sm font-medium text-gray-700"
@@ -780,7 +807,7 @@
                   <span class="absolute left-3 top-2.5 text-gray-500">$</span>
                   <input
                     id="paymentAmount"
-                    v-model="createForm.paymentAmount"
+                    v-model="createForm.payment_amount"
                     type="number"
                     placeholder="Enter amount"
                     class="flex h-10 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-green-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
@@ -877,18 +904,20 @@
                   class="h-12 w-12 rounded-full overflow-hidden border-2 border-white shadow-sm"
                 >
                   <img
-                    :src="selectedProblem.author.avatar || '/placeholder.svg'"
-                    :alt="selectedProblem.author.name"
+                    :src="
+                      selectedProblem.user_details?.image || '/placeholder.svg'
+                    "
+                    :alt="selectedProblem.user_details?.name"
                     class="h-full w-full object-cover"
                   />
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium">
-                    {{ selectedProblem.author.name }}
+                    {{ selectedProblem.user_details?.name }}
                   </p>
                   <div class="flex items-center text-xs text-gray-500">
                     <Clock class="h-3 w-3 mr-1" />
-                    <span>{{ selectedProblem.createdAt }}</span>
+                    <span>{{ formatTimeAgo(selectedProblem.created_at) }}</span>
                   </div>
                 </div>
               </div>
@@ -936,15 +965,26 @@
               <span
                 class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-800 shadow-sm"
               >
-                {{ selectedProblem.category }}
+                {{ selectedProblem.category_details?.name }}
               </span>
 
               <span
-                v-if="selectedProblem.isPaid"
-                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-green-50 text-green-700"
+                v-if="selectedProblem?.payment_option === 'paid'"
+                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
               >
-                <DollarSign class="h-3 w-3 mr-1" />
-                I can pay ${{ selectedProblem.paymentAmount }} for help
+                {{
+                  selectedProblem?.payment_amount > 0
+                    ? `I can pay `
+                    : "Paid Help"
+                }}
+                <span
+                  v-if="selectedProblem?.payment_amount > 0"
+                  class="inline-flex items-center"
+                >
+                  <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
+                  {{ selectedProblem?.payment_amount }}
+                </span>
+                &nbsp;for help!
               </span>
               <span
                 v-else
@@ -954,7 +994,7 @@
               </span>
 
               <span
-                v-if="selectedProblem.status === 'Solved'"
+                v-if="selectedProblem.status === 'solved'"
                 class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-green-600 text-white shadow-sm"
               >
                 <CheckCircle class="h-3 w-3 mr-1" />
@@ -972,18 +1012,18 @@
 
             <!-- Problem Photos (if any) -->
             <div
-              v-if="selectedProblem.photos && selectedProblem.photos.length > 0"
+              v-if="selectedProblem.media && selectedProblem.media.length > 0"
               class="mt-4"
             >
               <div class="grid grid-cols-2 gap-2">
                 <div
-                  v-for="(photo, index) in selectedProblem.photos"
+                  v-for="(photo, index) in selectedProblem.media"
                   :key="index"
                   class="relative rounded-lg overflow-hidden cursor-pointer"
                   @click="openPhotoViewer(index)"
                 >
                   <img
-                    :src="photo.url"
+                    :src="photo.image"
                     alt="Problem illustration"
                     class="w-full h-48 object-cover"
                   />
@@ -998,12 +1038,12 @@
               <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-600 flex items-center">
                   <MessageSquare class="h-4 w-4 mr-1.5" />
-                  {{ selectedProblem.comments.length }} comments
+                  {{ selectedProblem.comments?.length }} Advices
                 </span>
 
                 <span class="text-sm text-gray-600 flex items-center">
                   <Eye class="h-4 w-4 mr-1.5" />
-                  {{ selectedProblem.views }}
+                  {{ selectedProblem?.views }}
                 </span>
               </div>
             </div>
@@ -1011,14 +1051,14 @@
             <!-- Comments Section -->
             <div class="mt-6">
               <h3 class="text-lg font-medium mb-4 text-gray-900">
-                Comments ({{ selectedProblem.comments.length }})
+                Comments ({{ selectedProblem.comments?.length }})
               </h3>
 
               <!-- Comment List -->
               <div class="space-y-4">
                 <div
-                  v-if="selectedProblem.comments.length > 0"
-                  v-for="comment in selectedProblem.comments"
+                  v-if="selectedProblem.comments?.length > 0"
+                  v-for="comment in selectedProblem?.comments"
                   :key="comment.id"
                   :class="[
                     'p-5 rounded-lg transition-all',
@@ -1096,14 +1136,14 @@
                     <line x1="8" y1="12" x2="16" y2="12"></line>
                   </svg>
                   <p class="text-gray-500">
-                    No comments yet. Be the first to help!
+                    No advice have been posted yet. Be the first to help!
                   </p>
                 </div>
               </div>
 
               <!-- Add Comment with improved design -->
               <div class="mt-8">
-                <h4 class="text-sm font-medium mb-2">Add a comment</h4>
+                <h4 class="text-sm font-medium mb-2">Add a advice</h4>
                 <textarea
                   v-model="newComment"
                   placeholder="Share your solution or ask for clarification..."
@@ -1183,7 +1223,7 @@
           </div>
           <p class="mt-2 text-gray-600">
             This action cannot be undone. This will permanently delete your
-            problem and all associated comments.
+            problem and all associated advices.
           </p>
           <div class="flex justify-end gap-3 mt-8">
             <button
@@ -1311,6 +1351,7 @@ definePageMeta({
   ],
 });
 
+const { get, post } = useApi();
 // State
 const isCreating = ref(false);
 const isSearching = ref(false);
@@ -1331,9 +1372,9 @@ const createForm = ref({
   title: "",
   description: "",
   category: "",
-  paymentOption: "free",
-  paymentAmount: "",
-  images: [], // Will store {id, url} objects
+  payment_option: "free",
+  payment_amount: "",
+  images: [],
 });
 
 // Additional state for photos
@@ -1357,186 +1398,47 @@ const tabs = [
 ];
 
 // Categories
-const categories = [
-  "Web Development",
-  "Mobile Development",
-  "Database",
-  "DevOps",
-  "UI/UX Design",
-  "Machine Learning",
-  "Blockchain",
-  "Cloud Computing",
-  "Security",
-];
+const categories = ref([]);
 
+async function fetchCategories() {
+  try {
+    const { data } = await get("/bn/mindforce/categories/");
+    categories.value = data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+await fetchCategories();
 // Sample data
-const problems = ref([
-  {
-    id: 1,
-    title: "How to optimize database queries for large datasets?",
-    description:
-      "I have a database with over 10 million records and my queries are taking too long to execute. I need help optimizing these queries for better performance.",
-    category: "Database",
-    status: "Problem",
-    isPaid: false,
-    paymentAmount: 0,
-    author: {
-      name: "Alex Johnson",
-      avatar: "/mystical-forest-spirit.png",
-    },
-    createdAt: "2 hours ago",
-    comments: [
-      {
-        id: 1,
-        author: {
-          name: "Sarah Miller",
-          avatar: "/mystical-forest-spirit.png",
-        },
-        content:
-          "Have you tried indexing your most frequently queried columns? That's usually the first step to optimizing database performance.",
-        createdAt: "1 hour ago",
-        isSolution: false,
-      },
-      {
-        id: 2,
-        author: {
-          name: "Michael Chen",
-          avatar: "/mystical-forest-spirit.png",
-        },
-        content:
-          "You might want to look into query caching as well. For large datasets, caching frequently accessed data can significantly improve performance.",
-        createdAt: "30 minutes ago",
-        isSolution: false,
-      },
-    ],
-    views: 89,
-    photos: [],
-  },
-  {
-    id: 2,
-    title: "Best practices for securing a React application",
-    description:
-      "I'm building a React application that handles sensitive user data. What are the best practices for securing the frontend and preventing common security vulnerabilities?",
-    category: "Web Development",
-    status: "Solved",
-    isPaid: true,
-    paymentAmount: 50,
-    author: {
-      name: "Sarah Miller",
-      avatar: "/mystical-forest-spirit.png",
-    },
-    createdAt: "1 day ago",
-    comments: [
-      {
-        id: 3,
-        author: {
-          name: "David Wilson",
-          avatar: "/mystical-forest-spirit.png",
-        },
-        content:
-          "Always sanitize user inputs to prevent XSS attacks. Use libraries like DOMPurify when rendering user-generated content.",
-        createdAt: "20 hours ago",
-        isSolution: true,
-      },
-    ],
-    views: 156,
-    photos: [],
-  },
-  {
-    id: 3,
-    title: "Implementing authentication in a mobile app",
-    description:
-      "I'm developing a mobile app and need to implement secure authentication. Should I use JWT, OAuth, or something else? Any recommendations for libraries or services?",
-    category: "Mobile Development",
-    status: "Problem",
-    isPaid: true,
-    paymentAmount: 75,
-    author: {
-      name: "Michael Chen",
-      avatar: "/mystical-forest-spirit.png",
-    },
-    createdAt: "3 days ago",
-    comments: [],
-    views: 210,
-    photos: [],
-  },
-  {
-    id: 4,
-    title: "Strategies for improving mobile app performance",
-    description:
-      "Our mobile app is experiencing performance issues, especially on older devices. What strategies can we implement to improve overall performance and user experience?",
-    category: "Mobile Development",
-    status: "Problem",
-    isPaid: false,
-    paymentAmount: 0,
-    author: {
-      name: "Jessica Taylor",
-      avatar: "/mystical-forest-spirit.png",
-    },
-    createdAt: "5 days ago",
-    comments: [
-      {
-        id: 4,
-        author: {
-          name: "Alex Johnson",
-          avatar: "/mystical-forest-spirit.png",
-        },
-        content:
-          "Try implementing lazy loading for images and other heavy content. Also, minimize the use of animations on older devices.",
-        createdAt: "4 days ago",
-        isSolution: false,
-      },
-    ],
-    views: 132,
-    photos: [],
-  },
-  {
-    id: 5,
-    title: "Setting up CI/CD pipeline for a microservices architecture",
-    description:
-      "We're transitioning to a microservices architecture and need advice on setting up an efficient CI/CD pipeline that works well with multiple services.",
-    category: "DevOps",
-    status: "Solved",
-    isPaid: false,
-    paymentAmount: 0,
-    author: {
-      name: "David Wilson",
-      avatar: "/mystical-forest-spirit.png",
-    },
-    createdAt: "1 week ago",
-    comments: [
-      {
-        id: 5,
-        author: {
-          name: "Michael Chen",
-          avatar: "/mystical-forest-spirit.png",
-        },
-        content:
-          "I recommend using GitLab CI/CD with Docker. It allows you to define separate pipelines for each microservice while maintaining a unified view of the entire system.",
-        createdAt: "6 days ago",
-        isSolution: true,
-      },
-    ],
-    views: 278,
-    photos: [],
-  },
-]);
+const problems = ref([]);
+
+async function fetchProblems() {
+  try {
+    const { data } = await get("/bn/mindforce/");
+    problems.value = data;
+    console.log(problems.value);
+  } catch (error) {
+    console.error("Error fetching problems:", error);
+  }
+}
+await fetchProblems();
 
 // Computed properties
 const activeProblems = computed(() =>
-  problems.value.filter((problem) => problem.status === "Problem")
+  problems.value.filter((problem) => problem.status === "active")
 );
 
 const solvedProblems = computed(() =>
-  problems.value.filter((problem) => problem.status === "Solved")
+  problems.value.filter((problem) => problem.status === "solved")
 );
 
 const myProblems = computed(() =>
-  problems.value.filter((problem) => problem.author.name === "You")
+  problems.value.filter((problem) => problem.user_details.name === "You")
 );
 
 const isOwner = computed(
-  () => selectedProblem.value && selectedProblem.value.author.name === "You"
+  () =>
+    selectedProblem.value && selectedProblem.value.user_details.name === "You"
 );
 
 // Methods
@@ -1560,35 +1462,56 @@ const handleSearch = () => {
   }, 500);
 };
 
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} ${diffInSeconds === 1 ? "second" : "seconds"} ago`;
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
+};
+
 // Handle photo upload
 const handlePhotoUpload = (event) => {
-  const files = event.target.files;
-  if (!files.length) return;
-
-  const file = files[0];
-  if (!file.type.startsWith("image/")) return;
-
-  // Check if we've reached the limit
-  if (createForm.value.photos.length >= 4) return;
-
-  // Create a URL for the image
+  const files = Array.from(event.target.files);
   const reader = new FileReader();
-  reader.onload = (e) => {
-    createForm.value.photos.push({
-      id: Date.now(), // Simple unique ID
-      url: e.target.result,
-      file: file,
-    });
-  };
-  reader.readAsDataURL(file);
 
-  // Reset the input so the same file can be selected again
-  event.target.value = "";
+  // Event listener for successful read
+  reader.onload = () => {
+    createForm.value.images.push(reader.result);
+  };
+
+  // Event listener for errors
+  reader.onerror = (error) => reject(error);
+
+  // Read the file as a data URL (Base64 string)
+  reader.readAsDataURL(files[0]);
 };
 
 // Remove photo
 const removePhoto = (index) => {
-  createForm.value.photos.splice(index, 1);
+  createForm.value.images.splice(index, 1);
 };
 
 // Photo viewer functions
@@ -1617,42 +1540,20 @@ const handleCreateProblem = async () => {
   isSubmittingCreate.value = true;
 
   try {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const problem = {
-      id: Math.max(0, ...problems.value.map((p) => p.id)) + 1,
-      title: createForm.value.title,
-      description: createForm.value.description,
-      category: createForm.value.category,
-      status: "Problem",
-      isPaid: createForm.value.paymentOption === "paid",
-      paymentAmount:
-        createForm.value.paymentOption === "paid"
-          ? Number(createForm.value.paymentAmount)
-          : 0,
-      author: {
-        name: "You",
-        avatar: "/mystical-forest-spirit.png",
-      },
-      photos: createForm.value.photos.map((photo) => ({ url: photo.url })), // Add photos to the problem
-      createdAt: "Just now",
-      comments: [],
-      views: 0,
-    };
-
-    problems.value = [problem, ...problems.value];
-    isCreateModalOpen.value = false;
-
-    // Reset form
-    createForm.value = {
-      title: "",
-      description: "",
-      category: "",
-      paymentOption: "free",
-      paymentAmount: "",
-      photos: [],
-    };
+    const res = await post("/bn/mindforce/", createForm.value);
+    if (res.data) {
+      isCreateModalOpen.value = false;
+      await fetchProblems();
+      // Reset form
+      createForm.value = {
+        title: "",
+        description: "",
+        category: "",
+        payment_option: "free",
+        payment_amount: "",
+        images: [],
+      };
+    }
   } finally {
     isSubmittingCreate.value = false;
   }

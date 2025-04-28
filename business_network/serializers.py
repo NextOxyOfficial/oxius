@@ -132,6 +132,9 @@ class BusinessNetworkMindforceMediaSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
         
 class BusinessNetworkMindforceSerializer(serializers.ModelSerializer):
+    media = BusinessNetworkMindforceMediaSerializer(many=True, read_only=True)
+    user_details = UserSerializer(source='user', read_only=True)
+    category_details = BusinessNetworkMindforceCategorySerializer(source='category', read_only=True)
     class Meta:
         model = BusinessNetworkMindforce
         fields = '__all__'
