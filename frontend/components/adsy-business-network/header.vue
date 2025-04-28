@@ -492,18 +492,15 @@
                     <NuxtLink
                       v-for="(link, index) in [
                         {
-                          label:
-                            $route.path === '/business-network'
-                              ? 'AdsyClub'
-                              : t('business_network'),
-                          to:
-                            $route.path === '/business-network'
-                              ? '/'
-                              : '/business-network',
-                          icon:
-                            $route.path === '/business-network'
-                              ? 'i-lucide-chart-bar-big'
-                              : 'i-eos-icons-network',
+                          label: $route.path.includes('/business-network')
+                            ? 'AdsyClub'
+                            : t('business_network'),
+                          to: $route.path.includes('/business-network')
+                            ? '/'
+                            : '/business-network',
+                          icon: $route.path.includes('/business-network')
+                            ? 'i-lucide-chart-bar-big'
+                            : 'i-eos-icons-network',
                           color: 'text-orange-600 dark:text-orange-400',
                           bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
                           border: 'border-orange-200 dark:border-orange-800/30',
