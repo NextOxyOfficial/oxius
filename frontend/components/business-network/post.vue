@@ -11,135 +11,17 @@
         }"
       >
         <!-- Post Card -->
-        <div
-          class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300"
-        >
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300">
           <div class="px-3 py-5">
             <!-- Post Header -->
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center space-x-3 flex-1">
-                <div class="relative">
-                  <NuxtLink :to="`/business-network/profile/${post.author}`">
-                    <img
-                      :src="post?.author_details?.image"
-                      :alt="post?.author_details?.name"
-                      class="size-14 rounded-full cursor-pointer"
-                    />
-                  </NuxtLink>
-                </div>
-                <div class="flex-1">
-                  <NuxtLink
-                    :to="`/business-network/profile/${post.author}`"
-                    class="font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
-                  >
-                    <p class="">
-                      {{ post?.author_details?.name }}
-                    </p>
-                    <div
-                      v-if="post?.author_details?.kyc"
-                      class="text-blue-500 flex items-center"
-                    >
-                      <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
-                      <span
-                        v-if="post?.author_details?.is_pro"
-                        class="text-2xs px-1 py-0.5 font-medium"
-                      >
-                        <div class="flex items-center gap-0.5">
-                          <UIcon
-                            name="i-heroicons-shield-check"
-                            class="size-4 text-indigo-700 font-semibold"
-                          />
-                          <span class="text-xs font-semibold text-indigo-700"
-                            >Pro</span
-                          >
-                        </div>
-                      </span>
-                    </div>
-                  </NuxtLink>
-                  <p
-                    class="text-xs font-semibold bg-white py-0.5 text-slate-500"
-                  >
-                    {{ post?.author_details?.profession }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    {{ formatTimeAgo(post?.created_at) }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button
-                  v-if="post?.author && user && post.author !== user.user.id"
-                  :class="[
-                    'text-sm h-7 rounded-full px-3 flex items-center gap-1',
-                    post.isFollowing
-                      ? 'border border-gray-200 text-gray-800'
-                      : 'bg-blue-600 text-white',
-                  ]"
-                  @click="toggleFollow(post)"
-                >
-                  <component
-                    :is="post.isFollowing ? Check : UserPlus"
-                    class="h-3 w-3"
-                  />
-                  {{ post.isFollowing ? "Following" : "Follow" }}
-                </button>
-
-                <div class="relative">
-                  <button
-                    class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
-                    @click="toggleDropdown(post)"
-                  >
-                    <MoreHorizontal class="h-4 w-4" />
-                  </button>
-
-                  <!-- Dropdown Menu -->
-                  <div
-                    v-if="post.showDropdown"
-                    class="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
-                  >
-                    <div class="py-1">
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                        @click="toggleSave(post)"
-                      >
-                        <Bookmark
-                          :class="[
-                            'h-4 w-4 mr-2',
-                            post.isSaved ? 'text-blue-600 fill-blue-600' : '',
-                          ]"
-                        />
-                        {{ post.isSaved ? "Unsave post" : "Save post" }}
-                      </button>
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                        @click="copyLink(post)"
-                      >
-                        <Link2 class="h-4 w-4 mr-2" />
-                        Copy link
-                      </button>
-                      <hr class="my-1 border-gray-200" />
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                      >
-                        <UserX class="h-4 w-4 mr-2" />
-                        Unfollow @{{
-                          post.author_details.name
-                            .toLowerCase()
-                            .replace(/\s+/g, "")
-                        }}
-                      </button>
-                      <button
-                        class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                      >
-                        <Flag class="h-4 w-4 mr-2" />
-                        Report post
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <PostHeader 
+              :post="post" 
+              :user="user" 
+              @toggle-follow="toggleFollow"
+              @toggle-dropdown="toggleDropdown"
+              @toggle-save="toggleSave"
+              @copy-link="copyLink"
+            />
 
             <!-- Post Title -->
             <NuxtLink
@@ -181,441 +63,58 @@
               </button>
             </div>
 
-            <!-- Media Gallery with Professional Layout -->
-            <!-- Increased height for 2-column layouts -->
-            <div v-if="post?.post_media?.length > 0" class="mb-3">
-              <div
-                class="relative overflow-hidden rounded-lg"
-                :class="{
-                  'grid gap-1': post.post_media.length > 1,
-                  'grid-cols-2':
-                    post.post_media.length === 2 || post.post_media.length >= 4,
-                  'grid-rows-2': post.post_media.length >= 4,
-                  'h-[320px] sm:h-[400px]': post.post_media.length === 1,
-                  'h-[460px] sm:h-[520px]':
-                    post.post_media.length >= 2 && post.post_media.length <= 3,
-                  'h-[400px] sm:h-[500px]': post.post_media.length >= 4,
-                }"
-              >
-                <!-- Single Image Layout -->
-                <template v-if="post.post_media.length === 1">
-                  <div
-                    class="relative w-full h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
-                    @click="openMedia(post, 0)"
-                  >
-                    <img
-                      :src="post.post_media[0].image"
-                      alt="Media"
-                      class="h-full w-full object-cover"
-                    />
-                    <div
-                      v-if="post.post_media[0].type === 'video'"
-                      class="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div
-                        class="h-12 w-12 rounded-full bg-black/50 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-0 w-0 border-y-8 border-y-transparent border-l-12 border-l-white ml-1"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Two Images Layout -->
-                <template v-else-if="post.post_media.length === 2">
-                  <div
-                    v-for="(media, mediaIndex) in post.post_media.slice(0, 2)"
-                    :key="media.id"
-                    class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
-                    @click="openMedia(post, mediaIndex)"
-                  >
-                    <img
-                      :src="media.image"
-                      :alt="`Media ${mediaIndex + 1}`"
-                      class="h-full w-full object-cover"
-                    />
-                    <div
-                      v-if="media.type === 'video'"
-                      class="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div
-                        class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Three Images Layout -->
-                <template v-else-if="post.post_media.length === 3">
-                  <!-- First image - large, full width -->
-                  <div
-                    class="relative col-span-2 h-[240px] sm:h-[300px] cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
-                    @click="openMedia(post, 0)"
-                  >
-                    <img
-                      :src="post.post_media[0].image"
-                      :alt="'Media 1'"
-                      class="h-full w-full object-cover"
-                    />
-                    <div
-                      v-if="post.post_media[0].type === 'video'"
-                      class="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div
-                        class="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-0 w-0 border-y-4 border-y-transparent border-l-6 border-l-white ml-0.5"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Second and third images - side by side -->
-                  <div class="grid grid-cols-2 gap-1" style="height: 200px">
-                    <div
-                      v-for="(media, mediaIndex) in post.post_media.slice(1, 3)"
-                      :key="media.id"
-                      class="relative h-full cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
-                      @click="openMedia(post, mediaIndex + 1)"
-                    >
-                      <img
-                        :src="media.image"
-                        :alt="`Media ${mediaIndex + 2}`"
-                        class="h-full w-full object-cover"
-                      />
-                      <div
-                        v-if="media.type === 'video'"
-                        class="absolute inset-0 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center"
-                        >
-                          <div
-                            class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Four or more images - Grid Layout -->
-                <template v-else>
-                  <div
-                    v-for="(media, mediaIndex) in post.post_media.slice(0, 4)"
-                    :key="media.id"
-                    class="relative aspect-square cursor-pointer overflow-hidden transition-transform hover:scale-[1.02]"
-                    @click="openMedia(post, mediaIndex)"
-                  >
-                    <img
-                      :src="media.image"
-                      :alt="`Media ${mediaIndex + 1}`"
-                      class="h-full w-full object-cover"
-                    />
-                    <div
-                      v-if="media.type === 'video'"
-                      class="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div
-                        class="h-6 w-6 rounded-full bg-black/50 flex items-center justify-center"
-                      >
-                        <div
-                          class="h-0 w-0 border-y-3 border-y-transparent border-l-4 border-l-white ml-0.5"
-                        ></div>
-                      </div>
-                    </div>
-
-                    <!-- Show +X more overlay on the 4th image if there are more than 4 -->
-                    <div
-                      v-if="mediaIndex === 3 && post.post_media.length > 4"
-                      class="absolute inset-0 bg-black/60 flex items-center justify-center"
-                    >
-                      <span class="text-white font-medium text-lg"
-                        >+{{ post.post_media.length - 4 }}</span
-                      >
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
+            <!-- Media Gallery -->
+            <PostMediaGallery 
+              v-if="post?.post_media?.length > 0" 
+              :post="post"
+              @open-media="openMedia"
+            />
 
             <!-- Post Actions -->
-            <div
-              class="flex items-center justify-between pt-2 border-t border-gray-100 mb-3"
-            >
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-1">
-                  <!-- Update like button with loading state -->
-                  <button
-                    class="p-1 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
-                    @click="toggleLike(post)"
-                    :disabled="post.isLikeLoading"
-                  >
-                    <div
-                      v-if="post.isLikeLoading"
-                      class="animate-pulse h-4 w-4"
-                    >
-                      <Loader2 class="h-4 w-4 text-gray-400 animate-spin" />
-                    </div>
-                    <Heart
-                      v-else
-                      :class="[
-                        'h-4 w-4',
-                        post.post_likes?.find(
-                          (like) => like.user === user?.user?.id
-                        )
-                          ? 'text-red-500 fill-red-500'
-                          : 'text-gray-500',
-                      ]"
-                    />
-                  </button>
-                  <button
-                    class="text-sm text-gray-600 hover:underline"
-                    @click="openLikesModal(post)"
-                  >
-                    {{ post?.post_likes?.length }} likes
-                  </button>
-                </div>
-                <button
-                  class="flex items-center space-x-1"
-                  @click="openCommentsModal(post)"
-                >
-                  <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600"
-                    >{{ post?.post_comments?.length }} comments</span
-                  >
-                </button>
-                <button
-                  class="flex items-center space-x-1"
-                  @click="sharePost(post)"
-                >
-                  <Share2 class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600">Share</span>
-                </button>
-                <button
-                  class="flex items-center space-x-1"
-                  @click="toggleSave(post)"
-                >
-                  <Bookmark
-                    :class="[
-                      'h-4 w-4',
-                      post.isSaved
-                        ? 'text-blue-600 fill-blue-600'
-                        : 'text-gray-500',
-                    ]"
-                  />
-                  <span class="text-sm text-gray-600">Save</span>
-                </button>
-              </div>
-            </div>
+            <PostActions 
+              :post="post" 
+              :user="user"
+              @toggle-like="toggleLike"
+              @open-likes-modal="openLikesModal"
+              @open-comments-modal="openCommentsModal"
+              @share-post="sharePost"
+              @toggle-save="toggleSave"
+            />
 
             <!-- Comments Preview -->
-            <div v-if="post?.post_comments?.length > 0" class="space-y-2">
-              <!-- See all comments button moved to the top -->
-              <button
-                v-if="post?.post_comments?.length > 3"
-                class="text-sm text-blue-600 font-medium"
-                @click="openCommentsModal(post)"
-              >
-                See all {{ post?.post_comments?.length }} comments
-              </button>
-
-              <!-- Comments in reverse order (oldest first, newest last) -->
-              <div
-                v-for="comment in [...post.post_comments].slice(0, 3).reverse()"
-                :key="comment.id"
-                class="flex items-start space-x-2"
-              >
-                <div class="flex items-start space-x-2">
-                  <NuxtLink
-                    :to="`/business-network/profile/${comment?.author}`"
-                  >
-                    <img
-                      :src="comment.author_details?.image"
-                      :alt="comment.author_details?.name"
-                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer"
-                    />
-                  </NuxtLink>
-                  <div class="flex-1">
-                    <div class="bg-gray-50 rounded-lg pt-1 px-2">
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-1">
-                          <NuxtLink
-                            :to="`/business-network/profile/${comment.author}`"
-                            class="text-sm font-medium hover:underline"
-                          >
-                            {{ comment.author_details?.name }}
-                          </NuxtLink>
-                          <!-- Verified Badge -->
-                          <div
-                            v-if="comment.author_details?.kyc"
-                            class="text-blue-500 flex items-center"
-                          >
-                            <UIcon
-                              name="i-mdi-check-decagram"
-                              class="w-3 h-3"
-                            />
-                          </div>
-                        </div>
-
-                        <!-- Only edit/delete buttons for comment owner -->
-                        <div
-                          v-if="comment.author === user?.user?.id"
-                          class="flex items-center pl-3"
-                        >
-                          <button
-                            @click="editComment(post, comment)"
-                            class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
-                          >
-                            <UIcon
-                              name="i-heroicons-pencil-square"
-                              class="size-3.5"
-                            />
-                          </button>
-                          <button
-                            @click="deleteComment(post, comment)"
-                            class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
-                            :disabled="comment.isDeleting"
-                          >
-                            <Loader2
-                              v-if="comment.isDeleting"
-                              class="h-4 w-4 animate-spin text-red-500"
-                            />
-                            <UIcon
-                              v-else
-                              name="i-heroicons-trash"
-                              class="size-3.5"
-                            />
-                          </button>
-                        </div>
-                      </div>
-                      <!-- Comment Content -->
-                      <div v-if="comment.isEditing">
-                        <textarea
-                          :id="`comment-edit-${comment.id}`"
-                          v-model="comment.editText"
-                          class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                          rows="2"
-                        ></textarea>
-                        <div class="flex justify-end space-x-2 mt-1">
-                          <button
-                            @click="cancelEditComment(comment)"
-                            class="text-xs text-gray-500 hover:underline"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            @click="saveEditComment(post, comment)"
-                            class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                            :disabled="
-                              !comment.editText?.trim() ||
-                              comment.editText === comment.content ||
-                              comment.isSaving
-                            "
-                          >
-                            <Loader2
-                              v-if="comment.isSaving"
-                              class="h-3 w-3 animate-spin"
-                            />
-                            <span v-if="comment.isSaving">Saving...</span>
-                            <span v-else>Save</span>
-                          </button>
-                        </div>
-                      </div>
-                      <p v-else class="text-sm">{{ comment?.content }}</p>
-                    </div>
-                    <span class="text-sm text-gray-500 mt-1 inline-block">
-                      {{ formatTimeAgo(comment?.created_at) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <PostComments 
+              v-if="post?.post_comments?.length > 0" 
+              :post="post" 
+              :user="user"
+              @open-comments-modal="openCommentsModal"
+              @edit-comment="editComment"
+              @delete-comment="deleteComment"
+              @cancel-edit-comment="cancelEditComment"
+              @save-edit-comment="saveEditComment"
+            />
 
             <!-- Add Comment Input -->
-            <div
-              class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100"
+            <PostCommentInput 
               v-if="user"
-            >
-              <img
-                :src="user?.user?.image"
-                alt="Your avatar"
-                class="size-9 rounded-full"
-              />
-              <!-- Update the comment input -->
-              <div class="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 pr-10 pl-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all"
-                  v-model="post.commentText"
-                  @keyup.enter="addComment(post)"
-                  @focus="post.showCommentInput = true"
-                  @input="handleCommentInput($event, post)"
-                  @keydown="handleMentionKeydown($event, post)"
-                />
-                <div
-                  v-if="post.commentText"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1"
-                >
-                  <button
-                    class="p-1 text-gray-400 hover:text-gray-500 transition-colors"
-                    @click="post.commentText = ''"
-                    aria-label="Clear comment"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-                  </button>
-                  <button
-                    class="p-1 text-blue-600 hover:text-blue-700 transition-colors"
-                    @click="addComment(post)"
-                    aria-label="Post comment"
-                  >
-                    <Send class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+              :post="post"
+              :user="user"
+              :show-mentions="showMentions"
+              :mention-suggestions="mentionSuggestions"
+              :active-mention-index="activeMentionIndex"
+              :mention-input-position="mentionInputPosition"
+              @add-comment="addComment"
+              @handle-comment-input="handleCommentInput"
+              @handle-mention-keydown="handleMentionKeydown"
+              @select-mention="selectMention"
+            />
           </div>
         </div>
 
         <!-- Sponsored Products Section -->
-        <div
+        <ProductSection
           v-if="(index + 1) % randomInterval === 0"
-          class="sponsored-products-section"
-        >
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">
-            Sponsored Products
-          </h2>
-          <div class="relative">
-            <!-- Carousel Container for Mobile -->
-            <div
-              class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden"
-            >
-              <ProductCard
-                v-for="(product, productIndex) in getRandomProducts(2)"
-                :key="`mobile-${product.id || productIndex}`"
-                :product="product"
-                class="flex-shrink-0 w-[49%]"
-              />
-            </div>
-
-            <!-- Grid Layout for Desktop -->
-            <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
-              <ProductCard
-                v-for="(product, productIndex) in getRandomProducts(3)"
-                :key="`desktop-${product.id || productIndex}`"
-                :product="product"
-              />
-            </div>
-          </div>
-        </div>
+          :products="getRandomProducts(index % 2 === 0 ? 3 : 2)"
+        />
       </div>
 
       <div v-if="loading" class="flex justify-center py-6">
@@ -632,201 +131,51 @@
       </div>
     </div>
 
-    <!-- Media Viewer -->
-    <Teleport to="body">
-      <div
-        v-if="activeMedia"
-        class="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4"
-        @click="activeMedia = null"
-      >
-        <div
-          class="relative max-w-3xl w-full max-h-[80vh] bg-white rounded-lg overflow-hidden flex flex-col"
-          @click.stop
-        >
-          <button
-            class="absolute right-2 top-2 z-10 p-1 rounded-full bg-black/50 text-white"
-            @click="activeMedia = null"
-          >
-            <X class="h-6 w-6" />
-          </button>
-
-          <div class="flex-1 overflow-hidden relative">
-            <div
-              v-if="activeMedia.type === 'image' || !activeMedia.type"
-              class="relative h-[45vh] w-full"
-            >
-              <img
-                :src="activeMedia.image"
-                alt="Media preview"
-                class="w-full h-full object-contain"
-              />
-              <a
-                :href="activeMedia.image"
-                :download="`media-${activeMedia.id}`"
-                class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-                @click.stop
-              >
-                <Download class="h-5 w-5" />
-              </a>
-            </div>
-            <div v-else-if="activeMedia.type === 'video'" class="relative">
-              <video
-                :src="activeMedia.url || activeMedia.video"
-                controls
-                class="w-full h-auto max-h-[45vh]"
-              ></video>
-              <a
-                :href="activeMedia.url || activeMedia.video"
-                :download="`video-${activeMedia.id}`"
-                class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-                @click.stop
-              >
-                <Download class="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-
-          <!-- Media navigation -->
-          <div v-if="activePost && activePost.post_media.length > 1">
-            <button
-              class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
-              @click.stop="navigateMedia('prev')"
-            >
-              <ChevronLeft class="h-5 w-5" />
-            </button>
-            <button
-              class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
-              @click.stop="navigateMedia('next')"
-            >
-              <ChevronRight class="h-5 w-5" />
-            </button>
-            <div
-              class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm"
-            >
-              {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
-            </div>
-          </div>
-
-          <div class="p-4 border-t border-gray-200">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-1">
-                  <button
-                    class="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                    @click.stop="toggleMediaLike"
-                  >
-                    <Heart
-                    :class="[
-                        'h-4 w-4',
-                        activeMedia.media_likes?.find(
-                          (like) => like.user === user?.user?.id
-                        )
-                          ? 'text-red-500 fill-red-500'
-                          : 'text-gray-500',
-                      ]"
-                    />
-                  </button>
-                  <button
-                    class="text-sm text-gray-600 hover:underline"
-                    @click.stop="openMediaLikesModal"
-                  >
-                    {{ activeMedia.media_likes?.length }} likes
-                  </button>
-                </div>
-                <div class="flex items-center space-x-1">
-                  <MessageCircle class="h-4 w-4 text-gray-500" />
-                  <span class="text-sm text-gray-600">
-                    {{ activeMedia.media_comments?.length || 0 }} comments
-                  </span>
-                </div>
-              </div>
-            </div>
-            <!-- Media comments -->
-            <div
-              v-if="activeMedia.media_comments && activeMedia.media_comments.length > 0"
-              class="max-h-[20vh] overflow-y-auto mb-3"
-            >
-              <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
-              <div class="space-y-2">
-                <div
-                  v-for="comment in activeMedia.media_comments"
-                  :key="comment.id"
-                  class="flex items-start space-x-2"
-                >
-                  <div class="flex items-start space-x-2">
-                    <NuxtLink
-                      :to="`/business-network/profile/${comment.author_details.id}`"
-                    >
-                      <img
-                        v-if="comment.author_details.image"
-                        :src="comment.author_details.image"
-                        alt="User"
-                        class="w-6 h-6 rounded-full cursor-pointer"
-                      />
-                    </NuxtLink>
-                    <div class="flex-1">
-                      <div class="bg-gray-50 rounded-lg p-2">
-                        <div class="flex items-center justify-between">
-                          <div class="flex items-center gap-1.5">
-                            <NuxtLink
-                              :to="`/business-network/profile/${comment.author_details.id}`"
-                              class="text-sm font-medium hover:underline"
-                            >
-                              {{ comment.author_details.name }}
-                            </NuxtLink>
-                            <!-- Verified Badge -->
-                            <div
-                              v-if="comment.author_details.kyc"
-                              class="text-blue-500 flex items-center"
-                            >
-                              <UIcon
-                                name="i-mdi-check-decagram"
-                                class="w-3 h-3"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <p class="text-sm mt-1">{{ comment.content }}</p>
-                      </div>
-                      <div class="flex items-center mt-1 space-x-3">
-                        <span class="text-sm text-gray-500">{{
-                          formatTimeAgo(comment.created_at)
-                        }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="user" class="flex items-center gap-2">
-              <img
-                :src="user?.user?.image"
-                alt="Your avatar"
-                class="w-6 h-6 rounded-full"
-              />
-              <div class="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  v-model="mediaCommentText"
-                  @click.stop
-                />
-                <button
-                  v-if="mediaCommentText"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600"
-                  @click.stop="addMediaComment"
-                >
-                  <Send class="h-3 w-3" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
+    <!-- Media Viewer Component -->
+    <MediaViewer 
+      :active-media="activeMedia"
+      :active-post="activePost"
+      :active-media-index="activeMediaIndex"
+      :media-comment-text="mediaCommentText"
+      @update:media-comment-text="mediaCommentText = $event"
+      :user="user"
+      @close-media="closeMedia"
+      @navigate-media="navigateMedia"
+      @toggle-media-like="toggleMediaLike"
+      @open-media-likes-modal="openMediaLikesModal"
+      @add-media-comment="addMediaComment"
+      @edit-media-comment="editMediaComment"
+      @delete-media-comment="deleteMediaComment"
+    />
+    
+    <!-- All Modals -->
+    <PostModals
+      ref="modalsRef"
+      :active-likes-post="activeLikesPost"
+      :active-comments-post="activeCommentsPost"
+      :active-media-likes="activeMediaLikes"
+      :media-liked-users="mediaLikedUsers"
+      :comment-to-delete="commentToDelete"
+      :user="user"
+      :show-mentions="showMentions"
+      :mention-suggestions="mentionSuggestions"
+      :active-mention-index="activeMentionIndex"
+      :mention-input-position="mentionInputPosition"
+      @close-likes-modal="activeLikesPost = null"
+      @toggle-user-follow="toggleUserFollow"
+      @close-comments-modal="activeCommentsPost = null"
+      @handle-comment-input="handleCommentInput"
+      @handle-mention-keydown="handleMentionKeydown"
+      @add-comment="addComment"
+      @close-media-likes-modal="activeMediaLikes = null"
+      @cancel-delete-comment="commentToDelete = null"
+      @confirm-delete-comment="confirmDeleteComment"
+      @edit-comment="editComment"
+      @delete-comment="deleteComment"
+      @cancel-edit-comment="cancelEditComment"
+      @save-edit-comment="saveEditComment"
+    />
+    
     <!-- Create Post Modal -->
     <BusinessNetworkCreatePost
       :createPostContent="createPostContent"
@@ -835,383 +184,29 @@
       :isCreatePostOpen="isCreatePostOpen"
       :createPostTitle="createPostTitle"
     />
-
-    <!-- Likes Modal -->
-    <Teleport to="body">
-      <div
-        v-if="activeLikesPost"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="activeLikesPost = null"
-      >
-        <div
-          class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden"
-          @click.stop
-        >
-          <div class="p-4 sm:p-5 border-b border-gray-200">
-            <div class="flex items-center justify-between mb-1">
-              <h3 class="font-semibold">Liked by</h3>
-              <button @click="activeLikesPost = null">
-                <X class="h-5 w-5" />
-              </button>
-            </div>
-            <p class="text-sm text-gray-600 truncate">
-              {{ activeLikesPost.title }}
-            </p>
-          </div>
-          <div class="overflow-y-auto max-h-[60vh]">
-            <div
-              v-for="user in activeLikesPost.post_likes"
-              :key="user.id"
-              class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100"
-            >
-              <div class="flex items-center space-x-3">
-                <NuxtLink :to="`/business-network/profile/${user.user}`">
-                  <img
-                    :src="user.user_details.image"
-                    :alt="user.user_details.name"
-                    class="w-10 h-10 rounded-full cursor-pointer"
-                  />
-                </NuxtLink>
-                <div>
-                  <NuxtLink
-                    :to="`/business-network/profile/${user.user}`"
-                    class="font-medium hover:underline"
-                  >
-                    {{ user.user_details.name }}
-                  </NuxtLink>
-                  <p class="text-sm text-gray-500">
-                    @{{
-                      user.user_details.name.toLowerCase().replace(/\s+/g, "")
-                    }}
-                  </p>
-                </div>
-              </div>
-              <button
-                v-if="user"
-                :class="[
-                  'text-sm h-7 rounded-full px-3 flex items-center gap-1',
-                  user.isFollowing
-                    ? 'border border-gray-200 text-gray-800'
-                    : 'bg-blue-600 text-white',
-                ]"
-                @click.stop="toggleUserFollow(user)"
-              >
-                <component
-                  :is="user.isFollowing ? Check : UserPlus"
-                  class="h-3 w-3"
-                />
-                {{ user.isFollowing ? "Following" : "Follow" }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- Comments Modal -->
-    <Teleport to="body">
-      <div
-        v-if="activeCommentsPost"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="activeCommentsPost = null"
-      >
-        <div
-          class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden"
-          @click.stop
-        >
-          <div class="p-4 sm:p-5 border-b border-gray-200">
-            <div class="flex items-center justify-between mb-1">
-              <h3 class="font-semibold">Comments</h3>
-              <button @click="activeCommentsPost = null">
-                <X class="h-5 w-5" />
-              </button>
-            </div>
-            <p class="text-sm text-gray-600 truncate">
-              {{ activeCommentsPost.title }}
-            </p>
-          </div>
-          <div
-            ref="commentsContainerRef"
-            class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3"
-          >
-            <!-- Display comments with oldest first and newest last -->
-            <div
-              v-for="comment in [...activeCommentsPost.post_comments].reverse()"
-              :key="comment.id"
-              class="flex items-start space-x-2"
-            >
-              <div class="flex items-start space-x-2">
-                <NuxtLink :to="`/business-network/profile/${comment?.author}`">
-                  <img
-                    :src="comment.author_details?.image"
-                    :alt="comment.author_details?.name"
-                    class="w-8 h-8 rounded-full mt-0.5 cursor-pointer"
-                  />
-                </NuxtLink>
-                <div class="flex-1">
-                  <div class="bg-gray-50 rounded-lg p-2">
-                    <div class="flex items-center justify-between mb-1">
-                      <div class="flex items-center gap-1.5">
-                        <NuxtLink
-                          :to="`/business-network/profile/${comment?.author}`"
-                          class="text-sm font-medium hover:underline"
-                        >
-                          {{ comment.author_details.name }}
-                        </NuxtLink>
-                        <!-- Verified Badge -->
-                        <div
-                          v-if="comment.author_details?.kyc"
-                          class="text-blue-500 flex items-center"
-                        >
-                          <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
-                        </div>
-                      </div>
-
-                      <!-- Only edit/delete buttons for comment owner -->
-                      <div
-                        v-if="comment.author === user?.user?.id"
-                        class="flex items-center space-x-1"
-                      >
-                        <button
-                          @click="editComment(activeCommentsPost, comment)"
-                          class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
-                        >
-                          <UIcon
-                            name="i-heroicons-pencil-square"
-                            class="size-4"
-                          />
-                        </button>
-                        <button
-                          @click="deleteComment(activeCommentsPost, comment)"
-                          class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
-                          :disabled="comment.isDeleting"
-                        >
-                          <Loader2
-                            v-if="comment.isDeleting"
-                            class="h-4 w-4 animate-spin text-red-500"
-                          />
-                          <UIcon
-                            v-else
-                            name="i-heroicons-trash"
-                            class="size-4"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                    <!-- Editable comment content -->
-                    <div v-if="comment.isEditing">
-                      <textarea
-                        :id="`comment-edit-${comment.id}`"
-                        v-model="comment.editText"
-                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                        rows="2"
-                      ></textarea>
-                      <div class="flex justify-end space-x-2 mt-1">
-                        <button
-                          @click="cancelEditComment(comment)"
-                          class="text-xs text-gray-500 hover:underline"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          @click="saveEditComment(activeCommentsPost, comment)"
-                          class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                          :disabled="
-                            !comment.editText?.trim() ||
-                            comment.editText === comment.content ||
-                            comment.isSaving
-                          "
-                        >
-                          <Loader2
-                            v-if="comment.isSaving"
-                            class="h-3 w-3 animate-spin"
-                          />
-                          <span v-if="comment.isSaving">Saving...</span>
-                          <span v-else>Save</span>
-                        </button>
-                      </div>
-                    </div>
-                    <p v-else class="text-sm">{{ comment.content }}</p>
-                  </div>
-                  <div class="flex items-center mt-1 space-x-3">
-                    <span class="text-sm text-gray-500">{{
-                      formatTimeAgo(comment.created_at)
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="p-4 sm:p-5 border-t border-gray-200">
-            <div class="flex items-center gap-2">
-              <img
-                :src="user.user.image"
-                :alt="user.user.name"
-                class="w-6 h-6 rounded-full"
-              />
-              <div class="flex-1 relative">
-                <!-- Update the comments modal input -->
-                <input
-                  type="text"
-                  placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  v-model="activeCommentsPost.commentText"
-                  @input="handleCommentInput($event, activeCommentsPost)"
-                  @keydown="handleMentionKeydown($event, activeCommentsPost)"
-                  @keyup.enter="!showMentions && addComment(activeCommentsPost)"
-                  @click.stop
-                />
-                <!-- Add mention dropdown in modal too -->
-                <div
-                  v-if="
-                    showMentions &&
-                    mentionSuggestions.length > 0 &&
-                    activeCommentsPost === mentionInputPosition?.post
-                  "
-                  class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-48 overflow-y-auto"
-                >
-                  <div class="py-1">
-                    <div
-                      v-for="(user, index) in mentionSuggestions"
-                      :key="user.id"
-                      @click="selectMention(user, activeCommentsPost)"
-                      :class="[
-                        'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
-                        index === activeMentionIndex ? 'bg-gray-100' : '',
-                      ]"
-                    >
-                      <img
-                        :src="user.image"
-                        :alt="user.name"
-                        class="w-7 h-7 rounded-full mr-2"
-                      />
-                      <span class="text-sm font-medium">{{ user.name }}</span>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  v-if="activeCommentsPost.commentText"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
-                  @click.stop="addComment(activeCommentsPost)"
-                  :disabled="activeCommentsPost.isCommentLoading"
-                >
-                  <Loader2
-                    v-if="activeCommentsPost.isCommentLoading"
-                    class="h-5 w-5 animate-spin"
-                  />
-                  <Send v-else class="h-3 w-3" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- Media Likes Modal -->
-    <Teleport to="body">
-      <div
-        v-if="activeMediaLikes"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="activeMediaLikes = null"
-      >
-        <div
-          class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden"
-          @click.stop
-        >
-          <div
-            class="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between"
-          >
-            <h3 class="font-semibold">Liked by</h3>
-            <button @click="activeMediaLikes = null">
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-          <div class="overflow-y-auto max-h-[60vh]">
-            <div
-              v-for="(user, index) in mediaLikedUsers"
-              :key="index"
-              class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100"
-            >
-              <div class="flex items-center space-x-3">
-                <img
-                  :src="user.image"
-                  :alt="user.name"
-                  class="w-10 h-10 rounded-full"
-                />
-                <div>
-                  <NuxtLink
-                    :to="`/business-network/profile/${user.id}`"
-                    class="font-medium hover:underline"
-                  >
-                    {{ user.fullName }}
-                  </NuxtLink>
-                  <p class="text-sm text-gray-500">
-                    @{{ user.fullName.toLowerCase().replace(/\s+/g, "") }}
-                  </p>
-                </div>
-              </div>
-              <button
-                v-if="user.id !== 'current-user'"
-                :class="[
-                  'text-sm h-7 rounded-full px-3 flex items-center gap-1',
-                  user.isFollowing
-                    ? 'border border-gray-200 text-gray-800'
-                    : 'bg-blue-600 text-white',
-                ]"
-                @click.stop="toggleUserFollow(user)"
-              >
-                <component
-                  :is="user.isFollowing ? Check : UserPlus"
-                  class="h-3 w-3"
-                />
-                {{ user.isFollowing ? "Following" : "Follow" }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- Delete Comment Modal -->
-    <Teleport to="body">
-      <div
-        v-if="commentToDelete"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="commentToDelete = null"
-      >
-        <div class="bg-white rounded-lg max-w-sm w-full p-4" @click.stop>
-          <h3 class="text-lg font-semibold mb-2">Delete Comment</h3>
-          <p class="text-gray-600 mb-4">
-            Are you sure you want to delete this comment? This action cannot be
-            undone.
-          </p>
-          <div class="flex justify-end space-x-2">
-            <button
-              @click="commentToDelete = null"
-              class="px-4 py-2 border border-gray-200 text-gray-800 rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              @click="confirmDeleteComment()"
-              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-// Media height settings:
-// - Single image: h-[320px] sm:h-[400px]
-// - Two or three images: h-[280px] sm:h-[380px] (INCREASED HEIGHT)
-// - Four+ images: h-[400px] sm:h-[480px] (INCREASED HEIGHT)
+// Import all needed components
+import PostHeader from './PostHeader.vue';
+import PostMediaGallery from './PostMediaGallery.vue';
+import PostActions from './PostActions.vue';
+import PostComments from './PostComments.vue';
+import PostCommentInput from './PostCommentInput.vue';
+import MediaViewer from './MediaViewer.vue';
+import ProductSection from './ProductSection.vue';
+import PostModals from './PostModals.vue';
 
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import {
+  Search, X, Clock, ArrowRight, Heart, MessageCircle, Share2, Bookmark,
+  Check, UserPlus, MoreHorizontal, Link2, Flag, Send, Plus, Home, Bell, User,
+  BarChart2, Download, ChevronLeft, ChevronRight, Loader2, ImageIcon, Smile,
+  Paperclip, Tag, UserX
+} from 'lucide-vue-next';
+
+// Props
 const props = defineProps({
   posts: {
     type: Array,
@@ -1223,39 +218,10 @@ const props = defineProps({
   },
 });
 
-import {
-  Search,
-  X,
-  Clock,
-  ArrowRight,
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
-  Check,
-  UserPlus,
-  MoreHorizontal,
-  Link2,
-  Flag,
-  Send,
-  Plus,
-  Home,
-  Bell,
-  User,
-  BarChart2,
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  ImageIcon,
-  Smile,
-  Paperclip,
-  Tag,
-  UserX,
-} from "lucide-vue-next";
-import ProductCard from "@/components/common/product-card.vue";
+// Get auth and API utilities
 const { user } = useAuth();
 const { post, del, put, get } = useApi();
+const toast = useToast();
 
 // State
 const loading = ref(false);
@@ -1281,9 +247,9 @@ const activeMediaLikes = ref(null);
 const mediaLikedUsers = ref([]);
 const commentToDelete = ref(null);
 const postWithCommentToDelete = ref(null);
-const commentsContainerRef = ref(null);
+const modalsRef = ref(null);
 
-// Add these to your existing refs
+// Mention state
 const mentionSearchText = ref("");
 const mentionSuggestions = ref([]);
 const showMentions = ref(false);
@@ -1295,84 +261,13 @@ const allProducts = ref([]);
 const shuffledProducts = ref([]);
 const isLoadingProducts = ref(false);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
-const toast = useToast();
 
-// Function to fetch products from API
-async function fetchProducts() {
-  isLoadingProducts.value = true;
-  try {
-    const { data } = await get("/all-products/");
-    if (
-      data &&
-      (Array.isArray(data) || (data.results && Array.isArray(data.results)))
-    ) {
-      allProducts.value = Array.isArray(data) ? data : data.results;
-      getRandomProducts();
-    } else {
-      console.error("Unexpected product data format:", data);
-      allProducts.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    allProducts.value = [];
-  } finally {
-    isLoadingProducts.value = false;
-  }
-}
-
-// Function to get random products
-function getRandomProducts(count) {
-  if (allProducts.value.length === 0) {
-    return [];
-  }
-
-  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count); // Return exactly 'count' random products
-}
-
-// Fetch products when component is mounted
-onMounted(() => {
-  fetchProducts();
-});
-
-// Format time ago
-const formatTimeAgo = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) {
-    return `${diffInSeconds} ${diffInSeconds === 1 ? "second" : "seconds"} ago`;
-  }
-
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
-  }
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
-  }
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) {
-    return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
-  }
-
-  const diffInMonths = Math.floor(diffInDays / 30);
-  return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
-};
-
-// Toggle follow
+// Main methods
 const toggleFollow = async (currentPost) => {
   try {
-    // Make API call to toggle follow
     const response = await post(`/bn/posts/${currentPost.id}/follow/`, {
       user_id: user?.user?.id,
     });
-    console.log("Follow response:", response);
-    // Update UI based on response
     if (response && response.data) {
       console.log("Follow toggled successfully:", response.data);
     } else {
@@ -1415,14 +310,10 @@ const toggleLike = async (currentPost) => {
       // Then make API call
       const response = await del(`/bn/posts/${currentPost.id}/unlike/`);
 
-      // Check if API call failed (no need to check status property)
+      // Check if API call failed
       if (!response) {
         // Revert UI if API fails
-        if (
-          !currentPost.post_likes.some(
-            (like) => like.user === user.value?.user?.id
-          )
-        ) {
+        if (!currentPost.post_likes.some((like) => like.user === user.value?.user?.id)) {
           currentPost.post_likes.push({
             user: user.value?.user?.id,
             user_details: {
@@ -1457,15 +348,10 @@ const toggleLike = async (currentPost) => {
     }
   } catch (error) {
     console.error("Error toggling like:", error);
-
     // Revert UI on error
     if (wasLiked) {
       // Re-add like if we were removing it
-      if (
-        !currentPost.post_likes.some(
-          (like) => like.user === user.value?.user?.id
-        )
-      ) {
+      if (!currentPost.post_likes.some((like) => like.user === user.value?.user?.id)) {
         currentPost.post_likes.push({
           user: user.value?.user?.id,
           user_details: {
@@ -1480,7 +366,11 @@ const toggleLike = async (currentPost) => {
         (like) => like.user !== user.value?.user?.id
       );
     }
-    showNotification("Failed to update like", "error");
+    toast.add({
+      title: "Error", 
+      description: "Failed to update like", 
+      color: "red"
+    });
   } finally {
     currentPost.isLikeLoading = false;
   }
@@ -1568,7 +458,7 @@ const toggleMediaLike = async () => {
       activeMedia.value.likedBy?.unshift({
         id: user.value?.user?.id || "current-user",
         fullName: user.value?.user?.name || "You",
-        avatar: user.value?.user?.image || "/images/placeholder.jpg?height=40&width=40",
+        image: user.value?.user?.image || "/images/placeholder.jpg?height=40&width=40",
         isFollowing: false,
       });
     }
@@ -1600,7 +490,8 @@ const toggleMediaLike = async () => {
     toast.add({ 
       title: "Error", 
       description: "Failed to update like", 
-      color: "red" 
+      color: "red",
+      timeout: 3000
     });
   } finally {
     // Reset loading state
@@ -1633,7 +524,7 @@ const toggleDescription = (post) => {
 const copyLink = (post) => {
   const postUrl = `${window.location.origin}/post/${post.id}`;
   navigator.clipboard.writeText(postUrl);
-  alert("Link copied to clipboard");
+  toast.add({ title: "Link copied to clipboard" });
   post.showDropdown = false;
 };
 
@@ -1645,53 +536,75 @@ const sharePost = (post) => {
     navigator
       .share({
         title: post.title,
-        text:
-          post.content.substring(0, 100) +
-          (post.content.length > 100 ? "..." : ""),
+        text: post.content.substring(0, 100) + (post.content.length > 100 ? "..." : ""),
         url: postUrl,
       })
       .catch((error) => console.error("Error sharing:", error));
   } else {
-    alert(`Share URL: ${postUrl}`);
+    toast.add({ title: `Share URL: ${postUrl}` });
   }
 };
 
-// Open likes modal
+// Media methods
+const openMedia = (post, index) => {
+  activePost.value = post;
+  activeMediaIndex.value = index;
+  activeMedia.value = post.post_media[index];
+};
+
+const closeMedia = () => {
+  activeMedia.value = null;
+  activePost.value = null;
+};
+
+const navigateMedia = (direction) => {
+  if (!activePost.value || !activeMedia.value) return;
+
+  const currentIndex = activeMediaIndex.value;
+  const totalMedia = activePost.value.post_media.length;
+
+  if (direction === "prev") {
+    activeMediaIndex.value = (currentIndex - 1 + totalMedia) % totalMedia;
+  } else {
+    activeMediaIndex.value = (currentIndex + 1) % totalMedia;
+  }
+
+  activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
+};
+
+// Modal methods
 const openLikesModal = (post) => {
   activeLikesPost.value = post;
 };
 
-// Open comments modal
 const openCommentsModal = (post) => {
   activeCommentsPost.value = post;
-
+  
   // Wait for DOM update then scroll to bottom
   nextTick(() => {
     scrollToLatestComment();
   });
 };
 
-// Scroll to latest comment
 const scrollToLatestComment = () => {
-  if (commentsContainerRef.value) {
-    commentsContainerRef.value.scrollTop =
-      commentsContainerRef.value.scrollHeight;
+  if (modalsRef.value?.commentsContainerRef) {
+    modalsRef.value.commentsContainerRef.scrollTop =
+      modalsRef.value.commentsContainerRef.scrollHeight;
   }
 };
 
-// Open media likes modal
 const openMediaLikesModal = () => {
   if (!activeMedia.value || !activeMedia.value.likedBy) return;
-
+  
   mediaLikedUsers.value = activeMedia.value.likedBy;
   activeMediaLikes.value = activeMedia.value;
 };
 
-// Add comment
+// Comment methods
 const addComment = async (currentPost) => {
   // Check if user is logged in
   if (!user?.value?.user?.id) {
-    console.error("User not logged in");
+    toast.add({ title: "Please login to comment" });
     return;
   }
 
@@ -1711,21 +624,13 @@ const addComment = async (currentPost) => {
     author_details: {
       name: user.value.user.name,
       image: user.value.user.image,
+      kyc: user.value.user.kyc || false
     },
     // Add needed properties for UI
-    user: {
-      isFollowing: false,
-    },
+    isEditing: false,
+    isDeleting: false,
+    isSaving: false
   };
-
-  // Format mentions in the content if any
-  const formattedContent = commentText.replace(
-    /@(\w+)/g,
-    '<span class="text-blue-600">@$1</span>'
-  );
-
-  // Update the tempComment with formatted content
-  tempComment.content = formattedContent;
 
   // Add to UI immediately
   if (!currentPost.post_comments) {
@@ -1762,11 +667,10 @@ const addComment = async (currentPost) => {
       }
 
       // Show success toast
-      useToast().add({
+      toast.add({
         title: "Success",
         description: "Comment posted successfully",
         color: "green",
-        icon: "i-heroicons-check-circle",
         timeout: 3000,
       });
     } else {
@@ -1777,11 +681,10 @@ const addComment = async (currentPost) => {
       console.error("Failed to add comment:", response);
 
       // Show error toast
-      useToast().add({
+      toast.add({
         title: "Error",
         description: "Failed to post comment",
         color: "red",
-        icon: "i-heroicons-x-circle",
         timeout: 3000,
       });
     }
@@ -1793,12 +696,10 @@ const addComment = async (currentPost) => {
     console.error("Error adding comment:", error);
 
     // Show error toast
-    useToast().add({
+    toast.add({
       title: "Error",
-      description:
-        "Failed to post comment: " + (error.message || "Unknown error"),
+      description: "Failed to post comment: " + (error.message || "Unknown error"),
       color: "red",
-      icon: "i-heroicons-x-circle",
       timeout: 5000,
     });
   } finally {
@@ -1807,7 +708,6 @@ const addComment = async (currentPost) => {
   }
 };
 
-// Edit comment
 const editComment = (post, comment) => {
   if (!post || !comment || !user?.value?.user?.id) return;
 
@@ -1824,13 +724,11 @@ const editComment = (post, comment) => {
   });
 };
 
-// Cancel comment edit
 const cancelEditComment = (comment) => {
   comment.isEditing = false;
   comment.editText = null;
 };
 
-// Save edited comment
 const saveEditComment = async (currentPost, comment) => {
   if (!comment.editText?.trim() || comment.editText === comment.content) {
     cancelEditComment(comment);
@@ -1848,7 +746,6 @@ const saveEditComment = async (currentPost, comment) => {
 
     // Make API call to update comment
     const response = await put(`/bn/comments/${comment.id}/`, {
-      ...comment,
       content: comment.editText.trim(),
     });
 
@@ -1857,20 +754,18 @@ const saveEditComment = async (currentPost, comment) => {
       comment.content = originalContent;
       console.error("Failed to update comment");
       // Show error toast
-      useToast().add({
+      toast.add({
         title: "Error",
         description: "Failed to update comment",
         color: "red",
-        icon: "i-heroicons-x-circle",
         timeout: 3000,
       });
     } else {
       // Show success toast
-      useToast().add({
+      toast.add({
         title: "Success",
         description: "Comment updated successfully",
         color: "green",
-        icon: "i-heroicons-check-circle",
         timeout: 3000,
       });
     }
@@ -1879,12 +774,10 @@ const saveEditComment = async (currentPost, comment) => {
     comment.content = originalContent;
     console.error("Error updating comment:", error);
     // Show error toast
-    useToast().add({
+    toast.add({
       title: "Error",
-      description:
-        "Failed to update comment: " + (error.message || "Unknown error"),
+      description: "Failed to update comment: " + (error.message || "Unknown error"),
       color: "red",
-      icon: "i-heroicons-x-circle",
       timeout: 5000,
     });
   } finally {
@@ -1893,21 +786,13 @@ const saveEditComment = async (currentPost, comment) => {
   }
 };
 
-// Delete comment
 const deleteComment = (post, comment) => {
-  if (!post || !comment || !user?.value?.user?.id) return;
-
   commentToDelete.value = comment;
   postWithCommentToDelete.value = post;
 };
 
 const confirmDeleteComment = async () => {
-  if (
-    !commentToDelete.value ||
-    !postWithCommentToDelete.value ||
-    !user?.value?.user?.id
-  )
-    return;
+  if (!commentToDelete.value || !postWithCommentToDelete.value || !user?.value?.user?.id) return;
 
   const comment = commentToDelete.value;
   const post = postWithCommentToDelete.value;
@@ -1932,22 +817,20 @@ const confirmDeleteComment = async () => {
       console.log("Comment deleted successfully");
 
       // Show success toast
-      useToast().add({
+      toast.add({
         title: "Success",
         description: "Comment deleted successfully",
         color: "green",
-        icon: "i-heroicons-check-circle",
         timeout: 3000,
       });
     } else {
       console.error("Failed to delete comment - API returned no response");
 
       // Show error toast
-      useToast().add({
+      toast.add({
         title: "Error",
         description: "Failed to delete comment",
         color: "red",
-        icon: "i-heroicons-x-circle",
         timeout: 3000,
       });
     }
@@ -1955,12 +838,10 @@ const confirmDeleteComment = async () => {
     console.error("Error deleting comment:", error);
 
     // Show error toast
-    useToast().add({
+    toast.add({
       title: "Error",
-      description:
-        "Failed to delete comment: " + (error.message || "Unknown error"),
+      description: "Failed to delete comment: " + (error.message || "Unknown error"),
       color: "red",
-      icon: "i-heroicons-x-circle",
       timeout: 5000,
     });
   } finally {
@@ -1971,7 +852,7 @@ const confirmDeleteComment = async () => {
   }
 };
 
-// Add media comment
+// Media comment methods
 const addMediaComment = async () => {
   // Check if user is logged in
   if (!user?.value?.user?.id || !activeMedia.value) {
@@ -1992,8 +873,10 @@ const addMediaComment = async () => {
     content: commentText,
     created_at: new Date().toISOString(),
     author_details: {
+      id: user.value.user.id,
       name: user.value.user.name,
       image: user.value.user.image,
+      kyc: user.value.user.kyc || false
     },
     isDeleting: false,
   };
@@ -2011,7 +894,6 @@ const addMediaComment = async () => {
       content: commentText,
     });
     
-
     // If successful, replace temp comment with real one from API
     if (response.data) {
       const index = activeMedia.value.media_comments.findIndex(
@@ -2026,7 +908,6 @@ const addMediaComment = async () => {
       toast.add({
         title: "Comment posted",
         color: "green",
-        icon: "i-heroicons-check-circle",
         timeout: 3000,
       });
     } else {
@@ -2040,7 +921,6 @@ const addMediaComment = async () => {
         title: "Error",
         description: "Failed to post comment",
         color: "red",
-        icon: "i-heroicons-x-circle",
         timeout: 3000,
       });
     }
@@ -2057,13 +937,11 @@ const addMediaComment = async () => {
       title: "Error",
       description: "Failed to post comment: " + (error.message || "Unknown error"),
       color: "red",
-      icon: "i-heroicons-x-circle",
       timeout: 5000,
     });
   }
 };
 
-// Edit media comment
 const editMediaComment = (comment) => {
   if (!comment || !user?.value?.user?.id) return;
 
@@ -2080,76 +958,6 @@ const editMediaComment = (comment) => {
   });
 };
 
-// Cancel media comment edit
-const cancelMediaCommentEdit = (comment) => {
-  comment.isEditing = false;
-  comment.editText = null;
-};
-
-// Save edited media comment
-const saveMediaCommentEdit = async (comment) => {
-  if (!comment.editText?.trim() || comment.editText === comment.content) {
-    cancelMediaCommentEdit(comment);
-    return;
-  }
-
-  // Add saving state
-  comment.isSaving = true;
-  const originalContent = comment.content;
-
-  try {
-    // Optimistically update UI
-    comment.content = comment.editText.trim();
-    comment.isEditing = false;
-
-    // Make API call to update comment
-    const response = await put(`/bn/media/comments/${comment.id}/`, {
-      ...comment,
-      content: comment.editText.trim(),
-    });
-
-    if (!response || !response.data) {
-      // Revert on failure
-      comment.content = originalContent;
-      
-      // Show error toast
-      toast.add({
-        title: "Error",
-        description: "Failed to update comment",
-        color: "red",
-        icon: "i-heroicons-x-circle",
-        timeout: 3000,
-      });
-    } else {
-      // Show success toast
-      toast.add({
-        title: "Success",
-        description: "Comment updated successfully",
-        color: "green",
-        icon: "i-heroicons-check-circle",
-        timeout: 3000,
-      });
-    }
-  } catch (error) {
-    // Revert on error
-    comment.content = originalContent;
-    console.error("Error updating media comment:", error);
-    
-    // Show error toast
-    toast.add({
-      title: "Error",
-      description: "Failed to update comment: " + (error.message || "Unknown error"),
-      color: "red",
-      icon: "i-heroicons-x-circle",
-      timeout: 5000,
-    });
-  } finally {
-    // Always reset the saving state
-    comment.isSaving = false;
-  }
-};
-
-// Delete media comment
 const deleteMediaComment = (comment) => {
   if (!comment || !user?.value?.user?.id) return;
   
@@ -2157,171 +965,7 @@ const deleteMediaComment = (comment) => {
   mediaCommentToDelete.value = comment;
 };
 
-// Confirm delete media comment
-const confirmDeleteMediaComment = async () => {
-  if (!mediaCommentToDelete.value || !activeMedia.value) return;
-  
-  const comment = mediaCommentToDelete.value;
-  
-  // Set loading state
-  comment.isDeleting = true;
-  
-  try {
-    // Close modal first
-    mediaCommentToDelete.value = null;
-    
-    // Make API call to delete comment
-    const response = await del(`/bn/media/comments/${comment.id}/`);
-    
-    if (response) {
-      // Update the UI by filtering out the deleted comment
-      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
-        (c) => c.id !== comment.id
-      );
-      
-      // Show success toast
-      toast.add({
-        title: "Success",
-        description: "Comment deleted successfully",
-        color: "green",
-        icon: "i-heroicons-check-circle",
-        timeout: 3000,
-      });
-    } else {
-      // Show error toast
-      toast.add({
-        title: "Error",
-        description: "Failed to delete comment",
-        color: "red",
-        icon: "i-heroicons-x-circle",
-        timeout: 3000,
-      });
-    }
-  } catch (error) {
-    console.error("Error deleting media comment:", error);
-    
-    // Show error toast
-    toast.add({
-      title: "Error",
-      description: "Failed to delete comment: " + (error.message || "Unknown error"),
-      color: "red",
-      icon: "i-heroicons-x-circle",
-      timeout: 5000,
-    });
-  } finally {
-    // Reset loading state if the comment still exists
-    if (comment) {
-      comment.isDeleting = false;
-    }
-  }
-};
-
-// Open media
-const openMedia = (post, index) => {
-  activePost.value = post;
-  activeMediaIndex.value = index;
-  activeMedia.value = post.post_media[index];
-};
-
-// Navigate media
-const navigateMedia = (direction) => {
-  if (!activePost.value || !activeMedia.value) return;
-
-  const currentIndex = activeMediaIndex.value;
-  const totalMedia = activePost.value.post_media.length;
-
-  if (direction === "prev") {
-    activeMediaIndex.value = (currentIndex - 1 + totalMedia) % totalMedia;
-  } else {
-    activeMediaIndex.value = (currentIndex + 1) % totalMedia;
-  }
-
-  activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
-};
-
-// Create post functions
-const triggerFileInput = () => {
-  fileInputRef.value?.click();
-};
-
-const handleFileChange = (e) => {
-  const files = e.target.files;
-  if (!files) return;
-
-  const newFiles = Array.from(files);
-
-  // Check file type and size constraints
-  const validFiles = newFiles.filter((file) => {
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
-
-    if (isImage && file.size > 5 * 1024 * 1024) {
-      alert(`Image ${file.name} exceeds 5MB limit`);
-      return false;
-    }
-
-    if (isVideo && file.size > 250 * 1024 * 1024) {
-      alert(`Video ${file.name} exceeds 250MB limit`);
-      return false;
-    }
-
-    return isImage || isVideo;
-  });
-
-  // Check total media count constraints
-  const currentImages = selectedMedia.value.filter((file) =>
-    file.type.startsWith("image/")
-  ).length;
-  const currentVideos = selectedMedia.value.filter((file) =>
-    file.type.startsWith("video/")
-  ).length;
-
-  const newImages = validFiles.filter((file) => file.type.startsWith("image/"));
-  const newVideos = validFiles.filter((file) => file.type.startsWith("video/"));
-
-  if (currentImages + newImages.length > 12) {
-    alert("Maximum 12 images allowed");
-    return;
-  }
-
-  if (currentVideos + newVideos.length > 2) {
-    alert("Maximum 2 videos allowed");
-    return;
-  }
-
-  selectedMedia.value = [...selectedMedia.value, ...validFiles];
-};
-
-const getFilePreview = (file) => {
-  return URL.createObjectURL(file);
-};
-
-const removeMedia = (index) => {
-  selectedMedia.value = selectedMedia.value.filter((_, i) => i !== index);
-};
-
-const handleEmojiClick = (emoji) => {
-  createPostContent.value += emoji;
-  showEmojiPicker.value = false;
-};
-
-const addCategory = () => {
-  if (
-    categoryInput.value.trim() &&
-    !createPostCategories.value.includes(categoryInput.value.trim())
-  ) {
-    createPostCategories.value.push(categoryInput.value.trim());
-    categoryInput.value = "";
-  }
-};
-
-const removeCategory = (category) => {
-  createPostCategories.value = createPostCategories.value.filter(
-    (c) => c !== category
-  );
-};
-
-// Detect @ mentions while typing
+// Implement mention handling functions
 const handleCommentInput = (e, currentPost) => {
   const input = e.target;
   const text = input.value;
@@ -2336,10 +980,8 @@ const handleCommentInput = (e, currentPost) => {
     const searchText = mentionMatch[1].toLowerCase();
     mentionSearchText.value = searchText;
 
-    // Calculate dropdown position based on @ symbol
-    const atIndex = textBeforeCursor.lastIndexOf("@");
-    const textBeforeAt = textBeforeCursor.slice(0, atIndex);
-    const linePosition = textBeforeAt.split("\n").length - 1;
+    // Store input position info
+    mentionInputPosition.value = { post: currentPost, input: input };
 
     // Search for users matching the text
     searchMentionUsers(searchText);
@@ -2347,16 +989,12 @@ const handleCommentInput = (e, currentPost) => {
     // Show mention dropdown
     showMentions.value = true;
     activeMentionIndex.value = 0;
-
-    // Store input element for positioning dropdown
-    mentionInputPosition.value = input;
   } else {
     // Hide mentions when not typing @
     showMentions.value = false;
   }
 };
 
-// Function to search for users
 const searchMentionUsers = async (searchText) => {
   try {
     // Replace with your actual user search API
@@ -2383,11 +1021,10 @@ const searchMentionUsers = async (searchText) => {
   }
 };
 
-// Function to select a mentioned user
 const selectMention = (user, currentPost) => {
-  if (!mentionInputPosition.value) return;
+  if (!mentionInputPosition.value || !mentionInputPosition.value.input) return;
 
-  const input = mentionInputPosition.value;
+  const input = mentionInputPosition.value.input;
   const text = input.value;
   const cursorPosition = input.selectionStart;
 
@@ -2409,13 +1046,14 @@ const selectMention = (user, currentPost) => {
 
   // Move cursor after the inserted mention
   nextTick(() => {
-    const newPosition = atIndex + user.name.replace(/\s+/g, "").length + 2; // +2 for @ and space
-    input.setSelectionRange(newPosition, newPosition);
-    input.focus();
+    if (input) {
+      const newPosition = atIndex + user.name.replace(/\s+/g, "").length + 2; // +2 for @ and space
+      input.setSelectionRange(newPosition, newPosition);
+      input.focus();
+    }
   });
 };
 
-// Handle keyboard navigation in mentions dropdown
 const handleMentionKeydown = (e, currentPost) => {
   if (!showMentions.value || mentionSuggestions.value.length === 0) return;
 
@@ -2449,39 +1087,61 @@ const handleMentionKeydown = (e, currentPost) => {
   }
 };
 
-// Add a method to refresh posts
-const refreshPosts = async () => {
+// Product methods
+const fetchProducts = async () => {
+  isLoadingProducts.value = true;
   try {
-    const response = await get("/bn/posts/");
-    posts.value = response.data.results;
+    const { data } = await get("/all-products/");
+    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
+      allProducts.value = Array.isArray(data) ? data : data.results;
+      getRandomProducts();
+    } else {
+      console.error("Unexpected product data format:", data);
+      allProducts.value = [];
+    }
   } catch (error) {
-    console.error("Failed to refresh posts:", error);
+    console.error("Error fetching products:", error);
+    allProducts.value = [];
+  } finally {
+    isLoadingProducts.value = false;
   }
 };
 
-// Expose the method to parent components
-defineExpose({ refreshPosts });
+// Function to get random products
+const getRandomProducts = (count) => {
+  if (allProducts.value.length === 0) {
+    return [];
+  }
+
+  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count); // Return exactly 'count' random products
+};
+
+// Additional methods for component functionality as needed
+// ...
 
 // Initialize
 onMounted(() => {
-  // Implement infinite scroll
+  fetchProducts();
+  
+  // Implement infinite scroll (if needed)
   window.addEventListener("scroll", () => {
-    if (
-      window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
-      !loading.value
-    ) {
-      // loadMorePosts();
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !loading.value) {
+      // loadMorePosts(); (implementation would be needed)
     }
   });
+});
 
-  // Focus search input when overlay opens
-  watch(isSearchOpen, (newVal) => {
-    if (newVal) {
-      nextTick(() => {
-        searchInputRef.value?.focus();
-      });
+// Expose methods that might be called from parent components
+defineExpose({
+  refreshPosts: async () => {
+    try {
+      const response = await get("/bn/posts/");
+      // Handle the response appropriately
+    } catch (error) {
+      console.error("Failed to refresh posts:", error);
     }
-  });
+  }
 });
 </script>
 
@@ -2499,44 +1159,5 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.sponsored-products-section {
-  background-color: #f9f9f9;
-  padding: 15px;
-  margin: 0 auto; /* Center the section */
-  border-radius: 10px;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
-  width: 100%; /* Use 100% width instead of max-width */
-  box-sizing: border-box; /* Ensure padding is included in width calculation */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-}
-
-/* Hide scrollbar for mobile screens and ensure no overflow */
-.carousel {
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
-  max-width: 100%;
-  box-sizing: border-box;
-  padding-bottom: 5px; /* Add padding to avoid cut-off shadows */
-}
-
-/* Center images in the media gallery */
-.media-gallery img {
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  margin: 0 auto;
-}
-
-/* Hide scrollbar for mobile screens */
-.carousel {
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
-}
-
-.carousel::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
 }
 </style>
