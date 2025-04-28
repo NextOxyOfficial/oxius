@@ -12,7 +12,7 @@
             <div>
               <h1 class="text-3xl font-bold">MindForce</h1>
               <p class="text-blue-100 mt-1">
-                Raise your mind to help others! MindForce - Collaborative problem-solving network
+                Raise your mind to help others! MindForce - A Collaborative problem-solving network
               </p>
             </div>
             <button
