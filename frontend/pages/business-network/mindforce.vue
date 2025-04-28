@@ -16,7 +16,7 @@
           <span v-if="isCreating" class="flex items-center">
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             Loading...
           </span>
@@ -67,7 +67,7 @@
               viewBox="0 0 24 24"
             >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             <input 
               type="text" 
@@ -154,6 +154,22 @@
               </span>
 
               <h3 class="text-base font-medium text-gray-900 hover:text-blue-700 transition-colors line-clamp-2">{{ problem.title }}</h3>
+
+              <!-- Problem Photos (if any) -->
+              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-2 gap-2">
+                <div 
+                  v-for="(photo, index) in problem.photos" 
+                  :key="index" 
+                  class="relative rounded-lg overflow-hidden cursor-pointer"
+                  @click="openPhotoViewer(index)"
+                >
+                  <img 
+                    :src="photo.url" 
+                    alt="Problem illustration"
+                    class="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
@@ -271,6 +287,22 @@
 
               <h3 class="text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2">{{ problem.title }}</h3>
 
+              <!-- Problem Photos (if any) -->
+              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-2 gap-2">
+                <div 
+                  v-for="(photo, index) in problem.photos" 
+                  :key="index" 
+                  class="relative rounded-lg overflow-hidden cursor-pointer"
+                  @click="openPhotoViewer(index)"
+                >
+                  <img 
+                    :src="photo.url" 
+                    alt="Problem illustration"
+                    class="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
+
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
                   <span class="text-xs text-gray-600 flex items-center">
@@ -352,6 +384,22 @@
 
               <h3 class="text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2">{{ problem.title }}</h3>
 
+              <!-- Problem Photos (if any) -->
+              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-2 gap-2">
+                <div 
+                  v-for="(photo, index) in problem.photos" 
+                  :key="index" 
+                  class="relative rounded-lg overflow-hidden cursor-pointer"
+                  @click="openPhotoViewer(index)"
+                >
+                  <img 
+                    :src="photo.url" 
+                    alt="Problem illustration"
+                    class="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
+
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
                   <span class="text-xs text-gray-600 flex items-center">
@@ -409,6 +457,15 @@
         
         <!-- Modal -->
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+          <!-- Close button (X) at top right -->
+          <button 
+            @click="isCreateModalOpen = false"
+            class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close"
+          >
+            <X class="h-5 w-5 text-gray-500" />
+          </button>
+          
           <div class="flex flex-col p-6">
             <h2 class="text-xl font-semibold mb-1 text-gray-900">Post a New Problem</h2>
             <p class="text-gray-500 text-sm mb-4">Share your problem with the community and get expert help.</p>
@@ -433,6 +490,51 @@
                   rows="5"
                   class="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all"
                 ></textarea>
+              </div>
+
+              <!-- Photo Upload Section -->
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-700 flex justify-between">
+                  <span>Photos (Optional)</span>
+                  <span class="text-xs text-gray-500">{{ createForm.photos.length }}/4 photos</span>
+                </label>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <!-- Existing photos -->
+                  <div 
+                    v-for="(photo, index) in createForm.photos" 
+                    :key="index" 
+                    class="relative aspect-square rounded-lg border border-gray-200 overflow-hidden"
+                  >
+                    <img 
+                      :src="photo.url" 
+                      alt="Problem photo"
+                      class="w-full h-full object-cover"
+                    />
+                    <button 
+                      @click="removePhoto(index)"
+                      class="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/75 transition-colors"
+                      aria-label="Remove photo"
+                    >
+                      <X class="h-3 w-3 text-white" />
+                    </button>
+                  </div>
+                  
+                  <!-- Add photo button (only show if less than 4 photos) -->
+                  <label 
+                    v-if="createForm.photos.length < 4"
+                    class="flex flex-col items-center justify-center cursor-pointer aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors bg-gray-50"
+                  >
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      class="hidden"
+                      @change="handlePhotoUpload"
+                    />
+                    <ImagePlus class="h-6 w-6 text-gray-400" />
+                    <span class="mt-1 text-xs text-gray-500">Add Photo</span>
+                  </label>
+                </div>
               </div>
 
               <div class="space-y-2">
@@ -524,7 +626,7 @@
                 <span v-if="isSubmittingCreate" class="flex items-center">
                   <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   Posting...
                 </span>
@@ -551,6 +653,15 @@
         
         <!-- Modal -->
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
+          <!-- Close button (X) -->
+          <button 
+            @click="isDetailModalOpen = false"
+            class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close"
+          >
+            <X class="h-5 w-5 text-gray-500" />
+          </button>
+          
           <div class="p-6">
             <!-- Problem Header -->
             <div class="flex justify-between items-start">
@@ -641,6 +752,24 @@
             <!-- Problem Title & Content -->
             <h1 class="text-2xl font-semibold mt-4 text-gray-900">{{ selectedProblem.title }}</h1>
             <p class="mt-3 text-gray-700 whitespace-pre-line leading-relaxed">{{ selectedProblem.description }}</p>
+            
+            <!-- Problem Photos (if any) -->
+            <div v-if="selectedProblem.photos && selectedProblem.photos.length > 0" class="mt-4">
+              <div class="grid grid-cols-2 gap-2">
+                <div 
+                  v-for="(photo, index) in selectedProblem.photos" 
+                  :key="index" 
+                  class="relative rounded-lg overflow-hidden cursor-pointer"
+                  @click="openPhotoViewer(index)"
+                >
+                  <img 
+                    :src="photo.url" 
+                    alt="Problem illustration"
+                    class="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
+            </div>
 
             <!-- Problem Stats -->
             <div class="mt-6 flex items-center justify-between border-t border-b border-gray-200 py-3">
@@ -745,7 +874,7 @@
                     <span v-if="isSubmittingComment" class="flex items-center">
                       <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       Submitting...
                     </span>
@@ -799,6 +928,67 @@
         </div>
       </div>
     </Transition>
+    
+    <!-- Photo Viewer Modal -->
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="isPhotoViewerOpen" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/90">
+        <button 
+          @click="isPhotoViewerOpen = false"
+          class="absolute top-4 right-4 p-1.5 rounded-full text-white hover:bg-white/10 transition-colors"
+          aria-label="Close"
+        >
+          <X class="h-6 w-6" />
+        </button>
+        
+        <div class="relative w-full max-w-4xl px-4">
+          <img 
+            :src="selectedProblem?.photos[currentPhotoIndex]?.url" 
+            alt="Problem photo"
+            class="mx-auto max-h-[80vh] max-w-full object-contain"
+          />
+          
+          <div class="absolute top-1/2 left-0 right-0 flex justify-between transform -translate-y-1/2 px-2">
+            <button 
+              v-if="selectedProblem?.photos.length > 1"
+              @click="prevPhoto" 
+              class="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+              aria-label="Previous photo"
+            >
+              <ChevronLeft class="h-6 w-6" />
+            </button>
+            <div class="flex-1"></div>
+            <button 
+              v-if="selectedProblem?.photos.length > 1"
+              @click="nextPhoto" 
+              class="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+              aria-label="Next photo"
+            >
+              <ChevronRight class="h-6 w-6" />
+            </button>
+          </div>
+          
+          <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            <button 
+              v-for="(_, i) in selectedProblem?.photos" 
+              :key="i"
+              @click="currentPhotoIndex = i"
+              :class="[
+                'w-2 h-2 rounded-full transition-all',
+                currentPhotoIndex === i ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'
+              ]"
+              :aria-label="`View photo ${i+1}`"
+            ></button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -806,7 +996,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { 
   Search, Plus, MessageSquare, Eye, CheckCircle, DollarSign, 
-  Clock, Send, MoreHorizontal, Edit, Trash2, AlertTriangle 
+  Clock, Send, MoreHorizontal, Edit, Trash2, AlertTriangle, 
+  X, ImagePlus, ChevronLeft, ChevronRight 
 } from 'lucide-vue-next';
 
 definePageMeta({
@@ -833,14 +1024,19 @@ const isSubmittingComment = ref(false);
 const isSubmittingCreate = ref(false);
 const isLoading = ref(true);
 
-// Create form state
+// Create form state with photos array
 const createForm = ref({
   title: '',
   description: '',
   category: '',
   paymentOption: 'free',
   paymentAmount: '',
+  photos: [], // Will store {id, url} objects
 });
+
+// Additional state for photos
+const isPhotoViewerOpen = ref(false);
+const currentPhotoIndex = ref(0);
 
 // Computed
 const isCreateFormValid = computed(() => {
@@ -910,6 +1106,7 @@ const problems = ref([
       },
     ],
     views: 89,
+    photos: [],
   },
   {
     id: 2,
@@ -939,6 +1136,7 @@ const problems = ref([
       },
     ],
     views: 156,
+    photos: [],
   },
   {
     id: 3,
@@ -956,6 +1154,7 @@ const problems = ref([
     createdAt: "3 days ago",
     comments: [],
     views: 210,
+    photos: [],
   },
   {
     id: 4,
@@ -985,6 +1184,7 @@ const problems = ref([
       },
     ],
     views: 132,
+    photos: [],
   },
   {
     id: 5,
@@ -1014,6 +1214,7 @@ const problems = ref([
       },
     ],
     views: 278,
+    photos: [],
   },
 ]);
 
@@ -1055,6 +1256,54 @@ const handleSearch = () => {
   }, 500);
 };
 
+// Handle photo upload
+const handlePhotoUpload = (event) => {
+  const files = event.target.files;
+  if (!files.length) return;
+  
+  const file = files[0];
+  if (!file.type.startsWith('image/')) return;
+  
+  // Check if we've reached the limit
+  if (createForm.value.photos.length >= 4) return;
+  
+  // Create a URL for the image
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    createForm.value.photos.push({
+      id: Date.now(), // Simple unique ID
+      url: e.target.result,
+      file: file
+    });
+  };
+  reader.readAsDataURL(file);
+  
+  // Reset the input so the same file can be selected again
+  event.target.value = '';
+};
+
+// Remove photo
+const removePhoto = (index) => {
+  createForm.value.photos.splice(index, 1);
+};
+
+// Photo viewer functions
+const openPhotoViewer = (photoIndex) => {
+  currentPhotoIndex.value = photoIndex;
+  isPhotoViewerOpen.value = true;
+};
+
+const nextPhoto = () => {
+  if (!selectedProblem.value?.photos?.length) return;
+  currentPhotoIndex.value = (currentPhotoIndex.value + 1) % selectedProblem.value.photos.length;
+};
+
+const prevPhoto = () => {
+  if (!selectedProblem.value?.photos?.length) return;
+  currentPhotoIndex.value = (currentPhotoIndex.value - 1 + selectedProblem.value.photos.length) % selectedProblem.value.photos.length;
+};
+
+// Modified create problem function
 const handleCreateProblem = async () => {
   if (!isCreateFormValid.value) return;
   
@@ -1076,6 +1325,7 @@ const handleCreateProblem = async () => {
         name: "You",
         avatar: "/mystical-forest-spirit.png",
       },
+      photos: createForm.value.photos.map(photo => ({ url: photo.url })), // Add photos to the problem
       createdAt: "Just now",
       comments: [],
       views: 0,
@@ -1091,6 +1341,7 @@ const handleCreateProblem = async () => {
       category: '',
       paymentOption: 'free',
       paymentAmount: '',
+      photos: [],
     };
   } finally {
     isSubmittingCreate.value = false;
