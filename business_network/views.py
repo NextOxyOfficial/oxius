@@ -4,20 +4,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.db.models import Count, Q
 import base64
 from django.core.files.base import ContentFile
 
-from .models import (
-    BusinessNetworkPost,
-    BusinessNetworkMedia,
-    BusinessNetworkPostLike,
-    BusinessNetworkPostFollow,
-    BusinessNetworkPostComment,
-    BusinessNetworkPostTag,
-BusinessNetworkFollowerModel
-)
+from .models import *
 from .serializers import *
 from .pagination import *
 
@@ -562,3 +554,61 @@ class AbnAdsPanelFilterView(generics.ListAPIView):
             queryset = queryset.filter(country=user_country)
             
         return queryset
+
+
+class BusinessNetworkMindforceCategoryListView(generics.ListAPIView):
+    queryset = BusinessNetworkMindforceCategory.objects.all()
+    serializer_class = BusinessNetworkMindforceCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
+    queryset = BusinessNetworkMindforce.objects.all()
+    serializer_class = BusinessNetworkMindforceSerializer
+
+    def get_queryset(self):
+        queryset = BusinessNetworkMindforce.objects.all().order_by('-created_at')
+
+        # Filter by category if provided
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category__id=category)
+            
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+        
+    def create(self, request, *args, **kwargs):
+        images_data = request.data.pop('images', None)
+        serializer = self.get_serializer(data=
+                                         {'title':request.data['title'],
+                                          'description':request.data['description'],
+                                          'category':request.data['category'],
+                                          'user':request.user.id
+                                          }
+                                         )
+                
+        serializer.is_valid(raise_exception=True)
+        mindforce = serializer.save()
+        
+        if images_data:
+            # Handle both list of images and single image
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+                
+            for image_data in images_data:
+                try:
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # Process base64 image
+                        image_file = base64ToFile(image_data)
+                        mindforce_media = BusinessNetworkMindforceMedia.objects.create(image=image_file)
+                        post.media.add(mindforce_media)
+                except Exception as e:
+                    # Log error but continue processing
+                    print(f"Error processing image: {str(e)}")
+          
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)          
+
+

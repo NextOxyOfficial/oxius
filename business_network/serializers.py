@@ -118,3 +118,21 @@ class AbnAdsPanelSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+        
+class BusinessNetworkMindforceCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessNetworkMindforceCategory
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+
+class BusinessNetworkMindforceMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessNetworkMindforceMedia
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+        
+class BusinessNetworkMindforceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessNetworkMindforce
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']

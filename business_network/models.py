@@ -344,3 +344,76 @@ class AbnAdsPanel(models.Model):
     
     def __str__(self):
         return self.title
+
+class BusinessNetworkMindforceCategory(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if AbnAdsPanel.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+        
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+        
+    def __str__(self):
+        return self.name
+
+class BusinessNetworkMindforceMedia(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    image = models.ImageField(upload_to='business_network/mindforce/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if AbnAdsPanel.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+        
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+        
+    
+class BusinessNetworkMindforce(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_mindforce',default=1)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.ForeignKey(BusinessNetworkMindforceCategory, on_delete=models.CASCADE, related_name='business_network_mindforce', default=1)
+    media = models.ManyToManyField(BusinessNetworkMindforceMedia, blank=True, related_name='business_network_mindforce')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if AbnAdsPanel.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+        
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+        
+    def __str__(self):
+        return self.title

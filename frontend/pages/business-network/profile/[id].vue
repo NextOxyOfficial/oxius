@@ -26,7 +26,7 @@
             </div>
             <div class="flex gap-2">
               <button
-                v-if="user.id !== currentUser.user.id && currentUser"
+                v-if="user?.id !== currentUser?.user?.id && currentUser"
                 :class="[
                   'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
                   user?.isFollowing
@@ -137,7 +137,7 @@
                 <!-- Action buttons (Desktop) -->
                 <div class="hidden sm:flex">
                   <button
-                    v-if="user.id !== currentUser.user.id && currentUser"
+                    v-if="user.id !== currentUser?.user?.id && currentUser"
                     :class="[
                       'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
                       user?.isFollowing
@@ -433,10 +433,6 @@ const { get, post } = useApi();
 const user = ref({});
 const posts = ref([]);
 const toast = useToast();
-
-const isCurrentUserProfile = computed(() => {
-  return currentUser.value?.user?.id === route.params.id;
-});
 
 const followLoading = ref(false);
 
