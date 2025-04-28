@@ -107,7 +107,7 @@
         </div>
 
         <!-- Workspaces Section -->
-        <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+        <!-- <div class="bg-gray-100 p-4 rounded-lg shadow-md">
           <h3
             class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center"
           >
@@ -144,7 +144,7 @@
               <span class="text-sm font-medium">#{{ workspace.name }}</span>
             </NuxtLink>
           </nav>
-        </div>
+        </div> -->
 
         <!-- Create Workspace Modal -->
         <Teleport to="body">
@@ -635,6 +635,12 @@ const mainMenu = [
     label: "Profile",
     path: `/business-network/profile/${user.value?.user?.id}`,
     icon: User,
+    active: false,
+  },
+  {
+    label: "MindForce",
+    path: `/business-network/mindforce`,
+    icon: Hash,
     active: false,
   },
   {

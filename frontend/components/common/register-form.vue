@@ -212,75 +212,46 @@
                   v-model="form.confirmPassword"
                   class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
                 />
-                <!-- <div
-                  class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
-                  @click="isPassword = !isPassword"
-                >
-                  <UIcon
-                    name="i-heroicons-solid-eye"
-                    class="w-5 h-5 text-gray-400"
-                    v-if="isPassword"
-                  />
-                  <UIcon
-                    name="i-heroicons-solid-eye-off"
-                    class="w-5 h-5 text-gray-400"
-                    v-else
-                  />
-                </div> -->
               </div>
 
               <p v-if="error.confirmPassword" class="text-red-500 text-sm">
                 {{ error.confirmPassword }}
               </p>
             </div>
-            <!-- <div class="col-span-2">
-              <label for="file" class="text-base block mb-3 font-semibold"
-                >Profile Image</label
-              >
-              <div class="flex flex-wrap gap-5">
-                <div
-                  class="relative max-w-[200px] max-h-[200px]"
-                  v-if="userProfile.image"
-                >
-                  <img
-                    :src="userProfile.image"
-                    :alt="`Uploaded profile image`"
-                    class="rounded-full size-[100px] object-cover"
-                  />
-                  <div
-                    class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
-                    @click="deleteUpload(i)"
-                  >
-                    <UIcon
-                      name="i-heroicons-trash-solid"
-                      class="text-red-500"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  class="w-full h-full flex items-center justify-center max-w-[200px] max-h-[200px] relative pt-7"
-                >
-                  <input
-                    type="file"
-                    name=""
-                    id=""
-                    class="h-full w-full absolute left-0 top-0 z-10 cursor-pointer opacity-0"
-                    @change="handleFileUpload($event, 'image')"
-                  />
-                  <UIcon
-                  name="i-material-symbols:drive-folder-upload-outline"
-                  size="66"
+            <div class="grid grid-cols-2 gap-4">
+              <UFormGroup label="">
+                <UInput
+                  type="text"
+                  size="md"
+                  color="white"
+                  placeholder="Age"
+                  v-model="form.age"
+                  :ui="{
+                    placeholder:
+                      'placeholder-gray-400 dark:placeholder-gray-200',
+                  }"
                 />
-                  <UInput
-                    type="file"
-                    size="xs"
-                    class="pointer-events-none"
-                    icon="i-heroicons-folder"
-                  />
-                </div>
-              </div>
-            </div> -->
+                <p v-if="error.age" class="text-red-500 text-sm">
+                  {{ error.age }}
+                </p>
+              </UFormGroup>
+              <UFormGroup label="">
+                <USelectMenu
+                  v-model="form.gender"
+                  :options="['Male', 'Female', 'Others']"
+                  placeholder="Select Gender"
+                  size="md"
+                  color="white"
+                  :ui="{
+                    placeholder:
+                      'placeholder-gray-400 dark:placeholder-gray-200',
+                  }"
+                />
+                <p v-if="error.gender" class="text-red-500 text-sm">
+                  {{ error.gender }}
+                </p>
+              </UFormGroup>
+            </div>
             <div class="grid gap-4">
               <div class="col-span-2 md:col-auto">
                 <UFormGroup
@@ -418,6 +389,8 @@ const form = ref({
   phone: "",
   password: "",
   confirmPassword: "",
+  age: "",
+  gender: "",
   refer: "",
 });
 
@@ -445,19 +418,29 @@ async function handleSubmit() {
     phone: "",
     password: "",
     confirmPassword: "",
+    age: "",
+    gender: "",
   };
+
+  const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
+  const ageValid = /^\d+$/;
 
   // Validate fields
   if (!form.value.first_name) error.value.first_name = "First name is required";
   if (!form.value.last_name) error.value.last_name = "Last name is required";
   if (!form.value.email) error.value.email = "Email is required";
   if (!form.value.phone) error.value.phone = "Phone number is required";
+  if (!phoneNumberValid.test(form.value.phone))
+    error.value.phone = "Invalid phone number";
   if (!form.value.password) error.value.password = "Password is required";
   if (!form.value.confirmPassword)
     error.value.confirmPassword = "Confirm password is required";
   if (form.value.password !== form.value.confirmPassword) {
     error.value.confirmPassword = "Passwords do not match";
   }
+  if (!form.value.age) error.value.age = "Age is required";
+  if (!ageValid.test(+form.value.age)) error.value.age = "Invalid age";
+  if (!form.value.gender) error.value.gender = "Gender is required";
 
   // If any error exists, stop submission
   if (Object.values(error.value).some((err) => err)) {
@@ -474,6 +457,8 @@ async function handleSubmit() {
     username: form.value.email,
     phone: form.value.phone,
     refer: form.value.refer,
+    age: +form.value.age,
+    gender: form.value.gender,
     // image: userProfile.value.image,
     city: form.value.city,
     state: form.value.state,
