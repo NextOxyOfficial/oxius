@@ -392,7 +392,7 @@ async function addComment() {
       newComment.value.content = "";
 
       toast.add({
-        title: "Comment posted successfully",
+        description: "Comment posted!",
         color: "green",
       });
     }

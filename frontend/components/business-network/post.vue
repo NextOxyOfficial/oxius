@@ -668,8 +668,7 @@ const addComment = async (currentPost) => {
 
       // Show success toast
       toast.add({
-        title: "Success",
-        description: "Comment posted successfully",
+        description: "Comment posted!",
         color: "green",
         timeout: 3000,
       });
