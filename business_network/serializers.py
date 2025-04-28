@@ -131,10 +131,18 @@ class BusinessNetworkMindforceMediaSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
         
+class BusinessNetworkMindforceCommentSerializer(serializers.ModelSerializer):
+    author_details = UserSerializer(source='author', read_only=True)
+    class Meta:
+        model = BusinessNetworkMindforceComment
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+        
 class BusinessNetworkMindforceSerializer(serializers.ModelSerializer):
     media = BusinessNetworkMindforceMediaSerializer(many=True, read_only=True)
     user_details = UserSerializer(source='user', read_only=True)
     category_details = BusinessNetworkMindforceCategorySerializer(source='category', read_only=True)
+    mindforce_comments = BusinessNetworkMindforceCommentSerializer(many=True, read_only=True)
     class Meta:
         model = BusinessNetworkMindforce
         fields = '__all__'

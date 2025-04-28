@@ -614,6 +614,35 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
                     print(f"Error processing image: {str(e)}")
           
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)          
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+class BusinessNetworkMindforceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BusinessNetworkMindforce.objects.all()
+    serializer_class = BusinessNetworkMindforceSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
 
 
+
+class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView):
+    serializer_class = BusinessNetworkMindforceCommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        mindforce_id = self.kwargs['mindforce_id']
+        return BusinessNetworkMindforceComment.objects.filter(mindforce_problem=mindforce_id).order_by('-created_at')
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data={'author': request.user.id, 'mindforce_problem': kwargs['mindforce_id'], 'content': request.data['comment']})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+
+
+class BusinessNetworkMindforceCommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BusinessNetworkMindforceComment.objects.all()
+    serializer_class = BusinessNetworkMindforceCommentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'

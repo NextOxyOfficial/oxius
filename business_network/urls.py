@@ -50,4 +50,9 @@ urlpatterns = [
     # business_network mindforce endpoints
     path('mindforce/categories/', BusinessNetworkMindforceCategoryListView.as_view(), name='mindforce-category-list'),
     path('mindforce/', BusinessNetworkMindForceListCreateView.as_view(), name='mindforce-list-create'),
+    path('mindforce/<str:id>/', BusinessNetworkMindforceRetrieveUpdateDestroyView.as_view(), name='mindforce-detail'),
+    
+    # business-network minforce comments endpoints
+    path('mindforce/<str:mindforce_id>/comments/', BusinessNetworkMindforceCommentsListCreateView.as_view(), name='mindforce-comment-list-create'),
+    path('mindforce/comments/<str:id>/', BusinessNetworkMindforceCommentDetailView.as_view(), name='mindforce-comment-detail'),
 ]

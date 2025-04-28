@@ -83,15 +83,15 @@
     >
       <!-- Tabs -->
       <div
-        class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-5 py-4 border-b border-gray-100"
+        class="flex flex-col sm:flex-row justify-between items-center px-5 py-4 border-b border-gray-100"
       >
-        <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm">
+        <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm flex-1">
           <button
             v-for="tab in tabs"
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out',
+              'relative px-4 py-2 text-xs  font-medium transition-all duration-200 ease-in-out',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -102,7 +102,7 @@
         </div>
 
         <div class="flex items-center mt-3 sm:mt-0 w-full sm:w-auto">
-          <div class="relative w-full sm:w-auto">
+          <div class="relative w-full">
             <Search class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <svg
               v-if="isSearching"
@@ -128,7 +128,7 @@
             <input
               type="text"
               placeholder="Search problems..."
-              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 sm:w-[220px] md:w-[300px] transition-all"
+              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
               v-model="searchQuery"
               @input="handleSearch"
             />
@@ -463,7 +463,7 @@
         </div>
 
         <!-- My Problems Tab -->
-        <div v-if="activeTab === 'my-problems'" class="space-y-4">
+        <div v-if="activeTab === 'my-problems' && user" class="space-y-4">
           <!-- Similar structure to other tabs with appropriate styling -->
           <div v-if="myProblems?.length > 0" class="space-y-4">
             <div
@@ -493,21 +493,26 @@
                       {{ problem?.user_details?.name }}
                     </p>
                     <p class="text-xs text-gray-500">
-                      {{ problem?.created_at }}
+                      {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
                 </div>
                 <div>
                   <span
-                    v-if="problem.payment_option === 'paid'"
+                    v-if="problem?.payment_option === 'paid'"
                     class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
-                    <DollarSign class="h-3 w-3 mr-1" />
                     {{
-                      problem.payment_amount > 0
-                        ? `$${problem.payment_amount}`
-                        : "Paid Help"
+                      problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
                     }}
+                    <span
+                      v-if="problem?.payment_amount > 0"
+                      class="inline-flex items-center"
+                    >
+                      <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
+                      {{ problem?.payment_amount }}
+                    </span>
+                    &nbsp;for help!
                   </span>
                   <span
                     v-else
@@ -888,13 +893,6 @@
           class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto"
         >
           <!-- Close button (X) -->
-          <button
-            @click="isDetailModalOpen = false"
-            class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
-            aria-label="Close"
-          >
-            <X class="h-5 w-5 text-gray-500" />
-          </button>
 
           <div class="p-6">
             <!-- Problem Header -->
@@ -923,12 +921,21 @@
               </div>
 
               <div v-if="isOwner" class="relative">
-                <button
-                  @click="isMenuOpen = !isMenuOpen"
-                  class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-gray-100 h-8 w-8 p-0"
-                >
-                  <MoreHorizontal class="h-4 w-4" />
-                </button>
+                <div class="flex items-center gap-1">
+                  <button
+                    @click="isMenuOpen = !isMenuOpen"
+                    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-gray-100 h-8 w-8 p-0"
+                  >
+                    <MoreHorizontal class="h-4 w-4" />
+                  </button>
+                  <button
+                    @click="isDetailModalOpen = false"
+                    class="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X class="h-5 w-5 text-gray-500" />
+                  </button>
+                </div>
 
                 <Transition
                   enter-active-class="transition duration-200 ease-out"
@@ -1351,7 +1358,8 @@ definePageMeta({
   ],
 });
 
-const { get, post } = useApi();
+const { get, post, patch } = useApi();
+const { user } = useAuth();
 // State
 const isCreating = ref(false);
 const isSearching = ref(false);
@@ -1433,12 +1441,15 @@ const solvedProblems = computed(() =>
 );
 
 const myProblems = computed(() =>
-  problems.value.filter((problem) => problem.user_details.name === "You")
+  problems.value.filter(
+    (problem) => problem.user_details.id === user.value?.user?.id
+  )
 );
 
 const isOwner = computed(
   () =>
-    selectedProblem.value && selectedProblem.value.user_details.name === "You"
+    selectedProblem.value &&
+    selectedProblem.value.user_details.id === user.value?.user?.id
 );
 
 // Methods
@@ -1451,6 +1462,19 @@ const openCreateModal = () => {
 };
 
 const openProblemDetail = (problem) => {
+  if (!problem) return;
+
+  try {
+    setTimeout(async () => {
+      const res = await patch(`/bn/mindforce/${selectedProblem.value.id}/`, {
+        views: selectedProblem.value.views + 1,
+      });
+      console.log("viewupdated", res);
+    }, 7000);
+  } catch (error) {
+    console.log(error);
+  }
+
   selectedProblem.value = problem;
   isDetailModalOpen.value = true;
 };

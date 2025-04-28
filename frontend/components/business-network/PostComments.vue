@@ -16,9 +16,7 @@
       class="flex items-start space-x-2"
     >
       <div class="flex items-start space-x-2">
-        <NuxtLink
-          :to="`/business-network/profile/${comment?.author}`"
-        >
+        <NuxtLink :to="`/business-network/profile/${comment?.author}`">
           <img
             :src="comment.author_details?.image"
             :alt="comment.author_details?.name"
@@ -40,10 +38,7 @@
                   v-if="comment.author_details?.kyc"
                   class="text-blue-500 flex items-center"
                 >
-                  <UIcon
-                    name="i-mdi-check-decagram"
-                    class="w-3 h-3"
-                  />
+                  <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
                 </div>
               </div>
 
@@ -56,10 +51,7 @@
                   @click="$emit('edit-comment', comment)"
                   class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
                 >
-                  <UIcon
-                    name="i-heroicons-pencil-square"
-                    class="size-3.5"
-                  />
+                  <UIcon name="i-heroicons-pencil-square" class="size-3.5" />
                 </button>
                 <button
                   @click="$emit('delete-comment', comment)"
@@ -70,11 +62,7 @@
                     v-if="comment.isDeleting"
                     class="h-4 w-4 animate-spin text-red-500"
                   />
-                  <UIcon
-                    v-else
-                    name="i-heroicons-trash"
-                    class="size-3.5"
-                  />
+                  <UIcon v-else name="i-heroicons-trash" class="size-3.5" />
                 </button>
               </div>
             </div>
@@ -111,7 +99,9 @@
                 </button>
               </div>
             </div>
-            <p v-else class="text-sm">{{ comment?.content }}</p>
+            <p v-else class="text-sm" style="word-break: break-word">
+              {{ comment?.content }}
+            </p>
           </div>
           <span class="text-sm text-gray-500 mt-1 inline-block">
             {{ formatTimeAgo(comment?.created_at) }}
@@ -123,25 +113,25 @@
 </template>
 
 <script setup>
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from "lucide-vue-next";
 
 defineProps({
   post: {
     type: Object,
-    required: true
+    required: true,
   },
   user: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 defineEmits([
-  'open-comments-modal',
-  'edit-comment',
-  'delete-comment',
-  'cancel-edit-comment',
-  'save-edit-comment'
+  "open-comments-modal",
+  "edit-comment",
+  "delete-comment",
+  "cancel-edit-comment",
+  "save-edit-comment",
 ]);
 
 // Format time ago function

@@ -135,13 +135,20 @@
                       class="flex items-center space-x-1"
                     >
                       <button
-                        @click="$emit('edit-comment', activeCommentsPost, comment)"
+                        @click="
+                          $emit('edit-comment', activeCommentsPost, comment)
+                        "
                         class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
                       >
-                        <UIcon name="i-heroicons-pencil-square" class="size-4" />
+                        <UIcon
+                          name="i-heroicons-pencil-square"
+                          class="size-4"
+                        />
                       </button>
                       <button
-                        @click="$emit('delete-comment', activeCommentsPost, comment)"
+                        @click="
+                          $emit('delete-comment', activeCommentsPost, comment)
+                        "
                         class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
                         :disabled="comment.isDeleting"
                       >
@@ -169,7 +176,13 @@
                         Cancel
                       </button>
                       <button
-                        @click="$emit('save-edit-comment', activeCommentsPost, comment)"
+                        @click="
+                          $emit(
+                            'save-edit-comment',
+                            activeCommentsPost,
+                            comment
+                          )
+                        "
                         class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
                         :disabled="
                           !comment.editText?.trim() ||
@@ -186,7 +199,9 @@
                       </button>
                     </div>
                   </div>
-                  <p v-else class="text-sm">{{ comment.content }}</p>
+                  <p v-else class="text-sm" style="word-break: break-word">
+                    {{ comment.content }}
+                  </p>
                 </div>
                 <div class="flex items-center mt-1 space-x-3">
                   <span class="text-sm text-gray-500">
@@ -210,9 +225,15 @@
                 placeholder="Add a comment..."
                 class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
                 v-model="activeCommentsPost.commentText"
-                @input="$emit('handle-comment-input', $event, activeCommentsPost)"
-                @keydown="$emit('handle-mention-keydown', $event, activeCommentsPost)"
-                @keyup.enter="!showMentions && $emit('add-comment', activeCommentsPost)"
+                @input="
+                  $emit('handle-comment-input', $event, activeCommentsPost)
+                "
+                @keydown="
+                  $emit('handle-mention-keydown', $event, activeCommentsPost)
+                "
+                @keyup.enter="
+                  !showMentions && $emit('add-comment', activeCommentsPost)
+                "
                 @click.stop
               />
               <!-- Mention suggestions dropdown -->
@@ -334,69 +355,69 @@
 </template>
 
 <script setup>
-import { X, Check, UserPlus, Loader2, Send } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
+import { ref } from "vue";
 
 defineProps({
   activeLikesPost: {
     type: Object,
-    default: null
+    default: null,
   },
   activeCommentsPost: {
     type: Object,
-    default: null
+    default: null,
   },
   activeMediaLikes: {
     type: Object,
-    default: null
+    default: null,
   },
   mediaLikedUsers: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   commentToDelete: {
     type: Object,
-    default: null
+    default: null,
   },
   user: {
     type: Object,
-    default: null
+    default: null,
   },
   showMentions: {
     type: Boolean,
-    default: false
+    default: false,
   },
   mentionSuggestions: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   activeMentionIndex: {
     type: Number,
-    default: 0
+    default: 0,
   },
   mentionInputPosition: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 // Export a reference to the comments container for scrolling
 const commentsContainerRef = ref(null);
 
 defineEmits([
-  'close-likes-modal',
-  'toggle-user-follow',
-  'close-comments-modal',
-  'handle-comment-input',
-  'handle-mention-keydown',
-  'add-comment',
-  'close-media-likes-modal',
-  'cancel-delete-comment',
-  'confirm-delete-comment',
-  'edit-comment',
-  'delete-comment',
-  'cancel-edit-comment',
-  'save-edit-comment'
+  "close-likes-modal",
+  "toggle-user-follow",
+  "close-comments-modal",
+  "handle-comment-input",
+  "handle-mention-keydown",
+  "add-comment",
+  "close-media-likes-modal",
+  "cancel-delete-comment",
+  "confirm-delete-comment",
+  "edit-comment",
+  "delete-comment",
+  "cancel-edit-comment",
+  "save-edit-comment",
 ]);
 
 defineExpose({ commentsContainerRef });

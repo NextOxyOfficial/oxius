@@ -400,6 +400,7 @@ class BusinessNetworkMindforce(models.Model):
     status = models.CharField(max_length=255,choices=(('active','Active'),('solved','Solved')), blank=True, null=True, default='active')
     category = models.ForeignKey(BusinessNetworkMindforceCategory, on_delete=models.CASCADE, related_name='business_network_mindforce', default=1)
     media = models.ManyToManyField(BusinessNetworkMindforceMedia, blank=True, related_name='business_network_mindforce')
+    views = models.PositiveIntegerField(default=0, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -420,3 +421,29 @@ class BusinessNetworkMindforce(models.Model):
         
     def __str__(self):
         return self.title
+    
+
+class BusinessNetworkMindforceComment(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    mindforce_problem = models.ForeignKey(BusinessNetworkMindforce, on_delete=models.CASCADE, related_name='mindforce_comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mindforce_comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if BusinessNetworkMindforceComment.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+        
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
