@@ -93,7 +93,7 @@
                   />
                 </button>
                 <button
-                  class="text-sm text-gray-600 hover:underline"
+                  class="text-md text-gray-600 hover:underline"
                   @click.stop="$emit('open-media-likes-modal')"
                 >
                   {{ activeMedia.media_likes?.length || 0 }} likes
@@ -101,7 +101,7 @@
               </div>
               <div class="flex items-center space-x-1">
                 <MessageCircle class="h-4 w-4 text-gray-500" />
-                <span class="text-sm text-gray-600">
+                <span class="text-md text-gray-600">
                   {{ activeMedia.media_comments?.length || 0 }} comments
                 </span>
               </div>
@@ -113,7 +113,7 @@
             v-if="activeMedia.media_comments && activeMedia.media_comments.length > 0"
             class="max-h-[20vh] overflow-y-auto mb-3"
           >
-            <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
+            <h4 class="text-md font-medium text-gray-500 mb-2">Comments</h4>
             <div class="space-y-2">
               <div
                 v-for="comment in activeMedia.media_comments"

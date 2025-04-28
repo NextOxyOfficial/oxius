@@ -40,11 +40,11 @@
           </div>
         </NuxtLink>
         <p
-          class="text-xs font-semibold bg-white py-0.5 text-slate-500"
+          class="text-sm font-semibold bg-white py-0.5 text-slate-500"
         >
           {{ post?.author_details?.profession || '' }}
         </p>
-        <p class="text-xs text-gray-500">
+        <p class="text-sm text-gray-500">
           {{ formatTimeAgo(post?.created_at) }}
         </p>
       </div>

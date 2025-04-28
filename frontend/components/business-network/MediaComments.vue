@@ -1,6 +1,6 @@
 <template>
   <div class="max-h-[20vh] overflow-y-auto mb-3">
-    <h4 class="text-sm font-medium text-gray-500 mb-2">Comments</h4>
+    <h4 class="text-md font-medium text-gray-500 mb-2">Comments</h4>
     <div class="space-y-2">
       <div
         v-for="comment in mediaComments"

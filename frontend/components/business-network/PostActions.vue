@@ -29,7 +29,7 @@
           />
         </button>
         <button
-          class="text-sm text-gray-600 hover:underline"
+          class="text-md text-gray-600 hover:underline"
           @click="$emit('open-likes-modal', post)"
         >
           {{ post?.post_likes?.length }} likes
@@ -40,7 +40,7 @@
         @click="$emit('open-comments-modal', post)"
       >
         <MessageCircle class="h-4 w-4 text-gray-500" />
-        <span class="text-sm text-gray-600"
+        <span class="text-md text-gray-600"
           >{{ post?.post_comments?.length }} comments</span
         >
       </button>
@@ -49,7 +49,7 @@
         @click="$emit('share-post', post)"
       >
         <Share2 class="h-4 w-4 text-gray-500" />
-        <span class="text-sm text-gray-600">Share</span>
+        <span class="text-md text-gray-600">Share</span>
       </button>
       <button
         class="flex items-center space-x-1"
@@ -63,7 +63,7 @@
               : 'text-gray-500',
           ]"
         />
-        <span class="text-sm text-gray-600">Save</span>
+        <span class="text-md text-gray-600">Save</span>
       </button>
     </div>
   </div>
