@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl pb-20">
+  <div class="max-w-3xl pb-20 pt-3">
     <div class="space-y-4">
       <div
         v-for="(post, index) in posts"
