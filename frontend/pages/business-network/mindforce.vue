@@ -155,21 +155,7 @@
 
               <h3 class="text-base font-medium text-gray-900 hover:text-blue-700 transition-colors line-clamp-2">{{ problem.title }}</h3>
 
-              <!-- Problem Photos (if any) -->
-              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-2 gap-2">
-                <div 
-                  v-for="(photo, index) in problem.photos" 
-                  :key="index" 
-                  class="relative rounded-lg overflow-hidden cursor-pointer"
-                  @click="openPhotoViewer(index)"
-                >
-                  <img 
-                    :src="photo.url" 
-                    alt="Problem illustration"
-                    class="w-full h-48 object-cover"
-                  />
-                </div>
-              </div>
+              
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
@@ -288,7 +274,7 @@
               <h3 class="text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2">{{ problem.title }}</h3>
 
               <!-- Problem Photos (if any) -->
-              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-2 gap-2">
+              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-1 gap-2">
                 <div 
                   v-for="(photo, index) in problem.photos" 
                   :key="index" 
@@ -298,7 +284,7 @@
                   <img 
                     :src="photo.url" 
                     alt="Problem illustration"
-                    class="w-full h-48 object-cover"
+                    class="w-full h-24 object-cover"
                   />
                 </div>
               </div>
@@ -385,7 +371,7 @@
               <h3 class="text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2">{{ problem.title }}</h3>
 
               <!-- Problem Photos (if any) -->
-              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-2 gap-2">
+              <div v-if="problem.photos && problem.photos.length > 0" class="mt-4 grid grid-cols-1 gap-2">
                 <div 
                   v-for="(photo, index) in problem.photos" 
                   :key="index" 
@@ -395,7 +381,7 @@
                   <img 
                     :src="photo.url" 
                     alt="Problem illustration"
-                    class="w-full h-48 object-cover"
+                    class="w-full h-24 object-cover"
                   />
                 </div>
               </div>
