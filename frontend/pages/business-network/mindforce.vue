@@ -632,7 +632,7 @@
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[75vh] overflow-y-auto"
+          class="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 max-h-[75vh] overflow-y-auto"
         >
           <!-- Close button (X) at top right -->
           <button
@@ -756,7 +756,7 @@
                   <div
                     @click="createForm.payment_option = 'free'"
                     :class="[
-                      'flex items-center space-x-2 p-3 rounded-lg border cursor-pointer transition-all',
+                      'flex items-center space-x-2 px-3 rounded-lg border cursor-pointer transition-all',
                       createForm.payment_option === 'free'
                         ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-400'
                         : 'border-gray-200 hover:bg-gray-50',
@@ -769,7 +769,7 @@
                       v-model="createForm.payment_option"
                       class="h-4 w-4 border-blue-500 text-blue-600 focus:ring-blue-500"
                     />
-                    <label for="free" class="text-md cursor-pointer"
+                    <label for="free" class="text-sm cursor-pointer"
                       >I need help for free</label
                     >
                   </div>
@@ -789,7 +789,7 @@
                       v-model="createForm.payment_option"
                       class="h-4 w-4 border-green-500 text-green-600 focus:ring-green-500"
                     />
-                    <label for="paid" class="text-md cursor-pointer"
+                    <label for="paid" class="text-sm cursor-pointer"
                       >I can pay for help</label
                     >
                   </div>
