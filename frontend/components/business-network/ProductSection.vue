@@ -2,22 +2,23 @@
   <div class="sponsored-products-section">
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
-      <!-- Carousel Container for Mobile -->
-      <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
+      <!-- Custom Positioning for Mobile -->
+      <div class="mobile-layout !lg:hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
           :product="product"
-          class="flex-shrink-0 w-auto"
+          class="product-card"
         />
       </div>
 
-      <!-- Grid Layout for Desktop -->
-      <div class="carousel hidden flex overflow-x-auto my-2 gap-4">
+      <!-- Custom Positioning for Desktop -->
+      <div class="desktop-layout hidden !lg:block">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
           :product="product"
+          class="product-card"
         />
       </div>
     </div>
@@ -46,16 +47,27 @@ defineProps({
   overflow-x: hidden;
 }
 
-/* Hide scrollbar for mobile screens and ensure no overflow */
-.carousel {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding-bottom: 5px;
+/* Custom Positioning for Mobile */
+.mobile-layout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
-.carousel::-webkit-scrollbar {
-  display: none;
+.mobile-layout .product-card {
+  width: 48%;
+  margin-bottom: 10px;
+}
+
+/* Custom Positioning for Desktop */
+.desktop-layout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.desktop-layout .product-card {
+  width: 30%;
+  margin-bottom: 15px;
 }
 </style>
