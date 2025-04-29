@@ -3,7 +3,7 @@
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
       <!-- Carousel Container for Mobile -->
-      <div class="grid grid-cols-3 gap-2 my-2 pb-2 sm:hidden">
+      <div class="carousel flex max-w-full gap-2 my-2 pb-2 sm:hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
@@ -13,7 +13,7 @@
       </div>
 
       <!-- Grid Layout for Desktop -->
-      <div class="hidden lg:grid lg:grid-cols-3 my-2 gap-4">
+      <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
