@@ -5,12 +5,12 @@
       class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 sm:p-6 mb-8 shadow-lg"
     >
       <div
-        class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative"
+        class="flex flex-col  justify-between items-start md:items-center z-10 relative"
       >
         <div class="text-white w-full">
-          <div class="flex flex-col sm:flex-row justify-between items-start w-full">
+          <div class="flex flex-col justify-between items-start w-full">
             <div>
-              <h1 class="text-2xl sm:text-3xl font-bold">MindForce</h1>
+              <h1 class="text-xl sm:text-2xl font-bold">MindForce</h1>
               <p class="text-blue-100 mt-1 text-sm sm:text-base">
                 Raise your mind to help others! MindForce - A Collaborative problem-solving network
               </p>
@@ -80,7 +80,7 @@
     >
       <!-- Tabs -->
       <div
-        class="flex flex-col sm:flex-row justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
+        class="flex flex-col  justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
       >
         <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm w-full sm:w-auto">
           <button
@@ -98,7 +98,7 @@
           </button>
         </div>
 
-        <div class="w-full sm:w-64 md:w-80">
+        <div class="w-full sm:max-w-64 md:max-w-80">
           <div class="relative w-full">
             <Search class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <svg
@@ -262,27 +262,7 @@
             class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200"
           >
             <div class="text-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="mx-auto text-gray-400 mb-4"
-              >
-                <path
-                  d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-                ></path>
-                <path d="M3 3v5h5"></path>
-                <path
-                  d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0-6.74-2.74L21 16"
-                ></path>
-                <path d="M16 16h5v5"></path>
-              </svg>
+              <
               <p class="text-gray-500 mb-2">
                 No active problems at the moment.
               </p>
