@@ -48,8 +48,6 @@ defineProps({
 
 /* Hide scrollbar for mobile screens and ensure no overflow */
 .carousel {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   max-width: 100%;
   box-sizing: border-box;
   padding-bottom: 5px;
