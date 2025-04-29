@@ -803,7 +803,7 @@
                 <label
                   for="paymentAmount"
                   class="text-md font-medium text-gray-700"
-                  >Payment Amount (৳)</label
+                  >Payment Amount ৳</label
                 >
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-gray-500">৳</span>
