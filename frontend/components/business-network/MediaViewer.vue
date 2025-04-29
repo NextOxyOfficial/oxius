@@ -55,40 +55,40 @@
         <!-- Media navigation -->
         <div v-if="activePost && activePost.post_media.length > 1">
           <button
-            class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
+            class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/75 rounded-full p-2.5 text-white touch-manipulation transition-all duration-200 hover:scale-110 shadow-lg backdrop-blur-sm"
             @click.stop="$emit('navigate-media', 'prev')"
           >
             <ChevronLeft class="h-5 w-5" />
           </button>
           <button
-            class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-2 text-white touch-manipulation transition-all hover:scale-110"
+            class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/75 rounded-full p-2.5 text-white touch-manipulation transition-all duration-200 hover:scale-110 shadow-lg backdrop-blur-sm"
             @click.stop="$emit('navigate-media', 'next')"
           >
             <ChevronRight class="h-5 w-5" />
           </button>
           <div
-            class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm"
+            class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm font-medium shadow-lg"
           >
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
           </div>
         </div>
 
-        <div class="p-4 border-t border-gray-200">
+        <div class="p-4 border-t border-gray-200 bg-gray-50">
           <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-1">
+            <div class="flex items-center space-x-6">
+              <div class="flex items-center space-x-1.5 group">
                 <button
-                  class="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  class="p-1.5 rounded-full hover:bg-rose-50 transition-all duration-200 transform hover:scale-105"
                   @click.stop="$emit('toggle-media-like')"
                 >
                   <Heart
-                  :class="[
-                      'h-4 w-4',
+                    :class="[
+                      'h-5 w-5 transition-colors duration-300',
                       activeMedia.media_likes?.find(
                         (like) => like.user === user?.user?.id
                       )
-                        ? 'text-red-500 fill-red-500'
-                        : 'text-gray-500',
+                        ? 'text-red-500 fill-red-500 animate-heartbeat'
+                        : 'text-rose-400 group-hover:text-red-500',
                     ]"
                   />
                 </button>
