@@ -7,7 +7,7 @@
         class="transform transition-all duration-300"
         :style="{
           animationDelay: `${index * 0.05}s`,
-          animation: 'fadeIn 0.5s ease-out forwards',
+          animation: `fadeIn 0.5s ease-out forwards`,
         }"
       >
         <!-- Post Card -->
@@ -51,8 +51,8 @@
             <div class="mb-2 min-w-full">
               <p
                 :class="[
-                  'text-xs sm:text-sm text-gray-800',
-                  !post.showFullDescription && 'line-clamp-4',
+                  `text-xs sm:text-sm text-gray-800`,
+                  !post.showFullDescription && `line-clamp-4`,
                 ]"
                 v-html="post.content"
               ></p>
@@ -61,7 +61,9 @@
                 class="text-xs sm:text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
-                {{ post.showFullDescription ? "Read less" : "Read more" }}
+                {{
+                  post.showFullDescription ? $t("read_less") : $t("read_more")
+                }}
               </button>
             </div>
 
@@ -129,7 +131,7 @@
         v-if="!loading && posts?.length === 0"
         class="flex flex-col items-center justify-center py-12 text-center"
       >
-        <p class="text-gray-500 mb-2">No posts available</p>
+        <p class="text-gray-500 mb-2">{{ $t("no_posts_available") }}</p>
       </div>
     </div>
 
