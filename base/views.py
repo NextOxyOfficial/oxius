@@ -309,19 +309,24 @@ class PersonRetrieveView(generics.RetrieveAPIView):
         
         lookup_value = self.kwargs[lookup_url_kwarg]
         
-        # Determine if it's an email or ID based on the presence of '@' symbol
+        # Determine if it's an email, phone or ID based on the value format
         if '@' in str(lookup_value):
             # Email lookup
             filter_kwargs = {'email': lookup_value}
+            lookup_type = 'email'
+        elif str(lookup_value).isdigit() and len(str(lookup_value)) >= 10:
+            # Phone lookup - assuming phone numbers are at least 10 digits
+            filter_kwargs = {'phone': lookup_value}
+            lookup_type = 'phone'
         else:
             # ID lookup
             filter_kwargs = {'id': lookup_value}
+            lookup_type = 'ID'
             
         # Get the object
         try:
             obj = queryset.get(**filter_kwargs)
         except User.DoesNotExist:
-            lookup_type = 'email' if '@' in str(lookup_value) else 'ID'
             raise NotFound({"error": f"No person found with {lookup_type}: {lookup_value}"})
             
         # Check object permissions
@@ -2177,6 +2182,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                 # Create transaction record for refund
                 Balance.objects.create(
                     user=buyer,
+                    to_user=product_owner,
                     amount=refund_amount,
                     transaction_type='order_update_refund',
                     completed=True,
@@ -2325,7 +2331,20 @@ class NewsLogoView(generics.ListAPIView):
 
 
 
-
+@api_view(['GET'])
+def product_order_count(request, product_id):
+    """
+    Get the number of orders for a specific product
+    """
+    product = get_object_or_404(Product, id=product_id)
+    
+    data = {
+        'product_id': str(product.id),
+        'product_name': product.name,
+        'order_count': product.order_count,
+        'total_units_sold': product.total_items_ordered
+    }
+    return Response(data, status=status.HTTP_200_OK)
 
 # for frontend
 

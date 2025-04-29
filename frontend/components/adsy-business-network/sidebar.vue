@@ -42,41 +42,10 @@
             <Menu class="h-3.5 w-3.5 mr-1.5" />
             <span>Menu</span>
           </h3>
-          <nav class="space-y-1" v-if="user?.user?.id">
+          <nav class="space-y-1">
             <NuxtLink
               v-for="item in mainMenu"
               :key="item.path"
-              :to="item.path"
-              @click="cart.toggleBurgerMenu()"
-              :class="[
-                'flex items-center px-3 py-2.5 rounded-md transition-colors group',
-                item.path === route.path
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-700 hover:bg-gray-50',
-              ]"
-            >
-              <component
-                :is="item.icon"
-                :class="[
-                  'h-5 w-5 mr-3',
-                  item.path === route.path
-                    ? 'text-blue-600'
-                    : 'text-gray-500 group-hover:text-gray-600',
-                ]"
-              />
-              <span class="text-sm font-medium">{{ item.label }}</span>
-              <div
-                v-if="item.badge"
-                class="ml-auto bg-blue-600 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1"
-              >
-                {{ item.badge }}
-              </div>
-            </NuxtLink>
-          </nav>
-          <nav v-else>
-            <NuxtLink
-              v-for="(item, i) in mainMenu2"
-              :key="i"
               :to="item.path"
               @click="cart.toggleBurgerMenu()"
               :class="[

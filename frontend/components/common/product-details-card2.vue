@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\NextOxy\Desktop\office\oxy-us\frontend\components\common\product-details-card2.vue -->
 <template>
   <div class="product-sales-funnel w-full">
     <!-- Hero Section -->
@@ -220,7 +219,11 @@
       </h2>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div v-for="benefit in currentProduct?.benefits" class="benefit-card">
+        <div
+          v-for="benefit in currentProduct?.benefits"
+          :key="benefit.id"
+          class="benefit-card"
+        >
           <div class="icon-container">
             <UIcon :name="benefit.icon" class="w-8 h-8 text-primary-500" />
           </div>
@@ -755,11 +758,6 @@ const user = useState("user"); // Access user state
 // Check if user is logged in
 const isLoggedIn = computed(() => !!user.value);
 
-// Determine if user can submit a review
-const canSubmitReview = computed(() => {
-  return isLoggedIn.value;
-});
-
 function addToCart(product, quantity) {
   cart.addProduct(product, quantity);
   navigateTo("/checkout/");
@@ -1016,33 +1014,11 @@ function submitReview() {
   currentReviewPage.value = 1;
 }
 
-// FAQ items
-const faqs = [
-  {
-    label: "How long is the warranty period?",
-    content:
-      "Our product comes with a full 1-year warranty that covers all manufacturing defects and normal wear and tear. We stand behind the quality of our products.",
-    icon: "i-heroicons-shield-check",
-  },
-  {
-    label: "What payment methods do you accept?",
-    content:
-      "We accept all major credit cards, mobile banking, bKash, Nagad, and bank transfers. All payments are processed securely.",
-    icon: "i-heroicons-credit-card",
-  },
-  {
-    label: "How long does delivery take?",
-    content:
-      "Delivery within Dhaka typically takes 2-3 business days. For locations outside Dhaka, please allow 3-5 business days for your order to arrive.",
-    icon: "i-heroicons-truck",
-  },
-  {
-    label: "Is this product suitable for commercial use?",
-    content:
-      "Yes, our product is designed for both personal and commercial use. The durable construction ensures it can withstand heavy usage in commercial settings.",
-    icon: "i-heroicons-building-storefront",
-  },
-];
+onMounted(() => {
+  setTimeout(() => {
+    increaseProductViews();
+  }, 70000);
+});
 
 // Sticky button visibility control
 const lastScrollPosition = ref(0);

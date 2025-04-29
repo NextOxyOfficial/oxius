@@ -4,10 +4,12 @@
       <CommonProductDetailsCard2
         :currentProduct="currentProduct"
         v-if="currentProduct.is_advanced"
+        :increaseProductViews="increaseProductViews"
       />
       <CommonProductDetailsCard
         :seeDetails="false"
         :currentProduct="currentProduct"
+        :increaseProductViews="increaseProductViews"
         v-else
       />
     </UContainer>
@@ -15,7 +17,7 @@
 </template>
 
 <script setup>
-const { get } = useApi();
+const { get, patch } = useApi();
 const route = useRoute();
 
 const currentProduct = ref({});
@@ -31,4 +33,15 @@ async function getProduct() {
 }
 
 await getProduct();
+
+async function increaseProductViews() {
+  try {
+    const { data } = await patch(`/products/${currentProduct.value.slug}/`, {
+      views: currentProduct.value.views + 1,
+    });
+    console.log({ data });
+  } catch (error) {
+    console.log(error);
+  }
+}
 </script>

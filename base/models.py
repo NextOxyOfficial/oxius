@@ -16,10 +16,6 @@ from decimal import Decimal
 
 # Add this helper function for generating unique slugs
 def generate_unique_slug(model_class, field_value, instance=None):
-    """
-    Generate a unique slug based on the provided field value.
-    If the slug already exists, append a random string.
-    """
     slug = slugify(field_value)
     unique_slug = slug
     
@@ -618,6 +614,7 @@ class Product(models.Model):
     cta_badge1 = models.CharField(max_length=50, blank=True, null=True)
     cta_badge2 = models.CharField(max_length=50, blank=True, null=True)
     cta_badge3 = models.CharField(max_length=50, blank=True, null=True)
+    views = models.IntegerField(default=0)
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -626,7 +623,23 @@ class Product(models.Model):
     
     def __str__(self):
         return self.name
-    
+        
+    @property
+    def order_count(self):
+        """Returns the number of times this product has been ordered"""
+        from django.db.models import Sum
+        # Count all order items for this product
+        order_items = OrderItem.objects.filter(product=self)
+        return order_items.count()
+        
+    @property
+    def total_items_ordered(self):
+        """Returns the total quantity of this product that has been ordered"""
+        from django.db.models import Sum
+        # Sum all quantities for this product in order items
+        result = OrderItem.objects.filter(product=self).aggregate(Sum('quantity'))
+        return result['quantity__sum'] or 0
+
 class OrderItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='items')  # Added this field

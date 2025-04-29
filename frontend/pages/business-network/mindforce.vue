@@ -171,7 +171,7 @@
             <div
               v-for="problem in activeProblems"
               :key="problem.id"
-              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-sm transition-all duration-300 cursor-pointer relative overflow-hidden"
               @click="openProblemDetail(problem)"
             >
               <!-- Highlight effect on hover that doesn't obscure text -->
@@ -1053,64 +1053,67 @@
 
               <!-- Comment List -->
               <div class="space-y-4">
-                <div
-                  v-if="selectedProblem.comments?.length > 0"
-                  v-for="comment in selectedProblem?.comments"
-                  :key="comment.id"
-                  :class="[
-                    'px-2 py-3 rounded-lg transition-all',
-                    comment.isSolution
-                      ? 'bg-green-50 border border-green-100 shadow-sm'
-                      : 'bg-gray-50 hover:bg-gray-100',
-                  ]"
-                >
-                  <div class="flex justify-between">
-                    <div class="flex items-center">
-                      <div
-                        class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
-                      >
-                        <img
-                          :src="comment.author.avatar || '/placeholder.svg'"
-                          :alt="comment.author.name"
-                          class="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div class="ml-3">
-                        <div class="flex items-center">
-                          <p class="text-md font-medium">
-                            {{ comment.author.name }}
-                          </p>
-                          <span
-                            v-if="comment.isSolution"
-                            class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
-                          >
-                            <CheckCircle class="h-3 w-3 mr-1" /> Solution
-                          </span>
+                <div v-if="selectedProblem.comments?.length > 0">
+                  <div
+                    v-for="comment in selectedProblem?.comments"
+                    :key="comment.id"
+                    :class="[
+                      'px-2 py-3 rounded-lg transition-all',
+                      comment.isSolution
+                        ? 'bg-green-50 border border-green-100 shadow-sm'
+                        : 'bg-gray-50 hover:bg-gray-100',
+                    ]"
+                  >
+                    <div class="flex justify-between">
+                      <div class="flex items-center">
+                        <div
+                          class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
+                        >
+                          <img
+                            :src="comment.author.avatar || '/placeholder.svg'"
+                            :alt="comment.author.name"
+                            class="h-full w-full object-cover"
+                          />
                         </div>
-                        <p class="text-sm text-gray-500">
-                          {{ comment.createdAt }}
-                        </p>
+                        <div class="ml-3">
+                          <div class="flex items-center">
+                            <p class="text-md font-medium">
+                              {{ comment.author.name }}
+                            </p>
+                            <span
+                              v-if="comment.isSolution"
+                              class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
+                            >
+                              <CheckCircle class="h-3 w-3 mr-1" /> Solution
+                            </span>
+                          </div>
+                          <p class="text-sm text-gray-500">
+                            {{ comment.createdAt }}
+                          </p>
+                        </div>
                       </div>
+
+                      <button
+                        v-if="isOwner"
+                        @click="markAsSolution(comment.id)"
+                        :class="[
+                          'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3',
+                          comment.is_solved
+                            ? 'bg-green-600 text-white shadow-sm'
+                            : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700',
+                        ]"
+                      >
+                        <CheckCircle class="h-3 w-3 mr-1" />
+                        {{
+                          comment.is_solved ? "Solution" : "Mark as Solution"
+                        }}
+                      </button>
                     </div>
 
-                    <button
-                      v-if="isOwner"
-                      @click="markAsSolution(comment.id)"
-                      :class="[
-                        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3',
-                        comment.isSolution
-                          ? 'bg-green-600 text-white shadow-sm'
-                          : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700',
-                      ]"
-                    >
-                      <CheckCircle class="h-3 w-3 mr-1" />
-                      {{ comment.isSolution ? "Solution" : "Mark as Solution" }}
-                    </button>
+                    <p class="mt-3 text-md text-gray-700 leading-relaxed">
+                      {{ comment.content }}
+                    </p>
                   </div>
-
-                  <p class="mt-3 text-md text-gray-700 leading-relaxed">
-                    {{ comment.content }}
-                  </p>
                 </div>
 
                 <div
@@ -1139,7 +1142,7 @@
               </div>
 
               <!-- Add Comment with improved design -->
-              <div class="mt-8">
+              <div class="mt-8" v-if="user?.user?.id">
                 <h4 class="text-md font-medium mb-2">Add a advice</h4>
                 <textarea
                   v-model="newComment"
@@ -1527,6 +1530,25 @@ const formatTimeAgo = (dateString) => {
   return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
 };
 
+async function getProblemComments() {
+  const commentsRes = await get(
+    `/bn/mindforce/${selectedProblem.value.id}/comments/`
+  );
+
+  if (commentsRes.data) {
+    // Update both the selected problem and the problems array
+    selectedProblem.value.comments = commentsRes.data;
+
+    // Find and update the problem in the problems list
+    const index = problems.value.findIndex(
+      (p) => p.id === selectedProblem.value.id
+    );
+    if (index !== -1) {
+      problems.value[index].comments = commentsRes.data;
+    }
+  }
+}
+
 // Handle photo upload
 const handlePhotoUpload = (event) => {
   const files = Array.from(event.target.files);
@@ -1607,36 +1629,14 @@ const deleteProblem = () => {
   isDetailModalOpen.value = false;
 };
 
-const markAsSolution = (commentId) => {
-  problems.value = problems.value.map((problem) => {
-    if (problem.id === selectedProblem.value.id) {
-      // Toggle the solution status for this comment
-      const updatedComments = problem.comments.map((comment) => ({
-        ...comment,
-        isSolution:
-          comment.id === commentId ? !comment.isSolution : comment.isSolution,
-      }));
-
-      // Check if any comments are marked as solutions
-      const hasSolution = updatedComments.some((comment) => comment.isSolution);
-
-      // Update the selected problem reference
-      if (selectedProblem.value.id === problem.id) {
-        selectedProblem.value = {
-          ...problem,
-          status: hasSolution ? "Solved" : "Problem",
-          comments: updatedComments,
-        };
-      }
-
-      return {
-        ...problem,
-        status: hasSolution ? "Solved" : "Problem",
-        comments: updatedComments,
-      };
-    }
-    return problem;
+const markAsSolution = async (commentId) => {
+  const res = await patch(`/bn/mindforce/comments/${commentId}/`, {
+    is_solved: true,
   });
+  console.log("Marked as solution:", res.data);
+  if (res.data.is_solved) {
+    getProblemComments();
+  }
 };
 
 const addComment = async () => {
@@ -1645,36 +1645,10 @@ const addComment = async () => {
   isSubmittingComment.value = true;
 
   try {
-    // Send request to add the new comment
-    const res = await post(
-      `/bn/mindforce/${selectedProblem.value.id}/comments/`,
-      {
-        comment: newComment.value,
-      }
-    );
+    getProblemComments();
 
-    if (res.data) {
-      // Fetch updated comments to ensure we have the complete list
-      const commentsRes = await get(
-        `/bn/mindforce/${selectedProblem.value.id}/comments/`
-      );
-
-      if (commentsRes.data) {
-        // Update both the selected problem and the problems array
-        selectedProblem.value.comments = commentsRes.data;
-
-        // Find and update the problem in the problems list
-        const index = problems.value.findIndex(
-          (p) => p.id === selectedProblem.value.id
-        );
-        if (index !== -1) {
-          problems.value[index].comments = commentsRes.data;
-        }
-      }
-
-      // Clear the comment input
-      newComment.value = "";
-    }
+    // Clear the comment input
+    newComment.value = "";
   } catch (error) {
     console.error("Error adding comment:", error);
   } finally {

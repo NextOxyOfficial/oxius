@@ -329,11 +329,19 @@ class ProductSerializer(serializers.ModelSerializer):
     owner_details = UserSerializer(source='owner', read_only=True)
     faqs = ProductFAQSerializer(many=True, read_only=True)
     benefits = ProductBenefitSerializer(many=True, read_only=True)
+    order_count = serializers.SerializerMethodField()
+    total_items_ordered = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = '__all__'
         read_only_fields = ['slug']
+
+    def get_order_count(self, obj):
+        return obj.order_count
+        
+    def get_total_items_ordered(self, obj):
+        return obj.total_items_ordered
 
 class ProductMinSerializer(serializers.ModelSerializer):
     """Minimal product information for order items"""

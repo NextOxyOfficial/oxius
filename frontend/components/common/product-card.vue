@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div ref="productCardRef">
     <div class="md:hover:-translate-y-2 transition-all duration-300">
       <!-- Glass-like Card Container with Premium Shadows -->
       <div
@@ -130,7 +130,7 @@
             <!-- Premium Buy Button with Custom Loading Animation -->
             <button
               :disabled="loadingStates[product.id]"
-              class="premium-buy-button flex items-center justify-center gap-1 px-1.5  font-medium text-white rounded-lg relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
+              class="premium-buy-button flex items-center justify-center gap-1 px-1.5 font-medium text-white rounded-lg relative overflow-hidden transition-all duration-300 disabled:pointer-events-none disabled:opacity-70 h-[38px] min-w-[50px]"
               @click="addToCart(product, quantity)"
             >
               <!-- Gradient backgrounds -->
@@ -225,6 +225,7 @@
 </template>
 
 <script setup>
+const { patch } = useApi();
 const { product } = defineProps({ product: { type: Object, required: true } });
 const isModalOpen = ref(false);
 const selectedProduct = ref(null);
@@ -232,6 +233,7 @@ const quantity = ref(1);
 
 const loadingStates = ref({});
 const cart = useStoreCart();
+const productCardRef = ref(null);
 
 function getProductImage(item) {
   if (!item) return "/placeholder-image.jpg";
@@ -304,6 +306,49 @@ function openProductModal(product) {
 function closeProductModal() {
   isModalOpen.value = false;
 }
+
+async function increaseProductViews() {
+  try {
+    const { data } = await patch(`/products/${product.slug}/`, {
+      views: product.views + 1,
+    });
+    console.log({ data });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && !product.viewIncremented) {
+        product.viewIncremented = true;
+
+        setTimeout(() => {
+          increaseProductViews();
+        }, 500);
+
+        observer.disconnect();
+      }
+    },
+    {
+      threshold: 0.5, // Trigger when at least 50% of the product is visible
+      rootMargin: "0px", // No margin around the viewport
+    }
+  );
+
+  // Start observing the product card element
+  if (productCardRef.value) {
+    observer.observe(productCardRef.value);
+  }
+
+  // Cleanup observer on component unmount
+  onUnmounted(() => {
+    if (observer) {
+      observer.disconnect();
+    }
+  });
+});
 </script>
 
 <style scoped>

@@ -631,7 +631,12 @@ class BusinessNetworkMindforceRetrieveUpdateDestroyView(generics.RetrieveUpdateD
 
 class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMindforceCommentSerializer
-    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        else:
+            return [IsAuthenticated()]
 
     def get_queryset(self):
         mindforce_id = self.kwargs['mindforce_id']

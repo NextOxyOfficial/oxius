@@ -195,6 +195,20 @@
             </div>
             <div class="text-sm text-gray-500 flex items-center">
               <UIcon
+                name="i-heroicons-eye"
+                class="h-4 w-4 mr-1 text-gray-400"
+              />
+              {{ product.views }}
+            </div>
+            <div class="text-sm text-gray-500 flex items-center">
+              <UIcon
+                name="i-heroicons-shopping-bag"
+                class="h-4 w-4 mr-1 text-gray-400"
+              />
+              {{ product.order_count }}
+            </div>
+            <div class="text-sm text-gray-500 flex items-center">
+              <UIcon
                 name="i-heroicons-cube"
                 class="h-4 w-4 mr-1 text-gray-400"
               />
