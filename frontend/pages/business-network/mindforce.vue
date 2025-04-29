@@ -182,7 +182,7 @@
                     class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
-                      :src="problem?.user_details?.images || '/placeholder.svg'"
+                      :src="problem?.user_details?.image || '/placeholder.svg'"
                       :alt="problem?.user_details?.name"
                       class="h-full w-full object-cover"
                     />
