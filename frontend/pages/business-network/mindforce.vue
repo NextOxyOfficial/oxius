@@ -88,7 +88,7 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
+              'relative px-4 py-2 text-md font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -133,7 +133,7 @@
         </div>
       </div>
 
-      <div class="px-2 py-3">
+      <div class="px-2 py-3 mb-20 ">
         <!-- Active Problems Tab -->
         <div v-if="activeTab === 'active'" class="space-y-4">
           <!-- Skeleton loading state -->
@@ -191,7 +191,7 @@
                     <p class="text-md font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-sm text-gray-500">
+                    <p class=md text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -237,12 +237,12 @@
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
-                  <span class="text-sm text-gray-600 flex items-center">
+                  <span class="text-md text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-sm text-gray-500 flex items-center">
+                  <span class="text-md text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.views }} views
                   </span>
@@ -250,7 +250,7 @@
 
                 <span
                   v-if="problem?.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-100 text-green-800"
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-md font-medium bg-green-100 text-green-800"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -887,7 +887,7 @@
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto"
+          class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[75vh] overflow-y-auto"
         >
           <!-- Close button (X) -->
 
@@ -1154,7 +1154,7 @@
                   class="flex w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-md ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all"
                   rows="3"
                 ></textarea>
-                <div class="flex justify-end mt-3">
+                <div class="flex justify-end mt-3 mb-10">
                   <button
                     @click="addComment"
                     :disabled="!newComment.trim() || isSubmittingComment"
