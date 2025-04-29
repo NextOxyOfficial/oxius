@@ -3,7 +3,7 @@
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
       <!-- Carousel Container for Mobile -->
-      <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
+      <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 lg: hidden sm:hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
