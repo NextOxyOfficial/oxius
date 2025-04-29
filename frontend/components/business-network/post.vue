@@ -59,7 +59,7 @@
                 class="text-xs sm:text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
-                {{ post.showFullDescription ? "Read less" : "Read more" }}
+                {{ post.showFullDescription ? 'Read less' : 'Read more' }}
               </button>
             </div>
 
@@ -197,6 +197,7 @@ import PostCommentInput from './PostCommentInput.vue';
 import MediaViewer from './MediaViewer.vue';
 import ProductSection from './ProductSection.vue';
 import PostModals from './PostModals.vue';
+import BusinessNetworkCreatePost from './BusinessNetworkCreatePost.vue';
 
 import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import {
