@@ -944,12 +944,17 @@ function handleFileUpload(event, field) {
     return;
   }
 
-  // Updated the file size limit to 10 MB
+  // Updated the file size limit to 10 MB for initial upload
   const maxSize = 10 * 1024 * 1024; // 10MB
+  const targetSize = 150 * 1024; // 150KB target size
+
   if (file.size > maxSize) {
     showToast(
       "File Too Large",
-      `Image must be smaller than 10MB. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`,
+      `Image must be smaller than 10MB. Current size: ${(
+        file.size /
+        (1024 * 1024)
+      ).toFixed(1)}MB`,
       "red"
     );
     return;
@@ -958,28 +963,17 @@ function handleFileUpload(event, field) {
   const reader = new FileReader();
 
   reader.onload = () => {
-    // Resize the image if needed
+    // Resize and compress the image
     const img = new Image();
     img.onload = function () {
-      // If image is already small enough, use as is
-      if (reader.result.length <= maxSize) {
-        userProfile.value.image = reader.result;
-        showToast(
-          "Image Ready",
-          "Your image has been prepared for upload",
-          "green"
-        );
-        return;
-      }
-
-      // Otherwise, resize the image
+      // Start with reasonable dimensions
       const MAX_WIDTH = 800;
       const MAX_HEIGHT = 800;
 
       let width = img.width;
       let height = img.height;
 
-      // Calculate new dimensions
+      // Calculate new dimensions while maintaining aspect ratio
       if (width > height) {
         if (width > MAX_WIDTH) {
           height *= MAX_WIDTH / width;
@@ -1001,16 +995,42 @@ function handleFileUpload(event, field) {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Get resized image as base64 string
-      const quality = 0.8; // Good balance between size and quality
-      const resizedImage = canvas.toDataURL("image/jpeg", quality);
+      // Compress with decreasing quality until we hit target size
+      let quality = 0.7; // Start with good quality
+      let resultImage = canvas.toDataURL("image/jpeg", quality);
+      let resultSize = Math.round((resultImage.length * 3) / 4); // Estimate base64 size
+
+      // Iteratively reduce quality until we get under 150KB
+      while (resultSize > targetSize && quality > 0.1) {
+        quality -= 0.1;
+        resultImage = canvas.toDataURL("image/jpeg", quality);
+        resultSize = Math.round((resultImage.length * 3) / 4);
+      }
+
+      // If still too large, reduce dimensions further
+      if (resultSize > targetSize) {
+        const scaleFactor = Math.sqrt(targetSize / resultSize) * 0.9; // Add buffer
+        width = Math.floor(width * scaleFactor);
+        height = Math.floor(height * scaleFactor);
+
+        // Redraw at smaller size
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Try with medium quality
+        quality = 0.5;
+        resultImage = canvas.toDataURL("image/jpeg", quality);
+        resultSize = Math.round((resultImage.length * 3) / 4);
+      }
 
       // Update the profile image
-      userProfile.value.image = resizedImage;
+      userProfile.value.image = resultImage;
 
+      const finalSizeKB = (resultSize / 1024).toFixed(1);
       showToast(
         "Image Ready",
-        "Your image has been resized and is ready for upload",
+        `Image compressed to ${finalSizeKB}KB and ready for upload`,
         "green"
       );
     };
