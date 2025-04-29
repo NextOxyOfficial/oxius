@@ -8,18 +8,18 @@
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
           :product="product"
-          class="flex-shrink-0 sm:w-[33%] w-[49%]"
+          class="flex-shrink-0 w-[49%]"
         />
       </div>
 
       <!-- Grid Layout for Desktop -->
-      <!-- <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
+      <div class="!hidden sm:grid sm:grid-cols-3 my-2 gap-4">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
           :product="product"
         />
-      </div> -->
+      </div>
     </div>
   </div>
 </template>
