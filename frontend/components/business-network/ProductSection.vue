@@ -3,7 +3,7 @@
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
       <!-- Custom Positioning for Mobile -->
-      <div class="mobile-layout !lg:hidden">
+      <div class="mobile-layout !lg:hidden !sm:hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
@@ -37,7 +37,7 @@ defineProps({
 <style scoped>
 .sponsored-products-section {
   background-color: #f9f9f9;
-  padding: 15px;
+  padding: 8px;
   margin: 0 auto;
   border-radius: 10px;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.08);
@@ -55,7 +55,7 @@ defineProps({
 }
 
 .mobile-layout .product-card {
-  width: 48%;
+  width: 49%;
   margin-bottom: 10px;
 }
 
