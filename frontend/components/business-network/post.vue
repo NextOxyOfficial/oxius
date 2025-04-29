@@ -11,12 +11,14 @@
         }"
       >
         <!-- Post Card -->
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300">
+        <div
+          class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300"
+        >
           <div class="px-2 sm:px-3 py-4 sm:py-5">
             <!-- Post Header -->
-            <PostHeader 
-              :post="post" 
-              :user="user" 
+            <BusinessNetworkPostHeader
+              :post="post"
+              :user="user"
               @toggle-follow="toggleFollow"
               @toggle-dropdown="toggleDropdown"
               @toggle-save="toggleSave"
@@ -59,20 +61,20 @@
                 class="text-xs sm:text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
-                {{ post.showFullDescription ? 'Read less' : 'Read more' }}
+                {{ post.showFullDescription ? "Read less" : "Read more" }}
               </button>
             </div>
 
             <!-- Media Gallery -->
-            <PostMediaGallery 
-              v-if="post?.post_media?.length > 0" 
+            <BusinessNetworkPostMediaGallery
+              v-if="post?.post_media?.length > 0"
               :post="post"
               @open-media="openMedia"
             />
 
             <!-- Post Actions -->
-            <PostActions 
-              :post="post" 
+            <BusinessNetworkPostActions
+              :post="post"
               :user="user"
               @toggle-like="toggleLike"
               @open-likes-modal="openLikesModal"
@@ -82,9 +84,9 @@
             />
 
             <!-- Comments Preview -->
-            <PostComments 
-              v-if="post?.post_comments?.length > 0" 
-              :post="post" 
+            <BusinessNetworkPostComments
+              v-if="post?.post_comments?.length > 0"
+              :post="post"
               :user="user"
               @open-comments-modal="openCommentsModal"
               @edit-comment="editComment"
@@ -94,7 +96,7 @@
             />
 
             <!-- Add Comment Input -->
-            <PostCommentInput 
+            <BusinessNetworkPostCommentInput
               v-if="user"
               :post="post"
               :user="user"
@@ -111,7 +113,7 @@
         </div>
 
         <!-- Sponsored Products Section -->
-        <ProductSection
+        <BusinessNetworkProductSection
           v-if="(index + 1) % randomInterval === 0"
           :products="getRandomProducts(index % 2 === 0 ? 3 : 2)"
         />
@@ -132,7 +134,7 @@
     </div>
 
     <!-- Media Viewer Component -->
-    <MediaViewer 
+    <BusinessNetworkMediaViewer
       :active-media="activeMedia"
       :active-post="activePost"
       :active-media-index="activeMediaIndex"
@@ -147,9 +149,9 @@
       @edit-media-comment="editMediaComment"
       @delete-media-comment="deleteMediaComment"
     />
-    
+
     <!-- All Modals -->
-    <PostModals
+    <BusinessNetworkPostModals
       ref="modalsRef"
       :active-likes-post="activeLikesPost"
       :active-comments-post="activeCommentsPost"
@@ -175,7 +177,7 @@
       @cancel-edit-comment="cancelEditComment"
       @save-edit-comment="saveEditComment"
     />
-    
+
     <!-- Create Post Modal -->
     <BusinessNetworkCreatePost
       :createPostContent="createPostContent"
@@ -188,23 +190,36 @@
 </template>
 
 <script setup>
-// Import all needed components
-import PostHeader from './PostHeader.vue';
-import PostMediaGallery from './PostMediaGallery.vue';
-import PostActions from './PostActions.vue';
-import PostComments from './PostComments.vue';
-import PostCommentInput from './PostCommentInput.vue';
-import MediaViewer from './MediaViewer.vue';
-import ProductSection from './ProductSection.vue';
-import PostModals from './PostModals.vue';
-
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import {
-  Search, X, Clock, ArrowRight, Heart, MessageCircle, Share2, Bookmark,
-  Check, UserPlus, MoreHorizontal, Link2, Flag, Send, Plus, Home, Bell, User,
-  BarChart2, Download, ChevronLeft, ChevronRight, Loader2, ImageIcon, Smile,
-  Paperclip, Tag, UserX
-} from 'lucide-vue-next';
+  Search,
+  X,
+  Clock,
+  ArrowRight,
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  Check,
+  UserPlus,
+  MoreHorizontal,
+  Link2,
+  Flag,
+  Send,
+  Plus,
+  Home,
+  Bell,
+  User,
+  BarChart2,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ImageIcon,
+  Smile,
+  Paperclip,
+  Tag,
+  UserX,
+} from "lucide-vue-next";
 
 // Props
 const props = defineProps({
@@ -313,7 +328,11 @@ const toggleLike = async (currentPost) => {
       // Check if API call failed
       if (!response) {
         // Revert UI if API fails
-        if (!currentPost.post_likes.some((like) => like.user === user.value?.user?.id)) {
+        if (
+          !currentPost.post_likes.some(
+            (like) => like.user === user.value?.user?.id
+          )
+        ) {
           currentPost.post_likes.push({
             user: user.value?.user?.id,
             user_details: {
@@ -351,7 +370,11 @@ const toggleLike = async (currentPost) => {
     // Revert UI on error
     if (wasLiked) {
       // Re-add like if we were removing it
-      if (!currentPost.post_likes.some((like) => like.user === user.value?.user?.id)) {
+      if (
+        !currentPost.post_likes.some(
+          (like) => like.user === user.value?.user?.id
+        )
+      ) {
         currentPost.post_likes.push({
           user: user.value?.user?.id,
           user_details: {
@@ -367,9 +390,9 @@ const toggleLike = async (currentPost) => {
       );
     }
     toast.add({
-      title: "Error", 
-      description: "Failed to update like", 
-      color: "red"
+      title: "Error",
+      description: "Failed to update like",
+      color: "red",
     });
   } finally {
     currentPost.isLikeLoading = false;
@@ -406,15 +429,17 @@ const toggleMediaLike = async () => {
       // Check if API call failed
       if (!response) {
         // Revert UI if API fails
-        if (!activeMedia.value.media_likes.some(
-          (like) => like.user === user.value?.user?.id
-        )) {
+        if (
+          !activeMedia.value.media_likes.some(
+            (like) => like.user === user.value?.user?.id
+          )
+        ) {
           activeMedia.value.media_likes.push({
             user: user.value?.user?.id,
             user_details: {
               name: user.value?.user?.name,
               image: user.value?.user?.image,
-            }
+            },
           });
         }
       }
@@ -436,7 +461,7 @@ const toggleMediaLike = async () => {
         user_details: {
           name: user.value?.user?.name,
           image: user.value?.user?.image,
-        }
+        },
       });
 
       // Then make API call
@@ -458,25 +483,29 @@ const toggleMediaLike = async () => {
       activeMedia.value.likedBy?.unshift({
         id: user.value?.user?.id || "current-user",
         fullName: user.value?.user?.name || "You",
-        image: user.value?.user?.image || "/images/placeholder.jpg?height=40&width=40",
+        image:
+          user.value?.user?.image ||
+          "/images/placeholder.jpg?height=40&width=40",
         isFollowing: false,
       });
     }
   } catch (error) {
     console.error("Error toggling media like:", error);
-    
+
     // Revert UI on error
     if (wasLiked) {
       // Re-add like if we were removing it
-      if (!activeMedia.value.media_likes.some(
-        (like) => like.user === user.value?.user?.id
-      )) {
+      if (
+        !activeMedia.value.media_likes.some(
+          (like) => like.user === user.value?.user?.id
+        )
+      ) {
         activeMedia.value.media_likes.push({
           user: user.value?.user?.id,
           user_details: {
             name: user.value?.user?.name,
             image: user.value?.user?.image,
-          }
+          },
         });
       }
     } else {
@@ -485,13 +514,13 @@ const toggleMediaLike = async () => {
         (like) => like.user !== user.value?.user?.id
       );
     }
-    
+
     // Show error notification
-    toast.add({ 
-      title: "Error", 
-      description: "Failed to update like", 
+    toast.add({
+      title: "Error",
+      description: "Failed to update like",
       color: "red",
-      timeout: 3000
+      timeout: 3000,
     });
   } finally {
     // Reset loading state
@@ -536,7 +565,9 @@ const sharePost = (post) => {
     navigator
       .share({
         title: post.title,
-        text: post.content.substring(0, 100) + (post.content.length > 100 ? "..." : ""),
+        text:
+          post.content.substring(0, 100) +
+          (post.content.length > 100 ? "..." : ""),
         url: postUrl,
       })
       .catch((error) => console.error("Error sharing:", error));
@@ -579,7 +610,7 @@ const openLikesModal = (post) => {
 
 const openCommentsModal = (post) => {
   activeCommentsPost.value = post;
-  
+
   // Wait for DOM update then scroll to bottom
   nextTick(() => {
     scrollToLatestComment();
@@ -595,7 +626,7 @@ const scrollToLatestComment = () => {
 
 const openMediaLikesModal = () => {
   if (!activeMedia.value || !activeMedia.value.likedBy) return;
-  
+
   mediaLikedUsers.value = activeMedia.value.likedBy;
   activeMediaLikes.value = activeMedia.value;
 };
@@ -624,12 +655,12 @@ const addComment = async (currentPost) => {
     author_details: {
       name: user.value.user.name,
       image: user.value.user.image,
-      kyc: user.value.user.kyc || false
+      kyc: user.value.user.kyc || false,
     },
     // Add needed properties for UI
     isEditing: false,
     isDeleting: false,
-    isSaving: false
+    isSaving: false,
   };
 
   // Add to UI immediately
@@ -697,7 +728,8 @@ const addComment = async (currentPost) => {
     // Show error toast
     toast.add({
       title: "Error",
-      description: "Failed to post comment: " + (error.message || "Unknown error"),
+      description:
+        "Failed to post comment: " + (error.message || "Unknown error"),
       color: "red",
       timeout: 5000,
     });
@@ -775,7 +807,8 @@ const saveEditComment = async (currentPost, comment) => {
     // Show error toast
     toast.add({
       title: "Error",
-      description: "Failed to update comment: " + (error.message || "Unknown error"),
+      description:
+        "Failed to update comment: " + (error.message || "Unknown error"),
       color: "red",
       timeout: 5000,
     });
@@ -791,7 +824,12 @@ const deleteComment = (post, comment) => {
 };
 
 const confirmDeleteComment = async () => {
-  if (!commentToDelete.value || !postWithCommentToDelete.value || !user?.value?.user?.id) return;
+  if (
+    !commentToDelete.value ||
+    !postWithCommentToDelete.value ||
+    !user?.value?.user?.id
+  )
+    return;
 
   const comment = commentToDelete.value;
   const post = postWithCommentToDelete.value;
@@ -839,7 +877,8 @@ const confirmDeleteComment = async () => {
     // Show error toast
     toast.add({
       title: "Error",
-      description: "Failed to delete comment: " + (error.message || "Unknown error"),
+      description:
+        "Failed to delete comment: " + (error.message || "Unknown error"),
       color: "red",
       timeout: 5000,
     });
@@ -875,7 +914,7 @@ const addMediaComment = async () => {
       id: user.value.user.id,
       name: user.value.user.name,
       image: user.value.user.image,
-      kyc: user.value.user.kyc || false
+      kyc: user.value.user.kyc || false,
     },
     isDeleting: false,
   };
@@ -892,7 +931,7 @@ const addMediaComment = async () => {
     const response = await post(`/bn/media/${activeMedia.value.id}/comments/`, {
       content: commentText,
     });
-    
+
     // If successful, replace temp comment with real one from API
     if (response.data) {
       const index = activeMedia.value.media_comments.findIndex(
@@ -911,10 +950,11 @@ const addMediaComment = async () => {
       });
     } else {
       // Remove temp comment if API failed
-      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
-        (comment) => comment.id !== tempComment.id
-      );
-      
+      activeMedia.value.media_comments =
+        activeMedia.value.media_comments.filter(
+          (comment) => comment.id !== tempComment.id
+        );
+
       // Show error toast
       toast.add({
         title: "Error",
@@ -925,16 +965,17 @@ const addMediaComment = async () => {
     }
   } catch (error) {
     console.error("Error adding media comment:", error);
-    
+
     // Remove temp comment on error
     activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
       (comment) => comment.id !== tempComment.id
     );
-    
+
     // Show error toast
     toast.add({
       title: "Error",
-      description: "Failed to post comment: " + (error.message || "Unknown error"),
+      description:
+        "Failed to post comment: " + (error.message || "Unknown error"),
       color: "red",
       timeout: 5000,
     });
@@ -950,7 +991,9 @@ const editMediaComment = (comment) => {
 
   // Focus on textarea after Vue updates the DOM
   nextTick(() => {
-    const textarea = document.querySelector(`#media-comment-edit-${comment.id}`);
+    const textarea = document.querySelector(
+      `#media-comment-edit-${comment.id}`
+    );
     if (textarea) {
       textarea.focus();
     }
@@ -959,7 +1002,7 @@ const editMediaComment = (comment) => {
 
 const deleteMediaComment = (comment) => {
   if (!comment || !user?.value?.user?.id) return;
-  
+
   // Set the comment to delete
   mediaCommentToDelete.value = comment;
 };
@@ -1091,7 +1134,10 @@ const fetchProducts = async () => {
   isLoadingProducts.value = true;
   try {
     const { data } = await get("/all-products/");
-    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
+    if (
+      data &&
+      (Array.isArray(data) || (data.results && Array.isArray(data.results)))
+    ) {
       allProducts.value = Array.isArray(data) ? data : data.results;
       shuffledProducts.value = getRandomProducts();
     } else {
@@ -1122,10 +1168,13 @@ const getRandomProducts = (count = 3) => {
 // Initialize
 onMounted(() => {
   fetchProducts();
-  
+
   // Implement infinite scroll (if needed)
   window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !loading.value) {
+    if (
+      window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+      !loading.value
+    ) {
       // loadMorePosts(); (implementation would be needed)
     }
   });
@@ -1140,7 +1189,7 @@ defineExpose({
     } catch (error) {
       console.error("Failed to refresh posts:", error);
     }
-  }
+  },
 });
 </script>
 
@@ -1167,9 +1216,11 @@ defineExpose({
     min-width: auto;
     width: 100%;
   }
-  
+
   /* Fix horizontal scrolling issues */
-  div, p, span {
+  div,
+  p,
+  span {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;

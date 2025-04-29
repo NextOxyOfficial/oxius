@@ -100,7 +100,9 @@
             >
               <UserX class="h-4 w-4 mr-2" />
               Unfollow @{{
-                post.author_details?.name?.toLowerCase().replace(/\s+/g, "")
+                (post.author_details?.name || "")
+                  .toLowerCase()
+                  .replace(/\s+/g, "")
               }}
             </button>
             <button
