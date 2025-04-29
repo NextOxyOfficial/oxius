@@ -288,7 +288,7 @@
         Click text to edit
       </div>
 
-      <div class="w-full px-3 max-w-4xl mx-auto">
+      <div class="w-full px-1 max-w-4xl mx-auto">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
           <span v-if="!editModeActive">{{
             editorData.faqs_title || "Frequently Asked Questions"

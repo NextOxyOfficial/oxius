@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-6 sm:py-10 px-2"
+    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-6 sm:py-10"
   >
     <!-- Decorative background elements -->
     <div class="absolute top-0 left-0 w-full h-64 overflow-hidden">
@@ -663,7 +663,7 @@
               </div>
             </div>
           </div>
-          <UCard class="mx-6">
+          <UCard class="mx-2 sm:mx-6">
             <UCheckbox
               name="notifications"
               v-model="advanceEditMode"
@@ -678,7 +678,7 @@
           </UCard>
           <!-- Form Actions -->
           <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-6"
+            class="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-2 sm:px-6"
           >
             <!-- Left side buttons -->
             <div class="flex flex-wrap gap-4">

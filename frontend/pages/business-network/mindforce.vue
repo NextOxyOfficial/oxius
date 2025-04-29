@@ -8,7 +8,7 @@
         class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative"
       >
         <div class="text-white w-full">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full">
+          <div class="flex flex-col sm:flex-row justify-between items-start  w-full">
             <div>
               <h1 class="text-3xl font-bold">MindForce</h1>
               <p class="text-blue-100 mt-1">
@@ -17,7 +17,7 @@
             </div>
             <button
               @click="openCreateModal"
-              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-2 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               :disabled="isCreating"
             >
               <span v-if="isCreating" class="flex items-center">
@@ -88,7 +88,7 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-4 py-2 text-xs font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
+              'relative px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -125,7 +125,7 @@
             <input
               type="text"
               placeholder="Search problems..."
-              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
+              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-md ring-offset-background file:border-0 file:bg-transparent file:text-md file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
               v-model="searchQuery"
               @input="handleSearch"
             />
@@ -188,10 +188,10 @@
                     />
                   </div>
                   <div class="ml-3">
-                    <p class="text-sm font-medium">
+                    <p class="text-md font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-sm text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -199,7 +199,7 @@
                 <div>
                   <span
                     v-if="problem?.payment_option === 'paid'"
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     {{
                       problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
@@ -215,7 +215,7 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     I need free help!
                   </span>
@@ -224,7 +224,7 @@
 
               <!-- Category badge with subtle shadow -->
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
@@ -237,12 +237,12 @@
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
-                  <span class="text-xs text-gray-600 flex items-center">
+                  <span class="text-sm text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-xs text-gray-500 flex items-center">
+                  <span class="text-sm text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.views }} views
                   </span>
@@ -250,7 +250,7 @@
 
                 <span
                   v-if="problem?.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800"
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-100 text-green-800"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -288,7 +288,7 @@
               </p>
               <button
                 @click="openCreateModal"
-                class="inline-flex items-center justify-center rounded-md text-sm font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
+                class="inline-flex items-center justify-center rounded-md text-md font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
               >
                 Post a problem
               </button>
@@ -352,10 +352,10 @@
                     />
                   </div>
                   <div class="ml-3">
-                    <p class="text-sm font-medium">
+                    <p class="text-md font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-sm text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -363,7 +363,7 @@
                 <div>
                   <span
                     v-if="problem.payment_amount > 0"
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     <DollarSign class="h-3 w-3 mr-1" />
                     {{
@@ -374,7 +374,7 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
                   </span>
@@ -382,7 +382,7 @@
               </div>
 
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
@@ -414,19 +414,19 @@
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
-                  <span class="text-xs text-gray-600 flex items-center">
+                  <span class="text-sm text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem.comments?.length }} Advices
                   </span>
 
-                  <span class="text-xs text-gray-500 flex items-center">
+                  <span class="text-sm text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.views }} views
                   </span>
                 </div>
 
                 <span
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -486,10 +486,10 @@
                     />
                   </div>
                   <div class="ml-3">
-                    <p class="text-sm font-medium">
+                    <p class="text-md font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-sm text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -497,7 +497,7 @@
                 <div>
                   <span
                     v-if="problem?.payment_option === 'paid'"
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     {{
                       problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
@@ -513,7 +513,7 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
                   </span>
@@ -521,7 +521,7 @@
               </div>
 
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
@@ -553,12 +553,12 @@
 
               <div class="mt-4 flex items-center justify-between relative">
                 <div class="flex items-center space-x-4">
-                  <span class="text-xs text-gray-600 flex items-center">
+                  <span class="text-sm text-gray-600 flex items-center">
                     <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-xs text-gray-500 flex items-center">
+                  <span class="text-sm text-gray-500 flex items-center">
                     <Eye class="h-3.5 w-3.5 mr-1.5" />
                     {{ problem?.views }} views
                   </span>
@@ -566,7 +566,7 @@
 
                 <span
                   v-if="problem.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -601,7 +601,7 @@
               </p>
               <button
                 @click="openCreateModal"
-                class="inline-flex items-center justify-center rounded-md text-sm font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
+                class="inline-flex items-center justify-center rounded-md text-md font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
               >
                 Post your first problem
               </button>
@@ -647,27 +647,27 @@
             <h2 class="text-xl font-semibold mb-1 text-gray-900">
               Post a New Problem
             </h2>
-            <p class="text-gray-500 text-sm mb-4">
+            <p class="text-gray-500 text-md mb-4">
               Share your problem with the community and get expert help.
             </p>
 
             <div class="space-y-4">
               <div class="space-y-2">
-                <label for="title" class="text-sm font-medium text-gray-700"
+                <label for="title" class="text-md font-medium text-gray-700"
                   >Problem Title</label
                 >
                 <input
                   id="title"
                   v-model="createForm.title"
                   placeholder="Enter a clear, specific title for your problem"
-                  class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+                  class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-md ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
                 />
               </div>
 
               <div class="space-y-2">
                 <label
                   for="description"
-                  class="text-sm font-medium text-gray-700"
+                  class="text-md font-medium text-gray-700"
                   >Description</label
                 >
                 <textarea
@@ -675,17 +675,17 @@
                   v-model="createForm.description"
                   placeholder="Describe your problem in detail. Include what you've tried so far and what you're trying to achieve."
                   rows="5"
-                  class="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all"
+                  class="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-md ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all"
                 ></textarea>
               </div>
 
               <!-- Photo Upload Section -->
               <div class="space-y-2">
                 <label
-                  class="text-sm font-medium text-gray-700 flex justify-between"
+                  class="text-md font-medium text-gray-700 flex justify-between"
                 >
                   <span>Photos (Optional)</span>
-                  <span class="text-xs text-gray-500"
+                  <span class="text-sm text-gray-500"
                     >{{ createForm.images?.length }}/4 photos</span
                   >
                 </label>
@@ -723,19 +723,19 @@
                       @change="handlePhotoUpload"
                     />
                     <ImagePlus class="h-6 w-6 text-gray-400" />
-                    <span class="mt-1 text-xs text-gray-500">Add Photo</span>
+                    <span class="mt-1 text-sm text-gray-500">Add Photo</span>
                   </label>
                 </div>
               </div>
 
               <div class="space-y-2">
-                <label for="category" class="text-sm font-medium text-gray-700"
+                <label for="category" class="text-md font-medium text-gray-700"
                   >Category</label
                 >
                 <select
                   id="category"
                   v-model="createForm.category"
-                  class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+                  class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-md ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
                 >
                   <option value="" disabled>Select a category</option>
                   <option
@@ -749,7 +749,7 @@
               </div>
 
               <div class="space-y-2">
-                <label class="text-sm font-medium text-gray-700"
+                <label class="text-md font-medium text-gray-700"
                   >Help Type</label
                 >
                 <div class="grid grid-cols-2 gap-3 mt-1">
@@ -769,7 +769,7 @@
                       v-model="createForm.payment_option"
                       class="h-4 w-4 border-blue-500 text-blue-600 focus:ring-blue-500"
                     />
-                    <label for="free" class="text-sm cursor-pointer"
+                    <label for="free" class="text-md cursor-pointer"
                       >I need help for free</label
                     >
                   </div>
@@ -789,7 +789,7 @@
                       v-model="createForm.payment_option"
                       class="h-4 w-4 border-green-500 text-green-600 focus:ring-green-500"
                     />
-                    <label for="paid" class="text-sm cursor-pointer"
+                    <label for="paid" class="text-md cursor-pointer"
                       >I can pay for help</label
                     >
                   </div>
@@ -802,7 +802,7 @@
               >
                 <label
                   for="paymentAmount"
-                  class="text-sm font-medium text-gray-700"
+                  class="text-md font-medium text-gray-700"
                   >Payment Amount ($)</label
                 >
                 <div class="relative">
@@ -812,7 +812,7 @@
                     v-model="createForm.payment_amount"
                     type="number"
                     placeholder="Enter amount"
-                    class="flex h-10 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:border-green-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+                    class="flex h-10 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-3 py-2 text-md ring-offset-background placeholder:text-gray-400 focus:border-green-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
                   />
                 </div>
               </div>
@@ -821,7 +821,7 @@
             <div class="flex justify-end gap-3 mt-6 mb-8">
               <button
                 @click="isCreateModalOpen = false"
-                class="inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
+                class="inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
               >
                 Cancel
               </button>
@@ -829,7 +829,7 @@
                 @click="handleCreateProblem"
                 :disabled="!isCreateFormValid || isSubmittingCreate"
                 :class="[
-                  'inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
+                  'inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
                   isCreateFormValid && !isSubmittingCreate
                     ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
                     : 'bg-gray-200 text-gray-500',
@@ -907,10 +907,10 @@
                   />
                 </div>
                 <div class="ml-3">
-                  <p class="text-sm font-medium">
+                  <p class="text-md font-medium">
                     {{ selectedProblem.user_details?.name }}
                   </p>
-                  <div class="flex items-center text-xs text-gray-500">
+                  <div class="flex items-center text-sm text-gray-500">
                     <Clock class="h-3 w-3 mr-1" />
                     <span>{{ formatTimeAgo(selectedProblem.created_at) }}</span>
                   </div>
@@ -921,7 +921,7 @@
                 <div class="flex items-center gap-1">
                   <button
                     @click="isMenuOpen = !isMenuOpen"
-                    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-gray-100 h-8 w-8 p-0"
+                    class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-gray-100 h-8 w-8 p-0"
                   >
                     <MoreHorizontal class="h-4 w-4" />
                   </button>
@@ -948,13 +948,13 @@
                   >
                     <div class="py-1">
                       <button
-                        class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        class="flex w-full items-center px-4 py-2 text-md text-gray-700 hover:bg-gray-100"
                       >
                         <Edit class="h-4 w-4 mr-2" /> Edit Problem
                       </button>
                       <button
                         @click="confirmDelete"
-                        class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        class="flex w-full items-center px-4 py-2 text-md text-red-600 hover:bg-red-50"
                       >
                         <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
                       </button>
@@ -967,14 +967,14 @@
             <!-- Problem Category & Payment -->
             <div class="flex flex-wrap gap-2 mt-4">
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ selectedProblem.category_details?.name }}
               </span>
 
               <span
                 v-if="selectedProblem?.payment_option === 'paid'"
-                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
               >
                 {{
                   selectedProblem?.payment_amount > 0
@@ -992,14 +992,14 @@
               </span>
               <span
                 v-else
-                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-blue-50 text-blue-700"
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-blue-50 text-blue-700"
               >
                 I need help for free
               </span>
 
               <span
                 v-if="selectedProblem.status === 'solved'"
-                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-green-600 text-white shadow-sm"
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-green-600 text-white shadow-sm"
               >
                 <CheckCircle class="h-3 w-3 mr-1" />
                 Solved
@@ -1040,12 +1040,12 @@
               class="mt-6 flex items-center justify-between border-t border-b border-gray-200 py-3"
             >
               <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-600 flex items-center">
+                <span class="text-md text-gray-600 flex items-center">
                   <MessageSquare class="h-4 w-4 mr-1.5" />
                   {{ selectedProblem.comments?.length }} Advices
                 </span>
 
-                <span class="text-sm text-gray-600 flex items-center">
+                <span class="text-md text-gray-600 flex items-center">
                   <Eye class="h-4 w-4 mr-1.5" />
                   {{ selectedProblem?.views }}
                 </span>
@@ -1084,17 +1084,17 @@
                       </div>
                       <div class="ml-3">
                         <div class="flex items-center">
-                          <p class="text-sm font-medium">
+                          <p class="text-md font-medium">
                             {{ comment.author.name }}
                           </p>
                           <span
                             v-if="comment.isSolution"
-                            class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
+                            class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
                           >
                             <CheckCircle class="h-3 w-3 mr-1" /> Solution
                           </span>
                         </div>
-                        <p class="text-xs text-gray-500">
+                        <p class="text-sm text-gray-500">
                           {{ comment.createdAt }}
                         </p>
                       </div>
@@ -1104,7 +1104,7 @@
                       v-if="isOwner"
                       @click="markAsSolution(comment.id)"
                       :class="[
-                        'inline-flex items-center justify-center rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3',
+                        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3',
                         comment.isSolution
                           ? 'bg-green-600 text-white shadow-sm'
                           : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700',
@@ -1115,7 +1115,7 @@
                     </button>
                   </div>
 
-                  <p class="mt-3 text-sm text-gray-700 leading-relaxed">
+                  <p class="mt-3 text-md text-gray-700 leading-relaxed">
                     {{ comment.content }}
                   </p>
                 </div>
@@ -1147,11 +1147,11 @@
 
               <!-- Add Comment with improved design -->
               <div class="mt-8">
-                <h4 class="text-sm font-medium mb-2">Add a advice</h4>
+                <h4 class="text-md font-medium mb-2">Add a advice</h4>
                 <textarea
                   v-model="newComment"
                   placeholder="Share your solution or ask for clarification..."
-                  class="flex w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all"
+                  class="flex w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-md ring-offset-background placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all"
                   rows="3"
                 ></textarea>
                 <div class="flex justify-end mt-3">
@@ -1159,7 +1159,7 @@
                     @click="addComment"
                     :disabled="!newComment.trim() || isSubmittingComment"
                     :class="[
-                      'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
+                      'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
                       newComment.trim() && !isSubmittingComment
                         ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
                         : 'bg-gray-200 text-gray-500',
@@ -1232,13 +1232,13 @@
           <div class="flex justify-end gap-3 mt-8">
             <button
               @click="isDeleteDialogOpen = false"
-              class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
+              class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
             >
               Cancel
             </button>
             <button
               @click="deleteProblem"
-              class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-10 px-4 py-2 shadow-md hover:shadow-lg"
+              class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-10 px-4 py-2 shadow-md hover:shadow-lg"
             >
               <AlertTriangle class="h-4 w-4 mr-2" />
               Delete
