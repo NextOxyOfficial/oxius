@@ -27,7 +27,7 @@
 
             <!-- Post Title -->
             <NuxtLink
-              :to="`/business-network/posts/${post.slug}`"
+              :to="`/business-network/posts/${post.id}`"
               class="block text-sm sm:text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
             >
               {{ post.title }}

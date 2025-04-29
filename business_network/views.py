@@ -77,8 +77,13 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 class BusinessNetworkPostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BusinessNetworkPost.objects.all()
     serializer_class = BusinessNetworkPostSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'slug'
+    lookup_field = 'id'
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [] 
+        else:
+            return [IsAuthenticated()]
     
     def perform_update(self, serializer):
         # Only allow the author to update the post

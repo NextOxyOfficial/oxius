@@ -4,7 +4,7 @@ from .views import *
 urlpatterns = [
     # Post endpoints
     path('posts/', BusinessNetworkPostListCreateView.as_view(), name='post-list-create'),
-    path('posts/<slug:slug>/', BusinessNetworkPostRetrieveUpdateDestroyView.as_view(), name='post-detail'),
+    path('posts/<str:id>/', BusinessNetworkPostRetrieveUpdateDestroyView.as_view(), name='post-detail'),
     path('user/<uuid:user_id>/posts/', UserPostsListView.as_view(), name='user-posts'),
     path('posts/search/', BusinessNetworkPostSearchView.as_view(), name='post-search'),
     

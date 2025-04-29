@@ -8,11 +8,14 @@
         class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative"
       >
         <div class="text-white w-full">
-          <div class="flex flex-col sm:flex-row justify-between items-start w-full">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start w-full"
+          >
             <div>
               <h1 class="text-2xl sm:text-3xl font-bold">MindForce</h1>
               <p class="text-blue-100 mt-1 text-sm sm:text-base">
-                Raise your mind to help others! MindForce - A Collaborative problem-solving network
+                Raise your mind to help others! MindForce - A Collaborative
+                problem-solving network
               </p>
             </div>
             <button
@@ -38,7 +41,7 @@
                   <path
                     class="opacity-75"
                     fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
                 Loading...
@@ -82,7 +85,9 @@
       <div
         class="flex flex-col sm:flex-row justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
       >
-        <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm w-full sm:w-auto">
+        <div
+          class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm w-full sm:w-auto"
+        >
           <button
             v-for="tab in tabs"
             :key="tab.value"
@@ -119,7 +124,7 @@
               <path
                 class="opacity-75"
                 fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
             <input
@@ -133,7 +138,7 @@
         </div>
       </div>
 
-      <div class="px-2 py-3 mb-20 ">
+      <div class="px-2 py-3 mb-20">
         <!-- Active Problems Tab -->
         <div v-if="activeTab === 'active'" class="space-y-4">
           <!-- Skeleton loading state -->
@@ -235,14 +240,20 @@
                 {{ problem?.title }}
               </h3>
 
-              <div class="mt-3 sm:mt-4 flex items-center justify-between relative">
+              <div
+                class="mt-3 sm:mt-4 flex items-center justify-between relative"
+              >
                 <div class="flex items-center space-x-3 sm:space-x-4">
-                  <span class="text-xs sm:text-sm text-gray-600 flex items-center">
+                  <span
+                    class="text-xs sm:text-sm text-gray-600 flex items-center"
+                  >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-xs sm:text-sm text-gray-500 flex items-center">
+                  <span
+                    class="text-xs sm:text-sm text-gray-500 flex items-center"
+                  >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -412,14 +423,20 @@
                 </div>
               </div>
 
-              <div class="mt-3 sm:mt-4 flex items-center justify-between relative">
+              <div
+                class="mt-3 sm:mt-4 flex items-center justify-between relative"
+              >
                 <div class="flex items-center space-x-3 sm:space-x-4">
-                  <span class="text-xs sm:text-sm text-gray-600 flex items-center">
+                  <span
+                    class="text-xs sm:text-sm text-gray-600 flex items-center"
+                  >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem.comments?.length }} Advices
                   </span>
 
-                  <span class="text-xs sm:text-sm text-gray-500 flex items-center">
+                  <span
+                    class="text-xs sm:text-sm text-gray-500 flex items-center"
+                  >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -551,14 +568,20 @@
                 </div>
               </div>
 
-              <div class="mt-3 sm:mt-4 flex items-center justify-between relative">
+              <div
+                class="mt-3 sm:mt-4 flex items-center justify-between relative"
+              >
                 <div class="flex items-center space-x-3 sm:space-x-4">
-                  <span class="text-xs sm:text-sm text-gray-600 flex items-center">
+                  <span
+                    class="text-xs sm:text-sm text-gray-600 flex items-center"
+                  >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-xs sm:text-sm text-gray-500 flex items-center">
+                  <span
+                    class="text-xs sm:text-sm text-gray-500 flex items-center"
+                  >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -867,14 +890,7 @@
     </Transition>
 
     <!-- Problem Detail Modal with improved design -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-4"
-    >
+    <Transition>
       <div
         v-if="isDetailModalOpen && selectedProblem"
         class="fixed inset-0 z-50 flex items-center justify-center"
@@ -1458,22 +1474,43 @@ const openCreateModal = () => {
   }, 500);
 };
 
-const openProblemDetail = (problem) => {
+const openProblemDetail = async (problem) => {
   if (!problem) return;
-
-  try {
-    setTimeout(async () => {
-      const res = await patch(`/bn/mindforce/${selectedProblem.value.id}/`, {
-        views: selectedProblem.value.views + 1,
-      });
-      console.log("viewupdated", res);
-    }, 7000);
-  } catch (error) {
-    console.log(error);
-  }
 
   selectedProblem.value = problem;
   isDetailModalOpen.value = true;
+
+  try {
+    // Fetch comments for the selected problem
+    const commentsRes = await get(`/bn/mindforce/${problem.id}/comments/`);
+    if (commentsRes.data) {
+      // Update the comments in the selected problem
+      selectedProblem.value.comments = commentsRes.data;
+
+      // Also update comments in the problems array
+      const index = problems.value.findIndex((p) => p.id === problem.id);
+      if (index !== -1) {
+        problems.value[index].comments = commentsRes.data;
+      }
+    }
+
+    // Increment view count through API
+    const res = await patch(`/bn/mindforce/${problem.id}/`, {
+      views: problem.views + 1,
+    });
+
+    if (res.data) {
+      // Update the view count locally
+      problem.views += 1;
+      // Also update in problems array
+      const index = problems.value.findIndex((p) => p.id === problem.id);
+      if (index !== -1) {
+        problems.value[index].views += 1;
+      }
+    }
+  } catch (error) {
+    console.error("Error updating problem details:", error);
+  }
 };
 
 const handleSearch = () => {
@@ -1631,38 +1668,38 @@ const addComment = async () => {
   isSubmittingComment.value = true;
 
   try {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    problems.value = problems.value.map((problem) => {
-      if (problem.id === selectedProblem.value.id) {
-        const newCommentObj = {
-          id: Math.max(0, ...problem.comments.map((c) => c.id)) + 1,
-          author: {
-            name: "You",
-            avatar: "/mystical-forest-spirit.png",
-          },
-          content: newComment.value,
-          createdAt: "Just now",
-          isSolution: false,
-        };
-
-        const updatedProblem = {
-          ...problem,
-          comments: [...problem.comments, newCommentObj],
-        };
-
-        // Update the selected problem reference
-        if (selectedProblem.value.id === problem.id) {
-          selectedProblem.value = updatedProblem;
-        }
-
-        return updatedProblem;
+    // Send request to add the new comment
+    const res = await post(
+      `/bn/mindforce/${selectedProblem.value.id}/comments/`,
+      {
+        comment: newComment.value,
       }
-      return problem;
-    });
+    );
 
-    newComment.value = "";
+    if (res.data) {
+      // Fetch updated comments to ensure we have the complete list
+      const commentsRes = await get(
+        `/bn/mindforce/${selectedProblem.value.id}/comments/`
+      );
+
+      if (commentsRes.data) {
+        // Update both the selected problem and the problems array
+        selectedProblem.value.comments = commentsRes.data;
+
+        // Find and update the problem in the problems list
+        const index = problems.value.findIndex(
+          (p) => p.id === selectedProblem.value.id
+        );
+        if (index !== -1) {
+          problems.value[index].comments = commentsRes.data;
+        }
+      }
+
+      // Clear the comment input
+      newComment.value = "";
+    }
+  } catch (error) {
+    console.error("Error adding comment:", error);
   } finally {
     isSubmittingComment.value = false;
   }
@@ -1705,7 +1742,8 @@ onUnmounted(() => {
 
 /* Force proper viewport behavior */
 @media (max-width: 640px) {
-  html, body {
+  html,
+  body {
     max-width: 100%;
     overflow-x: hidden;
   }
