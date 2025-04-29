@@ -191,7 +191,7 @@
                     <p class="text-md font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class=md text-gray-500">
+                    <p class="text-md text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
