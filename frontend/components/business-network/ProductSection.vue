@@ -3,23 +3,23 @@
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
       <!-- Carousel Container for Mobile -->
-      <div class="carousel flex gap-2 my-2 pb-2 sm:hidden">
+      <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
           :product="product"
-          class="flex-shrink-0 w-[48%]"
+          class="flex-shrink-0 sm:w-[33%] w-[49%]"
         />
       </div>
 
       <!-- Grid Layout for Desktop -->
-      <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
+      <!-- <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
           :product="product"
         />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
