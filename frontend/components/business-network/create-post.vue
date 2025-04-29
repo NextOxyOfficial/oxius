@@ -596,9 +596,6 @@ import {
   CheckCircle,
   Upload,
 } from "lucide-vue-next";
-import { ref, computed, nextTick, onMounted, onUnmounted, watch } from "vue";
-import { useEventBus } from "@/composables/useEventBus"; // Make sure this import path is correct
-import { useRouter, useRoute } from "vue-router";
 
 const { user } = useAuth();
 // Auth and API

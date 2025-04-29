@@ -1,14 +1,10 @@
 <template>
   <div class="sponsored-products-section">
-    <h2 class="text-lg font-semibold text-gray-800 mb-4">
-      Sponsored Products
-    </h2>
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
       <!-- Carousel Container for Mobile -->
-      <div
-        class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden"
-      >
-        <ProductCard
+      <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
+        <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
           :product="product"
@@ -18,7 +14,7 @@
 
       <!-- Grid Layout for Desktop -->
       <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
-        <ProductCard
+        <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
           :product="product"
@@ -29,13 +25,11 @@
 </template>
 
 <script setup>
-import ProductCard from "@/components/common/product-card.vue";
-
 defineProps({
   products: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
 });
 </script>
 

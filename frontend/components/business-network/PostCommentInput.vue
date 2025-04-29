@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100"
-  >
+  <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
     <img
       :src="user?.user?.image"
       alt="Your avatar"
@@ -38,10 +36,14 @@
           <Send class="h-4 w-4" />
         </button>
       </div>
-      
+
       <!-- Mention suggestions dropdown -->
       <div
-        v-if="showMentions && mentionSuggestions.length > 0 && post === mentionInputPosition?.post"
+        v-if="
+          showMentions &&
+          mentionSuggestions.length > 0 &&
+          post === mentionInputPosition?.post
+        "
         class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-48 overflow-y-auto"
       >
         <div class="py-1">
@@ -68,39 +70,39 @@
 </template>
 
 <script setup>
-import { Send } from 'lucide-vue-next';
+import { Send } from "lucide-vue-next";
 
 defineProps({
   post: {
     type: Object,
-    required: true
+    required: true,
   },
   user: {
     type: Object,
-    required: true
+    required: true,
   },
   showMentions: {
     type: Boolean,
-    default: false
+    default: false,
   },
   mentionSuggestions: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   activeMentionIndex: {
     type: Number,
-    default: 0
+    default: 0,
   },
   mentionInputPosition: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 defineEmits([
-  'add-comment',
-  'handle-comment-input',
-  'handle-mention-keydown',
-  'select-mention'
+  "add-comment",
+  "handle-comment-input",
+  "handle-mention-keydown",
+  "select-mention",
 ]);
 </script>

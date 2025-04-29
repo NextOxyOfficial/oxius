@@ -107,10 +107,13 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Media comments -->
           <div
-            v-if="activeMedia.media_comments && activeMedia.media_comments.length > 0"
+            v-if="
+              activeMedia.media_comments &&
+              activeMedia.media_comments.length > 0
+            "
             class="max-h-[20vh] overflow-y-auto mb-3"
           >
             <h4 class="text-md font-medium text-gray-500 mb-2">Comments</h4>
@@ -198,46 +201,54 @@
 </template>
 
 <script setup>
-import { X, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Download } from 'lucide-vue-next';
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  MessageCircle,
+  Send,
+  Download,
+} from "lucide-vue-next";
 
 const props = defineProps({
   activeMedia: {
     type: Object,
-    default: null
+    default: null,
   },
   activePost: {
     type: Object,
-    default: null
+    default: null,
   },
   activeMediaIndex: {
     type: Number,
-    default: 0
+    default: 0,
   },
   mediaCommentText: {
     type: String,
-    default: ''
+    default: "",
   },
   user: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 defineEmits([
-  'close-media',
-  'navigate-media',
-  'toggle-media-like',
-  'open-media-likes-modal',
-  'add-media-comment',
-  'edit-media-comment',
-  'delete-media-comment',
-  'update:media-comment-text'
+  "close-media",
+  "navigate-media",
+  "toggle-media-like",
+  "open-media-likes-modal",
+  "add-media-comment",
+  "edit-media-comment",
+  "delete-media-comment",
+  "update:media-comment-text",
 ]);
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {
-  if (!dateString) return '';
-  
+  if (!dateString) return "";
+
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);

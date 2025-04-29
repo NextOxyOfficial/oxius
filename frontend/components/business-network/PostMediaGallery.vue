@@ -167,9 +167,9 @@
 defineProps({
   post: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
-defineEmits(['open-media']);
+defineEmits(["open-media"]);
 </script>
