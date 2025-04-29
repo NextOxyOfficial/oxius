@@ -295,7 +295,38 @@ class PersonRetrieveView(generics.RetrieveAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     lookup_field = 'id'
-
+    
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        # Get the lookup value from URL
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        assert lookup_url_kwarg in self.kwargs, (
+            f'Expected view {self.__class__.__name__} to be called with a URL keyword argument '
+            f'named "{lookup_url_kwarg}". Fix your URL conf, or set the `.lookup_field` '
+            f'attribute on the view correctly.'
+        )
+        
+        lookup_value = self.kwargs[lookup_url_kwarg]
+        
+        # Determine if it's an email or ID based on the presence of '@' symbol
+        if '@' in str(lookup_value):
+            # Email lookup
+            filter_kwargs = {'email': lookup_value}
+        else:
+            # ID lookup
+            filter_kwargs = {'id': lookup_value}
+            
+        # Get the object
+        try:
+            obj = queryset.get(**filter_kwargs)
+        except User.DoesNotExist:
+            lookup_type = 'email' if '@' in str(lookup_value) else 'ID'
+            raise NotFound({"error": f"No person found with {lookup_type}: {lookup_value}"})
+            
+        # Check object permissions
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
