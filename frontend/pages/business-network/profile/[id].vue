@@ -24,12 +24,13 @@
               </p>
               <p class="text-xs text-gray-500">@{{ user?.username }}</p>
             </div>
+
             <div class="flex gap-2">
               <button
                 v-if="user?.id !== currentUser?.user?.id && currentUser"
                 :class="[
                   'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
-                  user?.isFollowing
+                  isFollowing
                     ? 'border border-gray-200 hover:bg-gray-50 text-gray-800'
                     : 'bg-blue-600 hover:bg-blue-700 text-white',
                 ]"
@@ -40,10 +41,12 @@
                   v-if="followLoading"
                   class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
                 ></div>
-                <template v-else-if="user?.isFollowing">
+
+                <template v-else-if="isFollowing">
                   <Check class="h-3 w-3" />
                   Following
                 </template>
+
                 <template v-else>
                   <UserPlus class="h-3 w-3" />
                   Follow
@@ -140,7 +143,7 @@
                     v-if="user.id !== currentUser?.user?.id && currentUser"
                     :class="[
                       'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
-                      user?.isFollowing
+                      isFollowing
                         ? 'border border-gray-200 hover:bg-gray-50 text-gray-800'
                         : 'bg-blue-600 hover:bg-blue-700 text-white',
                     ]"
@@ -151,7 +154,7 @@
                       v-if="followLoading"
                       class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
                     ></div>
-                    <template v-else-if="user?.isFollowing">
+                    <template v-else-if="isFollowing">
                       <Check class="h-3 w-3" />
                       Following
                     </template>
@@ -423,7 +426,6 @@ import {
   ChevronRight,
 } from "lucide-vue-next";
 
-import { useEventBus } from "@/composables/useEventBus";
 const router = useRouter();
 const route = useRoute();
 
@@ -435,6 +437,20 @@ const posts = ref([]);
 const toast = useToast();
 
 const followLoading = ref(false);
+const isFollowing = ref(false);
+async function checkFollowing() {
+  if (!currentUser.value) return;
+  try {
+    const { data } = await get(
+      `/bn/check-follow-status/${currentUser.value?.user?.id}/${route.params.id}/`
+    );
+    console.log(data, "check-follow-status");
+    isFollowing.value = data.is_following;
+  } catch (error) {
+    console.error(error);
+  }
+}
+await checkFollowing();
 
 // Add social media properties to your fetchUser function
 async function fetchUser() {
@@ -516,16 +532,21 @@ const toggleFollow = async () => {
     const { data } = await post(`/bn/users/${route.params.id}/follow/`);
 
     if (data) {
+      // Toggle the follow status after successful API call
+      isFollowing.value = !isFollowing.value;
+      
+      // Update followers count accordingly
+      user.value.followers_count = user.value.followers_count + (isFollowing.value ? 1 : -1);
+      
       toast.add({
-        title: "Followed",
-        description: "You have successfully followed this user.",
+        title: isFollowing.value ? "Followed" : "Unfollowed",
+        description: isFollowing.value 
+          ? "You have successfully followed this user." 
+          : "You have successfully unfollowed this user.",
       });
     }
   } catch (error) {
     console.error("Error toggling follow:", error);
-    user.value.isFollowing = !user.value.isFollowing;
-    user.value.followers_count =
-      (user.value.followers_count || 0) + (user.value.isFollowing ? 1 : -1);
   } finally {
     followLoading.value = false;
   }

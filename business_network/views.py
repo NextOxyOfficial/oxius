@@ -354,6 +354,30 @@ class UserFollowCreateView(generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+class UserUnfollowDestroyView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        user_id = self.kwargs.get('user_id')
+        following_user = get_object_or_404(User, pk=user_id)
+        follow = get_object_or_404(BusinessNetworkFollowerModel, follower=self.request.user, following=following_user)
+        return follow
+
+class UserFollowersListView(generics.ListAPIView):
+    serializer_class = BusinessNetworkFollowerSerializer
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        return BusinessNetworkFollowerModel.objects.filter(following_id=user_id).order_by('-created_at')
+
+class UserFollowingListView(generics.ListAPIView):
+    serializer_class = BusinessNetworkFollowerSerializer
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        return BusinessNetworkFollowerModel.objects.filter(follower_id=user_id).order_by('-created_at')
 
 class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMediaLikeSerializer
@@ -456,7 +480,6 @@ class BusinessNetworkMediaCommentListCreateView(generics.ListCreateAPIView):
             )
         
 
-        
 
 class BusinessNetworkMediaCommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BusinessNetworkMediaCommentSerializer
@@ -580,6 +603,7 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
             
         return queryset
             
+
     def get_permissions(self):
         if self.request.method == 'POST':
             return [IsAuthenticated()]
@@ -651,8 +675,30 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
     
 
 
+
 class BusinessNetworkMindforceCommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BusinessNetworkMindforceComment.objects.all()
     serializer_class = BusinessNetworkMindforceCommentSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
+
+
+class CheckUserFollowStatusView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, follower_id, following_id):
+        try:
+            # Check if follower_id follows following_id
+            follow_exists = BusinessNetworkFollowerModel.objects.filter(
+                follower_id=follower_id,
+                following_id=following_id
+            ).exists()
+            
+            return Response({
+                'is_following': follow_exists
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
