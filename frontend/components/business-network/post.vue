@@ -1093,7 +1093,7 @@ const fetchProducts = async () => {
     const { data } = await get("/all-products/");
     if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
       allProducts.value = Array.isArray(data) ? data : data.results;
-      getRandomProducts();
+      shuffledProducts.value = getRandomProducts();
     } else {
       console.error("Unexpected product data format:", data);
       allProducts.value = [];
@@ -1107,7 +1107,7 @@ const fetchProducts = async () => {
 };
 
 // Function to get random products
-const getRandomProducts = (count) => {
+const getRandomProducts = (count = 3) => {
   if (allProducts.value.length === 0) {
     return [];
   }
