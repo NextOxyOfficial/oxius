@@ -266,7 +266,7 @@
                     :href="user?.website"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-xs truncate"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm truncate"
                   >
                     <LinkIcon class="h-3.5 w-3.5 flex-shrink-0" />
                     <span class="truncate">{{
