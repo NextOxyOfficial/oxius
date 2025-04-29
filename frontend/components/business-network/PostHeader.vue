@@ -32,17 +32,13 @@
                   name="i-heroicons-shield-check"
                   class="size-4 text-indigo-700 font-semibold"
                 />
-                <span class="text-xs font-semibold text-indigo-700"
-                  >Pro</span
-                >
+                <span class="text-xs font-semibold text-indigo-700">Pro</span>
               </div>
             </span>
           </div>
         </NuxtLink>
-        <p
-          class="text-sm font-semibold bg-white py-0.5 text-slate-500"
-        >
-          {{ post?.author_details?.profession || '' }}
+        <p class="text-sm font-semibold bg-white py-0.5 text-slate-500">
+          {{ post?.author_details?.profession || "" }}
         </p>
         <p class="text-sm text-gray-500">
           {{ formatTimeAgo(post?.created_at) }}
@@ -61,10 +57,7 @@
         ]"
         @click.stop="$emit('toggle-follow', post)"
       >
-        <component
-          :is="post.isFollowing ? Check : UserPlus"
-          class="h-3 w-3"
-        />
+        <component :is="post.isFollowing ? Check : UserPlus" class="h-3 w-3" />
         {{ post.isFollowing ? "Following" : "Follow" }}
       </button>
 
@@ -107,9 +100,7 @@
             >
               <UserX class="h-4 w-4 mr-2" />
               Unfollow @{{
-                (post.author_details?.name || '')
-                  .toLowerCase()
-                  .replace(/\s+/g, "")
+                post.author_details?.name?.toLowerCase().replace(/\s+/g, "")
               }}
             </button>
             <button
@@ -126,33 +117,33 @@
 </template>
 
 <script setup>
-import { 
-  UserPlus, 
-  Check, 
-  MoreHorizontal, 
-  Bookmark, 
-  Link2, 
-  UserX, 
-  Flag 
-} from 'lucide-vue-next';
+import {
+  UserPlus,
+  Check,
+  MoreHorizontal,
+  Bookmark,
+  Link2,
+  UserX,
+  Flag,
+} from "lucide-vue-next";
 
 defineProps({
   post: {
     type: Object,
-    required: true
+    required: true,
   },
   user: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
-defineEmits(['toggle-follow', 'toggle-dropdown', 'toggle-save', 'copy-link']);
+defineEmits(["toggle-follow", "toggle-dropdown", "toggle-save", "copy-link"]);
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {
-  if (!dateString) return '';
-  
+  if (!dateString) return "";
+
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
