@@ -2,23 +2,22 @@
   <div class="sponsored-products-section">
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
-      <!-- Custom Positioning for Mobile -->
-      <div class="mobile-layout !lg:hidden !sm:hidden">
+      <!-- Carousel Container for Mobile -->
+      <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 !sm:hidden overflow-hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`mobile-${product.id || productIndex}`"
           :product="product"
-          class="product-card"
+          class="flex-shrink-0 w-[48%]"
         />
       </div>
 
-      <!-- Custom Positioning for Desktop -->
-      <div class="desktop-layout hidden !lg:block">
+      <!-- Grid Layout for Desktop -->
+      <div class="hidden lg:grid lg:grid-cols-3 my-2 gap-4 overflow-hidden">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
           :product="product"
-          class="product-card"
         />
       </div>
     </div>
@@ -37,7 +36,7 @@ defineProps({
 <style scoped>
 .sponsored-products-section {
   background-color: #f9f9f9;
-  padding: 8px;
+  padding: 15px;
   margin: 0 auto;
   border-radius: 10px;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.08);
@@ -47,27 +46,16 @@ defineProps({
   overflow-x: hidden;
 }
 
-/* Custom Positioning for Mobile */
-.mobile-layout {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+/* Hide scrollbar for mobile screens and ensure no overflow */
+.carousel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-bottom: 5px;
 }
 
-.mobile-layout .product-card {
-  width: 49%;
-  margin-bottom: 10px;
-}
-
-/* Custom Positioning for Desktop */
-.desktop-layout {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.desktop-layout .product-card {
-  width: 30%;
-  margin-bottom: 15px;
+.carousel::-webkit-scrollbar {
+  display: none;
 }
 </style>
