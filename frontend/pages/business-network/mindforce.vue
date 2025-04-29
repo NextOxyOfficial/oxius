@@ -262,7 +262,7 @@
             class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200"
           >
             <div class="text-center">
-              <
+              
               <p class="text-gray-500 mb-2">
                 No active problems at the moment.
               </p>
