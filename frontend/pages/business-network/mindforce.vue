@@ -18,7 +18,7 @@
             </div>
             <button
               @click="openCreateModal"
-              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-sm transform hover:-translate-y-0.5"
               :disabled="isCreating"
             >
               <span v-if="isCreating" class="flex items-center">
@@ -320,7 +320,7 @@
             <div
               v-for="problem in solvedProblems"
               :key="problem.id"
-              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-sm transition-all duration-300 cursor-pointer relative overflow-hidden"
               @click="openProblemDetail(problem)"
             >
               <!-- Highlight effect on hover that doesn't obscure text -->
@@ -460,7 +460,7 @@
             <div
               v-for="problem in myProblems"
               :key="problem.id"
-              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden"
+              class="bg-white border border-gray-100 rounded-lg px-2 py-3 hover:shadow-sm transition-all duration-300 cursor-pointer relative overflow-hidden"
               @click="openProblemDetail(problem)"
             >
               <!-- Highlight effect on hover that doesn't obscure text -->
@@ -526,24 +526,7 @@
                 {{ problem?.title }}
               </h3>
 
-              <!-- Problem Photos (if any) -->
-              <div
-                v-if="problem?.media && problem?.media?.length > 0"
-                class="mt-4 grid grid-cols-1 gap-2"
-              >
-                <div
-                  v-for="(photo, index) in problem?.media"
-                  :key="index"
-                  class="relative rounded-lg overflow-hidden cursor-pointer"
-                  @click="openPhotoViewer(index)"
-                >
-                  <img
-                    :src="photo.image"
-                    alt="Problem illustration"
-                    class="w-full h-24 object-cover"
-                  />
-                </div>
-              </div>
+              
 
               <div
                 class="mt-3 sm:mt-4 flex items-center justify-between relative"
@@ -831,7 +814,7 @@
                 :class="[
                   'inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
                   isCreateFormValid && !isSubmittingCreate
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-sm'
                     : 'bg-gray-200 text-gray-500',
                 ]"
               >
@@ -1157,7 +1140,7 @@
                     :class="[
                       'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
                       newComment.trim() && !isSubmittingComment
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-sm'
                         : 'bg-gray-200 text-gray-500',
                     ]"
                   >
@@ -1234,7 +1217,7 @@
             </button>
             <button
               @click="deleteProblem"
-              class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-10 px-4 py-2 shadow-md hover:shadow-lg"
+              class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-10 px-4 py-2 shadow-md hover:shadow-sm"
             >
               <AlertTriangle class="h-4 w-4 mr-2" />
               Delete
