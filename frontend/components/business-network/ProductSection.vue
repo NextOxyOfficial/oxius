@@ -13,7 +13,7 @@
       </div>
 
       <!-- Grid Layout for Desktop -->
-      <div class="!hidden sm:grid sm:grid-cols-3 my-2 gap-4">
+      <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-4">
         <CommonProductCard
           v-for="(product, productIndex) in products"
           :key="`desktop-${product.id || productIndex}`"
