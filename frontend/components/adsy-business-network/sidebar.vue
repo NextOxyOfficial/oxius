@@ -524,7 +524,6 @@ const { get, post } = useApi();
 const logo = ref([]);
 const cart = useStoreCart();
 const route = useRoute();
-console.log(route.path);
 const tags = ref([]);
 const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
@@ -584,7 +583,6 @@ async function getTags() {
   try {
     const response = await get("/bn/tags/");
     tags.value = response.data;
-    console.log(tags.value);
   } catch (error) {
     console.log(error);
   }
@@ -827,7 +825,8 @@ async function fetchTopContributors() {
 
   while (retries > 0) {
     try {
-      const response = await get("/top-contributors/?limit=5");
+      let response;
+      // const response = await get("/top-contributors/?limit=5");
       if (response.data && Array.isArray(response.data)) {
         topContributors.value = response.data.map((user) => ({
           id: user.id,

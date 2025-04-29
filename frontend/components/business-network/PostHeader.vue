@@ -47,20 +47,6 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <button
-        v-if="post?.author && user && post.author !== user.user?.id"
-        :class="[
-          'text-sm h-7 rounded-full px-3 flex items-center gap-1',
-          post.isFollowing
-            ? 'border border-gray-200 text-gray-800'
-            : 'bg-blue-600 text-white',
-        ]"
-        @click.stop="$emit('toggle-follow', post)"
-      >
-        <component :is="post.isFollowing ? Check : UserPlus" class="h-3 w-3" />
-        {{ post.isFollowing ? "Following" : "Follow" }}
-      </button>
-
       <div class="relative">
         <button
           class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
@@ -95,16 +81,7 @@
               Copy link
             </button>
             <hr class="my-1 border-gray-200" />
-            <button
-              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-            >
-              <UserX class="h-4 w-4 mr-2" />
-              Unfollow @{{
-                (post.author_details?.name || "")
-                  .toLowerCase()
-                  .replace(/\s+/g, "")
-              }}
-            </button>
+
             <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
             >
