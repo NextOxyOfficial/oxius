@@ -12,7 +12,7 @@
       >
         <!-- Post Card -->
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300">
-          <div class="px-3 py-5">
+          <div class="px-2 sm:px-3 py-4 sm:py-5">
             <!-- Post Header -->
             <PostHeader 
               :post="post" 
@@ -26,7 +26,7 @@
             <!-- Post Title -->
             <NuxtLink
               :to="`/business-network/posts/${post.slug}`"
-              class="block text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
+              class="block text-sm sm:text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
             >
               {{ post.title }}
             </NuxtLink>
@@ -39,7 +39,7 @@
               <span
                 v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
-                class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
               >
                 #{{ tag.tag }}
               </span>
@@ -49,14 +49,14 @@
             <div class="mb-2 min-w-full">
               <p
                 :class="[
-                  'text-sm text-gray-800',
+                  'text-xs sm:text-sm text-gray-800',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="post.content"
               ></p>
               <button
                 v-if="post?.content?.length > 160"
-                class="text-sm text-blue-600 font-medium mt-1"
+                class="text-xs sm:text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
                 {{ post.showFullDescription ? "Read less" : "Read more" }}
@@ -1157,6 +1157,22 @@ defineExpose({
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Add viewport control for mobile */
+@media (max-width: 640px) {
+  /* Ensure no overflowing content */
+  .min-w-full {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  /* Fix horizontal scrolling issues */
+  div, p, span {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 </style>

@@ -2,22 +2,22 @@
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1">
     <!-- Header with gradient background -->
     <div
-      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-6 mb-8 shadow-lg"
+      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 sm:p-6 mb-8 shadow-lg"
     >
       <div
         class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative"
       >
         <div class="text-white w-full">
-          <div class="flex flex-col sm:flex-row justify-between items-start  w-full">
+          <div class="flex flex-col sm:flex-row justify-between items-start w-full">
             <div>
-              <h1 class="text-3xl font-bold">MindForce</h1>
-              <p class="text-blue-100 mt-1">
+              <h1 class="text-2xl sm:text-3xl font-bold">MindForce</h1>
+              <p class="text-blue-100 mt-1 text-sm sm:text-base">
                 Raise your mind to help others! MindForce - A Collaborative problem-solving network
               </p>
             </div>
             <button
               @click="openCreateModal"
-              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-11 px-2 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               :disabled="isCreating"
             >
               <span v-if="isCreating" class="flex items-center">
@@ -80,7 +80,7 @@
     >
       <!-- Tabs -->
       <div
-        class="flex flex-col sm:flex-row justify-between items-center px-5 py-4 border-b border-gray-100 gap-4"
+        class="flex flex-col sm:flex-row justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
       >
         <div class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm w-full sm:w-auto">
           <button
@@ -88,7 +88,7 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-4 py-2 text-md font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
+              'relative px-3 sm:px-4 py-2 text-sm sm:text-sm font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -119,13 +119,13 @@
               <path
                 class="opacity-75"
                 fill="currentColor"
-                d="M4 12a8 8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
             <input
               type="text"
               placeholder="Search problems..."
-              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-md ring-offset-background file:border-0 file:bg-transparent file:text-md file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
+              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
               v-model="searchQuery"
               @input="handleSearch"
             />
@@ -179,7 +179,7 @@
               <div class="flex justify-between items-start mb-3 relative">
                 <div class="flex items-center">
                   <div
-                    class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
+                    class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
                       :src="problem?.user_details?.image || '/placeholder.svg'"
@@ -187,11 +187,11 @@
                       class="h-full w-full object-cover"
                     />
                   </div>
-                  <div class="ml-3">
-                    <p class="text-md font-medium">
+                  <div class="ml-2 sm:ml-3">
+                    <p class="text-sm sm:text-base font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-md text-gray-500">
+                    <p class="text-xs text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -199,7 +199,7 @@
                 <div>
                   <span
                     v-if="problem?.payment_option === 'paid'"
-                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     {{
                       problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
@@ -215,7 +215,7 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     I need free help!
                   </span>
@@ -224,33 +224,33 @@
 
               <!-- Category badge with subtle shadow -->
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
 
               <h3
-                class="text-base font-medium text-gray-900 hover:text-blue-700 transition-colors"
+                class="text-sm sm:text-base font-medium text-gray-900 hover:text-blue-700 transition-colors"
               >
                 {{ problem?.title }}
               </h3>
 
-              <div class="mt-4 flex items-center justify-between relative">
-                <div class="flex items-center space-x-4">
-                  <span class="text-md text-gray-600 flex items-center">
-                    <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
+              <div class="mt-3 sm:mt-4 flex items-center justify-between relative">
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                  <span class="text-xs sm:text-sm text-gray-600 flex items-center">
+                    <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-md text-gray-500 flex items-center">
-                    <Eye class="h-3.5 w-3.5 mr-1.5" />
+                  <span class="text-xs sm:text-sm text-gray-500 flex items-center">
+                    <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
                 </div>
 
                 <span
                   v-if="problem?.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-md font-medium bg-green-100 text-green-800"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -343,7 +343,7 @@
               <div class="flex justify-between items-start mb-3 relative">
                 <div class="flex items-center">
                   <div
-                    class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
+                    class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
                       :src="problem?.user_details?.image || '/placeholder.svg'"
@@ -351,11 +351,11 @@
                       class="h-full w-full object-cover"
                     />
                   </div>
-                  <div class="ml-3">
-                    <p class="text-md font-medium">
+                  <div class="ml-2 sm:ml-3">
+                    <p class="text-sm sm:text-base font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-sm text-gray-500">
+                    <p class="text-xs text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -363,7 +363,7 @@
                 <div>
                   <span
                     v-if="problem.payment_amount > 0"
-                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     <DollarSign class="h-3 w-3 mr-1" />
                     {{
@@ -374,7 +374,7 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
                   </span>
@@ -382,13 +382,13 @@
               </div>
 
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
 
               <h3
-                class="text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2"
+                class="text-sm sm:text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -412,21 +412,21 @@
                 </div>
               </div>
 
-              <div class="mt-4 flex items-center justify-between relative">
-                <div class="flex items-center space-x-4">
-                  <span class="text-sm text-gray-600 flex items-center">
-                    <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
+              <div class="mt-3 sm:mt-4 flex items-center justify-between relative">
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                  <span class="text-xs sm:text-sm text-gray-600 flex items-center">
+                    <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem.comments?.length }} Advices
                   </span>
 
-                  <span class="text-sm text-gray-500 flex items-center">
-                    <Eye class="h-3.5 w-3.5 mr-1.5" />
+                  <span class="text-xs sm:text-sm text-gray-500 flex items-center">
+                    <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
                 </div>
 
                 <span
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -477,7 +477,7 @@
               <div class="flex justify-between items-start mb-3 relative">
                 <div class="flex items-center">
                   <div
-                    class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
+                    class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                   >
                     <img
                       :src="problem?.user_details?.image || '/placeholder.svg'"
@@ -485,11 +485,11 @@
                       class="h-full w-full object-cover"
                     />
                   </div>
-                  <div class="ml-3">
-                    <p class="text-md font-medium">
+                  <div class="ml-2 sm:ml-3">
+                    <p class="text-sm sm:text-base font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-sm text-gray-500">
+                    <p class="text-xs text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -497,7 +497,7 @@
                 <div>
                   <span
                     v-if="problem?.payment_option === 'paid'"
-                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     {{
                       problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
@@ -513,7 +513,7 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
                   </span>
@@ -521,13 +521,13 @@
               </div>
 
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium transition-all mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
 
               <h3
-                class="text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
+                class="text-sm sm:text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -551,22 +551,22 @@
                 </div>
               </div>
 
-              <div class="mt-4 flex items-center justify-between relative">
-                <div class="flex items-center space-x-4">
-                  <span class="text-sm text-gray-600 flex items-center">
-                    <MessageSquare class="h-3.5 w-3.5 mr-1.5" />
+              <div class="mt-3 sm:mt-4 flex items-center justify-between relative">
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                  <span class="text-xs sm:text-sm text-gray-600 flex items-center">
+                    <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-sm text-gray-500 flex items-center">
-                    <Eye class="h-3.5 w-3.5 mr-1.5" />
+                  <span class="text-xs sm:text-sm text-gray-500 flex items-center">
+                    <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
                 </div>
 
                 <span
                   v-if="problem.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -632,7 +632,7 @@
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto"
+          class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[75vh] overflow-y-auto"
         >
           <!-- Close button (X) at top right -->
           <button
@@ -803,10 +803,10 @@
                 <label
                   for="paymentAmount"
                   class="text-md font-medium text-gray-700"
-                  >Payment Amount ($)</label
+                  >Payment Amount (৳)</label
                 >
                 <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                  <span class="absolute left-3 top-2.5 text-gray-500">৳</span>
                   <input
                     id="paymentAmount"
                     v-model="createForm.payment_amount"
@@ -1701,5 +1701,13 @@ onUnmounted(() => {
     opacity, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+/* Force proper viewport behavior */
+@media (max-width: 640px) {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
 }
 </style>
