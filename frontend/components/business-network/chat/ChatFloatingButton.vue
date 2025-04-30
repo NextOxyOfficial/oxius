@@ -128,7 +128,7 @@
               <h4 class="text-sm font-medium text-gray-600">Stories</h4>
               <button @click="openAllStories" class="text-sm text-green-600">View all</button>
             </div>
-            <div class="flex space-x-3 overflow-x-auto pb-1 pt-1 scrollbar-hide">
+            <div class="flex space-x-5 overflow-x-auto pb-1 pt-1 scrollbar-hide">
               <!-- Add story button -->
               <div class="flex flex-col items-center">
                 <div 
@@ -142,7 +142,7 @@
                     <CameraIcon class="h-3 w-3" />
                   </div>
                 </div>
-                <span class="mt-1 text-xs">Add story</span>
+                <span class="mt-1 text-sm">Add story</span>
               </div>
               
               <!-- User stories -->
@@ -164,11 +164,9 @@
                       />
                     </div>
                   </div>
-                  <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
-                    LIVE
-                  </div>
+                  
                 </div>
-                <span class="mt-1 text-sm line-clamp-1">{{ story.name }}</span>
+                <span class="mt-1 text-md line-clamp-1">{{ story.name }}</span>
               </div>
             </div>
           </div>
@@ -231,7 +229,7 @@
                 </div>
                 <div class="ml-2 flex-1">
                   <div class="flex items-center justify-between">
-                    <h4 class="flex items-center text-sm font-medium text-gray-700">
+                    <h4 class="flex items-center text-md font-medium text-gray-700">
                       {{ friend.name }}
                       <span v-if="friend.isBlocked" class="ml-1 rounded-sm bg-red-100 px-1 py-0.5 text-[8px] text-red-600">
                         BLOCKED
