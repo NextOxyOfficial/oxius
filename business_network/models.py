@@ -200,6 +200,30 @@ class BusinessNetworkPostComment(models.Model):
         super().save(*args, **kwargs)
 
 
+class UserSavedPosts(models.Model):
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_posts')
+    post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='saved_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'post']
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if UserSavedPosts.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+
 
 class BusinessNetworkWorkspace(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)

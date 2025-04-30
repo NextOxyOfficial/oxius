@@ -80,7 +80,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     
-    list_display = ('email','first_name','balance','age','gender','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity', 'store_name','store_username','store_logo','store_banner','store_address','store_description')
+    list_display = ('email','first_name','balance','age','gender','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity','is_topcontributor', 'store_name','store_username','store_logo','store_banner','store_address','store_description')
     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
     
     def get_fieldsets(self, request, obj=None):
@@ -107,6 +107,7 @@ class CustomUserAdmin(UserAdmin):
             'is_active',
             'kyc_pending',
             'kyc',
+            'is_topcontributor',
             'address',
             'city',
             'state',

@@ -20,6 +20,7 @@ urlpatterns = [
   path('admin-notice/',getAdminNotice,name='admin_notice'),
   path('auth/register/', register, name='register_person'),
   path('user/<str:id>/', PersonRetrieveView.as_view(), name='person_detail'),
+  path('top-contributors/', get_top_contributors, name='top_contributors'),
   path('persons/<str:email>/', PersonRetrieveUpdateDestroyView.as_view(),name='person_detail'),
   path('persons/<str:email>/delete_image/', PersonImageDeleteView.as_view(), name='person-delete-image'),
   path('persons/update/<str:email>/', update_user,name='update_user'),

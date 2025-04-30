@@ -179,7 +179,7 @@
                 class="absolute inset-0 bg-blue-50 opacity-0 hover:opacity-10 transition-opacity duration-300 pointer-events-none"
               ></div>
 
-              <div class="flex justify-between items-start mb-3 relative">
+              <div class="flex justify-between items-start mb-1 relative">
                 <div class="flex items-center">
                   <div
                     class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
@@ -223,7 +223,7 @@
                     I need free help!
                   </span>
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
                   >
                     {{ problem?.category_details?.name }}
                   </span>
@@ -328,7 +328,7 @@
                 class="absolute inset-0 bg-green-50 opacity-0 hover:opacity-10 transition-opacity duration-300 pointer-events-none"
               ></div>
 
-              <div class="flex justify-between items-start mb-3 relative">
+              <div class="flex justify-between items-start mb-1 relative">
                 <div class="flex items-center">
                   <div
                     class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
@@ -348,7 +348,7 @@
                     </p>
                   </div>
                 </div>
-                <div>
+                <div class="flex flex-col items-end gap-1">
                   <span
                     v-if="problem.payment_amount > 0"
                     class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
@@ -365,6 +365,11 @@
                     class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
+                  </span>
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                  >
+                    {{ problem?.category_details?.name }}
                   </span>
                 </div>
               </div>
@@ -468,7 +473,7 @@
                 class="absolute inset-0 bg-indigo-50 opacity-0 hover:opacity-10 transition-opacity duration-300 pointer-events-none"
               ></div>
 
-              <div class="flex justify-between items-start mb-3 relative">
+              <div class="flex justify-between items-start mb-1 relative">
                 <div class="flex items-center">
                   <div
                     class="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
@@ -488,7 +493,7 @@
                     </p>
                   </div>
                 </div>
-                <div>
+                <div class="flex flex-col items-end gap-1">
                   <span
                     v-if="problem?.payment_option === 'paid'"
                     class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
@@ -511,14 +516,13 @@
                   >
                     Free Help
                   </span>
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                  >
+                    {{ problem?.category_details?.name }}
+                  </span>
                 </div>
               </div>
-
-              <span
-                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
-              >
-                {{ problem?.category_details?.name }}
-              </span>
 
               <h3
                 class="text-sm sm:text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"

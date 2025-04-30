@@ -189,6 +189,7 @@
           label="Promote on ABN"
           variant="outline"
           block
+          color="blue"
           to="/business-network/abn-ads"
         />
         <!-- Adsy News Section -->
@@ -440,7 +441,7 @@
             </div>
             <a
               v-else
-              v-for="(user, index) in topContributors.slice(0, 2)"
+              v-for="(user, index) in topContributors"
               :key="index"
               :href="`/business-network/profile/${user.id}`"
               class="flex items-center px-3 py-2 rounded-md hover:bg-gray-50 transition-colors"
@@ -448,9 +449,7 @@
             >
               <div class="relative">
                 <img
-                  :src="
-                    user.avatar || '/static/frontend/images/placeholder.jpg'
-                  "
+                  :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="user.name"
                   class="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
                 />
@@ -466,9 +465,9 @@
                 </h4>
                 <p class="text-xs text-gray-500 flex items-center">
                   <FileText class="h-3 w-3 mr-1" />
-                  <span>{{ user.posts }} posts</span>
+                  <span>{{ user.post_count }} posts</span>
                   <Users class="h-3 w-3 mx-1" />
-                  <span>{{ user.followers }}</span>
+                  <span>{{ user.follower_count }}</span>
                 </p>
               </div>
               <div class="ml-auto">
@@ -821,35 +820,20 @@ const topContributors = ref([]);
 // Enhanced fetchTopContributors function to handle retries and validate API response
 async function fetchTopContributors() {
   isLoadingContributors.value = true;
-  let retries = 3;
 
-  while (retries > 0) {
-    try {
-      let response;
-      // const response = await get("/top-contributors/?limit=5");
-      if (response.data && Array.isArray(response.data)) {
-        topContributors.value = response.data.map((user) => ({
-          id: user.id,
-          name: user.first_name
-            ? `${user.first_name} ${user.last_name || ""}`
-            : user.username,
-          avatar: user.profile_image,
-          posts: user.post_count || 0,
-          followers: user.follower_count || 0,
-        }));
-        break;
-      } else {
-        console.warn("Unexpected contributors response format:", response.data);
-        topContributors.value = [];
-      }
-    } catch (error) {
-      console.error("Error fetching contributors:", error);
+  try {
+    const response = await get("/top-contributors/");
+    if (response.data) {
+      topContributors.value = response.data;
+    } else {
+      console.warn("Unexpected contributors response format:", response.data);
+      topContributors.value = [];
     }
-    retries--;
-    if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 1000));
+  } catch (error) {
+    console.error("Error fetching contributors:", error);
+  } finally {
+    isLoadingContributors.value = false;
   }
-
-  isLoadingContributors.value = false;
 }
 
 // Methods

@@ -4,9 +4,11 @@ from .views import *
 urlpatterns = [
     # Post endpoints
     path('posts/', BusinessNetworkPostListCreateView.as_view(), name='post-list-create'),
+    path('posts/save/', UserSavedPostListCreateView.as_view(), name='user-saved-posts'),
     path('posts/<str:id>/', BusinessNetworkPostRetrieveUpdateDestroyView.as_view(), name='post-detail'),
     path('user/<uuid:user_id>/posts/', UserPostsListView.as_view(), name='user-posts'),
     path('posts/search/', BusinessNetworkPostSearchView.as_view(), name='post-search'),
+    
     
     # Media endpoints
     path('posts/<int:post_id>/media/', BusinessNetworkMediaCreateView.as_view(), name='post-media-create'),

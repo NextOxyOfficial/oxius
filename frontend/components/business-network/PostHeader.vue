@@ -6,7 +6,7 @@
           <img
             :src="post?.author_details?.image || '/placeholder.svg'"
             :alt="post?.author_details?.name"
-            class="size-14 rounded-full cursor-pointer object-cover "
+            class="size-14 rounded-full cursor-pointer object-cover"
           />
         </NuxtLink>
       </div>
@@ -64,14 +64,27 @@
             <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
               @click.stop="$emit('toggle-save', post)"
+              v-if="user"
             >
               <Bookmark
                 :class="[
                   'h-4 w-4 mr-2',
-                  post.isSaved ? 'text-blue-600 fill-blue-600' : '',
+                  post.isSaved ||
+                  savedPosts.some(
+                    (i) => i.post === post.id && i.user === user.user.id
+                  )
+                    ? 'text-blue-600 fill-blue-600'
+                    : '',
                 ]"
               />
-              {{ post.isSaved ? "Unsave post" : "Save post" }}
+              {{
+                post.isSaved ||
+                savedPosts.some(
+                  (i) => i.post === post.id && i.user === user.user.id
+                )
+                  ? "Unsave post"
+                  : "Save post"
+              }}
             </button>
             <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
@@ -80,10 +93,11 @@
               <Link2 class="h-4 w-4 mr-2" />
               Copy link
             </button>
-            <hr class="my-1 border-gray-200" />
+            <hr class="my-1 border-gray-200" v-if="user" />
 
             <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+              v-if="user"
             >
               <Flag class="h-4 w-4 mr-2" />
               Report post
@@ -106,6 +120,10 @@ import {
   Flag,
 } from "lucide-vue-next";
 
+const { user } = useAuth();
+const { get } = useApi();
+const savedPosts = ref([]);
+
 defineProps({
   post: {
     type: Object,
@@ -118,6 +136,12 @@ defineProps({
 });
 
 defineEmits(["toggle-follow", "toggle-dropdown", "toggle-save", "copy-link"]);
+
+async function getSavedPosts() {
+  const { data } = await get(`/bn/posts/save/`);
+  if (data) savedPosts.value = data;
+}
+await getSavedPosts();
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {

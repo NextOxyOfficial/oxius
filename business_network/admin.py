@@ -16,4 +16,5 @@ admin.site.register(BusinessNetworkMindforce)
 admin.site.register(BusinessNetworkMindforceCategory)
 admin.site.register(BusinessNetworkMindforceMedia)
 admin.site.register(BusinessNetworkMindforceComment)
+admin.site.register(UserSavedPosts)
 

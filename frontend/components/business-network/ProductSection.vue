@@ -5,7 +5,7 @@
       <!-- Carousel Container for Mobile -->
       <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">
         <CommonProductCard
-          v-for="(product, productIndex) in products"
+          v-for="(product, productIndex) in products.slice(0, 2)"
           :key="`mobile-${product.id || productIndex}`"
           :product="product"
           class="flex-shrink-0 w-[49%]"

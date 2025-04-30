@@ -65,7 +65,10 @@
         <Bookmark
           :class="[
             'h-5 w-5 transition-colors duration-300',
-            post.isSaved
+            post.isSaved ||
+            savedPosts.some(
+              (i) => i.post === post.id && i.user === user.user.id
+            )
               ? 'text-indigo-600 fill-indigo-600'
               : 'text-gray-600 group-hover:text-indigo-400',
           ]"
@@ -88,7 +91,7 @@ import {
   Loader2,
 } from "lucide-vue-next";
 
-defineProps({
+const { post } = defineProps({
   post: {
     type: Object,
     required: true,
@@ -106,6 +109,9 @@ defineEmits([
   "share-post",
   "toggle-save",
 ]);
+const { user } = useAuth();
+const { get } = useApi();
+const savedPosts = ref([]);
 
 /**
  * Format large numbers to compact format (1k, 1.1k, etc.)
@@ -117,12 +123,25 @@ function formatCount(count) {
     return count.toString();
   } else if (count < 10000) {
     // For 1000-9999, show with one decimal (1.1k, 9.9k)
-    return (count / 1000).toFixed(1) + 'k';
+    return (count / 1000).toFixed(1) + "k";
   } else {
     // For 10000+, show without decimal (10k, 11k, etc)
-    return Math.floor(count / 1000) + 'k';
+    return Math.floor(count / 1000) + "k";
   }
 }
+
+async function getSavedPosts() {
+  const { data } = await get(`/bn/posts/save/`);
+  if (data) savedPosts.value = data;
+  if (
+    !post.isSaved &&
+    savedPosts.value.some(
+      (i) => i.post === post.id && i.user === user.value.user?.id
+    )
+  )
+    post.isSaved = true;
+}
+await getSavedPosts();
 </script>
 
 <style scoped>

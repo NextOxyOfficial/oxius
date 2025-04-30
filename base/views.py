@@ -140,6 +140,12 @@ def register(request):
     )
 
 
+@api_view(['GET'])
+def get_top_contributors(request):
+    top_contributors = User.objects.filter(is_topcontributor=True)
+    serializer = UserSerializer(top_contributors, many=True)
+    return Response(serializer.data)
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_user(request, email):

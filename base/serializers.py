@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from business_network.models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
@@ -11,6 +12,9 @@ from cities_light.models import City, Region, Country
 
 
 class UserSerializer(serializers.ModelSerializer):
+    post_count = serializers.SerializerMethodField()
+    follower_count = serializers.SerializerMethodField()
+    follow_count = serializers.SerializerMethodField()
     class Meta:
         model = User
         # Exclude the password field for security
@@ -20,6 +24,15 @@ class UserSerializer(serializers.ModelSerializer):
             # 'username': {'read_only': True},
         }
         depth = 1
+        
+    def get_post_count(self, obj):
+        return BusinessNetworkPost.objects.filter(author=obj).count()
+    
+    def get_follower_count(self, obj):
+        return BusinessNetworkFollowerModel.objects.filter(following=obj).count()
+    
+    def get_follow_count(self, obj):
+        return BusinessNetworkFollowerModel.objects.filter(follower=obj).count()
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():

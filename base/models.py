@@ -74,6 +74,7 @@ class User(AbstractUser):
   profession = models.CharField(max_length=256,blank=True, default="")
   company = models.CharField(max_length=256,blank=True, default="")
   website = models.CharField(max_length=256,blank=True, default="")
+  is_topcontributor = models.BooleanField(default=False)
   
   #   subscription
   is_pro = models.BooleanField(default=False)

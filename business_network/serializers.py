@@ -147,3 +147,10 @@ class BusinessNetworkMindforceSerializer(serializers.ModelSerializer):
         model = BusinessNetworkMindforce
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+        
+class UserSavedPostSerializer(serializers.ModelSerializer):
+    post_details = BusinessNetworkPostSerializer(source='post', read_only=True)
+    class Meta:
+        model = UserSavedPosts
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']

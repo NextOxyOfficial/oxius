@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class=" sm:px-3 py-4 sm:py-5">
+          <div class="sm:px-3 py-4 sm:py-5">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post"
@@ -192,36 +192,7 @@
 </template>
 
 <script setup>
-import {
-  Search,
-  X,
-  Clock,
-  ArrowRight,
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
-  Check,
-  UserPlus,
-  MoreHorizontal,
-  Link2,
-  Flag,
-  Send,
-  Plus,
-  Home,
-  Bell,
-  User,
-  BarChart2,
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  ImageIcon,
-  Smile,
-  Paperclip,
-  Tag,
-  UserX,
-} from "lucide-vue-next";
+import { Loader2 } from "lucide-vue-next";
 
 // Props
 const props = defineProps({
@@ -531,9 +502,16 @@ const toggleMediaLike = async () => {
 };
 
 // Toggle save
-const toggleSave = (post) => {
-  post.isSaved = !post.isSaved;
-  post.showDropdown = false;
+const toggleSave = async (item) => {
+  item.isSaved = !item.isSaved;
+  item.showDropdown = false;
+  if (item.isSaved) {
+    const response = await post("/bn/posts/save/", { post: item.id });
+    console.log(response.data);
+    if (response.data) toast.add({ title: "Saved to your posts" });
+  } else {
+    toast.add({ title: "Removed from your posts" });
+  }
 };
 
 // Toggle dropdown
@@ -1042,22 +1020,11 @@ const handleCommentInput = (e, currentPost) => {
 const searchMentionUsers = async (searchText) => {
   try {
     // Replace with your actual user search API
-    const response = await post(`/bn/users/search/`, {
-      search: searchText,
-      limit: 5,
-    });
+    const response = await get(`/bn/users/${user.value?.user?.id}/followers/`);
 
     if (response?.data) {
-      mentionSuggestions.value = response.data;
-    } else {
-      // Fallback to mock data for testing
-      mentionSuggestions.value = [
-        { id: 1, name: "John Smith", image: "https://via.placeholder.com/40" },
-        { id: 2, name: "Jane Doe", image: "https://via.placeholder.com/40" },
-        { id: 3, name: "James Brown", image: "https://via.placeholder.com/40" },
-      ].filter((user) =>
-        user.name.toLowerCase().includes(searchText.toLowerCase())
-      );
+      console.log("follower", response.data.results);
+      mentionSuggestions.value = response.data.results;
     }
   } catch (error) {
     console.error("Error searching users:", error);
@@ -1079,7 +1046,7 @@ const selectMention = (user, currentPost) => {
   // Replace the @searchText with the selected user
   const newText =
     text.slice(0, atIndex) +
-    `@${user.name.replace(/\s+/g, "")} ` +
+    `@${user.follower_details.name.replace(/\s+/g, "")} ` +
     text.slice(cursorPosition);
 
   // Update the input value

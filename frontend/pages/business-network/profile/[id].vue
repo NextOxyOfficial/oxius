@@ -186,13 +186,13 @@
                   </div>
                   <div class="flex items-center">
                     <span class="font-semibold">{{
-                      user?.followers_count || 0
+                      user?.follow_count || 0
                     }}</span>
                     <span class="text-gray-500 ml-1">Followers</span>
                   </div>
                   <div class="flex items-center">
                     <span class="font-semibold">{{
-                      user?.following_count || 0
+                      user?.follower_count || 0
                     }}</span>
                     <span class="text-gray-500 ml-1">Following</span>
                   </div>
@@ -534,14 +534,15 @@ const toggleFollow = async () => {
     if (data) {
       // Toggle the follow status after successful API call
       isFollowing.value = !isFollowing.value;
-      
+
       // Update followers count accordingly
-      user.value.followers_count = user.value.followers_count + (isFollowing.value ? 1 : -1);
-      
+      user.value.followers_count =
+        user.value.followers_count + (isFollowing.value ? 1 : -1);
+
       toast.add({
         title: isFollowing.value ? "Followed" : "Unfollowed",
-        description: isFollowing.value 
-          ? "You have successfully followed this user." 
+        description: isFollowing.value
+          ? "You have successfully followed this user."
           : "You have successfully unfollowed this user.",
       });
     }

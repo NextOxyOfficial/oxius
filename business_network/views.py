@@ -109,6 +109,23 @@ class UserPostsListView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
         return BusinessNetworkPost.objects.filter(author__id=user_id).order_by('-created_at')
+    
+class UserSavedPostListCreateView(generics.ListCreateAPIView):
+    serializer_class = UserSavedPostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return UserSavedPosts.objects.filter(user=user.id).order_by('-created_at')
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        post_id = request.data.get('post')
+        serializer = self.get_serializer(data={'user': user.id, 'post': post_id})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 # Media Views
 class BusinessNetworkMediaCreateView(generics.CreateAPIView):
@@ -369,7 +386,7 @@ class UserFollowersListView(generics.ListAPIView):
     
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
-        return BusinessNetworkFollowerModel.objects.filter(following_id=user_id).order_by('-created_at')
+        return BusinessNetworkFollowerModel.objects.filter(following=user_id).order_by('-created_at')
 
 class UserFollowingListView(generics.ListAPIView):
     serializer_class = BusinessNetworkFollowerSerializer
@@ -377,7 +394,7 @@ class UserFollowingListView(generics.ListAPIView):
     
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
-        return BusinessNetworkFollowerModel.objects.filter(follower_id=user_id).order_by('-created_at')
+        return BusinessNetworkFollowerModel.objects.filter(follower=user_id).order_by('-created_at')
 
 class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMediaLikeSerializer

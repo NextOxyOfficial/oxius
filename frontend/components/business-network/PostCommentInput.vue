@@ -57,11 +57,13 @@
             ]"
           >
             <img
-              :src="user.image"
-              :alt="user.name"
+              :src="user?.follower_details?.image"
+              :alt="user?.follower_details?.name"
               class="w-7 h-7 rounded-full mr-2"
             />
-            <span class="text-sm font-medium">{{ user.name }}</span>
+            <span class="text-sm font-medium">{{
+              user?.follower_details?.name
+            }}</span>
           </div>
         </div>
       </div>
