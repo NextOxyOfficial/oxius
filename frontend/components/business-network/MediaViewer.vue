@@ -133,6 +133,12 @@
                       alt="User"
                       class="w-6 h-6 rounded-full cursor-pointer"
                     />
+                    <img
+                      v-else
+                      src="/static/frontend/avatar.png"
+                      alt="User"
+                      class="w-6 h-6 rounded-full cursor-pointer"
+                    />
                   </NuxtLink>
                   <div class="flex-1">
                     <div class="bg-gray-50 rounded-lg p-2">

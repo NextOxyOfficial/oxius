@@ -25,7 +25,9 @@
             />
             <div
               v-else
-              class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 border-4 border-white shadow-md overflow-hidden"
+              src="/static/frontend/avatar.png"
+              alt="Profile"
+              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
             >
               <!-- Better profile icon fallback -->
               <UIcon

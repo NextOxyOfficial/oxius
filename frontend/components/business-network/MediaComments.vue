@@ -17,6 +17,12 @@
               alt="User"
               class="w-6 h-6 rounded-full cursor-pointer"
             />
+            <img
+              v-else
+              src="/static/frontend/avatar.png"
+              alt="User"
+              class="w-6 h-6 rounded-full cursor-pointer"
+            />
           </NuxtLink>
           <div class="flex-1">
             <div class="bg-gray-50 rounded-lg p-2">
@@ -33,15 +39,15 @@
                     v-if="comment.author_details.kyc"
                     class="text-blue-500 flex items-center"
                   >
-                    <UIcon
-                      name="i-mdi-check-decagram"
-                      class="w-3 h-3"
-                    />
+                    <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
                   </div>
                 </div>
-                
+
                 <!-- Edit/Delete buttons - show only if currentUserId matches comment author -->
-                <div v-if="currentUserId === comment.author_details.id" class="flex space-x-1">
+                <div
+                  v-if="currentUserId === comment.author_details.id"
+                  class="flex space-x-1"
+                >
                   <button
                     @click="handleEditComment(comment)"
                     class="text-gray-500 hover:text-blue-600"
@@ -58,24 +64,24 @@
                   </button>
                 </div>
               </div>
-              
+
               <!-- Editable comment -->
               <div v-if="editingComment && editingComment.id === comment.id">
-                <textarea 
-                  v-model="editText" 
+                <textarea
+                  v-model="editText"
                   class="w-full mt-1 text-sm border border-gray-200 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   rows="2"
                   ref="editTextareaRef"
                   @keydown.enter.prevent="saveEdit"
                 ></textarea>
                 <div class="flex justify-end mt-1 space-x-2">
-                  <button 
-                    @click="cancelEdit" 
+                  <button
+                    @click="cancelEdit"
                     class="text-xs text-gray-500 hover:underline"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     @click="saveEdit"
                     class="text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700"
                     :disabled="!editText.trim()"
@@ -95,7 +101,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Comment input area -->
     <div v-if="showCommentInput" class="mt-3 flex items-center gap-2">
       <input
@@ -106,19 +112,19 @@
         @keydown.enter.prevent="submitComment"
         ref="commentInputRef"
       />
-      <button 
-        @click="submitComment" 
+      <button
+        @click="submitComment"
         class="text-blue-500 hover:text-blue-700"
         :disabled="!newComment.trim()"
       >
         <UIcon name="i-heroicons-paper-airplane" class="w-5 h-5" />
       </button>
     </div>
-    
+
     <!-- View all comments button -->
     <div v-if="mediaComments.length > 3 && !showAllComments" class="mt-2">
-      <button 
-        @click="openAllCommentsModal" 
+      <button
+        @click="openAllCommentsModal"
         class="text-sm text-blue-600 hover:underline"
       >
         View all {{ mediaComments.length }} comments
@@ -128,55 +134,55 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, nextTick, onMounted } from "vue";
 
 const props = defineProps({
   mediaComments: {
     type: Array,
-    required: true
+    required: true,
   },
   showCommentInput: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showAllComments: {
     type: Boolean,
-    default: false
+    default: false,
   },
   currentUserId: {
     type: [String, Number],
-    default: null
-  }
+    default: null,
+  },
 });
 
-const newComment = ref('');
+const newComment = ref("");
 const editingComment = ref(null);
-const editText = ref('');
+const editText = ref("");
 const commentInputRef = ref(null);
 const editTextareaRef = ref(null);
 
 const emit = defineEmits([
-  'edit-comment', 
-  'delete-comment', 
-  'add-comment',
-  'view-all-comments'
+  "edit-comment",
+  "delete-comment",
+  "add-comment",
+  "view-all-comments",
 ]);
 
 const submitComment = () => {
   if (newComment.value.trim()) {
-    emit('add-comment', newComment.value);
-    newComment.value = '';
+    emit("add-comment", newComment.value);
+    newComment.value = "";
   }
 };
 
 const openAllCommentsModal = () => {
-  emit('view-all-comments');
+  emit("view-all-comments");
 };
 
 const handleEditComment = (comment) => {
   editingComment.value = comment;
   editText.value = comment.content;
-  
+
   // Focus the textarea after it's rendered
   nextTick(() => {
     if (editTextareaRef.value) {
@@ -186,14 +192,14 @@ const handleEditComment = (comment) => {
 };
 
 const handleDeleteComment = (comment) => {
-  emit('delete-comment', comment);
+  emit("delete-comment", comment);
 };
 
 const saveEdit = () => {
   if (editText.value.trim() && editingComment.value) {
-    emit('edit-comment', {
+    emit("edit-comment", {
       ...editingComment.value,
-      content: editText.value.trim()
+      content: editText.value.trim(),
     });
     cancelEdit();
   }
@@ -201,7 +207,7 @@ const saveEdit = () => {
 
 const cancelEdit = () => {
   editingComment.value = null;
-  editText.value = '';
+  editText.value = "";
 };
 
 // Focus the comment input when component is mounted and showCommentInput is true

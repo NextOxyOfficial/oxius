@@ -17,7 +17,7 @@
           <div class="sm:px-3 py-4 sm:py-5">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
-              :post="post"
+              :post="post?.post_details ? post.post_details : post"
               :user="user"
               @toggle-follow="toggleFollow"
               @toggle-dropdown="toggleDropdown"
@@ -27,19 +27,27 @@
 
             <!-- Post Title -->
             <NuxtLink
-              :to="`/business-network/posts/${post.id}`"
+              :to="`/business-network/posts/${
+                post?.post ? post.post : post.id
+              }`"
               class="block text-sm sm:text-base font-semibold mb-1 hover:text-blue-600 transition-colors px-2"
             >
-              {{ post.title }}
+              {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
 
             <!-- Tags -->
             <div
-              v-if="post?.post_tags?.length > 0"
+              v-if="
+                post?.post_details
+                  ? post.post_details?.post_tags?.length > 0
+                  : post?.post_tags?.length > 0
+              "
               class="flex flex-wrap gap-1 mb-2 px-2"
             >
               <span
-                v-for="(tag, idx) in post?.post_tags"
+                v-for="(tag, idx) in post?.post_details
+                  ? post.post_details?.post_tags
+                  : post?.post_tags"
                 :key="idx"
                 class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full"
               >
@@ -54,10 +62,16 @@
                   `text-sm sm:text-base text-gray-800`,
                   !post.showFullDescription && `line-clamp-4`,
                 ]"
-                v-html="post.content"
+                v-html="
+                  post?.post_details ? post.post_details.content : post.content
+                "
               ></p>
               <button
-                v-if="post?.content?.length > 160"
+                v-if="
+                  post?.post_details
+                    ? post.post_details.content?.length > 160
+                    : post.content?.length > 160
+                "
                 class="text-xs sm:text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
@@ -69,14 +83,18 @@
 
             <!-- Media Gallery -->
             <BusinessNetworkPostMediaGallery
-              v-if="post?.post_media?.length > 0"
-              :post="post"
+              v-if="
+                post?.post_details
+                  ? post.post_details.post_media.length > 0
+                  : post?.post_media?.length > 0
+              "
+              :post="post.post_details ? post.post_details : post"
               @open-media="openMedia"
             />
 
             <!-- Post Actions -->
             <BusinessNetworkPostActions
-              :post="post"
+              :post="post.post_details ? post.post_details : post"
               :user="user"
               @toggle-like="toggleLike"
               @open-likes-modal="openLikesModal"
@@ -87,8 +105,12 @@
 
             <!-- Comments Preview -->
             <BusinessNetworkPostComments
-              v-if="post?.post_comments?.length > 0"
-              :post="post"
+              v-if="
+                post?.post_details
+                  ? post.post_details.post_comments.length > 0
+                  : post?.post_comments?.length > 0
+              "
+              :post="post.post_details ? post.post_details : post"
               :user="user"
               @open-comments-modal="openCommentsModal"
               @edit-comment="editComment"
@@ -100,7 +122,7 @@
             <!-- Add Comment Input -->
             <BusinessNetworkPostCommentInput
               v-if="user"
-              :post="post"
+              :post="post.post_details ? post.post_details : post"
               :user="user"
               :show-mentions="showMentions"
               :mention-suggestions="mentionSuggestions"
@@ -510,7 +532,8 @@ const toggleSave = async (item) => {
     console.log(response.data);
     if (response.data) toast.add({ title: "Saved to your posts" });
   } else {
-    toast.add({ title: "Removed from your posts" });
+    const response = await del(`/bn/saved-posts/delete/${item.id}/`);
+    if (response.data) toast.add({ title: "Removed from your saved posts" });
   }
 };
 
