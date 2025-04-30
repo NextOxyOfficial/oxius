@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
+  <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100 px-2">
     <img
       :src="user?.user?.image"
       alt="Your avatar"
