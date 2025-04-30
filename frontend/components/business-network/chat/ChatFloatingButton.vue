@@ -166,72 +166,72 @@
           @scroll="handleScroll"
         >
           <!-- Stories section -->
-          <div class="p-2">
-            <div class="flex items-center justify-between pb-2">
-              <h4 class="text-sm font-medium text-gray-600">Stories</h4>
-              <button @click="openAllStories" class="text-sm text-green-600">View all</button>
-            </div>
-            <div 
-              class="flex space-x-4 min-w-max overflow-x-auto pb-1 pt-1 scrollbar-hide"
-              @scroll="handleStoriesScroll"
-            >
-              <!-- Add story button -->
-              <div class="flex flex-col items-center">
-                <div 
-                  class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-                  @click="showAddStoryModal = true"
-                >
-                  <div class="absolute inset-0 flex items-center justify-center rounded-full bg-gray-100">
-                    <PlusIcon class="h-6 w-6 text-green-500" />
-                  </div>
-                  <div class="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
-                    <CameraIcon class="h-3 w-3" />
-                  </div>
-                </div>
-                <span class="mt-1 text-sm">Add story</span>
-              </div>
-              
-              <!-- User stories -->
+        <div class="p-2">
+          <div class="flex items-center justify-between pb-2">
+            <h4 class="text-sm font-medium text-gray-600">Stories</h4>
+            <button @click="openAllStories" class="text-sm text-green-600">View all</button>
+          </div>
+          <div 
+            class="flex space-x-4 overflow-x-auto  pb-1 pt-1 scrollbar-hide"
+            @scroll="handleStoriesScroll"
+          >
+            <!-- Add story button -->
+            <div class="flex flex-col items-center">
               <div 
-                v-for="(story, index) in stories" 
-                :key="index"
-                class="flex flex-col items-center"
+                class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+                @click="showAddStoryModal = true"
               >
-                <div 
-                  class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-                  @click="viewStory(story)"
-                >
-                  <div class="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-600 p-0.5">
-                    <div class="h-full w-full overflow-hidden rounded-full">
-                      <img 
-                        :src="story.avatar" 
-                        :alt="story.name" 
-                        class="h-full w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                  <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
-                    LIVE
+                <div class="absolute inset-0 flex items-center justify-center rounded-full bg-gray-100">
+                  <PlusIcon class="h-6 w-6 text-green-500" />
+                </div>
+                <div class="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
+                  <CameraIcon class="h-3 w-3" />
+                </div>
+              </div>
+              <span class="mt-1 text-sm min-w-max">Add story</span>
+            </div>
+            
+            <!-- User stories -->
+            <div 
+              v-for="(story, index) in stories" 
+              :key="index"
+              class="flex flex-col items-center"
+            >
+              <div 
+                class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+                @click="viewStory(story)"
+              >
+                <div class="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-600 p-0.5">
+                  <div class="h-full w-full overflow-hidden rounded-full">
+                    <img 
+                      :src="story.avatar" 
+                      :alt="story.name" 
+                      class="h-full w-full object-cover"
+                    />
                   </div>
                 </div>
-                <span class="mt-1 text-sm line-clamp-1">{{ story.name }}</span>
+                <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
+                  LIVE
+                </div>
               </div>
-              
-              <!-- Loading indicator for stories -->
-              <div v-if="isLoadingMoreStories" class="flex flex-col items-center justify-center">
-                <div class="relative h-14 w-14 flex-shrink-0 rounded-full bg-gray-100">
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="typing-animation">
-                      <span class="dot bg-green-500"></span>
-                      <span class="dot bg-green-500"></span>
-                      <span class="dot bg-green-500"></span>
-                    </div>
+              <span class="mt-1 text-md line-clamp-1">{{ story.name }}</span>
+            </div>
+            
+            <!-- Loading indicator for stories -->
+            <div v-if="isLoadingMoreStories" class="flex flex-col items-center justify-center">
+              <div class="relative h-14 w-14 flex-shrink-0 rounded-full bg-gray-100">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="typing-animation">
+                    <span class="dot bg-green-500"></span>
+                    <span class="dot bg-green-500"></span>
+                    <span class="dot bg-green-500"></span>
                   </div>
                 </div>
-                <span class="mt-1 text-sm">Loading...</span>
               </div>
+              <span class="mt-1 text-sm">Loading...</span>
             </div>
           </div>
+        </div>
   
           <!-- AdsyAI chat option -->
           <div class="p-2">
@@ -302,7 +302,6 @@
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
                       <p v-if="friend.isTyping" class="text-sm text-green-500">
-                        <span class="mr-1">typing</span>
                         <span class="typing-animation">
                           <span class="dot"></span>
                           <span class="dot"></span>
@@ -750,7 +749,7 @@
           </div>
           
           <!-- Text input -->
-          <div class="flex items-center rounded-full border bg-gray-50 px-3 py-2 transition-all focus-within:border-green-300 focus-within:ring-1 focus-within:ring-green-200">
+          <div class="flex items-center rounded-full border bg-gray-50 px-3 mb-2 py-2 transition-all focus-within:border-green-300 focus-within:ring-1 focus-within:ring-green-200">
             <input
               v-model="newMessage"
               @keyup.enter="sendMessage"
