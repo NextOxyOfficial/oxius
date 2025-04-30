@@ -346,14 +346,56 @@
 
         <div class="py-4">
           <div v-if="activeTab === 'posts'" class="px-2">
+            <!-- Lazyloader component for profile posts -->
+            <div v-if="isLoadingPosts" class="p-4">
+              <div class="flex justify-center items-center mb-6">
+                <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+              </div>
+              <!-- Skeleton loaders for posts -->
+              <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+                <div class="flex items-center space-x-3 mb-4">
+                  <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+                  </div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                  <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                  <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                </div>
+                <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+                <div class="flex justify-between">
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Display actual posts when loaded -->
             <BusinessNetworkPost
+              v-if="!isLoadingPosts"
               :posts="posts.results"
               :id="currentUser?.user?.id"
             />
           </div>
 
           <div v-else-if="activeTab === 'media'">
+            <!-- Lazyloader for media tab -->
+            <div v-if="isLoadingMedia" class="p-4">
+              <div class="flex justify-center items-center mb-6">
+                <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2">
+                <div v-for="i in 8" :key="i" class="aspect-square bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+            
+            <!-- Display actual media when loaded -->
             <div
+              v-if="!isLoadingMedia"
               class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2"
             >
               <div
@@ -371,15 +413,38 @@
           </div>
 
           <div v-else-if="activeTab === 'saved'" class="px-4 py-6">
-            <div v-if="savedPosts?.length === 0" class="text-center">
-              <h3 class="text-base font-medium text-gray-900">
-                No saved posts yet
-              </h3>
+            <!-- Lazyloader for saved posts -->
+            <div v-if="isLoadingSaved" class="p-4">
+              <div class="flex justify-center items-center mb-6">
+                <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+              </div>
+              <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+                <div class="flex items-center space-x-3 mb-4">
+                  <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+                  </div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                  <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                </div>
+                <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+              </div>
             </div>
-            <BusinessNetworkPost
-              :posts="savedPosts"
-              :id="currentUser?.user?.id"
-            />
+            
+            <div v-if="!isLoadingSaved">
+              <div v-if="savedPosts?.length === 0" class="text-center">
+                <h3 class="text-base font-medium text-gray-900">
+                  No saved posts yet
+                </h3>
+              </div>
+              <BusinessNetworkPost
+                :posts="savedPosts"
+                :id="currentUser?.user?.id"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -425,6 +490,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -439,6 +505,10 @@ const savedPosts = ref([]);
 
 const followLoading = ref(false);
 const isFollowing = ref(false);
+const isLoadingPosts = ref(true); // Initialize as true
+const isLoadingMedia = ref(true);
+const isLoadingSaved = ref(true);
+
 async function checkFollowing() {
   if (!currentUser.value) return;
   try {
@@ -484,6 +554,8 @@ async function fetchUserPosts() {
     posts.value = res.data;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoadingPosts.value = false;
   }
 }
 await fetchUserPosts();
@@ -495,6 +567,8 @@ async function fetchUserSavedPosts() {
     savedPosts.value = res.data;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoadingSaved.value = false;
   }
 }
 
