@@ -20,11 +20,11 @@
     <!-- Chat window -->
     <div
       v-show="isChatOpen"
-      class="fixed z-40 overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300"
+      class="fixed z-40 overflow-hidden rounded-sm sm:rounded-xl  bg-white shadow-2xl transition-all duration-300"
       :class="[
         isMobile 
           ? 'bottom-0 left-0 right-0 top-0' 
-          : 'bottom-24 right-6 h-[600px] w-[360px]'
+          : 'bottom-24 right-6 h-[650px] w-[380px]'
       ]"
     >
       <!-- User profile section -->
@@ -48,7 +48,7 @@
           </div>
           <div class="ml-2">
             <h3 class="text-md font-medium">{{ activeChatId ? activeChat.name : userProfile.name }}</h3>
-            <div class="flex items-center text-[10px]">
+            <div class="flex items-center text-sm">
               <span v-if="!activeChatId">{{ userProfile.isOnline ? 'Online' : 'Offline' }}</span>
               <span v-else-if="activeChatType === 'friend'">{{ activeChat.isOnline ? 'Online' : 'Offline' }}</span>
               <span v-else>AI Assistant</span>
@@ -126,7 +126,7 @@
           <div class="p-2">
             <div class="flex items-center justify-between pb-2">
               <h4 class="text-sm font-medium text-gray-600">Stories</h4>
-              <button @click="openAllStories" class="text-[10px] text-green-600">View all</button>
+              <button @click="openAllStories" class="text-sm text-green-600">View all</button>
             </div>
             <div class="flex space-x-3 overflow-x-auto pb-1 pt-1 scrollbar-hide">
               <!-- Add story button -->
@@ -142,7 +142,7 @@
                     <CameraIcon class="h-3 w-3" />
                   </div>
                 </div>
-                <span class="mt-1 text-[10px]">Add story</span>
+                <span class="mt-1 text-xs">Add story</span>
               </div>
               
               <!-- User stories -->
@@ -168,7 +168,7 @@
                     LIVE
                   </div>
                 </div>
-                <span class="mt-1 text-[10px] line-clamp-1">{{ story.name }}</span>
+                <span class="mt-1 text-sm line-clamp-1">{{ story.name }}</span>
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@
                     AI
                   </span>
                 </div>
-                <p class="text-[11px] text-purple-600">Ask me anything about AdsyConnect</p>
+                <p class="text-xs text-purple-600">Ask me anything about AdsyConnect</p>
               </div>
             </button>
           </div>
@@ -202,7 +202,7 @@
           <div class="px-2 py-1">
             <h4 class="mb-2 text-sm font-medium text-gray-600">Friends</h4>
             
-            <div v-if="filteredFriends.length === 0" class="flex items-center justify-center py-4 text-[11px] text-gray-500">
+            <div v-if="filteredFriends.length === 0" class="flex items-center justify-center py-4 text-sm text-gray-500">
               <p>No friends found</p>
             </div>
             <div v-else>
@@ -237,18 +237,18 @@
                         BLOCKED
                       </span>
                     </h4>
-                    <span class="text-[10px] text-gray-500">{{ friend.lastTime }}</span>
+                    <span class="text-xs text-gray-500">{{ friend.lastTime }}</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                      <p v-if="friend.isTyping" class="text-[10px] text-green-500">
+                      <p v-if="friend.isTyping" class="text-sm text-green-500">
                         <span class="typing-animation">
                           <span class="dot"></span>
                           <span class="dot"></span>
                           <span class="dot"></span>
                         </span>
                       </p>
-                      <p v-else class="text-[11px] text-gray-500 line-clamp-1">{{ friend.lastMessage }}</p>
+                      <p v-else class="text-sm text-gray-500 line-clamp-1">{{ friend.lastMessage }}</p>
                     </div>
                     <span v-if="friend.unreadCount" class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[9px] font-medium text-white">
                       {{ friend.unreadCount }}
@@ -396,7 +396,7 @@
               <MessageSquareIcon class="h-8 w-8 text-green-300" />
             </div>
             <p class="mb-1 mt-3 text-sm font-medium text-gray-600">No messages yet</p>
-            <p class="text-[10px] text-gray-500">Start a conversation with {{ activeChat.name }}</p>
+            <p class="text-sm text-gray-500">Start a conversation with {{ activeChat.name }}</p>
           </div>
           
           <div v-else>
@@ -449,7 +449,7 @@
                   ></video>
                   <div v-else-if="message.media.type === 'file'" class="flex items-center">
                     <FileIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
-                    <span class="ml-2 text-[10px]">{{ message.media.name }}</span>
+                    <span class="ml-2 text-sm">{{ message.media.name }}</span>
                   </div>
                   <div v-else-if="message.media.type === 'voice'" class="flex items-center">
                     <MicIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
@@ -517,7 +517,7 @@
           <!-- Media and attachment options -->
           <div class="mb-1.5 flex items-center justify-between px-1">
             <div class="flex space-x-3">
-              <button @click="showMediaPicker = !showMediaPicker" class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500">
+              <button @click="showMediaPicker = !showMediaPicker" class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500">
                 <ImageIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Media</span>
               </button>
@@ -527,19 +527,19 @@
                 @mousedown="startVoiceRecording"
                 @mouseup="stopVoiceRecording"
                 @mouseleave="stopVoiceRecording"
-                class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500"
+                class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500"
               >
                 <MicIcon class="mr-1 h-3.5 w-3.5" :class="isRecording ? 'text-red-500 animate-pulse' : ''" />
                 <span>{{ isRecording ? 'Recording...' : 'Voice' }}</span>
               </button>
-              <label class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500 cursor-pointer">
+              <label class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500 cursor-pointer">
                 <PaperclipIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Files</span>
                 <input type="file" class="hidden" @change="handleFileSelect" />
               </label>
             </div>
             <div class="flex items-center">
-              <button @click="toggleEmojiPicker" class="text-[10px] text-gray-500 transition-colors hover:text-green-500">
+              <button @click="toggleEmojiPicker" class="text-sm text-gray-500 transition-colors hover:text-green-500">
                 <SmileIcon class="h-3.5 w-3.5" />
               </button>
             </div>
@@ -552,12 +552,12 @@
               <div class="flex space-x-3">
                 <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
                   <ImageIcon class="h-5 w-5 mb-1" />
-                  <span class="text-[10px]">Images</span>
+                  <span class="text-sm">Images</span>
                   <input type="file" accept="image/*" multiple class="hidden" @change="handleMediaUpload" />
                 </label>
                 <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
                   <VideoIcon class="h-5 w-5 mb-1" />
-                  <span class="text-[10px]">Videos</span>
+                  <span class="text-sm">Videos</span>
                   <input type="file" accept="video/*" multiple class="hidden" @change="handleMediaUpload" />
                 </label>
               </div>
@@ -589,7 +589,7 @@
           </div>
           
           <!-- Text input -->
-          <div class="flex items-center rounded-full border bg-gray-50 px-3 py-2 transition-all focus-within:border-green-300 focus-within:ring-1 focus-within:ring-green-200">
+          <div class="flex items-center rounded-full border bg-gray-50 px-3 py-2 mb-2 transition-all focus-within:border-green-300 focus-within:ring-1 focus-within:ring-green-200">
             <input
               v-model="newMessage"
               @keyup.enter="sendMessage"
@@ -628,7 +628,7 @@
           <div v-if="selectedFile" class="mt-2 flex items-center rounded-md bg-gray-100 p-2">
             <FileIcon class="h-5 w-5 text-gray-500" />
             <div class="ml-2 flex-1">
-              <p class="text-[10px] font-medium text-gray-700">{{ selectedFileName }}</p>
+              <p class="text-sm font-medium text-gray-700">{{ selectedFileName }}</p>
               <p class="text-[9px] text-gray-500">Ready to send</p>
             </div>
             <button @click="clearSelectedFile" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">
@@ -651,7 +651,7 @@
           <div class="mb-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
             <ImageIcon class="mb-2 h-10 w-10 text-gray-400" />
             <p class="mb-1 text-sm text-gray-600">Upload a photo or video</p>
-            <p class="text-[10px] text-gray-500">Your story will be visible for 24 hours</p>
+            <p class="text-sm text-gray-500">Your story will be visible for 24 hours</p>
             <label class="mt-3 rounded-full bg-green-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-green-600 cursor-pointer">
               Select from gallery
               <input type="file" accept="image/*,video/*" class="hidden" />
