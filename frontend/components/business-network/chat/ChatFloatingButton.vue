@@ -38,7 +38,7 @@
       <!-- Chat Interface Modal -->
       <div 
         v-if="showChat" 
-        class="fixed bottom-[90px] right-5 z-40 w-[95%] md:w-[400px] lg:w-[450px] h-[600px] max-h-[80vh] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-500 transform"
+        class="fixed z-[999] max-sm:top-auto max-sm:inset-0 h-[90vh] bottom-0 sm:bottom-[55px] right-5 z-40 sm:w-[95%] md:w-[400px] lg:w-[450px] sm:h-[600px] sm:max-h-[80vh] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-500 transform"
         :class="{ 
           'translate-y-0 opacity-100': showChat, 
           'translate-y-10 opacity-0': !showChat 
