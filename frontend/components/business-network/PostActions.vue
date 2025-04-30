@@ -2,7 +2,7 @@
   <div
     class="flex items-center justify-center pt-3 pb-1 border-t border-gray-200 mb-4 max-w-2xl mx-auto"
   >
-    <div class="flex items-center space-x-6 w-full justify-center">
+    <div class="flex items-center space-x-2 w-full justify-center">
       <div class="flex items-center space-x-1.5 group">
         <!-- Like button with enhanced styling and transitions -->
         <button
@@ -24,7 +24,7 @@
           />
         </button>
         <button
-          class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200"
+          class="text-sm text-gray-700 hover:text-gray-900 transition-colors duration-200"
           @click="$emit('open-likes-modal', post)"
         >
           {{ post?.post_likes?.length }} Likes
@@ -39,7 +39,7 @@
           class="h-5 w-5 text-blue-400 group-hover:text-blue-500 transition-colors duration-200"
         />
         <span
-          class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200"
+          class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200"
         >
           {{ post?.post_comments?.length }} Comments
         </span>
@@ -53,7 +53,7 @@
           class="h-5 w-5 text-emerald-400 group-hover:text-green-500 transition-colors duration-200"
         />
         <span
-          class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200"
+          class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200"
           >Share</span
         >
       </button>
