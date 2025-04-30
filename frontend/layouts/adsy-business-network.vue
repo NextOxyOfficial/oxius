@@ -14,7 +14,7 @@
         <CommonPreloader />
       </section>
     </div>
-    <div>
+    <div class="fixed inset-0 z-[99999999999]">
       <!-- Chat Floating Button -->
       <BusinessNetworkChatFloatingButton />
     </div>
