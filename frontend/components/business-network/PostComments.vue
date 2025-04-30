@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-2">
+  <div class="space-y-2 px-2">
     <!-- See all comments button moved to the top -->
     <button
       v-if="post?.post_comments?.length > 3"
