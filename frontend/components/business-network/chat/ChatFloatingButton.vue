@@ -52,7 +52,7 @@
         <div class="flex items-center">
           <!-- Settings gear icon -->
           <button
-            @click="toggleSettings"
+            @click="openSettings"
             class="relative mr-2 rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Settings"
           >
@@ -67,53 +67,31 @@
             <XIcon class="h-4.5 w-4.5" />
           </button>
         </div>
-        
-        <!-- Settings dropdown -->
-        <div 
-          v-if="showSettings" 
-          class="absolute right-2 top-14 z-50 w-48 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5"
-        >
-          <div class="px-3 py-2">
-            <p class="text-xs font-medium text-gray-500">Status</p>
-            <div class="mt-1.5 flex items-center">
-              <button 
-                @click="setStatus(true)" 
-                class="mr-2 flex items-center rounded-full px-2 py-1 text-xs transition-colors"
-                :class="userProfile.isOnline ? 'bg-green-100 text-green-700' : 'hover:bg-gray-100'"
-              >
-                <span class="mr-1.5 h-2 w-2 rounded-full bg-green-500"></span>
-                Online
-              </button>
-              <button 
-                @click="setStatus(false)" 
-                class="flex items-center rounded-full px-2 py-1 text-xs transition-colors"
-                :class="!userProfile.isOnline ? 'bg-gray-100 text-gray-700' : 'hover:bg-gray-100'"
-              >
-                <span class="mr-1.5 h-2 w-2 rounded-full bg-gray-400"></span>
-                Offline
-              </button>
-            </div>
+      </div>
+
+      <!-- Settings page -->
+      <div v-if="showSettings" class="flex h-[calc(100%-64px)] flex-col">
+        <div class="flex items-center justify-between border-b bg-white p-2.5 shadow-sm">
+          <div class="flex items-center">
+            <button 
+              @click="showSettings = false" 
+              class="mr-2 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100"
+            >
+              <ArrowLeftIcon class="h-4 w-4" />
+            </button>
+            <h4 class="text-sm font-medium text-gray-800">Settings</h4>
           </div>
-          <div class="my-1 h-px bg-gray-200"></div>
-          <button class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
-            <BellIcon class="mr-2 h-3.5 w-3.5" />
-            Notification settings
-          </button>
-          <button class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
-            <ShieldIcon class="mr-2 h-3.5 w-3.5" />
-            Privacy settings
-          </button>
-          <button class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
-            <HelpCircleIcon class="mr-2 h-3.5 w-3.5" />
-            Help & support
-          </button>
+        </div>
+        
+        <div class="flex-1 p-4">
+          <p class="text-center text-sm text-gray-500">Settings page will be designed later</p>
         </div>
       </div>
 
       <!-- Main content area -->
-      <div v-if="!activeChatId && !showStoryView && !showGroupMembers" class="flex h-[calc(100%-64px)] flex-col">
+      <div v-else-if="!activeChatId && !showStoryView && !showGroupMembers && !showAllStories" class="flex h-[calc(100%-64px)] flex-col">
         <!-- Search bar -->
-        <div class="border-b p-2">
+        <div class="p-2">
           <div class="flex items-center rounded-md bg-gray-50 px-2 py-1.5 transition-all focus-within:ring-1 focus-within:ring-green-300">
             <SearchIcon class="h-3.5 w-3.5 text-gray-400" />
             <input 
@@ -125,125 +103,104 @@
           </div>
         </div>
 
-        <!-- Stories section -->
-        <div class="border-b p-2">
-          <div class="flex items-center justify-between pb-2">
-            <h4 class="text-xs font-medium text-gray-600">Stories</h4>
-            <button @click="toggleStoryOptions" class="text-[10px] text-gray-500">
-              <MoreHorizontalIcon class="h-4 w-4" />
-            </button>
-            
-            <!-- Story options dropdown -->
-            <div 
-              v-if="showStoryOptions" 
-              class="absolute right-2 top-[120px] z-50 w-40 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5"
-            >
-              <button @click="showAddStoryModal = true; showStoryOptions = false" class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
-                <PlusIcon class="mr-2 h-3.5 w-3.5" />
-                Add story
-              </button>
-              <button class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
-                <EyeIcon class="mr-2 h-3.5 w-3.5" />
-                View all stories
-              </button>
-              <button class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
-                <TrashIcon class="mr-2 h-3.5 w-3.5" />
-                Delete my story
-              </button>
+        <!-- Scrollable content area -->
+        <div class="flex-1 overflow-y-auto scrollbar-hide">
+          <!-- Stories section -->
+          <div class="p-2">
+            <div class="flex items-center justify-between pb-2">
+              <h4 class="text-xs font-medium text-gray-600">Stories</h4>
+              <button @click="openAllStories" class="text-[10px] text-green-600">View all</button>
             </div>
-          </div>
-          <div class="flex space-x-3 overflow-x-auto pb-1 pt-1 scrollbar-hide">
-            <!-- Add story button -->
-            <div class="flex flex-col items-center">
-              <div 
-                class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-                @click="showAddStoryModal = true"
-              >
-                <div class="absolute inset-0 flex items-center justify-center rounded-full bg-gray-100">
-                  <PlusIcon class="h-6 w-6 text-green-500" />
-                </div>
-                <div class="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
-                  <CameraIcon class="h-3 w-3" />
-                </div>
-              </div>
-              <span class="mt-1 text-[10px]">Add story</span>
-            </div>
-            
-            <!-- User stories -->
-            <div 
-              v-for="(story, index) in stories" 
-              :key="index"
-              class="flex flex-col items-center"
-            >
-              <div 
-                class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-                @click="viewStory(story)"
-              >
-                <div class="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-600 p-0.5">
-                  <div class="h-full w-full overflow-hidden rounded-full">
-                    <img 
-                      :src="story.avatar" 
-                      :alt="story.name" 
-                      class="h-full w-full object-cover"
-                    />
+            <div class="flex space-x-3 overflow-x-auto pb-1 pt-1 scrollbar-hide">
+              <!-- Add story button -->
+              <div class="flex flex-col items-center">
+                <div 
+                  class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+                  @click="showAddStoryModal = true"
+                >
+                  <div class="absolute inset-0 flex items-center justify-center rounded-full bg-gray-100">
+                    <PlusIcon class="h-6 w-6 text-green-500" />
+                  </div>
+                  <div class="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
+                    <CameraIcon class="h-3 w-3" />
                   </div>
                 </div>
-                <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
-                  LIVE
+                <span class="mt-1 text-[10px]">Add story</span>
+              </div>
+              
+              <!-- User stories -->
+              <div 
+                v-for="(story, index) in stories" 
+                :key="index"
+                class="flex flex-col items-center"
+              >
+                <div 
+                  class="relative h-14 w-14 flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+                  @click="viewStory(story)"
+                >
+                  <div class="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-600 p-0.5">
+                    <div class="h-full w-full overflow-hidden rounded-full">
+                      <img 
+                        :src="story.avatar" 
+                        :alt="story.name" 
+                        class="h-full w-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
+                    LIVE
+                  </div>
+                </div>
+                <span class="mt-1 text-[10px] line-clamp-1">{{ story.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AdsyAI chat option -->
+          <div class="p-2">
+            <button
+              @click="openChat('adsyai', 'ai')"
+              class="flex w-full items-center rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 p-2 text-left transition-all hover:shadow-sm"
+            >
+              <div class="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-inner">
+                <div class="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 opacity-50 blur-sm"></div>
+                <ZapIcon class="relative h-4.5 w-4.5 text-white" />
+                <div class="absolute -right-0.5 -top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-white">
+                  <div class="h-2 w-2 rounded-full bg-gradient-to-br from-purple-500 to-pink-500"></div>
                 </div>
               </div>
-              <span class="mt-1 text-[10px] line-clamp-1">{{ story.name }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- AdsyAI chat option -->
-        <div class="p-2">
-          <button
-            @click="openChat('adsyai', 'ai')"
-            class="flex w-full items-center rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 p-2 text-left transition-all hover:shadow-sm"
-          >
-            <div class="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-inner">
-              <div class="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 opacity-50 blur-sm"></div>
-              <ZapIcon class="relative h-4.5 w-4.5 text-white" />
-              <div class="absolute -right-0.5 -top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-white">
-                <div class="h-2 w-2 rounded-full bg-gradient-to-br from-purple-500 to-pink-500"></div>
+              <div class="ml-2 flex-1">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-medium text-purple-800">AdsyAI Assistant</h4>
+                  <span class="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 text-[9px] text-white">
+                    AI
+                  </span>
+                </div>
+                <p class="text-[11px] text-purple-600">Ask me anything about AdsyConnect</p>
               </div>
-            </div>
-            <div class="ml-2 flex-1">
-              <div class="flex items-center justify-between">
-                <h4 class="text-xs font-medium text-purple-800">AdsyAI Assistant</h4>
-                <span class="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 text-[9px] text-white">
-                  AI
-                </span>
-              </div>
-              <p class="text-[11px] text-purple-600">Ask me anything about AdsyConnect</p>
-            </div>
-          </button>
-        </div>
-
-        <!-- Tabs for Friends and Groups -->
-        <div class="border-b px-2">
-          <div class="flex">
-            <button 
-              @click="activeTab = 'friends'" 
-              class="flex-1 border-b-2 py-2 text-xs font-medium transition-colors"
-              :class="activeTab === 'friends' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500'"
-            >
-              Friends
-            </button>
-            <button 
-              @click="activeTab = 'groups'" 
-              class="flex-1 border-b-2 py-2 text-xs font-medium transition-colors"
-              :class="activeTab === 'groups' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500'"
-            >
-              Groups
             </button>
           </div>
-        </div>
 
-        <!-- Friends and Groups content -->
-        <div class="flex-1 overflow-y-auto" ref="chatListContainer" @scroll="handleScroll">
+          <!-- Tabs for Friends and Groups -->
+          <div class="px-2">
+            <div class="flex">
+              <button 
+                @click="activeTab = 'friends'" 
+                class="flex-1 border-b-2 py-2 text-xs font-medium transition-colors"
+                :class="activeTab === 'friends' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500'"
+              >
+                Friends
+              </button>
+              <button 
+                @click="activeTab = 'groups'" 
+                class="flex-1 border-b-2 py-2 text-xs font-medium transition-colors"
+                :class="activeTab === 'groups' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500'"
+              >
+                Groups
+              </button>
+            </div>
+          </div>
+
           <!-- Friends Tab Content -->
           <div v-if="activeTab === 'friends'" class="px-2 py-1">
             <div v-if="filteredFriends.length === 0" class="flex items-center justify-center py-4 text-[11px] text-gray-500">
@@ -266,10 +223,21 @@
                     class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white"
                     :class="friend.isOnline ? 'bg-green-500' : 'bg-gray-400'"
                   ></div>
+                  <div 
+                    v-if="friend.isBlocked" 
+                    class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40"
+                  >
+                    <BanIcon class="h-5 w-5 text-white" />
+                  </div>
                 </div>
                 <div class="ml-2 flex-1">
                   <div class="flex items-center justify-between">
-                    <h4 class="text-xs font-medium text-gray-700">{{ friend.name }}</h4>
+                    <h4 class="flex items-center text-xs font-medium text-gray-700">
+                      {{ friend.name }}
+                      <span v-if="friend.isBlocked" class="ml-1 rounded-sm bg-red-100 px-1 py-0.5 text-[8px] text-red-600">
+                        BLOCKED
+                      </span>
+                    </h4>
                     <span class="text-[10px] text-gray-500">{{ friend.lastTime }}</span>
                   </div>
                   <div class="flex items-center justify-between">
@@ -364,8 +332,33 @@
         </div>
       </div>
 
+      <!-- All Stories View -->
+      <div v-else-if="showAllStories" class="flex h-[calc(100%-64px)] flex-col">
+        <div class="flex items-center justify-between border-b bg-white p-2.5 shadow-sm">
+          <div class="flex items-center">
+            <button 
+              @click="showAllStories = false" 
+              class="mr-2 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100"
+            >
+              <ArrowLeftIcon class="h-4 w-4" />
+            </button>
+            <h4 class="text-sm font-medium text-gray-800">All Stories</h4>
+          </div>
+          <button 
+            @click="showAddStoryModal = true"
+            class="rounded-full bg-green-500 p-1 text-white transition-colors hover:bg-green-600"
+          >
+            <PlusIcon class="h-4 w-4" />
+          </button>
+        </div>
+        
+        <div class="flex-1 p-4">
+          <p class="text-center text-sm text-gray-500">All stories page will be designed later</p>
+        </div>
+      </div>
+
       <!-- Story view -->
-      <div v-if="showStoryView" class="relative flex h-[calc(100%-64px)] flex-col bg-black">
+      <div v-else-if="showStoryView" class="relative flex h-[calc(100%-64px)] flex-col bg-black">
         <!-- Story header -->
         <div class="flex items-center justify-between bg-black/80 p-3 text-white">
           <div class="flex items-center">
@@ -454,7 +447,7 @@
       </div>
 
       <!-- Group members view -->
-      <div v-if="showGroupMembers" class="flex h-[calc(100%-64px)] flex-col">
+      <div v-else-if="showGroupMembers" class="flex h-[calc(100%-64px)] flex-col">
         <!-- Group header -->
         <div class="flex items-center justify-between border-b bg-white p-2.5 shadow-sm">
           <div class="flex items-center">
@@ -522,7 +515,7 @@
       </div>
 
       <!-- Active chat area -->
-      <div v-if="activeChatId && !showStoryView && !showGroupMembers" class="flex h-[calc(100%-64px)] flex-col">
+      <div v-else-if="activeChatId" class="flex h-[calc(100%-64px)] flex-col">
         <!-- Chat header -->
         <div class="flex items-center justify-between border-b bg-white p-2.5 shadow-sm">
           <div class="flex items-center">
@@ -568,11 +561,28 @@
             <button v-if="activeChatType === 'friend'" class="ml-1 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
               <VideoIcon class="h-4 w-4" />
             </button>
+            <button v-if="activeChatType === 'group'" @click="viewGroupMembers">
+            </button>
             <button v-if="activeChatType === 'group'" @click="viewGroupMembers" class="rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
               <UsersIcon class="h-4 w-4" />
             </button>
-            <button class="ml-1 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
+            <button @click="toggleChatOptions" class="ml-1 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
               <MoreVerticalIcon class="h-4 w-4" />
+            </button>
+          </div>
+          
+          <!-- Chat options dropdown -->
+          <div 
+            v-if="showChatOptions" 
+            class="absolute right-2 top-14 z-50 w-48 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5"
+          >
+            <button v-if="activeChatType === 'friend'" @click="toggleBlockUser" class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
+              <BanIcon class="mr-2 h-3.5 w-3.5" />
+              {{ activeChat.isBlocked ? 'Unblock user' : 'Block user' }}
+            </button>
+            <button @click="deleteChat" class="flex w-full items-center px-3 py-2 text-xs text-red-600 transition-colors hover:bg-gray-100">
+              <TrashIcon class="mr-2 h-3.5 w-3.5" />
+              Delete chat
             </button>
           </div>
         </div>
@@ -606,7 +616,7 @@
                 <span v-if="!message.isUser && activeChatType === 'group'" class="mr-1 text-[10px] font-medium text-gray-500">
                   {{ message.sender || activeChat.name }}:
                 </span>
-                <img 
+                <img
                   v-if="message.isUser" 
                   :src="userProfile.avatar" 
                   :alt="userProfile.name" 
@@ -627,30 +637,30 @@
                 <p class="text-xs" v-html="formatMessageWithMentions(message.text)"></p>
                 
                 <!-- Media preview if message has media -->
-                <div v-if="message.media" class="mt-2">
+                <div v-if="message.media">
                   <img 
                     v-if="message.media.type === 'image'" 
                     :src="message.media.url" 
                     alt="Image" 
-                    class="max-h-40 w-full rounded-md object-cover"
+                    class="mt-2 max-h-40 w-full rounded-md object-cover"
                   />
-                  <div v-else-if="message.media.type === 'file'" class="flex items-center rounded-md bg-gray-100 p-2">
-                    <FileIcon class="h-4 w-4 text-gray-500" />
-                    <span class="ml-2 text-[10px] text-gray-700">{{ message.media.name }}</span>
+                  <div v-else-if="message.media.type === 'file'" class="mt-2 flex items-center">
+                    <FileIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
+                    <span class="ml-2 text-[10px]">{{ message.media.name }}</span>
                   </div>
-                  <div v-else-if="message.media.type === 'voice'" class="flex items-center rounded-md bg-gray-100 p-2">
-                    <MicIcon class="h-4 w-4 text-gray-500" />
+                  <div v-else-if="message.media.type === 'voice'" class="mt-2 flex items-center">
+                    <MicIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
                     <div class="ml-2 flex-1">
-                      <div class="h-1 w-full rounded-full bg-gray-300">
-                        <div class="h-full w-1/3 rounded-full bg-green-500"></div>
+                      <div class="h-1 w-full rounded-full" :class="message.isUser ? 'bg-white/30' : 'bg-gray-300'">
+                        <div class="h-full w-1/3 rounded-full" :class="message.isUser ? 'bg-white' : 'bg-green-500'"></div>
                       </div>
                       <div class="mt-1 flex items-center justify-between">
-                        <span class="text-[8px] text-gray-500">0:12</span>
-                        <span class="text-[8px] text-gray-500">0:36</span>
+                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">0:12</span>
+                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">0:36</span>
                       </div>
                     </div>
-                    <button class="ml-2 rounded-full bg-gray-200 p-1">
-                      <PlayIcon class="h-3 w-3 text-gray-700" />
+                    <button class="ml-2 rounded-full p-1" :class="message.isUser ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'">
+                      <PlayIcon class="h-3 w-3" />
                     </button>
                   </div>
                 </div>
@@ -696,14 +706,22 @@
                 <ImageIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Media</span>
               </button>
-              <button @click="startVoiceRecording" class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500">
+              <button 
+                @touchstart="startVoiceRecording" 
+                @touchend="stopVoiceRecording"
+                @mousedown="startVoiceRecording"
+                @mouseup="stopVoiceRecording"
+                @mouseleave="stopVoiceRecording"
+                class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500"
+              >
                 <MicIcon class="mr-1 h-3.5 w-3.5" :class="isRecording ? 'text-red-500 animate-pulse' : ''" />
                 <span>{{ isRecording ? 'Recording...' : 'Voice' }}</span>
               </button>
-              <button @click="openFilePicker" class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500">
+              <label class="flex items-center text-[10px] text-gray-500 transition-colors hover:text-green-500 cursor-pointer">
                 <PaperclipIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Files</span>
-              </button>
+                <input type="file" class="hidden" @change="handleFileSelect" />
+              </label>
             </div>
             <div class="flex items-center">
               <button v-if="activeChatType === 'group'" @click="toggleMentionList" class="mr-2 text-[10px] text-gray-500 transition-colors hover:text-green-500">
@@ -725,9 +743,10 @@
             >
               <img :src="`https://i.pravatar.cc/150?img=${20 + i}`" alt="Media" class="h-full w-full object-cover" />
             </div>
-            <div class="aspect-square flex items-center justify-center rounded-md bg-gray-100 text-gray-500">
+            <label class="aspect-square flex items-center justify-center rounded-md bg-gray-100 text-gray-500 cursor-pointer">
               <CameraIcon class="h-4 w-4" />
-            </div>
+              <input type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
+            </label>
           </div>
           
           <!-- Emoji picker -->
@@ -771,27 +790,10 @@
             <button
               @click="sendMessage"
               class="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white transition-all hover:shadow-sm disabled:opacity-50"
-              :disabled="!newMessage.trim() && !selectedMedia && !recordedVoice"
+              :disabled="!newMessage.trim() && !selectedMedia && !recordedVoice && !selectedFile"
               aria-label="Send message"
             >
               <SendIcon class="h-3 w-3" />
-            </button>
-          </div>
-          
-          <!-- Selected media preview -->
-          <div v-if="selectedMedia" class="mt-2 flex items-center rounded-md bg-gray-100 p-2">
-            <div class="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md">
-              <img v-if="selectedMediaType === 'image'" :src="selectedMedia" alt="Selected media" class="h-full w-full object-cover" />
-              <div v-else class="flex h-full w-full items-center justify-center bg-gray-200">
-                <FileIcon class="h-5 w-5 text-gray-500" />
-              </div>
-            </div>
-            <div class="ml-2 flex-1">
-              <p class="text-[10px] font-medium text-gray-700">{{ selectedMediaType === 'image' ? 'Image' : 'File' }}</p>
-              <p class="text-[9px] text-gray-500">Ready to send</p>
-            </div>
-            <button @click="clearSelectedMedia" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">
-              <XIcon class="h-3.5 w-3.5" />
             </button>
           </div>
           
@@ -807,6 +809,18 @@
               </div>
             </div>
             <button @click="clearRecordedVoice" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">
+              <XIcon class="h-3.5 w-3.5" />
+            </button>
+          </div>
+          
+          <!-- Selected file preview -->
+          <div v-if="selectedFile" class="mt-2 flex items-center rounded-md bg-gray-100 p-2">
+            <FileIcon class="h-5 w-5 text-gray-500" />
+            <div class="ml-2 flex-1">
+              <p class="text-[10px] font-medium text-gray-700">{{ selectedFileName }}</p>
+              <p class="text-[9px] text-gray-500">Ready to send</p>
+            </div>
+            <button @click="clearSelectedFile" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">
               <XIcon class="h-3.5 w-3.5" />
             </button>
           </div>
@@ -827,9 +841,10 @@
             <ImageIcon class="mb-2 h-10 w-10 text-gray-400" />
             <p class="mb-1 text-xs text-gray-600">Upload a photo or video</p>
             <p class="text-[10px] text-gray-500">Your story will be visible for 24 hours</p>
-            <button class="mt-3 rounded-full bg-green-500 px-4 py-1.5 text-xs text-white transition-colors hover:bg-green-600">
+            <label class="mt-3 rounded-full bg-green-500 px-4 py-1.5 text-xs text-white transition-colors hover:bg-green-600 cursor-pointer">
               Select from gallery
-            </button>
+              <input type="file" accept="image/*,video/*" class="hidden" />
+            </label>
           </div>
           
           <div class="flex justify-end">
@@ -886,6 +901,29 @@
           </div>
         </div>
       </div>
+      
+      <!-- Delete chat confirmation modal -->
+      <div v-if="showDeleteConfirmation" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-medium">Delete Chat</h3>
+            <button @click="showDeleteConfirmation = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">
+              <XIcon class="h-4 w-4" />
+            </button>
+          </div>
+          
+          <p class="mb-4 text-xs text-gray-600">Are you sure you want to delete this chat? This action cannot be undone.</p>
+          
+          <div class="flex justify-end">
+            <button @click="showDeleteConfirmation = false" class="mr-2 rounded-md px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100">
+              Cancel
+            </button>
+            <button @click="confirmDeleteChat" class="rounded-md bg-red-500 px-3 py-1.5 text-xs text-white transition-colors hover:bg-red-600">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -901,6 +939,7 @@ import {
   PhoneIcon,
   VideoIcon,
   MoreVerticalIcon,
+  MoreHorizontalIcon,
   PaperclipIcon,
   SearchIcon,
   PlusIcon,
@@ -922,7 +961,7 @@ import {
   AtSignIcon,
   FileIcon,
   PlayIcon,
-  MoreHorizontalIcon,
+  BanIcon,
   TrashIcon
 } from 'lucide-vue-next';
 
@@ -942,21 +981,13 @@ const toggleStatus = () => {
 // Set status explicitly
 const setStatus = (status) => {
   userProfile.value.isOnline = status;
-  showSettings.value = false;
 };
 
 // Settings state
 const showSettings = ref(false);
-const showStoryOptions = ref(false);
 
-const toggleSettings = () => {
-  showSettings.value = !showSettings.value;
-  showStoryOptions.value = false;
-};
-
-const toggleStoryOptions = () => {
-  showStoryOptions.value = !showStoryOptions.value;
-  showSettings.value = false;
+const openSettings = () => {
+  showSettings.value = true;
 };
 
 // Stories data
@@ -1053,18 +1084,31 @@ const stories = ref([
 
 // Story view state
 const showStoryView = ref(false);
+const showAllStories = ref(false);
 const activeStory = ref(null);
 const storyProgress = ref(0);
 const storyInterval = ref(null);
 const showStoryViewers = ref(false);
 const showAddStoryModal = ref(false);
+const showStoryOptions = ref(false);
+
+// Toggle story options
+const toggleStoryOptions = () => {
+  showStoryOptions.value = !showStoryOptions.value;
+};
+
+// Open all stories page
+const openAllStories = () => {
+  showAllStories.value = true;
+  showStoryOptions.value = false;
+};
 
 // View story
 const viewStory = (story) => {
   activeStory.value = { ...story };
   showStoryView.value = true;
   storyProgress.value = 0;
-  
+
   // Start story progress
   if (storyInterval.value) clearInterval(storyInterval.value);
   storyInterval.value = setInterval(() => {
@@ -1095,7 +1139,7 @@ const closeStoryView = () => {
 // React to story
 const reactToStory = () => {
   if (!activeStory.value) return;
-  
+
   if (activeStory.value.hasLiked) {
     activeStory.value.likes--;
     activeStory.value.hasLiked = false;
@@ -1103,7 +1147,7 @@ const reactToStory = () => {
     activeStory.value.likes++;
     activeStory.value.hasLiked = true;
   }
-  
+
   // Update the original story in the stories array
   const storyIndex = stories.value.findIndex(s => s.id === activeStory.value.id);
   if (storyIndex !== -1) {
@@ -1138,6 +1182,7 @@ const friends = ref([
     lastMessage: 'Are we still meeting tomorrow?',
     lastTime: '10:33 AM',
     unreadCount: 2,
+    isBlocked: false,
     messages: [
       {
         text: 'Hey, how are you doing?',
@@ -1170,6 +1215,7 @@ const friends = ref([
     lastMessage: 'Check out this new ad campaign',
     lastTime: 'Yesterday',
     unreadCount: 0,
+    isBlocked: false,
     messages: [
       {
         text: 'Hey, I saw your latest post. Great work!',
@@ -1189,11 +1235,7 @@ const friends = ref([
         isUser: false,
         time: 'Yesterday',
         sender: 'Michael Chen',
-        read: true,
-        media: {
-          type: 'image',
-          url: 'https://i.pravatar.cc/800?img=30'
-        }
+        read: true
       }
     ]
   },
@@ -1206,6 +1248,7 @@ const friends = ref([
     lastMessage: 'The client loved our presentation!',
     lastTime: 'Monday',
     unreadCount: 0,
+    isBlocked: false,
     messages: [
       {
         text: 'Just got out of the meeting with the client.',
@@ -1242,6 +1285,7 @@ for (let i = 4; i <= 20; i++) {
     lastMessage: `This is message ${i}`,
     lastTime: 'Last week',
     unreadCount: 0,
+    isBlocked: i % 7 === 0, // Block some friends for demo
     messages: []
   });
 }
@@ -1412,27 +1456,31 @@ const typingTimeout = ref(null);
 const showGroupMembers = ref(false);
 const showAddMemberModal = ref(false);
 const showMentionList = ref(false);
+const activeTab = ref('friends');
+const searchQuery = ref('');
 const currentPage = ref(1);
 const itemsPerPage = ref(15);
 const isLoadingMore = ref(false);
-const activeTab = ref('friends');
-const searchQuery = ref('');
 const showMediaPicker = ref(false);
 const showEmojiPicker = ref(false);
 const selectedMedia = ref(null);
 const selectedMediaType = ref(null);
 const isRecording = ref(false);
-const recordedVoice = ref(null);
+const recordedVoice = ref(false);
 const recordingDuration = ref(0);
 const recordingInterval = ref(null);
+const selectedFile = ref(null);
+const selectedFileName = ref('');
+const showChatOptions = ref(false);
+const showDeleteConfirmation = ref(false);
 
-// Emojis for emoji picker
-const emojis = ref(['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🙏', '😍', '👏', '🤔', '😢', '😭', '😡', '👋', '🥳']);
+// Emojis for picker
+const emojis = ref(['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🙏', '😢', '😍', '🤔', '👏', '💪', '🌟', '💯', '🤣']);
 
 // Computed properties
 const activeChat = computed(() => {
   if (!activeChatId.value) return null;
-  
+
   if (activeChatType.value === 'friend') {
     return friends.value.find(f => f.id === activeChatId.value);
   } else if (activeChatType.value === 'group') {
@@ -1440,7 +1488,7 @@ const activeChat = computed(() => {
   } else if (activeChatType.value === 'ai') {
     return adsyAI.value;
   }
-  
+
   return null;
 });
 
@@ -1450,13 +1498,11 @@ const unreadCount = computed(() => {
   return friendUnread + groupUnread;
 });
 
-// Filtered friends based on search query
+// Filtered friends based on search
 const filteredFriends = computed(() => {
   if (!searchQuery.value) return friends.value;
-  const query = searchQuery.value.toLowerCase();
   return friends.value.filter(friend => 
-    friend.name.toLowerCase().includes(query) || 
-    friend.lastMessage.toLowerCase().includes(query)
+    friend.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
@@ -1466,14 +1512,11 @@ const displayedFriends = computed(() => {
   return filteredFriends.value.slice(0, endIndex);
 });
 
-// Filtered groups based on search query
+// Filtered groups based on search
 const filteredGroups = computed(() => {
   if (!searchQuery.value) return groups.value;
-  const query = searchQuery.value.toLowerCase();
   return groups.value.filter(group => 
-    group.name.toLowerCase().includes(query) || 
-    group.lastMessage.toLowerCase().includes(query) ||
-    group.lastMessageSender.toLowerCase().includes(query)
+    group.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
@@ -1482,47 +1525,6 @@ const hasMoreFriends = computed(() => {
   return displayedFriends.value.length < filteredFriends.value.length;
 });
 
-// Helper function to convert time strings to timestamps for sorting
-const getTimestampFromString = (timeStr) => {
-  if (timeStr.includes('AM') || timeStr.includes('PM')) {
-    // Today's time
-    const today = new Date();
-    const [time, period] = timeStr.split(' ');
-    const [hours, minutes] = time.split(':').map(Number);
-    
-    let hour = hours;
-    if (period === 'PM' && hours < 12) hour += 12;
-    if (period === 'AM' && hours === 12) hour = 0;
-    
-    today.setHours(hour, minutes, 0, 0);
-    return today.getTime();
-  } else if (timeStr === 'Yesterday') {
-    // Yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.getTime();
-  } else {
-    // Older messages (Monday, etc.)
-    const daysAgo = {
-      'Monday': 1,
-      'Tuesday': 2,
-      'Wednesday': 3,
-      'Thursday': 4,
-      'Friday': 5,
-      'Saturday': 6,
-      'Sunday': 7
-    };
-    
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const daysToSubtract = (dayOfWeek + 7 - (daysAgo[timeStr] || 7)) % 7;
-    
-    const pastDate = new Date();
-    pastDate.setDate(pastDate.getDate() - daysToSubtract);
-    return pastDate.getTime();
-  }
-};
-
 // Methods
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768;
@@ -1530,32 +1532,25 @@ const checkMobile = () => {
 
 const toggleChat = () => {
   isChatOpen.value = !isChatOpen.value;
-  
+
   if (!isChatOpen.value) {
-    // Close settings if open
+    // Close all modals and views
     showSettings.value = false;
-    // Close story view if open
     closeStoryView();
-    // Close group members if open
     showGroupMembers.value = false;
-    // Close add member modal if open
     showAddMemberModal.value = false;
-    // Close add story modal if open
     showAddStoryModal.value = false;
-    // Close story options if open
+    showAllStories.value = false;
     showStoryOptions.value = false;
+    showChatOptions.value = false;
+    showDeleteConfirmation.value = false;
   }
 };
 
 const openChat = (id, type) => {
   activeChatId.value = id;
   activeChatType.value = type;
-  
-  // Close settings if open
-  showSettings.value = false;
-  // Close story options if open
-  showStoryOptions.value = false;
-  
+
   // Reset unread count
   if (type === 'friend') {
     const friend = friends.value.find(f => f.id === id);
@@ -1564,7 +1559,7 @@ const openChat = (id, type) => {
     const group = groups.value.find(g => g.id === id);
     if (group) group.unreadCount = 0;
   }
-  
+
   // Simulate other user typing for demo purposes
   if (type === 'friend' || type === 'group') {
     setTimeout(() => {
@@ -1574,7 +1569,7 @@ const openChat = (id, type) => {
       }, 3000);
     }, 2000);
   }
-  
+
   nextTick(() => {
     scrollToBottom();
   });
@@ -1583,20 +1578,17 @@ const openChat = (id, type) => {
 const closeActiveChat = () => {
   activeChatId.value = null;
   activeChatType.value = null;
-  
-  // Clear any selected media or voice recordings
-  clearSelectedMedia();
-  clearRecordedVoice();
+  showChatOptions.value = false;
 };
 
 const handleTyping = () => {
   isUserTyping.value = true;
-  
+
   // Clear existing timeout
   if (typingTimeout.value) {
     clearTimeout(typingTimeout.value);
   }
-  
+
   // Set new timeout to stop typing indicator after 2 seconds of inactivity
   typingTimeout.value = setTimeout(() => {
     isUserTyping.value = false;
@@ -1607,6 +1599,7 @@ const handleTyping = () => {
 const viewGroupMembers = () => {
   if (activeChatType.value !== 'group') return;
   showGroupMembers.value = true;
+  showChatOptions.value = false;
 };
 
 // Close group members view
@@ -1634,6 +1627,11 @@ const toggleEmojiPicker = () => {
   showMediaPicker.value = false;
 };
 
+// Toggle chat options
+const toggleChatOptions = () => {
+  showChatOptions.value = !showChatOptions.value;
+};
+
 // Add emoji to message
 const addEmoji = (emoji) => {
   newMessage.value += emoji;
@@ -1649,7 +1647,7 @@ const mentionUser = (user) => {
 // Format message with mentions
 const formatMessageWithMentions = (text) => {
   if (!text) return '';
-  
+
   // Replace @mentions with styled spans
   return text.replace(/@([a-zA-Z\s]+)/g, '<span class="font-medium text-green-600">@$1</span>');
 };
@@ -1667,133 +1665,181 @@ const clearSelectedMedia = () => {
   selectedMediaType.value = null;
 };
 
-// Open file picker
-const openFilePicker = () => {
-  // In a real app, this would open a file picker dialog
-  // For demo purposes, we'll just simulate selecting a file
-  selectMedia('file://document.pdf', 'file');
+// Handle image selection from device
+const handleImageSelect = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      selectMedia(e.target.result, 'image');
+    };
+    reader.readAsDataURL(file);
+  }
+  showMediaPicker.value = false;
+};
+
+// Handle file selection
+const handleFileSelect = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    selectedFile.value = file;
+    selectedFileName.value = file.name;
+  }
+};
+
+// Clear selected file
+const clearSelectedFile = () => {
+  selectedFile.value = null;
+  selectedFileName.value = '';
 };
 
 // Start voice recording
 const startVoiceRecording = () => {
+  isRecording.value = true;
+  recordingDuration.value = 0;
+  
+  // Start recording timer
+  recordingInterval.value = setInterval(() => {
+    recordingDuration.value++;
+  }, 1000);
+  
+  // In a real app, this would start actual voice recording
+};
+
+// Stop voice recording
+const stopVoiceRecording = () => {
   if (isRecording.value) {
-    // Stop recording
     isRecording.value = false;
-    recordedVoice.value = `voice-recording-${Date.now()}.mp3`;
+    clearInterval(recordingInterval.value);
     
-    if (recordingInterval.value) {
-      clearInterval(recordingInterval.value);
-      recordingInterval.value = null;
+    // Only save if recording lasted more than 1 second
+    if (recordingDuration.value > 0) {
+      recordedVoice.value = true;
     }
-  } else {
-    // Start recording
-    isRecording.value = true;
-    recordingDuration.value = 0;
-    recordedVoice.value = null;
     
-    recordingInterval.value = setInterval(() => {
-      recordingDuration.value++;
-    }, 1000);
+    // In a real app, this would stop and save the recording
   }
 };
 
 // Clear recorded voice
 const clearRecordedVoice = () => {
-  recordedVoice.value = null;
+  recordedVoice.value = false;
   recordingDuration.value = 0;
-  
-  if (recordingInterval.value) {
-    clearInterval(recordingInterval.value);
-    recordingInterval.value = null;
+};
+
+// Block/unblock user
+const toggleBlockUser = () => {
+  if (activeChatType.value === 'friend' && activeChat.value) {
+    const friendIndex = friends.value.findIndex(f => f.id === activeChatId.value);
+    if (friendIndex !== -1) {
+      friends.value[friendIndex].isBlocked = !friends.value[friendIndex].isBlocked;
+      showChatOptions.value = false;
+    }
   }
 };
 
-// Handle scroll for infinite loading
-const handleScroll = () => {
-  if (!chatListContainer.value || activeTab.value !== 'friends') return;
-  
-  const { scrollTop, scrollHeight, clientHeight } = chatListContainer.value;
-  
-  // If we're near the bottom and there are more friends to load
-  if (scrollTop + clientHeight >= scrollHeight - 50 && hasMoreFriends.value && !isLoadingMore.value) {
-    loadMoreFriends();
-  }
+// Delete chat
+const deleteChat = () => {
+  showDeleteConfirmation.value = true;
+  showChatOptions.value = false;
 };
 
-// Load more friends
-const loadMoreFriends = () => {
-  if (!hasMoreFriends.value) return;
+// Confirm delete chat
+const confirmDeleteChat = () => {
+  if (activeChatType.value === 'friend') {
+    const friendIndex = friends.value.findIndex(f => f.id === activeChatId.value);
+    if (friendIndex !== -1) {
+      friends.value[friendIndex].messages = [];
+      friends.value[friendIndex].lastMessage = '';
+      friends.value[friendIndex].lastTime = 'No messages';
+    }
+  } else if (activeChatType.value === 'group') {
+    const groupIndex = groups.value.findIndex(g => g.id === activeChatId.value);
+    if (groupIndex !== -1) {
+      groups.value[groupIndex].messages = [];
+      groups.value[groupIndex].lastMessage = '';
+      groups.value[groupIndex].lastTime = 'No messages';
+    }
+  }
   
-  isLoadingMore.value = true;
-  
-  // Simulate API call delay
-  setTimeout(() => {
-    currentPage.value++;
-    isLoadingMore.value = false;
-  }, 1000);
+  showDeleteConfirmation.value = false;
+  closeActiveChat();
 };
 
 const sendMessage = () => {
-  if ((!newMessage.value.trim() && !selectedMedia.value && !recordedVoice.value) || !activeChat.value) return;
-  
+  if ((!newMessage.value.trim() && !selectedMedia.value && !recordedVoice.value && !selectedFile.value) || !activeChat.value) return;
+
   const now = new Date();
   const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-  // Prepare media object if any
-  let media = null;
-  if (selectedMedia.value) {
-    media = {
-      type: selectedMediaType.value,
-      url: selectedMedia.value,
-      name: selectedMediaType.value === 'file' ? 'document.pdf' : 'image.jpg'
-    };
-  } else if (recordedVoice.value) {
-    media = {
-      type: 'voice',
-      url: recordedVoice.value,
-      duration: recordingDuration.value
-    };
-  }
-  
-  // Add message to chat
-  activeChat.value.messages.push({
+
+  // Create message object
+  const messageObj = {
     text: newMessage.value,
     isUser: true,
     time: timeString,
-    read: false,
-    media: media
-  });
-  
+    read: false
+  };
+
+  // Add media if selected
+  if (selectedMedia.value) {
+    messageObj.media = {
+      type: selectedMediaType.value,
+      url: selectedMedia.value
+    };
+  }
+
+  // Add voice recording if available
+  if (recordedVoice.value) {
+    messageObj.media = {
+      type: 'voice',
+      duration: recordingDuration.value
+    };
+  }
+
+  // Add file if selected
+  if (selectedFile.value) {
+    messageObj.media = {
+      type: 'file',
+      name: selectedFileName.value
+    };
+  }
+
+  // Add message to chat
+  activeChat.value.messages.push(messageObj);
+
   // Update last message
   if (activeChatType.value === 'friend') {
     const friendIndex = friends.value.findIndex(f => f.id === activeChatId.value);
     if (friendIndex !== -1) {
-      friends.value[friendIndex].lastMessage = media 
-        ? media.type === 'image' ? '📷 Image' : media.type === 'voice' ? '🎤 Voice message' : '📎 File' 
-        : newMessage.value;
+      friends.value[friendIndex].lastMessage = newMessage.value || (messageObj.media ? 
+        messageObj.media.type === 'image' ? 'Sent an image' : 
+        messageObj.media.type === 'voice' ? 'Sent a voice message' : 
+        'Sent a file' : '');
       friends.value[friendIndex].lastTime = timeString;
     }
   } else if (activeChatType.value === 'group') {
     const groupIndex = groups.value.findIndex(g => g.id === activeChatId.value);
     if (groupIndex !== -1) {
-      groups.value[groupIndex].lastMessage = media 
-        ? media.type === 'image' ? '📷 Image' : media.type === 'voice' ? '🎤 Voice message' : '📎 File' 
-        : newMessage.value;
+      groups.value[groupIndex].lastMessage = newMessage.value || (messageObj.media ? 
+        messageObj.media.type === 'image' ? 'Sent an image' : 
+        messageObj.media.type === 'voice' ? 'Sent a voice message' : 
+        'Sent a file' : '');
       groups.value[groupIndex].lastMessageSender = userProfile.value.name.split(' ')[0];
       groups.value[groupIndex].lastTime = timeString;
     }
   }
-  
-  // Clear input and media
+
+  // Clear inputs
   newMessage.value = '';
   clearSelectedMedia();
   clearRecordedVoice();
-  
+  clearSelectedFile();
+
   // Scroll to bottom
   nextTick(() => {
     scrollToBottom();
   });
-  
+
   // Simulate typing indicator
   setTimeout(() => {
     isOtherUserTyping.value = true;
@@ -1873,6 +1919,31 @@ const scrollToBottom = () => {
   }
 };
 
+// Handle scroll for infinite loading
+const handleScroll = () => {
+  if (!chatListContainer.value || !hasMoreFriends.value) return;
+  
+  const { scrollTop, scrollHeight, clientHeight } = chatListContainer.value;
+  
+  // If scrolled to bottom (with a small threshold)
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    loadMoreFriends();
+  }
+};
+
+// Load more friends
+const loadMoreFriends = () => {
+  if (isLoadingMore.value || !hasMoreFriends.value) return;
+  
+  isLoadingMore.value = true;
+  
+  // Simulate loading delay
+  setTimeout(() => {
+    currentPage.value++;
+    isLoadingMore.value = false;
+  }, 800);
+};
+
 // Clean up expired stories
 const cleanupExpiredStories = () => {
   const now = new Date();
@@ -1886,7 +1957,7 @@ watch(activeChatId, () => {
   });
 });
 
-// Watch for changes in search query
+// Watch for search query changes
 watch(searchQuery, () => {
   currentPage.value = 1; // Reset pagination when search changes
 });
@@ -1895,22 +1966,22 @@ watch(searchQuery, () => {
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
-  
+
   // Set up interval to check for expired stories
   const storyInterval = setInterval(cleanupExpiredStories, 60000); // Check every minute
-  
+
   // Click outside to close dropdowns
   const handleClickOutside = (event) => {
-    if (showSettings.value && !event.target.closest('.settings-dropdown')) {
-      showSettings.value = false;
-    }
-    if (showStoryOptions.value && !event.target.closest('.story-options-dropdown')) {
+    if (showStoryOptions.value && !event.target.closest('.story-options')) {
       showStoryOptions.value = false;
     }
+    if (showChatOptions.value && !event.target.closest('.chat-options')) {
+      showChatOptions.value = false;
+    }
   };
-  
+
   document.addEventListener('click', handleClickOutside);
-  
+
   // Cleanup
   onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
@@ -1921,14 +1992,13 @@ onMounted(() => {
       clearTimeout(typingTimeout.value);
     }
     
+    if (recordingInterval.value) {
+      clearInterval(recordingInterval.value);
+    }
+    
     // Close story interval if active
     if (storyInterval.value) {
       clearInterval(storyInterval.value);
-    }
-    
-    // Clear recording interval if active
-    if (recordingInterval.value) {
-      clearInterval(recordingInterval.value);
     }
   });
 });
@@ -2016,15 +2086,5 @@ onMounted(() => {
 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
-}
-
-/* Pulse animation */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-pulse {
-  animation: pulse 1.5s infinite;
 }
 </style>
