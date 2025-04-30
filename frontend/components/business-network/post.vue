@@ -51,7 +51,7 @@
             <div class="mb-2 min-w-full px-2">
               <p
                 :class="[
-                  `text-xs sm:text-sm text-gray-800`,
+                  `text-sm sm:text-base text-gray-800`,
                   !post.showFullDescription && `line-clamp-4`,
                 ]"
                 v-html="post.content"
