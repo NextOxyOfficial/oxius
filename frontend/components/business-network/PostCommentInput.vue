@@ -203,10 +203,6 @@ function selectMention(user, post) {
   emit('select-mention', user, post);
 }
 
-// Close mentions dropdown when clicking outside
-onClickOutside(document.body, () => {
-  showLocalMentions.value = false;
-});
 
 // Reset active index when suggestions change
 watch(dbMentionSuggestions, () => {
