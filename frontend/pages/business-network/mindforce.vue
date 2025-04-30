@@ -1055,15 +1055,15 @@
                           class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                         >
                           <img
-                            :src="comment.author.image || '/placeholder.svg'"
-                            :alt="comment.author.name"
+                            :src="problem?.user_details?.image || '/placeholder.svg'"
+                      :alt="problem?.user_details?.name"
                             class="h-full w-full object-cover"
                           />
                         </div>
                         <div class="ml-3">
                           <div class="flex items-center">
                             <p class="text-md font-medium">
-                              {{ comment.author.name }}
+                              {{ problem?.user_details?.name }}
                             </p>
                             <span
                               v-if="comment.isSolution"
