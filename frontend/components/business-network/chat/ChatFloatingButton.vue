@@ -210,9 +210,7 @@
                     />
                   </div>
                 </div>
-                <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
-                  LIVE
-                </div>
+                
               </div>
               <span class="mt-1 text-md line-clamp-1">{{ story.name }}</span>
             </div>
@@ -394,9 +392,7 @@
                   </div>
                   <span class="ml-1 text-sm font-medium text-white">{{ story.name }}</span>
                 </div>
-                <div v-if="story.isLive" class="absolute right-2 top-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[8px] text-white">
-                  LIVE
-                </div>
+                
               </div>
               <span class="mt-1 text-sm">{{ story.time }}</span>
             </div>
@@ -933,7 +929,6 @@
       id: "story1",
       name: "Sarah",
       avatar: "https://i.pravatar.cc/150?img=5",
-      isLive: true,
       content: "https://i.pravatar.cc/800?img=5",
       time: "2 hours ago",
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
@@ -951,7 +946,6 @@
       id: "story2",
       name: "Michael",
       avatar: "https://i.pravatar.cc/150?img=3",
-      isLive: false,
       content: "https://i.pravatar.cc/800?img=3",
       time: "45 minutes ago",
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -968,7 +962,6 @@
       id: "story3",
       name: "Emma",
       avatar: "https://i.pravatar.cc/150?img=9",
-      isLive: false,
       content: "https://i.pravatar.cc/800?img=9",
       time: "3 hours ago",
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -986,7 +979,6 @@
       id: "story4",
       name: "David",
       avatar: "https://i.pravatar.cc/150?img=12",
-      isLive: false,
       content: "https://i.pravatar.cc/800?img=12",
       time: "1 hour ago",
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -1000,7 +992,6 @@
       id: "story5",
       name: "Jessica",
       avatar: "https://i.pravatar.cc/150?img=25",
-      isLive: true,
       content: "https://i.pravatar.cc/800?img=25",
       time: "20 minutes ago",
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -1804,7 +1795,6 @@
           id: storyId,
           name: `User ${startIndex + i + 1}`,
           avatar: `https://i.pravatar.cc/150?img=${randomImg}`,
-          isLive: Math.random() > 0.8,
           content: `https://i.pravatar.cc/800?img=${randomImg}`,
           time: "Just now",
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
