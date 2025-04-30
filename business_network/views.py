@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
-from django.db.models import Count, Q
+from django.db.models import Count, Q,OuterRef, Subquery
 import base64
 from django.core.files.base import ContentFile
 
@@ -730,3 +730,13 @@ class CheckUserFollowStatusView(generics.GenericAPIView):
             return Response({
                 'error': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+class TopTagsView(APIView):
+
+    def get(self, request):
+        tag_id_subquery = BusinessNetworkPostTag.objects.filter(tag=OuterRef('tag')).values('id')[:1]
+        top_tags = BusinessNetworkPostTag.objects.values('tag').annotate(count=Count('id'), id=Subquery(tag_id_subquery)).order_by('-count')[:100]
+        serializer = FrequentTagSerializer(top_tags, many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+        

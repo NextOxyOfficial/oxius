@@ -154,3 +154,8 @@ class UserSavedPostSerializer(serializers.ModelSerializer):
         model = UserSavedPosts
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+        
+class FrequentTagSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    tag = serializers.CharField()
+    count = serializers.IntegerField()

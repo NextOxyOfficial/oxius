@@ -3,7 +3,9 @@
     <header class="sticky top-0 z-50 bg-white shadow-md">
       <div class="max-w-7xl mx-auto">
         <!-- Main Navigation - REVISED LAYOUT -->
-        <div class="flex items-center justify-between px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8">
+        <div
+          class="flex items-center justify-between px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
+        >
           <!-- Logo - Now in the same row with increased size -->
           <NuxtLink to="/adsy-news" class="flex-shrink-0 mr-3">
             <NuxtImg
@@ -12,7 +14,7 @@
               alt="Adsy News Logo"
               width="120"
               height="40"
-              class="h-7 sm:h-9 w-auto object-contain" 
+              class="h-7 sm:h-9 w-auto object-contain"
             />
           </NuxtLink>
 
@@ -22,7 +24,7 @@
             v-if="categories?.length > 0"
           >
             <NuxtLink
-              v-for="category in categories.slice(0, 6)"
+              v-for="category in categories.slice(0, 3)"
               :key="category.id"
               :class="[
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
@@ -34,22 +36,24 @@
             >
               {{ category.name }}
             </NuxtLink>
-            <div class="relative mt-1" v-if="categories.length > 4">
+            <div class="relative mt-1" v-if="categories.length > 3">
               <button
                 @click="toggleMoreCategories"
-                class="flex  items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
               >
                 More
-                <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
+                <UIcon
+                  name="i-heroicons-arrow-small-down-20-solid"
+                  class="ml-1"
+                />
               </button>
               <!-- More menu dropdown - unchanged -->
               <div
                 v-if="moreMenuOpen"
                 class="absolute top-full right-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
-                v-click-outside="() => (moreMenuOpen = false)"
               >
                 <NuxtLink
-                  v-for="category in categories.slice(4)"
+                  v-for="category in categories"
                   :key="category.id"
                   :class="[
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
@@ -75,7 +79,7 @@
             >
               <SearchIcon class="h-5 w-5" />
             </button>
-            
+
             <!-- Navigation Buttons -->
             <NuxtLink
               to="/"
@@ -85,7 +89,7 @@
               <BarChartBig class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>AdsyClub</span>
             </NuxtLink>
-            
+
             <NuxtLink
               to="/business-network"
               class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all"
@@ -96,16 +100,16 @@
             </NuxtLink>
           </div>
         </div>
-        
+
         <!-- Mobile Category Nav - CENTERED WITH FIXED DROPDOWN -->
-        <div class="px-4 sm:px-6 lg:px-8 ">
+        <div class="px-4 sm:px-6 lg:px-8">
           <nav
             class="flex md:hidden pb-3 mt-1 justify-center"
             v-if="categories?.length > 0"
           >
             <div class="flex space-x-4 overflow-x-auto scrollbar-hide">
               <NuxtLink
-                v-for="category in categories.slice(0, 4)"
+                v-for="category in categories.slice(0, 3)"
                 :key="category.id"
                 :class="[
                   'text-sm font-medium hover:text-primary transition-colors duration-200 py-1 flex-shrink-0',
@@ -117,24 +121,29 @@
               >
                 {{ category.name }}
               </NuxtLink>
-              <div class="relative flex-shrink-0 pt-1" v-if="categories.length > 4">
+              <div
+                class="relative flex-shrink-0 pt-1"
+                v-if="categories.length > 4"
+              >
                 <button
                   @click="toggleMoreCategories"
                   class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
                   aria-label="More categories"
                 >
                   More
-                  <UIcon name="i-heroicons-arrow-small-down-20-solid" class="ml-1" />
+                  <UIcon
+                    name="i-heroicons-arrow-small-down-20-solid"
+                    class="ml-1"
+                  />
                 </button>
                 <!-- Mobile dropdown menu with fixed positioning -->
                 <div
                   v-if="moreMenuOpen"
                   class="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 max-h-60 overflow-y-auto border border-gray-200"
-                  v-click-outside="() => (moreMenuOpen = false)"
-                  style="min-width: 150px;"
+                  style="min-width: 150px"
                 >
                   <NuxtLink
-                    v-for="category in categories.slice(4)"
+                    v-for="category in categories"
                     :key="category.id"
                     :class="[
                       'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
@@ -161,13 +170,15 @@
       class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4 sm:px-0"
       @click="isSearchVisible = false"
     >
-      <div 
+      <div
         class="bg-white rounded-lg shadow-xl w-full max-w-lg transform transition-all duration-300 overflow-hidden"
         @click.stop
       >
         <div class="p-4 border-b border-gray-100">
           <div class="relative">
-            <SearchIcon class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <SearchIcon
+              class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
             <input
               type="text"
               placeholder="Search news articles..."
@@ -176,8 +187,8 @@
               @input="handleSearchInput"
               ref="searchInputRef"
             />
-            <button 
-              v-if="searchQuery" 
+            <button
+              v-if="searchQuery"
               @click="clearSearch"
               class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
@@ -186,41 +197,66 @@
           </div>
         </div>
 
-        <div v-if="searchQuery" class="divide-y divide-gray-100 max-h-[60vh] overflow-y-auto">
+        <div
+          v-if="searchQuery"
+          class="divide-y divide-gray-100 max-h-[60vh] overflow-y-auto"
+        >
           <div
             v-for="result in searchResults"
             :key="result.id"
             class="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
             @click="navigateToArticle(result)"
           >
-            <p class="font-medium text-gray-800 line-clamp-2 mb-1">{{ result.title }}</p>
+            <p class="font-medium text-gray-800 line-clamp-2 mb-1">
+              {{ result.title }}
+            </p>
             <div class="flex items-center text-xs text-gray-500">
               <CalendarIcon class="h-3 w-3 mr-1" />
               {{ formatDate(result.created_at) }}
               <span class="mx-2">•</span>
-              <span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs capitalize">
-                {{ result.categories && result.categories.length > 0 ? result.categories[0].title : "News" }}
+              <span
+                class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs capitalize"
+              >
+                {{
+                  result.categories && result.categories.length > 0
+                    ? result.categories[0].title
+                    : "News"
+                }}
               </span>
             </div>
           </div>
-          
+
           <div
             v-if="searchResults.length === 0 && !isSearching && searchQuery"
             class="p-6 text-center text-gray-500"
           >
-            <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            <svg
+              class="mx-auto h-12 w-12 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
             </svg>
             <p class="mt-4">No results found for "{{ searchQuery }}"</p>
-            <p class="text-sm mt-2">Try using different keywords or check spelling</p>
+            <p class="text-sm mt-2">
+              Try using different keywords or check spelling
+            </p>
           </div>
-          
+
           <div v-if="isSearching" class="p-6 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"
+            ></div>
             <p class="mt-4 text-gray-500">Searching...</p>
           </div>
         </div>
-        
+
         <div v-if="!searchQuery" class="p-6 text-center text-gray-500">
           <SearchIcon class="mx-auto h-8 w-8 text-gray-300 mb-2" />
           <p>Type to start searching</p>
@@ -231,10 +267,15 @@
 
     <!-- Breaking News Ticker -->
     <UContainer>
-      <div class="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg shadow-md mt-3 mb-6 sm:mb-8">
+      <div
+        class="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg shadow-md mt-3 mb-6 sm:mb-8"
+      >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <span class="font-semibold text-xs sm:text-base mr-3 sm:mr-4 border-r border-white/30 pr-3 sm:pr-4">BREAKING</span>
+            <span
+              class="font-semibold text-xs sm:text-base mr-3 sm:mr-4 border-r border-white/30 pr-3 sm:pr-4"
+              >BREAKING</span
+            >
           </div>
           <div class="overflow-hidden relative w-full">
             <transition-group
@@ -274,11 +315,9 @@ import {
   CalendarIcon,
   CloudIcon,
   CloudRainIcon,
-  Globe,        // Added for Business Network
-  BarChartBig   // Added for AdsyClub
+  Globe, // Added for Business Network
+  BarChartBig, // Added for AdsyClub
 } from "lucide-vue-next";
-
-import { onMounted, onUnmounted, nextTick } from "vue";
 
 // Debounce utility function
 function debounce(func, wait) {
@@ -292,12 +331,11 @@ function debounce(func, wait) {
 
 // Navigation state
 const moreMenuOpen = ref(false);
+
 const toggleMoreCategories = () => {
+  console.log("Toggle more categories");
   moreMenuOpen.value = !moreMenuOpen.value;
-};
-const setMoreCategory = (categoryId) => {
-  setActiveCategory(categoryId);
-  moreMenuOpen.value = false;
+  console.log("More menu open:", moreMenuOpen.value);
 };
 
 // Search state
@@ -339,10 +377,10 @@ const handleClickOutside = (event) => {
 onMounted(() => {
   // Don't remove your existing event listener
   document.addEventListener("click", handleClickOutside);
-  
+
   // Add keyboard listener
   document.addEventListener("keydown", (e) => {
-    if (e.key === 'Escape' && isSearchVisible.value) {
+    if (e.key === "Escape" && isSearchVisible.value) {
       isSearchVisible.value = false;
     }
   });
@@ -350,7 +388,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
-  document.removeEventListener("keydown", handleEscKey);
+  // document.removeEventListener("keydown", handleEscKey);
 });
 
 // Perform search when query changes
@@ -517,10 +555,10 @@ const vClickOutside = {
         binding.value(event);
       }
     };
-    document.addEventListener('click', el.clickOutsideEvent);
+    document.addEventListener("click", el.clickOutsideEvent);
   },
   unmounted(el) {
-    document.removeEventListener('click', el.clickOutsideEvent);
+    document.removeEventListener("click", el.clickOutsideEvent);
   },
 };
 </script>

@@ -29,6 +29,7 @@ urlpatterns = [
     
     # Tag endpoints
     path('tags/', BusinessNetworkPostTagListCreateView.as_view(), name='post-tags'),
+    path('top-tags/', TopTagsView.as_view(), name='top-tags'),
     path('tags/<str:pk>/', BusinessNetworkPostTagDestroyView.as_view(), name='tag-delete'),
 
     # business_network_workspace endpoints

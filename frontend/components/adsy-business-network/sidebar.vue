@@ -323,7 +323,7 @@
           </h3>
           <div class="flex flex-wrap gap-2 px-3">
             <p
-              v-for="tag in tags"
+              v-for="tag in tags.slice(0, 30)"
               :key="tag.id"
               class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
             >
@@ -580,8 +580,9 @@ await getLogo();
 
 async function getTags() {
   try {
-    const response = await get("/bn/tags/");
+    const response = await get("/bn/top-tags/");
     tags.value = response.data;
+    console.log(response);
   } catch (error) {
     console.log(error);
   }
