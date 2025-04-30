@@ -12,7 +12,7 @@
       >
         <!-- Post Card -->
         <div
-          class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 px-2"
+          class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300"
         >
           <div class=" sm:px-3 py-4 sm:py-5">
             <!-- Post Header -->
