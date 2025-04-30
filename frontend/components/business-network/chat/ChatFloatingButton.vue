@@ -128,7 +128,7 @@
               <h4 class="text-sm font-medium text-gray-600">Stories</h4>
               <button @click="openAllStories" class="text-sm text-green-600">View all</button>
             </div>
-            <div class="flex space-x-5 overflow-x-auto pb-1 pt-1 scrollbar-hide">
+            <div class="flex space-x-4 min-w-max overflow-x-auto pb-1 pt-1 scrollbar-hide">
               <!-- Add story button -->
               <div class="flex flex-col items-center">
                 <div 
