@@ -1,9 +1,7 @@
 <template>
   <div class="font-AnekBangla">
     <AdsyBusinessNetworkHeader />
-    <div
-      class="max-w-5xl w-full mx-auto relative flex justify-center"
-    >
+    <div class="max-w-5xl w-full mx-auto relative flex justify-center">
       <AdsyBusinessNetworkSidebar />
       <slot />
     </div>
@@ -17,14 +15,10 @@
       </section>
     </div>
     <div>
-    <!-- Your existing layout content -->
-    <slot />
-    
-    <!-- Chat Floating Button -->
-    <BusinessNetworkChatFloatingButton />
+      <!-- Chat Floating Button -->
+      <BusinessNetworkChatFloatingButton />
+    </div>
   </div>
-  </div>
-
 </template>
 
 <script setup>

@@ -175,7 +175,7 @@
                   <img
                     :src="
                       article.author_details.image ||
-                      '/static/frontend/images/placeholder.jpg'
+                      '/static/frontend/avatar.png'
                     "
                     :alt="article.author"
                     class="h-8 w-8 rounded-full mr-2"

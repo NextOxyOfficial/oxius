@@ -1,7 +1,8 @@
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
@@ -126,6 +127,16 @@ class UserSavedPostListCreateView(generics.ListCreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+@api_view(['DELETE'])
+def delete_saved_post(request, post_id):
+    try:
+        saved_post = UserSavedPosts.objects.get(post=post_id, user=request.user)
+        saved_post.delete()
+        return Response({"message": "Post deleted from saved posts."}, status=status.HTTP_200_OK)
+    except UserSavedPosts.DoesNotExist:
+        return Response({"error": "Post not found in saved posts."}, status=status.HTTP_404_NOT_FOUND)
 
 # Media Views
 class BusinessNetworkMediaCreateView(generics.CreateAPIView):

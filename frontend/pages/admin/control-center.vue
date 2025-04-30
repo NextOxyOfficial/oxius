@@ -448,7 +448,10 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                           <UAvatar
-                            :src="activity.user.image"
+                            :src="
+                              activity.user.image ||
+                              '/static/frontend/avatar.png'
+                            "
                             size="sm"
                             class="mr-3"
                           />

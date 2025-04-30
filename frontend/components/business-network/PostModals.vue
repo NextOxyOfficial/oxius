@@ -31,7 +31,9 @@
               <div class="flex items-center space-x-3">
                 <NuxtLink :to="`/business-network/profile/${user.user}`">
                   <img
-                    :src="user.user_details.image"
+                    :src="
+                      user.user_details.image || '/static/frontend/avatar.png'
+                    "
                     :alt="user.user_details.name"
                     class="w-10 h-10 rounded-full cursor-pointer"
                   />

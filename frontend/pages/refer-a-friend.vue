@@ -374,7 +374,7 @@
                             </div>
                             <UAvatar
                               v-else
-                              :src="user.image"
+                              :src="user.image || '/static/frontend/avatar.png'"
                               size="sm"
                               class="user-avatar"
                             />

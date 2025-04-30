@@ -449,7 +449,7 @@
             >
               <div class="relative">
                 <img
-                  :src="user.image || '/static/frontend/images/placeholder.jpg'"
+                  :src="user.image || '/static/frontend/avatar.png'"
                   :alt="user.name"
                   class="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
                 />

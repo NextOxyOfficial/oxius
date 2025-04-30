@@ -156,7 +156,7 @@
                     ></div>
                     <template v-else-if="isFollowing">
                       <Check class="h-3 w-3" />
-                      Following
+                      Unfollow
                     </template>
                     <template v-else>
                       <UserPlus class="h-3 w-3" />
@@ -186,13 +186,13 @@
                   </div>
                   <div class="flex items-center">
                     <span class="font-semibold">{{
-                      user?.follow_count || 0
+                      user?.follower_count || 0
                     }}</span>
                     <span class="text-gray-500 ml-1">Followers</span>
                   </div>
                   <div class="flex items-center">
                     <span class="font-semibold">{{
-                      user?.follower_count || 0
+                      user?.follow_count || 0
                     }}</span>
                     <span class="text-gray-500 ml-1">Following</span>
                   </div>
@@ -371,14 +371,15 @@
           </div>
 
           <div v-else-if="activeTab === 'saved'" class="px-4 py-6">
-            <div class="text-center">
+            <div v-if="savedPosts?.length === 0" class="text-center">
               <h3 class="text-base font-medium text-gray-900">
                 No saved posts yet
               </h3>
-              <p class="text-sm text-gray-500 mt-1">
-                Posts saved by this user will appear here.
-              </p>
             </div>
+            <BusinessNetworkPost
+              :posts="savedPosts"
+              :id="currentUser?.user?.id"
+            />
           </div>
         </div>
       </div>
@@ -426,15 +427,15 @@ import {
   ChevronRight,
 } from "lucide-vue-next";
 
-const router = useRouter();
 const route = useRoute();
 
 const { user: currentUser } = useAuth();
-const { get, post } = useApi();
+const { get, post, del } = useApi();
 
 const user = ref({});
 const posts = ref([]);
 const toast = useToast();
+const savedPosts = ref([]);
 
 const followLoading = ref(false);
 const isFollowing = ref(false);
@@ -487,16 +488,17 @@ async function fetchUserPosts() {
 }
 await fetchUserPosts();
 
-const refreshPosts = async () => {
+async function fetchUserSavedPosts() {
   try {
-    const response = await get(`/bn/posts/?author=${route.params.id}`);
-    if (response && response.data) {
-      posts.value = response.data; // Update the posts array
-    }
+    const res = await get(`/bn/posts/save/`);
+    console.log(res.data, "saved posts");
+    savedPosts.value = res.data;
   } catch (error) {
-    console.error("Error refreshing posts:", error);
+    console.error(error);
   }
-};
+}
+
+await fetchUserSavedPosts();
 
 const viewMode = ref("list");
 const activeTab = ref("posts");
@@ -518,38 +520,61 @@ const activeMedia = ref(null);
 const activePost = ref(null);
 const activeMediaIndex = ref(0);
 
-const tabs = [
-  { label: "Posts", value: "posts" },
-  { label: "Media", value: "media" },
-  { label: "Saved", value: "saved" },
-];
+const tabs =
+  currentUser.value.user.id && currentUser.value.user.id === route.params.id
+    ? [
+        { label: "Posts", value: "posts" },
+        // { label: "Media", value: "media" },
+        { label: "Saved", value: "saved" },
+      ]
+    : [
+        { label: "Posts", value: "posts" },
+        // { label: "Media", value: "media" },
+        // { label: "Saved", value: "saved" },
+      ];
 
 const toggleFollow = async () => {
   if (followLoading.value) return;
   followLoading.value = true;
+  isFollowing.value = !isFollowing.value;
+  if (isFollowing.value) {
+    try {
+      const { data } = await post(`/bn/users/${route.params.id}/follow/`);
 
-  try {
-    const { data } = await post(`/bn/users/${route.params.id}/follow/`);
+      if (data) {
+        // Update followers count accordingly
+        user.value.follower_count =
+          user.value.follower_count + (isFollowing.value ? 1 : -1);
 
-    if (data) {
-      // Toggle the follow status after successful API call
-      isFollowing.value = !isFollowing.value;
-
-      // Update followers count accordingly
-      user.value.followers_count =
-        user.value.followers_count + (isFollowing.value ? 1 : -1);
-
-      toast.add({
-        title: isFollowing.value ? "Followed" : "Unfollowed",
-        description: isFollowing.value
-          ? "You have successfully followed this user."
-          : "You have successfully unfollowed this user.",
-      });
+        toast.add({
+          title: isFollowing.value ? "Followed" : "Unfollowed",
+          description: isFollowing.value
+            ? "You have successfully followed this user."
+            : "You have successfully unfollowed this user.",
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+    } finally {
+      followLoading.value = false;
     }
-  } catch (error) {
-    console.error("Error toggling follow:", error);
-  } finally {
-    followLoading.value = false;
+  } else {
+    try {
+      const res = await del(`/bn/users/${route.params.id}/unfollow/`);
+      if (res.data === undefined) {
+        // Update followers count accordingly
+        user.value.follower_count =
+          user.value.follower_count + (isFollowing.value ? 1 : -1);
+        toast.add({
+          title: "Unfollowed",
+          description: "You have successfully unfollowed this user.",
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+    } finally {
+      followLoading.value = false;
+    }
   }
 };
 
