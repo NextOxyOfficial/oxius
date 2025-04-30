@@ -20,7 +20,7 @@
     <!-- Chat window -->
     <div
       v-show="isChatOpen"
-      class="fixed z-40 overflow-hidden rounded-sm sm:rounded-xl  bg-white shadow-2xl transition-all duration-300"
+      class="fixed z-40 overflow-hidden rounded-sm sm:rounded-xl bg-white shadow-2xl transition-all duration-300"
       :class="[
         isMobile 
           ? 'bottom-0 left-0 right-0 top-0' 
@@ -65,6 +65,45 @@
           >
             <SettingsIcon class="h-4.5 w-4.5" />
           </button>
+          
+          <!-- Three dots menu for friend chats -->
+          <div v-if="activeChatId && activeChatType === 'friend'" class="relative chat-options">
+            <button
+              @click="toggleChatOptions"
+              class="relative mr-2 rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Chat options"
+            >
+              <MoreVerticalIcon class="h-4.5 w-4.5" />
+            </button>
+            
+            <!-- Dropdown menu -->
+            <div 
+              v-if="showChatOptions" 
+              class="absolute right-0 top-full mt-1 w-40 rounded-md bg-white py-1 shadow-lg"
+            >
+              <button 
+                @click="toggleBlockUser" 
+                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <BanIcon class="mr-2 h-3.5 w-3.5" :class="activeChat.isBlocked ? 'text-green-500' : 'text-red-500'" />
+                {{ activeChat.isBlocked ? 'Unblock user' : 'Block user' }}
+              </button>
+              <button 
+                @click="deleteChat" 
+                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <TrashIcon class="mr-2 h-3.5 w-3.5 text-red-500" />
+                Delete chat
+              </button>
+              <button 
+                @click="reportSpam" 
+                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <ShieldIcon class="mr-2 h-3.5 w-3.5 text-orange-500" />
+                Report as spam
+              </button>
+            </div>
+          </div>
           
           <!-- Back button when in chat -->
           <button
@@ -121,14 +160,21 @@
         </div>
   
         <!-- Scrollable content area -->
-        <div class="flex-1 overflow-y-auto scrollbar-hide">
+        <div 
+          ref="chatListContainer" 
+          class="flex-1 overflow-y-auto scrollbar-hide"
+          @scroll="handleScroll"
+        >
           <!-- Stories section -->
           <div class="p-2">
             <div class="flex items-center justify-between pb-2">
               <h4 class="text-sm font-medium text-gray-600">Stories</h4>
               <button @click="openAllStories" class="text-sm text-green-600">View all</button>
             </div>
-            <div class="flex space-x-4 min-w-max overflow-x-auto pb-1 pt-1 scrollbar-hide">
+            <div 
+              class="flex space-x-4 min-w-max overflow-x-auto pb-1 pt-1 scrollbar-hide"
+              @scroll="handleStoriesScroll"
+            >
               <!-- Add story button -->
               <div class="flex flex-col items-center">
                 <div 
@@ -164,9 +210,25 @@
                       />
                     </div>
                   </div>
-                  
+                  <div v-if="story.isLive" class="absolute -right-1 top-0 rounded-full bg-red-500 px-1 py-0.5 text-[8px] text-white">
+                    LIVE
+                  </div>
                 </div>
-                <span class="mt-1 text-md line-clamp-1">{{ story.name }}</span>
+                <span class="mt-1 text-sm line-clamp-1">{{ story.name }}</span>
+              </div>
+              
+              <!-- Loading indicator for stories -->
+              <div v-if="isLoadingMoreStories" class="flex flex-col items-center justify-center">
+                <div class="relative h-14 w-14 flex-shrink-0 rounded-full bg-gray-100">
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="typing-animation">
+                      <span class="dot bg-green-500"></span>
+                      <span class="dot bg-green-500"></span>
+                      <span class="dot bg-green-500"></span>
+                    </div>
+                  </div>
+                </div>
+                <span class="mt-1 text-sm">Loading...</span>
               </div>
             </div>
           </div>
@@ -191,7 +253,7 @@
                     AI
                   </span>
                 </div>
-                <p class="text-xs text-purple-600">Ask me anything about AdsyConnect</p>
+                <p class="text-sm text-purple-600">Ask me anything about AdsyConnect</p>
               </div>
             </button>
           </div>
@@ -235,11 +297,12 @@
                         BLOCKED
                       </span>
                     </h4>
-                    <span class="text-xs text-gray-500">{{ friend.lastTime }}</span>
+                    <span class="text-sm text-gray-500">{{ friend.lastTime }}</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
                       <p v-if="friend.isTyping" class="text-sm text-green-500">
+                        <span class="mr-1">typing</span>
                         <span class="typing-animation">
                           <span class="dot"></span>
                           <span class="dot"></span>
@@ -288,8 +351,66 @@
           </button>
         </div>
         
-        <div class="flex-1 p-4">
-          <p class="text-center text-md text-gray-500">All stories page will be designed later</p>
+        <div class="flex-1 overflow-y-auto p-4" @scroll="handleAllStoriesScroll">
+          <div class="grid grid-cols-3 gap-3">
+            <!-- Add story button -->
+            <div class="flex flex-col items-center">
+              <div 
+                class="relative h-24 w-full flex-shrink-0 cursor-pointer rounded-lg bg-gray-100 transition-transform hover:scale-105"
+                @click="showAddStoryModal = true"
+              >
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <PlusIcon class="h-8 w-8 text-green-500" />
+                </div>
+                <div class="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white">
+                  <CameraIcon class="h-3.5 w-3.5" />
+                </div>
+              </div>
+              <span class="mt-1 text-sm">Add story</span>
+            </div>
+            
+            <!-- User stories -->
+            <div 
+              v-for="(story, index) in stories" 
+              :key="index"
+              class="flex flex-col items-center"
+            >
+              <div 
+                class="relative h-24 w-full flex-shrink-0 cursor-pointer overflow-hidden rounded-lg transition-transform hover:scale-105"
+                @click="viewStory(story)"
+              >
+                <img 
+                  :src="story.content" 
+                  :alt="story.name" 
+                  class="h-full w-full object-cover"
+                />
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+                <div class="absolute left-2 top-2 flex items-center">
+                  <div class="relative h-6 w-6 overflow-hidden rounded-full ring-2 ring-white">
+                    <img 
+                      :src="story.avatar" 
+                      :alt="story.name" 
+                      class="h-full w-full object-cover"
+                    />
+                  </div>
+                  <span class="ml-1 text-sm font-medium text-white">{{ story.name }}</span>
+                </div>
+                <div v-if="story.isLive" class="absolute right-2 top-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[8px] text-white">
+                  LIVE
+                </div>
+              </div>
+              <span class="mt-1 text-sm">{{ story.time }}</span>
+            </div>
+          </div>
+          
+          <!-- Loading indicator for all stories -->
+          <div v-if="isLoadingMoreStories" class="flex justify-center py-4">
+            <div class="typing-animation">
+              <span class="dot bg-green-500"></span>
+              <span class="dot bg-green-500"></span>
+              <span class="dot bg-green-500"></span>
+            </div>
+          </div>
         </div>
       </div>
   
@@ -313,7 +434,7 @@
             </div>
             <div class="ml-2">
               <h4 class="text-sm font-medium">{{ activeStory.name }}</h4>
-              <p class="text-[9px] text-white/70">{{ activeStory.time }}</p>
+              <p class="text-sm text-white/70">{{ activeStory.time }}</p>
             </div>
           </div>
           <div class="flex">
@@ -323,8 +444,26 @@
           </div>
         </div>
         
-        <!-- Story content -->
+        <!-- Story content with touch navigation -->
         <div class="relative flex-1">
+          <!-- Left navigation area (previous) -->
+          <div 
+            class="absolute bottom-0 left-0 top-0 z-10 w-1/4 cursor-pointer" 
+            @click="prevStoryPart"
+          ></div>
+          
+          <!-- Center area (pause/play) -->
+          <div 
+            class="absolute bottom-0 left-1/4 right-1/4 top-0 z-10 cursor-pointer" 
+            @click="toggleStoryPause"
+          ></div>
+          
+          <!-- Right navigation area (next) -->
+          <div 
+            class="absolute bottom-0 right-0 top-0 z-10 w-1/4 cursor-pointer" 
+            @click="nextStoryPart"
+          ></div>
+          
           <img 
             :src="activeStory.content" 
             alt="Story" 
@@ -389,7 +528,22 @@
           ref="messagesContainer"
           class="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-3 scrollbar-hide"
         >
-          <div v-if="activeChat.messages.length === 0" class="flex h-full flex-col items-center justify-center text-center text-gray-500">
+          <!-- Blocked user message -->
+          <div v-if="activeChatType === 'friend' && activeChat.isBlocked" class="flex flex-col items-center justify-center p-4 text-center">
+            <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+              <BanIcon class="h-8 w-8 text-red-400" />
+            </div>
+            <p class="mb-2 text-md font-medium text-gray-700">You've blocked this user</p>
+            <p class="mb-4 text-sm text-gray-500">You won't receive messages from this user</p>
+            <button 
+              @click="toggleBlockUser" 
+              class="rounded-full bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+            >
+              Unblock to continue chat
+            </button>
+          </div>
+          
+          <div v-else-if="activeChat.messages.length === 0" class="flex h-full flex-col items-center justify-center text-center text-gray-500">
             <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
               <MessageSquareIcon class="h-8 w-8 text-green-300" />
             </div>
@@ -428,7 +582,7 @@
                       : 'bg-white text-gray-800'
                 ]"
               >
-                <p v-if="message.text" class="text-sm">{{ message.text }}</p>
+                <p v-if="message.text" class="text-md">{{ message.text }}</p>
                 
                 <!-- Media preview if message has media -->
                 <div v-if="message.media" class="mt-2">
@@ -511,11 +665,15 @@
         </div>
       
         <!-- Chat input options -->
-        <div class="border-t bg-white p-2">
+        <div class="border-t bg-white p-2" :class="{ 'opacity-50': activeChatType === 'friend' && activeChat.isBlocked }">
           <!-- Media and attachment options -->
           <div class="mb-1.5 flex items-center justify-between px-1">
             <div class="flex space-x-3">
-              <button @click="showMediaPicker = !showMediaPicker" class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500">
+              <button 
+                @click="showMediaPicker = !showMediaPicker" 
+                class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500"
+                :disabled="activeChatType === 'friend' && activeChat.isBlocked"
+              >
                 <ImageIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Media</span>
               </button>
@@ -526,18 +684,23 @@
                 @mouseup="stopVoiceRecording"
                 @mouseleave="stopVoiceRecording"
                 class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500"
+                :disabled="activeChatType === 'friend' && activeChat.isBlocked"
               >
                 <MicIcon class="mr-1 h-3.5 w-3.5" :class="isRecording ? 'text-red-500 animate-pulse' : ''" />
                 <span>{{ isRecording ? 'Recording...' : 'Voice' }}</span>
               </button>
-              <label class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500 cursor-pointer">
+              <label class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500 cursor-pointer" :class="{ 'pointer-events-none': activeChatType === 'friend' && activeChat.isBlocked }">
                 <PaperclipIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Files</span>
-                <input type="file" class="hidden" @change="handleFileSelect" />
+                <input type="file" class="hidden" @change="handleFileSelect" :disabled="activeChatType === 'friend' && activeChat.isBlocked" />
               </label>
             </div>
             <div class="flex items-center">
-              <button @click="toggleEmojiPicker" class="text-sm text-gray-500 transition-colors hover:text-green-500">
+              <button 
+                @click="toggleEmojiPicker" 
+                class="text-sm text-gray-500 transition-colors hover:text-green-500"
+                :disabled="activeChatType === 'friend' && activeChat.isBlocked"
+              >
                 <SmileIcon class="h-3.5 w-3.5" />
               </button>
             </div>
@@ -587,19 +750,20 @@
           </div>
           
           <!-- Text input -->
-          <div class="flex items-center rounded-full border bg-gray-50 px-3 py-2 mb-2 transition-all focus-within:border-green-300 focus-within:ring-1 focus-within:ring-green-200">
+          <div class="flex items-center rounded-full border bg-gray-50 px-3 py-2 transition-all focus-within:border-green-300 focus-within:ring-1 focus-within:ring-green-200">
             <input
               v-model="newMessage"
               @keyup.enter="sendMessage"
               @input="handleTyping"
               type="text"
-              :placeholder="`Message ${activeChat ? activeChat.name : ''}...`"
+              :placeholder="activeChatType === 'friend' && activeChat.isBlocked ? 'Unblock to send messages' : `Message ${activeChat ? activeChat.name : ''}...`"
               class="flex-1 bg-transparent text-sm focus:outline-none"
+              :disabled="activeChatType === 'friend' && activeChat.isBlocked"
             />
             <button
               @click="sendMessage"
               class="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white transition-all hover:shadow-sm disabled:opacity-50"
-              :disabled="!newMessage.trim() && !selectedMedia && !recordedVoice && !selectedFile && uploadedMedia.length === 0"
+              :disabled="(activeChatType === 'friend' && activeChat.isBlocked) || (!newMessage.trim() && !selectedMedia && !recordedVoice && !selectedFile && uploadedMedia.length === 0)"
               aria-label="Send message"
             >
               <SendIcon class="h-3 w-3" />
@@ -863,6 +1027,9 @@
   const showStoryViewers = ref(false)
   const showAddStoryModal = ref(false)
   const showStoryOptions = ref(false)
+  const isLoadingMoreStories = ref(false)
+  const hasMoreStories = ref(true)
+  const isPaused = ref(false)
   
   // Toggle story options
   const toggleStoryOptions = () => {
@@ -880,18 +1047,21 @@
     activeStory.value = { ...story }
     showStoryView.value = true
     storyProgress.value = 0
+    isPaused.value = false
   
     // Start story progress
     if (storyInterval.value) clearInterval(storyInterval.value)
     storyInterval.value = setInterval(() => {
-      storyProgress.value += 1
-      if (storyProgress.value >= 100) {
-        // Move to next part or close
-        if (activeStory.value.currentPart < activeStory.value.totalParts - 1) {
-          activeStory.value.currentPart++
-          storyProgress.value = 0
-        } else {
-          closeStoryView()
+      if (!isPaused.value) {
+        storyProgress.value += 1
+        if (storyProgress.value >= 100) {
+          // Move to next part or close
+          if (activeStory.value.currentPart < activeStory.value.totalParts - 1) {
+            activeStory.value.currentPart++
+            storyProgress.value = 0
+          } else {
+            closeStoryView()
+          }
         }
       }
     }, 50) // Update every 50ms for smooth progress
@@ -925,6 +1095,68 @@
     if (storyIndex !== -1) {
       stories.value[storyIndex].likes = activeStory.value.likes
       stories.value[storyIndex].hasLiked = activeStory.value.hasLiked
+    }
+  }
+  
+  // Navigate to next story part
+  const nextStoryPart = () => {
+    if (!activeStory.value) return
+  
+    if (activeStory.value.currentPart < activeStory.value.totalParts - 1) {
+      activeStory.value.currentPart++
+      storyProgress.value = 0
+    } else {
+      // Move to next story or close if this is the last one
+      const currentIndex = stories.value.findIndex((s) => s.id === activeStory.value.id)
+      if (currentIndex < stories.value.length - 1) {
+        viewStory(stories.value[currentIndex + 1])
+      } else {
+        closeStoryView()
+      }
+    }
+  }
+  
+  // Navigate to previous story part
+  const prevStoryPart = () => {
+    if (!activeStory.value) return
+  
+    if (activeStory.value.currentPart > 0) {
+      activeStory.value.currentPart--
+      storyProgress.value = 0
+    } else {
+      // Move to previous story or stay if this is the first one
+      const currentIndex = stories.value.findIndex(s => s.id === activeStory.value.id)
+      if (currentIndex > 0) {
+        const prevStory = stories.value[currentIndex - 1]
+        viewStory(prevStory)
+        // Set to last part of previous story
+        activeStory.value.currentPart = activeStory.value.totalParts - 1
+      }
+    }
+  }
+  
+  // Toggle story pause/play
+  const toggleStoryPause = () => {
+    isPaused.value = !isPaused.value
+  }
+  
+  // Handle stories scroll for infinite loading
+  const handleStoriesScroll = (event) => {
+    const container = event.target
+  
+    // Check if scrolled to the end (with a small threshold)
+    if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 50) {
+      loadMoreStories()
+    }
+  }
+  
+  // Handle all stories scroll for infinite loading
+  const handleAllStoriesScroll = (event) => {
+    const container = event.target
+  
+    // Check if scrolled to the bottom (with a small threshold)
+    if (container.scrollTop + container.clientHeight >= container.scrollHeight - 50) {
+      loadMoreStories()
     }
   }
   
@@ -1341,6 +1573,15 @@
     closeActiveChat()
   }
   
+  // Report user as spam
+  const reportSpam = () => {
+    if (activeChatType.value === "friend" && activeChat.value) {
+      // In a real app, this would send a report to the server
+      alert(`${activeChat.value.name} has been reported as spam`)
+      showChatOptions.value = false
+    }
+  }
+  
   const sendMessage = () => {
     if (
       (!newMessage.value.trim() &&
@@ -1544,6 +1785,53 @@
     stories.value = stories.value.filter((story) => story.expiresAt > now)
   }
   
+  // Load more stories
+  const loadMoreStories = () => {
+    if (isLoadingMoreStories.value || !hasMoreStories.value) return
+  
+    isLoadingMoreStories.value = true
+  
+    // Simulate loading delay
+    setTimeout(() => {
+      // Generate new stories
+      const newStories = []
+      const startIndex = stories.value.length
+  
+      for (let i = 0; i < 5; i++) {
+        const storyId = `story${startIndex + i + 1}`
+        const randomImg = Math.floor(Math.random() * 70) + 1
+  
+        newStories.push({
+          id: storyId,
+          name: `User ${startIndex + i + 1}`,
+          avatar: `https://i.pravatar.cc/150?img=${randomImg}`,
+          isLive: Math.random() > 0.8,
+          content: `https://i.pravatar.cc/800?img=${randomImg}`,
+          time: "Just now",
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          totalParts: Math.floor(Math.random() * 4) + 1,
+          currentPart: 0,
+          likes: Math.floor(Math.random() * 30),
+          hasLiked: false,
+          viewers: [
+            { name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=11" },
+            { name: "Sarah Williams", avatar: "https://i.pravatar.cc/150?img=5" },
+          ],
+        })
+      }
+  
+      // Add new stories to the list
+      stories.value = [...stories.value, ...newStories]
+  
+      // Simulate reaching the end after loading many stories
+      if (stories.value.length > 30) {
+        hasMoreStories.value = false
+      }
+  
+      isLoadingMoreStories.value = false
+    }, 1000)
+  }
+  
   // Format voice duration
   const formatVoiceDuration = (duration) => {
     const minutes = Math.floor(duration / 60)
@@ -1701,27 +1989,12 @@
   }
   
   /* Hide scrollbars but maintain scrolling functionality */
-  ::-webkit-scrollbar {
-    width: 0px;
-    height: 0px;
-    background: transparent;
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
   
-  /* For Firefox */
-  * {
-    scrollbar-width: none;
-  }
-  
-  /* For IE/Edge */
-  * {
-    -ms-overflow-style: none;
-  }
-  
-  /* Make scrollable areas respond to clicking/tapping */
-  .scrollable {
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* For iOS smooth scrolling */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
   }
   </style>
