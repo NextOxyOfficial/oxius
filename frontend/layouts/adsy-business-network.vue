@@ -16,7 +16,15 @@
         <CommonPreloader />
       </section>
     </div>
+    <div>
+    <!-- Your existing layout content -->
+    <slot />
+    
+    <!-- Chat Floating Button -->
+    <BusinessNetworkChatFloatingButton />
   </div>
+  </div>
+
 </template>
 
 <script setup>
