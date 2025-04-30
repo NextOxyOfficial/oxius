@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3">
     <div
-      class="relative overflow-hidden rounded-lg"
+      class="relative overflow-hidden rounded-sm"
       :class="{
         'grid gap-1': post.post_media.length > 1,
         'grid-cols-2':

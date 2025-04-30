@@ -199,7 +199,7 @@
                     </p>
                   </div>
                 </div>
-                <div>
+                <div class="flex flex-col items-end gap-1">
                   <span
                     v-if="problem?.payment_option === 'paid'"
                     class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
@@ -222,15 +222,15 @@
                   >
                     I need free help!
                   </span>
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                  >
+                    {{ problem?.category_details?.name }}
+                  </span>
                 </div>
               </div>
 
               <!-- Category badge with subtle shadow -->
-              <span
-                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
-              >
-                {{ problem?.category_details?.name }}
-              </span>
 
               <h3
                 class="text-sm sm:text-base font-medium text-gray-900 hover:text-blue-700 transition-colors"
@@ -525,8 +525,6 @@
               >
                 {{ problem?.title }}
               </h3>
-
-              
 
               <div
                 class="mt-3 sm:mt-4 flex items-center justify-between relative"
@@ -1457,20 +1455,17 @@ const openProblemDetail = async (problem) => {
       }
     }
 
-    // Increment view count through API
-    const res = await patch(`/bn/mindforce/${problem.id}/`, {
-      views: problem.views + 1,
-    });
+    setTimeout(async () => {
+      // Increment view count through API
+      const res = await patch(`/bn/mindforce/${problem.id}/`, {
+        views: problem.views + 1,
+      });
 
-    if (res.data) {
-      // Update the view count locally
-      problem.views += 1;
-      // Also update in problems array
-      const index = problems.value.findIndex((p) => p.id === problem.id);
-      if (index !== -1) {
-        problems.value[index].views += 1;
+      if (res.data) {
+        // Update the view count locally
+        problem.views += 1;
       }
-    }
+    }, 7000);
   } catch (error) {
     console.error("Error updating problem details:", error);
   }
@@ -1628,7 +1623,15 @@ const addComment = async () => {
   isSubmittingComment.value = true;
 
   try {
-    getProblemComments();
+    const res = await post(
+      `/bn/mindforce/${selectedProblem.value.id}/comments/`,
+      {
+        comment: newComment.value,
+      }
+    );
+    if (res.data) {
+      await getProblemComments();
+    }
 
     // Clear the comment input
     newComment.value = "";

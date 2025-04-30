@@ -14,7 +14,7 @@
         <div
           class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300"
         >
-          <div class="px-2 sm:px-3 py-4 sm:py-5">
+          <div class=" sm:px-3 py-4 sm:py-5">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post"
@@ -28,7 +28,7 @@
             <!-- Post Title -->
             <NuxtLink
               :to="`/business-network/posts/${post.id}`"
-              class="block text-sm sm:text-base font-semibold mb-1 hover:text-blue-600 transition-colors"
+              class="block text-sm sm:text-base font-semibold mb-1 hover:text-blue-600 transition-colors px-2"
             >
               {{ post.title }}
             </NuxtLink>
@@ -36,22 +36,22 @@
             <!-- Tags -->
             <div
               v-if="post?.post_tags?.length > 0"
-              class="flex flex-wrap gap-1 mb-2"
+              class="flex flex-wrap gap-1 mb-2 px-2"
             >
               <span
                 v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
-                class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full"
               >
                 #{{ tag.tag }}
               </span>
             </div>
 
             <!-- Post Content -->
-            <div class="mb-2 min-w-full">
+            <div class="mb-2 min-w-full px-2">
               <p
                 :class="[
-                  `text-xs sm:text-sm text-gray-800`,
+                  `text-sm sm:text-base text-gray-800`,
                   !post.showFullDescription && `line-clamp-4`,
                 ]"
                 v-html="post.content"
@@ -131,7 +131,7 @@
         v-if="!loading && posts?.length === 0"
         class="flex flex-col items-center justify-center py-12 text-center"
       >
-        <p class="text-gray-500 mb-2">{{ $t("no_posts_available") }}</p>
+        <p class="text-gray-500 mb-2">{{ $t("no_post_available") }}</p>
       </div>
     </div>
 

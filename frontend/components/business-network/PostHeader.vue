@@ -1,12 +1,12 @@
 <template>
-  <div class="flex items-center justify-between mb-2">
+  <div class="flex items-center justify-between mb-2 px-2">
     <div class="flex items-center space-x-3 flex-1">
       <div class="relative">
         <NuxtLink :to="`/business-network/profile/${post.author}`">
           <img
             :src="post?.author_details?.image || '/placeholder.svg'"
             :alt="post?.author_details?.name"
-            class="size-14 rounded-full cursor-pointer object-cover"
+            class="size-14 rounded-full cursor-pointer object-cover "
           />
         </NuxtLink>
       </div>
