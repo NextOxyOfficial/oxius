@@ -70,7 +70,7 @@
       </div>
     </div>
 
-    <div class="flex items-end" v-if="!isUserBlocked">
+    <div class="flex items-end flex-wrap" v-if="!isUserBlocked">
       <!-- Attachments -->
       <div class="flex space-x-2 mr-2">
         <label class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer">
@@ -101,7 +101,7 @@
       </div>
 
       <!-- Text input -->
-      <div class="flex-1 relative">
+      <div class="w-full relative max-sm:order-2">
         <textarea 
           :value="modelValue"
           @input="$emit('update:modelValue', $event.target.value)"
@@ -137,9 +137,21 @@
             </div>
           </div>
         </div>
-        
+        <!-- Send button -->
+      <button 
+        @click="$emit('send-message')" 
+        :disabled="!canSendMessage"
+        :class="[
+          'absolute right-3 top-2 rounded-full transition-all',
+          canSendMessage 
+            ? 'text-white shadow-md hover:bg-primary-600 active:scale-95' 
+            : 'text-gray-500 dark:text-gray-400 cursor-not-allowed'
+        ]"
+      >
+        <send-icon class="w-5 h-5" />
+      </button>
         <!-- Emoji button -->
-        <div class="absolute bottom-3 right-12">
+        <div class="absolute bottom-3 right-10">
           <button 
             @click="$emit('toggle-emoji-picker')" 
             class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -149,19 +161,7 @@
         </div>
       </div>
 
-      <!-- Send button -->
-      <button 
-        @click="$emit('send-message')" 
-        :disabled="!canSendMessage"
-        :class="[
-          'ml-2 p-3 rounded-full transition-all',
-          canSendMessage 
-            ? 'bg-primary-500 text-white shadow-md hover:bg-primary-600 active:scale-95' 
-            : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-        ]"
-      >
-        <send-icon class="w-5 h-5" />
-      </button>
+      
     </div>
   </div>
 </template>

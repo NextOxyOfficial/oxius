@@ -2,7 +2,7 @@
   <div 
     :class="[
       'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out z-20',
-      'w-80 md:w-20 md:hover:w-80 group/sidebar',
+      'w-full md:w-20 md:hover:w-80 group/sidebar',
       isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
       'fixed md:static inset-y-0 left-0'
     ]"

@@ -1,5 +1,5 @@
 <template>
-    <div class="flex h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden" :class="{ 'floating-mode': isFloating }">
+    <div class="flex h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden fixed inset-0 z-[999999]">
       <!-- Sidebar Component -->
       <BusinessNetworkChatSidebar 
         :friends="friends"
