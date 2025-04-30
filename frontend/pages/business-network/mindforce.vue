@@ -1055,7 +1055,7 @@
                           class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                         >
                           <img
-                            :src="comment.author.avatar || '/placeholder.svg'"
+                            :src="comment.author.image || '/placeholder.svg'"
                             :alt="comment.author.name"
                             class="h-full w-full object-cover"
                           />
