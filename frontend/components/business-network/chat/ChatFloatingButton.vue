@@ -503,12 +503,35 @@
               </div>
             </div>
             <div class="flex">
-              <button class="rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
+              <button @click="openChatWithMember(member)" class="rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
                 <MessageSquareIcon class="h-3.5 w-3.5" />
               </button>
-              <button v-if="userProfile.id !== member.id" class="ml-1 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
+              <button 
+                v-if="userProfile.id !== member.id" 
+                @click="toggleMemberOptions(member.id)"
+                class="ml-1 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100"
+              >
                 <MoreVerticalIcon class="h-3.5 w-3.5" />
               </button>
+              
+              <!-- Member options dropdown -->
+              <div 
+                v-if="activeMemberOptionsId === member.id" 
+                class="absolute right-2 mt-6 w-36 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5 z-10"
+              >
+                <button @click="viewMemberProfile(member)" class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
+                  <UserIcon class="mr-2 h-3.5 w-3.5" />
+                  View profile
+                </button>
+                <button 
+                  v-if="userProfile.isAdmin" 
+                  @click="removeMemberFromGroup(member)" 
+                  class="flex w-full items-center px-3 py-2 text-xs text-red-600 transition-colors hover:bg-gray-100"
+                >
+                  <UserMinusIcon class="mr-2 h-3.5 w-3.5" />
+                  Remove
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -561,8 +584,6 @@
             <button v-if="activeChatType === 'friend'" class="ml-1 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
               <VideoIcon class="h-4 w-4" />
             </button>
-            <button v-if="activeChatType === 'group'" @click="viewGroupMembers">
-            </button>
             <button v-if="activeChatType === 'group'" @click="viewGroupMembers" class="rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100">
               <UsersIcon class="h-4 w-4" />
             </button>
@@ -576,10 +597,23 @@
             v-if="showChatOptions" 
             class="absolute right-2 top-14 z-50 w-48 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5"
           >
+            <!-- Friend options -->
             <button v-if="activeChatType === 'friend'" @click="toggleBlockUser" class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
               <BanIcon class="mr-2 h-3.5 w-3.5" />
               {{ activeChat.isBlocked ? 'Unblock user' : 'Block user' }}
             </button>
+            
+            <!-- Group options -->
+            <button v-if="activeChatType === 'group'" @click="showRenameGroupModal = true" class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
+              <EditIcon class="mr-2 h-3.5 w-3.5" />
+              Rename group
+            </button>
+            <button v-if="activeChatType === 'group'" @click="leaveGroup" class="flex w-full items-center px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-100">
+              <LogOutIcon class="mr-2 h-3.5 w-3.5" />
+              Leave group
+            </button>
+            
+            <!-- Common options -->
             <button @click="deleteChat" class="flex w-full items-center px-3 py-2 text-xs text-red-600 transition-colors hover:bg-gray-100">
               <TrashIcon class="mr-2 h-3.5 w-3.5" />
               Delete chat
@@ -637,30 +671,49 @@
                 <p class="text-xs" v-html="formatMessageWithMentions(message.text)"></p>
                 
                 <!-- Media preview if message has media -->
-                <div v-if="message.media">
+                <div v-if="message.media" class="mt-2">
                   <img 
                     v-if="message.media.type === 'image'" 
                     :src="message.media.url" 
                     alt="Image" 
-                    class="mt-2 max-h-40 w-full rounded-md object-cover"
+                    class="max-h-40 w-full rounded-md object-cover"
+                    @click="viewFullMedia(message.media)"
                   />
-                  <div v-else-if="message.media.type === 'file'" class="mt-2 flex items-center">
+                  <video 
+                    v-else-if="message.media.type === 'video'" 
+                    :src="message.media.url" 
+                    class="max-h-40 w-full rounded-md object-cover" 
+                    controls
+                  ></video>
+                  <div v-else-if="message.media.type === 'file'" class="flex items-center">
                     <FileIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
                     <span class="ml-2 text-[10px]">{{ message.media.name }}</span>
                   </div>
-                  <div v-else-if="message.media.type === 'voice'" class="mt-2 flex items-center">
+                  <div v-else-if="message.media.type === 'voice'" class="flex items-center">
                     <MicIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
                     <div class="ml-2 flex-1">
                       <div class="h-1 w-full rounded-full" :class="message.isUser ? 'bg-white/30' : 'bg-gray-300'">
-                        <div class="h-full w-1/3 rounded-full" :class="message.isUser ? 'bg-white' : 'bg-green-500'"></div>
+                        <div class="h-full" 
+                          :style="{ width: message.media.isPlaying ? `${message.media.progress}%` : '0%' }" 
+                          :class="message.isUser ? 'bg-white' : 'bg-green-500'"
+                        ></div>
                       </div>
                       <div class="mt-1 flex items-center justify-between">
-                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">0:12</span>
-                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">0:36</span>
+                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
+                          {{ formatVoiceDuration(message.media.currentTime || 0) }}
+                        </span>
+                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
+                          {{ formatVoiceDuration(message.media.duration || 0) }}
+                        </span>
                       </div>
                     </div>
-                    <button class="ml-2 rounded-full p-1" :class="message.isUser ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'">
-                      <PlayIcon class="h-3 w-3" />
+                    <button 
+                      @click="playVoiceMessage(message)" 
+                      class="ml-2 rounded-full p-1" 
+                      :class="message.isUser ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'"
+                    >
+                      <PlayIcon v-if="!message.media.isPlaying" class="h-3 w-3" />
+                      <PauseIcon v-else class="h-3 w-3" />
                     </button>
                   </div>
                 </div>
@@ -734,19 +787,34 @@
           </div>
           
           <!-- Media picker -->
-          <div v-if="showMediaPicker" class="mb-2 grid grid-cols-4 gap-1 rounded-md border bg-gray-50 p-2">
-            <div 
-              v-for="i in 8" 
-              :key="i" 
-              class="aspect-square cursor-pointer overflow-hidden rounded-md bg-gray-200 transition-all hover:opacity-80"
-              @click="selectMedia(`https://i.pravatar.cc/150?img=${20 + i}`, 'image')"
-            >
-              <img :src="`https://i.pravatar.cc/150?img=${20 + i}`" alt="Media" class="h-full w-full object-cover" />
+          <div v-if="showMediaPicker" class="mb-2 rounded-md border bg-gray-50 p-3 shadow-sm">
+            <div class="flex flex-col items-center justify-center">
+              <p class="mb-2 text-xs text-gray-600">Upload media from your device</p>
+              <div class="flex space-x-3">
+                <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
+                  <ImageIcon class="h-5 w-5 mb-1" />
+                  <span class="text-[10px]">Images</span>
+                  <input type="file" accept="image/*" multiple class="hidden" @change="handleMediaUpload" />
+                </label>
+                <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
+                  <VideoIcon class="h-5 w-5 mb-1" />
+                  <span class="text-[10px]">Videos</span>
+                  <input type="file" accept="video/*" multiple class="hidden" @change="handleMediaUpload" />
+                </label>
+              </div>
             </div>
-            <label class="aspect-square flex items-center justify-center rounded-md bg-gray-100 text-gray-500 cursor-pointer">
-              <CameraIcon class="h-4 w-4" />
-              <input type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
-            </label>
+            <div v-if="uploadedMedia.length > 0" class="mt-3">
+              <p class="mb-1 text-xs text-gray-600">Selected media ({{ uploadedMedia.length }})</p>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="(media, index) in uploadedMedia" :key="index" class="relative h-16 w-16 overflow-hidden rounded-md">
+                  <img v-if="media.type.includes('image')" :src="media.url" class="h-full w-full object-cover" />
+                  <video v-else-if="media.type.includes('video')" :src="media.url" class="h-full w-full object-cover"></video>
+                  <button @click="removeUploadedMedia(index)" class="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/50 text-white">
+                    <XIcon class="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- Emoji picker -->
@@ -764,10 +832,10 @@
           <!-- Mention list -->
           <div 
             v-if="showMentionList && activeChatType === 'group'" 
-            class="mb-2 max-h-32 overflow-y-auto rounded-md border bg-white p-1 shadow-sm"
+            class="mb-2 max-h-32 overflow-y-auto rounded-md border bg-white p-1 shadow-sm scrollbar-hide"
           >
             <button 
-              v-for="member in groupMembers" 
+              v-for="member in filteredGroupMembers" 
               :key="member.id"
               @click="mentionUser(member)"
               class="flex w-full items-center rounded-md p-1 text-left hover:bg-gray-50"
@@ -782,7 +850,8 @@
             <input
               v-model="newMessage"
               @keyup.enter="sendMessage"
-              @input="handleTyping"
+              @input="handleInput"
+              @keydown="handleKeyDown"
               type="text"
               :placeholder="`Message ${activeChat.name}...`"
               class="flex-1 bg-transparent text-xs focus:outline-none"
@@ -790,7 +859,7 @@
             <button
               @click="sendMessage"
               class="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white transition-all hover:shadow-sm disabled:opacity-50"
-              :disabled="!newMessage.trim() && !selectedMedia && !recordedVoice && !selectedFile"
+              :disabled="!newMessage.trim() && !selectedMedia && !recordedVoice && !selectedFile && uploadedMedia.length === 0"
               aria-label="Send message"
             >
               <SendIcon class="h-3 w-3" />
@@ -879,14 +948,42 @@
             </div>
           </div>
           
-          <div class="mb-4 max-h-60 overflow-y-auto">
-            <div v-for="(friend, index) in friends" :key="index" class="flex items-center justify-between p-2 hover:bg-gray-50">
+          <div class="mb-4 max-h-60 overflow-y-auto scrollbar-hide">
+            <!-- Selected members -->
+            <div v-if="selectedMembers.length > 0" class="mb-2 border-b pb-2">
+              <p class="mb-1 text-xs font-medium text-gray-500">Selected ({{ selectedMembers.length }})</p>
+              <div class="flex flex-wrap gap-1">
+                <div 
+                  v-for="memberId in selectedMembers" 
+                  :key="memberId"
+                  class="flex items-center rounded-full bg-green-100 px-2 py-0.5"
+                >
+                  <img 
+                    :src="getFriendById(memberId).avatar" 
+                    :alt="getFriendById(memberId).name" 
+                    class="mr-1 h-4 w-4 rounded-full object-cover" 
+                  />
+                  <span class="text-[10px] text-green-800">{{ getFriendById(memberId).name }}</span>
+                  <button @click="deselectMember(memberId)" class="ml-1 text-green-600">
+                    <XIcon class="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Available friends to add -->
+            <div v-for="friend in availableFriendsToAdd" :key="friend.id" class="flex items-center justify-between p-2 hover:bg-gray-50">
               <div class="flex items-center">
                 <img :src="friend.avatar" :alt="friend.name" class="h-8 w-8 rounded-full object-cover" />
                 <span class="ml-2 text-xs">{{ friend.name }}</span>
               </div>
-              <button class="rounded-full bg-gray-200 p-1 text-gray-600 transition-colors hover:bg-green-500 hover:text-white">
-                <PlusIcon class="h-3 w-3" />
+              <button 
+                @click="toggleSelectMember(friend.id)"
+                class="rounded-full p-1 transition-colors"
+                :class="isSelectedMember(friend.id) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-green-500 hover:text-white'"
+              >
+                <CheckIcon v-if="isSelectedMember(friend.id)" class="h-3 w-3" />
+                <PlusIcon v-else class="h-3 w-3" />
               </button>
             </div>
           </div>
@@ -924,6 +1021,85 @@
           </div>
         </div>
       </div>
+
+      <!-- Rename group modal -->
+      <div v-if="showRenameGroupModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-medium">Rename Group</h3>
+            <button @click="showRenameGroupModal = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">
+              <XIcon class="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div class="mb-4">
+            <label class="mb-1 block text-xs font-medium text-gray-700">Group Name</label>
+            <input 
+              v-model="newGroupName" 
+              type="text" 
+              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500" 
+              placeholder="Enter new group name"
+            />
+          </div>
+          
+          <div class="flex justify-end">
+            <button @click="showRenameGroupModal = false" class="mr-2 rounded-md px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100">
+              Cancel
+            </button>
+            <button 
+              @click="renameGroup" 
+              class="rounded-md bg-green-500 px-3 py-1.5 text-xs text-white transition-colors hover:bg-green-600"
+              :disabled="!newGroupName.trim()"
+            >
+              Rename
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member profile modal -->
+      <div v-if="showMemberProfile" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-medium">Member Profile</h3>
+            <button @click="showMemberProfile = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">
+              <XIcon class="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div v-if="activeMember" class="flex flex-col items-center">
+            <div class="relative h-20 w-20 overflow-hidden rounded-full">
+              <img :src="activeMember.avatar" :alt="activeMember.name" class="h-full w-full object-cover" />
+              <div 
+                class="absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white"
+                :class="activeMember.isOnline ? 'bg-green-500' : 'bg-gray-400'"
+              ></div>
+            </div>
+            <h4 class="mt-2 text-sm font-medium">{{ activeMember.name }}</h4>
+            <p class="text-xs text-gray-500">{{ activeMember.isOnline ? 'Online' : 'Offline' }}</p>
+            
+            <div class="mt-4 flex w-full justify-center space-x-3">
+              <button @click="openChatWithMember(activeMember); showMemberProfile = false" class="flex items-center rounded-md bg-green-500 px-3 py-1.5 text-xs text-white">
+                <MessageSquareIcon class="mr-1 h-3.5 w-3.5" />
+                Message
+              </button>
+              <button v-if="userProfile.isAdmin && userProfile.id !== activeMember.id" @click="removeMemberFromGroup(activeMember); showMemberProfile = false" class="flex items-center rounded-md bg-red-500 px-3 py-1.5 text-xs text-white">
+                <UserMinusIcon class="mr-1 h-3.5 w-3.5" />
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full media view modal -->
+      <div v-if="showFullMedia" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+        <button @click="showFullMedia = false" class="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white">
+          <XIcon class="h-6 w-6" />
+        </button>
+        <img v-if="fullMediaItem && fullMediaItem.type === 'image'" :src="fullMediaItem.url" class="max-h-[90vh] max-w-[90vw] object-contain" />
+        <video v-else-if="fullMediaItem && fullMediaItem.type === 'video'" :src="fullMediaItem.url" controls class="max-h-[90vh] max-w-[90vw]"></video>
+      </div>
     </div>
   </div>
 </template>
@@ -939,7 +1115,6 @@ import {
   PhoneIcon,
   VideoIcon,
   MoreVerticalIcon,
-  MoreHorizontalIcon,
   PaperclipIcon,
   SearchIcon,
   PlusIcon,
@@ -961,8 +1136,13 @@ import {
   AtSignIcon,
   FileIcon,
   PlayIcon,
+  PauseIcon,
   BanIcon,
-  TrashIcon
+  TrashIcon,
+  EditIcon,
+  LogOutIcon,
+  UserIcon,
+  UserMinusIcon
 } from 'lucide-vue-next';
 
 // User profile
@@ -970,7 +1150,8 @@ const userProfile = ref({
   id: 'user1',
   name: 'Alex Johnson',
   avatar: 'https://i.pravatar.cc/150?img=11',
-  isOnline: true
+  isOnline: true,
+  isAdmin: true
 });
 
 // Toggle user online status
@@ -1473,6 +1654,17 @@ const selectedFile = ref(null);
 const selectedFileName = ref('');
 const showChatOptions = ref(false);
 const showDeleteConfirmation = ref(false);
+const showRenameGroupModal = ref(false);
+const newGroupName = ref('');
+const showMemberProfile = ref(false);
+const activeMember = ref(null);
+const activeMemberOptionsId = ref(null);
+const showFullMedia = ref(false);
+const fullMediaItem = ref(null);
+const mentionSearch = ref('');
+const uploadedMedia = ref([]);
+const mentionQuery = ref('');
+const mentionStartIndex = ref(-1);
 
 // Emojis for picker
 const emojis = ref(['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🙏', '😢', '😍', '🤔', '👏', '💪', '🌟', '💯', '🤣']);
@@ -1525,6 +1717,19 @@ const hasMoreFriends = computed(() => {
   return displayedFriends.value.length < filteredFriends.value.length;
 });
 
+// Available friends to add to group
+const availableFriendsToAdd = computed(() => {
+  return friends.value.filter(friend => !groupMembers.value.some(member => member.id === friend.id));
+});
+
+// Filtered group members based on @ mention search
+const filteredGroupMembers = computed(() => {
+  if (!mentionQuery.value) return groupMembers.value;
+  return groupMembers.value.filter(member => 
+    member.name.toLowerCase().includes(mentionQuery.value.toLowerCase())
+  );
+});
+
 // Methods
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768;
@@ -1544,6 +1749,9 @@ const toggleChat = () => {
     showStoryOptions.value = false;
     showChatOptions.value = false;
     showDeleteConfirmation.value = false;
+    showRenameGroupModal.value = false;
+    showMemberProfile.value = false;
+    showFullMedia.value = false;
   }
 };
 
@@ -1611,6 +1819,110 @@ const closeGroupMembers = () => {
 const addMembersToGroup = () => {
   showAddMemberModal.value = false;
   // In a real app, this would add the selected members to the group
+  // and update the groupMembers array accordingly.
+  // For this demo, we'll just close the modal.
+
+  // Add selected members to the groupMembers array
+  selectedMembers.value.forEach(memberId => {
+    const friendToAdd = friends.value.find(friend => friend.id === memberId);
+    if (friendToAdd) {
+      groupMembers.value.push({
+        ...friendToAdd,
+        isAdmin: false // New members are not admins by default
+      });
+    }
+  });
+
+  // Clear selected members
+  selectedMembers.value = [];
+};
+
+// Toggle select member
+const toggleSelectMember = (memberId) => {
+  if (selectedMembers.value.includes(memberId)) {
+    deselectMember(memberId);
+  } else {
+    selectMember(memberId);
+  }
+};
+
+// Select member
+const selectMember = (memberId) => {
+  if (!selectedMembers.value.includes(memberId)) {
+    selectedMembers.value.push(memberId);
+  }
+};
+
+// Deselect member
+const deselectMember = (memberId) => {
+  selectedMembers.value = selectedMembers.value.filter(id => id !== memberId);
+};
+
+// Is selected member
+const isSelectedMember = (memberId) => {
+  return selectedMembers.value.includes(memberId);
+};
+
+// Get friend by id
+const getFriendById = (memberId) => {
+  return friends.value.find(friend => friend.id === memberId);
+};
+
+// Rename group
+const renameGroup = () => {
+  if (activeChatType.value === 'group' && activeChat.value && newGroupName.value.trim()) {
+    activeChat.value.name = newGroupName.value.trim();
+    const groupIndex = groups.value.findIndex(g => g.id === activeChatId.value);
+    if (groupIndex !== -1) {
+      groups.value[groupIndex].name = newGroupName.value.trim();
+    }
+    showRenameGroupModal.value = false;
+    newGroupName.value = '';
+  }
+};
+
+// Leave group
+const leaveGroup = () => {
+  if (activeChatType.value === 'group' && activeChat.value) {
+    // Remove user from groupMembers array
+    groupMembers.value = groupMembers.value.filter(member => member.id !== userProfile.value.id);
+
+    // Close active chat
+    closeActiveChat();
+    showChatOptions.value = false;
+  }
+};
+
+// View member profile
+const viewMemberProfile = (member) => {
+  activeMember.value = member;
+  showMemberProfile.value = true;
+  activeMemberOptionsId.value = null;
+};
+
+// Remove member from group
+const removeMemberFromGroup = (member) => {
+  // Remove member from groupMembers array
+  groupMembers.value = groupMembers.value.filter(m => m.id !== member.id);
+
+  // If the removed member was the active member being viewed, close the profile
+  if (activeMember.value && activeMember.value.id === member.id) {
+    showMemberProfile.value = false;
+    activeMember.value = null;
+  }
+
+  // Close the member options dropdown
+  activeMemberOptionsId.value = null;
+};
+
+// Open chat with member
+const openChatWithMember = (member) => {
+  openChat(member.id, 'friend');
+};
+
+// Toggle member options
+const toggleMemberOptions = (memberId) => {
+  activeMemberOptionsId.value = activeMemberOptionsId.value === memberId ? null : memberId;
 };
 
 // Toggle mention list
@@ -1618,6 +1930,7 @@ const toggleMentionList = () => {
   showMentionList.value = !showMentionList.value;
   showEmojiPicker.value = false;
   showMediaPicker.value = false;
+  mentionSearch.value = ''; // Reset search when opening mention list
 };
 
 // Toggle emoji picker
@@ -1642,6 +1955,7 @@ const addEmoji = (emoji) => {
 const mentionUser = (user) => {
   newMessage.value += `@${user.name} `;
   showMentionList.value = false;
+  mentionSearch.value = ''; // Clear search after mentioning
 };
 
 // Format message with mentions
@@ -1676,6 +1990,29 @@ const handleImageSelect = (event) => {
     reader.readAsDataURL(file);
   }
   showMediaPicker.value = false;
+};
+
+// Handle media upload
+const handleMediaUpload = (event) => {
+  const files = Array.from(event.target.files);
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedMedia.value.push({
+        url: e.target.result,
+        type: file.type
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  showMediaPicker.value = false;
+};
+
+// Remove uploaded media
+const removeUploadedMedia = (index) => {
+  uploadedMedia.value.splice(index, 1);
 };
 
 // Handle file selection
@@ -1767,7 +2104,7 @@ const confirmDeleteChat = () => {
 };
 
 const sendMessage = () => {
-  if ((!newMessage.value.trim() && !selectedMedia.value && !recordedVoice.value && !selectedFile.value) || !activeChat.value) return;
+  if ((!newMessage.value.trim() && !selectedMedia.value && !recordedVoice.value && !selectedFile.value && uploadedMedia.length === 0) || !activeChat.value) return;
 
   const now = new Date();
   const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1777,7 +2114,8 @@ const sendMessage = () => {
     text: newMessage.value,
     isUser: true,
     time: timeString,
-    read: false
+    read: false,
+    media: null // Initialize media to null
   };
 
   // Add media if selected
@@ -1792,7 +2130,10 @@ const sendMessage = () => {
   if (recordedVoice.value) {
     messageObj.media = {
       type: 'voice',
-      duration: recordingDuration.value
+      duration: recordingDuration.value,
+      currentTime: 0,
+      isPlaying: false,
+      progress: 0
     };
   }
 
@@ -1804,8 +2145,25 @@ const sendMessage = () => {
     };
   }
 
+  // Add uploaded media
+  uploadedMedia.value.forEach(media => {
+    const mediaMessage = {
+      text: '',
+      isUser: true,
+      time: timeString,
+      read: false,
+      media: {
+        type: media.type,
+        url: media.url
+      }
+    };
+    activeChat.value.messages.push(mediaMessage);
+  });
+
   // Add message to chat
-  activeChat.value.messages.push(messageObj);
+  if (newMessage.value.trim() || messageObj.media) {
+    activeChat.value.messages.push(messageObj);
+  }
 
   // Update last message
   if (activeChatType.value === 'friend') {
@@ -1834,6 +2192,7 @@ const sendMessage = () => {
   clearSelectedMedia();
   clearRecordedVoice();
   clearSelectedFile();
+  uploadedMedia.value = [];
 
   // Scroll to bottom
   nextTick(() => {
@@ -1950,6 +2309,75 @@ const cleanupExpiredStories = () => {
   stories.value = stories.value.filter(story => story.expiresAt > now);
 };
 
+// Handle input for @ mentions
+const handleInput = () => {
+  handleTyping(); // Still trigger typing indicator
+
+  const lastWord = newMessage.value.split(' ').pop();
+  if (lastWord && lastWord.startsWith('@')) {
+    showMentionList.value = true;
+    mentionSearch.value = lastWord.substring(1).toLowerCase(); // Search term
+  } else {
+    showMentionList.value = false;
+    mentionSearch.value = '';
+  }
+};
+
+// Handle keydown to prevent space after @mention
+const handleKeyDown = (event) => {
+  if (event.key === ' ' && showMentionList.value) {
+    event.preventDefault(); // Prevent adding space
+  }
+};
+
+// Format voice duration
+const formatVoiceDuration = (duration) => {
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+// Play voice message
+const playVoiceMessage = (message) => {
+  if (!message.media) return;
+
+  // Stop any other playing messages
+  activeChat.value.messages.forEach(msg => {
+    if (msg.media && msg.media.type === 'voice' && msg.media.isPlaying && msg !== message) {
+      msg.media.isPlaying = false;
+    }
+  });
+
+  // Toggle play/pause
+  message.media.isPlaying = !message.media.isPlaying;
+
+  // Simulate progress update
+  if (message.media.isPlaying) {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 1;
+      message.media.progress = progress;
+      message.media.currentTime = (message.media.duration * progress) / 100;
+
+      if (progress >= 100 || !message.media.isPlaying) {
+        clearInterval(interval);
+        message.media.isPlaying = false;
+        message.media.progress = 0;
+        message.media.currentTime = 0;
+      }
+    }, message.media.duration / 100 * 10); // Simulate real-time progress
+  }
+};
+
+// View full media
+const viewFullMedia = (media) => {
+  fullMediaItem.value = media;
+  showFullMedia.value = true;
+};
+
+// Selected members
+const selectedMembers = ref([]);
+
 // Watch for changes in active chat
 watch(activeChatId, () => {
   nextTick(() => {
@@ -1977,6 +2405,9 @@ onMounted(() => {
     }
     if (showChatOptions.value && !event.target.closest('.chat-options')) {
       showChatOptions.value = false;
+    }
+    if (activeMemberOptionsId.value && !event.target.closest('.member-options')) {
+      activeMemberOptionsId.value = null;
     }
   };
 
