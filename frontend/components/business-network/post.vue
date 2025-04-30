@@ -41,7 +41,7 @@
               <span
                 v-for="(tag, idx) in post?.post_tags"
                 :key="idx"
-                class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full"
               >
                 #{{ tag.tag }}
               </span>
@@ -131,7 +131,7 @@
         v-if="!loading && posts?.length === 0"
         class="flex flex-col items-center justify-center py-12 text-center"
       >
-        <p class="text-gray-500 mb-2">{{ $t("no_posts_available") }}</p>
+        <p class="text-gray-500 mb-2">{{ $t("no_post_available") }}</p>
       </div>
     </div>
 
