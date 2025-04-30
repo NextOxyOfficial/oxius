@@ -13,11 +13,9 @@
       <section class="h-screen w-screen flex items-center justify-center">
         <CommonPreloader />
       </section>
-    </div>
-    <div class="fixed inset-0 z-[99999999999]">
-      <!-- Chat Floating Button -->
-      <BusinessNetworkChatFloatingButton />
-    </div>
+    </div class="fixed inset-0 z-[9999]">
+    <!-- Chat Floating Button - removed the fixed inset-0 wrapper -->
+    <BusinessNetworkChatFloatingButton />
   </div>
 </template>
 

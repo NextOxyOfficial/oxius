@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="bottom-50">
     <!-- Floating messenger button (hidden on mobile when chat is open) -->
     <button
       v-if="!(isMobile && isChatOpen)"
       @click="toggleChat"
-      class="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-green-200/50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      class="fixed bottom-20 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-green-200/50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
       :class="{ 'rotate-90 transform': isChatOpen }"
       aria-label="Open chat"
     >
@@ -17,10 +17,10 @@
       </div>
     </button>
   
-    <!-- Chat window -->
+    <!-- Chat window - ensure it doesn't capture clicks when closed -->
     <div
       v-show="isChatOpen"
-      class="fixed z-40 overflow-hidden rounded-sm sm:rounded-xl bg-white shadow-2xl transition-all duration-300"
+      class="fixed z-50 overflow-hidden rounded-sm sm:rounded-xl bg-white shadow-2xl transition-all duration-300 pointer-events-auto"
       :class="[
         isMobile 
           ? 'bottom-0 left-0 right-0 top-0' 
