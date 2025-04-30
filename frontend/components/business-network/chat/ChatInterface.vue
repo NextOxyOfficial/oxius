@@ -8,20 +8,18 @@
         :activeChat="activeChat"
         :isSearching="isSearching"
         :isLoadingMore="isLoadingMore"
-        :unreadNotifications="unreadNotifications"
         :isSidebarOpen="isSidebarOpen"
         @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
         @select-conversation="selectConversation"
         @search="handleSearch"
         @update-search-query="searchQuery = $event"
         @start-adsyai-chat="startAdsyAiChat"
-        @show-notifications="showNotifications = !showNotifications"
         @show-new-conversation="showNewConversationModal = true"
         @show-create-group="showCreateGroupModal = true"
       />
   
       <!-- Main chat area -->
-      <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 md:ml-20 transition-all duration-300 ease-in-out">
+      <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 transition-all duration-300 ease-in-out">
         <!-- Chat header -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <div class="flex items-center">
@@ -209,57 +207,6 @@
           @cancel-media-upload="cancelMediaUpload"
         />
       </div>
-  
-      <!-- Notifications panel -->
-      <div 
-        v-if="showNotifications" 
-        class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-xl z-30 transform transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700"
-      >
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
-          <button 
-            @click="showNotifications = false" 
-            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <x-icon class="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div class="overflow-y-auto h-full pb-20">
-          <div v-if="notifications.length === 0" class="p-8 text-center text-gray-500 dark:text-gray-400">
-            No notifications
-          </div>
-          
-          <div 
-            v-for="notification in notifications" 
-            :key="notification.id"
-            :class="[
-              'p-4 border-b border-gray-100 dark:border-gray-700',
-              notification.read ? 'bg-white dark:bg-gray-800' : 'bg-blue-50 dark:bg-gray-700'
-            ]"
-            @click="markNotificationAsRead(notification.id)"
-          >
-            <div class="flex items-start">
-              <img 
-                :src="notification.avatar"
-                :alt="notification.sender"
-                class="w-10 h-10 rounded-full mr-3"
-              />
-              <div class="flex-1">
-                <p class="text-sm text-gray-900 dark:text-white">
-                  <span class="font-medium">{{ notification.sender }}</span>
-                  {{ notification.message }}
-                </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {{ notification.time }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-  
-  
     </div>
   </template>
   
@@ -304,8 +251,6 @@ import { BusinessNetworkChatSidebar } from '#components';
   const searchQuery = ref('');
   const isSearching = ref(false);
   const isLoadingMore = ref(false);
-  const showNotifications = ref(false);
-  const unreadNotifications = ref(2);
   const showUserActions = ref(false);
   const isUserBlocked = ref(false);
   const showNewConversationModal = ref(false);
@@ -405,19 +350,6 @@ import { BusinessNetworkChatSidebar } from '#components';
       status: 'read'
     },
     // More messages...
-  ]);
-  
-  // Sample notifications
-  const notifications = ref([
-    {
-      id: 1,
-      sender: 'Sarah Thompson',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      message: 'sent you a message',
-      time: '2 minutes ago',
-      read: false
-    },
-    // More notifications...
   ]);
   
   // Computed properties
@@ -634,14 +566,6 @@ import { BusinessNetworkChatSidebar } from '#components';
   
   const leaveGroup = () => {
     // Leave group implementation
-  };
-  
-  const markNotificationAsRead = (id) => {
-    const notification = notifications.value.find(n => n.id === id);
-    if (notification) {
-      notification.read = true;
-      unreadNotifications.value = notifications.value.filter(n => !n.read).length;
-    }
   };
   
   const startAudioCall = () => {

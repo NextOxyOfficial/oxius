@@ -24,15 +24,6 @@
         </div>
       </div>
       <div class="flex space-x-2 hidden md:group-hover/sidebar:flex">
-        <button 
-          @click="$emit('show-notifications')" 
-          class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition relative"
-        >
-          <bell-icon class="w-5 h-5" />
-          <span v-if="unreadNotifications > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-            {{ unreadNotifications }}
-          </span>
-        </button>
         <button class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
           <settings-icon class="w-5 h-5" />
         </button>
@@ -215,7 +206,6 @@
 <script setup>
 import { computed } from 'vue';
 import { 
-  Bell as BellIcon,
   Settings as SettingsIcon,
   Search as SearchIcon,
   MessageSquarePlus as MessageSquarePlusIcon,
@@ -248,10 +238,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  unreadNotifications: {
-    type: Number,
-    default: 0
-  },
   isSidebarOpen: {
     type: Boolean,
     default: true
@@ -264,7 +250,6 @@ const emit = defineEmits([
   'search',
   'update-search-query',
   'start-adsyai-chat',
-  'show-notifications',
   'show-new-conversation',
   'show-create-group'
 ]);
