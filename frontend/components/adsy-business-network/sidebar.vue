@@ -203,7 +203,7 @@
             </div>
             <a
               href="/adsy-news"
-              class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center"
+              class="text-blue-700 text-xs normal-case font-medium hover:underline flex items-center"
               @click="handleNavigation('/adsy-news')"
             >
               <span>See All</span>
