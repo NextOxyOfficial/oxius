@@ -59,7 +59,7 @@
             <div class="mb-2 min-w-full px-2">
               <p
                 :class="[
-                  `text-sm sm:text-base text-gray-800`,
+                  `text-base text-gray-800`,
                   !post.showFullDescription && `line-clamp-4`,
                 ]"
                 v-html="
@@ -72,7 +72,7 @@
                     ? post.post_details.content?.length > 160
                     : post.content?.length > 160
                 "
-                class="text-xs sm:text-sm text-blue-600 font-medium mt-1"
+                class="text-sm text-blue-600 font-medium mt-1"
                 @click="toggleDescription(post)"
               >
                 {{
