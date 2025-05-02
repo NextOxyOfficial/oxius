@@ -92,7 +92,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-600 truncate">
+            <p class="text-base text-gray-600 truncate">
               {{ activeCommentsPost.title }}
             </p>
           </div>
