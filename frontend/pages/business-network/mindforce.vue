@@ -250,7 +250,7 @@
                   </span>
 
                   <span
-                    class="text-sm sm:text-md text-gray-500 flex items-center"
+                    class="text-md text-gray-500 flex items-center"
                   >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
@@ -617,7 +617,7 @@
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 max-h-[75vh] overflow-y-auto"
+          class="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 max-h-[80vh] overflow-y-auto"
         >
           <!-- Close button (X) at top right -->
           <button
@@ -865,7 +865,7 @@
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[75vh] overflow-y-auto"
+          class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[80vh] overflow-y-auto"
         >
           <!-- Close button (X) -->
 
@@ -985,7 +985,7 @@
             </div>
 
             <!-- Problem Title & Content -->
-            <h1 class="text-2xl font-semibold mt-4 text-gray-900">
+            <h1 class="text-lg mt-4 font-semibold text-green-900">
               {{ selectedProblem.title }}
             </h1>
             <p class="mt-3 text-gray-700 whitespace-pre-line leading-relaxed">
@@ -1128,7 +1128,7 @@
 
               <!-- Add Comment with improved design -->
               <div class="mt-8" v-if="user?.user?.id">
-                <h4 class="text-md font-medium mb-2">Add a advice</h4>
+                <h4 class="text-md font-medium mb-2">Write an advice</h4>
                 <textarea
                   v-model="newComment"
                   placeholder="Share your solution or ask for clarification..."

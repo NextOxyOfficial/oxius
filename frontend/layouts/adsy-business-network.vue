@@ -13,7 +13,7 @@
       <section class="h-screen w-screen flex items-center justify-center">
         <CommonPreloader />
       </section>
-    </div class="fixed inset-0 z-[9999]">
+    </div class="fixed inset-0 z-[9999] hidden">
     <!-- Chat Floating Button - removed the fixed inset-0 wrapper -->
     <BusinessNetworkChatFloatingButton />
   </div>
