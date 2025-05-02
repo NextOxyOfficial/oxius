@@ -1,8 +1,8 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1">
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1 bg-gradient">
     <div class="max-w-3xl mx-auto relative z-10 sm:px-0">
       <!-- Professional Profile Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+      <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 mb-6 animate-fadeIn">
         <div class="p-4 sm:p-5">
           <!-- Mobile Profile Header (Mobile Only) -->
           <div class="flex sm:hidden items-center justify-between mb-4">
@@ -13,7 +13,7 @@
                   <UIcon
                     v-if="user?.kyc"
                     name="i-mdi-check-decagram"
-                    class="w-4 h-4 text-blue-600"
+                    class="w-4 h-4 text-blue-600 animate-pulse-subtle"
                   />
                   <div class="tooltip-content">Verified</div>
                 </div>
@@ -29,10 +29,10 @@
               <button
                 v-if="user?.id !== currentUser?.user?.id && currentUser"
                 :class="[
-                  'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
+                  'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all duration-300',
                   isFollowing
-                    ? 'border border-gray-200 hover:bg-gray-50 text-gray-800'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white',
+                    ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md text-white',
                 ]"
                 :disabled="followLoading"
                 @click="toggleFollow"
@@ -43,18 +43,18 @@
                 ></div>
 
                 <template v-else-if="isFollowing">
-                  <Check class="h-3 w-3" />
+                  <Check class="h-3 w-3 animate-scaleIn" />
                   Following
                 </template>
 
                 <template v-else>
-                  <UserPlus class="h-3 w-3" />
+                  <UserPlus class="h-3 w-3 animate-scaleIn" />
                   Follow
                 </template>
               </button>
               <button
                 v-if="!currentUser"
-                class="p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-800 transition-colors"
+                class="p-1 border border-gray-200 rounded hover:bg-gray-50 hover:shadow-sm text-gray-800 transition-all duration-300"
                 aria-label="Message"
               >
                 <Mail class="h-3.5 w-3.5" />
@@ -62,39 +62,40 @@
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-start gap-6">
             <!-- Profile Picture and Mobile Stats -->
             <div class="flex flex-col items-center sm:items-start">
-              <div class="relative">
+              <div class="relative group">
                 <div
-                  class="size-36 rounded-full border-2 border-white shadow-md bg-white overflow-hidden"
+                  class="size-36 rounded-full border-2 border-white shadow-lg bg-white overflow-hidden group-hover:shadow-xl transition-all duration-300"
                 >
                   <img
                     :src="
                       user?.image || '/static/frontend/images/placeholder.jpg'
                     "
                     :alt="user?.name"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
                 </div>
+                <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-600/20 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
 
               <!-- User Stats for Mobile -->
-              <div class="flex w-full justify-center sm:hidden mt-3 space-x-4">
-                <div class="text-center">
+              <div class="flex w-full justify-center sm:hidden mt-4 space-x-6">
+                <div class="text-center hover:scale-105 transition-transform">
                   <div class="text-md font-semibold">
                     {{ user?.post_count || 0 }}
                   </div>
                   <div class="text-sm text-gray-500">Posts</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center hover:scale-105 transition-transform">
                   <div class="text-md font-semibold">
                     {{ user?.followers_count || 0 }}
                   </div>
                   <div class="text-sm text-gray-500">Followers</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center hover:scale-105 transition-transform">
                   <div class="text-md font-semibold">
                     {{ user?.following_count || 0 }}
                   </div>
@@ -125,7 +126,7 @@
                       <UIcon
                         v-if="user?.kyc"
                         name="i-mdi-check-decagram"
-                        class="w-4 h-4 text-blue-600"
+                        class="w-4 h-4 text-blue-600 animate-pulse-subtle"
                         data-tooltip="Verified"
                       />
                       <div class="tooltip-content">Verified</div>
@@ -142,10 +143,10 @@
                   <button
                     v-if="user.id !== currentUser?.user?.id && currentUser"
                     :class="[
-                      'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors',
+                      'px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-all duration-300',
                       isFollowing
-                        ? 'border border-gray-200 hover:bg-gray-50 text-gray-800'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white',
+                        ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
+                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md text-white',
                     ]"
                     :disabled="followLoading"
                     @click="toggleFollow"
@@ -155,17 +156,17 @@
                       class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
                     ></div>
                     <template v-else-if="isFollowing">
-                      <Check class="h-3 w-3" />
+                      <Check class="h-3 w-3 animate-scaleIn" />
                       Unfollow
                     </template>
                     <template v-else>
-                      <UserPlus class="h-3 w-3" />
+                      <UserPlus class="h-3 w-3 animate-scaleIn" />
                       Follow
                     </template>
                   </button>
                   <button
                     v-if="!currentUser"
-                    class="ml-2 p-1 border border-gray-200 rounded hover:bg-gray-50 text-gray-800 transition-colors"
+                    class="ml-2 p-1.5 border border-gray-200 rounded hover:bg-gray-50 hover:shadow-sm text-gray-800 transition-all duration-300"
                     aria-label="Message"
                   >
                     <Mail class="h-3.5 w-3.5" />
@@ -177,24 +178,20 @@
               <div
                 class="hidden sm:flex items-center mt-3 mb-3 border-b border-gray-100 pb-3"
               >
-                <div class="flex items-center gap-4 text-sm">
-                  <div class="flex items-center">
-                    <span class="font-semibold">{{
-                      user?.post_count || 0
-                    }}</span>
-                    <span class="text-gray-500 ml-1">Posts</span>
+                <div class="flex items-center gap-6 text-sm">
+                  <div class="flex items-center hover:scale-105 transition-transform">
+                    <span class="font-semibold">{{ user?.post_count || 0 }}</span>
+                    <span class="text-gray-500 ml-1.5">Posts</span>
                   </div>
-                  <div class="flex items-center">
-                    <span class="font-semibold">{{
-                      user?.follower_count || 0
-                    }}</span>
-                    <span class="text-gray-500 ml-1">Followers</span>
+                  <div class="flex items-center hover:scale-105 transition-transform">
+                    <span class="font-semibold">
+                      {{ user?.followers_count || 0 }}</span>
+                    <span class="text-gray-500 ml-1.5">Followers</span>
                   </div>
-                  <div class="flex items-center">
-                    <span class="font-semibold">{{
-                      user?.follow_count || 0
-                    }}</span>
-                    <span class="text-gray-500 ml-1">Following</span>
+                  <div class="flex items-center hover:scale-105 transition-transform">
+                    <span class="font-semibold">
+                      {{ user?.following_count || 0 }}</span>
+                    <span class="text-gray-500 ml-1.5">Following</span>
                   </div>
                 </div>
               </div>
@@ -203,7 +200,7 @@
               <div
                 class="mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100"
               >
-                <p v-if="user?.about" class="text-sm text-gray-600 mb-3">
+                <p v-if="user?.about" class="text-sm text-gray-600 mb-3 leading-relaxed">
                   {{ user?.about }}
                 </p>
               </div>
@@ -214,22 +211,22 @@
               >
                 <div
                   v-if="user?.city || user?.state"
-                  class="flex items-center gap-1.5"
+                  class="flex items-center gap-1.5 group"
                 >
-                  <MapPin class="h-3.5 w-3.5 text-gray-500" />
-                  <span class="text-gray-600 text-sm truncate">
+                  <MapPin class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">
                     {{ [user?.city, user?.state].filter(Boolean).join(", ") }}
                   </span>
                 </div>
-                <div v-if="user?.company" class="flex items-center gap-1.5">
-                  <Briefcase class="h-3.5 w-3.5 text-gray-500" />
-                  <span class="text-gray-600 text-sm truncate">{{
+                <div v-if="user?.company" class="flex items-center gap-1.5 group">
+                  <Briefcase class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">{{
                     user?.company
                   }}</span>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <Calendar class="h-3.5 w-3.5 text-gray-500" />
-                  <span class="text-gray-600 text-sm"
+                <div class="flex items-center gap-1.5 group">
+                  <Calendar class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                  <span class="text-gray-600 text-sm group-hover:text-gray-900 transition-colors"
                     >Joined {{ formatTimeAgo(user?.date_joined) }}</span
                   >
                 </div>
@@ -238,10 +235,10 @@
                     user?.email &&
                     (currentUser?.user?.id === user?.id || user?.show_email)
                   "
-                  class="flex items-center gap-1.5"
+                  class="flex items-center gap-1.5 group"
                 >
-                  <Mail class="h-3.5 w-3.5 text-gray-500" />
-                  <span class="text-gray-600 text-sm truncate">{{
+                  <Mail class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">{{
                     user?.email
                   }}</span>
                 </div>
@@ -250,10 +247,10 @@
                     user?.phone &&
                     (currentUser?.user?.id === user?.id || user?.show_phone)
                   "
-                  class="flex items-center gap-1.5"
+                  class="flex items-center gap-1.5 group"
                 >
-                  <Phone class="h-3.5 w-3.5 text-gray-500" />
-                  <span class="text-gray-600 text-sm truncate">{{
+                  <Phone class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">{{
                     user?.phone
                   }}</span>
                 </div>
@@ -269,7 +266,7 @@
                     :href="user?.website"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm truncate"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm truncate transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
                   >
                     <LinkIcon class="h-3.5 w-3.5 flex-shrink-0" />
                     <span class="truncate">{{
@@ -281,7 +278,7 @@
                     :href="user?.facebook_url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
                   >
                     <UIcon name="i-mdi-facebook" class="size-4 flex-shrink-0" />
                     <span class="text-xs">Facebook</span>
@@ -291,7 +288,7 @@
                     :href="`https://wa.me/${user?.whatsapp}`"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-green-600 hover:text-green-700"
+                    class="flex items-center gap-1.5 text-green-600 hover:text-green-700 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
                   >
                     <UIcon name="i-mdi-whatsapp" class="size-4 flex-shrink-0" />
                     <span class="text-xs">WhatsApp</span>
@@ -301,7 +298,7 @@
                     :href="user?.linkedin_url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-700 hover:text-blue-800"
+                    class="flex items-center gap-1.5 text-blue-700 hover:text-blue-800 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
                   >
                     <UIcon name="i-mdi-linkedin" class="size-4 flex-shrink-0" />
                     <span class="text-xs">LinkedIn</span>
@@ -311,7 +308,7 @@
                     :href="user?.twitter_url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-400 hover:text-blue-500"
+                    class="flex items-center gap-1.5 text-blue-400 hover:text-blue-500 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
                   >
                     <UIcon name="i-mdi-twitter" class="size-4 flex-shrink-0" />
                     <span class="text-xs">Twitter</span>
@@ -324,128 +321,137 @@
       </div>
 
       <!-- Tabs Section -->
-      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden animate-fadeIn-delayed">
         <!-- Scrollable Tabs for Mobile -->
         <div class="overflow-x-auto scrollbar-hide">
-          <div class="flex items-center border-b border-gray-200 min-w-max">
+          <div class="flex items-center border-b border-gray-200 min-w-max relative">
             <button
               v-for="tab in tabs"
               :key="tab.value"
-              class="px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
-              :class="
-                activeTab === tab.value
-                  ? 'text-blue-600 border-blue-600'
+              class="px-5 py-3.5 text-sm font-medium border-b-2 transition-all duration-300 whitespace-nowrap relative overflow-hidden"
+              :class="[
+                activeTab === tab.value 
+                  ? 'text-blue-600 border-blue-600' 
                   : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300'
-              "
-              @click="activeTab = tab.value"
+              ]"
+              @click="switchTab(tab.value)"
             >
-              {{ tab.label }}
+              <span class="relative z-10">{{ tab.label }}</span>
+              <div 
+                v-if="activeTab === tab.value"
+                class="absolute bottom-0 left-0 h-0.5 w-full bg-blue-600 animate-fadeIn"
+              ></div>
             </button>
+            <div class="tab-indicator"></div>
           </div>
         </div>
 
         <div class="py-4">
-          <div v-if="activeTab === 'posts'" class="px-2">
-            <!-- Lazyloader component for profile posts -->
-            <div v-if="isLoadingPosts" class="p-4">
-              <div class="flex justify-center items-center mb-6">
-                <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
-              </div>
-              <!-- Skeleton loaders for posts -->
-              <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
-                <div class="flex items-center space-x-3 mb-4">
-                  <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
-                  <div class="flex-1 space-y-2">
-                    <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-                    <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+          <transition name="tab-transition" mode="out-in">
+            <div v-if="activeTab === 'posts'" class="px-2 tab-content">
+              <!-- Lazyloader component for profile posts -->
+              <div v-if="isLoadingPosts" class="p-4">
+                <div class="flex justify-center items-center mb-6">
+                  <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+                </div>
+                <!-- Skeleton loaders for posts -->
+                <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4 animate-pulse-staggered">
+                  <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                      <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+                    </div>
+                  </div>
+                  <div class="space-y-2 mb-4">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                  </div>
+                  <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+                  <div class="flex justify-between">
+                    <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
                   </div>
                 </div>
-                <div class="space-y-2 mb-4">
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-                  <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-                  <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
-                </div>
-                <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
-                <div class="flex justify-between">
-                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-                </div>
               </div>
+              
+              <!-- Display actual posts when loaded -->
+              <BusinessNetworkPost
+                v-if="!isLoadingPosts"
+                :posts="posts.results"
+                :id="currentUser?.user?.id"
+                class="animate-fadeIn"
+              />
             </div>
-            
-            <!-- Display actual posts when loaded -->
-            <BusinessNetworkPost
-              v-if="!isLoadingPosts"
-              :posts="posts.results"
-              :id="currentUser?.user?.id"
-            />
-          </div>
 
-          <div v-else-if="activeTab === 'media'">
-            <!-- Lazyloader for media tab -->
-            <div v-if="isLoadingMedia" class="p-4">
-              <div class="flex justify-center items-center mb-6">
-                <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+            <div v-else-if="activeTab === 'media'" class="tab-content">
+              <!-- Lazyloader for media tab -->
+              <div v-if="isLoadingMedia" class="p-4">
+                <div class="flex justify-center items-center mb-6">
+                  <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2">
+                  <div v-for="i in 8" :key="i" class="aspect-square bg-gray-200 rounded animate-pulse"></div>
+                </div>
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2">
-                <div v-for="i in 8" :key="i" class="aspect-square bg-gray-200 rounded animate-pulse"></div>
+              
+              <!-- Display actual media when loaded -->
+              <div
+                v-if="!isLoadingMedia"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2 animate-fadeIn"
+              >
+                <div
+                  v-for="(media, index) in allMedia"
+                  :key="index"
+                  class="aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300"
+                >
+                  <img
+                    :src="media.thumbnail"
+                    :alt="`Media ${index + 1}`"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                  />
+                </div>
               </div>
             </div>
-            
-            <!-- Display actual media when loaded -->
-            <div
-              v-if="!isLoadingMedia"
-              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-2"
-            >
-              <div
-                v-for="(media, index) in allMedia"
-                :key="index"
-                class="aspect-square bg-gray-100 rounded overflow-hidden group cursor-pointer"
-              >
-                <img
-                  :src="media.thumbnail"
-                  :alt="`Media ${index + 1}`"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+
+            <div v-else-if="activeTab === 'saved'" class="px-4 py-6 tab-content">
+              <!-- Lazyloader for saved posts -->
+              <div v-if="isLoadingSaved" class="p-4">
+                <div class="flex justify-center items-center mb-6">
+                  <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+                </div>
+                <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4 animate-pulse-staggered">
+                  <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                      <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+                    </div>
+                  </div>
+                  <div class="space-y-2 mb-4">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                  </div>
+                  <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+                </div>
+              </div>
+              
+              <div v-if="!isLoadingSaved" class="animate-fadeIn">
+                <div v-if="savedPosts?.length === 0" class="text-center py-10">
+                  <h3 class="text-base font-medium text-gray-900 mb-2">
+                    No saved posts yet
+                  </h3>
+                  <p class="text-gray-500 text-sm">Posts you save will appear here</p>
+                </div>
+                <BusinessNetworkPost
+                  :posts="savedPosts"
+                  :id="currentUser?.user?.id"
                 />
               </div>
             </div>
-          </div>
-
-          <div v-else-if="activeTab === 'saved'" class="px-4 py-6">
-            <!-- Lazyloader for saved posts -->
-            <div v-if="isLoadingSaved" class="p-4">
-              <div class="flex justify-center items-center mb-6">
-                <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
-              </div>
-              <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
-                <div class="flex items-center space-x-3 mb-4">
-                  <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
-                  <div class="flex-1 space-y-2">
-                    <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-                    <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
-                  </div>
-                </div>
-                <div class="space-y-2 mb-4">
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-                  <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-                </div>
-                <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
-              </div>
-            </div>
-            
-            <div v-if="!isLoadingSaved">
-              <div v-if="savedPosts?.length === 0" class="text-center">
-                <h3 class="text-base font-medium text-gray-900">
-                  No saved posts yet
-                </h3>
-              </div>
-              <BusinessNetworkPost
-                :posts="savedPosts"
-                :id="currentUser?.user?.id"
-              />
-            </div>
-          </div>
+          </transition>
         </div>
       </div>
     </div>
@@ -502,6 +508,7 @@ const user = ref({});
 const posts = ref([]);
 const toast = useToast();
 const savedPosts = ref([]);
+const allMedia = ref([]);
 
 const followLoading = ref(false);
 const isFollowing = ref(false);
@@ -529,9 +536,9 @@ async function fetchUser() {
     const { data } = await get(`/user/${route.params.id}/`);
     user.value = {
       ...data,
-      // Ensure these properties exist with defaults
-      followers_count: data.followers_count || 0,
-      following_count: data.following_count || 0,
+      // Standardize the follower/following count properties
+      followers_count: data.followers_count || data.follower_count || 0,
+      following_count: data.following_count || data.follow_count || 0,
       post_count: data.post_count || 0,
       // Social media fields
       facebook_url: data.facebook_url || null,
@@ -574,6 +581,17 @@ async function fetchUserSavedPosts() {
 
 await fetchUserSavedPosts();
 
+// Simulate loading media
+onMounted(() => {
+  setTimeout(() => {
+    allMedia.value = Array(16).fill().map((_, i) => ({
+      thumbnail: `https://picsum.photos/500/500?random=${i+1}`,
+      url: `https://picsum.photos/1200/900?random=${i+1}`
+    }));
+    isLoadingMedia.value = false;
+  }, 1500);
+});
+
 const viewMode = ref("list");
 const activeTab = ref("posts");
 const isEditProfileOpen = ref(false);
@@ -595,7 +613,7 @@ const activePost = ref(null);
 const activeMediaIndex = ref(0);
 
 const tabs =
-  currentUser.value.user.id && currentUser.value.user.id === route.params.id
+  currentUser.value?.user?.id && currentUser.value?.user?.id === route.params.id
     ? [
         { label: "Posts", value: "posts" },
         // { label: "Media", value: "media" },
@@ -617,18 +635,18 @@ const toggleFollow = async () => {
 
       if (data) {
         // Update followers count accordingly
-        user.value.follower_count =
-          user.value.follower_count + (isFollowing.value ? 1 : -1);
+        user.value.followers_count = (user.value.followers_count || 0) + 1;
 
         toast.add({
-          title: isFollowing.value ? "Followed" : "Unfollowed",
-          description: isFollowing.value
-            ? "You have successfully followed this user."
-            : "You have successfully unfollowed this user.",
+          title: "Followed",
+          description: "You have successfully followed this user.",
+          icon: "i-heroicons-check-circle",
+          color: "green",
         });
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      isFollowing.value = !isFollowing.value; // Revert state on error
     } finally {
       followLoading.value = false;
     }
@@ -637,21 +655,33 @@ const toggleFollow = async () => {
       const res = await del(`/bn/users/${route.params.id}/unfollow/`);
       if (res.data === undefined) {
         // Update followers count accordingly
-        user.value.follower_count =
-          user.value.follower_count + (isFollowing.value ? 1 : -1);
+        user.value.followers_count = Math.max(0, (user.value.followers_count || 0) - 1);
+        
         toast.add({
           title: "Unfollowed",
           description: "You have successfully unfollowed this user.",
+          icon: "i-heroicons-information-circle",
+          color: "gray",
         });
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      isFollowing.value = !isFollowing.value; // Revert state on error
     } finally {
       followLoading.value = false;
     }
   }
 };
 
+// Animation when switching tabs
+const switchTab = (tabValue) => {
+  if (activeTab.value === tabValue) return;
+  
+  // Apply animation class and change tab
+  activeTab.value = tabValue;
+};
+
+// Remaining functions
 const updateProfile = () => {
   user.value = {
     ...user.value,
@@ -664,7 +694,12 @@ const updateProfile = () => {
     phone: profileForm.value.phone,
   };
   isEditProfileOpen.value = false;
-  alert("Profile updated successfully");
+  toast.add({
+    title: "Profile Updated",
+    description: "Your profile has been updated successfully.",
+    icon: "i-heroicons-check-circle",
+    color: "green",
+  });
 };
 
 const triggerProfilePhotoInput = () => {
@@ -679,7 +714,12 @@ const handleProfilePhotoChange = (e) => {
   const file = e.target.files?.[0];
   if (file) {
     setTimeout(() => {
-      alert("Profile photo updated successfully");
+      toast.add({
+        title: "Photo Updated",
+        description: "Your profile photo has been updated successfully.",
+        icon: "i-heroicons-check-circle",
+        color: "green",
+      });
       isEditPhotoOpen.value = false;
     }, 1000);
   }
@@ -689,7 +729,12 @@ const handleCoverPhotoChange = (e) => {
   const file = e.target.files?.[0];
   if (file) {
     setTimeout(() => {
-      alert("Cover photo updated successfully");
+      toast.add({
+        title: "Cover Updated",
+        description: "Your cover photo has been updated successfully.",
+        icon: "i-heroicons-check-circle",
+        color: "green",
+      });
       isEditCoverOpen.value = false;
     }, 1000);
   }
@@ -723,100 +768,6 @@ const formatTimeAgo = (dateString) => {
   return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
 };
 
-const toggleLike = (post) => {
-  post.isLiked = !post.isLiked;
-  post.likeCount += post.isLiked ? 1 : -1;
-};
-
-const toggleSave = (post) => {
-  post.isSaved = !post.isSaved;
-  post.showDropdown = false;
-};
-
-const toggleDropdown = (post) => {
-  posts.value.forEach((p) => {
-    if (p.id !== post.id) p.showDropdown = false;
-  });
-
-  post.showDropdown = !post.showDropdown;
-};
-
-const toggleDescription = (post) => {
-  post.showFullDescription = !post.showFullDescription;
-};
-
-const copyLink = (post) => {
-  const postUrl = `${window.location.origin}/post/${post.id}`;
-  navigator.clipboard.writeText(postUrl);
-  alert("Link copied to clipboard");
-  post.showDropdown = false;
-};
-
-const sharePost = (post) => {
-  const postUrl = `${window.location.origin}/post/${post.id}`;
-
-  if (navigator.share && navigator.canShare) {
-    navigator
-      .share({
-        title: post.title,
-        text:
-          post.content.substring(0, 100) +
-          (post.content.length > 100 ? "..." : ""),
-        url: postUrl,
-      })
-      .catch((error) => console.error("Error sharing:", error));
-  } else {
-    alert(`Share URL: ${postUrl}`);
-  }
-};
-
-const addComment = (post) => {
-  if (!post.commentText.trim()) return;
-
-  const newComment = {
-    id: `comment-${Date.now()}`,
-    user: {
-      id: "current-user",
-      fullName: "You",
-      avatar: "/images/placeholder.jpg?height=40&width=40",
-    },
-    text: post.commentText,
-    timestamp: new Date().toISOString(),
-  };
-
-  post.comments.unshift(newComment);
-  post.commentText = "";
-};
-
-const openMedia = (post, index) => {
-  activePost.value = post;
-  activeMediaIndex.value = index;
-  activeMedia.value = post.media[index];
-};
-
-const navigateMedia = (direction) => {
-  if (!activePost.value || !activeMedia.value) return;
-
-  const currentIndex = activeMediaIndex.value;
-  const totalMedia = activePost.value.media.length;
-
-  if (direction === "prev") {
-    activeMediaIndex.value = (currentIndex - 1 + totalMedia) % totalMedia;
-  } else {
-    activeMediaIndex.value = (currentIndex + 1) % totalMedia;
-  }
-
-  activeMedia.value = activePost.value.media[activeMediaIndex.value];
-};
-
-// Add handler for new posts
-const handleNewPost = (newPost) => {
-  // Only add to this profile's posts if the author is the profile owner
-  if (newPost.author?.id === route.params.id) {
-    posts.value.results = [newPost, ...posts.value.results];
-  }
-};
-
 // Add event listeners
 onMounted(() => {
   const eventBus = useEventBus();
@@ -828,6 +779,9 @@ onMounted(() => {
       if (posts.value?.results && Array.isArray(posts.value.results)) {
         posts.value.results.unshift(newPost);
       }
+
+      // Update post count
+      user.value.post_count = (user.value.post_count || 0) + 1;
 
       // Scroll to the new post after it renders
       nextTick(() => {
@@ -854,7 +808,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Replace your existing tooltip CSS with this */
+/* Enhanced background and styling */
+.bg-gradient {
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.8), rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.8));
+  background-size: 200% 200%;
+  animation: gradientBackground 15s ease infinite;
+}
+
+@keyframes gradientBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Enhanced tooltip styling */
 .tooltip-container {
   position: relative;
 }
@@ -876,6 +849,7 @@ onMounted(() => {
   transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
   pointer-events: none;
   width: max-content;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
 }
 
 .tooltip-container:hover .tooltip-content {
@@ -883,11 +857,22 @@ onMounted(() => {
   visibility: visible;
 }
 
-/* Your existing styles... */
-.border-l-3 {
-  border-left-width: 3px;
+/* Tab transitions */
+.tab-transition-enter-active,
+.tab-transition-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.tab-transition-enter-from,
+.tab-transition-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 
+.tab-content {
+  min-height: 300px;
+}
+
+/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -899,25 +884,14 @@ onMounted(() => {
   }
 }
 
-/* Remove or comment out the old tooltip CSS */
-/* 
-[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  z-index: 10;
-  white-space: nowrap;
-  margin-top: 0.25rem;
-  animation: fadeIn 0.2s ease-out forwards;
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
-*/
 
 @keyframes highlightPost {
   0% {
@@ -934,7 +908,50 @@ onMounted(() => {
   }
 }
 
+@keyframes pulse-subtle {
+  0% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-fadeIn-delayed {
+  animation: fadeIn 0.5s 0.2s ease forwards;
+  opacity: 0;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite;
+}
+
+.animate-pulse-staggered:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
 .highlight-new-post {
   animation: highlightPost 1.5s ease-out;
+}
+
+/* Hide scrollbar but allow scrolling */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 </style>
