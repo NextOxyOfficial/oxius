@@ -2,7 +2,7 @@
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1">
     <!-- Header with gradient background -->
     <div
-      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 sm:p-6 mb-8 shadow-lg"
+      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 sm:p-6 mb-4 sm:mb-8 shadow-lg"
     >
       <div
         class="flex flex-col justify-between items-start md:items-center z-10 relative"
@@ -11,14 +11,14 @@
           <div class="flex flex-col justify-between items-start w-full">
             <div>
               <h1 class="text-xl sm:text-2xl font-bold">MindForce</h1>
-              <p class="text-blue-100 mt-1 text-sm sm:text-base">
+              <p class="text-blue-100 mt-1 text-md sm:text-base">
                 Raise your mind to help others! MindForce - A Collaborative
                 problem-solving network
               </p>
             </div>
             <button
               @click="openCreateModal"
-              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-sm transform hover:-translate-y-0.5"
+              class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-sm transform hover:-translate-y-0.5"
               :disabled="isCreating"
             >
               <span v-if="isCreating" class="flex items-center">
@@ -91,7 +91,7 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-3 sm:px-4 py-2 text-sm sm:text-sm font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
+              'relative px-3 sm:px-4 py-2 text-md sm:text-md font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -128,7 +128,7 @@
             <input
               type="text"
               placeholder="Search problems..."
-              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
+              class="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-md ring-offset-background file:border-0 file:bg-transparent file:text-md file:font-medium placeholder:text-gray-400 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-10 transition-all"
               v-model="searchQuery"
               @input="handleSearch"
             />
@@ -191,10 +191,10 @@
                     />
                   </div>
                   <div class="ml-2 sm:ml-3">
-                    <p class="text-sm sm:text-base font-medium">
+                    <p class="text-md sm:text-base font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-sm text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -202,7 +202,7 @@
                 <div class="flex flex-col items-end gap-1">
                   <span
                     v-if="problem?.payment_option === 'paid'"
-                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     {{
                       problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
@@ -218,12 +218,12 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     I need free help!
                   </span>
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
                   >
                     {{ problem?.category_details?.name }}
                   </span>
@@ -233,7 +233,7 @@
               <!-- Category badge with subtle shadow -->
 
               <h3
-                class="text-sm sm:text-base font-medium text-gray-900 hover:text-blue-700 transition-colors"
+                class="text-base text-gray-900 hover:text-blue-700 transition-colors"
               >
                 {{ problem?.title }}
               </h3>
@@ -243,14 +243,14 @@
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
                   <span
-                    class="text-xs sm:text-sm text-gray-600 flex items-center"
+                    class="text-md text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
                   <span
-                    class="text-xs sm:text-sm text-gray-500 flex items-center"
+                    class="text-sm sm:text-md text-gray-500 flex items-center"
                   >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
@@ -259,7 +259,7 @@
 
                 <span
                   v-if="problem?.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium bg-green-100 text-green-800"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -340,10 +340,10 @@
                     />
                   </div>
                   <div class="ml-2 sm:ml-3">
-                    <p class="text-sm sm:text-base font-medium">
+                    <p class="text-base font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-sm text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -351,7 +351,7 @@
                 <div class="flex flex-col items-end gap-1">
                   <span
                     v-if="problem.payment_amount > 0"
-                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     <DollarSign class="h-3 w-3 mr-1" />
                     {{
@@ -362,12 +362,12 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
                   </span>
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
                   >
                     {{ problem?.category_details?.name }}
                   </span>
@@ -375,13 +375,13 @@
               </div>
 
               <span
-                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all mb-2 sm:mb-3 bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ problem?.category_details?.name }}
               </span>
 
               <h3
-                class="text-sm sm:text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2"
+                class="text-md sm:text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -410,14 +410,14 @@
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
                   <span
-                    class="text-xs sm:text-sm text-gray-600 flex items-center"
+                    class="text-sm sm:text-md text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem.comments?.length }} Advices
                   </span>
 
                   <span
-                    class="text-xs sm:text-sm text-gray-500 flex items-center"
+                    class="text-md text-gray-500 flex items-center"
                   >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
@@ -425,7 +425,7 @@
                 </div>
 
                 <span
-                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -485,10 +485,10 @@
                     />
                   </div>
                   <div class="ml-2 sm:ml-3">
-                    <p class="text-sm sm:text-base font-medium">
+                    <p class="text-md sm:text-base font-medium">
                       {{ problem?.user_details?.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-sm text-gray-500">
                       {{ formatTimeAgo(problem?.created_at) }}
                     </p>
                   </div>
@@ -496,7 +496,7 @@
                 <div class="flex flex-col items-end gap-1">
                   <span
                     v-if="problem?.payment_option === 'paid'"
-                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-green-50 text-green-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
                   >
                     {{
                       problem?.payment_amount > 0 ? `I can pay ` : "Paid Help"
@@ -512,12 +512,12 @@
                   </span>
                   <span
                     v-else
-                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-medium transition-all border-0 bg-blue-50 text-blue-700"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
                     Free Help
                   </span>
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
                   >
                     {{ problem?.category_details?.name }}
                   </span>
@@ -525,7 +525,7 @@
               </div>
 
               <h3
-                class="text-sm sm:text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
+                class="text-md sm:text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -535,14 +535,14 @@
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
                   <span
-                    class="text-xs sm:text-sm text-gray-600 flex items-center"
+                    class="text-sm sm:text-md text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
                   <span
-                    class="text-xs sm:text-sm text-gray-500 flex items-center"
+                    class="text-sm sm:text-md text-gray-500 flex items-center"
                   >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
@@ -551,7 +551,7 @@
 
                 <span
                   v-if="problem.status === 'solved'"
-                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-600 text-white shadow-sm"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
                 >
                   <CheckCircle class="h-3 w-3 mr-1" /> Solved
                 </span>
@@ -670,7 +670,7 @@
                   class="text-md font-medium text-gray-700 flex justify-between"
                 >
                   <span>Photos (Optional)</span>
-                  <span class="text-sm text-gray-500"
+                  <span class="text-md text-gray-500"
                     >{{ createForm.images?.length }}/4 photos</span
                   >
                 </label>
@@ -708,7 +708,7 @@
                       @change="handlePhotoUpload"
                     />
                     <ImagePlus class="h-6 w-6 text-gray-400" />
-                    <span class="mt-1 text-sm text-gray-500">Add Photo</span>
+                    <span class="mt-1 text-md text-gray-500">Add Photo</span>
                   </label>
                 </div>
               </div>
@@ -754,7 +754,7 @@
                       v-model="createForm.payment_option"
                       class="h-4 w-4 border-blue-500 text-blue-600 focus:ring-blue-500"
                     />
-                    <label for="free" class="text-sm cursor-pointer"
+                    <label for="free" class="text-md cursor-pointer"
                       >I need help for free</label
                     >
                   </div>
@@ -774,7 +774,7 @@
                       v-model="createForm.payment_option"
                       class="h-4 w-4 border-green-500 text-green-600 focus:ring-green-500"
                     />
-                    <label for="paid" class="text-sm cursor-pointer"
+                    <label for="paid" class="text-md cursor-pointer"
                       >I can pay for help</label
                     >
                   </div>
@@ -888,7 +888,7 @@
                   <p class="text-md font-medium">
                     {{ selectedProblem.user_details?.name }}
                   </p>
-                  <div class="flex items-center text-sm text-gray-500">
+                  <div class="flex items-center text-md text-gray-500">
                     <Clock class="h-3 w-3 mr-1" />
                     <span>{{ formatTimeAgo(selectedProblem.created_at) }}</span>
                   </div>
@@ -945,14 +945,14 @@
             <!-- Problem Category & Payment -->
             <div class="flex flex-wrap gap-2 mt-4">
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-gray-100 text-gray-800 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-md font-medium bg-gray-100 text-gray-800 shadow-sm"
               >
                 {{ selectedProblem.category_details?.name }}
               </span>
 
               <span
                 v-if="selectedProblem?.payment_option === 'paid'"
-                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-green-50 text-green-700"
+                class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium transition-all border-0 bg-green-50 text-green-700"
               >
                 {{
                   selectedProblem?.payment_amount > 0
@@ -970,14 +970,14 @@
               </span>
               <span
                 v-else
-                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-blue-50 text-blue-700"
+                class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-blue-50 text-blue-700"
               >
                 I need help for free
               </span>
 
               <span
                 v-if="selectedProblem.status === 'solved'"
-                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-green-600 text-white shadow-sm"
+                class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-green-600 text-white shadow-sm"
               >
                 <CheckCircle class="h-3 w-3 mr-1" />
                 Solved
@@ -1033,7 +1033,7 @@
             <!-- Comments Section -->
             <div class="mt-6">
               <h3 class="text-lg font-medium mb-4 text-gray-900">
-                Comments ({{ selectedProblem.comments?.length }})
+                Advice ({{ selectedProblem.comments?.length }})
               </h3>
 
               <!-- Comment List -->
@@ -1067,12 +1067,12 @@
                             </p>
                             <span
                               v-if="comment.isSolution"
-                              class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium bg-green-600 text-white shadow-sm"
+                              class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-md font-medium bg-green-600 text-white shadow-sm"
                             >
                               <CheckCircle class="h-3 w-3 mr-1" /> Solution
                             </span>
                           </div>
-                          <p class="text-sm text-gray-500">
+                          <p class="text-md text-gray-500">
                             {{ comment.createdAt }}
                           </p>
                         </div>
@@ -1082,7 +1082,7 @@
                         v-if="isOwner"
                         @click="markAsSolution(comment.id)"
                         :class="[
-                          'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3',
+                          'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3',
                           comment.is_solved
                             ? 'bg-green-600 text-white shadow-sm'
                             : 'border border-gray-200 bg-white hover:bg-gray-50 text-gray-700',
