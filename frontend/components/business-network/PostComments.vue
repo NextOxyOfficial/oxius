@@ -3,7 +3,7 @@
     <!-- See all comments button moved to the top -->
     <button
       v-if="post?.post_comments?.length > 3"
-      class="text-base text-blue-600 font-medium"
+      class="text-base sm:text-sm text-blue-600 font-medium"
       @click="$emit('open-comments-modal', post)"
     >
       See all {{ post?.post_comments?.length }} comments
@@ -99,7 +99,7 @@
                 </button>
               </div>
             </div>
-            <p v-else class="text-base" style="word-break: break-word">
+            <p v-else class="text-base sm:text-sm" style="word-break: break-word">
               {{ comment?.content }}
             </p>
           </div>

@@ -44,7 +44,7 @@
           </h3>
           <nav class="space-y-1">
             <NuxtLink
-              v-for="item in mainMenu"
+              v-for="item in user?.user ? mainMenu : mainMenu2"
               :key="item.path"
               :to="item.path"
               @click="cart.toggleBurgerMenu()"
@@ -511,6 +511,7 @@ import {
   Trophy,
   RefreshCw,
   Plus,
+  Globe,
 } from "lucide-vue-next";
 
 // State
@@ -595,7 +596,7 @@ const mainMenu = [
   {
     label: "Recent",
     path: "/business-network",
-    icon: Home,
+    icon: Zap,
     active: true,
   },
   {
@@ -629,8 +630,14 @@ const mainMenu2 = [
   {
     label: "Recent",
     path: "/business-network",
-    icon: Home,
+    icon: Globe,
     active: true,
+  },
+  {
+    label: "MindForce",
+    path: `/business-network/mindforce`,
+    icon: Hash,
+    active: false,
   },
   {
     label: "Login",
