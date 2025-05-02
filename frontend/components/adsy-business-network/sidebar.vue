@@ -1,4 +1,4 @@
-<template>
+<template >
   <div class="rounded-t-sm mt-16">
     <!-- Mobile Overlay (shows when sidebar is open on mobile) -->
     <div
