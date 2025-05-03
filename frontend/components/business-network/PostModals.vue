@@ -244,7 +244,35 @@
                   @click.stop
                 />
                 <!-- Mention suggestions dropdown -->
-                <!-- ...existing mentions dropdown code... -->
+                <div
+                  v-if="
+                    showMentions &&
+                    mentionSuggestions.length > 0 &&
+                    activeCommentsPost === mentionInputPosition?.post
+                  "
+                  class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-48 overflow-y-auto"
+                >
+                  <div class="py-1">
+                    <div
+                      v-for="(user, index) in mentionSuggestions"
+                      :key="user.id"
+                      @click="$emit('select-mention', user, activeCommentsPost)"
+                      :class="[
+                        'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
+                        index === activeMentionIndex ? 'bg-gray-100' : '',
+                      ]"
+                    >
+                      <img
+                        :src="user?.follower_details?.image"
+                        :alt="user?.follower_details?.name"
+                        class="w-7 h-7 rounded-full mr-2"
+                      />
+                      <span class="text-sm font-medium">{{
+                        user?.follower_details?.name
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
                 <button
                   v-if="activeCommentsPost.commentText"
                   class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
@@ -425,6 +453,7 @@ defineEmits([
   "delete-comment",
   "cancel-edit-comment",
   "save-edit-comment",
+  "select-mention",
 ]);
 
 defineExpose({ commentsContainerRef });

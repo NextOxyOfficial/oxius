@@ -344,7 +344,488 @@ watch(() => props.posts, (newPosts) => {
   }
 }, { deep: true });
 
-// ...remaining functions unchanged...
+// Toggle post description expand/collapse
+const toggleDescription = (post) => {
+  post.showFullDescription = !post.showFullDescription;
+};
+
+// Handle post interactions
+const toggleFollow = async (post) => {
+  const authorId = post.author_details?.id;
+  if (!authorId) return;
+  
+  try {
+    const isFollowing = post.author_details.is_following;
+    const endpoint = `/bn/follow/${authorId}/`;
+    
+    if (isFollowing) {
+      const { data } = await del(endpoint);
+      post.author_details.is_following = false;
+      toast.add({ title: "Unfollowed user", color: "gray" });
+    } else {
+      const { data } = await post(endpoint);
+      post.author_details.is_following = true;
+      toast.add({ title: "Following user", color: "blue" });
+    }
+  } catch (error) {
+    console.error("Error toggling follow:", error);
+    toast.add({
+      title: "Failed to update follow status",
+      color: "red",
+    });
+  }
+};
+
+const toggleDropdown = (clickedPost) => {
+  // Close other dropdowns
+  props.posts.forEach((p) => {
+    if (p.id !== clickedPost.id) p.showDropdown = false;
+  });
+  // Toggle this dropdown
+  clickedPost.showDropdown = !clickedPost.showDropdown;
+};
+
+const toggleSave = async (postToSave) => {
+  try {
+    const endpoint = `/bn/posts/${postToSave.id}/save/`;
+    const postIsSaved = postToSave.isSaved;
+    
+    if (postIsSaved) {
+      await del(endpoint);
+      postToSave.isSaved = false;
+      toast.add({ title: "Post removed from saved items", color: "gray" });
+    } else {
+      await post(endpoint);
+      postToSave.isSaved = true;
+      toast.add({ title: "Post saved", color: "green" });
+    }
+  } catch (error) {
+    console.error("Error saving post:", error);
+    toast.add({
+      title: "Failed to save post",
+      color: "red",
+    });
+  }
+};
+
+const copyLink = (postToCopy) => {
+  const postUrl = `${window.location.origin}/business-network/posts/${postToCopy.id}`;
+  navigator.clipboard.writeText(postUrl);
+  toast.add({
+    title: "Link copied to clipboard",
+    color: "blue",
+  });
+};
+
+// Like functionality
+const toggleLike = async (postToLike) => {
+  if (postToLike.isLikeLoading) return;
+  
+  postToLike.isLikeLoading = true;
+  
+  try {
+    const endpoint = `/bn/posts/${postToLike.id}/like/`;
+    // Check if current user has liked this post
+    const isLiked = postToLike.post_likes?.some(
+      like => like.user === user.value?.user?.id
+    );
+    
+    if (isLiked) {
+      await del(endpoint);
+      // Remove user from likes
+      postToLike.post_likes = postToLike.post_likes.filter(
+        like => like.user !== user.value?.user?.id
+      );
+    } else {
+      const { data } = await post(endpoint);
+      // Add new like data to the post
+      if (!postToLike.post_likes) {
+        postToLike.post_likes = [];
+      }
+      postToLike.post_likes.push(data);
+    }
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    toast.add({
+      title: "Failed to update like status",
+      color: "red",
+    });
+  } finally {
+    postToLike.isLikeLoading = false;
+  }
+};
+
+// Comment functionality
+const addComment = async (postToComment) => {
+  if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
+    return;
+  }
+  
+  postToComment.isCommentLoading = true;
+  
+  try {
+    const endpoint = `/bn/posts/${postToComment.id}/comments/`;
+    const { data } = await post(endpoint, {
+      content: postToComment.commentText,
+    });
+    
+    // Initialize post_comments array if it doesn't exist
+    if (!postToComment.post_comments) {
+      postToComment.post_comments = [];
+    }
+    
+    // Add the new comment to the beginning
+    postToComment.post_comments.unshift(data);
+    
+    // Clear the comment text
+    postToComment.commentText = "";
+    
+    // Close mentions dropdown if open
+    showMentions.value = false;
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    toast.add({
+      title: "Failed to add comment",
+      color: "red",
+    });
+  } finally {
+    postToComment.isCommentLoading = false;
+  }
+};
+
+// Handle mentions and comment input
+const handleCommentInput = (event, targetPost) => {
+  targetPost.commentText = event.target.value;
+  
+  // Check for mention character (@)
+  const cursorPos = event.target.selectionStart;
+  const textBeforeCursor = targetPost.commentText.substring(0, cursorPos);
+  const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+  
+  if (mentionMatch) {
+    mentionSearchText.value = mentionMatch[1];
+    showMentions.value = true;
+    mentionInputPosition.value = {
+      post: targetPost,
+      startPos: cursorPos - mentionMatch[0].length,
+      endPos: cursorPos,
+    };
+    
+    // Search for users matching the mention text
+    searchMentions(mentionSearchText.value);
+  } else {
+    showMentions.value = false;
+  }
+};
+
+const handleMentionKeydown = (event, targetPost) => {
+  if (!showMentions.value) return;
+  
+  // Handle arrow keys for mention selection
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    activeMentionIndex.value = activeMentionIndex.value <= 0 
+      ? mentionSuggestions.value.length - 1 
+      : activeMentionIndex.value - 1;
+  } else if (event.key === 'Enter' && showMentions.value) {
+    event.preventDefault();
+    const selectedUser = mentionSuggestions.value[activeMentionIndex.value];
+    if (selectedUser) {
+      selectMention(selectedUser, targetPost);
+    }
+  } else if (event.key === 'Escape') {
+    showMentions.value = false;
+  }
+};
+
+// Search for users to mention
+const searchMentions = async (query) => {
+  if (!query) {
+    mentionSuggestions.value = [];
+    return;
+  }
+  
+  try {
+    const { data } = await get(`/bn/mentions/?search=${query}`);
+    mentionSuggestions.value = data || [];
+    activeMentionIndex.value = 0;
+  } catch (error) {
+    console.error("Error searching mentions:", error);
+    mentionSuggestions.value = [];
+  }
+};
+
+const selectMention = (user, targetPost) => {
+  if (!mentionInputPosition.value) return;
+  
+  const { startPos, endPos } = mentionInputPosition.value;
+  const beforeMention = targetPost.commentText.substring(0, startPos);
+  const afterMention = targetPost.commentText.substring(endPos);
+  
+  // Replace the mention with the user's name
+  targetPost.commentText = `${beforeMention}@${user.follower_details.name} ${afterMention}`;
+  
+  // Reset mention state
+  showMentions.value = false;
+  mentionSuggestions.value = [];
+};
+
+// Modal handling
+const openLikesModal = (postToView) => {
+  activeLikesPost.value = postToView;
+};
+
+const openCommentsModal = (postToView) => {
+  activeCommentsPost.value = postToView;
+  
+  // Set timeout to scroll to end of comments once modal is visible
+  setTimeout(() => {
+    if (modalsRef.value?.commentsContainerRef) {
+      modalsRef.value.commentsContainerRef.scrollTop = 0;
+    }
+  }, 100);
+};
+
+const toggleUserFollow = async (userToFollow) => {
+  try {
+    const userId = userToFollow.user;
+    
+    if (userToFollow.isFollowing) {
+      await del(`/bn/follow/${userId}/`);
+      userToFollow.isFollowing = false;
+    } else {
+      await post(`/bn/follow/${userId}/`);
+      userToFollow.isFollowing = true;
+    }
+  } catch (error) {
+    console.error("Error toggling user follow:", error);
+  }
+};
+
+// Media viewer functions
+const openMedia = (postWithMedia, media) => {
+  activeMedia.value = media;
+  activePost.value = postWithMedia;
+  activeMediaIndex.value = postWithMedia.post_media.findIndex(m => m.id === media.id);
+};
+
+const closeMedia = () => {
+  activeMedia.value = null;
+  activePost.value = null;
+  activeMediaIndex.value = 0;
+  mediaCommentText.value = "";
+};
+
+const navigateMedia = (direction) => {
+  if (!activePost.value || !activePost.value.post_media) return;
+  
+  const totalMedia = activePost.value.post_media.length;
+  
+  if (direction === 'next') {
+    activeMediaIndex.value = (activeMediaIndex.value + 1) % totalMedia;
+  } else {
+    activeMediaIndex.value = (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
+  }
+  
+  activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
+};
+
+const toggleMediaLike = async () => {
+  if (!activeMedia.value) return;
+  
+  try {
+    const endpoint = `/bn/media/${activeMedia.value.id}/like/`;
+    const isLiked = activeMedia.value.media_likes?.some(
+      like => like.user === user.value?.user?.id
+    );
+    
+    if (isLiked) {
+      await del(endpoint);
+      // Remove user from likes
+      activeMedia.value.media_likes = activeMedia.value.media_likes.filter(
+        like => like.user !== user.value?.user?.id
+      );
+    } else {
+      const { data } = await post(endpoint);
+      // Add new like data
+      if (!activeMedia.value.media_likes) {
+        activeMedia.value.media_likes = [];
+      }
+      activeMedia.value.media_likes.push(data);
+    }
+  } catch (error) {
+    console.error("Error toggling media like:", error);
+  }
+};
+
+const openMediaLikesModal = () => {
+  if (!activeMedia.value) return;
+  
+  activeMediaLikes.value = activeMedia.value;
+  // Set liked users for the modal
+  mediaLikedUsers.value = activeMedia.value.media_likes.map(like => ({
+    id: like.user_details.id,
+    image: like.user_details.image,
+    fullName: like.user_details.name,
+    isFollowing: like.user_details.is_following
+  }));
+};
+
+const addMediaComment = async () => {
+  if (!mediaCommentText.value.trim() || !activeMedia.value) return;
+  
+  try {
+    const endpoint = `/bn/media/${activeMedia.value.id}/comments/`;
+    const { data } = await post(endpoint, {
+      content: mediaCommentText.value,
+    });
+    
+    // Initialize media_comments array if it doesn't exist
+    if (!activeMedia.value.media_comments) {
+      activeMedia.value.media_comments = [];
+    }
+    
+    // Add the new comment
+    activeMedia.value.media_comments.push(data);
+    
+    // Clear the comment text
+    mediaCommentText.value = "";
+  } catch (error) {
+    console.error("Error adding media comment:", error);
+    toast.add({
+      title: "Failed to add comment",
+      color: "red",
+    });
+  }
+};
+
+const editMediaComment = async (comment) => {
+  mediaCommentToDelete = comment;
+};
+
+const deleteMediaComment = async (comment) => {
+  mediaCommentToDelete = comment;
+  
+  try {
+    await del(`/bn/media-comments/${comment.id}/`);
+    
+    // Remove the comment from the list
+    if (activeMedia.value && activeMedia.value.media_comments) {
+      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
+        c => c.id !== comment.id
+      );
+    }
+    
+    mediaCommentToDelete = null;
+  } catch (error) {
+    console.error("Error deleting media comment:", error);
+    toast.add({
+      title: "Failed to delete comment",
+      color: "red",
+    });
+  }
+};
+
+// Post comment edit/delete functions
+const editComment = (postToEdit, commentToEdit) => {
+  commentToEdit.isEditing = true;
+  commentToEdit.editText = commentToEdit.content;
+};
+
+const deleteComment = (postToUpdate, commentToDelete) => {
+  commentToDelete = { ...commentToDelete };
+  postWithCommentToDelete.value = postToUpdate;
+};
+
+const confirmDeleteComment = async () => {
+  if (!commentToDelete.value || !postWithCommentToDelete.value) return;
+  
+  try {
+    commentToDelete.value.isDeleting = true;
+    
+    await del(`/bn/post-comments/${commentToDelete.value.id}/`);
+    
+    // Remove the comment from the list
+    if (postWithCommentToDelete.value && postWithCommentToDelete.value.post_comments) {
+      postWithCommentToDelete.value.post_comments = 
+        postWithCommentToDelete.value.post_comments.filter(
+          c => c.id !== commentToDelete.value.id
+        );
+    }
+    
+    toast.add({ 
+      title: "Comment deleted", 
+      color: "blue"
+    });
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    toast.add({
+      title: "Failed to delete comment",
+      color: "red",
+    });
+  } finally {
+    commentToDelete.value = null;
+    postWithCommentToDelete.value = null;
+  }
+};
+
+const cancelEditComment = (comment) => {
+  comment.isEditing = false;
+  comment.editText = "";
+};
+
+const saveEditComment = async (postToUpdate, commentToSave) => {
+  if (!commentToSave.editText?.trim()) return;
+  
+  commentToSave.isSaving = true;
+  
+  try {
+    const { data } = await put(`/bn/post-comments/${commentToSave.id}/`, {
+      content: commentToSave.editText,
+    });
+    
+    // Update the comment content
+    commentToSave.content = data.content;
+    commentToSave.isEditing = false;
+    commentToSave.editText = "";
+    
+    toast.add({ 
+      title: "Comment updated", 
+      color: "green"
+    });
+  } catch (error) {
+    console.error("Error updating comment:", error);
+    toast.add({
+      title: "Failed to update comment",
+      color: "red",
+    });
+  } finally {
+    commentToSave.isSaving = false;
+  }
+};
+
+// Post sharing function
+const sharePost = (postToShare) => {
+  const postUrl = `${window.location.origin}/business-network/posts/${postToShare.id}`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: postToShare.title,
+      text: 'Check out this post on Business Network',
+      url: postUrl,
+    })
+    .catch(error => console.log('Error sharing', error));
+  } else {
+    navigator.clipboard.writeText(postUrl);
+    toast.add({
+      title: "Link copied to clipboard",
+      color: "blue",
+    });
+  }
+};
 </script>
 
 <style scoped>
