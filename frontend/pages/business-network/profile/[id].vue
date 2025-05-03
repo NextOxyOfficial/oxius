@@ -503,6 +503,21 @@ const route = useRoute();
 
 const { user: currentUser } = useAuth();
 const { get, post, del } = useApi();
+const eventBus = useEventBus();
+
+// Listen for loading events from footer and sidebar
+eventBus.on('start-loading-profile', () => {
+  // Reset loading states
+  isLoadingPosts.value = true;
+  isLoadingMedia.value = true;
+  isLoadingSaved.value = true;
+  
+  // Refresh data with a slight delay to allow navigation
+  setTimeout(() => {
+    fetchUserPosts();
+    fetchUserSavedPosts();
+  }, 100);
+});
 
 const user = ref({});
 const posts = ref([]);

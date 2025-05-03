@@ -47,9 +47,9 @@
               v-for="item in user?.user ? mainMenu : mainMenu2"
               :key="item.path"
               :to="item.path"
-              @click="cart.toggleBurgerMenu()"
+              @click="handleMenuClick(item.path)"
+              class="flex items-center px-3 py-2.5 rounded-md transition-colors group"
               :class="[
-                'flex items-center px-3 py-2.5 rounded-md transition-colors group',
                 item.path === route.path
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-gray-50',
