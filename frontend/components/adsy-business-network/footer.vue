@@ -228,9 +228,9 @@ const eventBus = useEventBus();
 
 // Handle Recent menu click
 function handleRecentClick() {
-  // Emit loading event for Recent menu
-  eventBus.emit('start-loading-posts');
-  console.log('Emitted start-loading-posts event from footer');
+  // Emit a specific event for loading recent posts
+  eventBus.emit('load-recent-posts');
+  console.log('Emitted load-recent-posts event from footer');
 }
 
 // Handle Profile menu click

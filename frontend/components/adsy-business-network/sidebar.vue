@@ -872,9 +872,9 @@ const handleMenuClick = (path) => {
     eventBus.emit('start-loading-profile');
     console.log('Emitted start-loading-profile event');
   } else if (path === '/business-network') {
-    // For main feed, emit posts loading event
-    eventBus.emit('start-loading-posts');
-    console.log('Emitted start-loading-posts event');
+    // For main feed, emit the recent posts loading event 
+    eventBus.emit('load-recent-posts');
+    console.log('Emitted load-recent-posts event');
   }
 };
 

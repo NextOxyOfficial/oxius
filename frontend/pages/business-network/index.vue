@@ -418,9 +418,15 @@ onMounted(() => {
     loadData();
   });
   
+  // Listen for the specific recent posts loading event
+  eventBus.on('load-recent-posts', () => {
+    loadRecentPosts();
+  });
+  
   // Clean up event listeners when component is unmounted
   onUnmounted(() => {
     eventBus.off('start-loading-posts');
+    eventBus.off('load-recent-posts');
   });
 });
 
@@ -450,6 +456,80 @@ const handleNewPost = (newPost) => {
     newestCreatedAt.value = processedNewPost.created_at;
   }
 };
+
+// Function to specifically load recent posts (newest 10)
+function loadRecentPosts() {
+  // Reset state
+  loading.value = true;
+  page.value = 1;
+  hasMore.value = true;
+  lastCreatedAt.value = null;
+  loadedPostIds.value.clear(); // Reset tracked post IDs
+  allPosts.value = []; // Clear existing posts
+  displayedPosts.value = []; // Clear displayed posts
+
+  // Set a small delay for better UX (showing skeleton)
+  setTimeout(() => {
+    // Use specific params for recent posts
+    const params = {
+      page_size: 10, // Get 10 most recent posts
+      sort: 'recent' // Sort parameter for recent posts
+    };
+    
+    // Call API with specific parameters for recent posts
+    get("/bn/posts/", { params })
+      .then(response => {
+        if (response.data && response.data.results) {
+          const newPosts = response.data.results;
+          
+          // Process posts
+          const processedPosts = newPosts.map(post => ({
+            ...post,
+            showFullDescription: false,
+            showDropdown: false,
+            commentText: '',
+            isCommentLoading: false,
+            isLikeLoading: false,
+          }));
+          
+          // Track post IDs to prevent duplicates
+          processedPosts.forEach(post => {
+            loadedPostIds.value.add(post.id);
+          });
+          
+          // Set posts
+          allPosts.value = processedPosts;
+          
+          // Update cursor for pagination
+          if (processedPosts.length > 0) {
+            const lastPost = processedPosts[processedPosts.length - 1];
+            lastCreatedAt.value = lastPost.created_at;
+            
+            // Set newest timestamp for potential refresh
+            newestCreatedAt.value = processedPosts[0].created_at;
+          }
+          
+          // Check if we have more posts to load
+          hasMore.value = processedPosts.length === 10;
+          
+          // Update displayed posts
+          updateDisplayedPosts();
+        }
+      })
+      .catch(error => {
+        console.error("Failed to load recent posts:", error);
+        useToast().add({
+          title: 'Error',
+          description: 'Failed to load recent posts',
+          color: 'red',
+          timeout: 3000
+        });
+      })
+      .finally(() => {
+        loading.value = false;
+      });
+  }, 500); // Slightly longer delay to ensure skeleton shows
+}
 
 // Search functionality
 const isSearchOpen = ref(false);
