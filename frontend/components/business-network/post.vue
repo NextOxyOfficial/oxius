@@ -408,6 +408,7 @@ const toggleSave = async (postToSave) => {
   }
 };
 
+
 const copyLink = (postToCopy) => {
   const postUrl = `${window.location.origin}/business-network/posts/${postToCopy.id}`;
   navigator.clipboard.writeText(postUrl);
