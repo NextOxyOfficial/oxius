@@ -69,7 +69,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         if tags_data:
             if tags_data and isinstance(tags_data, list):
                 for tag_data in tags_data:
-                    tag, created = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
+                    tag,_= BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
                     post.tags.add(tag)
 
         headers = self.get_success_headers(serializer.data)
@@ -735,8 +735,32 @@ class CheckUserFollowStatusView(generics.GenericAPIView):
 class TopTagsView(APIView):
 
     def get(self, request):
-        tag_id_subquery = BusinessNetworkPostTag.objects.filter(tag=OuterRef('tag')).values('id')[:1]
-        top_tags = BusinessNetworkPostTag.objects.values('tag').annotate(count=Count('id'), id=Subquery(tag_id_subquery)).order_by('-count')[:100]
-        serializer = FrequentTagSerializer(top_tags, many=True)
+        # Access the auto-generated ManyToMany "through" table
+        through_model = BusinessNetworkPost.tags.through
+
+        # Step 1: Count how many times each tag (by tag_id) was used in posts
+        tag_usage = (
+            through_model.objects
+            .values('businessnetworkposttag')  # FK to tag
+            .annotate(count=Count('businessnetworkpost'))
+            .order_by('-count')[:100]
+        )
+
+        # Step 2: Get the corresponding tag objects
+        tag_ids = [item['businessnetworkposttag'] for item in tag_usage]
+        tag_objects = BusinessNetworkPostTag.objects.in_bulk(tag_ids)
+
+        # Step 3: Combine tag object + count
+        results = []
+        for item in tag_usage:
+            tag_obj = tag_objects.get(item['businessnetworkposttag'])
+            if tag_obj:
+                results.append({
+                    'id': tag_obj.id,
+                    'tag': tag_obj.tag,
+                    'count': item['count']
+                })
+
+        serializer = FrequentTagSerializer(results, many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
         

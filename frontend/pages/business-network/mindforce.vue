@@ -91,7 +91,7 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-3 sm:px-4 py-2 text-md sm:text-md font-medium transition-all duration-200 ease-in-out flex-1 sm:flex-initial whitespace-nowrap',
+              'relative px-3 sm:px-4 py-2 font-medium transition-all text-sm sm:text-base duration-200 ease-in-out',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -242,16 +242,12 @@
                 class="mt-3 sm:mt-4 flex items-center justify-between relative"
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
-                  <span
-                    class="text-md text-gray-600 flex items-center"
-                  >
+                  <span class="text-md text-gray-600 flex items-center">
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span
-                    class="text-md text-gray-500 flex items-center"
-                  >
+                  <span class="text-md text-gray-500 flex items-center">
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -416,9 +412,7 @@
                     {{ problem.comments?.length }} Advices
                   </span>
 
-                  <span
-                    class="text-md text-gray-500 flex items-center"
-                  >
+                  <span class="text-md text-gray-500 flex items-center">
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -605,7 +599,6 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95"
     >
-    
       <div
         v-if="isCreateModalOpen"
         class="fixed inset-0 z-50 flex items-center justify-center"
@@ -1056,15 +1049,18 @@
                           class="h-10 w-10 rounded-full overflow-hidden border-2 border-white shadow-sm"
                         >
                           <img
-                            :src="problem?.user_details?.image || '/placeholder.svg'"
-                      :alt="problem?.user_details?.name"
+                            :src="
+                              comment?.author_details?.image ||
+                              '/placeholder.svg'
+                            "
+                            :alt="comment?.author_details?.name"
                             class="h-full w-full object-cover"
                           />
                         </div>
                         <div class="ml-3">
                           <div class="flex items-center">
-                            <p class="text-md font-medium">
-                              {{ problem?.user_details?.name }}
+                            <p class="font-medium">
+                              {{ comment?.author_details?.name }}
                             </p>
                             <span
                               v-if="comment.isSolution"
@@ -1074,7 +1070,7 @@
                             </span>
                           </div>
                           <p class="text-md text-gray-500">
-                            {{ comment.createdAt }}
+                            {{ formatTimeAgo(comment.created_at) }}
                           </p>
                         </div>
                       </div>

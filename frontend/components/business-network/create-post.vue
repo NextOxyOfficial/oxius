@@ -368,7 +368,7 @@
                                 <div
                                   class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700"
                                 >
-                                  Search Results
+                                  Suggested hashtags
                                 </div>
                                 <div
                                   v-for="(tag, index) in hashtagSuggestions"
@@ -646,7 +646,7 @@ const openCreatePostModal = () => {
   isCreatePostOpen.value = true;
   nextTick(() => {
     document.body.style.overflow = "hidden"; // Prevent background scrolling
-    fetchPopularHashtags(); // Get popular hashtags when opening modal
+    // Get popular hashtags when opening modal
   });
 };
 
@@ -877,18 +877,10 @@ async function searchHashtags() {
   }
 
   try {
-    const { data } = await get(
-      `/news/categories/search/?q=${categoryInput.value.trim()}`
-    );
+    const { data } = await get(`/bn/top-tags/`);
 
-    if (data && Array.isArray(data.results)) {
-      hashtagSuggestions.value = data.results
-        .map((tag) => ({
-          id: tag.id,
-          tag: tag.tag,
-          count: tag.posts_count || 0,
-        }))
-        .slice(0, 5); // Take top 5 results
+    if (data) {
+      hashtagSuggestions.value = data.slice(0, 10);
 
       showSuggestions.value = true;
     } else {
@@ -907,38 +899,13 @@ async function searchHashtags() {
 }
 
 // Fetch popular hashtags
-const fetchPopularHashtags = async () => {
-  try {
-    const { data } = await get("/news/categories/popular/?limit=8");
-
-    if (data && Array.isArray(data.results)) {
-      popularHashtags.value = data.results.map((tag) => ({
-        id: tag.id,
-        tag: tag.tag,
-        count: tag.posts_count || 0,
-      }));
-    } else if (data && Array.isArray(data)) {
-      // Alternative format
-      popularHashtags.value = data.map((tag) => ({
-        id: tag.id || 0,
-        tag: tag.tag || tag.name,
-        count: tag.posts_count || tag.count || 0,
-      }));
-    } else {
-      popularHashtags.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching popular hashtags:", error);
-    popularHashtags.value = [];
-  }
-};
 
 // Handler for when hashtag input is focused
 const onHashtagInputFocus = () => {
   showSuggestions.value = true;
   // Show popular tags initially if no search input
   if (!categoryInput.value.trim() && popularHashtags.value.length === 0) {
-    fetchPopularHashtags();
+    console.log("ok");
   } else {
     searchHashtags();
   }
@@ -1130,7 +1097,6 @@ onMounted(() => {
   document.addEventListener("keydown", handleEscape);
 
   // Fetch popular hashtags
-  fetchPopularHashtags();
 
   // Clean up
   onUnmounted(() => {
