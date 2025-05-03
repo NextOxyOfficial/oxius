@@ -1032,12 +1032,12 @@
 
               <!-- Comment List -->
               <div class="space-y-4">
-                <div v-if="selectedProblem.comments?.length > 0">
+                <div v-if="selectedProblem.comments?.length > 0" class="space-y-2">
                   <div
                     v-for="comment in selectedProblem?.comments"
                     :key="comment.id"
                     :class="[
-                      'px-2 py-3 rounded-lg transition-all',
+                      'px-2 py-2 sm:py-3 rounded-lg transition-all',
                       comment.isSolution
                         ? 'bg-green-50 border border-green-100 shadow-sm'
                         : 'bg-gray-50 hover:bg-gray-100',
@@ -1087,12 +1087,12 @@
                       >
                         <CheckCircle class="h-3 w-3 mr-1" />
                         {{
-                          comment.is_solved ? "Solution" : "Mark as Solution"
+                          comment.is_solved ? "Solution" : "Useful!"
                         }}
                       </button>
                     </div>
 
-                    <p class="mt-3 text-md text-gray-700 leading-relaxed">
+                    <p class="mt-1 sm:mt-3 text-md text-gray-700 leading-relaxed">
                       {{ comment.content }}
                     </p>
                   </div>
