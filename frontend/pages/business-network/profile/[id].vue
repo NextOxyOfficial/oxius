@@ -489,8 +489,8 @@
 
         <div class="py-4">
           <transition name="tab-transition" mode="out-in">
-            <div v-if="activeTab === 'posts'" class="px-2 tab-content">
-              <!-- Lazyloader component for profile posts -->
+            <div v-if="activeTab === 'posts'" class="tab-content">
+              <!-- Lazyloader for posts -->
               <div v-if="isLoadingPosts" class="p-4">
                 <div class="flex justify-center items-center mb-6">
                   <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
@@ -516,6 +516,32 @@
                     <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
                   </div>
                 </div>
+              </div>
+              
+              <!-- Load more posts indicator at the bottom -->
+              <div v-if="loadingMorePosts && !isLoadingPosts" class="pb-6">
+                <div class="flex justify-center items-center py-4">
+                  <Loader2 class="h-8 w-8 text-blue-600 animate-spin" />
+                </div>
+              </div>
+              
+              <!-- End of feed indicator - shows when all posts are loaded -->
+              <div 
+                v-if="!isLoadingPosts && !loadingMorePosts && !hasMorePosts && posts?.results?.length > 0"
+                class="flex flex-col items-center justify-center py-8 text-center"
+              >
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <Check class="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
+                <p class="text-gray-500 mb-8 max-w-md">You've seen all posts from this profile.</p>
+                <button 
+                  @click="scrollToTop" 
+                  class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+                >
+                  <ChevronUp class="h-4 w-4" />
+                  <span>Back to top</span>
+                </button>
               </div>
               
               <!-- Display actual posts when loaded -->
@@ -638,6 +664,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  ChevronUp,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -652,10 +679,15 @@ const isLoading = ref(true);
 const isLoadingPosts = ref(true);
 const isLoadingMedia = ref(true);
 const isLoadingSaved = ref(true);
+const loadingMorePosts = ref(false);
+const hasMorePosts = ref(true);
+const currentPage = ref(1);
+const postsPerPage = ref(10);
+const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplicates
 
 // Initialize other reactive state
 const user = ref({});
-const posts = ref([]);
+const posts = ref({});
 const toast = useToast();
 const savedPosts = ref([]);
 const allMedia = ref([]);
@@ -733,50 +765,126 @@ async function fetchUser() {
   }
 }
 
-async function fetchUserPosts() {
+async function fetchUserPosts(loadMore = false) {
   try {
-    isLoadingPosts.value = true;
-    
-    // First request to get the first page and total count
-    const res = await get(`/bn/user/${route.params.id}/posts/`);
-    console.log(res, "user posts");
-    
-    // Set initial posts
-    posts.value = res.data;
-    
-    // Check if there are more pages to load
-    if (res.data.next && res.data.results) {
-      // Store initial results
-      const allResults = [...res.data.results];
-      let nextPageUrl = res.data.next;
-      
-      // Loop through all pages to fetch all posts
-      while (nextPageUrl) {
-        // Fetch the next page
-        const nextPageRes = await get(nextPageUrl);
-        
-        // Add results to our collection
-        if (nextPageRes.data.results) {
-          allResults.push(...nextPageRes.data.results);
-        }
-        
-        // Update next page URL
-        nextPageUrl = nextPageRes.data.next;
-      }
-      
-      // Update the posts object with all combined results
-      posts.value = {
-        ...res.data,
-        results: allResults
-      };
-      
-      console.log(`Loaded all ${allResults.length} posts for user`);
+    if (loadMore) {
+      loadingMorePosts.value = true;
+    } else {
+      isLoadingPosts.value = true;
+      currentPage.value = 1;
+      loadedPostIds.value.clear(); // Clear tracked IDs on initial load
     }
+    
+    // Build params for pagination
+    const params = {
+      page: currentPage.value,
+      page_size: postsPerPage.value
+    };
+    
+    const res = await get(`/bn/user/${route.params.id}/posts/`, { params });
+    
+    if (loadMore) {
+      // Append new posts to existing ones
+      if (posts.value?.results && Array.isArray(posts.value.results) && 
+          res.data?.results && Array.isArray(res.data.results)) {
+        // Filter out any duplicates based on post ID
+        const newPosts = res.data.results.filter(post => !loadedPostIds.value.has(post.id));
+        
+        // Add new post IDs to our tracking Set
+        newPosts.forEach(post => loadedPostIds.value.add(post.id));
+        
+        // Update posts with combined unique results
+        posts.value = {
+          ...res.data,
+          results: [...posts.value.results, ...newPosts]
+        };
+        
+        // If we filtered out all posts as duplicates, show end of feed
+        if (newPosts.length === 0 && res.data.results.length > 0) {
+          hasMorePosts.value = false;
+          toast.add({
+            title: 'You\'re all caught up!',
+            description: 'You\'ve seen all posts from this profile',
+            color: 'blue',
+            timeout: 3000
+          });
+        }
+      } else {
+        // Initial set of posts when loading more
+        if (res.data?.results) {
+          res.data.results.forEach(post => loadedPostIds.value.add(post.id));
+        }
+        posts.value = res.data;
+      }
+    } else {
+      // Initial load - replace existing posts
+      if (res.data?.results) {
+        // Clear tracking and add all new posts
+        loadedPostIds.value.clear();
+        res.data.results.forEach(post => loadedPostIds.value.add(post.id));
+      }
+      posts.value = res.data;
+    }
+    
+    // Check if we have more posts to load
+    hasMorePosts.value = !!res.data.next;
+    
+    // If we didn't get any posts in a load more request, we're at the end
+    if (loadMore && (!res.data.results || res.data.results.length === 0)) {
+      hasMorePosts.value = false;
+      
+      toast.add({
+        title: 'You\'re all caught up!',
+        description: 'You\'ve seen all posts from this profile',
+        color: 'blue',
+        timeout: 3000
+      });
+    }
+    
+    console.log(`Loaded ${loadMore ? 'more' : 'initial'} posts for user. Has more: ${hasMorePosts.value}, Total unique posts: ${loadedPostIds.value.size}`);
+    
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching user posts:", error);
+    
+    toast.add({
+      title: 'Error',
+      description: 'Failed to load posts',
+      color: 'red',
+      timeout: 3000
+    });
+    
   } finally {
     isLoadingPosts.value = false;
+    loadingMorePosts.value = false;
   }
+}
+
+// Load more posts
+function loadMorePosts() {
+  if (!hasMorePosts.value || loadingMorePosts.value || isLoadingPosts.value) return;
+  
+  currentPage.value++;
+  fetchUserPosts(true);
+}
+
+// Setup scroll detection for infinite scroll
+function setupInfiniteScroll() {
+  const handleScroll = () => {
+    if (activeTab.value !== 'posts') return;
+    
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+      if (!loadingMorePosts.value && hasMorePosts.value && !isLoadingPosts.value) {
+        loadMorePosts();
+      }
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll);
+
+  // Remove event listener on component unmount
+  onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+  });
 }
 
 async function fetchUserSavedPosts() {
@@ -798,6 +906,9 @@ function loadAllData() {
   isLoadingPosts.value = true;
   isLoadingMedia.value = true;
   isLoadingSaved.value = true;
+  loadingMorePosts.value = false;
+  hasMorePosts.value = true;
+  currentPage.value = 1;
   
   // Fetch all data in parallel
   Promise.all([
@@ -989,12 +1100,23 @@ onMounted(() => {
   // Load data on mount (with skeleton already showing)
   loadAllData();
   
+  // Setup infinite scroll
+  setupInfiniteScroll();
+  
   // Clean up event listener on unmount
   onUnmounted(() => {
     eventBus.off("post-created");
     eventBus.off("start-loading-profile");
   });
 });
+
+// Scroll to top function
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
 </script>
 
 <style scoped>
