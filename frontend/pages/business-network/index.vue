@@ -53,7 +53,7 @@
         <Check class="h-8 w-8 text-blue-600" />
       </div>
       <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
-      <p class="text-gray-500 mb-4 max-w-md">You've seen all posts in the business network feed.</p>
+      <p class="text-gray-500 mb-8 max-w-md">You've seen all posts in the business network feed.</p>
       <button 
         @click="scrollToTop" 
         class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
@@ -211,6 +211,7 @@ const loadingMore = ref(false);
 const { get } = useApi();
 const { user } = useAuth();
 const eventBus = useEventBus();
+const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplicates
 
 // Batch size and pagination
 const POSTS_PER_BATCH = 5;
@@ -236,7 +237,7 @@ async function getPosts(isLoadingMore = false) {
     
     // Build query parameters based on action type
     let params = {
-      page_size: POSTS_PER_BATCH
+      page_size: isLoadingMore ? 1 : POSTS_PER_BATCH // Load 1 post at a time when scrolling
     };
     
     if (isLoadingMore && lastCreatedAt.value) {
@@ -249,7 +250,7 @@ async function getPosts(isLoadingMore = false) {
     const [response] = await Promise.all([
       get("/bn/posts/", { params }),
       // Add a minimum delay for UX, shorter for subsequent loads
-      new Promise(resolve => setTimeout(resolve, isLoadingMore ? 400 : 800))
+      new Promise(resolve => setTimeout(resolve, isLoadingMore ? 300 : 800))
     ]);
     
     if (response.data && response.data.results) {
@@ -265,25 +266,65 @@ async function getPosts(isLoadingMore = false) {
         isLikeLoading: false,
       }));
       
+      // Filter out duplicate posts based on their IDs
+      const uniquePosts = processedPosts.filter(post => {
+        if (loadedPostIds.value.has(post.id)) {
+          console.log(`Filtered out duplicate post ID: ${post.id}`);
+          return false;
+        }
+        loadedPostIds.value.add(post.id);
+        return true;
+      });
+      
+      console.log(`Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`);
+      
       // On initial load or load more, append to the end
       allPosts.value = isLoadingMore 
-        ? [...allPosts.value, ...processedPosts] 
-        : processedPosts;
+        ? [...allPosts.value, ...uniquePosts] 
+        : uniquePosts;
       
-      // Update pagination cursor
-      if (processedPosts.length > 0) {
-        const lastPost = processedPosts[processedPosts.length - 1];
+      // Update pagination cursor if we got any unique posts
+      if (uniquePosts.length > 0) {
+        const lastPost = uniquePosts[uniquePosts.length - 1];
         lastCreatedAt.value = lastPost.created_at;
         
         // Set initial newest timestamp if first load
-        if (!newestCreatedAt.value && processedPosts.length > 0) {
-          newestCreatedAt.value = processedPosts[0].created_at;
+        if (!newestCreatedAt.value && uniquePosts.length > 0) {
+          newestCreatedAt.value = uniquePosts[0].created_at;
           console.log('Initial newest timestamp set:', newestCreatedAt.value);
         }
       }
       
       // Check if we have more posts to load
-      hasMore.value = processedPosts.length === POSTS_PER_BATCH;
+      // If we received posts but all were duplicates, or if we received no posts at all,
+      // then we've reached the end
+      if (processedPosts.length > 0 && uniquePosts.length === 0) {
+        hasMore.value = false;
+        
+        useToast().add({
+          title: 'You\'re all caught up!',
+          description: 'You\'ve reached the end of the feed',
+          color: 'blue',
+          timeout: 3000
+        });
+      } else {
+        // If we got some unique posts, assume there might be more
+        hasMore.value = processedPosts.length > 0;
+        
+        // If we got no posts at all, we've definitely reached the end
+        if (processedPosts.length === 0) {
+          hasMore.value = false;
+          
+          if (isLoadingMore) {
+            useToast().add({
+              title: 'You\'re all caught up!',
+              description: 'You\'ve reached the end of the feed',
+              color: 'blue',
+              timeout: 3000
+            });
+          }
+        }
+      }
       
       // Update displayed posts
       updateDisplayedPosts();
@@ -330,6 +371,7 @@ function loadData() {
   page.value = 1;
   hasMore.value = true;
   lastCreatedAt.value = null;
+  loadedPostIds.value.clear(); // Reset tracked post IDs when reloading
   
   // Get initial posts with a slight delay
   setTimeout(() => {
@@ -393,6 +435,11 @@ const handleNewPost = (newPost) => {
     isCommentLoading: false,
     isLikeLoading: false,
   };
+  
+  // Track the new post ID to prevent future duplicates
+  if (newPost.id) {
+    loadedPostIds.value.add(newPost.id);
+  }
   
   // Add the new post to the beginning of the posts array for immediate display
   allPosts.value = [processedNewPost, ...allPosts.value];
