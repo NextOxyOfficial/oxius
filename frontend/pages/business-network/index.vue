@@ -37,10 +37,28 @@
       :id="user?.user?.id" 
     />
 
-    <!-- Load more indicator -->
-    <div v-if="loadingMore && !loading" class="flex justify-center py-6">
-      <div class="h-6 w-6 animate-spin text-blue-600">
-        <Loader2 />
+    <!-- Load more indicator with skeletons for better UX -->
+    <div v-if="loadingMore && !loading" class="pb-6">
+      <!-- Skeleton loader for loading more posts -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+            <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+          </div>
+        </div>
+        <div class="space-y-2 mb-4">
+          <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+          <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+          <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+        </div>
+        <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+        <div class="flex justify-between">
+          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+        </div>
       </div>
     </div>
     
