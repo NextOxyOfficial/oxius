@@ -1,35 +1,37 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
     <!-- Lazyloader component to display while posts are loading -->
-    <div v-if="loading" class="p-4">
-      <div class="flex justify-center items-center mb-6">
-        <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
-      </div>
-      <!-- Skeleton loaders for posts -->
-      <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-            <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+    <template v-if="loading">
+      <div class="p-4">
+        <div class="flex justify-center items-center mb-6">
+          <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+        </div>
+        <!-- Skeleton loaders for posts -->
+        <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+            </div>
+          </div>
+          <div class="space-y-2 mb-4">
+            <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+            <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+          </div>
+          <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+          <div class="flex justify-between">
+            <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+            <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+            <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
           </div>
         </div>
-        <div class="space-y-2 mb-4">
-          <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-          <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-          <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
-        </div>
-        <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
-        <div class="flex justify-between">
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-        </div>
       </div>
-    </div>
+    </template>
 
     <!-- Actual posts displayed after loading -->
-    <BusinessNetworkPost v-if="!loading" :posts="posts" :id="user?.user?.id" />
+    <BusinessNetworkPost v-else :posts="posts" :id="user?.user?.id" />
 
     <!-- Add the create post component with event listener -->
     <BusinessNetworkCreatePost @post-created="handleNewPost" />
@@ -174,12 +176,19 @@ eventBus.on('start-loading-posts', () => {
   // Wait a bit to allow navigation to complete before refreshing posts
   setTimeout(() => {
     getPosts();
-  }, 100);
+  }, 300); // Increased timeout to ensure skeleton is visible
 });
 
 async function getPosts() {
   try {
-    const response = await get("/bn/posts/");
+    loading.value = true; // Ensure loading is true when fetching starts
+    
+    // Add a minimum delay to ensure skeleton is visible
+    const [response] = await Promise.all([
+      get("/bn/posts/"),
+      new Promise(resolve => setTimeout(resolve, 500)) // Force minimum loading time of 500ms
+    ]);
+    
     posts.value = response.data.results;
     console.log(posts.value);
   } catch (error) {
@@ -189,7 +198,10 @@ async function getPosts() {
   }
 }
 
-await getPosts();
+// Don't immediately call getPosts, wait for component to mount
+onMounted(() => {
+  getPosts();
+});
 
 const page = ref(1);
 const isSearchOpen = ref(false);
