@@ -123,7 +123,7 @@
               </NuxtLink>
               <div
                 class="relative flex-shrink-0 pt-1"
-                v-if="categories.length > 4"
+                v-if="categories.length > 2"
               >
                 <button
                   @click="toggleMoreCategories"
@@ -139,8 +139,7 @@
                 <!-- Mobile dropdown menu with fixed positioning -->
                 <div
                   v-if="moreMenuOpen"
-                  class="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 max-h-60 overflow-y-auto border border-gray-200"
-                  style="min-width: 150px"
+                  class="absolute top-full right-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform"
                 >
                   <NuxtLink
                     v-for="category in categories"

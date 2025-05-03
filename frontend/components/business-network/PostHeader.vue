@@ -86,14 +86,14 @@
                   : "Save post"
               }}
             </button>
-            <button
+            <!-- <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
               @click="editPost(post)"
               v-if="post.author_details.id === user.user.id"
             >
               <UIcon name="i-mdi-square-edit-outline" class="h-4 w-4 mr-2" />
               Edit post
-            </button>
+            </button> -->
             <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
               @click="openPostDeleteModal(post)"
