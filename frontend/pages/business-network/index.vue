@@ -1,13 +1,5 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
-    <!-- Pull-to-refresh indicator -->
-    <div v-if="isRefreshing" class="flex justify-center items-center py-4">
-      <div class="flex flex-col items-center">
-        <Loader2 class="h-6 w-6 text-blue-600 animate-spin" />
-        <span class="text-sm text-gray-500 mt-2">Refreshing...</span>
-      </div>
-    </div>
-    
     <!-- Lazyloader component to display while initial posts are loading -->
     <template v-if="loading && !loadingMore && allPosts.length === 0">
       <div class="p-4">
@@ -216,7 +208,6 @@ const allPosts = ref([]); // All loaded posts
 const displayedPosts = ref([]); // Currently displayed posts
 const loading = ref(true);
 const loadingMore = ref(false);
-const isRefreshing = ref(false);
 const { get } = useApi();
 const { user } = useAuth();
 const eventBus = useEventBus();
@@ -228,11 +219,6 @@ const hasMore = ref(true);
 const lastCreatedAt = ref(null); // For pagination cursor
 const newestCreatedAt = ref(null); // For refresh/newer posts
 
-// Set up pull-to-refresh detection
-let touchStartY = 0;
-const pullDistance = ref(0);
-const pullThreshold = 80; // pixels needed to trigger refresh
-
 // Listen for loading events from footer and sidebar
 eventBus.on('start-loading-posts', () => {
   // Set loading to true immediately
@@ -240,11 +226,9 @@ eventBus.on('start-loading-posts', () => {
 });
 
 // Get initial posts or more posts based on pagination
-async function getPosts(isLoadingMore = false, isRefresh = false) {
+async function getPosts(isLoadingMore = false) {
   try {
-    if (isRefresh) {
-      isRefreshing.value = true;
-    } else if (isLoadingMore) {
+    if (isLoadingMore) {
       loadingMore.value = true;
     } else {
       loading.value = true;
@@ -255,11 +239,7 @@ async function getPosts(isLoadingMore = false, isRefresh = false) {
       page_size: POSTS_PER_BATCH
     };
     
-    if (isRefresh && newestCreatedAt.value) {
-      // Get newer posts (for pull-to-refresh)
-      params.newer_than = newestCreatedAt.value;
-      console.log('Refreshing with newer_than:', newestCreatedAt.value);
-    } else if (isLoadingMore && lastCreatedAt.value) {
+    if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
     }
@@ -269,7 +249,7 @@ async function getPosts(isLoadingMore = false, isRefresh = false) {
     const [response] = await Promise.all([
       get("/bn/posts/", { params }),
       // Add a minimum delay for UX, shorter for subsequent loads
-      new Promise(resolve => setTimeout(resolve, isLoadingMore || isRefresh ? 400 : 800))
+      new Promise(resolve => setTimeout(resolve, isLoadingMore ? 400 : 800))
     ]);
     
     if (response.data && response.data.results) {
@@ -285,46 +265,20 @@ async function getPosts(isLoadingMore = false, isRefresh = false) {
         isLikeLoading: false,
       }));
       
-      if (isRefresh) {
-        if (processedPosts.length > 0) {
-          // Add new posts at the beginning
-          allPosts.value = [...processedPosts, ...allPosts.value];
-          
-          // Update newest timestamp for future refreshes
-          if (processedPosts[0].created_at) {
-            newestCreatedAt.value = processedPosts[0].created_at;
-          }
-          
-          // Show toast notification indicating new posts
-          useToast().add({
-            title: `${processedPosts.length} new ${processedPosts.length === 1 ? 'post' : 'posts'} loaded`,
-            color: 'blue',
-            timeout: 3000
-          });
-        } else {
-          // Show message that there are no new posts
-          useToast().add({
-            title: 'You\'re up to date',
-            description: 'No new posts at this time',
-            timeout: 3000
-          });
-        }
-      } else {
-        // On initial load or load more, append to the end
-        allPosts.value = isLoadingMore 
-          ? [...allPosts.value, ...processedPosts] 
-          : processedPosts;
+      // On initial load or load more, append to the end
+      allPosts.value = isLoadingMore 
+        ? [...allPosts.value, ...processedPosts] 
+        : processedPosts;
+      
+      // Update pagination cursor
+      if (processedPosts.length > 0) {
+        const lastPost = processedPosts[processedPosts.length - 1];
+        lastCreatedAt.value = lastPost.created_at;
         
-        // Update pagination cursor
-        if (processedPosts.length > 0) {
-          const lastPost = processedPosts[processedPosts.length - 1];
-          lastCreatedAt.value = lastPost.created_at;
-          
-          // Set initial newest timestamp if first load
-          if (!newestCreatedAt.value && processedPosts.length > 0) {
-            newestCreatedAt.value = processedPosts[0].created_at;
-            console.log('Initial newest timestamp set:', newestCreatedAt.value);
-          }
+        // Set initial newest timestamp if first load
+        if (!newestCreatedAt.value && processedPosts.length > 0) {
+          newestCreatedAt.value = processedPosts[0].created_at;
+          console.log('Initial newest timestamp set:', newestCreatedAt.value);
         }
       }
       
@@ -336,7 +290,7 @@ async function getPosts(isLoadingMore = false, isRefresh = false) {
       
     } else {
       console.log('No posts returned from API');
-      if (!isLoadingMore && !isRefresh) {
+      if (!isLoadingMore) {
         // Only clear on initial load failure
         allPosts.value = [];
         displayedPosts.value = [];
@@ -352,7 +306,7 @@ async function getPosts(isLoadingMore = false, isRefresh = false) {
       timeout: 3000
     });
     
-    if (!isLoadingMore && !isRefresh) {
+    if (!isLoadingMore) {
       allPosts.value = [];
       displayedPosts.value = [];
     }
@@ -360,7 +314,6 @@ async function getPosts(isLoadingMore = false, isRefresh = false) {
   } finally {
     loading.value = false;
     loadingMore.value = false;
-    isRefreshing.value = false;
   }
 }
 
@@ -392,61 +345,6 @@ function loadMorePosts() {
   getPosts(true);
 }
 
-// Pull-to-refresh to get newer posts
-function refreshPosts() {
-  if (isRefreshing.value) return;
-  getPosts(false, true);
-}
-
-// Setup touch events for pull-to-refresh
-function setupPullToRefresh() {
-  const handleTouchStart = (e) => {
-    if (window.scrollY === 0) { // Only enable pull-to-refresh at the top of the page
-      touchStartY = e.touches[0].clientY;
-      pullDistance.value = 0;
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (touchStartY > 0 && window.scrollY === 0) {
-      const currentY = e.touches[0].clientY;
-      pullDistance.value = Math.max(0, currentY - touchStartY);
-      
-      if (pullDistance.value > 0) {
-        // Prevent default scroll behavior when pulling down
-        e.preventDefault();
-      }
-      
-      if (pullDistance.value >= pullThreshold && !isRefreshing.value) {
-        // Visually indicate that release will refresh
-        isRefreshing.value = true;
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (pullDistance.value >= pullThreshold) {
-      refreshPosts();
-    }
-    
-    // Reset state
-    touchStartY = 0;
-    pullDistance.value = 0;
-  };
-
-  // Add event listeners
-  window.addEventListener('touchstart', handleTouchStart, { passive: false });
-  window.addEventListener('touchmove', handleTouchMove, { passive: false });
-  window.addEventListener('touchend', handleTouchEnd);
-
-  // Remove event listeners on component unmount
-  onUnmounted(() => {
-    window.removeEventListener('touchstart', handleTouchStart);
-    window.removeEventListener('touchmove', handleTouchMove);
-    window.removeEventListener('touchend', handleTouchEnd);
-  });
-}
-
 // Setup scroll detection for infinite scroll
 function setupInfiniteScroll() {
   const handleScroll = () => {
@@ -468,7 +366,6 @@ function setupInfiniteScroll() {
 // Initialize
 onMounted(() => {
   loadData();
-  setupPullToRefresh();
   setupInfiniteScroll();
 });
 
