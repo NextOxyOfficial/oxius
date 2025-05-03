@@ -57,8 +57,9 @@
 
         <!-- Dropdown Menu -->
         <div
-          v-if="post.showDropdown"
+          v-if="post?.showDropdown"
           class="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+          @click.stop
         >
           <div class="py-1">
             <button

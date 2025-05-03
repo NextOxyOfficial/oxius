@@ -284,15 +284,35 @@ const getRandomProducts = (count = 3) => {
 
 // Pre-process posts to ensure they have necessary details
 const processPosts = () => {
+  if (!props.posts || !Array.isArray(props.posts)) return;
+  
   props.posts.forEach(post => {
-    // Ensure author details are properly set - this helps prevent late loading of user info
-    if (post.author_details) {
-      // Make sure post has necessary properties for rendering
-      post.showFullDescription = false;
+    // Ensure all required UI state properties are initialized
+    if (!post.hasOwnProperty('showDropdown')) {
       post.showDropdown = false;
+    }
+    
+    if (!post.hasOwnProperty('showFullDescription')) {
+      post.showFullDescription = false;
+    }
+    
+    if (!post.hasOwnProperty('commentText')) {
       post.commentText = '';
+    }
+    
+    if (!post.hasOwnProperty('isCommentLoading')) {
       post.isCommentLoading = false;
+    }
+    
+    if (!post.hasOwnProperty('isLikeLoading')) {
       post.isLikeLoading = false;
+    }
+    
+    // If there's a nested post_details, also initialize its properties
+    if (post.post_details) {
+      if (!post.post_details.hasOwnProperty('showDropdown')) {
+        post.post_details.showDropdown = false;
+      }
     }
   });
 };
