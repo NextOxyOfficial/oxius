@@ -47,9 +47,9 @@
               v-for="item in user?.user ? mainMenu : mainMenu2"
               :key="item.path"
               :to="item.path"
-              @click="cart.toggleBurgerMenu()"
+              @click="handleMenuClick(item.path)"
+              class="flex items-center px-3 py-2.5 rounded-md transition-colors group"
               :class="[
-                'flex items-center px-3 py-2.5 rounded-md transition-colors group',
                 item.path === route.path
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-gray-50',
@@ -854,6 +854,20 @@ const handleNavigation = (path) => {
 
   // In a real app, you would use router.push(path) here
   console.log(`Navigating to: ${path}`);
+};
+
+const handleMenuClick = (path) => {
+  cart.toggleBurgerMenu();
+  
+  // Emit loading events for specific paths
+  const eventBus = useEventBus();
+  if (path === "/business-network") {
+    eventBus.emit('start-loading-posts');
+  } else if (path === `/business-network/profile/${user.value?.user?.id}`) {
+    eventBus.emit('start-loading-profile');
+  }
+  
+  handleNavigation(path);
 };
 
 const nextProduct = () => {

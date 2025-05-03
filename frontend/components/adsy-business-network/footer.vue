@@ -11,6 +11,7 @@
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
             : 'text-gray-500'
         "
+        @click="handleRecentClick"
       >
         <div class="relative">
           <Clock
@@ -58,6 +59,7 @@
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
             : 'text-gray-500'
         "
+        @click="handleProfileClick"
       >
         <div class="relative">
           <User
@@ -222,4 +224,17 @@ import {
 } from "lucide-vue-next";
 
 const { user } = useAuth();
+const eventBus = useEventBus();
+
+// Handle Recent menu click
+function handleRecentClick() {
+  // Emit loading event for Recent menu
+  eventBus.emit('start-loading-posts');
+}
+
+// Handle Profile menu click
+function handleProfileClick() {
+  // Emit loading event for Profile menu
+  eventBus.emit('start-loading-profile');
+}
 </script>

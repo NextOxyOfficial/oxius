@@ -166,6 +166,16 @@ const posts = ref([]);
 const loading = ref(true); // Start with loading true
 const { get } = useApi();
 const { user } = useAuth();
+const eventBus = useEventBus();
+
+// Listen for loading events from footer and sidebar
+eventBus.on('start-loading-posts', () => {
+  loading.value = true;
+  // Wait a bit to allow navigation to complete before refreshing posts
+  setTimeout(() => {
+    getPosts();
+  }, 100);
+});
 
 async function getPosts() {
   try {
