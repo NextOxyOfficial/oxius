@@ -1,7 +1,15 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
-    <!-- Lazyloader component to display while posts are loading -->
-    <template v-if="loading">
+    <!-- Pull-to-refresh indicator -->
+    <div v-if="isRefreshing" class="flex justify-center items-center py-4">
+      <div class="flex flex-col items-center">
+        <Loader2 class="h-6 w-6 text-blue-600 animate-spin" />
+        <span class="text-sm text-gray-500 mt-2">Refreshing...</span>
+      </div>
+    </div>
+    
+    <!-- Lazyloader component to display while initial posts are loading -->
+    <template v-if="loading && !loadingMore && allPosts.length === 0">
       <div class="p-4">
         <div class="flex justify-center items-center mb-6">
           <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
@@ -31,7 +39,45 @@
     </template>
 
     <!-- Actual posts displayed after loading -->
-    <BusinessNetworkPost v-else :posts="posts" :id="user?.user?.id" />
+    <BusinessNetworkPost 
+      v-if="!loading || (allPosts.length > 0)" 
+      :posts="displayedPosts" 
+      :id="user?.user?.id" 
+    />
+
+    <!-- Load more indicator -->
+    <div v-if="loadingMore && !loading" class="flex justify-center py-6">
+      <div class="h-6 w-6 animate-spin text-blue-600">
+        <Loader2 />
+      </div>
+    </div>
+    
+    <!-- End of feed indicator - shows when all posts are loaded -->
+    <div 
+      v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
+      class="flex flex-col items-center justify-center py-8 text-center"
+    >
+      <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+        <Check class="h-8 w-8 text-blue-600" />
+      </div>
+      <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
+      <p class="text-gray-500 mb-4 max-w-md">You've seen all posts in the business network feed.</p>
+      <button 
+        @click="scrollToTop" 
+        class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+      >
+        <ChevronUp class="h-4 w-4" />
+        <span>Back to top</span>
+      </button>
+    </div>
+
+    <!-- No posts message -->
+    <div
+      v-if="!loading && !loadingMore && allPosts.length === 0"
+      class="flex flex-col items-center justify-center py-12 text-center"
+    >
+      <p class="text-gray-500 mb-2">{{ $t("no_post_available") }}</p>
+    </div>
 
     <!-- Add the create post component with event listener -->
     <BusinessNetworkCreatePost @post-created="handleNewPost" />
@@ -160,16 +206,32 @@ import {
   X,
   Clock,
   ArrowRight,
-  Loader2
+  Loader2,
+  Check,
+  ChevronUp
 } from "lucide-vue-next";
 
 // State
-const posts = ref([]);
-// Always start with loading state to show skeleton immediately
+const allPosts = ref([]); // All loaded posts
+const displayedPosts = ref([]); // Currently displayed posts
 const loading = ref(true);
+const loadingMore = ref(false);
+const isRefreshing = ref(false);
 const { get } = useApi();
 const { user } = useAuth();
 const eventBus = useEventBus();
+
+// Batch size and pagination
+const POSTS_PER_BATCH = 5;
+const page = ref(1);
+const hasMore = ref(true);
+const lastCreatedAt = ref(null); // For pagination cursor
+const newestCreatedAt = ref(null); // For refresh/newer posts
+
+// Set up pull-to-refresh detection
+let touchStartY = 0;
+const pullDistance = ref(0);
+const pullThreshold = 80; // pixels needed to trigger refresh
 
 // Listen for loading events from footer and sidebar
 eventBus.on('start-loading-posts', () => {
@@ -177,40 +239,237 @@ eventBus.on('start-loading-posts', () => {
   loading.value = true;
 });
 
-async function getPosts() {
+// Get initial posts or more posts based on pagination
+async function getPosts(isLoadingMore = false, isRefresh = false) {
   try {
-    // Ensure loading is true when fetching starts
-    loading.value = true; 
+    if (isRefresh) {
+      isRefreshing.value = true;
+    } else if (isLoadingMore) {
+      loadingMore.value = true;
+    } else {
+      loading.value = true;
+    }
     
-    // Add a minimum delay to ensure skeleton is visible
+    // Build query parameters based on action type
+    let params = {
+      page_size: POSTS_PER_BATCH
+    };
+    
+    if (isRefresh && newestCreatedAt.value) {
+      // Get newer posts (for pull-to-refresh)
+      params.newer_than = newestCreatedAt.value;
+      console.log('Refreshing with newer_than:', newestCreatedAt.value);
+    } else if (isLoadingMore && lastCreatedAt.value) {
+      // Get older posts (for pagination)
+      params.older_than = lastCreatedAt.value;
+    }
+    
+    console.log('Fetching posts with params:', params);
+    
     const [response] = await Promise.all([
-      get("/bn/posts/"),
-      new Promise(resolve => setTimeout(resolve, 800)) // Increased to 800ms for consistency with profile page
+      get("/bn/posts/", { params }),
+      // Add a minimum delay for UX, shorter for subsequent loads
+      new Promise(resolve => setTimeout(resolve, isLoadingMore || isRefresh ? 400 : 800))
     ]);
     
-    posts.value = response.data.results;
-    console.log(posts.value);
+    if (response.data && response.data.results) {
+      const newPosts = response.data.results;
+      
+      // Process posts to ensure they have necessary UI properties
+      const processedPosts = newPosts.map(post => ({
+        ...post,
+        showFullDescription: false,
+        showDropdown: false,
+        commentText: '',
+        isCommentLoading: false,
+        isLikeLoading: false,
+      }));
+      
+      if (isRefresh) {
+        if (processedPosts.length > 0) {
+          // Add new posts at the beginning
+          allPosts.value = [...processedPosts, ...allPosts.value];
+          
+          // Update newest timestamp for future refreshes
+          if (processedPosts[0].created_at) {
+            newestCreatedAt.value = processedPosts[0].created_at;
+          }
+          
+          // Show toast notification indicating new posts
+          useToast().add({
+            title: `${processedPosts.length} new ${processedPosts.length === 1 ? 'post' : 'posts'} loaded`,
+            color: 'blue',
+            timeout: 3000
+          });
+        } else {
+          // Show message that there are no new posts
+          useToast().add({
+            title: 'You\'re up to date',
+            description: 'No new posts at this time',
+            timeout: 3000
+          });
+        }
+      } else {
+        // On initial load or load more, append to the end
+        allPosts.value = isLoadingMore 
+          ? [...allPosts.value, ...processedPosts] 
+          : processedPosts;
+        
+        // Update pagination cursor
+        if (processedPosts.length > 0) {
+          const lastPost = processedPosts[processedPosts.length - 1];
+          lastCreatedAt.value = lastPost.created_at;
+          
+          // Set initial newest timestamp if first load
+          if (!newestCreatedAt.value && processedPosts.length > 0) {
+            newestCreatedAt.value = processedPosts[0].created_at;
+            console.log('Initial newest timestamp set:', newestCreatedAt.value);
+          }
+        }
+      }
+      
+      // Check if we have more posts to load
+      hasMore.value = processedPosts.length === POSTS_PER_BATCH;
+      
+      // Update displayed posts
+      updateDisplayedPosts();
+      
+    } else {
+      console.log('No posts returned from API');
+      if (!isLoadingMore && !isRefresh) {
+        // Only clear on initial load failure
+        allPosts.value = [];
+        displayedPosts.value = [];
+      }
+      hasMore.value = false;
+    }
   } catch (error) {
-    console.log(error);
+    console.error("Failed to load posts:", error);
+    useToast().add({
+      title: 'Error',
+      description: 'Failed to load posts',
+      color: 'red',
+      timeout: 3000
+    });
+    
+    if (!isLoadingMore && !isRefresh) {
+      allPosts.value = [];
+      displayedPosts.value = [];
+    }
+    hasMore.value = false;
   } finally {
     loading.value = false;
+    loadingMore.value = false;
+    isRefreshing.value = false;
   }
+}
+
+// Function to update displayed posts with proper grouping
+function updateDisplayedPosts() {
+  // Create a new array to avoid reactivity issues
+  displayedPosts.value = [...allPosts.value];
 }
 
 // Load data when component is created
 function loadData() {
-  // Always reset loading state first
+  // Reset state
   loading.value = true;
+  page.value = 1;
+  hasMore.value = true;
+  lastCreatedAt.value = null;
   
-  // Get posts with a slight delay
+  // Get initial posts with a slight delay
   setTimeout(() => {
     getPosts();
   }, 100); // Small delay to ensure navigation completes first
 }
 
-// Don't immediately call getPosts, wait for component to mount
+// Load more posts when user scrolls down
+function loadMorePosts() {
+  if (!hasMore.value || loadingMore.value || loading.value) return;
+  
+  page.value++;
+  getPosts(true);
+}
+
+// Pull-to-refresh to get newer posts
+function refreshPosts() {
+  if (isRefreshing.value) return;
+  getPosts(false, true);
+}
+
+// Setup touch events for pull-to-refresh
+function setupPullToRefresh() {
+  const handleTouchStart = (e) => {
+    if (window.scrollY === 0) { // Only enable pull-to-refresh at the top of the page
+      touchStartY = e.touches[0].clientY;
+      pullDistance.value = 0;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (touchStartY > 0 && window.scrollY === 0) {
+      const currentY = e.touches[0].clientY;
+      pullDistance.value = Math.max(0, currentY - touchStartY);
+      
+      if (pullDistance.value > 0) {
+        // Prevent default scroll behavior when pulling down
+        e.preventDefault();
+      }
+      
+      if (pullDistance.value >= pullThreshold && !isRefreshing.value) {
+        // Visually indicate that release will refresh
+        isRefreshing.value = true;
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance.value >= pullThreshold) {
+      refreshPosts();
+    }
+    
+    // Reset state
+    touchStartY = 0;
+    pullDistance.value = 0;
+  };
+
+  // Add event listeners
+  window.addEventListener('touchstart', handleTouchStart, { passive: false });
+  window.addEventListener('touchmove', handleTouchMove, { passive: false });
+  window.addEventListener('touchend', handleTouchEnd);
+
+  // Remove event listeners on component unmount
+  onUnmounted(() => {
+    window.removeEventListener('touchstart', handleTouchStart);
+    window.removeEventListener('touchmove', handleTouchMove);
+    window.removeEventListener('touchend', handleTouchEnd);
+  });
+}
+
+// Setup scroll detection for infinite scroll
+function setupInfiniteScroll() {
+  const handleScroll = () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+      if (!loadingMore.value && hasMore.value) {
+        loadMorePosts();
+      }
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll);
+
+  // Remove event listener on component unmount
+  onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+  });
+}
+
+// Initialize
 onMounted(() => {
   loadData();
+  setupPullToRefresh();
+  setupInfiniteScroll();
 });
 
 // Event listener setup
@@ -226,9 +485,27 @@ onMounted(() => {
   });
 });
 
-// Pagination
-const page = ref(1);
-const isLoadingMore = ref(false);
+// Add this function to handle the new post
+const handleNewPost = (newPost) => {
+  // Process the new post to ensure it has necessary UI properties
+  const processedNewPost = {
+    ...newPost,
+    showFullDescription: false,
+    showDropdown: false,
+    commentText: '',
+    isCommentLoading: false,
+    isLikeLoading: false,
+  };
+  
+  // Add the new post to the beginning of the posts array for immediate display
+  allPosts.value = [processedNewPost, ...allPosts.value];
+  updateDisplayedPosts();
+  
+  // Update newest timestamp
+  if (processedNewPost.created_at) {
+    newestCreatedAt.value = processedNewPost.created_at;
+  }
+};
 
 // Search functionality
 const isSearchOpen = ref(false);
@@ -331,12 +608,6 @@ const searchResults = computed(() => {
   return [];
 });
 
-// Add this function to handle the new post
-const handleNewPost = (newPost) => {
-  // Add the new post to the beginning of the posts array for immediate display
-  posts.value = [newPost, ...posts.value];
-};
-
 // Initialize
 onMounted(() => {
   // Focus search input when overlay opens
@@ -348,6 +619,11 @@ onMounted(() => {
     }
   });
 });
+
+// Scroll to top functionality
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 </script>
 
 <style scoped>
@@ -364,5 +640,10 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Pull-to-refresh indicator animation */
+.ptr-indicator {
+  transition: transform 0.2s ease;
 }
 </style>
