@@ -425,25 +425,40 @@ const toggleLike = async (postToLike) => {
   postToLike.isLikeLoading = true;
   
   try {
-    const endpoint = `/bn/posts/${postToLike.id}/like/`;
-    // Check if current user has liked this post
+    const currentUserId = user.value?.user?.id;
     const isLiked = postToLike.post_likes?.some(
-      like => like.user === user.value?.user?.id
+      like => like.user === currentUserId
     );
     
     if (isLiked) {
+      // Use the unlike endpoint when already liked
+      const endpoint = `/bn/posts/${postToLike.id}/unlike/`;
       await del(endpoint);
+      
       // Remove user from likes
       postToLike.post_likes = postToLike.post_likes.filter(
-        like => like.user !== user.value?.user?.id
+        like => like.user !== currentUserId
       );
+      
+      // Update like count for UI if needed
+      if (postToLike.likes_count !== undefined) {
+        postToLike.likes_count = Math.max(0, (postToLike.likes_count || 0) - 1);
+      }
     } else {
+      // Use the like endpoint when not yet liked
+      const endpoint = `/bn/posts/${postToLike.id}/like/`;
       const { data } = await post(endpoint);
+      
       // Add new like data to the post
       if (!postToLike.post_likes) {
         postToLike.post_likes = [];
       }
       postToLike.post_likes.push(data);
+      
+      // Update like count for UI if needed
+      if (postToLike.likes_count !== undefined) {
+        postToLike.likes_count = (postToLike.likes_count || 0) + 1;
+      }
     }
   } catch (error) {
     console.error("Error toggling like:", error);
