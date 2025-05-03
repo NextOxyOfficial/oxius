@@ -88,12 +88,20 @@
             </button>
             <button
               class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+              @click="editPost(post)"
+              v-if="post.author_details.id === user.user.id"
+            >
+              <UIcon name="i-mdi-square-edit-outline" class="h-4 w-4 mr-2" />
+              Edit post
+            </button>
+            <button
+              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
               @click="openPostDeleteModal(post)"
               v-if="post.author_details.id === user.user.id"
             >
               <UIcon
                 name="i-material-symbols-light-delete-outline"
-                class="h-4 w-4 mr-2 text-red-600"
+                class="h-4 w-4 mr-2"
               />
               Delete post
             </button>
@@ -165,6 +173,8 @@ const { get, del } = useApi();
 const savedPosts = ref([]);
 const postToDelete = ref();
 const toast = useToast();
+const selectedEditPost = ref(null);
+const isCreatePostOpen = ref(false);
 
 defineProps({
   post: {
@@ -200,6 +210,10 @@ async function handlePostDelete(post) {
     window.location.reload();
     return;
   }
+}
+function editPost(post) {
+  // Pass the post to the component
+  selectedEditPost.value = post;
 }
 
 // Format time ago function

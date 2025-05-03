@@ -56,7 +56,7 @@
                   >
                     <Edit3 class="h-4 w-4 text-white" />
                   </div>
-                  Create Post
+                  {{ modalTitle }}
                 </h2>
                 <button
                   class="rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition-colors transform hover:rotate-90 duration-300"
@@ -454,7 +454,13 @@
                 >
                   <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
                   <Send v-else class="h-4 w-4" />
-                  {{ isSubmitting ? "Posting..." : "Publish Post" }}
+                  {{
+                    isSubmitting
+                      ? isEditMode
+                        ? "Updating..."
+                        : "Posting..."
+                      : submitButtonText
+                  }}
                 </button>
               </div>
 
@@ -493,9 +499,10 @@
             <CheckCircle class="h-5 w-5" />
           </div>
           <div>
-            <p class="font-medium text-green-800">Post published!</p>
+            <p class="font-medium text-green-800">{{ successMessage }}</p>
             <p class="text-sm text-green-600">
-              Your post was successfully created
+              Your post was successfully
+              {{ isEditMode ? "updated" : "created" }}
             </p>
           </div>
           <button
@@ -596,10 +603,16 @@ import {
   CheckCircle,
   Upload,
 } from "lucide-vue-next";
+const props = defineProps({
+  editPost: {
+    type: Object,
+    default: null,
+  },
+});
 
 const { user } = useAuth();
 // Auth and API
-const { post, get } = useApi();
+const { post, get, patch } = useApi();
 const auth = useAuth();
 const emit = defineEmits(["post-created"]);
 
@@ -629,6 +642,43 @@ const showSuggestions = ref(false);
 const hashtagSuggestions = ref([]);
 const popularHashtags = ref([]);
 const selectedSuggestionIndex = ref(-1);
+
+const isEditMode = computed(() => !!props.editPost);
+const modalTitle = computed(() =>
+  isEditMode.value ? "Edit Post" : "Create Post"
+);
+const submitButtonText = computed(() =>
+  isEditMode.value ? "Update Post" : "Publish Post"
+);
+
+watch(
+  () => props.editPost,
+  (newPost) => {
+    if (newPost) {
+      // Populate form with existing post data
+      form.value.title = newPost.title || "";
+      form.value.content = newPost.content || "";
+
+      // Load existing images if any
+      if (newPost.images && newPost.images.length > 0) {
+        images.value = [...newPost.images];
+      } else {
+        images.value = [];
+      }
+
+      // Load existing tags/categories
+      if (newPost.tags && newPost.tags.length > 0) {
+        createPostCategories.value = [...newPost.tags];
+      } else {
+        createPostCategories.value = [];
+      }
+
+      // Open the modal
+      openCreatePostModal();
+    }
+  },
+  { immediate: true }
+);
 
 // Computed properties
 const canAddMoreMedia = computed(() => images.value.length < 12);
@@ -950,68 +1000,65 @@ async function handleCreatePost() {
   isSubmitting.value = true;
 
   try {
-    // Post to the API
-    const { data } = await post("/bn/posts/", {
-      ...form.value,
-      images: images.value,
-      tags: createPostCategories.value,
-    });
+    let response;
 
-    if (data) {
-      // Reset form
-      resetForm();
+    if (isEditMode.value) {
+      // Update existing post
+      response = await patch(`/bn/posts/${props.editPost.id}/`, {
+        ...form.value,
+        images: images.value,
+        tags: createPostCategories.value,
+      });
 
-      // Close modal
-      isCreatePostOpen.value = false;
-      document.body.style.overflow = "";
-
-      // Show success toast notification
-      showSuccessToast.value = true;
-      setTimeout(() => {
-        showSuccessToast.value = false;
-      }, 5000);
-
-      // IMPORTANT: Emit the event with the complete post data for immediate display
-      emit("post-created", data);
+      // Emit a different event for updates
+      emit("post-updated", response.data);
 
       // Use event bus for better cross-component communication
       const eventBus = useEventBus();
-      eventBus.emit("post-created", data);
+      eventBus.emit("post-updated", response.data);
+    } else {
+      // Create new post (existing logic)
+      response = await post("/bn/posts/", {
+        ...form.value,
+        images: images.value,
+        tags: createPostCategories.value,
+      });
 
-      // Redirect to profile if we're not already there
-      const router = useRouter();
-      const route = useRoute();
-      const { user } = auth;
+      // Emit the event with the complete post data for immediate display
+      emit("post-created", response.data);
 
-      if (route.path !== `/business-network/profile/${user.value?.user?.id}`) {
-        // Navigate to profile page
-        router.push(`/business-network/profile/${user.value?.user?.id}`);
-      } else {
-        // Already on profile, scroll to the new post after it renders
-        nextTick(() => {
-          setTimeout(() => {
-            const newPostElement = document.getElementById(`post-${data.id}`);
-            if (newPostElement) {
-              newPostElement.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-              // Add highlight animation to make the new post stand out
-              newPostElement.classList.add("highlight-new-post");
-            }
-          }, 500); // Small timeout to ensure DOM is updated
-        });
-      }
+      // Use event bus for better cross-component communication
+      const eventBus = useEventBus();
+      eventBus.emit("post-created", response.data);
     }
+
+    // Reset form and close modal (existing logic)
+    resetForm();
+    isCreatePostOpen.value = false;
+    document.body.style.overflow = "";
+
+    // Show success toast notification
+    showSuccessToast.value = true;
+    setTimeout(() => {
+      showSuccessToast.value = false;
+    }, 5000);
   } catch (error) {
-    console.error("Error creating post:", error);
+    console.error(
+      `Error ${isEditMode.value ? "updating" : "creating"} post:`,
+      error
+    );
     formError.value =
       error.response?.data?.message ||
-      "Failed to create post. Please try again.";
+      `Failed to ${
+        isEditMode.value ? "update" : "create"
+      } post. Please try again.`;
   } finally {
     isSubmitting.value = false;
   }
 }
+const successMessage = computed(() =>
+  isEditMode.value ? "Post updated successfully!" : "Post published!"
+);
 
 // Refresh posts using JWT without page reload
 const refreshPostsWithJWT = async () => {
