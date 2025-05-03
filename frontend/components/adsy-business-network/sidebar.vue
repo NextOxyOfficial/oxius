@@ -856,6 +856,27 @@ const handleNavigation = (path) => {
   console.log(`Navigating to: ${path}`);
 };
 
+// Add a method to handle menu clicks with loading states
+const handleMenuClick = (path) => {
+  // Close sidebar on mobile
+  if (isMobile.value) {
+    isOpen.value = false;
+    cart.burgerMenu = false;
+    document.body.style.overflow = "";
+  }
+  
+  // Trigger appropriate loading state based on the path
+  const eventBus = useEventBus();
+  if (path.includes('/profile/')) {
+    // For profile pages, emit the profile loading event
+    eventBus.emit('start-loading-profile');
+    console.log('Emitted start-loading-profile event');
+  } else if (path === '/business-network') {
+    // For main feed, emit posts loading event
+    eventBus.emit('start-loading-posts');
+    console.log('Emitted start-loading-posts event');
+  }
+};
 
 const nextProduct = () => {
   if (products.value.length === 0) return;

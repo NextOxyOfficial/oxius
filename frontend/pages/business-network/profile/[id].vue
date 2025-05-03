@@ -1,6 +1,147 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1 bg-gradient">
-    <div class="max-w-3xl mx-auto relative z-10 sm:px-0">
+    <!-- Skeleton loader for the entire profile page -->
+    <template v-if="isLoading">
+      <div class="max-w-3xl mx-auto relative z-10 sm:px-0">
+        <!-- Skeleton for Profile Card -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 mb-6 animate-pulse">
+          <div class="p-4 sm:p-5">
+            <!-- Desktop Layout Skeleton -->
+            <div class="flex flex-col sm:flex-row sm:items-start gap-6">
+              <!-- Profile Picture Skeleton -->
+              <div class="flex flex-col items-center sm:items-start">
+                <div class="size-36 rounded-full border-2 border-white shadow-lg bg-gray-200"></div>
+                
+                <!-- User Stats Skeleton (Mobile) -->
+                <div class="flex w-full justify-center sm:hidden mt-4 space-x-6">
+                  <div class="text-center">
+                    <div class="h-5 w-8 bg-gray-200 rounded mb-1 mx-auto"></div>
+                    <div class="h-4 w-12 bg-gray-200 rounded mx-auto"></div>
+                  </div>
+                  <div class="text-center">
+                    <div class="h-5 w-8 bg-gray-200 rounded mb-1 mx-auto"></div>
+                    <div class="h-4 w-12 bg-gray-200 rounded mx-auto"></div>
+                  </div>
+                  <div class="text-center">
+                    <div class="h-5 w-8 bg-gray-200 rounded mb-1 mx-auto"></div>
+                    <div class="h-4 w-12 bg-gray-200 rounded mx-auto"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- User Info Skeleton -->
+              <div class="flex-1">
+                <!-- Header Skeleton -->
+                <div class="hidden sm:flex sm:flex-row sm:items-start sm:justify-between">
+                  <div class="flex-1">
+                    <div class="h-7 bg-gray-200 rounded w-1/4 mb-2"></div>
+                    <div class="h-5 bg-gray-200 rounded w-1/3 mb-1"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/5"></div>
+                  </div>
+                  
+                  <!-- Action buttons Skeleton -->
+                  <div class="hidden sm:flex space-x-2">
+                    <div class="h-8 w-24 bg-gray-200 rounded"></div>
+                    <div class="h-8 w-10 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                
+                <!-- User Stats Skeleton (Desktop) -->
+                <div class="hidden sm:flex items-center mt-3 mb-3 border-b border-gray-100 pb-3">
+                  <div class="flex items-center gap-6">
+                    <div class="h-5 w-20 bg-gray-200 rounded"></div>
+                    <div class="h-5 w-24 bg-gray-200 rounded"></div>
+                    <div class="h-5 w-24 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                
+                <!-- Bio Skeleton -->
+                <div class="mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                  <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                  <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                </div>
+                
+                <!-- Contact Info Skeleton -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-3">
+                  <div class="flex items-center gap-1.5">
+                    <div class="h-4 w-4 bg-gray-200 rounded-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <div class="h-4 w-4 bg-gray-200 rounded-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <div class="h-4 w-4 bg-gray-200 rounded-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <div class="h-4 w-4 bg-gray-200 rounded-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                </div>
+                
+                <!-- Social Media Skeleton -->
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                  <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+                    <div class="flex items-center gap-1.5">
+                      <div class="h-4 w-4 bg-gray-200 rounded"></div>
+                      <div class="h-4 bg-gray-200 rounded w-20"></div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <div class="h-4 w-4 bg-gray-200 rounded"></div>
+                      <div class="h-4 bg-gray-200 rounded w-20"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Skeleton for Tabs Section -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden">
+          <!-- Tabs Skeleton -->
+          <div class="border-b border-gray-200">
+            <div class="flex items-center">
+              <div class="h-10 w-20 bg-gray-200 rounded m-2"></div>
+              <div class="h-10 w-20 bg-gray-200 rounded m-2"></div>
+              <div class="h-10 w-20 bg-gray-200 rounded m-2"></div>
+            </div>
+          </div>
+          
+          <!-- Tab Content Skeleton -->
+          <div class="py-4">
+            <div class="px-2">
+              <!-- Skeleton loaders for posts -->
+              <div v-for="i in 2" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+                <div class="flex items-center space-x-3 mb-4">
+                  <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+                  </div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                  <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                  <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                </div>
+                <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
+                <div class="flex justify-between">
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                  <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+    
+    <!-- Actual profile content -->
+    <div v-else class="max-w-3xl mx-auto relative z-10 sm:px-0">
       <!-- Professional Profile Card -->
       <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 mb-6 animate-fadeIn">
         <div class="p-4 sm:p-5">
@@ -500,37 +641,40 @@ import {
 } from "lucide-vue-next";
 
 const route = useRoute();
+const router = useRouter();
 
 const { user: currentUser } = useAuth();
 const { get, post, del } = useApi();
 const eventBus = useEventBus();
 
-// Listen for loading events from footer and sidebar
-eventBus.on('start-loading-profile', () => {
-  // Reset loading states
-  isLoadingPosts.value = true;
-  isLoadingMedia.value = true;
-  isLoadingSaved.value = true;
-  
-  // Refresh data with a slight delay to allow navigation
-  setTimeout(() => {
-    fetchUserPosts();
-    fetchUserSavedPosts();
-  }, 100);
-});
+// Always start with loading state to show skeleton immediately
+const isLoading = ref(true);
+const isLoadingPosts = ref(true);
+const isLoadingMedia = ref(true);
+const isLoadingSaved = ref(true);
 
+// Initialize other reactive state
 const user = ref({});
 const posts = ref([]);
 const toast = useToast();
 const savedPosts = ref([]);
 const allMedia = ref([]);
-
 const followLoading = ref(false);
 const isFollowing = ref(false);
-const isLoadingPosts = ref(true); // Initialize as true
-const isLoadingMedia = ref(true);
-const isLoadingSaved = ref(true);
 
+// Set up event listener for navigation events
+onMounted(() => {
+  // Listen for loading events from footer and sidebar
+  eventBus.on('start-loading-profile', () => {
+    // Reset loading states
+    isLoading.value = true;
+    isLoadingPosts.value = true;
+    isLoadingMedia.value = true;
+    isLoadingSaved.value = true;
+  });
+});
+
+// Define data loading functions
 async function checkFollowing() {
   if (!currentUser.value) return;
   try {
@@ -543,9 +687,7 @@ async function checkFollowing() {
     console.error(error);
   }
 }
-await checkFollowing();
 
-// Add social media properties to your fetchUser function
 async function fetchUser() {
   try {
     const { data } = await get(`/user/${route.params.id}/`);
@@ -565,9 +707,13 @@ async function fetchUser() {
     console.log(user.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    // Add a minimum loading time for better UX
+    setTimeout(() => {
+      isLoading.value = false;
+    }, 800);
   }
 }
-await fetchUser();
 
 async function fetchUserPosts() {
   try {
@@ -580,7 +726,6 @@ async function fetchUserPosts() {
     isLoadingPosts.value = false;
   }
 }
-await fetchUserPosts();
 
 async function fetchUserSavedPosts() {
   try {
@@ -594,10 +739,23 @@ async function fetchUserSavedPosts() {
   }
 }
 
-await fetchUserSavedPosts();
-
-// Simulate loading media
-onMounted(() => {
+// Load data when component is created
+function loadAllData() {
+  // Start with loading states set to true
+  isLoading.value = true;
+  isLoadingPosts.value = true;
+  isLoadingMedia.value = true;
+  isLoadingSaved.value = true;
+  
+  // Fetch all data in parallel
+  Promise.all([
+    fetchUser(),
+    fetchUserPosts(),
+    currentUser.value ? fetchUserSavedPosts() : Promise.resolve(),
+    currentUser.value && route.params.id ? checkFollowing() : Promise.resolve()
+  ]);
+  
+  // Simulate loading media items
   setTimeout(() => {
     allMedia.value = Array(16).fill().map((_, i) => ({
       thumbnail: `https://picsum.photos/500/500?random=${i+1}`,
@@ -605,8 +763,9 @@ onMounted(() => {
     }));
     isLoadingMedia.value = false;
   }, 1500);
-});
+}
 
+// Existing view mode and tab states
 const viewMode = ref("list");
 const activeTab = ref("posts");
 const isEditProfileOpen = ref(false);
@@ -640,10 +799,13 @@ const tabs =
         // { label: "Saved", value: "saved" },
       ];
 
+// Rest of your existing functions
+// Toggle follow action
 const toggleFollow = async () => {
   if (followLoading.value) return;
   followLoading.value = true;
   isFollowing.value = !isFollowing.value;
+  
   if (isFollowing.value) {
     try {
       const { data } = await post(`/bn/users/${route.params.id}/follow/`);
@@ -696,65 +858,7 @@ const switchTab = (tabValue) => {
   activeTab.value = tabValue;
 };
 
-// Remaining functions
-const updateProfile = () => {
-  user.value = {
-    ...user.value,
-    name: profileForm.value.name,
-    bio: profileForm.value.bio,
-    location: profileForm.value.location,
-    company: profileForm.value.company,
-    website: profileForm.value.website,
-    email: profileForm.value.email,
-    phone: profileForm.value.phone,
-  };
-  isEditProfileOpen.value = false;
-  toast.add({
-    title: "Profile Updated",
-    description: "Your profile has been updated successfully.",
-    icon: "i-heroicons-check-circle",
-    color: "green",
-  });
-};
-
-const triggerProfilePhotoInput = () => {
-  profilePhotoInputRef.value?.click();
-};
-
-const triggerCoverPhotoInput = () => {
-  coverPhotoInputRef.value?.click();
-};
-
-const handleProfilePhotoChange = (e) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    setTimeout(() => {
-      toast.add({
-        title: "Photo Updated",
-        description: "Your profile photo has been updated successfully.",
-        icon: "i-heroicons-check-circle",
-        color: "green",
-      });
-      isEditPhotoOpen.value = false;
-    }, 1000);
-  }
-};
-
-const handleCoverPhotoChange = (e) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    setTimeout(() => {
-      toast.add({
-        title: "Cover Updated",
-        description: "Your cover photo has been updated successfully.",
-        icon: "i-heroicons-check-circle",
-        color: "green",
-      });
-      isEditCoverOpen.value = false;
-    }, 1000);
-  }
-};
-
+// Format time ago function
 const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
@@ -783,10 +887,25 @@ const formatTimeAgo = (dateString) => {
   return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
 };
 
-// Add event listeners
-onMounted(() => {
-  const eventBus = useEventBus();
+// Watch for route changes
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId !== oldId) {
+    // Always reset loading states when route changes
+    isLoading.value = true;
+    isLoadingPosts.value = true;
+    isLoadingMedia.value = true;
+    isLoadingSaved.value = true;
+    
+    // Load fresh data
+    loadAllData();
+  }
+}, { immediate: false });
 
+// Lifecycle hooks
+onMounted(() => {
+  // Register event listeners
+  const eventBus = useEventBus();
+  
   eventBus.on("post-created", (newPost) => {
     // Only update if this is the author's profile
     if (newPost.author?.id === route.params.id) {
@@ -815,9 +934,13 @@ onMounted(() => {
     }
   });
 
-  // Clean up event listener
+  // Load data on mount (with skeleton already showing)
+  loadAllData();
+  
+  // Clean up event listener on unmount
   onUnmounted(() => {
     eventBus.off("post-created");
+    eventBus.off("start-loading-profile");
   });
 });
 </script>
@@ -968,5 +1091,19 @@ onMounted(() => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
+}
+
+/* Additional animation for skeleton loading */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>
