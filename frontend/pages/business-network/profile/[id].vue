@@ -735,9 +735,43 @@ async function fetchUser() {
 
 async function fetchUserPosts() {
   try {
+    isLoadingPosts.value = true;
+    
+    // First request to get the first page and total count
     const res = await get(`/bn/user/${route.params.id}/posts/`);
     console.log(res, "user posts");
+    
+    // Set initial posts
     posts.value = res.data;
+    
+    // Check if there are more pages to load
+    if (res.data.next && res.data.results) {
+      // Store initial results
+      const allResults = [...res.data.results];
+      let nextPageUrl = res.data.next;
+      
+      // Loop through all pages to fetch all posts
+      while (nextPageUrl) {
+        // Fetch the next page
+        const nextPageRes = await get(nextPageUrl);
+        
+        // Add results to our collection
+        if (nextPageRes.data.results) {
+          allResults.push(...nextPageRes.data.results);
+        }
+        
+        // Update next page URL
+        nextPageUrl = nextPageRes.data.next;
+      }
+      
+      // Update the posts object with all combined results
+      posts.value = {
+        ...res.data,
+        results: allResults
+      };
+      
+      console.log(`Loaded all ${allResults.length} posts for user`);
+    }
   } catch (error) {
     console.error(error);
   } finally {
