@@ -856,6 +856,7 @@ const handleNavigation = (path) => {
   console.log(`Navigating to: ${path}`);
 };
 
+
 const nextProduct = () => {
   if (products.value.length === 0) return;
   currentProductIndex.value =
