@@ -666,6 +666,24 @@ const isFollowing = ref(false);
 onMounted(() => {
   // Listen for loading events from footer and sidebar
   eventBus.on('start-loading-profile', () => {
+    // Special case: If we're already on the profile page and the ID matches the current route
+    if (route.path.includes('/profile/') && !isLoading.value) {
+      // Just reload the data without showing skeleton if we're already on this profile
+      const currentId = route.params.id;
+      const alreadyOnPage = currentId === route.params.id;
+      
+      if (alreadyOnPage) {
+        // Don't show skeleton, just refresh data in the background
+        fetchUser();
+        fetchUserPosts();
+        if (currentUser.value) {
+          fetchUserSavedPosts();
+        }
+        return;
+      }
+    }
+    
+    // Standard behavior when navigating to a different profile
     // Reset loading states
     isLoading.value = true;
     isLoadingPosts.value = true;

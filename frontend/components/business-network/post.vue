@@ -272,6 +272,80 @@ const shuffledProducts = ref([]);
 const isLoadingProducts = ref(false);
 const randomInterval = ref(5 + Math.floor(Math.random() * 4)); // Random interval between 5-8
 
+// Function to get random products
+const getRandomProducts = (count = 3) => {
+  if (allProducts.value.length === 0) {
+    return [];
+  }
+
+  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count); // Return exactly 'count' random products
+};
+
+// Pre-process posts to ensure they have necessary details
+const processPosts = () => {
+  props.posts.forEach(post => {
+    // Ensure author details are properly set - this helps prevent late loading of user info
+    if (post.author_details) {
+      // Make sure post has necessary properties for rendering
+      post.showFullDescription = false;
+      post.showDropdown = false;
+      post.commentText = '';
+      post.isCommentLoading = false;
+      post.isLikeLoading = false;
+    }
+  });
+};
+
+// Product methods
+const fetchProducts = async () => {
+  isLoadingProducts.value = true;
+  try {
+    const { data } = await get("/all-products/");
+    if (
+      data &&
+      (Array.isArray(data) || (data.results && Array.isArray(data.results)))
+    ) {
+      allProducts.value = Array.isArray(data) ? data : data.results;
+      shuffledProducts.value = getRandomProducts();
+    } else {
+      console.error("Unexpected product data format:", data);
+      allProducts.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    allProducts.value = [];
+  } finally {
+    isLoadingProducts.value = false;
+  }
+};
+
+// Additional methods for component functionality as needed
+// ...
+
+// Initialize
+onMounted(() => {
+  fetchProducts();
+  processPosts(); // Process posts when component mounts
+
+  // Implement infinite scroll (if needed)
+  window.addEventListener("scroll", () => {
+    if (
+      window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+      !loading.value
+    ) {
+      // loadMorePosts(); (implementation would be needed)
+    }
+  });
+});
+
+// Watch for changes in the posts prop
+watch(() => props.posts, (newPosts) => {
+  if (newPosts && newPosts.length > 0) {
+    processPosts(); // Process posts when they change
+  }
+}, { deep: true });
+
 // Main methods
 const toggleFollow = async (currentPost) => {
   try {
@@ -1121,56 +1195,8 @@ const handleMentionKeydown = (e, currentPost) => {
   }
 };
 
-// Product methods
-const fetchProducts = async () => {
-  isLoadingProducts.value = true;
-  try {
-    const { data } = await get("/all-products/");
-    if (
-      data &&
-      (Array.isArray(data) || (data.results && Array.isArray(data.results)))
-    ) {
-      allProducts.value = Array.isArray(data) ? data : data.results;
-      shuffledProducts.value = getRandomProducts();
-    } else {
-      console.error("Unexpected product data format:", data);
-      allProducts.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    allProducts.value = [];
-  } finally {
-    isLoadingProducts.value = false;
-  }
-};
-
-// Function to get random products
-const getRandomProducts = (count = 3) => {
-  if (allProducts.value.length === 0) {
-    return [];
-  }
-
-  const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count); // Return exactly 'count' random products
-};
-
 // Additional methods for component functionality as needed
 // ...
-
-// Initialize
-onMounted(() => {
-  fetchProducts();
-
-  // Implement infinite scroll (if needed)
-  window.addEventListener("scroll", () => {
-    if (
-      window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
-      !loading.value
-    ) {
-      // loadMorePosts(); (implementation would be needed)
-    }
-  });
-});
 
 // Expose methods that might be called from parent components
 defineExpose({

@@ -165,28 +165,27 @@ import {
 
 // State
 const posts = ref([]);
-const loading = ref(true); // Start with loading true
+// Always start with loading state to show skeleton immediately
+const loading = ref(true);
 const { get } = useApi();
 const { user } = useAuth();
 const eventBus = useEventBus();
 
 // Listen for loading events from footer and sidebar
 eventBus.on('start-loading-posts', () => {
+  // Set loading to true immediately
   loading.value = true;
-  // Wait a bit to allow navigation to complete before refreshing posts
-  setTimeout(() => {
-    getPosts();
-  }, 300); // Increased timeout to ensure skeleton is visible
 });
 
 async function getPosts() {
   try {
-    loading.value = true; // Ensure loading is true when fetching starts
+    // Ensure loading is true when fetching starts
+    loading.value = true; 
     
     // Add a minimum delay to ensure skeleton is visible
     const [response] = await Promise.all([
       get("/bn/posts/"),
-      new Promise(resolve => setTimeout(resolve, 500)) // Force minimum loading time of 500ms
+      new Promise(resolve => setTimeout(resolve, 800)) // Increased to 800ms for consistency with profile page
     ]);
     
     posts.value = response.data.results;
@@ -198,12 +197,40 @@ async function getPosts() {
   }
 }
 
+// Load data when component is created
+function loadData() {
+  // Always reset loading state first
+  loading.value = true;
+  
+  // Get posts with a slight delay
+  setTimeout(() => {
+    getPosts();
+  }, 100); // Small delay to ensure navigation completes first
+}
+
 // Don't immediately call getPosts, wait for component to mount
 onMounted(() => {
-  getPosts();
+  loadData();
 });
 
+// Event listener setup
+onMounted(() => {
+  // Listen for events from footer or sidebar
+  eventBus.on('start-loading-posts', () => {
+    loadData();
+  });
+  
+  // Clean up event listeners when component is unmounted
+  onUnmounted(() => {
+    eventBus.off('start-loading-posts');
+  });
+});
+
+// Pagination
 const page = ref(1);
+const isLoadingMore = ref(false);
+
+// Search functionality
 const isSearchOpen = ref(false);
 const searchQuery = ref("");
 const recentSearches = ref([

@@ -230,11 +230,13 @@ const eventBus = useEventBus();
 function handleRecentClick() {
   // Emit loading event for Recent menu
   eventBus.emit('start-loading-posts');
+  console.log('Emitted start-loading-posts event from footer');
 }
 
 // Handle Profile menu click
 function handleProfileClick() {
   // Emit loading event for Profile menu
   eventBus.emit('start-loading-profile');
+  console.log('Emitted start-loading-profile event from footer');
 }
 </script>
