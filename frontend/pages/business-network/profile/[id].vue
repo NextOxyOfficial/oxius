@@ -525,25 +525,6 @@
                 </div>
               </div>
               
-              <!-- End of feed indicator - shows when all posts are loaded -->
-              <div 
-                v-if="!isLoadingPosts && !loadingMorePosts && !hasMorePosts && posts?.results?.length > 0"
-                class="flex flex-col items-center justify-center py-8 text-center"
-              >
-                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <Check class="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
-                <p class="text-gray-500 mb-8 max-w-md">You've seen all posts from this profile.</p>
-                <button 
-                  @click="scrollToTop" 
-                  class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
-                >
-                  <ChevronUp class="h-4 w-4" />
-                  <span>Back to top</span>
-                </button>
-              </div>
-              
               <!-- Display actual posts when loaded -->
               <BusinessNetworkPost
                 v-if="!isLoadingPosts"
@@ -551,6 +532,33 @@
                 :id="currentUser?.user?.id"
                 class="animate-fadeIn"
               />
+              
+              <!-- No posts indicator -->
+              <div v-if="!isLoadingPosts && posts?.results?.length === 0" class="flex flex-col items-center justify-center py-8 text-center">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <ChevronUp class="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 class="text-lg font-medium text-gray-800 mb-1">No posts yet</h3>
+                <p class="text-gray-500 mb-4 max-w-md">This profile hasn't posted anything yet</p>
+              </div>
+              
+              <!-- NEW: Static End of feed indicator - Always shows at the bottom of the page -->
+              <div class="end-of-feed-indicator bg-white rounded-xl border border-gray-200/50 overflow-hidden mt-8 mb-4">
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                  <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <Check class="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
+                  <p class="text-gray-500 mb-8 max-w-md">You've reached the end of the feed</p>
+                  <button 
+                    @click="scrollToTop" 
+                    class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+                  >
+                    <ChevronUp class="h-4 w-4" />
+                    <span>Back to top</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div v-else-if="activeTab === 'media'" class="tab-content">
@@ -802,12 +810,6 @@ async function fetchUserPosts(loadMore = false) {
         // If we filtered out all posts as duplicates, show end of feed
         if (newPosts.length === 0 && res.data.results.length > 0) {
           hasMorePosts.value = false;
-          toast.add({
-            title: 'You\'re all caught up!',
-            description: 'You\'ve seen all posts from this profile',
-            color: 'blue',
-            timeout: 3000
-          });
         }
       } else {
         // Initial set of posts when loading more
@@ -832,13 +834,6 @@ async function fetchUserPosts(loadMore = false) {
     // If we didn't get any posts in a load more request, we're at the end
     if (loadMore && (!res.data.results || res.data.results.length === 0)) {
       hasMorePosts.value = false;
-      
-      toast.add({
-        title: 'You\'re all caught up!',
-        description: 'You\'ve seen all posts from this profile',
-        color: 'blue',
-        timeout: 3000
-      });
     }
     
     console.log(`Loaded ${loadMore ? 'more' : 'initial'} posts for user. Has more: ${hasMorePosts.value}, Total unique posts: ${loadedPostIds.value.size}`);
@@ -869,11 +864,28 @@ function loadMorePosts() {
 
 // Setup scroll detection for infinite scroll
 function setupInfiniteScroll() {
+  // Create a global flag to track if we've reached the end of feed
+  // Using a ref ensures this state persists properly
+  const endOfFeedReached = ref(false);
+  
   const handleScroll = () => {
     if (activeTab.value !== 'posts') return;
+    if (endOfFeedReached.value) {
+      // If we already know we're at the end, don't do anything
+      return;
+    }
     
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
-      if (!loadingMorePosts.value && hasMorePosts.value && !isLoadingPosts.value) {
+    // Check if we're at or near the bottom of the page
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+      // Stop further API calls if we're already at the end (no more posts OR we've already seen the "all caught up" message)
+      if (!hasMorePosts.value) {
+        console.log("End of feed reached - disabling infinite scroll");
+        endOfFeedReached.value = true;
+        return;
+      }
+      
+      // Otherwise, try loading more posts if not currently loading
+      if (!loadingMorePosts.value && !isLoadingPosts.value) {
         loadMorePosts();
       }
     }

@@ -313,18 +313,9 @@ async function getPosts(isLoadingMore = false) {
         }
       }
       
-      // Check if we have more posts to load
-      // If we received posts but all were duplicates, or if we received no posts at all,
-      // then we've reached the end
+      
       if (processedPosts.length > 0 && uniquePosts.length === 0) {
         hasMore.value = false;
-        
-        useToast().add({
-          title: 'You\'re all caught up!',
-          description: 'You\'ve reached the end of the feed',
-          color: 'blue',
-          timeout: 3000
-        });
       } else {
         // If we got some unique posts, assume there might be more
         hasMore.value = processedPosts.length > 0;
@@ -332,15 +323,6 @@ async function getPosts(isLoadingMore = false) {
         // If we got no posts at all, we've definitely reached the end
         if (processedPosts.length === 0) {
           hasMore.value = false;
-          
-          if (isLoadingMore) {
-            useToast().add({
-              title: 'You\'re all caught up!',
-              description: 'You\'ve reached the end of the feed',
-              color: 'blue',
-              timeout: 3000
-            });
-          }
         }
       }
       
