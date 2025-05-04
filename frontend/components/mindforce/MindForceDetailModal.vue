@@ -135,8 +135,6 @@
             {{ problem.description }}
           </p>
 
-         
-
           <!-- Problem Stats -->
           <div
             class="mt-6 flex items-center justify-between border-t border-b border-gray-200 py-3"
@@ -152,6 +150,16 @@
                 {{ problem?.views || 0 }}
               </span>
             </div>
+            
+            <!-- Mark as Solved button (only visible for problem owner and when problem is not already solved) -->
+            <button
+              v-if="isOwner && problem.status !== 'solved'"
+              @click="$emit('mark-as-solved')"
+              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-green-600 text-white hover:bg-green-700 shadow-sm"
+            >
+              <CheckCircle class="h-4 w-4 mr-1.5" />
+              Mark as Solved
+            </button>
           </div>
 
           <!-- Comments Section -->
@@ -192,12 +200,7 @@
                           <p class="font-medium">
                             {{ comment?.author_details?.name }}
                           </p>
-                          <span
-                            v-if="comment.is_solved"
-                            class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-md font-medium bg-green-600 text-white shadow-sm"
-                          >
-                            <CheckCircle class="h-3 w-3 mr-1" /> Solution
-                          </span>
+                          
                         </div>
                         <p class="text-sm text-gray-500">
                           {{ formatTimeAgo(comment.created_at) }}
@@ -289,7 +292,7 @@
                       <path
                         class="opacity-75"
                         fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
                     Submitting...

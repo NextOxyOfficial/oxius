@@ -210,6 +210,7 @@
       @mark-solution="markAsSolution"
       @add-comment="addComment"
       @delete="confirmDelete"
+      @mark-as-solved="markProblemAsSolved"
     />
 
     <MindForceDeleteDialog
@@ -458,6 +459,12 @@ const markAsSolution = async (commentId) => {
 
 const addComment = async (commentText) => {
   if (!commentText.trim()) return;
+  
+  // Check if the problem is already solved
+  if (selectedProblem.value.status === 'solved') {
+    alert('Comments cannot be added to solved problems.');
+    return;
+  }
 
   isSubmittingComment.value = true;
 
@@ -473,8 +480,46 @@ const addComment = async (commentText) => {
     }
   } catch (error) {
     console.error("Error adding comment:", error);
+    // Check if the error is due to the problem being solved
+    if (error.response && error.response.data && error.response.data.detail === 'Cannot comment on solved problems') {
+      alert('This problem has been marked as solved. Comments are disabled.');
+    } else {
+      alert('Failed to add comment. Please try again later.');
+    }
   } finally {
     isSubmittingComment.value = false;
+  }
+};
+
+const markProblemAsSolved = async () => {
+  if (!selectedProblem.value) return;
+
+  try {
+    // Make sure we're updating the correct problem
+    const problemId = selectedProblem.value.id;
+    
+    // Call the API to update the problem status
+    const res = await patch(`/bn/mindforce/${problemId}/`, {
+      status: "solved",
+    });
+    
+    if (res.data && res.data.status === "solved") {
+      // Update the problem in the local state
+      const index = problems.value.findIndex(p => p.id === problemId);
+      if (index !== -1) {
+        problems.value[index].status = "solved";
+      }
+      
+      // Close the modal and refresh problems to ensure everything is up-to-date
+      isDetailModalOpen.value = false;
+      await fetchProblems();
+    } else {
+      console.error("Error marking problem as solved: Unexpected response", res.data);
+      alert("Could not mark the problem as solved. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error marking problem as solved:", error);
+    alert("An error occurred while marking the problem as solved. Please try again.");
   }
 };
 

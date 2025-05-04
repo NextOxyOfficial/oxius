@@ -695,7 +695,18 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
         return BusinessNetworkMindforceComment.objects.filter(mindforce_problem=mindforce_id).order_by('-created_at')
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data={'author': request.user.id, 'mindforce_problem': kwargs['mindforce_id'], 'content': request.data['comment']})
+        # Check if problem is already solved before allowing comment
+        mindforce_id = kwargs['mindforce_id']
+        mindforce_problem = get_object_or_404(BusinessNetworkMindforce, id=mindforce_id)
+        
+        # If the problem is already solved, prevent commenting
+        if mindforce_problem.status == 'solved':
+            return Response(
+                {"detail": "Cannot comment on solved problems"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        serializer = self.get_serializer(data={'author': request.user.id, 'mindforce_problem': mindforce_id, 'content': request.data['comment']})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         headers = self.get_success_headers(serializer.data)
