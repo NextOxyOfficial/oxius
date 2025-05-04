@@ -763,4 +763,51 @@ class TopTagsView(APIView):
 
         serializer = FrequentTagSerializer(results, many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
-        
+
+
+class BusinessNetworkNotificationListView(generics.ListAPIView):
+    """List view for user notifications"""
+    serializer_class = BusinessNetworkNotificationSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self):
+        """Return notifications for the current user"""
+        return BusinessNetworkNotification.objects.filter(recipient=self.request.user)
+
+
+class BusinessNetworkNotificationReadView(generics.UpdateAPIView):
+    """View to mark a notification as read"""
+    serializer_class = BusinessNetworkNotificationSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    
+    def get_queryset(self):
+        """Only allow users to mark their own notifications as read"""
+        return BusinessNetworkNotification.objects.filter(recipient=self.request.user)
+    
+    def update(self, request, *args, **kwargs):
+        notification = self.get_object()
+        notification.read = True
+        notification.save()
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+
+class BusinessNetworkMarkAllNotificationsReadView(generics.GenericAPIView):
+    """View to mark all notifications as read"""
+    permission_classes = [IsAuthenticated]
+    
+    def put(self, request):
+        """Mark all of a user's notifications as read"""
+        BusinessNetworkNotification.objects.filter(recipient=request.user, read=False).update(read=True)
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+
+class BusinessNetworkUnreadNotificationCountView(generics.GenericAPIView):
+    """View to get count of unread notifications"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Return count of unread notifications"""
+        count = BusinessNetworkNotification.objects.filter(recipient=request.user, read=False).count()
+        return Response({'count': count}, status=status.HTTP_200_OK)

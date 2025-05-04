@@ -472,3 +472,32 @@ class BusinessNetworkMindforceComment(models.Model):
         if not self.pk:
             self.id = self.generate_id()
         super().save(*args, **kwargs)
+
+
+class BusinessNetworkNotification(models.Model):
+    """Model for business network notifications"""
+    NOTIFICATION_TYPES = (
+        ('follow', 'Follow'),
+        ('like_post', 'Like Post'),
+        ('like_comment', 'Like Comment'),
+        ('comment', 'Comment'),
+        ('reply', 'Reply'),
+        ('mention', 'Mention'),
+        ('solution', 'Solution'),
+    )
+    
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bn_notifications_received')
+    actor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bn_notifications_created')
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    read = models.BooleanField(default=False)
+    target_id = models.CharField(max_length=50, null=True, blank=True)  # ID of the target object (post, comment, etc.)
+    parent_id = models.CharField(max_length=50, null=True, blank=True)  # ID of parent object (post for comments)
+    content = models.TextField(null=True, blank=True)  # Optional content snippet
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.actor.username} {self.get_type_display()} to {self.recipient.username}"

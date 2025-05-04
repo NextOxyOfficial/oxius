@@ -159,3 +159,18 @@ class FrequentTagSerializer(serializers.Serializer):
     id = serializers.CharField()
     tag = serializers.CharField()
     count = serializers.IntegerField()
+
+class UserMinimalSerializer(serializers.ModelSerializer):
+    """Minimal user information for notifications"""
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'image', 'kyc')
+
+class BusinessNetworkNotificationSerializer(serializers.ModelSerializer):
+    """Serializer for business network notifications"""
+    actor = UserMinimalSerializer(read_only=True)
+    
+    class Meta:
+        model = BusinessNetworkNotification
+        fields = ('id', 'actor', 'type', 'read', 'target_id', 'parent_id', 
+                 'content', 'created_at')
