@@ -6,7 +6,10 @@
       class="flex items-center text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-300 group"
       @click="$emit('open-comments-modal', post)"
     >
-      <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="mr-1.5 w-4 h-4 group-hover:scale-105 transition-transform duration-300" />
+      <UIcon
+        name="i-heroicons-chat-bubble-left-ellipsis"
+        class="mr-1.5 w-4 h-4 group-hover:scale-105 transition-transform duration-300"
+      />
       See all {{ post?.post_comments?.length }} comments
     </button>
 
@@ -28,18 +31,13 @@
               :alt="comment.author_details?.name"
               class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-md transition-all duration-300"
             />
-            <!-- Verified badge -->
-            <div
-              v-if="comment.author_details?.kyc"
-              class="absolute -bottom-0.5 -right-0.5 bg-blue-500 rounded-full w-3 h-3 border border-white dark:border-gray-800 flex items-center justify-center"
-            >
-              <UIcon name="i-heroicons-check" class="w-2 h-2 text-white" />
-            </div>
           </div>
         </NuxtLink>
-        
+
         <div class="flex-1">
-          <div class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl py-2 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50">
+          <div
+            class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl py-2 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
+          >
             <div class="flex items-center justify-between mb-0.5">
               <div class="flex items-center gap-1">
                 <NuxtLink
@@ -83,7 +81,7 @@
                 </button>
               </div>
             </div>
-            
+
             <!-- Comment editing form with glassmorphism -->
             <div v-if="comment.isEditing">
               <textarea
@@ -119,20 +117,23 @@
                 </button>
               </div>
             </div>
-            
+
             <!-- Comment content with premium styling -->
-            <p 
-              v-else 
-              class="text-base sm:text-sm text-gray-800 dark:text-gray-200" 
+            <p
+              v-else
+              class="text-base sm:text-sm text-gray-800 dark:text-gray-200"
               style="word-break: break-word"
             >
               {{ comment?.content }}
             </p>
           </div>
-          
+
           <!-- Timestamp with premium styling -->
           <div class="flex items-center mt-1 pl-1">
-            <UIcon name="i-heroicons-clock" class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1" />
+            <UIcon
+              name="i-heroicons-clock"
+              class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
+            />
             <span class="text-xs text-gray-500 dark:text-gray-400">
               {{ formatTimeAgo(comment?.created_at) }}
             </span>
@@ -171,22 +172,22 @@ const editComment = (post, comment) => {
   if (!comment.editText) {
     comment.editText = comment.content;
   }
-  
+
   // Set editing state
   comment.isEditing = true;
-  
+
   // Emit event for parent components
-  emit('edit-comment', post, comment);
+  emit("edit-comment", post, comment);
 };
 
 const deleteComment = (post, comment) => {
   // Emit delete event to parent
-  emit('delete-comment', post, comment);
+  emit("delete-comment", post, comment);
 };
 
 const saveEditComment = (post, comment) => {
   // Emit save event to parent
-  emit('save-edit-comment', post, comment);
+  emit("save-edit-comment", post, comment);
 };
 
 // Format time ago function
