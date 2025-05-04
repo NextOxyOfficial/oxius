@@ -82,11 +82,16 @@
                       : 'text-gray-700 group-hover:text-gray-900'
                   ]">
                   {{ item.label }}
+                  
+                  <!-- "New" badge for exclusive features -->
+                  <span v-if="item.isNew" class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-pink-500 to-rose-500 text-white">
+                    New
+                  </span>
                 </span>
                 
-                <!-- Badge with enhanced styling -->
+                <!-- Badge with enhanced styling - only show if greater than 0 -->
                 <div
-                  v-if="item.badge"
+                  v-if="item.badge && item.badge > 0"
                   class="ml-auto transition-all duration-300 px-2 py-0.5 text-xs rounded-full flex items-center justify-center font-medium"
                   :class="getMenuItemColor(item.label, 'badge')"
                 >
@@ -629,6 +634,7 @@ const mainMenu = [
     path: `/business-network/mindforce`,
     icon: Hash,
     active: false,
+    isNew: true,
   },
   {
     label: "Notifications",
@@ -657,6 +663,7 @@ const mainMenu2 = [
     path: `/business-network/mindforce`,
     icon: Hash,
     active: false,
+    isNew: true,
   },
   {
     label: "Login",
