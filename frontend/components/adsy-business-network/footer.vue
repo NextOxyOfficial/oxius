@@ -1,11 +1,11 @@
 <template>
   <div
-    class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg"
+    class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg px-2"
   >
     <div v-if="user?.user?.id" class="flex justify-between items-center px-2">
       <NuxtLink
         to="/business-network"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/business-network'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -27,7 +27,7 @@
       </NuxtLink>
       <NuxtLink
         to="/business-network/notifications"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/business-network/notifications'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -53,7 +53,7 @@
       </NuxtLink>
       <NuxtLink
         :to="`/business-network/profile/${user?.user?.id}`"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === `/business-network/profile/${user?.user?.id}`
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -75,7 +75,7 @@
       </NuxtLink>
       <NuxtLink
         to="/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -92,7 +92,7 @@
       </NuxtLink>
       <NuxtLink
         to="/adsy-news"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/adsy-news'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -134,7 +134,7 @@
       </NuxtLink>
       <NuxtLink
         to="/auth/login"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/auth/login'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -154,7 +154,7 @@
       </NuxtLink>
       <NuxtLink
         to="/#micro-gigs"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/#micro-gigs'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -174,7 +174,7 @@
       </NuxtLink>
       <NuxtLink
         to="/"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
@@ -191,7 +191,7 @@
       </NuxtLink>
       <NuxtLink
         to="/adsy-news"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 px-1.5 text-xs relative"
         :class="
           $route.path === '/adsy-news'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'

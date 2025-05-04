@@ -236,7 +236,7 @@
       <div class="flex justify-between items-center px-2">
         <NuxtLink
           to="/"
-          class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+          class="flex flex-col items-center py-2 px-1 text-xs relative text-gray-500"
         >
           <div class="relative">
             <Home class="h-6 w-6 mb-1 text-gray-500" />
@@ -260,7 +260,7 @@
         </NuxtLink>
         <NuxtLink
           to="/profile"
-          class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+          class="flex flex-col items-center py-2 px-1 text-xs relative text-gray-500"
         >
           <div class="relative">
             <User class="h-6 w-6 mb-1 text-gray-500" />
@@ -269,7 +269,7 @@
         </NuxtLink>
         <NuxtLink
           to="/dashboard"
-          class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+          class="flex flex-col items-center py-2 px-1 text-xs relative text-gray-500"
         >
           <div class="relative">
             <BarChart2 class="h-6 w-6 mb-1 text-gray-500" />
@@ -278,7 +278,7 @@
         </NuxtLink>
         <NuxtLink
           to="/saved"
-          class="flex flex-col items-center py-3 px-3 text-xs relative text-gray-500"
+          class="flex flex-col items-center py-2 px-1 text-xs relative text-gray-500"
         >
           <div class="relative">
             <Bookmark class="h-6 w-6 mb-1 text-gray-500" />

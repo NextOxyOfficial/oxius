@@ -91,10 +91,10 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-1.5 sm:px-4 py-2 font-medium transition-all text-sm sm:text-base duration-200 ease-in-out',
+              'relative px-1.5 sm:px-4 py-2 font-semibold transition-all text-sm sm:text-base duration-200 ease-in-out',
               activeTab === tab.value
-                ? 'text-blue-700 bg-white rounded-md shadow-sm'
-                : 'text-gray-500 hover:text-gray-700',
+                ? 'text-blue-600 bg-white rounded-md shadow-sm'
+                : 'text-gray-500 hover:text-gray-600',
             ]"
           >
             {{ tab.label }}
@@ -223,7 +223,7 @@
                     I need free help!
                   </span>
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-700 shadow-sm"
                   >
                     {{ problem?.category_details?.name }}
                   </span>
@@ -363,7 +363,7 @@
                     I need free help!
                   </span>
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-700 shadow-sm"
                   >
                     {{ problem?.category_details?.name }}
                   </span>
