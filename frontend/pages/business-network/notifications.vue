@@ -337,21 +337,21 @@ function getNotificationIcon(type) {
 function getNotificationText(notification) {
   switch (notification.type) {
     case notificationTypes.FOLLOW:
-      return 'started following you';
+      return ' started following you';
     case notificationTypes.LIKE_POST:
-      return 'liked your post';
+      return ' liked your post';
     case notificationTypes.LIKE_COMMENT:
-      return 'liked your comment';
+      return ' liked your comment';
     case notificationTypes.COMMENT:
-      return 'commented on your post';
+      return ' commented on your post';
     case notificationTypes.REPLY:
-      return 'replied to your comment';
+      return ' replied to your comment';
     case notificationTypes.MENTION:
-      return 'mentioned you in a post';
+      return ' mentioned you in a post';
     case notificationTypes.SOLUTION:
-      return 'marked your advice as a solution';
+      return ' marked your advice as a solution';
     default:
-      return 'interacted with your content';
+      return ' interacted with your content';
   }
 }
 

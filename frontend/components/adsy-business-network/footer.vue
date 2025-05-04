@@ -44,9 +44,10 @@
             "
           />
           <span
+            v-if="unreadCount > 0"
             class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
           >
-            5
+            {{ unreadCount }}
           </span>
         </div>
         <span>Notifications</span>
@@ -225,6 +226,15 @@ import {
 
 const { user } = useAuth();
 const eventBus = useEventBus();
+const { unreadCount, fetchUnreadCount } = useNotifications();
+
+// Fetch unread count when component is mounted
+onMounted(() => {
+  // Only fetch if user exists and is logged in
+  if (user.value?.user?.id) {
+    fetchUnreadCount();
+  }
+});
 
 // Handle Recent menu click
 function handleRecentClick() {
