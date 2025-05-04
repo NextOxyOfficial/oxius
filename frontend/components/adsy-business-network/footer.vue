@@ -110,10 +110,10 @@
         <span>Adsy News</span>
       </NuxtLink>
     </div>
-    <div v-else class="flex justify-between items-center px-2">
+    <div v-else class="flex justify-between items-center">
       <NuxtLink
         to="/business-network"
-        class="flex flex-col items-center py-3 px-3 text-xs relative"
+        class="flex flex-col items-center py-2 text-xs relative"
         :class="
           $route.path === '/business-network'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-600'
