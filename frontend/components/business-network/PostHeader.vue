@@ -3,14 +3,29 @@
     <div class="flex items-center space-x-3 flex-1">
       <div class="relative group">
         <NuxtLink :to="`/business-network/profile/${post.author}`">
+          <!-- Pro user badge with improved color ring around profile picture -->
+          <div 
+            v-if="post?.author_details?.is_pro" 
+            class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
+          ></div>
           <img
             :src="post?.author_details?.image || '/placeholder.svg'"
             :alt="post?.author_details?.name"
             class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-md transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105"
           />
+          <!-- Pro text badge -->
+          <div
+            v-if="post?.author_details?.is_pro"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-20 text-[9px] font-bold"
+          >
+            PRO
+          </div>
           <!-- Subtle glow effect on hover -->
           <div
-            class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-md -z-10"
+            :class="[
+              'absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md -z-10',
+              'bg-gradient-to-r from-[#7f00ff]/20 to-[#e100ff]/20'
+            ]"
           ></div>
         </NuxtLink>
       </div>
@@ -23,6 +38,7 @@
           <p class="truncate max-w-[180px]">
             {{ post?.author_details?.name }}
           </p>
+          <!-- Removed Pro text badge next to username -->
           <div
             v-if="post?.author_details?.kyc"
             class="text-blue-500 flex items-center"
@@ -47,6 +63,8 @@
     </div>
 
     <div class="flex items-center gap-2">
+      <!-- Follow button removed from feed posts -->
+      
       <div class="relative">
         <button
           class="h-8 w-8 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
@@ -213,7 +231,7 @@ defineProps({
   },
 });
 
-defineEmits(["toggle-follow", "toggle-dropdown", "toggle-save", "copy-link"]);
+defineEmits(["toggle-dropdown", "toggle-save", "copy-link"]);
 
 async function getSavedPosts() {
   const { data } = await get(`/bn/posts/save/`);
@@ -318,5 +336,23 @@ const formatTimeAgo = (dateString) => {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Improved Pro user border with proper rounded style */
+.pro-border-ring {
+  border-radius: 9999px; /* Ensure full circle */
+  border: 2px solid transparent;
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Premium shadow effect */
+.premium-shadow {
+  box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.1),
+              0 4px 8px -2px rgba(0, 0, 0, 0.05);
 }
 </style>

@@ -20,6 +20,7 @@
       <!-- Modal with enhanced styling -->
       <div
         class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden border border-slate-100 dark:border-slate-700 animate-fade-in-up"
+        @click.stop
       >
         <!-- Premium scrollbar styling -->
         <div class="px-4 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[85vh]">
@@ -27,7 +28,7 @@
           <div class="flex justify-between items-start">
             <div class="flex items-center">
               <div
-                class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
+                class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
               >
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-30"></div>
                 <img
@@ -47,50 +48,51 @@
               </div>
             </div>
 
-            <div v-if="isOwner" class="relative">
-              <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1">
+              <div v-if="isOwner" class="relative">
                 <button
-                  @click="toggleMenu"
+                  @click.stop="toggleMenu"
                   class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
                 >
                   <MoreHorizontal class="h-4 w-4 text-slate-600 dark:text-slate-300" />
                 </button>
-                <button
-                  @click="$emit('update:modelValue', false)"
-                  class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label="Close"
-                >
-                  <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
-                </button>
-              </div>
 
-              <Transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="opacity-0 scale-95"
-                enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition duration-100 ease-in"
-                leave-from-class="opacity-100 scale-100"
-                leave-to-class="opacity-0 scale-95"
-              >
-                <div
-                  v-if="isMenuOpen"
-                  class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                <Transition
+                  enter-active-class="transition duration-200 ease-out"
+                  enter-from-class="opacity-0 scale-95"
+                  enter-to-class="opacity-100 scale-100"
+                  leave-active-class="transition duration-100 ease-in"
+                  leave-from-class="opacity-100 scale-100"
+                  leave-to-class="opacity-0 scale-95"
                 >
-                  <div class="py-1">
-                    <button
-                      class="flex w-full items-center px-4 py-2 text-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    >
-                      <Edit class="h-4 w-4 mr-2" /> Edit Problem
-                    </button>
-                    <button
-                      @click="$emit('delete')"
-                      class="flex w-full items-center px-4 py-2 text-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
-                    </button>
+                  <div
+                    v-if="isMenuOpen"
+                    class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                  >
+                    <div class="py-1">
+                      <button
+                        class="flex w-full items-center px-4 py-2 text-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <Edit class="h-4 w-4 mr-2" /> Edit Problem
+                      </button>
+                      <button
+                        @click="$emit('delete')"
+                        class="flex w-full items-center px-4 py-2 text-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Transition>
+                </Transition>
+              </div>
+              <!-- Fixed X button - Made it larger and more visible -->
+              <button
+                @click.stop="$emit('update:modelValue', false)"
+                class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                aria-label="Close"
+              >
+                <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
+              </button>
             </div>
           </div>
 
@@ -128,7 +130,7 @@
 
             <span
               v-if="problem.status === 'solved'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md"
+              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
             >
               <CheckCircle class="h-3 w-3 mr-1" />
               Solved
@@ -151,7 +153,7 @@
               <span class="text-sm text-slate-600 dark:text-slate-400 flex items-center group">
                 <MessageSquare class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors" />
                 <span class="group-hover:text-blue-500 transition-colors">
-                  {{ problem.mindforce_comments?.length || 0 }} Advices
+                  {{ localComments.length || 0 }} Advices
                 </span>
               </span>
 
@@ -165,7 +167,7 @@
             <button
               v-if="isOwner && problem.status !== 'solved'"
               @click="$emit('mark-as-solved')"
-              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <CheckCircle class="h-4 w-4 mr-1.5" />
               Mark as Solved
@@ -176,40 +178,46 @@
           <div class="mt-6">
             <h3 class="text-lg font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center">
               <MessageSquare class="h-5 w-5 mr-2 text-blue-500" />
-              Advice ({{ problem.mindforce_comments?.length || 0 }})
+              Advice ({{ localComments.length || 0 }})
             </h3>
 
             <!-- Comment List with enhanced styling -->
             <div class="space-y-4">
               <div
-                v-if="problem.comments?.length > 0"
+                v-if="localComments.length > 0"
                 class="space-y-3"
               >
                 <div
-                  v-for="comment in problem.comments"
+                  v-for="comment in sortedComments"
                   :key="comment.id"
                   :class="[
                     'px-3 py-3 sm:py-4 rounded-lg transition-all transform hover:scale-[1.01]',
                     comment.is_solved
-                      ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-md'
+                      ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-sm'
                       : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50',
+                    comment.is_temp ? 'opacity-70' : ''
                   ]"
                 >
                   <div class="flex justify-between">
                     <div class="flex items-center">
                       <div
-                        class="h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm"
+                        :class="[
+                          'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm',
+                          isCommentAuthorPro(comment) ? 'pro-ring' : ''
+                        ]"
                       >
                         <img
                           :src="comment?.author_details?.image || '/placeholder.svg'"
                           :alt="comment?.author_details?.name"
-                          class="h-full w-full object-cover"
+                          class="h-full w-full object-cover relative z-10"
                         />
+                        <span v-if="isCommentAuthorPro(comment)" class="pro-badge">PRO</span>
                       </div>
                       <div class="ml-3">
                         <div class="flex items-center">
                           <p class="font-medium text-slate-800 dark:text-slate-200">
                             {{ comment?.author_details?.name }}
+                            <span v-if="comment.is_temp" class="italic text-sm opacity-70">(Sending...)</span>
                           </p>
                           <span
                             v-if="comment.is_solved"
@@ -223,22 +231,25 @@
                         </p>
                       </div>
                     </div>
-
+                    <!-- Updated Mark Solution button with spinner and conditionally showing -->
                     <button
-                      v-if="isOwner && problem.status !== 'solved'"
+                      v-if="isOwner && problem.status !== 'solved' && !comment.is_solved"
                       @click="$emit('mark-solution', comment.id)"
+                      :disabled="processingCommentIds.includes(comment.id)"
                       :class="[
-                        'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
-                        comment.is_solved
-                          ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md'
+                        'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
+                        processingCommentIds.includes(comment.id)
+                          ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
                       ]"
                     >
-                      <CheckCircle class="h-3 w-3 mr-1" />
-                      {{ comment.is_solved ? "Solution" : "Mark as Solution" }}
+                      <span v-if="processingCommentIds.includes(comment.id)" class="loading-spinner mr-1.5"></span>
+                      <CheckCircle v-else class="h-3 w-3 mr-1" />
+                      Mark Solution
                     </button>
                   </div>
 
+                
                   <p class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed">
                     {{ comment.content }}
                   </p>
@@ -265,7 +276,7 @@
                   <line x1="8" y1="12" x2="16" y2="12"></line>
                 </svg>
                 <p class="text-slate-500 dark:text-slate-400">
-                  No advice have been posted yet. Be the first to help!
+                  No advice has been posted yet. Be the first to help!
                 </p>
               </div>
             </div>
@@ -288,32 +299,13 @@
                   :disabled="!newComment.trim() || isSubmittingComment"
                   :class="[
                     'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
-                    newComment.trim() && !isSubmittingComment
-                      ? 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
+                    !newComment.trim() || isSubmittingComment
+                      ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                      : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
                   ]"
                 >
                   <span v-if="isSubmittingComment" class="flex items-center">
-                    <svg
-                      class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                      ></circle>
-                      <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <span class="loading-spinner mr-2"></span>
                     Submitting...
                   </span>
                   <span v-else class="flex items-center">
@@ -375,6 +367,10 @@ const props = defineProps({
   isSubmittingComment: {
     type: Boolean,
     default: false
+  },
+  processingCommentIds: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -390,11 +386,56 @@ const emit = defineEmits([
 // State management
 const newComment = ref("");
 const isMenuOpen = ref(false);
+const localComments = ref([]);
+const commentSubmitStatus = ref(false);
 
 // Computed properties
 const isOwner = computed(() => {
   return props.currentUserId === props.problem?.user;
 });
+
+// Check if user is premium/pro
+const isUserPro = computed(() => {
+  return props.problem?.user_details?.is_premium || props.problem?.user_details?.subscription_active;
+});
+
+// Display comments in chronological order (oldest to newest)
+const sortedComments = computed(() => {
+  // Use localComments to ensure we display what's in our local state
+  if (!localComments.value || localComments.value.length === 0) return [];
+  
+  // First ensure we don't have duplicate comments (identify by ID)
+  const uniqueComments = [];
+  const seenIds = new Set();
+  
+  localComments.value.forEach(comment => {
+    // Skip temporary comments if we have their real counterparts
+    if (comment.is_temp && localComments.value.some(c => !c.is_temp && c.content === comment.content)) {
+      return;
+    }
+    
+    // For real comments, check by ID
+    if (!comment.is_temp) {
+      if (!seenIds.has(comment.id)) {
+        seenIds.add(comment.id);
+        uniqueComments.push(comment);
+      }
+    } else {
+      // Always include temporary comments
+      uniqueComments.push(comment);
+    }
+  });
+  
+  // Then sort them chronologically
+  return uniqueComments.sort((a, b) => {
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+});
+
+// Check if comment author is premium/pro
+const isCommentAuthorPro = (comment) => {
+  return comment?.author_details?.is_premium || comment?.author_details?.subscription_active;
+};
 
 // Methods
 const toggleMenu = () => {
@@ -403,14 +444,49 @@ const toggleMenu = () => {
 
 const submitComment = () => {
   if (newComment.value.trim()) {
-    // Update to emit both events for compatibility
+    // Create temporary local comment while API call is in progress
+    const tempComment = createTempComment(newComment.value);
+    localComments.value.push(tempComment);
+    commentSubmitStatus.value = true;
+    
+    // Emit events for backend submission
     emit('submit-comment', { content: newComment.value });
     emit('add-comment', newComment.value);
-    // Reset comment after submission
+    
+    // Clear input after submission
     if (!props.isSubmittingComment) {
       newComment.value = "";
     }
+    
+    // Auto-scroll to the bottom to see new comment
+    scrollToBottom();
   }
+};
+
+// Create a temporary comment while waiting for server response
+const createTempComment = (content) => {
+  return {
+    id: 'temp-' + Date.now(),
+    content: content,
+    created_at: new Date().toISOString(),
+    author_details: {
+      id: props.currentUserId,
+      name: 'You', // This will be replaced when real data comes back
+      image: '/placeholder.svg', // Temporary placeholder
+    },
+    is_solved: false,
+    is_temp: true // Flag to identify temporary comments
+  };
+};
+
+// Scroll to the bottom of comments container
+const scrollToBottom = () => {
+  setTimeout(() => {
+    const container = document.querySelector('.custom-scrollbar');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, 100);
 };
 
 const formatTimeAgo = (dateString) => {
@@ -455,6 +531,10 @@ const handleKeydown = (event) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('keydown', handleKeydown);
+  // Initialize local comments from props
+  if (props.problem?.mindforce_comments) {
+    localComments.value = [...props.problem.mindforce_comments];
+  }
 });
 
 // Watch for modal opening to reset state
@@ -462,8 +542,37 @@ watch(() => props.modelValue, (newVal) => {
   if (newVal) {
     newComment.value = "";
     isMenuOpen.value = false;
+    commentSubmitStatus.value = false;
+    if (props.problem?.mindforce_comments) {
+      localComments.value = [...props.problem.mindforce_comments];
+    }
   }
 });
+
+// Watch for changes in problem comments and update local state
+watch(() => props.problem?.mindforce_comments, (newComments) => {
+  if (!newComments) return;
+  
+  if (commentSubmitStatus.value) {
+    // We have local temporary comments waiting to be replaced
+    // Remove any temporary comments first
+    localComments.value = localComments.value.filter(comment => !comment.is_temp);
+    
+    // Then add all server comments that aren't already in our local state
+    newComments.forEach(serverComment => {
+      const alreadyExists = localComments.value.some(c => c.id === serverComment.id);
+      if (!alreadyExists) {
+        localComments.value.push(serverComment);
+      }
+    });
+    
+    // Reset submission status
+    commentSubmitStatus.value = false;
+  } else {
+    // Normal update from parent component, no temporary comments involved
+    localComments.value = [...newComments];
+  }
+}, { deep: true });
 </script>
 
 <style scoped>
@@ -560,5 +669,24 @@ watch(() => props.modelValue, (newVal) => {
 /* Perspective for 3D effects */
 .perspective-1000 {
   perspective: 1000px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

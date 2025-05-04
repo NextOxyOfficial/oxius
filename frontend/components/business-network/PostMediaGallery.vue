@@ -36,15 +36,14 @@
           </div>
         </div>
         
-        <!-- Play button overlay for videos -->
-        <div
-          v-if="post.post_media[activeIndex].type === 'video'"
-          class="absolute inset-0 flex items-center justify-center pointer-events-none"
+        <!-- Download button with premium styling - kept only on main image -->
+        <button 
+          @click.stop="downloadImage(post.post_media[activeIndex].image)"
+          class="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/30 backdrop-blur-md text-white opacity-0 group-hover:opacity-100 hover:bg-black/50 transition-all duration-300 shadow-lg border border-white/10"
+          title="Download image"
         >
-          <div class="w-14 h-14 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl group-hover:scale-110 transition-transform duration-300 group-hover:bg-black/40">
-            <div class="w-0 h-0 border-y-[10px] border-y-transparent border-l-[18px] border-l-white ml-1.5"></div>
-          </div>
-        </div>
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+        </button>
         
         <!-- Navigation arrows for quick navigation on main image -->
         <button
@@ -148,20 +147,8 @@
             >
               {{ mediaIndex + 1 }}
             </div>
-
-            <!-- Video indicator with premium styling -->
-            <div
-              v-if="media.type === 'video'"
-              class="absolute inset-0 flex items-center justify-center"
-            >
-              <div
-                class="h-6 w-6 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-md transition-transform duration-300 group-hover/thumb:scale-110"
-              >
-                <div
-                  class="h-0 w-0 border-y-[4px] border-y-transparent border-l-[7px] border-l-white ml-0.5"
-                ></div>
-              </div>
-            </div>
+            
+            <!-- Download button removed from thumbnails -->
           </div>
         </div>
       </div>
@@ -240,6 +227,19 @@ const navigateMedia = (direction) => {
   } else {
     activeIndex.value = (activeIndex.value - 1 + totalMedia) % totalMedia;
   }
+};
+
+// Function to download an image
+const downloadImage = (url) => {
+  if (!url) return;
+  
+  // Create a temporary link element
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = url.split('/').pop() || 'image.jpg';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 // Handle thumbnail scrolling with enhanced smooth behavior

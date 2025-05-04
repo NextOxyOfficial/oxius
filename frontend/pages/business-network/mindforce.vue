@@ -206,6 +206,7 @@
       :problem="selectedProblem"
       :current-user-id="user?.user?.id"
       :is-submitting-comment="isSubmittingComment"
+      :processing-comment-ids="processingCommentIds"
       @photo-view="(index) => openPhotoViewer(selectedProblem, index)"
       @mark-solution="markAsSolution"
       @add-comment="addComment"
@@ -273,6 +274,7 @@ const isLoading = ref(true);
 const isPhotoViewerOpen = ref(false);
 const currentPhotoIndex = ref(0);
 const viewerPhotos = ref([]);
+const processingCommentIds = ref([]);
 
 // Create form state with photos array
 const createForm = ref({
@@ -352,13 +354,13 @@ const openProblemDetail = async (problem) => {
     // Fetch comments for the selected problem
     const commentsRes = await get(`/bn/mindforce/${problem.id}/comments/`);
     if (commentsRes.data) {
-      // Update the comments in the selected problem
-      selectedProblem.value.comments = commentsRes.data;
+      // Update the comments in the selected problem - use mindforce_comments key
+      selectedProblem.value.mindforce_comments = commentsRes.data;
 
       // Also update comments in the problems array
       const index = problems.value.findIndex((p) => p.id === problem.id);
       if (index !== -1) {
-        problems.value[index].comments = commentsRes.data;
+        problems.value[index].mindforce_comments = commentsRes.data;
       }
     }
 
@@ -449,11 +451,39 @@ const deleteProblem = () => {
 };
 
 const markAsSolution = async (commentId) => {
-  const res = await patch(`/bn/mindforce/comments/${commentId}/`, {
-    is_solved: true,
-  });
-  if (res.data.is_solved) {
-    getProblemComments();
+  // Keep track of which comment is being processed
+  processingCommentIds.value.push(commentId);
+  
+  try {
+    // Make the API call to mark the comment as a solution
+    const res = await patch(`/bn/mindforce/comments/${commentId}/`, {
+      is_solved: true,
+    });
+    
+    if (res.data.is_solved) {
+      // Update the selected problem's comments
+      if (selectedProblem.value && selectedProblem.value.mindforce_comments) {
+        // Find and update the specific comment
+        const commentIndex = selectedProblem.value.mindforce_comments.findIndex(c => c.id === commentId);
+        if (commentIndex !== -1) {
+          selectedProblem.value.mindforce_comments[commentIndex].is_solved = true;
+        }
+      }
+      
+      // Also update in the main problems array
+      const problemIndex = problems.value.findIndex(p => p.id === selectedProblem.value.id);
+      if (problemIndex !== -1 && problems.value[problemIndex].mindforce_comments) {
+        const commentIndex = problems.value[problemIndex].mindforce_comments.findIndex(c => c.id === commentId);
+        if (commentIndex !== -1) {
+          problems.value[problemIndex].mindforce_comments[commentIndex].is_solved = true;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error marking solution:", error);
+    alert("Failed to mark as solution. Please try again.");
+  } finally {
+    processingCommentIds.value = processingCommentIds.value.filter(id => id !== commentId);
   }
 };
 
@@ -469,18 +499,25 @@ const addComment = async (commentText) => {
   isSubmittingComment.value = true;
 
   try {
+    // Initialize mindforce_comments array if needed
+    if (!selectedProblem.value.mindforce_comments) {
+      selectedProblem.value.mindforce_comments = [];
+    }
+    
     const res = await post(
       `/bn/mindforce/${selectedProblem.value.id}/comments/`,
       {
         comment: commentText,
       }
     );
+    
     if (res.data) {
-      await getProblemComments();
+      // The modal component will handle displaying the comment via its local state
+      // We don't need to update the comments array here
+      // This prevents duplicate comments
     }
   } catch (error) {
     console.error("Error adding comment:", error);
-    // Check if the error is due to the problem being solved
     if (error.response && error.response.data && error.response.data.detail === 'Cannot comment on solved problems') {
       alert('This problem has been marked as solved. Comments are disabled.');
     } else {
