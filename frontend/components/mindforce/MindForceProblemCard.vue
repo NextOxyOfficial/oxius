@@ -25,13 +25,18 @@
         <div
           class="h-9 w-9 sm:h-11 sm:w-11 rounded-full border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
         >
+          <!-- Pro user border with gradient effect -->
+          <div 
+            v-if="problem?.user_details?.is_pro" 
+            class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
+          ></div>
           <div
             class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-20"
           ></div>
           <img
             :src="problem?.user_details?.image || '/placeholder.svg'"
             :alt="problem?.user_details?.name"
-            class="h-full w-full object-cover relative z-10"
+            class="h-full w-full object-cover relative z-10 rounded-full"
           />
           <!-- Pro text badge -->
           <div
@@ -57,7 +62,7 @@
               v-if="problem?.user_details?.kyc"
               class="text-blue-500 flex items-center"
             >
-              <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
+              <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5 animate-pulse-subtle" />
             </div>
           </div>
           <div class="flex items-center text-sm text-slate-500">
@@ -278,5 +283,34 @@ const formatTimeAgo = (dateString) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Pro user border with gradient effect */
+.pro-border-ring {
+  border-radius: 9999px; /* Ensure full circle */
+  border: 2px solid transparent;
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Subtle pulse animation for verified badge */
+@keyframes pulse-subtle {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
 </style>
