@@ -135,8 +135,7 @@
             {{ problem.description }}
           </p>
 
-          
-          </div>
+         
 
           <!-- Problem Stats -->
           <div
