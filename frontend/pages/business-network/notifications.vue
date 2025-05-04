@@ -1,61 +1,19 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1">
-    <!-- Header with gradient background -->
-    <div
-      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 sm:p-6 mb-4 sm:mb-8 shadow-lg"
-    >
-      <div
-        class="flex flex-col justify-between items-start md:items-center z-10 relative"
-      >
-        <div class="text-white w-full">
-          <div class="flex flex-col justify-between items-start w-full">
-            <div>
-              <h1 class="text-xl sm:text-2xl font-bold">Notifications</h1>
-              <p class="text-blue-100 mt-1 text-md sm:text-base">
-                Stay up-to-date with all activities in your business network
-              </p>
-            </div>
-            <!-- Mark all as read button -->
-            <div class="mt-3">
-              <button
-                v-if="unreadCount > 0"
-                @click="markAllAsRead"
-                class="inline-flex items-center justify-center rounded-md text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-sm transform hover:scale-105"
-              >
-                <Check class="h-4 w-4 mr-2" />
-                Mark all as read
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <p class="text-2xl font-semibold text-gray-900 mb-4">
+      <Bell class="inline-block mr-2" />
+      Notifications
+    </p>
 
-      <!-- Decorative elements -->
-      <div
-        class="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-blue-400 opacity-20 blur-3xl"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 -mb-16 -ml-16 h-64 w-64 rounded-full bg-indigo-400 opacity-20 blur-3xl"
-      ></div>
-    </div>
-
-    <!-- Filter tabs -->
+    <!-- Filter tabs - simplified to only All Notifications -->
     <div class="border-b border-gray-200 mb-4">
       <div class="flex space-x-4">
         <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          @click="activeTab = tab.value"
-          class="px-3 py-2 text-sm font-medium transition-colors relative"
-          :class="[
-            activeTab === tab.value
-              ? 'text-blue-600 border-b-2 border-blue-500'
-              : 'text-gray-600 hover:text-gray-800 hover:border-b-2 hover:border-gray-300'
-          ]"
+          class="px-3 py-2 text-sm font-medium transition-colors relative text-blue-600 border-b-2 border-blue-500"
         >
-          {{ tab.label }}
+          All Notifications
           <span
-            v-if="tab.value === 'all' && unreadCount > 0"
+            v-if="unreadCount > 0"
             class="ml-1.5 inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
           >
             {{ unreadCount }}
@@ -224,17 +182,6 @@ const page = ref(1);
 const hasMoreNotifications = ref(false);
 const unreadCount = ref(0);
 
-// Tabs
-const activeTab = ref("all");
-const tabs = [
-  { label: "All", value: "all" },
-  { label: "Follow", value: "follow" },
-  { label: "Like", value: "like" },
-  { label: "Comment", value: "comment" },
-  { label: "Mention", value: "mention" },
-  { label: "Solution", value: "solution" },
-];
-
 // Notification types
 const notificationTypes = {
   FOLLOW: 'follow',
@@ -246,16 +193,8 @@ const notificationTypes = {
   SOLUTION: 'solution',
 };
 
-// Filter notifications based on active tab
-const filteredNotifications = computed(() => {
-  if (activeTab.value === 'all') {
-    return notifications.value;
-  }
-  
-  return notifications.value.filter(notification => 
-    notification.type.includes(activeTab.value)
-  );
-});
+// Simplified - no filtering by tab type
+const filteredNotifications = computed(() => notifications.value);
 
 // Load notifications on mount
 onMounted(async () => {
