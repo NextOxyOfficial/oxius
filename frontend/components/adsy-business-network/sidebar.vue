@@ -1,4 +1,4 @@
-<template >
+<template>
   <div class="rounded-t-sm mt-16">
     <!-- Mobile Overlay (shows when sidebar is open on mobile) -->
     <div
@@ -453,11 +453,6 @@
                   :alt="user.name"
                   class="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
                 />
-                <div
-                  class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center border border-white"
-                >
-                  {{ index + 1 }}
-                </div>
               </div>
               <div class="ml-3 min-w-0">
                 <h4 class="text-sm font-medium text-gray-800 truncate">
@@ -513,7 +508,7 @@ import {
   Plus,
   Globe,
 } from "lucide-vue-next";
-import { useNotifications } from '~/composables/useNotifications';
+import { useNotifications } from "~/composables/useNotifications";
 
 // State
 const isOpen = ref(false);
@@ -866,17 +861,17 @@ const handleMenuClick = (path) => {
     cart.burgerMenu = false;
     document.body.style.overflow = "";
   }
-  
+
   // Trigger appropriate loading state based on the path
   const eventBus = useEventBus();
-  if (path.includes('/profile/')) {
+  if (path.includes("/profile/")) {
     // For profile pages, emit the profile loading event
-    eventBus.emit('start-loading-profile');
-    console.log('Emitted start-loading-profile event');
-  } else if (path === '/business-network') {
-    // For main feed, emit the recent posts loading event 
-    eventBus.emit('load-recent-posts');
-    console.log('Emitted load-recent-posts event');
+    eventBus.emit("start-loading-profile");
+    console.log("Emitted start-loading-profile event");
+  } else if (path === "/business-network") {
+    // For main feed, emit the recent posts loading event
+    eventBus.emit("load-recent-posts");
+    console.log("Emitted load-recent-posts event");
   }
 };
 
@@ -972,7 +967,7 @@ onMounted(async () => {
   if (user.value?.user?.id) {
     await fetchUnreadCount();
   }
-  
+
   // Fetch dynamic data
   await Promise.all([
     fetchNewsItems(),

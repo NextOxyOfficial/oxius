@@ -23,14 +23,18 @@
         @click.stop
       >
         <!-- Premium scrollbar styling -->
-        <div class="px-4 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[85vh]">
+        <div
+          class="px-4 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[85vh]"
+        >
           <!-- Problem Header with enhanced design -->
           <div class="flex justify-between items-start">
             <div class="flex items-center">
               <div
                 class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
               >
-                <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-30"></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-30"
+                ></div>
                 <img
                   :src="problem.user_details?.image || '/placeholder.svg'"
                   :alt="problem.user_details?.name"
@@ -54,7 +58,9 @@
                   @click.stop="toggleMenu"
                   class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
                 >
-                  <MoreHorizontal class="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                  <MoreHorizontal
+                    class="h-4 w-4 text-slate-600 dark:text-slate-300"
+                  />
                 </button>
 
                 <Transition
@@ -108,16 +114,15 @@
               v-if="problem?.payment_option === 'paid'"
               class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
             >
-              {{
-                problem?.payment_amount > 0
-                  ? `I can pay `
-                  : "Paid Help"
-              }}
+              {{ problem?.payment_amount > 0 ? `I can pay ` : "Paid Help" }}
               <span
                 v-if="problem?.payment_amount > 0"
                 class="inline-flex items-center"
               >
-                <UIcon name="i-mdi-currency-bdt" class="text-emerald-600 dark:text-emerald-400" />
+                <UIcon
+                  name="i-mdi-currency-bdt"
+                  class="text-emerald-600 dark:text-emerald-400"
+                />
                 {{ problem?.payment_amount }}
               </span>
             </span>
@@ -141,7 +146,9 @@
           <h1 class="text-xl mt-4 font-bold text-slate-900 dark:text-white">
             {{ problem.title }}
           </h1>
-          <div class="mt-3 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none">
+          <div
+            class="mt-3 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none"
+          >
             {{ problem.description }}
           </div>
 
@@ -150,19 +157,25 @@
             class="mt-6 flex items-center justify-between border-t border-b border-slate-200 dark:border-slate-700 py-3"
           >
             <div class="flex items-center space-x-4">
-              <span class="text-sm text-slate-600 dark:text-slate-400 flex items-center group">
-                <MessageSquare class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors" />
+              <span
+                class="text-sm text-slate-600 dark:text-slate-400 flex items-center group"
+              >
+                <MessageSquare
+                  class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors"
+                />
                 <span class="group-hover:text-blue-500 transition-colors">
                   {{ localComments.length || 0 }} Advices
                 </span>
               </span>
 
-              <span class="text-sm text-slate-600 dark:text-slate-400 flex items-center">
+              <span
+                class="text-sm text-slate-600 dark:text-slate-400 flex items-center"
+              >
                 <Eye class="h-4 w-4 mr-1.5" />
                 {{ problem?.views || 0 }}
               </span>
             </div>
-            
+
             <!-- Mark as Solved button with premium styling -->
             <button
               v-if="isOwner && problem.status !== 'solved'"
@@ -176,17 +189,16 @@
 
           <!-- Comments Section - Enhanced styling -->
           <div class="mt-6">
-            <h3 class="text-lg font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center">
+            <h3
+              class="text-lg font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center"
+            >
               <MessageSquare class="h-5 w-5 mr-2 text-blue-500" />
               Advice ({{ localComments.length || 0 }})
             </h3>
 
             <!-- Comment List with enhanced styling -->
             <div class="space-y-4">
-              <div
-                v-if="localComments.length > 0"
-                class="space-y-3"
-              >
+              <div v-if="localComments.length > 0" class="space-y-3">
                 <div
                   v-for="comment in sortedComments"
                   :key="comment.id"
@@ -195,7 +207,7 @@
                     comment.is_solved
                       ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-sm'
                       : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50',
-                    comment.is_temp ? 'opacity-70' : ''
+                    comment.is_temp ? 'opacity-70' : '',
                   ]"
                 >
                   <div class="flex justify-between">
@@ -203,21 +215,33 @@
                       <div
                         :class="[
                           'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm',
-                          isCommentAuthorPro(comment) ? 'pro-ring' : ''
+                          isCommentAuthorPro(comment) ? 'pro-ring' : '',
                         ]"
                       >
                         <img
-                          :src="comment?.author_details?.image || '/placeholder.svg'"
+                          :src="
+                            comment?.author_details?.image || '/placeholder.svg'
+                          "
                           :alt="comment?.author_details?.name"
                           class="h-full w-full object-cover relative z-10"
                         />
-                        <span v-if="isCommentAuthorPro(comment)" class="pro-badge">PRO</span>
+                        <span
+                          v-if="isCommentAuthorPro(comment)"
+                          class="pro-badge"
+                          >PRO</span
+                        >
                       </div>
                       <div class="ml-3">
                         <div class="flex items-center">
-                          <p class="font-medium text-slate-800 dark:text-slate-200">
+                          <p
+                            class="font-medium text-slate-800 dark:text-slate-200"
+                          >
                             {{ comment?.author_details?.name }}
-                            <span v-if="comment.is_temp" class="italic text-sm opacity-70">(Sending...)</span>
+                            <span
+                              v-if="comment.is_temp"
+                              class="italic text-sm opacity-70"
+                              >(Posted!)</span
+                            >
                           </p>
                           <span
                             v-if="comment.is_solved"
@@ -233,7 +257,11 @@
                     </div>
                     <!-- Updated Mark Solution button with spinner and conditionally showing -->
                     <button
-                      v-if="isOwner && problem.status !== 'solved' && !comment.is_solved"
+                      v-if="
+                        isOwner &&
+                        problem.status !== 'solved' &&
+                        !comment.is_solved
+                      "
                       @click="$emit('mark-solution', comment.id)"
                       :disabled="processingCommentIds.includes(comment.id)"
                       :class="[
@@ -243,14 +271,18 @@
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
                       ]"
                     >
-                      <span v-if="processingCommentIds.includes(comment.id)" class="loading-spinner mr-1.5"></span>
+                      <span
+                        v-if="processingCommentIds.includes(comment.id)"
+                        class="loading-spinner mr-1.5"
+                      ></span>
                       <CheckCircle v-else class="h-3 w-3 mr-1" />
                       Mark Solution
                     </button>
                   </div>
 
-                
-                  <p class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <p
+                    class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed"
+                  >
                     {{ comment.content }}
                   </p>
                 </div>
@@ -282,8 +314,13 @@
             </div>
 
             <!-- Add Comment with premium styling -->
-            <div class="mt-8" v-if="currentUserId && problem.status !== 'solved'">
-              <h4 class="text-md font-medium mb-2 text-slate-700 dark:text-slate-300 flex items-center">
+            <div
+              class="mt-8"
+              v-if="currentUserId && problem.status !== 'solved'"
+            >
+              <h4
+                class="text-md font-medium mb-2 text-slate-700 dark:text-slate-300 flex items-center"
+              >
                 <Send class="h-4 w-4 mr-2 text-blue-500" />
                 Write an advice
               </h4>
@@ -301,7 +338,7 @@
                     'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
                     !newComment.trim() || isSubmittingComment
                       ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-                      : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
+                      : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
                   ]"
                 >
                   <span v-if="isSubmittingComment" class="flex items-center">
@@ -317,14 +354,27 @@
             </div>
 
             <!-- Message for solved problems with enhanced styling -->
-            <div v-else-if="problem.status === 'solved'" class="mt-8 p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-lg border border-emerald-100 dark:border-emerald-900/30 mb-10">
+            <div
+              v-else-if="problem.status === 'solved'"
+              class="mt-8 p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-lg border border-emerald-100 dark:border-emerald-900/30 mb-10"
+            >
               <div class="flex items-center">
-                <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mr-3">
-                  <CheckCircle class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <div
+                  class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mr-3"
+                >
+                  <CheckCircle
+                    class="h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                  />
                 </div>
                 <div>
-                  <h4 class="text-md font-medium text-emerald-800 dark:text-emerald-400">This problem has been marked as solved</h4>
-                  <p class="mt-1 text-sm text-emerald-700 dark:text-emerald-500">
+                  <h4
+                    class="text-md font-medium text-emerald-800 dark:text-emerald-400"
+                  >
+                    This problem has been marked as solved
+                  </h4>
+                  <p
+                    class="mt-1 text-sm text-emerald-700 dark:text-emerald-500"
+                  >
                     New advice cannot be added to solved problems.
                   </p>
                 </div>
@@ -348,40 +398,42 @@ import {
   Trash2,
   Eye,
   Edit,
-  Clock
+  Clock,
 } from "lucide-vue-next";
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true
+    required: true,
   },
   problem: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   currentUserId: {
     type: Number,
-    default: null
+    default: null,
   },
   isSubmittingComment: {
     type: Boolean,
-    default: false
+    default: false,
   },
   processingCommentIds: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 });
 
 const emit = defineEmits([
-  'update:modelValue',
-  'submit-comment',
-  'mark-as-solved',
-  'mark-solution',
-  'delete',
-  'add-comment'  // Add this event to support the parent component
+  "update:modelValue",
+  "submit-comment",
+  "mark-as-solved",
+  "mark-solution",
+  "delete",
+  "add-comment", // Add this event to support the parent component
 ]);
+
+const { user } = useAuth();
 
 // State management
 const newComment = ref("");
@@ -396,24 +448,32 @@ const isOwner = computed(() => {
 
 // Check if user is premium/pro
 const isUserPro = computed(() => {
-  return props.problem?.user_details?.is_premium || props.problem?.user_details?.subscription_active;
+  return (
+    props.problem?.user_details?.is_premium ||
+    props.problem?.user_details?.subscription_active
+  );
 });
 
 // Display comments in chronological order (oldest to newest)
 const sortedComments = computed(() => {
   // Use localComments to ensure we display what's in our local state
   if (!localComments.value || localComments.value.length === 0) return [];
-  
+
   // First ensure we don't have duplicate comments (identify by ID)
   const uniqueComments = [];
   const seenIds = new Set();
-  
-  localComments.value.forEach(comment => {
+
+  localComments.value.forEach((comment) => {
     // Skip temporary comments if we have their real counterparts
-    if (comment.is_temp && localComments.value.some(c => !c.is_temp && c.content === comment.content)) {
+    if (
+      comment.is_temp &&
+      localComments.value.some(
+        (c) => !c.is_temp && c.content === comment.content
+      )
+    ) {
       return;
     }
-    
+
     // For real comments, check by ID
     if (!comment.is_temp) {
       if (!seenIds.has(comment.id)) {
@@ -425,7 +485,7 @@ const sortedComments = computed(() => {
       uniqueComments.push(comment);
     }
   });
-  
+
   // Then sort them chronologically
   return uniqueComments.sort((a, b) => {
     return new Date(a.created_at) - new Date(b.created_at);
@@ -434,7 +494,10 @@ const sortedComments = computed(() => {
 
 // Check if comment author is premium/pro
 const isCommentAuthorPro = (comment) => {
-  return comment?.author_details?.is_premium || comment?.author_details?.subscription_active;
+  return (
+    comment?.author_details?.is_premium ||
+    comment?.author_details?.subscription_active
+  );
 };
 
 // Methods
@@ -448,16 +511,16 @@ const submitComment = () => {
     const tempComment = createTempComment(newComment.value);
     localComments.value.push(tempComment);
     commentSubmitStatus.value = true;
-    
+
     // Emit events for backend submission
-    emit('submit-comment', { content: newComment.value });
-    emit('add-comment', newComment.value);
-    
+    emit("submit-comment", { content: newComment.value });
+    emit("add-comment", newComment.value);
+
     // Clear input after submission
     if (!props.isSubmittingComment) {
       newComment.value = "";
     }
-    
+
     // Auto-scroll to the bottom to see new comment
     scrollToBottom();
   }
@@ -466,23 +529,23 @@ const submitComment = () => {
 // Create a temporary comment while waiting for server response
 const createTempComment = (content) => {
   return {
-    id: 'temp-' + Date.now(),
+    id: "temp-" + Date.now(),
     content: content,
     created_at: new Date().toISOString(),
     author_details: {
       id: props.currentUserId,
-      name: 'You', // This will be replaced when real data comes back
-      image: '/placeholder.svg', // Temporary placeholder
+      name: user.value?.user?.name || "You", // This will be replaced when real data comes back
+      image: user.value?.user?.image || "/placeholder.svg", // Temporary placeholder
     },
     is_solved: false,
-    is_temp: true // Flag to identify temporary comments
+    is_temp: true, // Flag to identify temporary comments
   };
 };
 
 // Scroll to the bottom of comments container
 const scrollToBottom = () => {
   setTimeout(() => {
-    const container = document.querySelector('.custom-scrollbar');
+    const container = document.querySelector(".custom-scrollbar");
     if (container) {
       container.scrollTop = container.scrollHeight;
     }
@@ -491,11 +554,11 @@ const scrollToBottom = () => {
 
 const formatTimeAgo = (dateString) => {
   if (!dateString) return "";
-  
+
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
-  
+
   if (diffInSeconds < 60) {
     return "just now";
   } else if (diffInSeconds < 3600) {
@@ -522,15 +585,15 @@ const handleClickOutside = (event) => {
 
 // Handle escape key to close modal
 const handleKeydown = (event) => {
-  if (event.key === 'Escape' && props.modelValue) {
-    emit('update:modelValue', false);
+  if (event.key === "Escape" && props.modelValue) {
+    emit("update:modelValue", false);
   }
 };
 
 // Add event listeners
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener("click", handleClickOutside);
+  document.addEventListener("keydown", handleKeydown);
   // Initialize local comments from props
   if (props.problem?.mindforce_comments) {
     localComments.value = [...props.problem.mindforce_comments];
@@ -538,41 +601,52 @@ onMounted(() => {
 });
 
 // Watch for modal opening to reset state
-watch(() => props.modelValue, (newVal) => {
-  if (newVal) {
-    newComment.value = "";
-    isMenuOpen.value = false;
-    commentSubmitStatus.value = false;
-    if (props.problem?.mindforce_comments) {
-      localComments.value = [...props.problem.mindforce_comments];
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (newVal) {
+      newComment.value = "";
+      isMenuOpen.value = false;
+      commentSubmitStatus.value = false;
+      if (props.problem?.mindforce_comments) {
+        localComments.value = [...props.problem.mindforce_comments];
+      }
     }
   }
-});
+);
 
 // Watch for changes in problem comments and update local state
-watch(() => props.problem?.mindforce_comments, (newComments) => {
-  if (!newComments) return;
-  
-  if (commentSubmitStatus.value) {
-    // We have local temporary comments waiting to be replaced
-    // Remove any temporary comments first
-    localComments.value = localComments.value.filter(comment => !comment.is_temp);
-    
-    // Then add all server comments that aren't already in our local state
-    newComments.forEach(serverComment => {
-      const alreadyExists = localComments.value.some(c => c.id === serverComment.id);
-      if (!alreadyExists) {
-        localComments.value.push(serverComment);
-      }
-    });
-    
-    // Reset submission status
-    commentSubmitStatus.value = false;
-  } else {
-    // Normal update from parent component, no temporary comments involved
-    localComments.value = [...newComments];
-  }
-}, { deep: true });
+watch(
+  () => props.problem?.mindforce_comments,
+  (newComments) => {
+    if (!newComments) return;
+
+    if (commentSubmitStatus.value) {
+      // We have local temporary comments waiting to be replaced
+      // Remove any temporary comments first
+      localComments.value = localComments.value.filter(
+        (comment) => !comment.is_temp
+      );
+
+      // Then add all server comments that aren't already in our local state
+      newComments.forEach((serverComment) => {
+        const alreadyExists = localComments.value.some(
+          (c) => c.id === serverComment.id
+        );
+        if (!alreadyExists) {
+          localComments.value.push(serverComment);
+        }
+      });
+
+      // Reset submission status
+      commentSubmitStatus.value = false;
+    } else {
+      // Normal update from parent component, no temporary comments involved
+      localComments.value = [...newComments];
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>
@@ -647,7 +721,7 @@ watch(() => props.problem?.mindforce_comments, (newComments) => {
 }
 
 .glow-effect:hover::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -4px;
   background: linear-gradient(45deg, #3b82f6, #8b5cf6, #3b82f6);

@@ -26,17 +26,27 @@
           <!-- Close button with enhanced styling -->
           <button
             @click="$emit('update:modelValue', false)"
-            class="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
+            class="absolute top-4 z-30 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
             aria-label="Close"
           >
-            <X class="h-5 w-5 text-slate-500 dark:text-slate-400 group-hover:rotate-90 transition-transform" />
+            <X
+              class="h-5 w-5 text-slate-500 dark:text-slate-400 group-hover:rotate-90 transition-transform"
+            />
           </button>
 
           <!-- Modal header with subtle decorative elements -->
-          <div class="relative px-6 py-6 border-b border-slate-100 dark:border-slate-700">
-            <div class="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
-            <h2 class="text-xl font-bold mb-1 text-slate-800 dark:text-white relative z-10 flex items-center">
-              <div class="h-6 w-6 rounded-full bg-blue-500 mr-2.5 flex items-center justify-center">
+          <div
+            class="relative px-6 py-6 border-b border-slate-100 dark:border-slate-700"
+          >
+            <div
+              class="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"
+            ></div>
+            <h2
+              class="text-xl font-bold mb-1 text-slate-800 dark:text-white relative z-10 flex items-center"
+            >
+              <div
+                class="h-6 w-6 rounded-full bg-blue-500 mr-2.5 flex items-center justify-center"
+              >
                 <Plus class="h-4 w-4 text-white" />
               </div>
               Post a New Problem
@@ -49,7 +59,10 @@
           <!-- Form content -->
           <div class="flex flex-col px-6 py-5 space-y-5">
             <div class="space-y-2">
-              <label for="title" class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center">
+              <label
+                for="title"
+                class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center"
+              >
                 <Hash class="h-4 w-4 mr-1.5 text-blue-500" />
                 Problem Title
               </label>
@@ -87,9 +100,10 @@
                   <Image class="h-4 w-4 mr-1.5 text-blue-500" />
                   Photos (Optional)
                 </span>
-                <span 
+                <span
                   class="text-sm text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700"
-                >{{ formData.images?.length }}/4 photos</span>
+                  >{{ formData.images?.length }}/4 photos</span
+                >
               </label>
 
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -104,7 +118,9 @@
                     alt="Problem photo"
                     class="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
-                  <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div
+                    class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                  ></div>
                   <button
                     @click="removePhoto(index)"
                     class="absolute bottom-2 right-2 bg-red-500 rounded-full p-1.5 hover:bg-red-600 transition-colors transform opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100"
@@ -125,17 +141,27 @@
                     class="hidden"
                     @change="handlePhotoUpload"
                   />
-                  <div class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                    <ImagePlus class="h-5 w-5 text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors" />
+                  <div
+                    class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors"
+                  >
+                    <ImagePlus
+                      class="h-5 w-5 text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors"
+                    />
                   </div>
-                  <span class="mt-2 text-sm text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors">Add Photo</span>
+                  <span
+                    class="mt-2 text-sm text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors"
+                    >Add Photo</span
+                  >
                 </label>
               </div>
             </div>
 
             <!-- Category selector with premium styling -->
             <div class="space-y-2">
-              <label for="category" class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center">
+              <label
+                for="category"
+                class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center"
+              >
                 <TagIcon class="h-4 w-4 mr-1.5 text-blue-500" />
                 Category
               </label>
@@ -154,13 +180,17 @@
                     {{ cat.name }}
                   </option>
                 </select>
-                <ChevronDown class="absolute right-3 top-3 h-4 w-4 text-slate-500 dark:text-slate-400 pointer-events-none" />
+                <ChevronDown
+                  class="absolute right-3 top-3 h-4 w-4 text-slate-500 dark:text-slate-400 pointer-events-none"
+                />
               </div>
             </div>
 
             <!-- Help Type selector with premium styling -->
             <div class="space-y-2">
-              <label class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center">
+              <label
+                class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center"
+              >
                 <HelpCircle class="h-4 w-4 mr-1.5 text-blue-500" />
                 Help Type
               </label>
@@ -181,7 +211,9 @@
                     v-model="formData.payment_option"
                     class="h-4 w-4 border-blue-500 text-blue-600 focus:ring-blue-500"
                   />
-                  <label for="free" class="text-md cursor-pointer text-slate-700 dark:text-slate-300"
+                  <label
+                    for="free"
+                    class="text-md cursor-pointer text-slate-700 dark:text-slate-300"
                     >I need help for free</label
                   >
                 </div>
@@ -201,7 +233,9 @@
                     v-model="formData.payment_option"
                     class="h-4 w-4 border-emerald-500 text-emerald-600 focus:ring-emerald-500"
                   />
-                  <label for="paid" class="text-md cursor-pointer text-slate-700 dark:text-slate-300"
+                  <label
+                    for="paid"
+                    class="text-md cursor-pointer text-slate-700 dark:text-slate-300"
                     >I can pay for help</label
                   >
                 </div>
@@ -209,10 +243,7 @@
             </div>
 
             <!-- Payment amount with premium styling -->
-            <div
-              v-if="formData.payment_option === 'paid'"
-              class="space-y-2"
-            >
+            <div v-if="formData.payment_option === 'paid'" class="space-y-2">
               <label
                 for="paymentAmount"
                 class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center"
@@ -221,7 +252,10 @@
                 Payment Amount
               </label>
               <div class="relative">
-                <span class="absolute left-3 top-2.5 text-emerald-600 dark:text-emerald-400">৳</span>
+                <span
+                  class="absolute left-3 top-2.5 text-emerald-600 dark:text-emerald-400"
+                  >৳</span
+                >
                 <input
                   id="paymentAmount"
                   v-model="formData.payment_amount"
@@ -234,7 +268,9 @@
           </div>
 
           <!-- Action buttons with premium styling -->
-          <div class="flex justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+          <div
+            class="flex justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+          >
             <button
               @click="$emit('update:modelValue', false)"
               class="inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 h-10 px-4 py-2 shadow-sm"
@@ -287,21 +323,34 @@
 </template>
 
 <script setup>
-import { X, ImagePlus, Hash, FileText, Image, TagIcon, ChevronDown, HelpCircle, Send, DollarSign, Trash, Plus } from "lucide-vue-next";
+import {
+  X,
+  ImagePlus,
+  Hash,
+  FileText,
+  Image,
+  TagIcon,
+  ChevronDown,
+  HelpCircle,
+  Send,
+  DollarSign,
+  Trash,
+  Plus,
+} from "lucide-vue-next";
 import { ref, computed } from "vue";
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true
+    required: true,
   },
   categories: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   isSubmitting: {
     type: Boolean,
-    default: false
+    default: false,
   },
   initialFormData: {
     type: Object,
@@ -311,15 +360,15 @@ const props = defineProps({
       category: "",
       payment_option: "free",
       payment_amount: "",
-      images: []
-    })
-  }
+      images: [],
+    }),
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'submit']);
+const emit = defineEmits(["update:modelValue", "submit"]);
 
 // Create a local reactive form data object that is initialized from props
-const formData = ref({...props.initialFormData});
+const formData = ref({ ...props.initialFormData });
 
 // Computed property to check if form is valid
 const isFormValid = computed(() => {
@@ -334,7 +383,7 @@ const isFormValid = computed(() => {
 const handlePhotoUpload = (event) => {
   const files = Array.from(event.target.files);
   if (!files.length) return;
-  
+
   const reader = new FileReader();
   reader.onload = () => {
     formData.value.images.push(reader.result);
@@ -351,7 +400,7 @@ const removePhoto = (index) => {
 // Submit form
 const handleSubmit = () => {
   if (isFormValid.value && !props.isSubmitting) {
-    emit('submit', formData.value);
+    emit("submit", formData.value);
   }
 };
 </script>
@@ -359,16 +408,22 @@ const handleSubmit = () => {
 <style scoped>
 /* Grid background pattern */
 .bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+  background-image: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.05) 1px,
+      transparent 1px
+    ),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 @media (prefers-color-scheme: dark) {
   .bg-grid-pattern {
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    background-image: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.05) 1px,
+        transparent 1px
+      ),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
 }
