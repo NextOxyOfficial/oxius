@@ -487,7 +487,7 @@
           </div>
         </div>
 
-        <div class="py-4">
+        <div class="py-4 px-1">
           <transition name="tab-transition" mode="out-in">
             <div v-if="activeTab === 'posts'" class="tab-content">
               <!-- Lazyloader for posts -->
@@ -591,7 +591,7 @@
               </div>
             </div>
 
-            <div v-else-if="activeTab === 'saved'" class="px-4 py-6 tab-content">
+            <div v-else-if="activeTab === 'saved'" class=" tab-content">
               <!-- Lazyloader for saved posts -->
               <div v-if="isLoadingSaved" class="p-4">
                 <div class="flex justify-center items-center mb-6">

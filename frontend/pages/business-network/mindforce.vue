@@ -214,7 +214,7 @@
                       <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
                       {{ problem?.payment_amount }}
                     </span>
-                    &nbsp;for help!
+                    
                   </span>
                   <span
                     v-else
@@ -502,7 +502,6 @@
                       <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
                       {{ problem?.payment_amount }}
                     </span>
-                    &nbsp;for help!
                   </span>
                   <span
                     v-else
@@ -960,7 +959,6 @@
                   <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
                   {{ selectedProblem?.payment_amount }}
                 </span>
-                &nbsp;for help!
               </span>
               <span
                 v-else
