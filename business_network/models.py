@@ -324,6 +324,7 @@ class AbnAdsPanelMedia(models.Model):
 
 class AbnAdsPanel(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    user= models.ForeignKey(User, on_delete=models.CASCADE, related_name='abn_ads_panel', null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     category = models.ForeignKey(AbnAdsPanelCategory, on_delete=models.CASCADE, related_name='abn_ads_panel')
@@ -337,9 +338,9 @@ class AbnAdsPanel(models.Model):
     min_age = models.PositiveIntegerField(null=True, blank=True)
     max_age = models.PositiveIntegerField(null=True, blank=True)
     COUNTRY_CHOICES = (
-        ('BD', 'Bangladesh'),
+        ('bangladesh', 'Bangladesh'),
     )
-    country = models.CharField(max_length=2, choices=COUNTRY_CHOICES, default='BD')
+    country = models.CharField(max_length=15, choices=COUNTRY_CHOICES, default='bangladesh')
     AD_TyPES = (
         ('click_to_website', 'Click To Website'),
         ('call_on_whatsapp', 'Call On WhatsApp'),
@@ -347,7 +348,11 @@ class AbnAdsPanel(models.Model):
         ('email_us', 'Email Us'),
     )
     ad_type = models.CharField(max_length=20, choices=AD_TyPES, default='image')
-    ad_budgert = models.DecimalField(max_digits=10, decimal_places=2)
+    budget = models.DecimalField(max_digits=10, decimal_places=2)
+    STATUS_CHOCES = (('active', 'Active'), ('pending', 'Pending'),('stoped','Stoped'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOCES, default='active')
+    views = models.PositiveIntegerField(default=0)
+    estimated_views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -364,6 +369,8 @@ class AbnAdsPanel(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+        if self.estimated_views == self.views:
+            self.status = 'stoped'
         super().save(*args, **kwargs)
     
     def __str__(self):

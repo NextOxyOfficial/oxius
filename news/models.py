@@ -147,7 +147,7 @@ class TipsAndSuggestion(models.Model):
 class BreakingNews(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     title = models.CharField(max_length=255)
-    news = models.ForeignKey(NewsPost, on_delete=models.CASCADE, related_name='breaking_news')
+    news = models.ForeignKey(NewsPost, on_delete=models.CASCADE, related_name='breaking_news', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

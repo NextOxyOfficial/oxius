@@ -531,7 +531,15 @@ class BusinessNetworkMediaCommentRetrieveUpdateDestroyView(generics.RetrieveUpda
         else:
             return Response({"detail": "You do not have permission to delete this comment."}, 
                            status=status.HTTP_403_FORBIDDEN)
-        
+            
+
+
+class AbnAdsPanelCategoryListCreateView(generics.ListCreateAPIView):
+    queryset = AbnAdsPanelCategory.objects.all()
+    serializer_class = AbnAdsPanelCategorySerializer
+    permission_classes = [IsAuthenticated]
+    
+      
 
 class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
     queryset = AbnAdsPanel.objects.all()
@@ -564,8 +572,42 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
             
         return queryset
     
-    def perform_create(self, serializer):
-        serializer.save()
+    def create(self, request, *args, **kwargs):
+        print(request.data)
+        images_data = request.data.pop('images', None)
+        
+        serializer = self.get_serializer(data={'title':request.data['title'], 'description':request.data['description'], 'category':request.data['category'], 'gender':request.data['gender'], 'country':request.data['country'], 'ad_type':request.data['ad_type'], 'user':request.user.id,'budget':request.data['budget'], 'estimated_views':request.data['estimated_views'], 'min_age':request.data['min_age'], 'max_age':request.data['max_age'] })
+                
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            print(serializer.errors)  # Print validation errors
+            raise e
+        abn_ads = serializer.save()
+                
+        # Print or log the serializer errors
+                
+        if images_data:
+            # Handle both list of images and single image
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+                            
+            for image_data in images_data:
+                try:
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # Process base64 image
+                        image_file = base64ToFile(image_data)
+                        abn_ads_media = AbnAdsPanelMedia.objects.create(image=image_file)
+                        abn_ads.media.add(abn_ads_media)
+                except Exception as e:
+                    # Log error but continue processing
+                    print(f"Error processing image: {str(e)}")
+                            
+        
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        
 
 
 class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

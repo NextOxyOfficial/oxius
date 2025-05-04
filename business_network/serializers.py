@@ -107,16 +107,17 @@ class BusinessNetworkFollowerSerializer(serializers.ModelSerializer):
         model = BusinessNetworkFollowerModel
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+        
+class AbnAdsPanelCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AbnAdsPanelCategory
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
 
 class AbnAdsPanelSerializer(serializers.ModelSerializer):
     class Meta:
         model = AbnAdsPanel
-        fields = [
-            'id', 'title', 'description', 'category', 
-            'media', 'gender', 'min_age', 'max_age', 
-            'country', 'ad_type', 'ad_budgert', 
-            'created_at', 'updated_at'
-        ]
+        fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
         
 class BusinessNetworkMindforceCategorySerializer(serializers.ModelSerializer):

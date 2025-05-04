@@ -51,7 +51,7 @@
                   ৳{{ user?.user?.balance }}
                 </span>
                 <span
-                  v-if="isLowBalance"
+                  v-if="user?.user?.balance < 200"
                   class="ml-1 text-sm text-red-500 font-medium"
                   >Low!</span
                 >
@@ -64,7 +64,7 @@
       <div class="mx-auto mt-3">
         <!-- Low Balance Alert -->
         <div
-          v-if="isLowBalance"
+          v-if="user?.user?.balance < 200"
           class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center justify-between"
         >
           <div class="flex items-center">
@@ -83,7 +83,7 @@
               />
             </svg>
             <span class="text-sm">
-              Your account balance is low (৳{{ accountBalance }}). Please
+              Your account balance is low (৳{{ user?.user?.balance }}). Please
               recharge to continue posting ads.
             </span>
           </div>
@@ -357,7 +357,7 @@
                           <span
                             class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
                           >
-                            Age: {{ ad.ageRange[0] }}-{{ ad.ageRange[1] }}
+                            Age: {{ ad.min_age }}-{{ ad.max_age }}
                           </span>
                         </div>
                       </div>
@@ -454,11 +454,11 @@
                     <div class="flex items-center">
                       <span class="text-sm text-gray-600 mr-2">Contact:</span>
                       <div
-                        v-if="ad.adType && ad.adType !== 'none'"
+                        v-if="ad.ad_type && ad.ad_type !== 'none'"
                         class="flex items-center"
                       >
                         <!-- Website -->
-                        <template v-if="ad.adType === 'website'">
+                        <template v-if="ad.ad_type === 'website'">
                           <a
                             :href="ad.contactInfo"
                             target="_blank"
@@ -490,7 +490,7 @@
                         </template>
 
                         <!-- WhatsApp -->
-                        <template v-else-if="ad.adType === 'whatsapp'">
+                        <template v-else-if="ad.ad_type === 'whatsapp'">
                           <a
                             :href="`https://wa.me/${ad.contactInfo.replace(
                               /[^0-9]/g,
@@ -528,7 +528,7 @@
                         </template>
 
                         <!-- Phone -->
-                        <template v-else-if="ad.adType === 'phone'">
+                        <template v-else-if="ad.ad_type === 'phone'">
                           <a
                             :href="`tel:${ad.contactInfo}`"
                             class="text-sm text-gray-600 flex items-center hover:underline"
@@ -558,7 +558,7 @@
                         </template>
 
                         <!-- Email -->
-                        <template v-else-if="ad.adType === 'email'">
+                        <template v-else-if="ad.ad_type === 'email'">
                           <a
                             :href="`mailto:${ad.contactInfo}`"
                             class="text-sm text-purple-600 flex items-center hover:underline"
@@ -1101,15 +1101,13 @@
                       v-model="adForm.category"
                       class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     >
-                      <option value="none">None</option>
-                      <option value="electronics">Electronics</option>
-                      <option value="vehicles">Vehicles</option>
-                      <option value="property">Property</option>
-                      <option value="jobs">Jobs</option>
-                      <option value="services">Services</option>
-                      <option value="furniture">Furniture</option>
-                      <option value="fashion">Fashion</option>
-                      <option value="education">Education</option>
+                      <option value="">Select Category</option>
+                      <option
+                        v-for="category in abnAdsCategories"
+                        :value="category.id"
+                      >
+                        {{ category.name }}
+                      </option>
                     </select>
                   </div>
 
@@ -1124,7 +1122,7 @@
                           type="radio"
                           v-model="adForm.gender"
                           value="male"
-                          class="form-radio text-emerald-500"
+                          class="form-radio text-emerald-500 focus:outline-none"
                         />
                         <span class="ml-2 text-sm text-gray-700">Male</span>
                       </label>
@@ -1133,7 +1131,7 @@
                           type="radio"
                           v-model="adForm.gender"
                           value="female"
-                          class="form-radio text-emerald-500"
+                          class="form-radio text-emerald-500 focus:outline-none"
                         />
                         <span class="ml-2 text-sm text-gray-700">Female</span>
                       </label>
@@ -1141,12 +1139,10 @@
                         <input
                           type="radio"
                           v-model="adForm.gender"
-                          value=""
-                          class="form-radio text-emerald-500"
+                          value="other"
+                          class="form-radio text-emerald-500 focus:outline-none"
                         />
-                        <span class="ml-2 text-sm text-gray-700"
-                          >Not specified</span
-                        >
+                        <span class="ml-2 text-sm text-gray-700">Other</span>
                       </label>
                     </div>
                   </div>
@@ -1159,10 +1155,10 @@
                     <div class="mt-2 px-2">
                       <div class="flex justify-between mb-1">
                         <span class="text-sm text-gray-600"
-                          >{{ adForm.ageRange[0] }} years</span
+                          >{{ adForm.min_age }} years</span
                         >
                         <span class="text-sm text-gray-600"
-                          >{{ adForm.ageRange[1] }} years</span
+                          >{{ adForm.max_age }} years</span
                         >
                       </div>
                       <div class="relative h-1 bg-gray-200 rounded-md">
@@ -1170,11 +1166,9 @@
                         <div
                           class="absolute h-1 bg-emerald-500 rounded-md"
                           :style="{
-                            left: ((adForm.ageRange[0] - 13) / 87) * 100 + '%',
+                            left: ((adForm.min_age - 13) / 87) * 100 + '%',
                             right:
-                              100 -
-                              ((adForm.ageRange[1] - 13) / 87) * 100 +
-                              '%',
+                              100 - ((adForm.max_age - 13) / 87) * 100 + '%',
                           }"
                         ></div>
 
@@ -1183,7 +1177,7 @@
                           type="button"
                           class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           :style="{
-                            left: ((adForm.ageRange[0] - 13) / 87) * 100 + '%',
+                            left: ((adForm.min_age - 13) / 87) * 100 + '%',
                           }"
                           @mousedown="startDrag('min')"
                           @touchstart="startDrag('min')"
@@ -1194,7 +1188,7 @@
                           type="button"
                           class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           :style="{
-                            left: ((adForm.ageRange[1] - 13) / 87) * 100 + '%',
+                            left: ((adForm.max_age - 13) / 87) * 100 + '%',
                           }"
                           @mousedown="startDrag('max')"
                           @touchstart="startDrag('max')"
@@ -1245,31 +1239,31 @@
                     </label>
                     <select
                       id="adType"
-                      v-model="adForm.adType"
+                      v-model="adForm.ad_type"
                       class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     >
-                      <option value="none">None</option>
-                      <option value="website">Click to Website</option>
-                      <option value="whatsapp">Call on WhatsApp</option>
-                      <option value="phone">Call on Phone</option>
-                      <option value="email">Email Us</option>
+                      <option value="">Select Ad Type</option>
+                      <option value="click_to_website">Click to Website</option>
+                      <option value="call_on_whatsapp">Call on WhatsApp</option>
+                      <option value="call_on_phone">Call on Phone</option>
+                      <option value="email_us">Email Us</option>
                     </select>
                   </div>
 
                   <!-- Contact Info based on Ad Type -->
-                  <div v-if="adForm.adType && adForm.adType !== 'none'">
+                  <div v-if="adForm.ad_type && adForm.ad_type !== 'none'">
                     <label
-                      :for="`${adForm.adType}Contact`"
+                      :for="`${adForm.ad_type}Contact`"
                       class="block text-sm font-medium text-gray-700"
                     >
-                      {{ adTypeLabels[adForm.adType] }}
+                      {{ adTypeLabels[adForm.ad_type] }}
                     </label>
                     <input
-                      :type="adTypeInputTypes[adForm.adType]"
-                      :id="`${adForm.adType}Contact`"
+                      :type="adTypeInputTypes[adForm.ad_type]"
+                      :id="`${adForm.ad_type}Contact`"
                       v-model="adForm.contactInfo"
                       class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                      :placeholder="adTypePlaceholders[adForm.adType]"
+                      :placeholder="adTypePlaceholders[adForm.ad_type]"
                       required
                     />
                   </div>
@@ -1405,7 +1399,9 @@
                       <div class="mt-1 flex justify-between">
                         <p class="text-sm text-gray-500">
                           Your account balance:
-                          <span class="font-medium">৳{{ accountBalance }}</span>
+                          <span class="font-medium"
+                            >৳{{ user?.user?.balance }}</span
+                          >
                         </p>
                         <p class="text-sm text-amber-600">
                           Minimum budget: ৳200
@@ -1441,7 +1437,7 @@
                           >
                         </div>
                         <p v-else class="text-sm text-blue-700 font-medium">
-                          Estimated Views: {{ calculatedViews }}
+                          Estimated Views: {{ adForm.estimated_views }}
                         </p>
                       </div>
                     </div>
@@ -1542,7 +1538,11 @@
                           v-if="adForm.category && adForm.category !== 'none'"
                           class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm"
                         >
-                          {{ adForm.category }}
+                          {{
+                            abnAdsCategories.find(
+                              (cat) => cat.id === adForm.category
+                            ).name
+                          }}
                         </span>
                         <span class="text-gray-500 text-sm">Bangladesh</span>
                         <div class="flex flex-wrap gap-2">
@@ -1555,9 +1555,7 @@
                           <span
                             class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
                           >
-                            Age: {{ adForm.ageRange[0] }}-{{
-                              adForm.ageRange[1]
-                            }}
+                            Age: {{ adForm.min_age }}-{{ adForm.max_age }}
                           </span>
                         </div>
                       </div>
@@ -1572,7 +1570,7 @@
                       <!-- Ad Type Preview -->
                       <div class="mt-2">
                         <div
-                          v-if="adForm.adType === 'website'"
+                          v-if="adForm.ad_type === 'website'"
                           class="flex items-center text-sm text-blue-600"
                         >
                           <svg
@@ -1602,7 +1600,7 @@
                           </a>
                         </div>
                         <div
-                          v-else-if="adForm.adType === 'whatsapp'"
+                          v-else-if="adForm.ad_type === 'whatsapp'"
                           class="flex items-center text-sm text-green-600"
                         >
                           <svg
@@ -1635,7 +1633,7 @@
                           </a>
                         </div>
                         <div
-                          v-else-if="adForm.adType === 'phone'"
+                          v-else-if="adForm.ad_type === 'phone'"
                           class="flex items-center text-sm text-gray-600"
                         >
                           <svg
@@ -1664,7 +1662,7 @@
                           </a>
                         </div>
                         <div
-                          v-else-if="adForm.adType === 'email'"
+                          v-else-if="adForm.ad_type === 'email'"
                           class="flex items-center text-sm text-purple-600"
                         >
                           <svg
@@ -1703,7 +1701,7 @@
                           >Budget: ৳{{ adForm.budget || "0" }}</span
                         >
                         <span class="text-sm text-emerald-500">
-                          Est. Views: {{ calculatedViews }}
+                          Est. Views: {{ adForm.estimated_views }}
                         </span>
                       </div>
                     </div>
@@ -1914,7 +1912,10 @@
                     "
                     class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm"
                   >
-                    {{ previewAdData.category }}
+                    {{
+                      abnAdsCategories.find((cat) => cat.id === adForm.category)
+                        .name
+                    }}
                   </span>
                   <span class="text-gray-500 text-sm">Bangladesh</span>
                   <span
@@ -1933,8 +1934,8 @@
                     <span
                       class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
                     >
-                      Age: {{ previewAdData.ageRange[0] }}-{{
-                        previewAdData.ageRange[1]
+                      Age: {{ previewAdData.min_age }}-{{
+                        previewAdData.max_age
                       }}
                     </span>
                   </div>
@@ -1950,7 +1951,7 @@
                 <!-- Ad Type Preview with Icons -->
                 <div class="mt-3">
                   <div
-                    v-if="previewAdData.adType === 'website'"
+                    v-if="previewAdData.ad_type === 'website'"
                     class="flex items-center"
                   >
                     <a
@@ -1982,7 +1983,7 @@
                     </a>
                   </div>
                   <div
-                    v-else-if="previewAdData.adType === 'whatsapp'"
+                    v-else-if="previewAdData.ad_type === 'whatsapp'"
                     class="flex items-center"
                   >
                     <span class="text-sm text-green-600 mr-2">{{
@@ -2013,7 +2014,7 @@
                     </a>
                   </div>
                   <div
-                    v-else-if="previewAdData.adType === 'phone'"
+                    v-else-if="previewAdData.ad_type === 'phone'"
                     class="flex items-center"
                   >
                     <span class="text-sm text-gray-600 mr-2">{{
@@ -2040,7 +2041,7 @@
                     </a>
                   </div>
                   <div
-                    v-else-if="previewAdData.adType === 'email'"
+                    v-else-if="previewAdData.ad_type === 'email'"
                     class="flex items-center"
                   >
                     <span class="text-sm text-purple-600 mr-2">{{
@@ -2089,7 +2090,10 @@
 </template>
 
 <script setup>
+const { get, post } = useApi();
 const { user } = useAuth();
+
+const abnAds = ref([]);
 // State
 const activeTab = ref("my-ads");
 const showCreateAdModal = ref(false);
@@ -2109,6 +2113,18 @@ const dateFilter = reactive({
   to: "",
 });
 
+const abnAdsCategories = ref([]);
+async function fetchAbnAdsCategories() {
+  try {
+    const response = await get("/bn/abn-ads-categories/");
+    abnAdsCategories.value = response.data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+
+await fetchAbnAdsCategories();
+
 // Image carousel state
 const currentImageIndex = ref(0);
 
@@ -2119,10 +2135,12 @@ const previewAdData = reactive({
   images: [],
   budget: 0,
   country: "bangladesh",
-  adType: "",
+  ad_type: "",
   contactInfo: "",
   gender: "",
-  ageRange: [18, 65],
+  min_age: 18,
+  max_age: 65,
+  estimated_views: 501, // Default age range
   status: "active",
   metrics: {
     views: 0,
@@ -2138,10 +2156,12 @@ const adForm = reactive({
   images: [],
   budget: 200, // Minimum budget is now 200
   country: "bangladesh",
-  adType: "",
+  ad_type: "",
   contactInfo: "",
-  gender: "",
-  ageRange: [18, 65], // Default age range
+  gender: "other",
+  min_age: 18,
+  max_age: 65,
+  estimated_views: 501, // Default age range
   metrics: {
     views: 0,
     clicks: 0,
@@ -2150,7 +2170,6 @@ const adForm = reactive({
 
 // Estimated views calculation with spinner
 const isCalculatingViews = ref(false);
-const calculatedViews = ref(0);
 
 // Watch for budget changes to trigger the spinner and calculation
 watch(
@@ -2161,7 +2180,7 @@ watch(
     // Set a timeout to simulate calculation (2 seconds)
     setTimeout(() => {
       const baseRate = Math.random() * (6.2 - 7.1) + 3.5;
-      calculatedViews.value = Math.round(newValue * baseRate);
+      adForm.estimated_views = Math.round(newValue * baseRate);
       isCalculatingViews.value = false;
     }, 2000);
   },
@@ -2300,7 +2319,7 @@ const postedAds = ref([
     status: "active",
     publishDate: "2023-04-20",
     budget: 400,
-    adType: "phone",
+    ad_type: "phone",
     contactInfo: "+880 1512345678",
     gender: "",
     ageRange: [25, 45],
@@ -2333,14 +2352,14 @@ const drag = (event) => {
   let position = (clientX - offset) / trackWidth;
 
   if (dragHandle.value === "min") {
-    adForm.ageRange[0] = Math.max(
+    adForm.min_age = Math.max(
       13,
-      Math.min(adForm.ageRange[1], Math.round(position * 87 + 13))
+      Math.min(adForm.max_age, Math.round(position * 87 + 13))
     );
   } else if (dragHandle.value === "max") {
-    adForm.ageRange[1] = Math.min(
+    adForm.max_age = Math.min(
       100,
-      Math.max(adForm.ageRange[0], Math.round(position * 87 + 13))
+      Math.max(adForm.min_age, Math.round(position * 87 + 13))
     );
   }
 };
@@ -2361,10 +2380,10 @@ const clickTrack = (event) => {
   let position = (event.clientX - offset) / trackWidth;
   let age = Math.round(position * 87 + 13);
 
-  if (age < adForm.ageRange[0]) {
-    adForm.ageRange[0] = age;
+  if (age < adForm.min_age) {
+    adForm.min_age = age;
   } else {
-    adForm.ageRange[1] = age;
+    adForm.max_age = age;
   }
 };
 
@@ -2388,29 +2407,12 @@ const applyDateFilter = () => {
 const handleAdSubmit = async () => {
   isSubmitting.value = true;
   try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    if (editingAdIndex.value !== null) {
-      // Update existing ad
-      postedAds.value[editingAdIndex.value] = { ...adForm };
-      editingAdIndex.value = null;
-    } else {
-      // Create new ad
-      postedAds.value.push({
-        ...adForm,
-        publishDate: new Date().toLocaleDateString(),
-        status: "active",
-        metrics: {
-          views: 0,
-          clicks: 0,
-        },
-      });
+    const res = await post("/bn/abn-ads-panels/", adForm);
+    if (res.data) {
+      console.log("abn ad", res.data);
+      resetAdForm();
+      closeCreateAdModal();
     }
-
-    // Reset form
-    resetAdForm();
-    closeCreateAdModal();
   } catch (error) {
     console.error("Error submitting ad:", error);
     // Handle error appropriately
@@ -2486,10 +2488,12 @@ const resetAdForm = () => {
     images: [],
     budget: 200,
     country: "bangladesh",
-    adType: "",
+    ad_type: "",
     contactInfo: "",
     gender: "",
-    ageRange: [18, 65],
+    min_age: 18,
+    max_age: 65,
+    estimated_views: 501,
     metrics: {
       views: 0,
       clicks: 0,
@@ -2533,7 +2537,7 @@ const getStatusClass = (status) => {
       return "bg-green-100 text-green-600";
     case "stopped":
       return "bg-red-100 text-red-600";
-    case "review":
+    case "pending":
       return "bg-amber-100 text-amber-600";
     default:
       return "bg-gray-100 text-gray-600";

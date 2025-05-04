@@ -52,6 +52,7 @@ urlpatterns = [
     
     # abn-ads endpoints
     path('abn-ads-panels/', AbnAdsPanelListCreateView.as_view(), name='abn-ads-panel-list-create'),
+    path('abn-ads-categories/', AbnAdsPanelCategoryListCreateView.as_view(), name='abn-ads-panel-category-list-create'),
     path('abn-ads-panels/<str:pk>/', AbnAdsPanelRetrieveUpdateDestroyView.as_view(), name='abn-ads-panel-detail'),
     path('abn-ads-panels/filter/', AbnAdsPanelFilterView.as_view(), name='abn-ads-panel-filter'),
 

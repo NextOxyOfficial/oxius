@@ -17,4 +17,7 @@ admin.site.register(BusinessNetworkMindforceCategory)
 admin.site.register(BusinessNetworkMindforceMedia)
 admin.site.register(BusinessNetworkMindforceComment)
 admin.site.register(UserSavedPosts)
+admin.site.register(AbnAdsPanelCategory)
+admin.site.register(AbnAdsPanel)
+admin.site.register(AbnAdsPanelMedia)
 
