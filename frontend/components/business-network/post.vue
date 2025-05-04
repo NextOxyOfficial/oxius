@@ -13,7 +13,7 @@
               'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)',
           }"
         >
-          <div class="sm:px-4 py-5 sm:py-6">
+          <div class="sm:px-4 pb-5 pt-0 px-1">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post?.post_details ? post.post_details : post"
