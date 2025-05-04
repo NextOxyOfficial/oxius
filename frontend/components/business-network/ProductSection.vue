@@ -1,6 +1,6 @@
 <template>
   <div class="sponsored-products-section">
-    <h2 class="text-lg font-semibold text-gray-800 mb-4">Sponsored Products</h2>
+    <h2 class="text-base font-medium text-gray-800 mb-4">Sponsored Products</h2>
     <div class="relative">
       <!-- Carousel Container for Mobile -->
       <div class="carousel flex overflow-x-auto gap-2 my-2 pb-2 sm:hidden">

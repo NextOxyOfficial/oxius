@@ -513,6 +513,7 @@ import {
   Plus,
   Globe,
 } from "lucide-vue-next";
+import { useNotifications } from '~/composables/useNotifications';
 
 // State
 const isOpen = ref(false);
@@ -530,6 +531,7 @@ const allProducts = ref([]); // Store all fetched products
 const workspaces = ref([]); // Predefined workspaces with # prefix
 const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
+const { unreadCount, fetchUnreadCount } = useNotifications();
 
 // Updated the toggleSidebar function to handle mobile screen issues and ensure proper state management.
 const toggleSidebar = () => {
@@ -615,7 +617,7 @@ const mainMenu = [
     label: "Notifications",
     path: "/business-network/notifications",
     icon: Bell,
-    badge: 5,
+    badge: unreadCount,
     active: false,
   },
   {
@@ -966,6 +968,11 @@ onMounted(async () => {
   // Add resize listener
   window.addEventListener("resize", checkMobile);
 
+  // Fetch unread notification count if user is logged in
+  if (user.value?.user?.id) {
+    await fetchUnreadCount();
+  }
+  
   // Fetch dynamic data
   await Promise.all([
     fetchNewsItems(),
