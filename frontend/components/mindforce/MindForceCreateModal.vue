@@ -30,7 +30,7 @@
           <X class="h-5 w-5 text-gray-500" />
         </button>
 
-        <div class="flex flex-col px-2 py-6">
+        <div class="flex flex-col px-2 sm:px-6 py-6">
           <h2 class="text-xl font-semibold mb-1 text-gray-700">
             Post a New Problem
           </h2>

@@ -15,7 +15,7 @@
         class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[80vh] overflow-y-auto"
       >
         <!-- Close button (X) -->
-        <div class="px-2 py-6">
+        <div class="px-2 sm:px-6 py-6">
           <!-- Problem Header -->
           <div class="flex justify-between items-start">
             <div class="flex items-center">
@@ -255,7 +255,7 @@
             </div>
 
             <!-- Add Comment with improved design -->
-            <div class="mt-8" v-if="currentUserId">
+            <div class="mt-8" v-if="currentUserId && problem.status !== 'solved'">
               <h4 class="text-md font-medium mb-2">Write an advice</h4>
               <textarea
                 v-model="newComment"
@@ -292,7 +292,7 @@
                       <path
                         class="opacity-75"
                         fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
                     Submitting...
@@ -303,6 +303,17 @@
                   </span>
                 </button>
               </div>
+            </div>
+
+            <!-- Message for solved problems -->
+            <div v-else-if="problem.status === 'solved'" class="mt-8 p-4 bg-green-50 rounded-lg border border-green-100 mb-10">
+              <div class="flex items-center">
+                <CheckCircle class="h-5 w-5 text-green-600 mr-2" />
+                <h4 class="text-md font-medium text-green-800">This problem has been marked as solved</h4>
+              </div>
+              <p class="mt-1 text-sm text-green-700">
+                New advice cannot be added to solved problems.
+              </p>
             </div>
           </div>
         </div>
