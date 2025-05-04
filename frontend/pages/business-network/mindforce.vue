@@ -233,7 +233,7 @@
               <!-- Category badge with subtle shadow -->
 
               <h3
-                class="text-base text-gray-900 hover:text-blue-700 transition-colors"
+                class="text-base text-gray-700 hover:text-blue-700 transition-colors"
               >
                 {{ problem?.title }}
               </h3>
@@ -377,7 +377,7 @@
               </span>
 
               <h3
-                class="text-md sm:text-base font-medium text-gray-900 hover:text-green-700 transition-colors line-clamp-2"
+                class="text-md sm:text-base font-medium text-gray-700 hover:text-green-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -518,7 +518,7 @@
               </div>
 
               <h3
-                class="text-md sm:text-base  text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
+                class="text-md sm:text-base  text-gray-700 hover:text-indigo-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -622,7 +622,7 @@
           </button>
 
           <div class="flex flex-col px-2 py-6">
-            <h2 class="text-xl font-semibold mb-1 text-gray-900">
+            <h2 class="text-xl font-semibold mb-1 text-gray-700">
               Post a New Problem
             </h2>
             <p class="text-gray-500 text-md mb-4">
@@ -799,7 +799,7 @@
             <div class="flex justify-end gap-3 mt-6 mb-8">
               <button
                 @click="isCreateModalOpen = false"
-                class="inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
+                class="inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 h-10 px-4 py-2"
               >
                 Cancel
               </button>
@@ -1024,7 +1024,7 @@
 
             <!-- Comments Section -->
             <div class="mt-6">
-              <h3 class="text-lg font-medium mb-4 text-gray-900">
+              <h3 class="text-lg font-medium mb-4 text-gray-700">
                 Advice ({{ selectedProblem.comments?.length }})
               </h3>
 
@@ -1208,7 +1208,7 @@
           <div class="flex justify-end gap-3 mt-8">
             <button
               @click="isDeleteDialogOpen = false"
-              class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-900 hover:bg-gray-100 h-10 px-4 py-2"
+              class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 h-10 px-4 py-2"
             >
               Cancel
             </button>
