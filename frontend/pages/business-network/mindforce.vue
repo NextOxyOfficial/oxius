@@ -81,7 +81,7 @@
     >
       <!-- Tabs -->
       <div
-        class="flex flex-col justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
+        class="flex flex-col justify-between !items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
       >
         <div
           class="bg-gray-50 rounded-lg inline-flex shadow-sm w-full sm:w-auto"
@@ -91,7 +91,7 @@
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-1.5 sm:px-4 py-2 font-semibold transition-all text-sm sm:text-base duration-200 ease-in-out',
+              'relative px-1.5 sm:px-4 py-2 font-medium transition-all text-sm  duration-200 ease-in-out',
               activeTab === tab.value
                 ? 'text-blue-600 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-600',
