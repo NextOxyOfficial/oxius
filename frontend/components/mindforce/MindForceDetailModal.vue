@@ -153,7 +153,7 @@
               <span class="text-sm text-slate-600 dark:text-slate-400 flex items-center group">
                 <MessageSquare class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors" />
                 <span class="group-hover:text-blue-500 transition-colors">
-                  {{ problem.mindforce_comments?.length || 0 }} Advices
+                  {{ localComments.length || 0 }} Advices
                 </span>
               </span>
 
@@ -178,40 +178,46 @@
           <div class="mt-6">
             <h3 class="text-lg font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center">
               <MessageSquare class="h-5 w-5 mr-2 text-blue-500" />
-              Advice ({{ problem.mindforce_comments?.length || 0 }})
+              Advice ({{ localComments.length || 0 }})
             </h3>
 
             <!-- Comment List with enhanced styling -->
             <div class="space-y-4">
               <div
-                v-if="problem.mindforce_comments?.length > 0"
+                v-if="localComments.length > 0"
                 class="space-y-3"
               >
                 <div
-                  v-for="comment in problem.mindforce_comments"
+                  v-for="comment in sortedComments"
                   :key="comment.id"
                   :class="[
                     'px-3 py-3 sm:py-4 rounded-lg transition-all transform hover:scale-[1.01]',
                     comment.is_solved
                       ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-sm'
                       : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50',
+                    comment.is_temp ? 'opacity-70' : ''
                   ]"
                 >
                   <div class="flex justify-between">
                     <div class="flex items-center">
                       <div
-                        class="h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm"
+                        :class="[
+                          'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm',
+                          isCommentAuthorPro(comment) ? 'pro-ring' : ''
+                        ]"
                       >
                         <img
                           :src="comment?.author_details?.image || '/placeholder.svg'"
                           :alt="comment?.author_details?.name"
-                          class="h-full w-full object-cover"
+                          class="h-full w-full object-cover relative z-10"
                         />
+                        <span v-if="isCommentAuthorPro(comment)" class="pro-badge">PRO</span>
                       </div>
                       <div class="ml-3">
                         <div class="flex items-center">
                           <p class="font-medium text-slate-800 dark:text-slate-200">
                             {{ comment?.author_details?.name }}
+                            <span v-if="comment.is_temp" class="italic text-sm opacity-70">(Sending...)</span>
                           </p>
                           <span
                             v-if="comment.is_solved"
@@ -225,7 +231,6 @@
                         </p>
                       </div>
                     </div>
-
                     <button
                       v-if="isOwner && problem.status !== 'solved'"
                       @click="$emit('mark-solution', comment.id)"
@@ -241,6 +246,7 @@
                     </button>
                   </div>
 
+                
                   <p class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed">
                     {{ comment.content }}
                   </p>
@@ -373,11 +379,31 @@ const emit = defineEmits([
 // State management
 const newComment = ref("");
 const isMenuOpen = ref(false);
+const localComments = ref([]);
+const commentSubmitStatus = ref(false);
 
 // Computed properties
 const isOwner = computed(() => {
   return props.currentUserId === props.problem?.user;
 });
+
+// Check if user is premium/pro
+const isUserPro = computed(() => {
+  return props.problem?.user_details?.is_premium || props.problem?.user_details?.subscription_active;
+});
+
+// Display comments in chronological order (oldest to newest)
+const sortedComments = computed(() => {
+  if (!props.problem?.mindforce_comments) return [];
+  return [...props.problem.mindforce_comments].sort((a, b) => {
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+});
+
+// Check if comment author is premium/pro
+const isCommentAuthorPro = (comment) => {
+  return comment?.author_details?.is_premium || comment?.author_details?.subscription_active;
+};
 
 // Methods
 const toggleMenu = () => {
@@ -386,14 +412,49 @@ const toggleMenu = () => {
 
 const submitComment = () => {
   if (newComment.value.trim()) {
-    // Update to emit both events for compatibility
+    // Create temporary local comment while API call is in progress
+    const tempComment = createTempComment(newComment.value);
+    localComments.value.push(tempComment);
+    commentSubmitStatus.value = true;
+    
+    // Emit events for backend submission
     emit('submit-comment', { content: newComment.value });
     emit('add-comment', newComment.value);
-    // Reset comment after submission
+    
+    // Clear input after submission
     if (!props.isSubmittingComment) {
       newComment.value = "";
     }
+    
+    // Auto-scroll to the bottom to see new comment
+    scrollToBottom();
   }
+};
+
+// Create a temporary comment while waiting for server response
+const createTempComment = (content) => {
+  return {
+    id: 'temp-' + Date.now(),
+    content: content,
+    created_at: new Date().toISOString(),
+    author_details: {
+      id: props.currentUserId,
+      name: 'You', // This will be replaced when real data comes back
+      image: '/placeholder.svg', // Temporary placeholder
+    },
+    is_solved: false,
+    is_temp: true // Flag to identify temporary comments
+  };
+};
+
+// Scroll to the bottom of comments container
+const scrollToBottom = () => {
+  setTimeout(() => {
+    const container = document.querySelector('.custom-scrollbar');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, 100);
 };
 
 const formatTimeAgo = (dateString) => {
@@ -438,6 +499,10 @@ const handleKeydown = (event) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('keydown', handleKeydown);
+  // Initialize local comments from props
+  if (props.problem?.mindforce_comments) {
+    localComments.value = [...props.problem.mindforce_comments];
+  }
 });
 
 // Watch for modal opening to reset state
@@ -445,8 +510,29 @@ watch(() => props.modelValue, (newVal) => {
   if (newVal) {
     newComment.value = "";
     isMenuOpen.value = false;
+    commentSubmitStatus.value = false;
+    if (props.problem?.mindforce_comments) {
+      localComments.value = [...props.problem.mindforce_comments];
+    }
   }
 });
+
+// Watch for changes in problem comments and update local state
+watch(() => props.problem?.mindforce_comments, (newComments) => {
+  if (newComments && !commentSubmitStatus.value) {
+    // Normal update from parent component
+    localComments.value = [...newComments];
+  } else if (newComments && commentSubmitStatus.value) {
+    // Comment was just submitted, check if new comments from server include our local comment
+    const serverHasNewerComments = newComments.length > localComments.value.filter(c => !c.is_temp).length;
+    
+    if (serverHasNewerComments) {
+      // Replace temporary comments with server data
+      localComments.value = newComments;
+      commentSubmitStatus.value = false;
+    }
+  }
+}, { deep: true });
 </script>
 
 <style scoped>
