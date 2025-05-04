@@ -28,20 +28,23 @@
           <!-- Pro user border with gradient effect -->
           <div 
             v-if="problem?.user_details?.is_pro" 
-            class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
+            class="absolute inset-0 rounded-full pro-border-ring z-20"
+            style="pointer-events: none;"
           ></div>
           <div
-            class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-20"
+            class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-10"
           ></div>
           <img
             :src="problem?.user_details?.image || '/placeholder.svg'"
             :alt="problem?.user_details?.name"
-            class="h-full w-full object-cover relative z-10 rounded-full"
+            class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
+            style="object-fit: cover; aspect-ratio: 1/1;"
           />
-          <!-- Pro text badge -->
+          <!-- Pro text badge with increased z-index -->
           <div
             v-if="problem?.user_details?.is_pro"
-            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-20 text-[9px] font-bold"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
+            style="border: 1px solid rgba(255,255,255,0.5);"
           >
             PRO
           </div>

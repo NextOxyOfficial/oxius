@@ -32,14 +32,29 @@
               <div
                 class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
               >
+                <!-- Pro user border with gradient effect -->
+                <div 
+                  v-if="problem.user_details?.is_pro" 
+                  class="absolute inset-0 rounded-full pro-border-ring z-20"
+                  style="pointer-events: none;"
+                ></div>
                 <div
-                  class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-30"
+                  class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
                 ></div>
                 <img
                   :src="problem.user_details?.image || '/placeholder.svg'"
                   :alt="problem.user_details?.name"
-                  class="h-full w-full object-cover relative z-10"
+                  class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
+                  style="object-fit: cover; aspect-ratio: 1/1;"
                 />
+                <!-- Pro badge with increased z-index and white border -->
+                <div
+                  v-if="problem.user_details?.is_pro"
+                  class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-30 text-[9px] font-bold"
+                  style="border: 1px solid rgba(255,255,255,0.5);"
+                >
+                  PRO
+                </div>
               </div>
               <div class="ml-3">
                 <p class="text-md font-medium dark:text-white">
@@ -214,22 +229,34 @@
                     <div class="flex items-center">
                       <div
                         :class="[
-                          'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm',
+                          'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative',
                           isCommentAuthorPro(comment) ? 'pro-ring' : '',
                         ]"
                       >
+                        <!-- Pro user border with gradient effect -->
+                        <div 
+                          v-if="isCommentAuthorPro(comment)" 
+                          class="absolute inset-0 rounded-full pro-border-ring z-20"
+                        ></div>
+                        <div
+                          class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
+                        ></div>
                         <img
                           :src="
                             comment?.author_details?.image || '/placeholder.svg'
                           "
                           :alt="comment?.author_details?.name"
-                          class="h-full w-full object-cover relative z-10"
+                          class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
+                          style="object-fit: cover; aspect-ratio: 1/1;"
                         />
-                        <span
+                        <!-- Pro text badge with fixed z-index -->
+                        <div
                           v-if="isCommentAuthorPro(comment)"
-                          class="pro-badge"
-                          >PRO</span
+                          class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
+                          style="border: 1px solid rgba(255,255,255,0.5);"
                         >
+                          PRO
+                        </div>
                       </div>
                       <div class="ml-3">
                         <div class="flex items-center">
@@ -762,5 +789,17 @@ watch(
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Pro user border with gradient effect */
+.pro-border-ring {
+  border-radius: 9999px; /* Ensure full circle */
+  border: 2px solid transparent;
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 </style>
