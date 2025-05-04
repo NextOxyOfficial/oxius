@@ -2,8 +2,8 @@
   <div
     class="flex items-center justify-center pt-3.5 pb-1.5 border-t border-gray-200/70 dark:border-slate-700/50 mb-4 max-w-2xl mx-auto"
   >
-    <div class="flex items-center space-x-4 w-full justify-center">
-      <div class="flex items-center space-x-1.5 group">
+    <div class="flex items-center space-x-1 w-full justify-center">
+      <div class="flex items-center space-x-1 group">
         <!-- Like button with premium effects -->
         <button
           class="p-1.5 rounded-full hover:bg-rose-50/80 dark:hover:bg-rose-900/20 transition-all duration-300 disabled:opacity-60 transform hover:scale-105 relative"
@@ -29,7 +29,7 @@
 
             <Heart
               :class="[
-                'h-5 w-5 transition-all duration-300',
+                'size-5 transition-all duration-300',
                 post.post_likes?.find((like) => like.user === user?.user?.id)
                   ? 'text-rose-500 dark:text-rose-400 fill-rose-500 dark:fill-rose-400 animate-heartbeat-premium'
                   : 'text-rose-400 dark:text-rose-300 group-hover:text-rose-500 dark:group-hover:text-rose-400',
@@ -49,12 +49,12 @@
 
       <!-- Comment button with premium glassmorphism effects -->
       <button
-        class="flex items-center space-x-1.5 group px-2.5 py-1.5 rounded-full hover:bg-blue-50/80 dark:hover:bg-blue-900/20 transition-all duration-300 transform hover:scale-105"
+        class="flex items-center space-x-1 group px-1 py-1.5 rounded-full hover:bg-blue-50/80 dark:hover:bg-blue-900/20 transition-all duration-300 transform hover:scale-105"
         @click="$emit('open-comments-modal', post)"
       >
         <div class="relative">
           <MessageCircle
-            class="h-5 w-5 text-blue-500/90 dark:text-blue-400/90 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors duration-300"
+            class="size-5 text-blue-500/90 dark:text-blue-400/90 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors duration-300"
           />
           <!-- Enhanced glow effect on hover -->
           <div
@@ -70,7 +70,7 @@
 
       <!-- Share button with premium effects -->
       <button
-        class="flex items-center space-x-1.5 group px-2.5 py-1.5 rounded-full hover:bg-emerald-50/80 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-105"
+        class="flex items-center space-x-1 group px-1 py-1.5 rounded-full hover:bg-emerald-50/80 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-105"
         @click="$emit('share-post', post)"
       >
         <div class="relative">
@@ -90,7 +90,7 @@
 
       <!-- Save button with premium effects -->
       <button
-        class="flex items-center space-x-1.5 group px-2.5 py-1.5 rounded-full hover:bg-indigo-50/80 dark:hover:bg-indigo-900/20 transition-all duration-300 transform hover:scale-105"
+        class="flex items-center space-x-1 group px-1 py-1.5 rounded-full hover:bg-indigo-50/80 dark:hover:bg-indigo-900/20 transition-all duration-300 transform hover:scale-105"
         @click="$emit('toggle-save', post)"
       >
         <div class="relative">
