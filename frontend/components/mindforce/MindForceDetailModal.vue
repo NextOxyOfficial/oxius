@@ -231,17 +231,20 @@
                         </p>
                       </div>
                     </div>
+                    <!-- Updated Mark Solution button with spinner and conditionally showing -->
                     <button
-                      v-if="isOwner && problem.status !== 'solved'"
+                      v-if="isOwner && problem.status !== 'solved' && !comment.is_solved"
                       @click="$emit('mark-solution', comment.id)"
+                      :disabled="processingCommentIds.includes(comment.id)"
                       :class="[
-                        'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
-                        comment.is_solved
-                          ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm'
+                        'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
+                        processingCommentIds.includes(comment.id)
+                          ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
                       ]"
                     >
-                      <CheckCircle class="h-3 w-3 mr-1" />
+                      <span v-if="processingCommentIds.includes(comment.id)" class="loading-spinner mr-1.5"></span>
+                      <CheckCircle v-else class="h-3 w-3 mr-1" />
                       Mark Solution
                     </button>
                   </div>
@@ -364,6 +367,10 @@ const props = defineProps({
   isSubmittingComment: {
     type: Boolean,
     default: false
+  },
+  processingCommentIds: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -394,8 +401,33 @@ const isUserPro = computed(() => {
 
 // Display comments in chronological order (oldest to newest)
 const sortedComments = computed(() => {
-  if (!props.problem?.mindforce_comments) return [];
-  return [...props.problem.mindforce_comments].sort((a, b) => {
+  // Use localComments to ensure we display what's in our local state
+  if (!localComments.value || localComments.value.length === 0) return [];
+  
+  // First ensure we don't have duplicate comments (identify by ID)
+  const uniqueComments = [];
+  const seenIds = new Set();
+  
+  localComments.value.forEach(comment => {
+    // Skip temporary comments if we have their real counterparts
+    if (comment.is_temp && localComments.value.some(c => !c.is_temp && c.content === comment.content)) {
+      return;
+    }
+    
+    // For real comments, check by ID
+    if (!comment.is_temp) {
+      if (!seenIds.has(comment.id)) {
+        seenIds.add(comment.id);
+        uniqueComments.push(comment);
+      }
+    } else {
+      // Always include temporary comments
+      uniqueComments.push(comment);
+    }
+  });
+  
+  // Then sort them chronologically
+  return uniqueComments.sort((a, b) => {
     return new Date(a.created_at) - new Date(b.created_at);
   });
 });
@@ -519,18 +551,26 @@ watch(() => props.modelValue, (newVal) => {
 
 // Watch for changes in problem comments and update local state
 watch(() => props.problem?.mindforce_comments, (newComments) => {
-  if (newComments && !commentSubmitStatus.value) {
-    // Normal update from parent component
-    localComments.value = [...newComments];
-  } else if (newComments && commentSubmitStatus.value) {
-    // Comment was just submitted, check if new comments from server include our local comment
-    const serverHasNewerComments = newComments.length > localComments.value.filter(c => !c.is_temp).length;
+  if (!newComments) return;
+  
+  if (commentSubmitStatus.value) {
+    // We have local temporary comments waiting to be replaced
+    // Remove any temporary comments first
+    localComments.value = localComments.value.filter(comment => !comment.is_temp);
     
-    if (serverHasNewerComments) {
-      // Replace temporary comments with server data
-      localComments.value = newComments;
-      commentSubmitStatus.value = false;
-    }
+    // Then add all server comments that aren't already in our local state
+    newComments.forEach(serverComment => {
+      const alreadyExists = localComments.value.some(c => c.id === serverComment.id);
+      if (!alreadyExists) {
+        localComments.value.push(serverComment);
+      }
+    });
+    
+    // Reset submission status
+    commentSubmitStatus.value = false;
+  } else {
+    // Normal update from parent component, no temporary comments involved
+    localComments.value = [...newComments];
   }
 }, { deep: true });
 </script>
