@@ -478,7 +478,7 @@
                 <img
                   :src="user.image || '/static/frontend/avatar.png'"
                   :alt="user.name"
-                  class="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
+                  class="size-7 rounded-full object-cover border-2 border-white shadow-sm"
                 />
               </div>
               <div class="ml-3 min-w-0">

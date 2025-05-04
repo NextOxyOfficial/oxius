@@ -8,7 +8,7 @@
             <!-- Sidebar Toggle Button - MOBILE ONLY -->
             <button
               @click="cart.toggleBurgerMenu()"
-              class="flex sm:hidden group relative h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+              class="flex sm:hidden group relative size-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
               aria-label="Toggle sidebar"
             >
               <div
@@ -55,7 +55,7 @@
           </div>
 
           <!-- Right Section: Search + Navigation + User Menu -->
-          <div class="flex items-center gap-1 sm:gap-3 relative">
+          <div class="flex items-center sm:gap-3 relative">
             <!-- Search Button with Animated Dropdown -->
             <div class="relative search-button-container">
               <button
@@ -254,7 +254,7 @@
                 v-if="user?.user?.is_pro"
                 class="text-xs px-0.5 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
               >
-                <div class="flex items-center gap-1">
+                <div class="flex items-center">
                   <UIcon
                     name="i-heroicons-shield-check"
                     class="size-4 text-white"
