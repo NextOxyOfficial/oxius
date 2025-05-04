@@ -163,7 +163,7 @@
               <p class="text-sm font-medium text-slate-600 mb-0.5">
                 {{ user?.profession }}
               </p>
-              <p class="text-xs text-gray-500">@{{ user?.username }}</p>
+              <!-- <p class="text-xs text-gray-500">@{{ user?.username }}</p> -->
             </div>
 
             <div class="flex gap-2">
@@ -276,7 +276,7 @@
                   <p class="text-sm font-medium text-slate-600 mb-0.5">
                     {{ user?.profession }}
                   </p>
-                  <p class="text-xs text-gray-500">@{{ user?.username }}</p>
+                  <!-- <p class="text-xs text-gray-500">@{{ user?.username }}</p> -->
                 </div>
 
                 <!-- Action buttons (Desktop) -->
