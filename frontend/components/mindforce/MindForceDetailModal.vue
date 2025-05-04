@@ -184,11 +184,11 @@
             <!-- Comment List with enhanced styling -->
             <div class="space-y-4">
               <div
-                v-if="problem.comments?.length > 0"
+                v-if="problem.mindforce_comments?.length > 0"
                 class="space-y-3"
               >
                 <div
-                  v-for="comment in problem.comments"
+                  v-for="comment in problem.mindforce_comments"
                   :key="comment.id"
                   :class="[
                     'px-3 py-3 sm:py-4 rounded-lg transition-all transform hover:scale-[1.01]',
@@ -226,7 +226,7 @@
                       </div>
                     </div>
 
-                    <button>
+                    <button
                       v-if="isOwner && problem.status !== 'solved'"
                       @click="$emit('mark-solution', comment.id)"
                       :class="[
@@ -235,8 +235,10 @@
                           ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm'
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
                       ]"
-                    </button>
+                    >
                       <CheckCircle class="h-3 w-3 mr-1" />
+                      Mark Solution
+                    </button>
                   </div>
 
                   <p class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -265,7 +267,7 @@
                   <line x1="8" y1="12" x2="16" y2="12"></line>
                 </svg>
                 <p class="text-slate-500 dark:text-slate-400">
-                  No advice have been posted yet. Be the first to help!
+                  No advice has been posted yet. Be the first to help!
                 </p>
               </div>
             </div>
