@@ -41,7 +41,7 @@ class NewsPostDetailSerializer(serializers.ModelSerializer):
 class TipsAndSuggestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipsAndSuggestion
-        fields = ['title','description']
+        fields = '__all__'
 
 class BreakingNewsSerializer(serializers.ModelSerializer):
     class Meta:

@@ -3,12 +3,29 @@ from django.utils.text import slugify
 from base.models import *
 from tinymce import models as tinymce_models
 
-def slugify_bangla(text):
-    slug = slugify(text)
-    if not slug or len(slug) < len(text) / 2:
-        return f"{text.replace(' ', '-')}"
-    else:
-        return slug
+# Add this helper function for generating unique slugs
+def generate_unique_slug(model_class, field_value, instance=None):
+# Handle Bangla/non-Latin slugification
+    slug = slugify(field_value)
+    if not slug or len(slug) < len(field_value) / 2:
+        slug = field_value.replace(' ', '-')
+        
+    unique_slug = slug
+    queryset = model_class.objects.filter(slug=unique_slug)
+
+    # Exclude the current instance if it's an update
+    if instance and instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+
+    # Keep generating slugs until a unique one is found
+    while queryset.exists():
+        suffix = f"-{random.choice(string.ascii_lowercase)}{random.randint(1, 999)}"
+        unique_slug = f"{slug}{suffix}"
+        queryset = model_class.objects.filter(slug=unique_slug)
+        if instance and instance.pk:
+            queryset = queryset.exclude(pk=instance.pk)
+
+    return unique_slug
     
 class NewsCategory(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
@@ -30,7 +47,7 @@ class NewsCategory(models.Model):
         if not self.pk:
             self.id = self.generate_id()
         if not self.slug and self.title:
-            self.slug = slugify_bangla(self.title)
+            self.slug = generate_unique_slug(NewsCategory,self.title,self)
         super().save(*args, **kwargs)
         
     def __str__(self):
@@ -63,7 +80,7 @@ class NewsPost(models.Model):
         if not self.pk:
             self.id = self.generate_id()
         if not self.slug and self.title:
-            self.slug = slugify_bangla(self.title)
+            self.slug = generate_unique_slug(NewsPost,self.title,self)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -118,7 +135,7 @@ class TipsAndSuggestion(models.Model):
         if not self.pk:
             self.id = self.generate_id()
         if not self.slug and self.title:
-            self.slug = slugify_bangla(self.title)
+            self.slug = generate_unique_slug(TipsAndSuggestion,self.title,self)
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -130,8 +147,7 @@ class TipsAndSuggestion(models.Model):
 class BreakingNews(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     title = models.CharField(max_length=255)
-    description = models.TextField()
-    # slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
+    news = models.ForeignKey(NewsPost, on_delete=models.CASCADE, related_name='breaking_news')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

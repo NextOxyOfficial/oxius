@@ -16,20 +16,26 @@ from decimal import Decimal
 
 # Add this helper function for generating unique slugs
 def generate_unique_slug(model_class, field_value, instance=None):
+# Handle Bangla/non-Latin slugification
     slug = slugify(field_value)
+    if not slug or len(slug) < len(field_value) / 2:
+        slug = field_value.replace(' ', '-')
+        
     unique_slug = slug
-    
-    # Get the model class
     queryset = model_class.objects.filter(slug=unique_slug)
-    
-    # Exclude the current instance from the queryset if updating
+
+    # Exclude the current instance if it's an update
     if instance and instance.pk:
         queryset = queryset.exclude(pk=instance.pk)
-    
-    # If the slug exists, append random string
-    if queryset.exists():
-        unique_slug = f"{slug}-{random.choice(string.ascii_lowercase)}{random.randint(1, 999)}"
-    
+
+    # Keep generating slugs until a unique one is found
+    while queryset.exists():
+        suffix = f"-{random.choice(string.ascii_lowercase)}{random.randint(1, 999)}"
+        unique_slug = f"{slug}{suffix}"
+        queryset = model_class.objects.filter(slug=unique_slug)
+        if instance and instance.pk:
+            queryset = queryset.exclude(pk=instance.pk)
+
     return unique_slug
 
 # Create your models here.
