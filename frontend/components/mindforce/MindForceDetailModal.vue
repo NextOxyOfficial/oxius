@@ -20,6 +20,7 @@
       <!-- Modal with enhanced styling -->
       <div
         class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden border border-slate-100 dark:border-slate-700 animate-fade-in-up"
+        @click.stop
       >
         <!-- Premium scrollbar styling -->
         <div class="px-4 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[85vh]">
@@ -27,7 +28,7 @@
           <div class="flex justify-between items-start">
             <div class="flex items-center">
               <div
-                class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
+                class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
               >
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-30"></div>
                 <img
@@ -47,50 +48,51 @@
               </div>
             </div>
 
-            <div v-if="isOwner" class="relative">
-              <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1">
+              <div v-if="isOwner" class="relative">
                 <button
-                  @click="toggleMenu"
+                  @click.stop="toggleMenu"
                   class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
                 >
                   <MoreHorizontal class="h-4 w-4 text-slate-600 dark:text-slate-300" />
                 </button>
-                <button
-                  @click="$emit('update:modelValue', false)"
-                  class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label="Close"
-                >
-                  <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
-                </button>
-              </div>
 
-              <Transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="opacity-0 scale-95"
-                enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition duration-100 ease-in"
-                leave-from-class="opacity-100 scale-100"
-                leave-to-class="opacity-0 scale-95"
-              >
-                <div
-                  v-if="isMenuOpen"
-                  class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                <Transition
+                  enter-active-class="transition duration-200 ease-out"
+                  enter-from-class="opacity-0 scale-95"
+                  enter-to-class="opacity-100 scale-100"
+                  leave-active-class="transition duration-100 ease-in"
+                  leave-from-class="opacity-100 scale-100"
+                  leave-to-class="opacity-0 scale-95"
                 >
-                  <div class="py-1">
-                    <button
-                      class="flex w-full items-center px-4 py-2 text-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    >
-                      <Edit class="h-4 w-4 mr-2" /> Edit Problem
-                    </button>
-                    <button
-                      @click="$emit('delete')"
-                      class="flex w-full items-center px-4 py-2 text-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
-                    </button>
+                  <div
+                    v-if="isMenuOpen"
+                    class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                  >
+                    <div class="py-1">
+                      <button
+                        class="flex w-full items-center px-4 py-2 text-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <Edit class="h-4 w-4 mr-2" /> Edit Problem
+                      </button>
+                      <button
+                        @click="$emit('delete')"
+                        class="flex w-full items-center px-4 py-2 text-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Transition>
+                </Transition>
+              </div>
+              <!-- Fixed X button - Made it larger and more visible -->
+              <button
+                @click.stop="$emit('update:modelValue', false)"
+                class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                aria-label="Close"
+              >
+                <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
+              </button>
             </div>
           </div>
 
@@ -128,7 +130,7 @@
 
             <span
               v-if="problem.status === 'solved'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md"
+              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
             >
               <CheckCircle class="h-3 w-3 mr-1" />
               Solved
@@ -165,7 +167,7 @@
             <button
               v-if="isOwner && problem.status !== 'solved'"
               @click="$emit('mark-as-solved')"
-              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <CheckCircle class="h-4 w-4 mr-1.5" />
               Mark as Solved
@@ -191,7 +193,7 @@
                   :class="[
                     'px-3 py-3 sm:py-4 rounded-lg transition-all transform hover:scale-[1.01]',
                     comment.is_solved
-                      ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-md'
+                      ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-sm'
                       : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50',
                   ]"
                 >
@@ -224,19 +226,17 @@
                       </div>
                     </div>
 
-                    <button
+                    <button>
                       v-if="isOwner && problem.status !== 'solved'"
                       @click="$emit('mark-solution', comment.id)"
                       :class="[
                         'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
                         comment.is_solved
-                          ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md'
+                          ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm'
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
                       ]"
-                    >
-                      <CheckCircle class="h-3 w-3 mr-1" />
-                      {{ comment.is_solved ? "Solution" : "Mark as Solution" }}
                     </button>
+                      <CheckCircle class="h-3 w-3 mr-1" />
                   </div>
 
                   <p class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -288,32 +288,13 @@
                   :disabled="!newComment.trim() || isSubmittingComment"
                   :class="[
                     'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
-                    newComment.trim() && !isSubmittingComment
-                      ? 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
+                    !newComment.trim() || isSubmittingComment
+                      ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                      : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
                   ]"
                 >
                   <span v-if="isSubmittingComment" class="flex items-center">
-                    <svg
-                      class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                      ></circle>
-                      <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <span class="loading-spinner mr-2"></span>
                     Submitting...
                   </span>
                   <span v-else class="flex items-center">
@@ -560,5 +541,24 @@ watch(() => props.modelValue, (newVal) => {
 /* Perspective for 3D effects */
 .perspective-1000 {
   perspective: 1000px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
