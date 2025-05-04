@@ -5,23 +5,15 @@
       Notifications
     </p>
 
-    <!-- Filter tabs -->
+    <!-- Filter tabs - simplified to only All Notifications -->
     <div class="border-b border-gray-200 mb-4">
       <div class="flex space-x-4">
         <button
-          v-for="tab in tabs"
-          :key="tab.value"
-          @click="activeTab = tab.value"
-          class="px-3 py-2 text-sm font-medium transition-colors relative"
-          :class="[
-            activeTab === tab.value
-              ? 'text-blue-600 border-b-2 border-blue-500'
-              : 'text-gray-600 hover:text-gray-800 hover:border-b-2 hover:border-gray-300'
-          ]"
+          class="px-3 py-2 text-sm font-medium transition-colors relative text-blue-600 border-b-2 border-blue-500"
         >
-          {{ tab.label }}
+          All Notifications
           <span
-            v-if="tab.value === 'all' && unreadCount > 0"
+            v-if="unreadCount > 0"
             class="ml-1.5 inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
           >
             {{ unreadCount }}
@@ -190,17 +182,6 @@ const page = ref(1);
 const hasMoreNotifications = ref(false);
 const unreadCount = ref(0);
 
-// Tabs
-const activeTab = ref("all");
-const tabs = [
-  { label: "All", value: "all" },
-  { label: "Follow", value: "follow" },
-  { label: "Like", value: "like" },
-  { label: "Comment", value: "comment" },
-  { label: "Mention", value: "mention" },
-  { label: "Solution", value: "solution" },
-];
-
 // Notification types
 const notificationTypes = {
   FOLLOW: 'follow',
@@ -212,16 +193,8 @@ const notificationTypes = {
   SOLUTION: 'solution',
 };
 
-// Filter notifications based on active tab
-const filteredNotifications = computed(() => {
-  if (activeTab.value === 'all') {
-    return notifications.value;
-  }
-  
-  return notifications.value.filter(notification => 
-    notification.type.includes(activeTab.value)
-  );
-});
+// Simplified - no filtering by tab type
+const filteredNotifications = computed(() => notifications.value);
 
 // Load notifications on mount
 onMounted(async () => {
