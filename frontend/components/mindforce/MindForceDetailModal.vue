@@ -383,7 +383,8 @@ const emit = defineEmits([
   'submit-comment',
   'mark-as-solved',
   'mark-solution',
-  'delete'
+  'delete',
+  'add-comment'  // Add this event to support the parent component
 ]);
 
 // State management
@@ -402,7 +403,9 @@ const toggleMenu = () => {
 
 const submitComment = () => {
   if (newComment.value.trim()) {
+    // Update to emit both events for compatibility
     emit('submit-comment', { content: newComment.value });
+    emit('add-comment', newComment.value);
     // Reset comment after submission
     if (!props.isSubmittingComment) {
       newComment.value = "";

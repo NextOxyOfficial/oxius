@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-4 transition-all duration-300 cursor-pointer relative overflow-hidden hover:shadow-lg group transform hover:-translate-y-1"
+    class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-4 transition-all duration-300 cursor-pointer relative overflow-hidden hover:shadow-lg group transform hover:shadow-sm"
     @click="$emit('click', problem)"
   >
     <!-- Premium subtle background patterns with gradient overlay -->
