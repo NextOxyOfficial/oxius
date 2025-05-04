@@ -12,12 +12,17 @@
             <div>
               <h1 class="text-xl sm:text-3xl font-bold flex items-center">
                 MindForce
-                <div class="shimmer-badge ml-3 h-5 px-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xs">
-                  <span class="font-medium">Collaborative Problem-Solving Network</span>
+                <div
+                  class="shimmer-badge ml-3 h-5 px-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xs"
+                >
+                  <span class="font-medium"
+                    >Collaborative Problem-Solving Network</span
+                  >
                 </div>
               </h1>
               <p class="text-blue-100 mt-1 text-md sm:text-base">
-                Raise your mind to help others! Connect and solve problems together.
+                Raise your mind to help others! Connect and solve problems
+                together.
               </p>
             </div>
             <button
@@ -50,10 +55,15 @@
                   Loading...
                 </span>
                 <span v-else class="flex items-center">
-                  <Plus class="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" /> Post a Problem
+                  <Plus
+                    class="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform"
+                  />
+                  Post a Problem
                 </span>
               </span>
-              <span class="absolute inset-0 bg-gradient-to-r from-white/90 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+              <span
+                class="absolute inset-0 bg-gradient-to-r from-white/90 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"
+              ></span>
             </button>
           </div>
         </div>
@@ -231,7 +241,6 @@
                       <UIcon name="i-mdi-currency-bdt" class="text-green-600" />
                       {{ problem?.payment_amount }}
                     </span>
-                    
                   </span>
                   <span
                     v-else
@@ -261,7 +270,7 @@
                 <div class="flex items-center space-x-3 sm:space-x-4">
                   <span class="text-sm text-gray-600 flex items-center">
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                    {{ problem?.comments?.length }} Advices
+                    {{ problem?.mindforce_comments?.length }} Advices
                   </span>
 
                   <span class="text-sm text-gray-500 flex items-center">
@@ -426,7 +435,7 @@
                     class="text-sm sm:text-sm text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                    {{ problem.comments?.length }} Advices
+                    {{ problem.mindforce_comments?.length }} Advices
                   </span>
 
                   <span class="text-sm text-gray-500 flex items-center">
@@ -535,7 +544,7 @@
               </div>
 
               <h3
-                class="text-md sm:text-base  text-gray-700 hover:text-indigo-700 transition-colors line-clamp-2"
+                class="text-md sm:text-base text-gray-700 hover:text-indigo-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -548,7 +557,7 @@
                     class="text-sm sm:text-sm text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                    {{ problem?.comments?.length }} Advices
+                    {{ problem?.mindforce_comments?.length }} Advices
                   </span>
 
                   <span
@@ -1029,7 +1038,7 @@
               <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-600 flex items-center">
                   <MessageSquare class="h-4 w-4 mr-1.5" />
-                  {{ selectedProblem.comments?.length }} Advices
+                  {{ selectedProblem.mindforce_comments?.length }} Advices
                 </span>
 
                 <span class="text-sm text-gray-600 flex items-center">
@@ -1042,12 +1051,15 @@
             <!-- Comments Section -->
             <div class="mt-6">
               <h3 class="text-lg font-medium mb-4 text-gray-700">
-                Advice ({{ selectedProblem.comments?.length }})
+                Advice ({{ selectedProblem.mindforce_comments?.length }})
               </h3>
 
               <!-- Comment List -->
               <div class="space-y-4">
-                <div v-if="selectedProblem.comments?.length > 0" class="space-y-2">
+                <div
+                  v-if="selectedProblem.mindforce_comments?.length > 0"
+                  class="space-y-2"
+                >
                   <div
                     v-for="comment in selectedProblem?.comments"
                     :key="comment.id"
@@ -1101,13 +1113,13 @@
                         ]"
                       >
                         <CheckCircle class="h-3 w-3 mr-1" />
-                        {{
-                          comment.is_solved ? "Solution" : "Solution!"
-                        }}
+                        {{ comment.is_solved ? "Solution" : "Solution!" }}
                       </button>
                     </div>
 
-                    <p class="mt-1 sm:mt-3 text-md text-gray-700 leading-relaxed">
+                    <p
+                      class="mt-1 sm:mt-3 text-md text-gray-700 leading-relaxed"
+                    >
                       {{ comment.content }}
                     </p>
                   </div>
