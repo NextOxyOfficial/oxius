@@ -84,14 +84,14 @@
         class="flex flex-col justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 gap-3 sm:gap-4"
       >
         <div
-          class="bg-gray-50 p-1 rounded-lg inline-flex shadow-sm w-full sm:w-auto"
+          class="bg-gray-50 rounded-lg inline-flex shadow-sm w-full sm:w-auto"
         >
           <button
             v-for="tab in tabs"
             :key="tab.value"
             @click="activeTab = tab.value"
             :class="[
-              'relative px-3 sm:px-4 py-2 font-medium transition-all text-sm sm:text-base duration-200 ease-in-out',
+              'relative px-1.5 sm:px-4 py-2 font-medium transition-all text-sm sm:text-base duration-200 ease-in-out',
               activeTab === tab.value
                 ? 'text-blue-700 bg-white rounded-md shadow-sm'
                 : 'text-gray-500 hover:text-gray-700',
@@ -242,12 +242,12 @@
                 class="mt-3 sm:mt-4 flex items-center justify-between relative"
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
-                  <span class="text-md text-gray-600 flex items-center">
+                  <span class="text-sm text-gray-600 flex items-center">
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
-                  <span class="text-md text-gray-500 flex items-center">
+                  <span class="text-sm text-gray-500 flex items-center">
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -272,7 +272,7 @@
               </p>
               <button
                 @click="openCreateModal"
-                class="inline-flex items-center justify-center rounded-md text-md font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
+                class="inline-flex items-center justify-center rounded-md text-sm sm:text-base font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
               >
                 Post a problem
               </button>
@@ -360,7 +360,7 @@
                     v-else
                     class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
-                    Free Help
+                    I need free help!
                   </span>
                   <span
                     class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
@@ -406,13 +406,13 @@
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
                   <span
-                    class="text-sm sm:text-md text-gray-600 flex items-center"
+                    class="text-sm sm:text-sm text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem.comments?.length }} Advices
                   </span>
 
-                  <span class="text-md text-gray-500 flex items-center">
+                  <span class="text-sm text-gray-500 flex items-center">
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
                   </span>
@@ -507,7 +507,7 @@
                     v-else
                     class="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 text-blue-700"
                   >
-                    Free Help
+                    I need free help!
                   </span>
                   <span
                     class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium transition-all bg-gray-100 text-gray-800 shadow-sm"
@@ -518,7 +518,7 @@
               </div>
 
               <h3
-                class="text-md sm:text-base font-medium text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
+                class="text-md sm:text-base  text-gray-900 hover:text-indigo-700 transition-colors line-clamp-2"
               >
                 {{ problem?.title }}
               </h3>
@@ -528,14 +528,14 @@
               >
                 <div class="flex items-center space-x-3 sm:space-x-4">
                   <span
-                    class="text-sm sm:text-md text-gray-600 flex items-center"
+                    class="text-sm sm:text-sm text-gray-600 flex items-center"
                   >
                     <MessageSquare class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.comments?.length }} Advices
                   </span>
 
                   <span
-                    class="text-sm sm:text-md text-gray-500 flex items-center"
+                    class="text-sm sm:text-sm text-gray-500 flex items-center"
                   >
                     <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                     {{ problem?.views }} views
@@ -621,7 +621,7 @@
             <X class="h-5 w-5 text-gray-500" />
           </button>
 
-          <div class="flex flex-col p-6">
+          <div class="flex flex-col px-2 py-6">
             <h2 class="text-xl font-semibold mb-1 text-gray-900">
               Post a New Problem
             </h2>
@@ -862,7 +862,7 @@
         >
           <!-- Close button (X) -->
 
-          <div class="p-6">
+          <div class="px-2 py-6">
             <!-- Problem Header -->
             <div class="flex justify-between items-start">
               <div class="flex items-center">
@@ -1010,12 +1010,12 @@
               class="mt-6 flex items-center justify-between border-t border-b border-gray-200 py-3"
             >
               <div class="flex items-center space-x-4">
-                <span class="text-md text-gray-600 flex items-center">
+                <span class="text-sm text-gray-600 flex items-center">
                   <MessageSquare class="h-4 w-4 mr-1.5" />
                   {{ selectedProblem.comments?.length }} Advices
                 </span>
 
-                <span class="text-md text-gray-600 flex items-center">
+                <span class="text-sm text-gray-600 flex items-center">
                   <Eye class="h-4 w-4 mr-1.5" />
                   {{ selectedProblem?.views }}
                 </span>
@@ -1085,7 +1085,7 @@
                       >
                         <CheckCircle class="h-3 w-3 mr-1" />
                         {{
-                          comment.is_solved ? "Solution" : "Useful!"
+                          comment.is_solved ? "Solution" : "Solution!"
                         }}
                       </button>
                     </div>
