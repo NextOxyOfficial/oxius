@@ -9,7 +9,8 @@
           :style="{
             animationDelay: `${index * 0.05}s`,
             animation: `fadeIn 0.5s ease-out forwards`,
-            backgroundImage: 'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)'
+            backgroundImage:
+              'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)',
           }"
         >
           <div class="sm:px-4 py-5 sm:py-6">
@@ -76,7 +77,14 @@
                 <span>{{
                   post.showFullDescription ? $t("read_less") : $t("read_more")
                 }}</span>
-                <UIcon :name="post.showFullDescription ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="ml-1 w-4 h-4" />
+                <UIcon
+                  :name="
+                    post.showFullDescription
+                      ? 'i-heroicons-chevron-up'
+                      : 'i-heroicons-chevron-down'
+                  "
+                  class="ml-1 w-4 h-4"
+                />
               </button>
             </div>
 
@@ -154,7 +162,9 @@
           <div class="h-10 w-10 animate-spin text-blue-600">
             <Loader2 class="h-10 w-10" />
           </div>
-          <div class="absolute inset-0 animate-ping-sm opacity-70 rounded-full bg-blue-400/20 h-10 w-10"></div>
+          <div
+            class="absolute inset-0 animate-ping-sm opacity-70 rounded-full bg-blue-400/20 h-10 w-10"
+          ></div>
         </div>
       </div>
 
@@ -163,9 +173,16 @@
         v-if="!loading && posts?.length === 0"
         class="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-gray-100 dark:border-slate-700/50 shadow-md"
       >
-        <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
-        <p class="text-gray-500 dark:text-gray-400 mb-2 font-medium">{{ $t("no_post_available") }}</p>
-        <p class="text-gray-400 dark:text-gray-500 text-sm">Check back later for new updates</p>
+        <UIcon
+          name="i-heroicons-document-text"
+          class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3"
+        />
+        <p class="text-gray-500 dark:text-gray-400 mb-2 font-medium">
+          {{ $t("no_post_available") }}
+        </p>
+        <p class="text-gray-400 dark:text-gray-500 text-sm">
+          Check back later for new updates
+        </p>
       </div>
     </div>
 
@@ -290,23 +307,23 @@ const getRandomProducts = (count = 3) => {
   if (allProducts.value.length === 0) {
     return [];
   }
-  
+
   // Generate a cache key based on the current view
   const cacheKey = `batch-${Math.floor(Date.now() / 10000)}`; // Changes every 10 seconds
-  
+
   // Check if we already have products for this batch in cache
   if (!productCache.value.has(cacheKey)) {
     // If not in cache, create a new random selection
     const shuffled = [...allProducts.value].sort(() => 0.5 - Math.random());
     productCache.value.set(cacheKey, shuffled);
-    
+
     // Limit cache size to prevent memory issues
     if (productCache.value.size > 10) {
       const oldestKey = productCache.value.keys().next().value;
       productCache.value.delete(oldestKey);
     }
   }
-  
+
   // Get products from cache
   const cachedProducts = productCache.value.get(cacheKey);
   return cachedProducts.slice(0, count);
@@ -347,11 +364,15 @@ onMounted(() => {
 });
 
 // Watch for changes in the posts prop
-watch(() => props.posts, (newPosts) => {
-  if (newPosts && newPosts.length > 0) {
-    processPosts(); // Process posts when they change
-  }
-}, { deep: true });
+watch(
+  () => props.posts,
+  (newPosts) => {
+    if (newPosts && newPosts.length > 0) {
+      processPosts(); // Process posts when they change
+    }
+  },
+  { deep: true }
+);
 
 // Toggle post description expand/collapse
 const toggleDescription = (post) => {
@@ -362,11 +383,11 @@ const toggleDescription = (post) => {
 const toggleFollow = async (post) => {
   const authorId = post.author_details?.id;
   if (!authorId) return;
-  
+
   try {
     const isFollowing = post.author_details.is_following;
     const endpoint = `/bn/follow/${authorId}/`;
-    
+
     if (isFollowing) {
       const { data } = await del(endpoint);
       post.author_details.is_following = false;
@@ -395,10 +416,16 @@ const toggleDropdown = (clickedPost) => {
 };
 
 const toggleSave = async (postToSave) => {
+  if (!user.value?.user) {
+    toast.add({
+      title: "You must be logged in to save posts",
+    });
+    return;
+  }
   try {
     const endpoint = `/bn/posts/${postToSave.id}/save/`;
     const postIsSaved = postToSave.isSaved;
-    
+
     if (postIsSaved) {
       await del(endpoint);
       postToSave.isSaved = false;
@@ -417,38 +444,42 @@ const toggleSave = async (postToSave) => {
   }
 };
 
-
 const copyLink = (postToCopy) => {
   const postUrl = `${window.location.origin}/business-network/posts/${postToCopy.id}`;
   navigator.clipboard.writeText(postUrl);
   toast.add({
     title: "Link copied to clipboard",
-    color: "blue",
   });
 };
 
 // Like functionality
 const toggleLike = async (postToLike) => {
+  if (!user.value?.user) {
+    toast.add({
+      title: "Please log in to like posts",
+    });
+    return;
+  }
   if (postToLike.isLikeLoading) return;
-  
+
   postToLike.isLikeLoading = true;
-  
+
   try {
     const currentUserId = user.value?.user?.id;
     const isLiked = postToLike.post_likes?.some(
-      like => like.user === currentUserId
+      (like) => like.user === currentUserId
     );
-    
+
     if (isLiked) {
       // Use the unlike endpoint when already liked
       const endpoint = `/bn/posts/${postToLike.id}/unlike/`;
       await del(endpoint);
-      
+
       // Remove user from likes
       postToLike.post_likes = postToLike.post_likes.filter(
-        like => like.user !== currentUserId
+        (like) => like.user !== currentUserId
       );
-      
+
       // Update like count for UI if needed
       if (postToLike.likes_count !== undefined) {
         postToLike.likes_count = Math.max(0, (postToLike.likes_count || 0) - 1);
@@ -457,13 +488,13 @@ const toggleLike = async (postToLike) => {
       // Use the like endpoint when not yet liked
       const endpoint = `/bn/posts/${postToLike.id}/like/`;
       const { data } = await post(endpoint);
-      
+
       // Add new like data to the post
       if (!postToLike.post_likes) {
         postToLike.post_likes = [];
       }
       postToLike.post_likes.push(data);
-      
+
       // Update like count for UI if needed
       if (postToLike.likes_count !== undefined) {
         postToLike.likes_count = (postToLike.likes_count || 0) + 1;
@@ -485,26 +516,26 @@ const addComment = async (postToComment) => {
   if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
     return;
   }
-  
+
   postToComment.isCommentLoading = true;
-  
+
   try {
     const endpoint = `/bn/posts/${postToComment.id}/comments/`;
     const { data } = await post(endpoint, {
       content: postToComment.commentText,
     });
-    
+
     // Initialize post_comments array if it doesn't exist
     if (!postToComment.post_comments) {
       postToComment.post_comments = [];
     }
-    
+
     // Add the new comment to the beginning
     postToComment.post_comments.unshift(data);
-    
+
     // Clear the comment text
     postToComment.commentText = "";
-    
+
     // Close mentions dropdown if open
     showMentions.value = false;
   } catch (error) {
@@ -521,12 +552,12 @@ const addComment = async (postToComment) => {
 // Handle mentions and comment input
 const handleCommentInput = (event, targetPost) => {
   targetPost.commentText = event.target.value;
-  
+
   // Check for mention character (@)
   const cursorPos = event.target.selectionStart;
   const textBeforeCursor = targetPost.commentText.substring(0, cursorPos);
   const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-  
+
   if (mentionMatch) {
     mentionSearchText.value = mentionMatch[1];
     showMentions.value = true;
@@ -535,7 +566,7 @@ const handleCommentInput = (event, targetPost) => {
       startPos: cursorPos - mentionMatch[0].length,
       endPos: cursorPos,
     };
-    
+
     // Search for users matching the mention text
     searchMentions(mentionSearchText.value);
   } else {
@@ -545,23 +576,25 @@ const handleCommentInput = (event, targetPost) => {
 
 const handleMentionKeydown = (event, targetPost) => {
   if (!showMentions.value) return;
-  
+
   // Handle arrow keys for mention selection
-  if (event.key === 'ArrowDown') {
+  if (event.key === "ArrowDown") {
     event.preventDefault();
-    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
-  } else if (event.key === 'ArrowUp') {
+    activeMentionIndex.value =
+      (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+  } else if (event.key === "ArrowUp") {
     event.preventDefault();
-    activeMentionIndex.value = activeMentionIndex.value <= 0 
-      ? mentionSuggestions.value.length - 1 
-      : activeMentionIndex.value - 1;
-  } else if (event.key === 'Enter' && showMentions.value) {
+    activeMentionIndex.value =
+      activeMentionIndex.value <= 0
+        ? mentionSuggestions.value.length - 1
+        : activeMentionIndex.value - 1;
+  } else if (event.key === "Enter" && showMentions.value) {
     event.preventDefault();
     const selectedUser = mentionSuggestions.value[activeMentionIndex.value];
     if (selectedUser) {
       selectMention(selectedUser, targetPost);
     }
-  } else if (event.key === 'Escape') {
+  } else if (event.key === "Escape") {
     showMentions.value = false;
   }
 };
@@ -572,7 +605,7 @@ const searchMentions = async (query) => {
     mentionSuggestions.value = [];
     return;
   }
-  
+
   try {
     const { data } = await get(`/bn/mentions/?search=${query}`);
     mentionSuggestions.value = data || [];
@@ -585,14 +618,14 @@ const searchMentions = async (query) => {
 
 const selectMention = (user, targetPost) => {
   if (!mentionInputPosition.value) return;
-  
+
   const { startPos, endPos } = mentionInputPosition.value;
   const beforeMention = targetPost.commentText.substring(0, startPos);
   const afterMention = targetPost.commentText.substring(endPos);
-  
+
   // Replace the mention with the user's name
   targetPost.commentText = `${beforeMention}@${user.follower_details.name} ${afterMention}`;
-  
+
   // Reset mention state
   showMentions.value = false;
   mentionSuggestions.value = [];
@@ -605,7 +638,7 @@ const openLikesModal = (postToView) => {
 
 const openCommentsModal = (postToView) => {
   activeCommentsPost.value = postToView;
-  
+
   // Set timeout to scroll to end of comments once modal is visible
   setTimeout(() => {
     if (modalsRef.value?.commentsContainerRef) {
@@ -617,7 +650,7 @@ const openCommentsModal = (postToView) => {
 const toggleUserFollow = async (userToFollow) => {
   try {
     const userId = userToFollow.user;
-    
+
     if (userToFollow.isFollowing) {
       await del(`/bn/follow/${userId}/`);
       userToFollow.isFollowing = false;
@@ -634,7 +667,9 @@ const toggleUserFollow = async (userToFollow) => {
 const openMedia = (postWithMedia, media) => {
   activeMedia.value = media;
   activePost.value = postWithMedia;
-  activeMediaIndex.value = postWithMedia.post_media.findIndex(m => m.id === media.id);
+  activeMediaIndex.value = postWithMedia.post_media.findIndex(
+    (m) => m.id === media.id
+  );
 };
 
 const closeMedia = () => {
@@ -646,32 +681,33 @@ const closeMedia = () => {
 
 const navigateMedia = (direction) => {
   if (!activePost.value || !activePost.value.post_media) return;
-  
+
   const totalMedia = activePost.value.post_media.length;
-  
-  if (direction === 'next') {
+
+  if (direction === "next") {
     activeMediaIndex.value = (activeMediaIndex.value + 1) % totalMedia;
   } else {
-    activeMediaIndex.value = (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
+    activeMediaIndex.value =
+      (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
   }
-  
+
   activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
 };
 
 const toggleMediaLike = async () => {
   if (!activeMedia.value) return;
-  
+
   try {
     const endpoint = `/bn/media/${activeMedia.value.id}/like/`;
     const isLiked = activeMedia.value.media_likes?.some(
-      like => like.user === user.value?.user?.id
+      (like) => like.user === user.value?.user?.id
     );
-    
+
     if (isLiked) {
       await del(endpoint);
       // Remove user from likes
       activeMedia.value.media_likes = activeMedia.value.media_likes.filter(
-        like => like.user !== user.value?.user?.id
+        (like) => like.user !== user.value?.user?.id
       );
     } else {
       const { data } = await post(endpoint);
@@ -688,34 +724,34 @@ const toggleMediaLike = async () => {
 
 const openMediaLikesModal = () => {
   if (!activeMedia.value) return;
-  
+
   activeMediaLikes.value = activeMedia.value;
   // Set liked users for the modal
-  mediaLikedUsers.value = activeMedia.value.media_likes.map(like => ({
+  mediaLikedUsers.value = activeMedia.value.media_likes.map((like) => ({
     id: like.user_details.id,
     image: like.user_details.image,
     fullName: like.user_details.name,
-    isFollowing: like.user_details.is_following
+    isFollowing: like.user_details.is_following,
   }));
 };
 
 const addMediaComment = async () => {
   if (!mediaCommentText.value.trim() || !activeMedia.value) return;
-  
+
   try {
     const endpoint = `/bn/media/${activeMedia.value.id}/comments/`;
     const { data } = await post(endpoint, {
       content: mediaCommentText.value,
     });
-    
+
     // Initialize media_comments array if it doesn't exist
     if (!activeMedia.value.media_comments) {
       activeMedia.value.media_comments = [];
     }
-    
+
     // Add the new comment
     activeMedia.value.media_comments.push(data);
-    
+
     // Clear the comment text
     mediaCommentText.value = "";
   } catch (error) {
@@ -733,17 +769,16 @@ const editMediaComment = async (comment) => {
 
 const deleteMediaComment = async (comment) => {
   mediaCommentToDelete = comment;
-  
+
   try {
     await del(`/bn/media-comments/${comment.id}/`);
-    
+
     // Remove the comment from the list
     if (activeMedia.value && activeMedia.value.media_comments) {
-      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
-        c => c.id !== comment.id
-      );
+      activeMedia.value.media_comments =
+        activeMedia.value.media_comments.filter((c) => c.id !== comment.id);
     }
-    
+
     mediaCommentToDelete = null;
   } catch (error) {
     console.error("Error deleting media comment:", error);
@@ -760,7 +795,7 @@ const editComment = (post, comment) => {
   if (!comment.editText) {
     comment.editText = comment.content;
   }
-  
+
   // Set editing state to true
   comment.isEditing = true;
 };
@@ -772,23 +807,26 @@ const deleteComment = (post, comment) => {
 
 const confirmDeleteComment = async () => {
   if (!commentToDelete.value || !postWithCommentToDelete.value) return;
-  
+
   try {
     commentToDelete.value.isDeleting = true;
-    
+
     await del(`/bn/post-comments/${commentToDelete.value.id}/`);
-    
+
     // Remove the comment from the list
-    if (postWithCommentToDelete.value && postWithCommentToDelete.value.post_comments) {
-      postWithCommentToDelete.value.post_comments = 
+    if (
+      postWithCommentToDelete.value &&
+      postWithCommentToDelete.value.post_comments
+    ) {
+      postWithCommentToDelete.value.post_comments =
         postWithCommentToDelete.value.post_comments.filter(
-          c => c.id !== commentToDelete.value.id
+          (c) => c.id !== commentToDelete.value.id
         );
     }
-    
-    toast.add({ 
-      title: "Comment deleted", 
-      color: "blue"
+
+    toast.add({
+      title: "Comment deleted",
+      color: "blue",
     });
   } catch (error) {
     console.error("Error deleting comment:", error);
@@ -809,22 +847,22 @@ const cancelEditComment = (comment) => {
 
 const saveEditComment = async (post, comment) => {
   if (!comment.editText?.trim()) return;
-  
+
   comment.isSaving = true;
-  
+
   try {
     const { data } = await put(`/bn/post-comments/${comment.id}/`, {
       content: comment.editText,
     });
-    
+
     // Update the comment content
     comment.content = data.content;
     comment.isEditing = false;
     comment.editText = "";
-    
-    toast.add({ 
-      title: "Comment updated", 
-      color: "green"
+
+    toast.add({
+      title: "Comment updated",
+      color: "green",
     });
   } catch (error) {
     console.error("Error updating comment:", error);
@@ -840,14 +878,15 @@ const saveEditComment = async (post, comment) => {
 // Post sharing function
 const sharePost = (postToShare) => {
   const postUrl = `${window.location.origin}/business-network/posts/${postToShare.id}`;
-  
+
   if (navigator.share) {
-    navigator.share({
-      title: postToShare.title,
-      text: 'Check out this post on Business Network',
-      url: postUrl,
-    })
-    .catch(error => console.log('Error sharing', error));
+    navigator
+      .share({
+        title: postToShare.title,
+        text: "Check out this post on Business Network",
+        url: postUrl,
+      })
+      .catch((error) => console.log("Error sharing", error));
   } else {
     navigator.clipboard.writeText(postUrl);
     toast.add({
@@ -875,7 +914,8 @@ const sharePost = (postToShare) => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
     transform: scale(1);
   }
@@ -890,7 +930,8 @@ const sharePost = (postToShare) => {
     transform: scale(0.95);
     opacity: 1;
   }
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(1.2);
     opacity: 0;
   }
@@ -901,7 +942,8 @@ const sharePost = (postToShare) => {
     transform: scale(0.95);
     opacity: 0.8;
   }
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(1.15);
     opacity: 0;
   }
@@ -913,15 +955,13 @@ const sharePost = (postToShare) => {
 }
 
 .premium-shadow {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05), 
-              0 2px 6px rgba(0, 0, 0, 0.05),
-              0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.05),
+    0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .dark .premium-shadow {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 
-              0 2px 6px rgba(0, 0, 0, 0.2),
-              0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.2),
+    0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Add viewport control for mobile */
@@ -933,7 +973,9 @@ const sharePost = (postToShare) => {
   }
 
   /* Fix horizontal scrolling issues */
-  div, p, span {
+  div,
+  p,
+  span {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;

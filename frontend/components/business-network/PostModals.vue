@@ -219,7 +219,7 @@
               </div>
             </div>
           </div>
-          <div class="p-4 sm:p-5 border-t border-gray-200">
+          <div class="p-4 sm:p-5 border-t border-gray-200" v-if="user?.user">
             <div class="flex items-center gap-2">
               <img
                 :src="user?.user?.image"

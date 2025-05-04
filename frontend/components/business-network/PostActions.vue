@@ -12,17 +12,21 @@
         >
           <!-- Loading state -->
           <div v-if="post.isLikeLoading" class="h-5 w-5">
-            <Loader2 class="h-5 w-5 text-rose-400 dark:text-rose-300 animate-spin" />
+            <Loader2
+              class="h-5 w-5 text-rose-400 dark:text-rose-300 animate-spin"
+            />
           </div>
-          
+
           <!-- Heart icon with reduced effects -->
           <div v-else class="relative">
             <!-- Pulse effect for liked posts - smaller effect -->
-            <div 
-              v-if="post.post_likes?.find((like) => like.user === user?.user?.id)"
+            <div
+              v-if="
+                post.post_likes?.find((like) => like?.user === user?.user?.id)
+              "
               class="absolute inset-0 rounded-full bg-rose-500/20 animate-ping-sm opacity-70"
             ></div>
-            
+
             <Heart
               :class="[
                 'h-5 w-5 transition-all duration-300',
@@ -33,7 +37,7 @@
             />
           </div>
         </button>
-        
+
         <!-- Like count with hover effect -->
         <button
           class="text-sm text-gray-700 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors duration-300 font-medium"
@@ -53,7 +57,9 @@
             class="h-5 w-5 text-blue-500/90 dark:text-blue-400/90 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors duration-300"
           />
           <!-- Subtle glow effect on hover - smaller size -->
-          <div class="absolute inset-0 rounded-full bg-blue-400/0 group-hover:bg-blue-400/20 blur-sm transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"></div>
+          <div
+            class="absolute inset-0 rounded-full bg-blue-400/0 group-hover:bg-blue-400/20 blur-sm transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"
+          ></div>
         </div>
         <span
           class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-300"
@@ -72,7 +78,9 @@
             class="h-5 w-5 text-emerald-500/90 dark:text-emerald-400/90 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors duration-300"
           />
           <!-- Subtle glow effect on hover - smaller size -->
-          <div class="absolute inset-0 rounded-full bg-emerald-400/0 group-hover:bg-emerald-400/20 blur-sm transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"></div>
+          <div
+            class="absolute inset-0 rounded-full bg-emerald-400/0 group-hover:bg-emerald-400/20 blur-sm transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"
+          ></div>
         </div>
         <span
           class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-300"
@@ -87,24 +95,31 @@
       >
         <div class="relative">
           <!-- Pulse effect for saved posts - smaller effect -->
-          <div 
-            v-if="post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user.user.id)"
+          <div
+            v-if="
+              post.isSaved ||
+              savedPosts.some(
+                (i) => i.post === post.id && i.user === user?.user?.id
+              )
+            "
             class="absolute inset-0 rounded-full bg-indigo-500/20 animate-pulse-sm opacity-70"
           ></div>
-          
+
           <Bookmark
             :class="[
               'h-5 w-5 transition-all duration-300',
               post.isSaved ||
               savedPosts.some(
-                (i) => i.post === post.id && i.user === user.user.id
+                (i) => i.post === post.id && i.user === user?.user?.id
               )
                 ? 'text-indigo-600 dark:text-indigo-400 fill-indigo-600 dark:fill-indigo-400'
                 : 'text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-300',
             ]"
           />
           <!-- Subtle glow effect on hover - smaller size -->
-          <div class="absolute inset-0 rounded-full bg-indigo-400/0 group-hover:bg-indigo-400/20 blur-sm transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"></div>
+          <div
+            class="absolute inset-0 rounded-full bg-indigo-400/0 group-hover:bg-indigo-400/20 blur-sm transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"
+          ></div>
         </div>
         <span
           class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300"
@@ -222,7 +237,8 @@ await getSavedPosts();
     transform: scale(0.8);
     opacity: 0.8;
   }
-  70%, 100% {
+  70%,
+  100% {
     transform: scale(1.7);
     opacity: 0;
   }
@@ -233,14 +249,16 @@ await getSavedPosts();
     transform: scale(0.9);
     opacity: 0.8;
   }
-  70%, 100% {
+  70%,
+  100% {
     transform: scale(1.4);
     opacity: 0;
   }
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -251,7 +269,8 @@ await getSavedPosts();
 }
 
 @keyframes pulse-sm {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }

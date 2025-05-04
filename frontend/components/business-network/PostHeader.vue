@@ -9,18 +9,12 @@
             class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-md transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105"
           />
           <!-- Subtle glow effect on hover -->
-          <div class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-md -z-10"></div>
+          <div
+            class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-md -z-10"
+          ></div>
         </NuxtLink>
-        
-        <!-- Premium badge for verified users -->
-        <div
-          v-if="post?.author_details?.kyc"
-          class="absolute bottom-0 right-0 bg-gradient-to-r from-blue-500 to-indigo-600 p-1 rounded-full shadow-lg border border-white dark:border-slate-700"
-        >
-          <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5 text-white" />
-        </div>
       </div>
-      
+
       <div class="flex-1">
         <NuxtLink
           :to="`/business-network/profile/${post.author}`"
@@ -34,31 +28,19 @@
             class="text-blue-500 flex items-center"
           >
             <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
-            <span
-              v-if="post?.author_details?.is_pro"
-              class="text-2xs px-1 py-0.5 font-medium"
-            >
-              <div class="flex items-center gap-0.5">
-                <div class="relative">
-                  <UIcon
-                    name="i-heroicons-shield-check"
-                    class="size-4 text-indigo-700 dark:text-indigo-400 font-semibold"
-                  />
-                  <!-- Glow effect for pro badge -->
-                  <div class="absolute inset-0 bg-indigo-400/30 blur-sm rounded-full -z-10"></div>
-                </div>
-                <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-gradient-to-r from-indigo-700 to-indigo-500 dark:from-indigo-400 dark:to-indigo-300 bg-clip-text text-transparent">Pro</span>
-              </div>
-            </span>
           </div>
         </NuxtLink>
-        
-        <p class="text-sm font-medium bg-transparent py-0.5 text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
+
+        <p
+          class="text-sm font-medium bg-transparent py-0.5 text-slate-600 dark:text-slate-400 truncate max-w-[180px]"
+        >
           {{ post?.author_details?.profession || "" }}
         </p>
-        
-        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-          <UIcon name="i-heroicons-clock" class="h-3 w-3" /> 
+
+        <p
+          class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1"
+        >
+          <UIcon name="i-heroicons-clock" class="h-3 w-3" />
           {{ formatTimeAgo(post?.created_at) }}
         </p>
       </div>
@@ -83,7 +65,7 @@
             <button
               class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('toggle-save', post)"
-              v-if="user"
+              v-if="user?.user"
             >
               <Bookmark
                 :class="[
@@ -100,18 +82,18 @@
                 {{
                   post.isSaved ||
                   savedPosts.some(
-                    (i) => i.post === post.id && i.user === user.user.id
+                    (i) => i.post === post.id && i.user === user?.user?.id
                   )
                     ? "Unsave post"
                     : "Save post"
                 }}
               </span>
             </button>
-            
+
             <button
               class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click="openPostDeleteModal(post)"
-              v-if="post.author_details.id === user.user.id"
+              v-if="post.author_details?.id === user?.user?.id"
             >
               <UIcon
                 name="i-material-symbols-light-delete-outline"
@@ -119,16 +101,21 @@
               />
               <span>Delete post</span>
             </button>
-            
+
             <button
               class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('copy-link', post)"
             >
-              <Link2 class="h-4 w-4 mr-2.5 text-purple-600 dark:text-purple-400" />
+              <Link2
+                class="h-4 w-4 mr-2.5 text-purple-600 dark:text-purple-400"
+              />
               <span>Copy link</span>
             </button>
-            
-            <hr class="my-1.5 border-gray-200/50 dark:border-gray-700/50" v-if="user" />
+
+            <hr
+              class="my-1.5 border-gray-200/50 dark:border-gray-700/50"
+              v-if="user"
+            />
 
             <button
               class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
@@ -141,7 +128,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Delete modal with glassmorphism effect -->
     <Teleport to="body">
       <div
@@ -149,27 +136,33 @@
         class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
         @click="postToDelete = null"
       >
-        <div 
+        <div
           class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl max-w-sm w-full p-6 shadow-2xl border border-white/20 dark:border-slate-700/30 transform transition-all duration-300 animate-scale-in"
           @click.stop
         >
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-500 mr-2" />
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white flex items-center"
+            >
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-5 h-5 text-red-500 mr-2"
+              />
               <span>Delete Post</span>
             </h3>
-            <button 
+            <button
               @click="postToDelete = null"
               class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             >
               <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-500" />
             </button>
           </div>
-          
+
           <p class="text-gray-600 dark:text-gray-300 mb-5">
-            Are you sure you want to delete this post? This action cannot be undone.
+            Are you sure you want to delete this post? This action cannot be
+            undone.
           </p>
-          
+
           <div class="flex justify-end space-x-3">
             <button
               @click="postToDelete = null"
