@@ -689,7 +689,7 @@
                   class="text-md font-medium text-gray-700 flex justify-between"
                 >
                   <span>Photos (Optional)</span>
-                  <span class="text-md text-gray-500"
+                  <span class="text-sm text-gray-500"
                     >{{ createForm.images?.length }}/4 photos</span
                   >
                 </label>
@@ -727,7 +727,7 @@
                       @change="handlePhotoUpload"
                     />
                     <ImagePlus class="h-6 w-6 text-gray-400" />
-                    <span class="mt-1 text-md text-gray-500">Add Photo</span>
+                    <span class="mt-1 text-sm text-gray-500">Add Photo</span>
                   </label>
                 </div>
               </div>
@@ -907,7 +907,7 @@
                   <p class="text-md font-medium">
                     {{ selectedProblem.user_details?.name }}
                   </p>
-                  <div class="flex items-center text-md text-gray-500">
+                  <div class="flex items-center text-sm text-gray-500">
                     <Clock class="h-3 w-3 mr-1" />
                     <span>{{ formatTimeAgo(selectedProblem.created_at) }}</span>
                   </div>
@@ -1096,7 +1096,7 @@
                               <CheckCircle class="h-3 w-3 mr-1" /> Solution
                             </span>
                           </div>
-                          <p class="text-md text-gray-500">
+                          <p class="text-sm text-gray-500">
                             {{ formatTimeAgo(comment.created_at) }}
                           </p>
                         </div>
