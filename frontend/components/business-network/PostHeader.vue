@@ -1,21 +1,32 @@
 <template>
-  <div class="flex items-center justify-between mb-2 px-2">
+  <div class="flex items-center justify-between mb-3 px-2">
     <div class="flex items-center space-x-3 flex-1">
-      <div class="relative">
+      <div class="relative group">
         <NuxtLink :to="`/business-network/profile/${post.author}`">
           <img
             :src="post?.author_details?.image || '/placeholder.svg'"
             :alt="post?.author_details?.name"
-            class="size-14 rounded-full cursor-pointer object-cover"
+            class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-md transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105"
           />
+          <!-- Subtle glow effect on hover -->
+          <div class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 blur-md -z-10"></div>
         </NuxtLink>
+        
+        <!-- Premium badge for verified users -->
+        <div
+          v-if="post?.author_details?.kyc"
+          class="absolute bottom-0 right-0 bg-gradient-to-r from-blue-500 to-indigo-600 p-1 rounded-full shadow-lg border border-white dark:border-slate-700"
+        >
+          <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5 text-white" />
+        </div>
       </div>
+      
       <div class="flex-1">
         <NuxtLink
           :to="`/business-network/profile/${post.author}`"
-          class="font-semibold text-gray-900 text-md hover:cursor-pointer flex gap-1 w-full"
+          class="font-semibold text-gray-900 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
         >
-          <p class="">
+          <p class="truncate max-w-[180px]">
             {{ post?.author_details?.name }}
           </p>
           <div
@@ -28,19 +39,26 @@
               class="text-2xs px-1 py-0.5 font-medium"
             >
               <div class="flex items-center gap-0.5">
-                <UIcon
-                  name="i-heroicons-shield-check"
-                  class="size-4 text-indigo-700 font-semibold"
-                />
-                <span class="text-xs font-semibold text-indigo-700">Pro</span>
+                <div class="relative">
+                  <UIcon
+                    name="i-heroicons-shield-check"
+                    class="size-4 text-indigo-700 dark:text-indigo-400 font-semibold"
+                  />
+                  <!-- Glow effect for pro badge -->
+                  <div class="absolute inset-0 bg-indigo-400/30 blur-sm rounded-full -z-10"></div>
+                </div>
+                <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-gradient-to-r from-indigo-700 to-indigo-500 dark:from-indigo-400 dark:to-indigo-300 bg-clip-text text-transparent">Pro</span>
               </div>
             </span>
           </div>
         </NuxtLink>
-        <p class="text-sm font-semibold bg-white py-0.5 text-slate-500">
+        
+        <p class="text-sm font-medium bg-transparent py-0.5 text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
           {{ post?.author_details?.profession || "" }}
         </p>
-        <p class="text-sm text-gray-500">
+        
+        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+          <UIcon name="i-heroicons-clock" class="h-3 w-3" /> 
           {{ formatTimeAgo(post?.created_at) }}
         </p>
       </div>
@@ -49,105 +67,119 @@
     <div class="flex items-center gap-2">
       <div class="relative">
         <button
-          class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+          class="h-8 w-8 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
           @click.stop="$emit('toggle-dropdown', post)"
         >
-          <MoreHorizontal class="h-4 w-4" />
+          <MoreHorizontal class="h-4 w-4 text-gray-600 dark:text-gray-300" />
         </button>
 
-        <!-- Dropdown Menu -->
+        <!-- Dropdown Menu with glassmorphism effect -->
         <div
           v-if="post?.showDropdown"
-          class="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+          class="absolute right-0 mt-1 w-56 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-lg shadow-xl border border-gray-100/50 dark:border-slate-700/50 z-20 premium-shadow transform transition-all duration-200 animate-fade-in-down"
           @click.stop
         >
-          <div class="py-1">
+          <div class="py-1.5">
             <button
-              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('toggle-save', post)"
               v-if="user"
             >
               <Bookmark
                 :class="[
-                  'h-4 w-4 mr-2',
+                  'h-4 w-4 mr-2.5',
                   post.isSaved ||
                   savedPosts.some(
                     (i) => i.post === post.id && i.user === user.user.id
                   )
-                    ? 'text-blue-600 fill-blue-600'
+                    ? 'text-blue-600 dark:text-blue-500 fill-blue-600 dark:fill-blue-500'
                     : '',
                 ]"
               />
-              {{
-                post.isSaved ||
-                savedPosts.some(
-                  (i) => i.post === post.id && i.user === user.user.id
-                )
-                  ? "Unsave post"
-                  : "Save post"
-              }}
+              <span>
+                {{
+                  post.isSaved ||
+                  savedPosts.some(
+                    (i) => i.post === post.id && i.user === user.user.id
+                  )
+                    ? "Unsave post"
+                    : "Save post"
+                }}
+              </span>
             </button>
-            <!-- <button
-              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-              @click="editPost(post)"
-              v-if="post.author_details.id === user.user.id"
-            >
-              <UIcon name="i-mdi-square-edit-outline" class="h-4 w-4 mr-2" />
-              Edit post
-            </button> -->
+            
             <button
-              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click="openPostDeleteModal(post)"
               v-if="post.author_details.id === user.user.id"
             >
               <UIcon
                 name="i-material-symbols-light-delete-outline"
-                class="h-4 w-4 mr-2"
+                class="h-4 w-4 mr-2.5 text-red-500 dark:text-red-400"
               />
-              Delete post
+              <span>Delete post</span>
             </button>
+            
             <button
-              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('copy-link', post)"
             >
-              <Link2 class="h-4 w-4 mr-2" />
-              Copy link
+              <Link2 class="h-4 w-4 mr-2.5 text-purple-600 dark:text-purple-400" />
+              <span>Copy link</span>
             </button>
-            <hr class="my-1 border-gray-200" v-if="user" />
+            
+            <hr class="my-1.5 border-gray-200/50 dark:border-gray-700/50" v-if="user" />
 
             <button
-              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               v-if="user"
             >
-              <Flag class="h-4 w-4 mr-2" />
-              Report post
+              <Flag class="h-4 w-4 mr-2.5 text-amber-600 dark:text-amber-400" />
+              <span>Report post</span>
             </button>
           </div>
         </div>
       </div>
     </div>
+    
+    <!-- Delete modal with glassmorphism effect -->
     <Teleport to="body">
       <div
         v-if="postToDelete"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-        @click="$emit('cancel-delete-comment')"
+        class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        @click="postToDelete = null"
       >
-        <div class="bg-white rounded-lg max-w-sm w-full p-4" @click.stop>
-          <h3 class="text-lg font-semibold mb-2">Delete Post</h3>
-          <p class="text-gray-600 mb-4">
-            Are you sure you want to delete this Post? This action cannot be
-            undone.
+        <div 
+          class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl max-w-sm w-full p-6 shadow-2xl border border-white/20 dark:border-slate-700/30 transform transition-all duration-300 animate-scale-in"
+          @click.stop
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+              <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-500 mr-2" />
+              <span>Delete Post</span>
+            </h3>
+            <button 
+              @click="postToDelete = null"
+              class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+          
+          <p class="text-gray-600 dark:text-gray-300 mb-5">
+            Are you sure you want to delete this post? This action cannot be undone.
           </p>
-          <div class="flex justify-end space-x-2">
+          
+          <div class="flex justify-end space-x-3">
             <button
               @click="postToDelete = null"
-              class="px-4 py-2 border border-gray-200 text-gray-800 rounded-lg hover:bg-gray-50"
+              class="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>
             <button
               @click="handlePostDelete(postToDelete)"
-              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
             >
               Delete
             </button>
@@ -212,6 +244,7 @@ async function handlePostDelete(post) {
     return;
   }
 }
+
 function editPost(post) {
   // Pass the post to the component
   selectedEditPost.value = post;
@@ -248,3 +281,49 @@ const formatTimeAgo = (dateString) => {
   return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
 };
 </script>
+
+<style scoped>
+/* Animation for dropdown */
+.animate-fade-in-down {
+  animation: fadeInDown 0.2s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>

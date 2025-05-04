@@ -1,17 +1,18 @@
 <template>
   <div class="max-w-3xl pb-8 pt-3">
-    <div class="space-y-4">
+    <div class="space-y-6">
       <!-- Loop through posts and insert sponsored products after every 5 posts -->
       <template v-for="(post, index) in posts" :key="post.id">
-        <!-- Post Card -->
+        <!-- Post Card with glassmorphism effect -->
         <div
-          class="transform transition-all duration-300 bg-white rounded-xl border border-gray-200 overflow-hidden"
+          class="transform transition-all duration-300 bg-white/90 dark:bg-slate-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden backdrop-blur-md shadow-sm hover:shadow-sm dark:shadow-slate-800/20"
           :style="{
             animationDelay: `${index * 0.05}s`,
             animation: `fadeIn 0.5s ease-out forwards`,
+            backgroundImage: 'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)'
           }"
         >
-          <div class="sm:px-3 py-4 sm:py-5">
+          <div class="sm:px-4 py-5 sm:py-6">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post?.post_details ? post.post_details : post"
@@ -22,42 +23,42 @@
               @copy-link="copyLink"
             />
 
-            <!-- Post Title -->
+            <!-- Post Title with enhanced styling -->
             <NuxtLink
               :to="`/business-network/posts/${
                 post?.post ? post.post : post.id
               }`"
-              class="block text-sm sm:text-base font-semibold mb-1 hover:text-blue-600 transition-colors px-2"
+              class="block text-sm sm:text-base font-semibold mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-800 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
 
-            <!-- Tags -->
+            <!-- Tags with premium styling -->
             <div
               v-if="
                 post?.post_details
                   ? post.post_details?.post_tags?.length > 0
                   : post?.post_tags?.length > 0
               "
-              class="flex flex-wrap gap-1 mb-2 px-2"
+              class="flex flex-wrap gap-1.5 mb-3 px-2"
             >
               <span
                 v-for="(tag, idx) in post?.post_details
                   ? post.post_details?.post_tags
                   : post?.post_tags"
                 :key="idx"
-                class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full"
+                class="text-xs bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full shadow-sm border border-blue-200/30 dark:border-blue-700/30 hover:shadow-md transition-all duration-300 transform hover:scale-105"
               >
                 #{{ tag.tag }}
               </span>
             </div>
 
-            <!-- Post Content -->
-            <div class="mb-2 min-w-full px-2">
+            <!-- Post Content with improved styling -->
+            <div class="mb-3 min-w-full px-2">
               <p
                 :class="[
-                  `text-base text-gray-800`,
-                  !post.showFullDescription && `line-clamp-4`,
+                  'text-base text-gray-700 dark:text-gray-200 leading-relaxed',
+                  !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="
                   post?.post_details ? post.post_details.content : post.content
@@ -69,12 +70,13 @@
                     ? post.post_details.content?.length > 160
                     : post.content?.length > 160
                 "
-                class="text-sm text-blue-600 font-medium mt-1"
+                class="text-sm text-blue-600 dark:text-blue-400 font-medium mt-1.5 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center"
                 @click="toggleDescription(post)"
               >
-                {{
+                <span>{{
                   post.showFullDescription ? $t("read_less") : $t("read_more")
-                }}
+                }}</span>
+                <UIcon :name="post.showFullDescription ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="ml-1 w-4 h-4" />
               </button>
             </div>
 
@@ -133,7 +135,7 @@
           </div>
         </div>
 
-        <!-- Sponsored Products Section - Show after every 5th post -->
+        <!-- Sponsored Products Section - Show after every 5th post with enhanced design -->
         <BusinessNetworkProductSection
           v-if="(index + 1) % 5 === 0 || (index === 0 && posts.length === 1)"
           :key="`sponsored-${index}`"
@@ -146,17 +148,24 @@
         />
       </template>
 
-      <div v-if="loading" class="flex justify-center py-6">
-        <div class="h-6 w-6 animate-spin text-blue-600">
-          <Loader2 />
+      <!-- Loading spinner with premium styling -->
+      <div v-if="loading" class="flex justify-center py-8">
+        <div class="relative">
+          <div class="h-10 w-10 animate-spin text-blue-600">
+            <Loader2 class="h-10 w-10" />
+          </div>
+          <div class="absolute inset-0 animate-ping-sm opacity-70 rounded-full bg-blue-400/20 h-10 w-10"></div>
         </div>
       </div>
 
+      <!-- Empty state with better styling -->
       <div
         v-if="!loading && posts?.length === 0"
-        class="flex flex-col items-center justify-center py-12 text-center"
+        class="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-gray-100 dark:border-slate-700/50 shadow-md"
       >
-        <p class="text-gray-500 mb-2">{{ $t("no_post_available") }}</p>
+        <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
+        <p class="text-gray-500 dark:text-gray-400 mb-2 font-medium">{{ $t("no_post_available") }}</p>
+        <p class="text-gray-400 dark:text-gray-500 text-sm">Check back later for new updates</p>
       </div>
     </div>
 
@@ -746,14 +755,19 @@ const deleteMediaComment = async (comment) => {
 };
 
 // Post comment edit/delete functions
-const editComment = (postToEdit, commentToEdit) => {
-  commentToEdit.isEditing = true;
-  commentToEdit.editText = commentToEdit.content;
+const editComment = (post, comment) => {
+  // Make sure we initialize editText if it doesn't exist
+  if (!comment.editText) {
+    comment.editText = comment.content;
+  }
+  
+  // Set editing state to true
+  comment.isEditing = true;
 };
 
-const deleteComment = (postToUpdate, commentToDelete) => {
-  commentToDelete = { ...commentToDelete };
-  postWithCommentToDelete.value = postToUpdate;
+const deleteComment = (post, comment) => {
+  commentToDelete.value = comment;
+  postWithCommentToDelete.value = post;
 };
 
 const confirmDeleteComment = async () => {
@@ -790,23 +804,23 @@ const confirmDeleteComment = async () => {
 
 const cancelEditComment = (comment) => {
   comment.isEditing = false;
-  comment.editText = "";
+  comment.editText = ""; // Reset edit text
 };
 
-const saveEditComment = async (postToUpdate, commentToSave) => {
-  if (!commentToSave.editText?.trim()) return;
+const saveEditComment = async (post, comment) => {
+  if (!comment.editText?.trim()) return;
   
-  commentToSave.isSaving = true;
+  comment.isSaving = true;
   
   try {
-    const { data } = await put(`/bn/post-comments/${commentToSave.id}/`, {
-      content: commentToSave.editText,
+    const { data } = await put(`/bn/post-comments/${comment.id}/`, {
+      content: comment.editText,
     });
     
     // Update the comment content
-    commentToSave.content = data.content;
-    commentToSave.isEditing = false;
-    commentToSave.editText = "";
+    comment.content = data.content;
+    comment.isEditing = false;
+    comment.editText = "";
     
     toast.add({ 
       title: "Comment updated", 
@@ -819,7 +833,7 @@ const saveEditComment = async (postToUpdate, commentToSave) => {
       color: "red",
     });
   } finally {
-    commentToSave.isSaving = false;
+    comment.isSaving = false;
   }
 };
 
@@ -860,6 +874,56 @@ const sharePost = (postToShare) => {
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes ping-slow {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  75%, 100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes ping-sm {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  75%, 100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+/* Add frosted glass effect base classes */
+.glass-effect {
+  @apply backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border border-white/20 dark:border-slate-700/20 shadow-lg;
+}
+
+.premium-shadow {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05), 
+              0 2px 6px rgba(0, 0, 0, 0.05),
+              0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .premium-shadow {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 
+              0 2px 6px rgba(0, 0, 0, 0.2),
+              0 0 1px rgba(255, 255, 255, 0.05);
+}
+
 /* Add viewport control for mobile */
 @media (max-width: 640px) {
   /* Ensure no overflowing content */
@@ -869,9 +933,7 @@ const sharePost = (postToShare) => {
   }
 
   /* Fix horizontal scrolling issues */
-  div,
-  p,
-  span {
+  div, p, span {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;

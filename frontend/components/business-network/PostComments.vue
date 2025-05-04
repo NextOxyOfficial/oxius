@@ -1,35 +1,50 @@
 <template>
-  <div class="space-y-2 px-2">
-    <!-- See all comments button moved to the top -->
+  <div class="space-y-2.5 px-2 pt-1">
+    <!-- See all comments button with smaller hover effect -->
     <button
       v-if="post?.post_comments?.length > 3"
-      class="text-base sm:text-sm text-blue-600 font-medium"
+      class="flex items-center text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-300 group"
       @click="$emit('open-comments-modal', post)"
     >
+      <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="mr-1.5 w-4 h-4 group-hover:scale-105 transition-transform duration-300" />
       See all {{ post?.post_comments?.length }} comments
     </button>
 
-    <!-- Comments in reverse order (oldest first, newest last) -->
+    <!-- Comments with premium glassmorphism design -->
     <div
-      v-for="comment in [...post.post_comments].slice(0, 3).reverse()"
+      v-for="(comment, index) in [...post.post_comments].slice(0, 3).reverse()"
       :key="comment.id"
-      class="flex items-start space-x-2"
+      class="flex items-start space-x-2.5"
+      :style="{
+        animationDelay: `${index * 0.1}s`,
+        animation: `fadeInUp 0.4s ease-out forwards`,
+      }"
     >
-      <div class="flex items-start space-x-2">
+      <div class="flex items-start space-x-2.5 w-full">
         <NuxtLink :to="`/business-network/profile/${comment?.author}`">
-          <img
-            :src="comment.author_details?.image"
-            :alt="comment.author_details?.name"
-            class="w-8 h-8 rounded-full mt-0.5 cursor-pointer"
-          />
+          <div class="relative group">
+            <img
+              :src="comment.author_details?.image"
+              :alt="comment.author_details?.name"
+              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-md transition-all duration-300"
+            />
+            <!-- Verified badge -->
+            <div
+              v-if="comment.author_details?.kyc"
+              class="absolute -bottom-0.5 -right-0.5 bg-blue-500 rounded-full w-3 h-3 border border-white dark:border-gray-800 flex items-center justify-center"
+            >
+              <UIcon name="i-heroicons-check" class="w-2 h-2 text-white" />
+            </div>
+          </div>
         </NuxtLink>
+        
         <div class="flex-1">
-          <div class="bg-gray-50 rounded-lg pt-1 px-2">
-            <div class="flex items-center justify-between">
+          <div class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl py-2 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50">
+            <div class="flex items-center justify-between mb-0.5">
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${comment.author}`"
-                  class="text-sm font-medium hover:underline"
+                  class="text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {{ comment.author_details?.name }}
                 </NuxtLink>
@@ -42,48 +57,53 @@
                 </div>
               </div>
 
-              <!-- Only edit/delete buttons for comment owner -->
+              <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
               <div
                 v-if="comment.author === user?.user?.id"
                 class="flex items-center pl-3"
               >
                 <button
-                  @click="$emit('edit-comment', comment)"
-                  class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
+                  type="button"
+                  @click.prevent="editComment(post, comment)"
+                  class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-blue-50/70 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                 >
                   <UIcon name="i-heroicons-pencil-square" class="size-3.5" />
                 </button>
                 <button
-                  @click="$emit('delete-comment', comment)"
-                  class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
+                  type="button"
+                  @click.prevent="deleteComment(post, comment)"
+                  class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-50/70 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-all flex items-center justify-center"
                   :disabled="comment.isDeleting"
                 >
                   <Loader2
                     v-if="comment.isDeleting"
-                    class="h-4 w-4 animate-spin text-red-500"
+                    class="h-3.5 w-3.5 animate-spin text-red-500"
                   />
                   <UIcon v-else name="i-heroicons-trash" class="size-3.5" />
                 </button>
               </div>
             </div>
-            <!-- Comment Content -->
+            
+            <!-- Comment editing form with glassmorphism -->
             <div v-if="comment.isEditing">
               <textarea
                 :id="`comment-edit-${comment.id}`"
                 v-model="comment.editText"
-                class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                class="w-full text-sm p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
                 rows="2"
               ></textarea>
-              <div class="flex justify-end space-x-2 mt-1">
+              <div class="flex justify-end space-x-2 mt-2">
                 <button
-                  @click="$emit('cancel-edit-comment', comment)"
-                  class="text-xs text-gray-500 hover:underline"
+                  type="button"
+                  @click.prevent="$emit('cancel-edit-comment', comment)"
+                  class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  @click="$emit('save-edit-comment', comment)"
-                  class="text-xs bg-blue-600 text-white rounded-md px-3 py-1 hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  type="button"
+                  @click.prevent="saveEditComment(post, comment)"
+                  class="text-xs bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg px-3 py-1.5 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 disabled:opacity-50 shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
                   :disabled="
                     !comment.editText?.trim() ||
                     comment.editText === comment.content ||
@@ -99,13 +119,24 @@
                 </button>
               </div>
             </div>
-            <p v-else class="text-base sm:text-sm" style="word-break: break-word">
+            
+            <!-- Comment content with premium styling -->
+            <p 
+              v-else 
+              class="text-base sm:text-sm text-gray-800 dark:text-gray-200" 
+              style="word-break: break-word"
+            >
               {{ comment?.content }}
             </p>
           </div>
-          <span class="text-sm text-gray-500 mt-1 inline-block">
-            {{ formatTimeAgo(comment?.created_at) }}
-          </span>
+          
+          <!-- Timestamp with premium styling -->
+          <div class="flex items-center mt-1 pl-1">
+            <UIcon name="i-heroicons-clock" class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1" />
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              {{ formatTimeAgo(comment?.created_at) }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -115,7 +146,7 @@
 <script setup>
 import { Loader2 } from "lucide-vue-next";
 
-defineProps({
+const props = defineProps({
   post: {
     type: Object,
     required: true,
@@ -126,13 +157,37 @@ defineProps({
   },
 });
 
-defineEmits([
+const emit = defineEmits([
   "open-comments-modal",
   "edit-comment",
   "delete-comment",
   "cancel-edit-comment",
   "save-edit-comment",
 ]);
+
+// Direct helper functions for comment actions
+const editComment = (post, comment) => {
+  // Initialize edit text if not already set
+  if (!comment.editText) {
+    comment.editText = comment.content;
+  }
+  
+  // Set editing state
+  comment.isEditing = true;
+  
+  // Emit event for parent components
+  emit('edit-comment', post, comment);
+};
+
+const deleteComment = (post, comment) => {
+  // Emit delete event to parent
+  emit('delete-comment', post, comment);
+};
+
+const saveEditComment = (post, comment) => {
+  // Emit save event to parent
+  emit('save-edit-comment', post, comment);
+};
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {
@@ -163,3 +218,17 @@ const formatTimeAgo = (dateString) => {
   return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
 };
 </script>
+
+<style scoped>
+/* Animation for comments */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
