@@ -3,8 +3,7 @@
     <!-- Main content area with enhanced premium image display -->
     <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
       <div
-        class="relative w-full cursor-pointer overflow-hidden transition-all duration-700 h-[480px] sm:h-[540px]"
-        @click="$emit('open-media', post, activeIndex)"
+        class="relative w-full overflow-hidden transition-all duration-700 h-[480px] sm:h-[540px]"
       >
         <!-- Main image with premium hover effects -->
         <img
@@ -71,7 +70,7 @@
     <!-- Enhanced thumbnail gallery with premium styling - only show if there's more than one media item -->
     <div v-if="post.post_media.length > 1" class="relative px-0.5 mt-5">
       <!-- Premium Gallery Heading with glass effect -->
-      <div class="flex items-center justify-between mb-4 relative">
+      <div class="flex items-center px-4 justify-between mb-4 relative">
         <div class="absolute -inset-2 bg-gradient-to-r from-purple-500/5 via-blue-500/10 to-emerald-500/5 rounded-lg blur-xl opacity-50 dark:opacity-30"></div>
         
         <h3 class="font-medium text-slate-800 dark:text-slate-100 flex items-center space-x-2 relative backdrop-blur-sm">
