@@ -215,7 +215,7 @@
               <div class="relative group">
                 <div class="relative">
                   <!-- Professional border for profile picture -->
-                  <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1 blur animate-gradient-slow"></div>
+                  <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1 "></div>
                   
                   <!-- Profile image container -->
                   <div class="size-32 sm:size-40 rounded-full border-4 border-white shadow-sm bg-white overflow-hidden relative z-10">

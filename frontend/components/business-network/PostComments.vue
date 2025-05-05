@@ -36,13 +36,13 @@
 
         <div class="flex-1">
           <div
-            class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl py-2 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
+            class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
           >
             <div class="flex items-center justify-between mb-0.5">
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${comment.author}`"
-                  class="text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  class="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {{ comment.author_details?.name }}
                 </NuxtLink>
@@ -134,7 +134,7 @@
               name="i-heroicons-clock"
               class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
             />
-            <span class="text-xs text-gray-500 dark:text-gray-400">
+            <span class="text-sm text-gray-500 dark:text-gray-400">
               {{ formatTimeAgo(comment?.created_at) }}
             </span>
           </div>
