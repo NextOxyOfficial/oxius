@@ -3,16 +3,27 @@
     <!-- Main content area with enhanced premium image display -->
     <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
       <div
-        class="relative w-full overflow-hidden transition-all duration-700 max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
+        ref="imageContainer"
+        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center bg-slate-50 dark:bg-slate-800/30 min-h-[300px]"
       >
         <!-- Main image with premium hover effects -->
         <img
           :src="post.post_media[activeIndex].image"
+          :key="activeIndex"
           alt="Media"
-          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
+          class="w-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
+          @load="adjustContainerHeight"
         />
 
-  
+        <!-- Premium overlay gradients -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-60"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent opacity-60"></div>
+        
+        <!-- Radial glow on hover -->
+        <div class="absolute inset-0 bg-radial-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+        
+        <!-- Premium vignette effect -->
+        <div class="absolute inset-0 bg-vignette-gradient opacity-40 pointer-events-none"></div>
 
         <!-- Glassmorphic image counter indicator -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
@@ -247,12 +258,17 @@ defineEmits(["open-media"]);
 // References and state
 const activeIndex = ref(0);
 const thumbnailsContainer = ref(null);
+const imageContainer = ref(null);
 const isMobile = ref(false);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 
 // Set the active media
 const setActiveMedia = (index) => {
+  // Store the current scroll position
+  const scrollPosition = window.scrollY;
+  
+  // Update the active index
   activeIndex.value = index;
 
   // Ensure the active thumb is visible by scrolling to it
@@ -261,17 +277,33 @@ const setActiveMedia = (index) => {
 
     const thumbnailElements = thumbnailsContainer.value.children;
     if (thumbnailElements && thumbnailElements[index]) {
-      thumbnailElements[index].scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
+      const container = thumbnailsContainer.value;
+      const thumbElement = thumbnailElements[index];
+      
+      // Center the thumbnail in the container without affecting page scroll
+      const containerWidth = container.clientWidth;
+      const thumbLeft = thumbElement.offsetLeft;
+      const thumbWidth = thumbElement.clientWidth;
+      
+      container.scrollTo({
+        left: thumbLeft - (containerWidth / 2) + (thumbWidth / 2),
+        behavior: "smooth"
       });
     }
+    
+    // Restore the original scroll position
+    window.scrollTo({
+      top: scrollPosition,
+      behavior: 'instant'
+    });
   });
 };
 
 // Navigate through media directly from main image
 const navigateMedia = (direction) => {
+  // Store the current scroll position
+  const scrollPosition = window.scrollY;
+  
   const totalMedia = props.post.post_media.length;
   if (totalMedia <= 1) return;
   
@@ -280,6 +312,14 @@ const navigateMedia = (direction) => {
   } else {
     activeIndex.value = (activeIndex.value - 1 + totalMedia) % totalMedia;
   }
+  
+  // Restore the scroll position to prevent page jumping
+  nextTick(() => {
+    window.scrollTo({
+      top: scrollPosition,
+      behavior: 'instant'
+    });
+  });
 };
 
 // Function to download an image
@@ -327,6 +367,29 @@ const updateScrollIndicators = () => {
 // Check if the device is mobile
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 640; // sm breakpoint in Tailwind
+};
+
+// Adjust container height based on image dimensions
+const adjustContainerHeight = () => {
+  // Store the current scroll position
+  const scrollPosition = window.scrollY;
+  
+  if (!imageContainer.value) return;
+
+  const imageElement = imageContainer.value.querySelector("img");
+  if (imageElement) {
+    // Set the container height to match the image height (with max limits)
+    const imageHeight = Math.min(imageElement.naturalHeight, isMobile.value ? 520 : 540);
+    if (imageHeight > 0) {
+      imageContainer.value.style.height = `${imageHeight}px`;
+    }
+  }
+  
+  // Restore the original scroll position to prevent the page from jumping
+  window.scrollTo({
+    top: scrollPosition,
+    behavior: 'instant'
+  });
 };
 
 // Lifecycle hooks
