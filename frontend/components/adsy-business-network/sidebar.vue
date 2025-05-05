@@ -246,13 +246,13 @@
             </NuxtLink>
           </div>
         </div>
-        <UButton
+        <!-- <UButton
           label="Promote on ABN"
           variant="outline"
           block
           color="blue"
           to="/business-network/abn-ads"
-        />
+        /> -->
         <!-- Adsy News Section -->
         <div>
           <h3
