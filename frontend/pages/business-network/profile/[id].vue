@@ -215,10 +215,10 @@
               <div class="relative group">
                 <div class="relative">
                   <!-- Professional border for profile picture -->
-                  <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 p-1 -m-1 blur animate-gradient-slow"></div>
+                  <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1 blur animate-gradient-slow"></div>
                   
                   <!-- Profile image container -->
-                  <div class="size-32 sm:size-40 rounded-full border-4 border-white shadow-xl bg-white overflow-hidden relative z-10">
+                  <div class="size-32 sm:size-40 rounded-full border-4 border-white shadow-sm bg-white overflow-hidden relative z-10">
                     <img
                       :src="user?.image || '/static/frontend/images/placeholder.jpg'"
                       :alt="user?.name"
@@ -484,7 +484,7 @@
       </div>
 
       <!-- Tabs Section with Premium Styling -->
-      <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 overflow-hidden animate-fadeIn-delayed">
+      <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-gray-200/50 overflow-hidden animate-fadeIn-delayed">
         <!-- Scrollable Tabs for Mobile -->
         <div class="overflow-x-auto scrollbar-hide">
           <div class="flex items-center border-b border-gray-200 min-w-max relative">
