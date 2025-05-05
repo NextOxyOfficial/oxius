@@ -94,6 +94,13 @@
                         : getMenuItemColor(item.label, 'icon'),
                     ]"
                   />
+                  <!-- Notification badge on icon -->
+                  <span
+                    v-if="item.badge && item.badge > 0 && item.label === 'Notifications'"
+                    class="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full"
+                  >
+                    {{ item.badge > 99 ? '99+' : item.badge }}
+                  </span>
                 </div>
 
                 <!-- Label with dynamic styling -->

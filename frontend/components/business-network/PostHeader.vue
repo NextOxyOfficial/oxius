@@ -54,7 +54,7 @@
         </p>
 
         <p
-          class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1"
+          class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1"
         >
           <UIcon name="i-heroicons-clock" class="h-3 w-3" />
           {{ formatTimeAgo(post?.created_at) }}
