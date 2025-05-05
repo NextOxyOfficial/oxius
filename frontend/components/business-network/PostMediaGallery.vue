@@ -3,7 +3,7 @@
     <!-- Main content area with enhanced premium image display -->
     <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
       <div
-        class="relative w-full overflow-hidden transition-all duration-700 max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
+        class="relative w-full overflow-hidden transition-all duration-700 min-h-[340px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
         <!-- Main image with premium hover effects -->
         <img
