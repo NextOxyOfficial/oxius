@@ -1,17 +1,17 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
       <div
         ref="imageContainer"
-        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center dark:bg-slate-800/30 h-auto min-h-[300px]"
+        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center"
       >
         <!-- Main image with premium hover effects -->
         <img
           :src="post.post_media[activeIndex].image"
           :key="activeIndex"
           alt="Media"
-          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
+          class="w-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
           @load="adjustContainerHeight"
         />
 
