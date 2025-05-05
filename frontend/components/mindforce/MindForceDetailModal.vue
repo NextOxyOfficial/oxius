@@ -24,7 +24,7 @@
       >
         <!-- Premium scrollbar styling -->
         <div
-          class="px-4 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[85vh]"
+          class="px-2 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[80vh]"
         >
           <!-- Problem Header with enhanced design -->
           <div class="flex justify-between items-start">

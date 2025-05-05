@@ -22,7 +22,7 @@
         class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-xl mx-4 max-h-[85vh] overflow-hidden border border-slate-100 dark:border-slate-700 animate-fade-in-up"
       >
         <!-- Premium scrollbar styling -->
-        <div class="overflow-y-auto custom-scrollbar max-h-[85vh]">
+        <div class="overflow-y-auto custom-scrollbar max-h-[80vh]">
           <!-- Close button with enhanced styling -->
           <button
             @click="$emit('update:modelValue', false)"
