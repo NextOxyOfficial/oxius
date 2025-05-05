@@ -589,68 +589,8 @@ const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
 const { unreadCount, fetchUnreadCount } = useNotifications();
 
-// Updated the toggleSidebar function to handle mobile screen issues and ensure proper state management.
-const toggleSidebar = () => {
-  isOpen.value = !isOpen.value;
-
-  // Prevent body scroll when sidebar is open on mobile
-  if (isOpen.value && isMobile.value) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
-  }
-
-  // Ensure cart.burgerMenu state syncs with isOpen
-  if (isMobile.value) {
-    cart.burgerMenu = isOpen.value;
-  }
-};
-
-// Updated checkMobile function to auto-close sidebar properly on resize
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 1024; // lg breakpoint
-
-  // Auto-close sidebar on mobile when resizing
-  if (isMobile.value) {
-    isOpen.value = false;
-    cart.burgerMenu = false;
-    document.body.style.overflow = "";
-  }
-};
-
-// Loading states
-const isLoadingNews = ref(true);
-const isLoadingProducts = ref(true);
-const isLoadingContributors = ref(true);
-let newsInterval = null;
-
-const toast = useToast(); // Initialize toast
-
-async function getLogo() {
-  try {
-    const { data } = await get("/bn-logo/");
-    logo.value = data;
-  } catch (error) {
-    console.error("Error fetching logo:", error);
-  }
-}
-
-await getLogo();
-
-async function getTags() {
-  try {
-    const response = await get("/bn/top-tags/");
-    tags.value = response.data;
-    console.log(response);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-await getTags();
-
-// Main Menu Items
-const mainMenu = [
+// Create a reactive menu array that updates when unreadCount changes
+const mainMenu = computed(() => [
   {
     label: "Recent",
     path: "/business-network",
@@ -674,7 +614,7 @@ const mainMenu = [
     label: "Notifications",
     path: "/business-network/notifications",
     icon: Bell,
-    badge: unreadCount,
+    badge: unreadCount.value,
     active: false,
   },
   {
@@ -683,7 +623,7 @@ const mainMenu = [
     icon: Settings,
     active: false,
   },
-];
+]);
 
 const mainMenu2 = [
   {
@@ -1016,6 +956,35 @@ const resumeCarousel = () => {
   newsInterval = setInterval(() => {
     nextNews();
   }, 7000);
+};
+
+// Updated the toggleSidebar function to handle mobile screen issues and ensure proper state management.
+const toggleSidebar = () => {
+  isOpen.value = !isOpen.value;
+
+  // Prevent body scroll when sidebar is open on mobile
+  if (isOpen.value && isMobile.value) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+
+  // Ensure cart.burgerMenu state syncs with isOpen
+  if (isMobile.value) {
+    cart.burgerMenu = isOpen.value;
+  }
+};
+
+// Check if screen is mobile size and manage sidebar state accordingly
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 1024; // lg breakpoint
+
+  // Auto-close sidebar on mobile when resizing
+  if (isMobile.value) {
+    isOpen.value = false;
+    cart.burgerMenu = false;
+    document.body.style.overflow = "";
+  }
 };
 
 // Lifecycle hooks
