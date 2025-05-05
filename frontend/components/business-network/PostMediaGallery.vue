@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+    <div class="relative overflow-hidden rounded-xl shadow-sm  hover:shadow-sm hover:-translate-y-0.5">
       <div
         class="relative w-full overflow-hidden transition-all duration-700 h-[480px] sm:h-[540px]"
       >
@@ -9,19 +9,10 @@
         <img
           :src="post.post_media[activeIndex].image"
           alt="Media"
-          class="h-full w-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.03] brightness-[0.98] group-hover:brightness-[1.02]"
+          class="h-full w-full object-fill"
         />
 
-        <!-- Premium overlay gradients -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-60"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent opacity-60"></div>
-        
-        <!-- Radial glow on hover -->
-        <div class="absolute inset-0 bg-radial-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-        
-        <!-- Premium vignette effect -->
-        <div class="absolute inset-0 bg-vignette-gradient opacity-40 pointer-events-none"></div>
-
+      
         <!-- Glassmorphic image counter indicator -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
           <div class="relative w-3 h-3">
