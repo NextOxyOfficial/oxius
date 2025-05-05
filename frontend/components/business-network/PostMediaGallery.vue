@@ -1,18 +1,19 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm  hover:shadow-sm hover:-translate-y-0.5">
+    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
       <div
-        class="relative w-full overflow-hidden transition-all duration-700 max-h-520 sm:h-[540px]"
+        class="relative w-full overflow-hidden transition-all duration-700 max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
         <!-- Main image with premium hover effects -->
         <img
           :src="post.post_media[activeIndex].image"
           alt="Media"
-          class="h-auto w-full object-fill"
+          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
         />
 
-      
+  
+
         <!-- Glassmorphic image counter indicator -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
           <div class="relative w-3 h-3">
