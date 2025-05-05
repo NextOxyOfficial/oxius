@@ -158,7 +158,7 @@
             :class="{
               'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-sm scale-[1.03] z-10 premium-thumb-active':
                 activeIndex === mediaIndex,
-              'opacity-90 hover:opacity-100 hover:shadow-md ring-1 ring-white/70 dark:ring-slate-700/90':
+              'opacity-90 hover:opacity-100 hover:shadow-sm ring-1 ring-white/70 dark:ring-slate-700/90':
                 activeIndex !== mediaIndex,
             }"
             @click="setActiveMedia(mediaIndex)"
