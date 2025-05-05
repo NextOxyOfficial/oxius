@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-between mb-3 bg-slate-50 py-3 rounded-xl">
-    <div class="flex items-center space-x-3 flex-1">
+    <div class="flex items-center space-x-3 flex-1 pl-2">
       <div class="relative group">
         <NuxtLink :to="`/business-network/profile/${post.author}`">
           <!-- Pro user badge with improved color ring around profile picture -->
