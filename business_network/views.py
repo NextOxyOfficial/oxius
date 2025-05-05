@@ -545,7 +545,7 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
     queryset = AbnAdsPanel.objects.all()
     serializer_class = AbnAdsPanelSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = StandardResultsSetPagination
+    # pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         queryset = AbnAdsPanel.objects.all().order_by('-created_at')
@@ -573,10 +573,11 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
         return queryset
     
     def create(self, request, *args, **kwargs):
-        print(request.data)
-        images_data = request.data.pop('images', None)
         
-        serializer = self.get_serializer(data={'title':request.data['title'], 'description':request.data['description'], 'category':request.data['category'], 'gender':request.data['gender'], 'country':request.data['country'], 'ad_type':request.data['ad_type'], 'user':request.user.id,'budget':request.data['budget'], 'estimated_views':request.data['estimated_views'], 'min_age':request.data['min_age'], 'max_age':request.data['max_age'] })
+        images_data = request.data.pop('images', None)
+        data = request.data
+        data['user'] = request.user.id
+        serializer = self.get_serializer(data=data)
                 
         try:
             serializer.is_valid(raise_exception=True)

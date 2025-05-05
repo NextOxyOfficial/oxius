@@ -172,12 +172,12 @@
                   </div>
                   <div class="text-sm text-gray-600">Total Views</div>
                 </div>
-                <div class="bg-green-50 rounded-md p-2 text-center">
+                <!-- <div class="bg-green-50 rounded-md p-2 text-center">
                   <div class="text-lg font-bold text-green-600">
                     {{ totalClicks }}
                   </div>
                   <div class="text-sm text-gray-600">Total Clicks</div>
-                </div>
+                </div> -->
                 <div class="bg-amber-50 rounded-md p-2 text-center">
                   <div class="text-lg font-bold text-amber-600">
                     {{ postedAds.length }}
@@ -305,8 +305,8 @@
                 <div class="md:w-1/3 h-40 md:h-auto relative">
                   <!-- Main image -->
                   <img
-                    v-if="ad.images && ad.images.length > 0"
-                    :src="ad.images[0]"
+                    v-if="ad.media && ad.media?.length > 0"
+                    :src="ad.media[0].image"
                     alt="Ad image"
                     class="h-full w-full object-cover"
                   />
@@ -319,10 +319,10 @@
 
                   <!-- Image count indicator -->
                   <div
-                    v-if="ad.images && ad.images.length > 1"
+                    v-if="ad.media && ad.media?.length > 1"
                     class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-sm px-2 py-1 rounded-md"
                   >
-                    {{ ad.images.length }} images
+                    {{ ad.media?.length }} images
                   </div>
                 </div>
 
@@ -335,10 +335,10 @@
                       </h3>
                       <div class="flex flex-wrap items-center gap-2 mb-2">
                         <span
-                          v-if="ad.category && ad.category !== 'none'"
+                          v-if="ad.category_details && ad.category !== 'none'"
                           class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm"
                         >
-                          {{ ad.category }}
+                          {{ ad.category_details?.name }}
                         </span>
                         <span class="text-gray-500 text-sm">Bangladesh</span>
                         <span
@@ -349,10 +349,22 @@
                         </span>
                         <div class="flex flex-wrap gap-1">
                           <span
-                            v-if="ad.gender"
+                            v-if="ad.male"
                             class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
                           >
-                            {{ ad.gender === "male" ? "Male" : "Female" }}
+                            {{ ad.male ? "Male" : "" }}
+                          </span>
+                          <span
+                            v-if="ad.female"
+                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                          >
+                            {{ ad.female ? "Female" : "" }}
+                          </span>
+                          <span
+                            v-if="ad.other"
+                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                          >
+                            {{ ad.other ? "Other" : "" }}
                           </span>
                           <span
                             class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
@@ -393,9 +405,9 @@
                           d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         />
                       </svg>
-                      <span>{{ ad.metrics.views }} views</span>
+                      <span>{{ ad.views }} views</span>
                     </div>
-                    <div class="flex items-center">
+                    <!-- <div class="flex items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="h-3 w-3 mr-1"
@@ -411,7 +423,7 @@
                         />
                       </svg>
                       <span>{{ ad.metrics.clicks }} clicks</span>
-                    </div>
+                    </div> -->
                     <div class="flex items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -427,7 +439,7 @@
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <span>{{ ad.publishDate }}</span>
+                      <span>{{ formatTimeAgo(ad.created_at) }}</span>
                     </div>
                     <div class="flex items-center">
                       <svg
@@ -458,9 +470,9 @@
                         class="flex items-center"
                       >
                         <!-- Website -->
-                        <template v-if="ad.ad_type === 'website'">
+                        <template v-if="ad.ad_type === 'click_to_website'">
                           <a
-                            :href="ad.contactInfo"
+                            :href="ad.ad_type_details"
                             target="_blank"
                             class="text-sm text-blue-600 flex items-center hover:underline"
                           >
@@ -478,10 +490,10 @@
                                 d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                               />
                             </svg>
-                            {{ ad.contactInfo }}
+                            {{ ad.ad_type_details }}
                           </a>
                           <a
-                            :href="ad.contactInfo"
+                            :href="ad.ad_type_details"
                             target="_blank"
                             class="ml-2 text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md hover:bg-blue-200 transition-colors"
                           >
@@ -490,9 +502,9 @@
                         </template>
 
                         <!-- WhatsApp -->
-                        <template v-else-if="ad.ad_type === 'whatsapp'">
+                        <template v-else-if="ad.ad_type === 'call_on_whatsapp'">
                           <a
-                            :href="`https://wa.me/${ad.contactInfo.replace(
+                            :href="`https://wa.me/${ad.ad_type_details.replace(
                               /[^0-9]/g,
                               ''
                             )}`"
@@ -513,10 +525,10 @@
                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                               />
                             </svg>
-                            {{ ad.contactInfo }}
+                            {{ ad.ad_type_details }}
                           </a>
                           <a
-                            :href="`https://wa.me/${ad.contactInfo.replace(
+                            :href="`https://wa.me/${ad.ad_type_details?.replace(
                               /[^0-9]/g,
                               ''
                             )}`"
@@ -528,9 +540,9 @@
                         </template>
 
                         <!-- Phone -->
-                        <template v-else-if="ad.ad_type === 'phone'">
+                        <template v-else-if="ad.ad_type === 'call_on_phone'">
                           <a
-                            :href="`tel:${ad.contactInfo}`"
+                            :href="`tel:${ad.ad_type_details}`"
                             class="text-sm text-gray-600 flex items-center hover:underline"
                           >
                             <svg
@@ -547,10 +559,10 @@
                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                               />
                             </svg>
-                            {{ ad.contactInfo }}
+                            {{ ad.ad_type_details }}
                           </a>
                           <a
-                            :href="`tel:${ad.contactInfo}`"
+                            :href="`tel:${ad.ad_type_details}`"
                             class="ml-2 text-sm bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors"
                           >
                             Call
@@ -558,9 +570,9 @@
                         </template>
 
                         <!-- Email -->
-                        <template v-else-if="ad.ad_type === 'email'">
+                        <template v-else-if="ad.ad_type === 'email_us'">
                           <a
-                            :href="`mailto:${ad.contactInfo}`"
+                            :href="`mailto:${ad.ad_type_details}`"
                             class="text-sm text-purple-600 flex items-center hover:underline"
                           >
                             <svg
@@ -577,10 +589,10 @@
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                               />
                             </svg>
-                            {{ ad.contactInfo }}
+                            {{ ad.ad_type_details }}
                           </a>
                           <a
-                            :href="`mailto:${ad.contactInfo}`"
+                            :href="`mailto:${ad.ad_type_details}`"
                             class="ml-2 text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md hover:bg-purple-200 transition-colors"
                           >
                             Email
@@ -1114,35 +1126,33 @@
                   <!-- Gender -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700"
-                      >Gender</label
+                      >Targeted Audience</label
                     >
                     <div class="mt-1 flex space-x-4">
-                      <label class="inline-flex items-center">
+                      <label class="inline-flex items-center space-x-2">
                         <input
-                          type="radio"
-                          v-model="adForm.gender"
-                          value="male"
-                          class="form-radio text-emerald-500 focus:outline-none"
+                          type="checkbox"
+                          v-model="adForm.male"
+                          class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
                         />
-                        <span class="ml-2 text-sm text-gray-700">Male</span>
+                        <span class="text-sm text-gray-700">Male</span>
                       </label>
-                      <label class="inline-flex items-center">
+                      <label class="inline-flex items-center space-x-2">
                         <input
-                          type="radio"
-                          v-model="adForm.gender"
-                          value="female"
-                          class="form-radio text-emerald-500 focus:outline-none"
+                          type="checkbox"
+                          v-model="adForm.female"
+                          class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
                         />
-                        <span class="ml-2 text-sm text-gray-700">Female</span>
+                        <span class="text-sm text-gray-700">Female</span>
                       </label>
-                      <label class="inline-flex items-center">
+                      <label class="inline-flex items-center space-x-2">
                         <input
-                          type="radio"
-                          v-model="adForm.gender"
+                          type="checkbox"
+                          v-model="adForm.other"
                           value="other"
-                          class="form-radio text-emerald-500 focus:outline-none"
+                          class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
                         />
-                        <span class="ml-2 text-sm text-gray-700">Other</span>
+                        <span class="text-sm text-gray-700">Other</span>
                       </label>
                     </div>
                   </div>
@@ -1261,7 +1271,7 @@
                     <input
                       :type="adTypeInputTypes[adForm.ad_type]"
                       :id="`${adForm.ad_type}Contact`"
-                      v-model="adForm.contactInfo"
+                      v-model="adForm.ad_type_details"
                       class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       :placeholder="adTypePlaceholders[adForm.ad_type]"
                       required
@@ -2142,14 +2152,10 @@ const previewAdData = reactive({
   max_age: 65,
   estimated_views: 501, // Default age range
   status: "active",
-  metrics: {
-    views: 0,
-    clicks: 0,
-  },
 });
 
 // Ad form data
-const adForm = reactive({
+const adForm = ref({
   title: "",
   category: "",
   description: "",
@@ -2158,14 +2164,13 @@ const adForm = reactive({
   country: "bangladesh",
   ad_type: "",
   contactInfo: "",
-  gender: "other",
+  male: false,
+  female: false,
+  other: false,
   min_age: 18,
   max_age: 65,
-  estimated_views: 501, // Default age range
-  metrics: {
-    views: 0,
-    clicks: 0,
-  },
+  estimated_views: 501,
+  ad_type_details: "", // Default age range
 });
 
 // Estimated views calculation with spinner
@@ -2173,14 +2178,14 @@ const isCalculatingViews = ref(false);
 
 // Watch for budget changes to trigger the spinner and calculation
 watch(
-  () => adForm.budget,
+  () => adForm.value.budget,
   (newValue) => {
     isCalculatingViews.value = true;
 
     // Set a timeout to simulate calculation (2 seconds)
     setTimeout(() => {
       const baseRate = Math.random() * (6.2 - 7.1) + 3.5;
-      adForm.estimated_views = Math.round(newValue * baseRate);
+      adForm.value.estimated_views = Math.round(newValue * baseRate);
       isCalculatingViews.value = false;
     }, 2000);
   },
@@ -2214,121 +2219,19 @@ const isLowBalance = computed(() => {
   return accountBalance.value < 250;
 });
 
-const postedAds = ref([
-  // Sample ads for demonstration
-  {
-    title: "iPhone 13 Pro Max - 256GB",
-    category: "electronics",
-    price: "120000",
-    description:
-      "Brand new iPhone 13 Pro Max with 256GB storage. Comes with 1 year official warranty. All colors available.",
-    images: [
-      "https://placehold.co/600x400/png?text=iPhone+13+Pro+Max",
-      "https://placehold.co/600x400/png?text=iPhone+13+Pro+Max+Side",
-    ],
-    contact: "01712345678",
-    status: "active",
-    publishDate: "2023-05-15",
-    budget: 500,
-    adType: "phone",
-    contactInfo: "+880 1712345678",
-    gender: "male",
-    ageRange: [25, 35],
-    metrics: {
-      views: 245,
-      clicks: 37,
-    },
-  },
-  {
-    title: "Toyota Corolla 2019 Model",
-    category: "vehicles",
-    price: "2500000",
-    description:
-      "Toyota Corolla 2019 model in excellent condition. Single owner, all documents up to date. Low mileage.",
-    images: [
-      "https://placehold.co/600x400/png?text=Toyota+Corolla",
-      "https://placehold.co/600x400/png?text=Toyota+Corolla+Interior",
-      "https://placehold.co/600x400/png?text=Toyota+Corolla+Back",
-    ],
-    contact: "01812345678",
-    status: "active",
-    publishDate: "2023-05-10",
-    budget: 1000,
-    adType: "whatsapp",
-    contactInfo: "+880 1812345678",
-    gender: "female",
-    ageRange: [30, 40],
-    metrics: {
-      views: 189,
-      clicks: 24,
-    },
-  },
-  {
-    title: "3 Bedroom Apartment for Rent in Gulshan",
-    category: "property",
-    price: "45000",
-    description:
-      "Luxurious 3 bedroom apartment available for rent in Gulshan. Fully furnished with modern amenities. 24/7 security.",
-    images: [
-      "https://placehold.co/600x400/png?text=Apartment+Front",
-      "https://placehold.co/600x400/png?text=Apartment+Living+Room",
-      "https://placehold.co/600x400/png?text=Apartment+Kitchen",
-      "https://placehold.co/600x400/png?text=Apartment+Bedroom",
-    ],
-    contact: "01912345678",
-    status: "stopped",
-    publishDate: "2023-05-05",
-    budget: 750,
-    adType: "email",
-    contactInfo: "property@example.com",
-    gender: "",
-    ageRange: [40, 50],
-    metrics: {
-      views: 92,
-      clicks: 11,
-    },
-  },
-  {
-    title: "Web Developer - Remote Position",
-    category: "jobs",
-    price: "Negotiable",
-    description:
-      "Looking for a skilled web developer for a remote position. Must have experience with Vue.js and Node.js.",
-    images: ["https://placehold.co/600x400/png?text=Web+Developer"],
-    contact: "01612345678",
-    status: "review",
-    publishDate: "2023-04-28",
-    budget: 300,
-    adType: "website",
-    contactInfo: "https://example.com/careers",
-    gender: "",
-    ageRange: [22, 35],
-    metrics: {
-      views: 312,
-      clicks: 55,
-    },
-  },
-  {
-    title: "Home Cleaning Services",
-    category: "services",
-    price: "500",
-    description:
-      "Professional home cleaning services available in Dhaka. Experienced and reliable cleaners. Book your appointment today!",
-    images: ["https://placehold.co/600x400/png?text=Home+Cleaning"],
-    contact: "01512345678",
-    status: "active",
-    publishDate: "2023-04-20",
-    budget: 400,
-    ad_type: "phone",
-    contactInfo: "+880 1512345678",
-    gender: "",
-    ageRange: [25, 45],
-    metrics: {
-      views: 488,
-      clicks: 82,
-    },
-  },
-]);
+const postedAds = ref([]);
+
+async function fetchPostedAds() {
+  try {
+    const response = await get("/bn/abn-ads-panels/");
+    postedAds.value = response.data;
+    console.log("Posted ads:", postedAds.value);
+  } catch (error) {
+    console.error("Error fetching posted ads:", error);
+  }
+}
+
+await fetchPostedAds();
 
 // Drag handle state
 const dragHandle = ref(null);
@@ -2352,14 +2255,14 @@ const drag = (event) => {
   let position = (clientX - offset) / trackWidth;
 
   if (dragHandle.value === "min") {
-    adForm.min_age = Math.max(
+    adForm.value.min_age = Math.max(
       13,
-      Math.min(adForm.max_age, Math.round(position * 87 + 13))
+      Math.min(adForm.value.max_age, Math.round(position * 87 + 13))
     );
   } else if (dragHandle.value === "max") {
-    adForm.max_age = Math.min(
+    adForm.value.max_age = Math.min(
       100,
-      Math.max(adForm.min_age, Math.round(position * 87 + 13))
+      Math.max(adForm.value.min_age, Math.round(position * 87 + 13))
     );
   }
 };
@@ -2380,10 +2283,10 @@ const clickTrack = (event) => {
   let position = (event.clientX - offset) / trackWidth;
   let age = Math.round(position * 87 + 13);
 
-  if (age < adForm.min_age) {
-    adForm.min_age = age;
+  if (age < adForm.value.min_age) {
+    adForm.value.min_age = age;
   } else {
-    adForm.max_age = age;
+    adForm.value.max_age = age;
   }
 };
 
@@ -2407,11 +2310,27 @@ const applyDateFilter = () => {
 const handleAdSubmit = async () => {
   isSubmitting.value = true;
   try {
-    const res = await post("/bn/abn-ads-panels/", adForm);
+    const res = await post("/bn/abn-ads-panels/", adForm.value);
     if (res.data) {
-      console.log("abn ad", res.data);
-      resetAdForm();
+      adForm.value = {
+        title: "",
+        category: "",
+        description: "",
+        images: [],
+        budget: 200,
+        country: "bangladesh",
+        ad_type: "",
+        contactInfo: "",
+        male: false,
+        female: false,
+        other: false,
+        min_age: 18,
+        max_age: 65,
+        estimated_views: 501,
+        ad_type_details: "",
+      };
       closeCreateAdModal();
+      await fetchPostedAds();
     }
   } catch (error) {
     console.error("Error submitting ad:", error);
@@ -2435,6 +2354,36 @@ const previewAd = (ad) => {
   showPreviewModal.value = true;
 };
 
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} ${diffInSeconds === 1 ? "second" : "seconds"} ago`;
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
+};
+
 // Preview ad from form
 const previewAdFromForm = () => {
   Object.assign(previewAdData, adForm);
@@ -2456,7 +2405,7 @@ const confirmDelete = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Delete ad
-    postedAds.value.splice(deleteAdIndex.value, 1);
+    postedAds.value?.splice(deleteAdIndex.value, 1);
     cancelDelete();
   } catch (error) {
     console.error("Error deleting ad:", error);
@@ -2494,10 +2443,6 @@ const resetAdForm = () => {
     min_age: 18,
     max_age: 65,
     estimated_views: 501,
-    metrics: {
-      views: 0,
-      clicks: 0,
-    },
   });
 };
 
@@ -2511,10 +2456,10 @@ const handleImageUpload = (event) => {
         alert("Image size should be less than 5MB");
         continue;
       }
-      if (adForm.images.length < 4) {
+      if (adForm.value.images?.length < 4) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          adForm.images.push(e.target.result);
+          adForm.value?.images.push(e.target.result);
         };
         reader.readAsDataURL(file);
       } else {
@@ -2527,7 +2472,7 @@ const handleImageUpload = (event) => {
 
 // Remove image
 const removeImage = (index) => {
-  adForm.images.splice(index, 1);
+  adForm.value.images.splice(index, 1);
 };
 
 // Get status class
@@ -2602,13 +2547,8 @@ const adTips = ref([
       "Ensure your ad reaches the people who are most likely to be interested.",
   },
 ]);
-
-// Computed properties for total views and clicks
+//calculate total views using computed
 const totalViews = computed(() => {
-  return postedAds.value.reduce((sum, ad) => sum + ad.metrics.views, 0);
-});
-
-const totalClicks = computed(() => {
-  return postedAds.value.reduce((sum, ad) => sum + ad.metrics.clicks, 0);
+  return postedAds.value?.reduce((total, ad) => total + ad.views, 0);
 });
 </script>

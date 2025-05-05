@@ -329,12 +329,9 @@ class AbnAdsPanel(models.Model):
     description = models.TextField()
     category = models.ForeignKey(AbnAdsPanelCategory, on_delete=models.CASCADE, related_name='abn_ads_panel')
     media = models.ManyToManyField(AbnAdsPanelMedia, blank=True, related_name='abn_ads_panel')
-    GENDER_CHOICES = (
-        ('male' , 'Male'),
-        ('female' , 'Female'),
-        ('other' , 'Other'),
-    )
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
+    male = models.BooleanField(default=False)
+    female = models.BooleanField(default=False)
+    other = models.BooleanField(default=False)
     min_age = models.PositiveIntegerField(null=True, blank=True)
     max_age = models.PositiveIntegerField(null=True, blank=True)
     COUNTRY_CHOICES = (
@@ -348,6 +345,7 @@ class AbnAdsPanel(models.Model):
         ('email_us', 'Email Us'),
     )
     ad_type = models.CharField(max_length=20, choices=AD_TyPES, default='image')
+    ad_type_details= models.TextField(null=True, blank=True)
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     STATUS_CHOCES = (('active', 'Active'), ('pending', 'Pending'),('stoped','Stoped'))
     status = models.CharField(max_length=20, choices=STATUS_CHOCES, default='active')

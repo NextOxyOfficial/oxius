@@ -114,7 +114,16 @@ class AbnAdsPanelCategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
 
+class AbnAdsPanelMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AbnAdsPanelMedia
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+
 class AbnAdsPanelSerializer(serializers.ModelSerializer):
+    media = AbnAdsPanelMediaSerializer(many=True, read_only=True)
+    user_details = UserSerializer(source='user', read_only=True)
+    category_details = AbnAdsPanelCategorySerializer(source='category', read_only=True)
     class Meta:
         model = AbnAdsPanel
         fields = '__all__'
