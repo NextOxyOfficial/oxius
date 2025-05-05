@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
+    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
       <div
         ref="imageContainer"
         class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center bg-slate-50 dark:bg-slate-800/30 min-h-[300px]"
@@ -26,7 +26,7 @@
         <div class="absolute inset-0 bg-vignette-gradient opacity-40 pointer-events-none"></div>
 
         <!-- Glassmorphic image counter indicator -->
-        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-sm border border-white/10 transform transition-all duration-300 group-hover:scale-105">
+        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-400/50 rounded-full animate-ping opacity-75"></div>
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
@@ -41,7 +41,7 @@
         <!-- Download button with premium styling - kept only on main image -->
         <button 
           @click.stop="downloadImage(post.post_media[activeIndex].image)"
-          class="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/30 backdrop-blur-md text-white opacity-0 group-hover:opacity-100 hover:bg-black/50 transition-all duration-300 shadow-sm border border-white/10"
+          class="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/30 backdrop-blur-md text-white opacity-0 group-hover:opacity-100 hover:bg-black/50 transition-all duration-300 shadow-lg border border-white/10"
           title="Download image"
         >
           <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
@@ -51,7 +51,7 @@
         <button
           v-if="post.post_media.length > 1"
           @click.stop="navigateMedia('prev')"
-          class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:-translate-x-0.5 border border-white/10 shadow-sm"
+          class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:-translate-x-0.5 border border-white/10 shadow-lg"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -61,7 +61,7 @@
         <button
           v-if="post.post_media.length > 1"
           @click.stop="navigateMedia('next')"
-          class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:translate-x-0.5 border border-white/10 shadow-sm"
+          class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:translate-x-0.5 border border-white/10 shadow-lg"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -110,7 +110,7 @@
       <button
         v-show="canScrollLeft"
         @click="scrollThumbnails('left')"
-        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
         aria-label="Previous thumbnails"
       >
         <svg
@@ -131,7 +131,7 @@
       </button>
 
       <!-- Premium thumbnail container with luxury glass effect -->
-      <div class="relative rounded-xl overflow-hidden bg-gradient-to-br from-white/80 via-slate-50/90 to-white/70 dark:from-slate-800/80 dark:via-slate-800/40 dark:to-slate-900/60 backdrop-blur-sm shadow-sm border border-white/50 dark:border-slate-700/50 p-3 transition-all duration-500 hover:shadow-blue-500/5 dark:hover:shadow-blue-500/5">
+      <div class="relative rounded-xl overflow-hidden bg-gradient-to-br from-white/80 via-slate-50/90 to-white/70 dark:from-slate-800/80 dark:via-slate-800/40 dark:to-slate-900/60 backdrop-blur-sm shadow-lg border border-white/50 dark:border-slate-700/50 p-3 transition-all duration-500 hover:shadow-blue-500/5 dark:hover:shadow-blue-500/5">
         <!-- Premium light beam effects -->
         <div class="absolute -inset-2 bg-grid opacity-10 dark:opacity-5 pointer-events-none"></div>
         <div class="absolute -inset-2 bg-gradient-conic opacity-5 dark:opacity-10 mix-blend-overlay pointer-events-none"></div>
@@ -156,9 +156,9 @@
             :key="media.id"
             class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] rounded-lg transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group/thumb"
             :class="{
-              'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-sm scale-[1.03] z-10 premium-thumb-active':
+              'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-lg scale-[1.03] z-10 premium-thumb-active':
                 activeIndex === mediaIndex,
-              'opacity-90 hover:opacity-100 hover:shadow-sm ring-1 ring-white/70 dark:ring-slate-700/90':
+              'opacity-90 hover:opacity-100 hover:shadow-md ring-1 ring-white/70 dark:ring-slate-700/90':
                 activeIndex !== mediaIndex,
             }"
             @click="setActiveMedia(mediaIndex)"
@@ -195,7 +195,7 @@
 
             <!-- Premium media counter badge on thumbnails -->
             <div 
-              class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-md rounded-full text-white text-[10px] font-medium opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300 shadow-sm border border-white/10 flex items-center"
+              class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-md rounded-full text-white text-[10px] font-medium opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300 shadow-lg border border-white/10 flex items-center"
             >
               <span class="relative z-10">{{ mediaIndex + 1 }}</span>
               <div class="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/80 rounded-full opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 z-0"></div>
@@ -220,7 +220,7 @@
       <button
         v-show="canScrollRight"
         @click="scrollThumbnails('right')"
-        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
         aria-label="Next thumbnails"
       >
         <svg
