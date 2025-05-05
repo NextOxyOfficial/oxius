@@ -191,7 +191,24 @@
           </div>
           <div class="flex justify-between items-center">
             <div class="text-lg font-bold text-indigo-600">
-              ৳{{ product.sale_price || product.regular_price }}
+              ৳{{
+                product.sale_price && parseFloat(product.sale_price) > 0
+                  ? product.sale_price
+                  : product.regular_price
+              }}
+              <span
+                v-if="
+                  product.sale_price &&
+                  parseFloat(product.sale_price) > 0 &&
+                  product.regular_price &&
+                  parseFloat(product.sale_price) <
+                    parseFloat(product.regular_price)
+                "
+                class="text-xs text-slate-400 line-through -mt-0.5 flex items-center"
+              >
+                <span class="text-[10px] mr-0.5">৳</span
+                >{{ product.regular_price }}
+              </span>
             </div>
             <div class="text-sm text-gray-500 flex items-center">
               <UIcon
