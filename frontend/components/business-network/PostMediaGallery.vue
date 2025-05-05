@@ -255,17 +255,28 @@ const canScrollRight = ref(false);
 const setActiveMedia = (index) => {
   activeIndex.value = index;
 
-  // Ensure the active thumb is visible by scrolling to it
+  // Ensure the active thumb is visible in the thumbnail container without scrolling the page
   nextTick(() => {
     if (!thumbnailsContainer.value) return;
 
-    const thumbnailElements = thumbnailsContainer.value.children;
+    const container = thumbnailsContainer.value;
+    const thumbnailElements = container.children;
+    
     if (thumbnailElements && thumbnailElements[index]) {
-      thumbnailElements[index].scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
+      // Calculate position for scrolling within thumbnail container only
+      const thumbnail = thumbnailElements[index];
+      const containerLeft = container.scrollLeft;
+      const containerWidth = container.clientWidth;
+      const thumbLeft = thumbnail.offsetLeft;
+      const thumbWidth = thumbnail.offsetWidth;
+      
+      // Only scroll the thumbnail container if the thumbnail is not fully visible
+      if (thumbLeft < containerLeft || thumbLeft + thumbWidth > containerLeft + containerWidth) {
+        container.scrollTo({
+          left: thumbLeft - containerWidth / 2 + thumbWidth / 2,
+          behavior: "smooth"
+        });
+      }
     }
   });
 };
