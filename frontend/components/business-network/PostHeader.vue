@@ -35,7 +35,7 @@
           :to="`/business-network/profile/${post.author}`"
           class="font-semibold text-gray-900 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
         >
-          <p class="truncate max-w-[180px]">
+          <p class="truncate max-w-[220px]">
             {{ post?.author_details?.name }}
           </p>
           <!-- Removed Pro text badge next to username -->
@@ -48,7 +48,7 @@
         </NuxtLink>
 
         <p
-          class="text-sm font-medium bg-transparent py-0.5 text-slate-600 dark:text-slate-400 truncate max-w-[180px]"
+          class="text-sm font-medium bg-transparent py-0.5 text-slate-600 dark:text-slate-400 truncate max-w-[220px]"
         >
           {{ post?.author_details?.profession || "" }}
         </p>
