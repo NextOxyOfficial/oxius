@@ -142,14 +142,28 @@
     
     <!-- Actual profile content -->
     <div v-else class="max-w-3xl mx-auto relative z-10 sm:px-0">
-      <!-- Professional Profile Card -->
-      <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 mb-6 animate-fadeIn">
-        <div class="p-4 sm:p-5">
+      <!-- Professional Profile Card with Premium Design -->
+      <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-sm border border-gray-200/50 mb-6 animate-fadeIn overflow-hidden relative">
+        <!-- Background gradient pattern for added premium feel -->
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 pointer-events-none"></div>
+        <div class="absolute inset-0 opacity-5 bg-pattern"></div>
+        
+        <div class="p-2 py-5 sm:p-8 relative">
           <!-- Mobile Profile Header (Mobile Only) -->
           <div class="flex sm:hidden items-center justify-between mb-4">
             <div>
               <h1 class="text-xl font-bold flex items-center gap-1.5">
                 {{ user?.name }}
+                <!-- Pro badge for mobile -->
+                <div class="inline-flex" v-if="user?.is_pro">
+                  <span class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm">
+                    <div class="flex items-center gap-1">
+                      <UIcon name="i-heroicons-shield-check" class="size-3" />
+                      <span class="text-2xs">Pro</span>
+                    </div>
+                  </span>
+                </div>
+                <!-- Verified badge for mobile -->
                 <div class="relative inline-flex tooltip-container">
                   <UIcon
                     v-if="user?.kyc"
@@ -159,14 +173,13 @@
                   <div class="tooltip-content">Verified</div>
                 </div>
               </h1>
-              <!-- Move these elements under the name in mobile view -->
               <p class="text-sm font-medium text-slate-600 mb-0.5">
                 {{ user?.profession }}
               </p>
-              <!-- <p class="text-xs text-gray-500">@{{ user?.username }}</p> -->
             </div>
 
             <div class="flex gap-2">
+              <!-- Action buttons for mobile -->
               <button
                 v-if="user?.id !== currentUser?.user?.id && currentUser"
                 :class="[
@@ -185,20 +198,13 @@
 
                 <template v-else-if="isFollowing">
                   <Check class="h-3 w-3 animate-scaleIn" />
-                  Following
+                  Unfollow
                 </template>
 
                 <template v-else>
                   <UserPlus class="h-3 w-3 animate-scaleIn" />
                   Follow
                 </template>
-              </button>
-              <button
-                v-if="!currentUser"
-                class="p-1 border border-gray-200 rounded hover:bg-gray-50 hover:shadow-sm text-gray-800 transition-all duration-300"
-                aria-label="Message"
-              >
-                <Mail class="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
@@ -207,40 +213,43 @@
             <!-- Profile Picture and Mobile Stats -->
             <div class="flex flex-col items-center sm:items-start">
               <div class="relative group">
-                <div
-                  class="size-36 rounded-full border-2 border-white shadow-lg bg-white overflow-hidden group-hover:shadow-xl transition-all duration-300"
-                >
-                  <img
-                    :src="
-                      user?.image || '/static/frontend/images/placeholder.jpg'
-                    "
-                    :alt="user?.name"
-                    class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                <div class="relative">
+                  <!-- Professional border for profile picture -->
+                  <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 p-1 -m-1 blur animate-gradient-slow"></div>
+                  
+                  <!-- Profile image container -->
+                  <div class="size-32 sm:size-40 rounded-full border-4 border-white shadow-xl bg-white overflow-hidden relative z-10">
+                    <img
+                      :src="user?.image || '/static/frontend/images/placeholder.jpg'"
+                      :alt="user?.name"
+                      class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                  
+                  
                 </div>
-                <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-600/20 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
 
               <!-- User Stats for Mobile -->
               <div class="flex w-full justify-center sm:hidden mt-4 space-x-6">
-                <div class="text-center hover:scale-105 transition-transform">
+                <div class="text-center hover:scale-105 transition-transform cursor-pointer">
                   <div class="text-md font-semibold">
                     {{ user?.post_count || 0 }}
                   </div>
-                  <div class="text-sm text-gray-500">Posts</div>
+                  <div class="text-xs text-gray-500">Posts</div>
                 </div>
-                <div class="text-center hover:scale-105 transition-transform">
+                <div class="text-center hover:scale-105 transition-transform cursor-pointer">
                   <div class="text-md font-semibold">
                     {{ user?.followers_count || 0 }}
                   </div>
-                  <div class="text-sm text-gray-500">Followers</div>
+                  <div class="text-xs text-gray-500">Followers</div>
                 </div>
-                <div class="text-center hover:scale-105 transition-transform">
+                <div class="text-center hover:scale-105 transition-transform cursor-pointer">
                   <div class="text-md font-semibold">
                     {{ user?.following_count || 0 }}
                   </div>
-                  <div class="text-sm text-gray-500">Following</div>
+                  <div class="text-xs text-gray-500">Following</div>
                 </div>
               </div>
             </div>
@@ -248,12 +257,12 @@
             <!-- User Info -->
             <div class="flex-1">
               <!-- Desktop Header (Hidden on Mobile) -->
-              <div
-                class="hidden sm:flex sm:flex-row sm:items-start sm:justify-between"
-              >
+              <div class="hidden sm:flex sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div class="flex items-center flex-wrap gap-1.5">
                     <h1 class="text-xl font-bold">{{ user?.name }}</h1>
+                    
+                    <!-- Pro badge -->
                     <span
                       v-if="user?.is_pro"
                       class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm"
@@ -263,6 +272,19 @@
                         <span class="text-2xs">Pro</span>
                       </div>
                     </span>
+                    
+                    <!-- Top contributor badge -->
+                    <span
+                      v-if="user?.is_topcontributor"
+                      class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
+                    >
+                      <div class="flex items-center gap-1">
+                        <Trophy class="size-3" />
+                        <span class="text-2xs">Top Contributor</span>
+                      </div>
+                    </span>
+                    
+                    <!-- Verified badge -->
                     <div class="relative inline-flex tooltip-container">
                       <UIcon
                         v-if="user?.kyc"
@@ -276,13 +298,12 @@
                   <p class="text-sm font-medium text-slate-600 mb-0.5">
                     {{ user?.profession }}
                   </p>
-                  <!-- <p class="text-xs text-gray-500">@{{ user?.username }}</p> -->
                 </div>
 
                 <!-- Action buttons (Desktop) -->
                 <div class="hidden sm:flex">
                   <button
-                    v-if="user.id !== currentUser?.user?.id && currentUser"
+                    v-if="user?.id !== currentUser?.user?.id && currentUser"
                     :class="[
                       'px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-all duration-300',
                       isFollowing
@@ -305,154 +326,155 @@
                       Follow
                     </template>
                   </button>
-                  <button
-                    v-if="!currentUser"
-                    class="ml-2 p-1.5 border border-gray-200 rounded hover:bg-gray-50 hover:shadow-sm text-gray-800 transition-all duration-300"
-                    aria-label="Message"
-                  >
-                    <Mail class="h-3.5 w-3.5" />
-                  </button>
                 </div>
               </div>
 
               <!-- User Stats (Desktop) -->
-              <div
-                class="hidden sm:flex items-center mt-3 mb-3 border-b border-gray-100 pb-3"
-              >
+              <div class="hidden sm:flex items-center mt-3 mb-3 border-b border-gray-100 pb-3">
                 <div class="flex items-center gap-6 text-sm">
-                  <div class="flex items-center hover:scale-105 transition-transform">
+                  <div class="flex items-center hover:scale-105 transition-transform cursor-pointer">
                     <span class="font-semibold">{{ user?.post_count || 0 }}</span>
                     <span class="text-gray-500 ml-1.5">Posts</span>
                   </div>
-                  <div class="flex items-center hover:scale-105 transition-transform">
-                    <span class="font-semibold">
-                      {{ user?.followers_count || 0 }}</span>
+                  <div class="flex items-center hover:scale-105 transition-transform cursor-pointer">
+                    <span class="font-semibold">{{ user?.followers_count || 0 }}</span>
                     <span class="text-gray-500 ml-1.5">Followers</span>
                   </div>
-                  <div class="flex items-center hover:scale-105 transition-transform">
-                    <span class="font-semibold">
-                      {{ user?.following_count || 0 }}</span>
+                  <div class="flex items-center hover:scale-105 transition-transform cursor-pointer">
+                    <span class="font-semibold">{{ user?.following_count || 0 }}</span>
                     <span class="text-gray-500 ml-1.5">Following</span>
                   </div>
                 </div>
               </div>
 
               <!-- Bio -->
-              <div
-                class="mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100"
-              >
-                <p v-if="user?.about" class="text-sm text-gray-600 mb-3 leading-relaxed">
+              <div class="mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                <p v-if="user?.about" class="text-sm font-medium text-gray-600 mb-3 leading-relaxed">
                   {{ user?.about }}
                 </p>
+                <p v-else class="text-sm text-gray-400 italic mb-3">No bio provided</p>
               </div>
 
               <!-- Contact Info & Social Media -->
-              <div
-                class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm"
-              >
-                <div
-                  v-if="user?.city || user?.state"
-                  class="flex items-center gap-1.5 group"
-                >
-                  <MapPin class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">
-                    {{ [user?.city, user?.state].filter(Boolean).join(", ") }}
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <!-- Location info -->
+                <div v-if="user?.city || user?.state" class="flex items-center gap-1.5 group">
+                  <div class="p-1 rounded-md text-blue-500 group-hover:bg-blue-50 transition-colors">
+                    <MapPin class="h-3.5 w-3.5" />
+                  </div>
+                  <span class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors">
+                    {{ [(user?.city || ''), (user?.state || '')].filter(item => item !== '').join(", ") }}
                   </span>
                 </div>
+                
+                <!-- Company info -->
                 <div v-if="user?.company" class="flex items-center gap-1.5 group">
-                  <Briefcase class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">{{
-                    user?.company
-                  }}</span>
+                  <div class="p-1 rounded-md text-purple-500 group-hover:bg-purple-50 transition-colors">
+                    <Briefcase class="h-3.5 w-3.5" />
+                  </div>
+                  <span class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors">
+                    {{ user?.company }}
+                  </span>
                 </div>
+                
+                <!-- Joined date -->
                 <div class="flex items-center gap-1.5 group">
-                  <Calendar class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span class="text-gray-600 text-sm group-hover:text-gray-900 transition-colors"
-                    >Joined {{ formatTimeAgo(user?.date_joined) }}</span
-                  >
+                  <div class="p-1 rounded-md text-emerald-500 group-hover:bg-emerald-50 transition-colors">
+                    <Calendar class="h-3.5 w-3.5" />
+                  </div>
+                  <span class="text-gray-600 text-sm group-hover:text-gray-900 transition-colors">
+                    Joined {{ formatTimeAgo(user?.date_joined) }}
+                  </span>
                 </div>
+                
+                <!-- Email (if allowed to show) -->
                 <div
-                  v-if="
-                    user?.email &&
-                    (currentUser?.user?.id === user?.id || user?.show_email)
-                  "
+                  v-if="user?.email && (currentUser?.user?.id === user?.id || user?.show_email)"
                   class="flex items-center gap-1.5 group"
                 >
-                  <Mail class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">{{
-                    user?.email
-                  }}</span>
+                  <div class="p-1 rounded-md text-amber-500 group-hover:bg-amber-50 transition-colors">
+                    <Mail class="h-3.5 w-3.5" />
+                  </div>
+                  <span class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors">
+                    {{ user?.email }}
+                  </span>
                 </div>
+                
+                <!-- Phone (if allowed to show) -->
                 <div
-                  v-if="
-                    user?.phone &&
-                    (currentUser?.user?.id === user?.id || user?.show_phone)
-                  "
+                  v-if="user?.phone && (currentUser?.user?.id === user?.id || user?.show_phone)"
                   class="flex items-center gap-1.5 group"
                 >
-                  <Phone class="h-3.5 w-3.5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span class="text-gray-600 text-sm truncate group-hover:text-gray-900 transition-colors">{{
-                    user?.phone
-                  }}</span>
+                  <div class="p-1 rounded-md text-rose-500 group-hover:bg-rose-50 transition-colors">
+                    <Phone class="h-3.5 w-3.5" />
+                  </div>
+                  <span class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors">
+                    {{ user?.phone }}
+                  </span>
                 </div>
               </div>
 
               <!-- Social Media Links -->
               <div class="mt-3 pt-3 border-t border-gray-100">
-                <div
-                  class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3"
-                >
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
+                  <!-- Website -->
                   <a
                     v-if="user?.website"
-                    :href="user?.website"
+                    :href="user?.website.startsWith('http') ? user.website : 'https://' + user.website"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm truncate transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm font-medium truncate transform transition-all duration-300 hover:translate-y-[-2px] hover:shadow-sm p-1.5 rounded-md bg-gradient-to-br from-blue-50/80 to-blue-50/30 hover:from-blue-50 hover:to-blue-100/50 border border-blue-100/50"
                   >
-                    <LinkIcon class="h-3.5 w-3.5 flex-shrink-0" />
-                    <span class="truncate">{{
-                      user?.website?.replace(/^https?:\/\//, "")
-                    }}</span>
+                    <LinkIcon class="h-4 w-4 flex-shrink-0" />
+                    <span class="truncate">{{ typeof user?.website === 'string' ? user.website.replace(/^https?:\/\//, "") : "" }}</span>
                   </a>
+                  
+                  <!-- Facebook -->
                   <a
-                    v-if="user?.facebook_url"
-                    :href="user?.facebook_url"
+                    v-if="user?.face_link"
+                    :href="user.face_link.startsWith('http') ? user.face_link : 'https://' + user.face_link"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
+                    class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transform transition-all duration-300 hover:translate-y-[-2px] hover:shadow-sm p-1.5 rounded-md bg-gradient-to-br from-blue-50/80 to-blue-50/30 hover:from-blue-50 hover:to-blue-100/50 border border-blue-100/50"
                   >
                     <UIcon name="i-mdi-facebook" class="size-4 flex-shrink-0" />
-                    <span class="text-xs">Facebook</span>
+                    <span class="text-sm font-medium">Facebook</span>
                   </a>
+                  
+                  <!-- Instagram -->
                   <a
-                    v-if="user?.whatsapp"
-                    :href="`https://wa.me/${user?.whatsapp}`"
+                    v-if="user?.instagram_link"
+                    :href="user.instagram_link.startsWith('http') ? user.instagram_link : 'https://' + user.instagram_link"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1.5 text-pink-600 hover:text-pink-700 transform transition-all duration-300 hover:translate-y-[-2px] hover:shadow-sm p-1.5 rounded-md bg-gradient-to-br from-pink-50/80 to-pink-50/30 hover:from-pink-50 hover:to-pink-100/50 border border-pink-100/50"
+                  >
+                    <UIcon name="i-mdi-instagram" class="size-4 flex-shrink-0" />
+                    <span class="text-sm font-medium">Instagram</span>
+                  </a>
+                  
+                  <!-- WhatsApp -->
+                  <a
+                    v-if="user?.whatsapp_link"
+                    :href="`https://wa.me/${user.whatsapp_link.replace(/[^0-9]/g, '')}`"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-green-600 hover:text-green-700 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
+                    class="flex items-center gap-1.5 text-green-600 hover:text-green-700 transform transition-all duration-300 hover:translate-y-[-2px] hover:shadow-sm p-1.5 rounded-md bg-gradient-to-br from-green-50/80 to-green-50/30 hover:from-green-50 hover:to-green-100/50 border border-green-100/50"
                   >
                     <UIcon name="i-mdi-whatsapp" class="size-4 flex-shrink-0" />
-                    <span class="text-xs">WhatsApp</span>
+                    <span class="text-sm font-medium">WhatsApp</span>
                   </a>
+                  
+                  <!-- Gmail/Email -->
                   <a
-                    v-if="user?.linkedin_url"
-                    :href="user?.linkedin_url"
+                    v-if="user?.gmail_link"
+                    :href="`mailto:${user.gmail_link}`"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-700 hover:text-blue-800 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
+                    class="flex items-center gap-1.5 text-red-500 hover:text-red-600 transform transition-all duration-300 hover:translate-y-[-2px] hover:shadow-sm p-1.5 rounded-md bg-gradient-to-br from-red-50/80 to-red-50/30 hover:from-red-50 hover:to-red-100/50 border border-red-100/50"
                   >
-                    <UIcon name="i-mdi-linkedin" class="size-4 flex-shrink-0" />
-                    <span class="text-xs">LinkedIn</span>
-                  </a>
-                  <a
-                    v-if="user?.twitter_url"
-                    :href="user?.twitter_url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex items-center gap-1.5 text-blue-400 hover:text-blue-500 transform transition-transform hover:scale-105 hover:shadow-sm p-1 rounded-md"
-                  >
-                    <UIcon name="i-mdi-twitter" class="size-4 flex-shrink-0" />
-                    <span class="text-xs">Twitter</span>
+                    <UIcon name="i-mdi-gmail" class="size-4 flex-shrink-0" />
+                    <span class="text-sm font-medium">Email</span>
                   </a>
                 </div>
               </div>
@@ -461,15 +483,16 @@
         </div>
       </div>
 
-      <!-- Tabs Section -->
-      <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden animate-fadeIn-delayed">
+      <!-- Tabs Section with Premium Styling -->
+      <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 overflow-hidden animate-fadeIn-delayed">
         <!-- Scrollable Tabs for Mobile -->
         <div class="overflow-x-auto scrollbar-hide">
           <div class="flex items-center border-b border-gray-200 min-w-max relative">
+            <!-- Tab buttons with enhanced styling -->
             <button
               v-for="tab in tabs"
               :key="tab.value"
-              class="px-5 py-3.5 text-sm font-medium border-b-2 transition-all duration-300 whitespace-nowrap relative overflow-hidden"
+              class="px-5 py-3.5 text-sm font-medium border-b-2 transition-all duration-300 whitespace-nowrap relative overflow-hidden group"
               :class="[
                 activeTab === tab.value 
                   ? 'text-blue-600 border-blue-600' 
@@ -478,17 +501,24 @@
               @click="switchTab(tab.value)"
             >
               <span class="relative z-10">{{ tab.label }}</span>
+              
+              <!-- Animated underline effect -->
               <div 
                 v-if="activeTab === tab.value"
-                class="absolute bottom-0 left-0 h-0.5 w-full bg-blue-600 animate-fadeIn"
+                class="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-blue-500 to-indigo-500 animate-fadeIn"
+              ></div>
+              
+              <!-- Tab hover effect -->
+              <div 
+                class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity -z-10"
               ></div>
             </button>
-            <div class="tab-indicator"></div>
           </div>
         </div>
 
         <div class="py-4 px-1">
           <transition name="tab-transition" mode="out-in">
+            <!-- Tab content sections here -->
             <div v-if="activeTab === 'posts'" class="tab-content">
               <!-- Lazyloader for posts -->
               <div v-if="isLoadingPosts" class="p-4">
@@ -673,6 +703,7 @@ import {
   ChevronRight,
   Loader2,
   ChevronUp,
+  Trophy,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -1151,6 +1182,49 @@ const scrollToTop = () => {
   }
 }
 
+/* Premium Animations */
+@keyframes gradient-slow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-gradient-slow {
+  animation: gradient-slow 6s ease infinite;
+  background-size: 200% 200%;
+}
+
 /* Enhanced tooltip styling */
 .tooltip-container {
   position: relative;
@@ -1160,7 +1234,7 @@ const scrollToTop = () => {
   position: absolute;
   top: calc(100% + 5px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-10px);
   background-color: #333;
   color: white;
   padding: 0.25rem 0.5rem;
@@ -1170,7 +1244,7 @@ const scrollToTop = () => {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+  transition: opacity 0.2s ease-out, visibility 0.2s ease-out, transform 0.3s ease-out;
   pointer-events: none;
   width: max-content;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
@@ -1179,13 +1253,26 @@ const scrollToTop = () => {
 .tooltip-container:hover .tooltip-content {
   opacity: 1;
   visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #333 transparent;
 }
 
 /* Tab transitions */
 .tab-transition-enter-active,
 .tab-transition-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
+  transition: opacity 0.4s, transform 0.4s;
 }
+
 .tab-transition-enter-from,
 .tab-transition-leave-to {
   opacity: 0;
@@ -1244,6 +1331,12 @@ const scrollToTop = () => {
   }
 }
 
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.5s ease forwards;
 }
@@ -1269,6 +1362,42 @@ const scrollToTop = () => {
   animation: highlightPost 1.5s ease-out;
 }
 
+/* Premium shimmer effect on profile badge */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Premium glass card effect */
+.glass-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+}
+
+/* 3D button hover effect */
+button.btn-3d {
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(0) scale(1);
+}
+
+button.btn-3d:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+button.btn-3d:active {
+  transform: translateY(1px) scale(0.98);
+}
+
 /* Hide scrollbar but allow scrolling */
 .scrollbar-hide {
   scrollbar-width: none; /* Firefox */
@@ -1291,5 +1420,21 @@ const scrollToTop = () => {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Premium shadow effects for cards */
+.shadow-soft {
+  box-shadow: 
+    0 2px 10px rgba(0, 0, 0, 0.03),
+    0 6px 15px rgba(0, 0, 0, 0.02),
+    0 12px 30px rgba(0, 0, 0, 0.01);
+  transition: all 0.3s ease;
+}
+
+.shadow-soft:hover {
+  box-shadow: 
+    0 5px 15px rgba(0, 0, 0, 0.05),
+    0 10px 25px rgba(0, 0, 0, 0.04),
+    0 15px 35px rgba(0, 0, 0, 0.02);
 }
 </style>

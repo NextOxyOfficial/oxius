@@ -4,7 +4,7 @@
       <div class="max-w-5xl mx-auto pl-1 pr-2 sm:px-4">
         <div class="flex items-center justify-between h-16 sm:h-18">
           <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
-          <div class="flex items-center sm:gap-5">
+          <div class="flex items-center space-x-1 sm:gap-5">
             <!-- Sidebar Toggle Button - MOBILE ONLY -->
             <button
               @click="cart.toggleBurgerMenu()"
@@ -44,7 +44,7 @@
                   alt="Adsy Logo"
                   width="150"
                   height="50"
-                  class="h-8 sm:h-10 w-auto object-contain"
+                  class="h-7 sm:h-10 w-auto object-contain"
                   loading="eager"
                 />
                 <div

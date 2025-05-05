@@ -2,7 +2,7 @@
   <div
     class="flex items-center justify-center pt-3.5 pb-1.5 border-t border-gray-200/70 dark:border-slate-700/50 mb-4 max-w-2xl mx-auto"
   >
-    <div class="flex items-center space-x-1 w-full justify-center">
+    <div class="flex items-center space-x-2 w-full justify-center">
       <div class="flex items-center space-x-1 group">
         <!-- Like button with premium effects -->
         <button
