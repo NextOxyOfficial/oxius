@@ -1,29 +1,18 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
+    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
       <div
-        ref="imageContainer"
-        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center"
+        class="relative w-full overflow-hidden transition-all duration-700 max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
         <!-- Main image with premium hover effects -->
         <img
           :src="post.post_media[activeIndex].image"
-          :key="activeIndex"
           alt="Media"
-          class="w-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
-          @load="adjustContainerHeight"
+          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
         />
 
-        <!-- Premium overlay gradients -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-60"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent opacity-60"></div>
-        
-        <!-- Radial glow on hover -->
-        <div class="absolute inset-0 bg-radial-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-        
-        <!-- Premium vignette effect -->
-        <div class="absolute inset-0 bg-vignette-gradient opacity-40 pointer-events-none"></div>
+  
 
         <!-- Glassmorphic image counter indicator -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
@@ -148,13 +137,13 @@
 
         <div
           ref="thumbnailsContainer"
-          class="flex flex-nowrap gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 relative"
+          class="grid grid-cols-5 md:grid-cols-7 gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 relative"
           @scroll="updateScrollIndicators"
         >
           <div
             v-for="(media, mediaIndex) in post.post_media"
             :key="media.id"
-            class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] min-w-[72px] sm:min-w-[76px] flex-shrink-0 rounded-lg transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group/thumb"
+            class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] rounded-lg transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group/thumb"
             :class="{
               'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-lg scale-[1.03] z-10 premium-thumb-active':
                 activeIndex === mediaIndex,
@@ -258,17 +247,12 @@ defineEmits(["open-media"]);
 // References and state
 const activeIndex = ref(0);
 const thumbnailsContainer = ref(null);
-const imageContainer = ref(null);
 const isMobile = ref(false);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 
 // Set the active media
 const setActiveMedia = (index) => {
-  // Store the current scroll position
-  const scrollPosition = window.scrollY;
-  
-  // Update the active index
   activeIndex.value = index;
 
   // Ensure the active thumb is visible by scrolling to it
@@ -277,33 +261,17 @@ const setActiveMedia = (index) => {
 
     const thumbnailElements = thumbnailsContainer.value.children;
     if (thumbnailElements && thumbnailElements[index]) {
-      const container = thumbnailsContainer.value;
-      const thumbElement = thumbnailElements[index];
-      
-      // Center the thumbnail in the container without affecting page scroll
-      const containerWidth = container.clientWidth;
-      const thumbLeft = thumbElement.offsetLeft;
-      const thumbWidth = thumbElement.clientWidth;
-      
-      container.scrollTo({
-        left: thumbLeft - (containerWidth / 2) + (thumbWidth / 2),
-        behavior: "smooth"
+      thumbnailElements[index].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
       });
     }
-    
-    // Restore the original scroll position
-    window.scrollTo({
-      top: scrollPosition,
-      behavior: 'instant'
-    });
   });
 };
 
 // Navigate through media directly from main image
 const navigateMedia = (direction) => {
-  // Store the current scroll position
-  const scrollPosition = window.scrollY;
-  
   const totalMedia = props.post.post_media.length;
   if (totalMedia <= 1) return;
   
@@ -312,14 +280,6 @@ const navigateMedia = (direction) => {
   } else {
     activeIndex.value = (activeIndex.value - 1 + totalMedia) % totalMedia;
   }
-  
-  // Restore the scroll position to prevent page jumping
-  nextTick(() => {
-    window.scrollTo({
-      top: scrollPosition,
-      behavior: 'instant'
-    });
-  });
 };
 
 // Function to download an image
@@ -367,55 +327,6 @@ const updateScrollIndicators = () => {
 // Check if the device is mobile
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 640; // sm breakpoint in Tailwind
-};
-
-// Adjust container height based on image dimensions
-const adjustContainerHeight = () => {
-  // Store the current scroll position and the gallery element position
-  const scrollPosition = window.scrollY;
-  const galleryElement = imageContainer.value.closest('div').nextElementSibling;
-  let galleryPosition = null;
-  
-  if (galleryElement) {
-    galleryPosition = galleryElement.getBoundingClientRect().top + window.scrollY;
-  }
-  
-  if (!imageContainer.value) return;
-
-  const imageElement = imageContainer.value.querySelector("img");
-  if (imageElement) {
-    // Set the container height to match the image height (with max limits)
-    const imageHeight = Math.min(imageElement.naturalHeight, isMobile.value ? 520 : 540);
-    if (imageHeight > 0) {
-      imageContainer.value.style.height = `${imageHeight}px`;
-      
-      // If we have a gallery position, restore its position relative to viewport
-      if (galleryPosition) {
-        nextTick(() => {
-          const newGalleryElement = imageContainer.value.closest('div').nextElementSibling;
-          if (newGalleryElement) {
-            const newGalleryPosition = newGalleryElement.getBoundingClientRect().top + window.scrollY;
-            const diff = newGalleryPosition - galleryPosition;
-            
-            // Only adjust if there was a significant change in position
-            if (Math.abs(diff) > 5) {
-              window.scrollTo({
-                top: scrollPosition + diff,
-                behavior: 'instant'
-              });
-              return;
-            }
-          }
-        });
-      }
-    }
-  }
-  
-  // Restore the original scroll position to prevent the page from jumping
-  window.scrollTo({
-    top: scrollPosition,
-    behavior: 'instant'
-  });
 };
 
 // Lifecycle hooks
