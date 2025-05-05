@@ -4,7 +4,7 @@
     <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
       <div
         ref="imageContainer"
-        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center dark:bg-slate-800/30 min-h-[300px]"
+        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center dark:bg-slate-800/30"
       >
         <!-- Main image with premium hover effects -->
         <img
