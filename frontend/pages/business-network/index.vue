@@ -7,7 +7,11 @@
           <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
         </div>
         <!-- Skeleton loaders for posts -->
-        <div v-for="i in 3" :key="i" class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+        <div
+          v-for="i in 3"
+          :key="i"
+          class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4"
+        >
           <div class="flex items-center space-x-3 mb-4">
             <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
             <div class="flex-1 space-y-2">
@@ -31,16 +35,18 @@
     </template>
 
     <!-- Actual posts displayed after loading -->
-    <BusinessNetworkPost 
-      v-if="!loading || (allPosts.length > 0)" 
-      :posts="displayedPosts" 
-      :id="user?.user?.id" 
+    <BusinessNetworkPost
+      v-if="!loading || allPosts.length > 0"
+      :posts="displayedPosts"
+      :id="user?.user?.id"
     />
 
     <!-- Load more indicator with skeletons for better UX -->
     <div v-if="loadingMore && !loading" class="pb-6">
       <!-- Skeleton loader for loading more posts -->
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+      <div
+        class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4"
+      >
         <div class="flex items-center space-x-3 mb-4">
           <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
           <div class="flex-1 space-y-2">
@@ -61,19 +67,25 @@
         </div>
       </div>
     </div>
-    
+
     <!-- End of feed indicator - shows when all posts are loaded -->
-    <div 
+    <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center"
     >
-      <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+      <div
+        class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
+      >
         <Check class="h-8 w-8 text-blue-600" />
       </div>
-      <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
-      <p class="text-gray-500 mb-8 max-w-md">You've seen all posts in the business network feed.</p>
-      <button 
-        @click="scrollToTop" 
+      <h3 class="text-lg font-medium text-gray-800 mb-1">
+        You're all caught up!
+      </h3>
+      <p class="text-gray-500 mb-8 max-w-md">
+        You've seen all posts in the business network feed.
+      </p>
+      <button
+        @click="scrollToTop"
         class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
       >
         <ChevronUp class="h-4 w-4" />
@@ -218,7 +230,7 @@ import {
   ArrowRight,
   Loader2,
   Check,
-  ChevronUp
+  ChevronUp,
 } from "lucide-vue-next";
 
 // State
@@ -239,53 +251,53 @@ const lastCreatedAt = ref(null); // For pagination cursor
 const newestCreatedAt = ref(null); // For refresh/newer posts
 
 // Listen for loading events from footer and sidebar
-eventBus.on('start-loading-posts', () => {
+eventBus.on("start-loading-posts", () => {
   // Set loading to true immediately
   loading.value = true;
 });
 
 // Get initial posts or more posts based on pagination
-async function getPosts(isLoadingMore = false) {
+async function getPosts(isLoadingMore = false, page = 1) {
   try {
     if (isLoadingMore) {
       loadingMore.value = true;
     } else {
       loading.value = true;
     }
-    
+
     // Build query parameters based on action type
     let params = {
-      page_size: isLoadingMore ? 1 : POSTS_PER_BATCH // Load 1 post at a time when scrolling
+      page_size: isLoadingMore ? 1 : POSTS_PER_BATCH, // Load 1 post at a time when scrolling
     };
-    
+
     if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
     }
-    
-    console.log('Fetching posts with params:', params);
-    
+
+    console.log("Fetching posts with params:", params);
+
     const [response] = await Promise.all([
-      get("/bn/posts/", { params }),
+      get(`/bn/posts/?page=${page}`, { params }),
       // Add a minimum delay for UX, shorter for subsequent loads
-      new Promise(resolve => setTimeout(resolve, isLoadingMore ? 300 : 800))
+      new Promise((resolve) => setTimeout(resolve, isLoadingMore ? 300 : 800)),
     ]);
-    
+
     if (response.data && response.data.results) {
       const newPosts = response.data.results;
-      
+
       // Process posts to ensure they have necessary UI properties
-      const processedPosts = newPosts.map(post => ({
+      const processedPosts = newPosts.map((post) => ({
         ...post,
         showFullDescription: false,
         showDropdown: false,
-        commentText: '',
+        commentText: "",
         isCommentLoading: false,
         isLikeLoading: false,
       }));
-      
+
       // Filter out duplicate posts based on their IDs
-      const uniquePosts = processedPosts.filter(post => {
+      const uniquePosts = processedPosts.filter((post) => {
         if (loadedPostIds.value.has(post.id)) {
           console.log(`Filtered out duplicate post ID: ${post.id}`);
           return false;
@@ -293,44 +305,44 @@ async function getPosts(isLoadingMore = false) {
         loadedPostIds.value.add(post.id);
         return true;
       });
-      
-      console.log(`Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`);
-      
+
+      console.log(
+        `Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`
+      );
+
       // On initial load or load more, append to the end
-      allPosts.value = isLoadingMore 
-        ? [...allPosts.value, ...uniquePosts] 
+      allPosts.value = isLoadingMore
+        ? [...allPosts.value, ...uniquePosts]
         : uniquePosts;
-      
+
       // Update pagination cursor if we got any unique posts
       if (uniquePosts.length > 0) {
         const lastPost = uniquePosts[uniquePosts.length - 1];
         lastCreatedAt.value = lastPost.created_at;
-        
+
         // Set initial newest timestamp if first load
         if (!newestCreatedAt.value && uniquePosts.length > 0) {
           newestCreatedAt.value = uniquePosts[0].created_at;
-          console.log('Initial newest timestamp set:', newestCreatedAt.value);
+          console.log("Initial newest timestamp set:", newestCreatedAt.value);
         }
       }
-      
-      
+
       if (processedPosts.length > 0 && uniquePosts.length === 0) {
         hasMore.value = false;
       } else {
         // If we got some unique posts, assume there might be more
         hasMore.value = processedPosts.length > 0;
-        
+
         // If we got no posts at all, we've definitely reached the end
         if (processedPosts.length === 0) {
           hasMore.value = false;
         }
       }
-      
+
       // Update displayed posts
       updateDisplayedPosts();
-      
     } else {
-      console.log('No posts returned from API');
+      console.log("No posts returned from API");
       if (!isLoadingMore) {
         // Only clear on initial load failure
         allPosts.value = [];
@@ -341,12 +353,12 @@ async function getPosts(isLoadingMore = false) {
   } catch (error) {
     console.error("Failed to load posts:", error);
     useToast().add({
-      title: 'Error',
-      description: 'Failed to load posts',
-      color: 'red',
-      timeout: 3000
+      title: "Error",
+      description: "Failed to load posts",
+      color: "red",
+      timeout: 3000,
     });
-    
+
     if (!isLoadingMore) {
       allPosts.value = [];
       displayedPosts.value = [];
@@ -372,7 +384,7 @@ function loadData() {
   hasMore.value = true;
   lastCreatedAt.value = null;
   loadedPostIds.value.clear(); // Reset tracked post IDs when reloading
-  
+
   // Get initial posts with a slight delay
   setTimeout(() => {
     getPosts();
@@ -382,26 +394,29 @@ function loadData() {
 // Load more posts when user scrolls down
 function loadMorePosts() {
   if (!hasMore.value || loadingMore.value || loading.value) return;
-  
+
   page.value++;
-  getPosts(true);
+  getPosts(true, page.value);
 }
 
 // Setup scroll detection for infinite scroll
 function setupInfiniteScroll() {
   const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+    if (
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - 500
+    ) {
       if (!loadingMore.value && hasMore.value) {
         loadMorePosts();
       }
     }
   };
 
-  window.addEventListener('scroll', handleScroll);
+  window.addEventListener("scroll", handleScroll);
 
   // Remove event listener on component unmount
   onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener("scroll", handleScroll);
   });
 }
 
@@ -414,19 +429,19 @@ onMounted(() => {
 // Event listener setup
 onMounted(() => {
   // Listen for events from footer or sidebar
-  eventBus.on('start-loading-posts', () => {
+  eventBus.on("start-loading-posts", () => {
     loadData();
   });
-  
+
   // Listen for the specific recent posts loading event
-  eventBus.on('load-recent-posts', () => {
+  eventBus.on("load-recent-posts", () => {
     loadRecentPosts();
   });
-  
+
   // Clean up event listeners when component is unmounted
   onUnmounted(() => {
-    eventBus.off('start-loading-posts');
-    eventBus.off('load-recent-posts');
+    eventBus.off("start-loading-posts");
+    eventBus.off("load-recent-posts");
   });
 });
 
@@ -437,20 +452,20 @@ const handleNewPost = (newPost) => {
     ...newPost,
     showFullDescription: false,
     showDropdown: false,
-    commentText: '',
+    commentText: "",
     isCommentLoading: false,
     isLikeLoading: false,
   };
-  
+
   // Track the new post ID to prevent future duplicates
   if (newPost.id) {
     loadedPostIds.value.add(newPost.id);
   }
-  
+
   // Add the new post to the beginning of the posts array for immediate display
   allPosts.value = [processedNewPost, ...allPosts.value];
   updateDisplayedPosts();
-  
+
   // Update newest timestamp
   if (processedNewPost.created_at) {
     newestCreatedAt.value = processedNewPost.created_at;
@@ -473,56 +488,56 @@ function loadRecentPosts() {
     // Use specific params for recent posts
     const params = {
       page_size: 10, // Get 10 most recent posts
-      sort: 'recent' // Sort parameter for recent posts
+      sort: "recent", // Sort parameter for recent posts
     };
-    
+
     // Call API with specific parameters for recent posts
     get("/bn/posts/", { params })
-      .then(response => {
+      .then((response) => {
         if (response.data && response.data.results) {
           const newPosts = response.data.results;
-          
+
           // Process posts
-          const processedPosts = newPosts.map(post => ({
+          const processedPosts = newPosts.map((post) => ({
             ...post,
             showFullDescription: false,
             showDropdown: false,
-            commentText: '',
+            commentText: "",
             isCommentLoading: false,
             isLikeLoading: false,
           }));
-          
+
           // Track post IDs to prevent duplicates
-          processedPosts.forEach(post => {
+          processedPosts.forEach((post) => {
             loadedPostIds.value.add(post.id);
           });
-          
+
           // Set posts
           allPosts.value = processedPosts;
-          
+
           // Update cursor for pagination
           if (processedPosts.length > 0) {
             const lastPost = processedPosts[processedPosts.length - 1];
             lastCreatedAt.value = lastPost.created_at;
-            
+
             // Set newest timestamp for potential refresh
             newestCreatedAt.value = processedPosts[0].created_at;
           }
-          
+
           // Check if we have more posts to load
           hasMore.value = processedPosts.length === 10;
-          
+
           // Update displayed posts
           updateDisplayedPosts();
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Failed to load recent posts:", error);
         useToast().add({
-          title: 'Error',
-          description: 'Failed to load recent posts',
-          color: 'red',
-          timeout: 3000
+          title: "Error",
+          description: "Failed to load recent posts",
+          color: "red",
+          timeout: 3000,
         });
       })
       .finally(() => {
