@@ -21,7 +21,7 @@
     >
       <!-- Sidebar Header -->
       <div
-        class="h-12 mt-2flex items-center justify-between px-4 border-gray-100 relative"
+        class="h-12 mt-2 flex items-center justify-between px-4 border-gray-100 relative"
       >
         <button
           v-if="cart.burgerMenu"
@@ -581,13 +581,19 @@ const { get, post } = useApi();
 const logo = ref([]);
 const cart = useStoreCart();
 const route = useRoute();
-const tags = ref([]);
+const tags = ref([]); // Will be populated from hashtags
 const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
 const workspaces = ref([]); // Predefined workspaces with # prefix
 const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
 const { unreadCount, fetchUnreadCount } = useNotifications();
+// Add loading state variables
+const isLoadingNews = ref(false);
+const isLoadingProducts = ref(false);
+const isLoadingContributors = ref(false);
+// Add variable for news interval
+let newsInterval = null;
 
 // Create a reactive menu array that updates when unreadCount changes
 const mainMenu = computed(() => [
@@ -712,17 +718,23 @@ async function fetchHashtags() {
     // Fetch trending hashtags from the news tags API
     const response = await get("/news/categories/?limit=10");
     if (response.data && response.data.results) {
-      hashtags.value = response.data.results.map((tag) => ({
+      // Update both hashtags and tags refs with the same data
+      const hashtagData = response.data.results.map((tag) => ({
+        id: tag.id || Math.random().toString(36).substr(2, 9), // Ensure each tag has an id
         tag: tag.tag,
         count: tag.posts_count || 0,
       }));
+      hashtags.value = hashtagData;
+      tags.value = hashtagData; // This is what's displayed in the template
     } else {
       console.warn("Unexpected hashtags response format:", response.data);
       hashtags.value = [];
+      tags.value = [];
     }
   } catch (error) {
     console.error("Error fetching hashtags:", error);
     hashtags.value = [];
+    tags.value = [];
   }
 }
 
