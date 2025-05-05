@@ -2,13 +2,15 @@ from django.db import models
 from django.utils.text import slugify
 from base.models import *
 from tinymce import models as tinymce_models
+import re
 
 # Add this helper function for generating unique slugs
 def generate_unique_slug(model_class, field_value, instance=None):
 # Handle Bangla/non-Latin slugification
     slug = slugify(field_value)
     if not slug or len(slug) < len(field_value) / 2:
-        slug = field_value.replace(' ', '-').replace("'", "").replace(".", "").replace(",", "").replace(":", "").replace("!", "").replace("?", "").replace("(", "").replace(")", "").replace("&", "").replace("*", "").replace("+", "").replace("=", "").replace("|", "").replace("\\", "").replace("/", "").replace("`", "").replace("~", "").replace("{", "").replace("}", "").replace("[", "").replace("]", "").replace("<", "").replace(">", "").replace(";", "").replace("\"", "").replace("’", "").replace("‘", "").replace("“", "").replace("”", "").replace("_", "")
+        slug = re.sub(r'[\'.,:!?()&*+=|\\/\`~{}\[\]<>;"“”‘’"_]', '', field_value)
+        slug = re.sub(r'\s+', '-', slug)
         
     unique_slug = slug
     queryset = model_class.objects.filter(slug=unique_slug)
