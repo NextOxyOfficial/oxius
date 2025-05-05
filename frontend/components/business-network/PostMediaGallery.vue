@@ -148,13 +148,13 @@
 
         <div
           ref="thumbnailsContainer"
-          class="grid grid-cols-5 md:grid-cols-7 gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 relative"
+          class="flex flex-nowrap gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 relative"
           @scroll="updateScrollIndicators"
         >
           <div
             v-for="(media, mediaIndex) in post.post_media"
             :key="media.id"
-            class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] rounded-lg transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group/thumb"
+            class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] min-w-[72px] sm:min-w-[76px] flex-shrink-0 rounded-lg transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group/thumb"
             :class="{
               'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-lg scale-[1.03] z-10 premium-thumb-active':
                 activeIndex === mediaIndex,
@@ -371,8 +371,14 @@ const checkMobile = () => {
 
 // Adjust container height based on image dimensions
 const adjustContainerHeight = () => {
-  // Store the current scroll position
+  // Store the current scroll position and the gallery element position
   const scrollPosition = window.scrollY;
+  const galleryElement = imageContainer.value.closest('div').nextElementSibling;
+  let galleryPosition = null;
+  
+  if (galleryElement) {
+    galleryPosition = galleryElement.getBoundingClientRect().top + window.scrollY;
+  }
   
   if (!imageContainer.value) return;
 
@@ -382,6 +388,26 @@ const adjustContainerHeight = () => {
     const imageHeight = Math.min(imageElement.naturalHeight, isMobile.value ? 520 : 540);
     if (imageHeight > 0) {
       imageContainer.value.style.height = `${imageHeight}px`;
+      
+      // If we have a gallery position, restore its position relative to viewport
+      if (galleryPosition) {
+        nextTick(() => {
+          const newGalleryElement = imageContainer.value.closest('div').nextElementSibling;
+          if (newGalleryElement) {
+            const newGalleryPosition = newGalleryElement.getBoundingClientRect().top + window.scrollY;
+            const diff = newGalleryPosition - galleryPosition;
+            
+            // Only adjust if there was a significant change in position
+            if (Math.abs(diff) > 5) {
+              window.scrollTo({
+                top: scrollPosition + diff,
+                behavior: 'instant'
+              });
+              return;
+            }
+          }
+        });
+      }
     }
   }
   
