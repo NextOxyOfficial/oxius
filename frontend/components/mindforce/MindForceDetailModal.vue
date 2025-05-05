@@ -33,10 +33,10 @@
                 class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
               >
                 <!-- Pro user border with gradient effect -->
-                <div 
-                  v-if="problem.user_details?.is_pro" 
+                <div
+                  v-if="problem.user_details?.is_pro"
                   class="absolute inset-0 rounded-full pro-border-ring z-20"
-                  style="pointer-events: none;"
+                  style="pointer-events: none"
                 ></div>
                 <div
                   class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
@@ -45,13 +45,13 @@
                   :src="problem.user_details?.image || '/placeholder.svg'"
                   :alt="problem.user_details?.name"
                   class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
-                  style="object-fit: cover; aspect-ratio: 1/1;"
+                  style="object-fit: cover; aspect-ratio: 1/1"
                 />
                 <!-- Pro badge with increased z-index and white border -->
                 <div
                   v-if="problem.user_details?.is_pro"
                   class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-30 text-[9px] font-bold"
-                  style="border: 1px solid rgba(255,255,255,0.5);"
+                  style="border: 1px solid rgba(255, 255, 255, 0.5)"
                 >
                   PRO
                 </div>
@@ -68,7 +68,7 @@
             </div>
 
             <div class="flex items-center gap-1">
-              <div v-if="isOwner" class="relative">
+              <div v-if="problem.user === user.user.id" class="relative">
                 <button
                   @click.stop="toggleMenu"
                   class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
@@ -234,8 +234,8 @@
                         ]"
                       >
                         <!-- Pro user border with gradient effect -->
-                        <div 
-                          v-if="isCommentAuthorPro(comment)" 
+                        <div
+                          v-if="isCommentAuthorPro(comment)"
                           class="absolute inset-0 rounded-full pro-border-ring z-20"
                         ></div>
                         <div
@@ -247,13 +247,13 @@
                           "
                           :alt="comment?.author_details?.name"
                           class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
-                          style="object-fit: cover; aspect-ratio: 1/1;"
+                          style="object-fit: cover; aspect-ratio: 1/1"
                         />
                         <!-- Pro text badge with fixed z-index -->
                         <div
                           v-if="isCommentAuthorPro(comment)"
                           class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
-                          style="border: 1px solid rgba(255,255,255,0.5);"
+                          style="border: 1px solid rgba(255, 255, 255, 0.5)"
                         >
                           PRO
                         </div>
@@ -795,10 +795,9 @@ watch(
 .pro-border-ring {
   border-radius: 9999px; /* Ensure full circle */
   border: 2px solid transparent;
-  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) padding-box, 
-    linear-gradient(#fff 0 0);
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff)
+    border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }

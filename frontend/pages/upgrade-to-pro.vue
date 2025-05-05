@@ -325,12 +325,19 @@
                 </span>
                 Pro Plan
               </h3>
-
-              <div class="mt-4 flex items-baseline">
-                <span class="text-4xl font-bold text-white">৳ 149</span>
-                <span class="ml-2 text-sm text-sky-100">/Month</span>
+              <div class="flex items-center gap-3">
+                <div class="mt-4 flex items-baseline">
+                  <span
+                    class="text-4xl font-bold text-white line-through decoration-slate-900"
+                    >৳ 399</span
+                  >
+                  <span class="ml-2 text-sm text-sky-100">/Month</span>
+                </div>
+                <div class="mt-4 flex items-baseline">
+                  <span class="text-4xl font-bold text-white">৳ 149</span>
+                  <span class="ml-2 text-sm text-sky-100">/Month</span>
+                </div>
               </div>
-
               <p class="mt-2 text-sm text-sky-100">
                 For businesses ready to grow
               </p>

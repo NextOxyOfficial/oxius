@@ -26,10 +26,10 @@
           class="h-9 w-9 sm:h-11 sm:w-11 rounded-full border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
         >
           <!-- Pro user border with gradient effect -->
-          <div 
-            v-if="problem?.user_details?.is_pro" 
+          <div
+            v-if="problem?.user_details?.is_pro"
             class="absolute inset-0 rounded-full pro-border-ring z-20"
-            style="pointer-events: none;"
+            style="pointer-events: none"
           ></div>
           <div
             class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-10"
@@ -38,13 +38,13 @@
             :src="problem?.user_details?.image || '/placeholder.svg'"
             :alt="problem?.user_details?.name"
             class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
-            style="object-fit: cover; aspect-ratio: 1/1;"
+            style="object-fit: cover; aspect-ratio: 1/1"
           />
           <!-- Pro text badge with increased z-index -->
           <div
             v-if="problem?.user_details?.is_pro"
             class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
-            style="border: 1px solid rgba(255,255,255,0.5);"
+            style="border: 1px solid rgba(255, 255, 255, 0.5)"
           >
             PRO
           </div>
@@ -65,7 +65,10 @@
               v-if="problem?.user_details?.kyc"
               class="text-blue-500 flex items-center"
             >
-              <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5 animate-pulse-subtle" />
+              <UIcon
+                name="i-mdi-check-decagram"
+                class="w-3.5 h-3.5 animate-pulse-subtle"
+              />
             </div>
           </div>
           <div class="flex items-center text-sm text-slate-500">
@@ -292,10 +295,9 @@ const formatTimeAgo = (dateString) => {
 .pro-border-ring {
   border-radius: 9999px; /* Ensure full circle */
   border: 2px solid transparent;
-  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) padding-box, 
-    linear-gradient(#fff 0 0);
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff)
+    border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }

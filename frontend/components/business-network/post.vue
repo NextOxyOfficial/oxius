@@ -790,14 +790,31 @@ const deleteMediaComment = async (comment) => {
 };
 
 // Post comment edit/delete functions
-const editComment = (post, comment) => {
+const editComment = async (post, comment) => {
   // Make sure we initialize editText if it doesn't exist
   if (!comment.editText) {
     comment.editText = comment.content;
   }
-
-  // Set editing state to true
   comment.isEditing = true;
+
+  // try {
+  //   // Set the comment text to the editText
+  //   comment.content = comment.editText;
+  //   const res = await put(`/bn/comments/${comment.id}/`, {
+  //     ...comment,
+  //     content: comment.editText,
+  //   });
+  //   if (res.data) {
+  //     toast.add({
+  //       title: "Comment edited successfully",
+  //     });
+  //   }
+  // } catch (error) {
+  //   console.error("Error editing comment:", error);
+  //   toast.add({
+  //     title: "Failed to edit comment",
+  //   });
+  // }
 };
 
 const deleteComment = (post, comment) => {
@@ -811,7 +828,7 @@ const confirmDeleteComment = async () => {
   try {
     commentToDelete.value.isDeleting = true;
 
-    await del(`/bn/post-comments/${commentToDelete.value.id}/`);
+    await del(`/bn/comments/${commentToDelete.value.id}/`);
 
     // Remove the comment from the list
     if (
@@ -826,7 +843,6 @@ const confirmDeleteComment = async () => {
 
     toast.add({
       title: "Comment deleted",
-      color: "blue",
     });
   } catch (error) {
     console.error("Error deleting comment:", error);
@@ -851,12 +867,13 @@ const saveEditComment = async (post, comment) => {
   comment.isSaving = true;
 
   try {
-    const { data } = await put(`/bn/post-comments/${comment.id}/`, {
+    const { data } = await put(`/bn/comments/${comment.id}/`, {
+      ...comment,
       content: comment.editText,
     });
 
     // Update the comment content
-    comment.content = data.content;
+    comment.content = data?.content;
     comment.isEditing = false;
     comment.editText = "";
 

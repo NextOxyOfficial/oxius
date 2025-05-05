@@ -4,16 +4,18 @@
     <MindForceHeader :is-creating="isCreating" @create="openCreateModal" />
 
     <!-- Main Content -->
-    <div class="bg-white rounded-xl shadow-md border border-gray-100 transition-all">
+    <div
+      class="bg-white rounded-xl shadow-md border border-gray-100 transition-all"
+    >
       <!-- Tabs & Search Component -->
-      <MindForceTabsSearch 
-        :tabs="tabs" 
-        :active-tab="activeTab" 
+      <MindForceTabsSearch
+        :tabs="tabs"
+        :active-tab="activeTab"
         :is-searching="isSearching"
         :search-query="searchQuery"
         @update:active-tab="activeTab = $event"
         @update:search-query="searchQuery = $event"
-        @search="handleSearch" 
+        @search="handleSearch"
       />
 
       <div class="px-2 py-3 mb-20">
@@ -193,7 +195,7 @@
     </div>
 
     <!-- Modals and dialogs using components -->
-    <MindForceCreateModal 
+    <MindForceCreateModal
       v-model="isCreateModalOpen"
       :categories="categories"
       :is-submitting="isSubmittingCreate"
@@ -225,7 +227,6 @@
       :current-photo-index="currentPhotoIndex"
       @update:current-index="currentPhotoIndex = $event"
     />
-
   </div>
 </template>
 
@@ -255,8 +256,10 @@ definePageMeta({
   ],
 });
 
-const { get, post, patch } = useApi();
+const { get, post, patch, del } = useApi();
 const { user } = useAuth();
+
+const toast = useToast();
 
 // State
 const isCreating = ref(false);
@@ -443,39 +446,62 @@ const confirmDelete = () => {
   isDeleteDialogOpen.value = true;
 };
 
-const deleteProblem = () => {
-  problems.value = problems.value.filter(
-    (problem) => problem.id !== selectedProblem.value.id
-  );
+const deleteProblem = async () => {
+  try {
+    const res = await del(`/bn/mindforce/${selectedProblem.value.id}/`);
+    if (res.data === undefined) {
+      isDeleteDialogOpen.value = false;
+      toast.add({
+        title: "Success",
+        description: "Problem deleted successfully",
+      });
+      await fetchProblems();
+    }
+  } catch (error) {
+    toast.add({ title: "Error", description: "Failed to delete problem" });
+  }
   isDeleteDialogOpen.value = false;
 };
 
 const markAsSolution = async (commentId) => {
   // Keep track of which comment is being processed
   processingCommentIds.value.push(commentId);
-  
+
   try {
     // Make the API call to mark the comment as a solution
     const res = await patch(`/bn/mindforce/comments/${commentId}/`, {
       is_solved: true,
     });
-    
+
     if (res.data.is_solved) {
       // Update the selected problem's comments
       if (selectedProblem.value && selectedProblem.value.mindforce_comments) {
         // Find and update the specific comment
-        const commentIndex = selectedProblem.value.mindforce_comments.findIndex(c => c.id === commentId);
+        const commentIndex = selectedProblem.value.mindforce_comments.findIndex(
+          (c) => c.id === commentId
+        );
         if (commentIndex !== -1) {
-          selectedProblem.value.mindforce_comments[commentIndex].is_solved = true;
+          selectedProblem.value.mindforce_comments[
+            commentIndex
+          ].is_solved = true;
         }
       }
-      
+
       // Also update in the main problems array
-      const problemIndex = problems.value.findIndex(p => p.id === selectedProblem.value.id);
-      if (problemIndex !== -1 && problems.value[problemIndex].mindforce_comments) {
-        const commentIndex = problems.value[problemIndex].mindforce_comments.findIndex(c => c.id === commentId);
+      const problemIndex = problems.value.findIndex(
+        (p) => p.id === selectedProblem.value.id
+      );
+      if (
+        problemIndex !== -1 &&
+        problems.value[problemIndex].mindforce_comments
+      ) {
+        const commentIndex = problems.value[
+          problemIndex
+        ].mindforce_comments.findIndex((c) => c.id === commentId);
         if (commentIndex !== -1) {
-          problems.value[problemIndex].mindforce_comments[commentIndex].is_solved = true;
+          problems.value[problemIndex].mindforce_comments[
+            commentIndex
+          ].is_solved = true;
         }
       }
     }
@@ -483,16 +509,18 @@ const markAsSolution = async (commentId) => {
     console.error("Error marking solution:", error);
     alert("Failed to mark as solution. Please try again.");
   } finally {
-    processingCommentIds.value = processingCommentIds.value.filter(id => id !== commentId);
+    processingCommentIds.value = processingCommentIds.value.filter(
+      (id) => id !== commentId
+    );
   }
 };
 
 const addComment = async (commentText) => {
   if (!commentText.trim()) return;
-  
+
   // Check if the problem is already solved
-  if (selectedProblem.value.status === 'solved') {
-    alert('Comments cannot be added to solved problems.');
+  if (selectedProblem.value.status === "solved") {
+    alert("Comments cannot be added to solved problems.");
     return;
   }
 
@@ -503,14 +531,14 @@ const addComment = async (commentText) => {
     if (!selectedProblem.value.mindforce_comments) {
       selectedProblem.value.mindforce_comments = [];
     }
-    
+
     const res = await post(
       `/bn/mindforce/${selectedProblem.value.id}/comments/`,
       {
         comment: commentText,
       }
     );
-    
+
     if (res.data) {
       // The modal component will handle displaying the comment via its local state
       // We don't need to update the comments array here
@@ -518,10 +546,14 @@ const addComment = async (commentText) => {
     }
   } catch (error) {
     console.error("Error adding comment:", error);
-    if (error.response && error.response.data && error.response.data.detail === 'Cannot comment on solved problems') {
-      alert('This problem has been marked as solved. Comments are disabled.');
+    if (
+      error.response &&
+      error.response.data &&
+      error.response.data.detail === "Cannot comment on solved problems"
+    ) {
+      alert("This problem has been marked as solved. Comments are disabled.");
     } else {
-      alert('Failed to add comment. Please try again later.');
+      alert("Failed to add comment. Please try again later.");
     }
   } finally {
     isSubmittingComment.value = false;
@@ -534,29 +566,34 @@ const markProblemAsSolved = async () => {
   try {
     // Make sure we're updating the correct problem
     const problemId = selectedProblem.value.id;
-    
+
     // Call the API to update the problem status
     const res = await patch(`/bn/mindforce/${problemId}/`, {
       status: "solved",
     });
-    
+
     if (res.data && res.data.status === "solved") {
       // Update the problem in the local state
-      const index = problems.value.findIndex(p => p.id === problemId);
+      const index = problems.value.findIndex((p) => p.id === problemId);
       if (index !== -1) {
         problems.value[index].status = "solved";
       }
-      
+
       // Close the modal and refresh problems to ensure everything is up-to-date
       isDetailModalOpen.value = false;
       await fetchProblems();
     } else {
-      console.error("Error marking problem as solved: Unexpected response", res.data);
+      console.error(
+        "Error marking problem as solved: Unexpected response",
+        res.data
+      );
       alert("Could not mark the problem as solved. Please try again.");
     }
   } catch (error) {
     console.error("Error marking problem as solved:", error);
-    alert("An error occurred while marking the problem as solved. Please try again.");
+    alert(
+      "An error occurred while marking the problem as solved. Please try again."
+    );
   }
 };
 
