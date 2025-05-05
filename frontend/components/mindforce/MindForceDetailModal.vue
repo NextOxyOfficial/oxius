@@ -68,7 +68,7 @@
             </div>
 
             <div class="flex items-center gap-1">
-              <div v-if="problem.user === user.user.id" class="relative">
+              <div v-if="user?.user && problem.user === user.user.id" class="relative">
                 <button
                   @click.stop="toggleMenu"
                   class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
@@ -380,6 +380,32 @@
               </div>
             </div>
 
+            <!-- Login prompt for non-logged in users -->
+            <div
+              v-else-if="!currentUserId && problem.status !== 'solved'"
+              class="mt-8 p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-100 dark:border-amber-900/30 mb-10"
+            >
+              <div class="flex items-center">
+                <div
+                  class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3"
+                >
+                  <LockIcon class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <h4
+                    class="text-md font-medium text-amber-800 dark:text-amber-400"
+                  >
+                    Authentication Required
+                  </h4>
+                  <p
+                    class="mt-1 text-sm text-amber-700 dark:text-amber-500"
+                  >
+                    Please <NuxtLink to="/auth/login" class="font-medium underline">login</NuxtLink> or <NuxtLink to="/auth/register" class="font-medium underline">register</NuxtLink> first to add your advice.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Message for solved problems with enhanced styling -->
             <div
               v-else-if="problem.status === 'solved'"
@@ -426,6 +452,7 @@ import {
   Eye,
   Edit,
   Clock,
+  LockIcon,
 } from "lucide-vue-next";
 
 const props = defineProps({

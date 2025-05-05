@@ -289,12 +289,20 @@ const createForm = ref({
   images: [],
 });
 
-// Tabs
-const tabs = [
-  { label: "Active Problems", value: "active" },
-  { label: "Solved Problems", value: "solved" },
-  { label: "My Problems", value: "my-problems" },
-];
+// Tabs - Dynamically include the My Problems tab only for logged in users
+const tabs = computed(() => {
+  const baseTabs = [
+    { label: "Active Problems", value: "active" },
+    { label: "Solved Problems", value: "solved" }
+  ];
+  
+  // Only add My Problems tab if user is logged in
+  if (user.value?.user) {
+    baseTabs.push({ label: "My Problems", value: "my-problems" });
+  }
+  
+  return baseTabs;
+});
 
 // Categories
 const categories = ref([]);
@@ -340,6 +348,18 @@ const myProblems = computed(() =>
 
 // Methods
 const openCreateModal = () => {
+  // Check if user is logged in
+  if (!user.value?.user) {
+    // Show toast notification to inform user to login first
+    toast.add({
+      title: "Authentication Required",
+      description: "Please login first to create a problem",
+      color: "amber",
+      timeout: 5000,
+    });
+    return;
+  }
+
   isCreating.value = true;
   setTimeout(() => {
     isCreating.value = false;
