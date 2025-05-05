@@ -1,32 +1,21 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
       <div
-        ref="imageContainer"
-        class="relative w-full overflow-hidden transition-transform duration-700 flex items-center justify-center bg-slate-50 dark:bg-slate-800/30 min-h-[300px]"
+        class="relative w-full overflow-hidden transition-all duration-700 max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
         <!-- Main image with premium hover effects -->
         <img
           :src="post.post_media[activeIndex].image"
-          :key="activeIndex"
           alt="Media"
-          class="w-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
-          @load="adjustContainerHeight"
+          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700 ease-out group-hover:brightness-[1.02]"
         />
 
-        <!-- Premium overlay gradients -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-60"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent opacity-60"></div>
-        
-        <!-- Radial glow on hover -->
-        <div class="absolute inset-0 bg-radial-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-        
-        <!-- Premium vignette effect -->
-        <div class="absolute inset-0 bg-vignette-gradient opacity-40 pointer-events-none"></div>
+  
 
         <!-- Glassmorphic image counter indicator -->
-        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
+        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-sm border border-white/10 transform transition-all duration-300 group-hover:scale-105">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-400/50 rounded-full animate-ping opacity-75"></div>
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
@@ -77,7 +66,7 @@
         <div class="absolute -inset-2 bg-gradient-to-r from-purple-500/5 via-blue-500/10 to-emerald-500/5 rounded-lg blur-xl opacity-50 dark:opacity-30"></div>
         
         <h3 class="font-medium text-slate-800 dark:text-slate-100 flex items-center space-x-2 relative backdrop-blur-sm">
-          <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-md shadow-md shadow-blue-500/20 dark:shadow-blue-400/10">
+          <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-md shadow-sm shadow-blue-500/20 dark:shadow-blue-400/10">
             <UIcon name="i-heroicons-photo" class="w-3.5 h-3.5" />
           </span>
           <span class="relative">
@@ -92,7 +81,7 @@
         <!-- Media counter with luxury styling -->
         <div class="relative group">
           <div class="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div class="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/90 rounded-lg text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-100/50 dark:border-blue-800/50 shadow-md relative group-hover:shadow-blue-500/10 dark:shadow-blue-800/5 group-hover:scale-[1.02] transition-all duration-300">
+          <div class="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/90 rounded-lg text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-100/50 dark:border-blue-800/50 shadow-sm relative group-hover:shadow-blue-500/10 dark:shadow-blue-800/5 group-hover:scale-[1.02] transition-all duration-300">
             <span class="flex items-center space-x-1.5">
               <UIcon name="i-heroicons-viewfinder-circle" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 animate-pulse" />
               <span class="relative">
@@ -110,7 +99,7 @@
       <button
         v-show="canScrollLeft"
         @click="scrollThumbnails('left')"
-        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
         aria-label="Previous thumbnails"
       >
         <svg
@@ -158,7 +147,7 @@
             :class="{
               'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-lg scale-[1.03] z-10 premium-thumb-active':
                 activeIndex === mediaIndex,
-              'opacity-90 hover:opacity-100 hover:shadow-md ring-1 ring-white/70 dark:ring-slate-700/90':
+              'opacity-90 hover:opacity-100 hover:shadow-sm ring-1 ring-white/70 dark:ring-slate-700/90':
                 activeIndex !== mediaIndex,
             }"
             @click="setActiveMedia(mediaIndex)"
@@ -204,7 +193,7 @@
             <!-- Premium selection indicator -->
             <div
               v-if="activeIndex === mediaIndex" 
-              class="absolute top-1 left-1 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-md"
+              class="absolute top-1 left-1 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm"
             >
               <span class="text-white text-[8px]">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-2.5 h-2.5">
@@ -220,7 +209,7 @@
       <button
         v-show="canScrollRight"
         @click="scrollThumbnails('right')"
-        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
         aria-label="Next thumbnails"
       >
         <svg
@@ -258,17 +247,12 @@ defineEmits(["open-media"]);
 // References and state
 const activeIndex = ref(0);
 const thumbnailsContainer = ref(null);
-const imageContainer = ref(null);
 const isMobile = ref(false);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 
 // Set the active media
 const setActiveMedia = (index) => {
-  // Store the current scroll position
-  const scrollPosition = window.scrollY;
-  
-  // Update the active index
   activeIndex.value = index;
 
   // Ensure the active thumb is visible by scrolling to it
@@ -277,33 +261,17 @@ const setActiveMedia = (index) => {
 
     const thumbnailElements = thumbnailsContainer.value.children;
     if (thumbnailElements && thumbnailElements[index]) {
-      const container = thumbnailsContainer.value;
-      const thumbElement = thumbnailElements[index];
-      
-      // Center the thumbnail in the container without affecting page scroll
-      const containerWidth = container.clientWidth;
-      const thumbLeft = thumbElement.offsetLeft;
-      const thumbWidth = thumbElement.clientWidth;
-      
-      container.scrollTo({
-        left: thumbLeft - (containerWidth / 2) + (thumbWidth / 2),
-        behavior: "smooth"
+      thumbnailElements[index].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
       });
     }
-    
-    // Restore the original scroll position
-    window.scrollTo({
-      top: scrollPosition,
-      behavior: 'instant'
-    });
   });
 };
 
 // Navigate through media directly from main image
 const navigateMedia = (direction) => {
-  // Store the current scroll position
-  const scrollPosition = window.scrollY;
-  
   const totalMedia = props.post.post_media.length;
   if (totalMedia <= 1) return;
   
@@ -312,14 +280,6 @@ const navigateMedia = (direction) => {
   } else {
     activeIndex.value = (activeIndex.value - 1 + totalMedia) % totalMedia;
   }
-  
-  // Restore the scroll position to prevent page jumping
-  nextTick(() => {
-    window.scrollTo({
-      top: scrollPosition,
-      behavior: 'instant'
-    });
-  });
 };
 
 // Function to download an image
@@ -367,29 +327,6 @@ const updateScrollIndicators = () => {
 // Check if the device is mobile
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 640; // sm breakpoint in Tailwind
-};
-
-// Adjust container height based on image dimensions
-const adjustContainerHeight = () => {
-  // Store the current scroll position
-  const scrollPosition = window.scrollY;
-  
-  if (!imageContainer.value) return;
-
-  const imageElement = imageContainer.value.querySelector("img");
-  if (imageElement) {
-    // Set the container height to match the image height (with max limits)
-    const imageHeight = Math.min(imageElement.naturalHeight, isMobile.value ? 520 : 540);
-    if (imageHeight > 0) {
-      imageContainer.value.style.height = `${imageHeight}px`;
-    }
-  }
-  
-  // Restore the original scroll position to prevent the page from jumping
-  window.scrollTo({
-    top: scrollPosition,
-    behavior: 'instant'
-  });
 };
 
 // Lifecycle hooks
