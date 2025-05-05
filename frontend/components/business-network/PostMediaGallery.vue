@@ -3,13 +3,13 @@
     <!-- Main content area with enhanced premium image display -->
     <div class="relative overflow-hidden rounded-xl shadow-sm  hover:shadow-sm hover:-translate-y-0.5">
       <div
-        class="relative w-full overflow-hidden transition-all duration-700 h-auto max-h-520 sm:h-[540px]"
+        class="relative w-full overflow-hidden transition-all duration-700 max-h-520 sm:h-[540px]"
       >
         <!-- Main image with premium hover effects -->
         <img
           :src="post.post_media[activeIndex].image"
           alt="Media"
-          class="h-full w-full object-fill"
+          class="h-auto w-full object-fill"
         />
 
       
