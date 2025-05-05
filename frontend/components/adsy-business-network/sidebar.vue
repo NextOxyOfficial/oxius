@@ -1000,14 +1000,22 @@ onMounted(async () => {
     await fetchUnreadCount();
   }
 
-  // Fetch dynamic data
-  await Promise.all([
-    fetchNewsItems(),
-    fetchHashtags(),
-    fetchWorkspaces(),
-    fetchProducts(),
-    fetchTopContributors(),
-  ]);
+  // Fetch dynamic data regardless of login status
+  try {
+    await Promise.all([
+      fetchNewsItems(),
+      fetchHashtags(),
+      fetchProducts(),
+      fetchTopContributors(),
+    ]);
+
+    // Only fetch workspaces if the user is logged in
+    if (user.value?.user?.id) {
+      await fetchWorkspaces();
+    }
+  } catch (error) {
+    console.error("Error fetching sidebar content:", error);
+  }
 
   // Auto-change product every 10 seconds
   const productInterval = setInterval(() => {
