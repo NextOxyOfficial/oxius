@@ -86,7 +86,7 @@
               </div>
             </div>
             <span class="text-sm text-gray-500 capitalize">
-              {{ article.author_details?.user_type || "Contributor" }}
+              {{ article.author_details?.profession || "Contributor" }}
             </span>
           </div>
         </div>

@@ -388,6 +388,7 @@ definePageMeta({
 
 const { get, post } = useApi();
 
+import { ar } from "date-fns/locale";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -622,8 +623,8 @@ const formatArticleForDisplay = (article) => {
         })
       : "Unknown date",
     readTime: article.content ? Math.ceil(article.content.length / 1000) : 1,
-    author: getAuthorName(article.author_details),
-    authorTitle: article.author_details?.user_type || "",
+    author: article.author_details?.name || "Unknown Author",
+    authorTitle: article.author_details?.profession || "",
     authorImage:
       article.author_details?.image ||
       "/static/frontend/images/placeholder.jpg",
