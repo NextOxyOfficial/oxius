@@ -14,7 +14,10 @@
           <div class="p-4 sm:p-5 border-b border-gray-200">
             <div class="flex items-center justify-between mb-1">
               <h3 class="font-semibold">Liked by</h3>
-              <button @click="$emit('close-likes-modal')" class="hover:bg-gray-100 p-1 rounded-full transition-colors">
+              <button
+                @click="$emit('close-likes-modal')"
+                class="hover:bg-gray-100 p-1 rounded-full transition-colors"
+              >
                 <X class="h-5 w-5" />
               </button>
             </div>
@@ -32,8 +35,8 @@
                 <NuxtLink :to="`/business-network/profile/${user.user}`">
                   <div class="relative">
                     <!-- Pro user badge with improved color ring around profile picture -->
-                    <div 
-                      v-if="user.user_details?.is_pro" 
+                    <div
+                      v-if="user.user_details?.is_pro"
                       class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
                     ></div>
                     <img
@@ -67,7 +70,7 @@
                 </div>
               </div>
               <button
-                v-if="user"
+                v-if="currentUser && user.user !== currentUser.user.id"
                 :class="[
                   'text-sm h-8 rounded-full px-4 flex items-center gap-1.5 font-medium shadow-sm transition-all duration-200',
                   user.isFollowing
@@ -102,7 +105,10 @@
           <div class="p-4 sm:p-5 border-b border-gray-200">
             <div class="flex items-center justify-between mb-1">
               <h3 class="font-semibold">Comments</h3>
-              <button @click="$emit('close-comments-modal')" class="hover:bg-gray-100 p-1 rounded-full transition-colors">
+              <button
+                @click="$emit('close-comments-modal')"
+                class="hover:bg-gray-100 p-1 rounded-full transition-colors"
+              >
                 <X class="h-5 w-5" />
               </button>
             </div>
@@ -123,12 +129,15 @@
                 <NuxtLink :to="`/business-network/profile/${comment?.author}`">
                   <div class="relative">
                     <!-- Pro user badge with improved color ring around profile picture -->
-                    <div 
-                      v-if="comment.author_details?.is_pro" 
+                    <div
+                      v-if="comment.author_details?.is_pro"
                       class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
                     ></div>
                     <img
-                      :src="comment.author_details?.image || '/static/frontend/avatar.png'"
+                      :src="
+                        comment.author_details?.image ||
+                        '/static/frontend/avatar.png'
+                      "
                       :alt="comment.author_details?.name"
                       class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover"
                     />
@@ -251,8 +260,8 @@
             <div class="flex items-center gap-2">
               <div class="relative">
                 <!-- Pro user badge with improved color ring around profile picture -->
-                <div 
-                  v-if="user?.user?.is_pro" 
+                <div
+                  v-if="user?.user?.is_pro"
                   class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
                 ></div>
                 <img
@@ -306,12 +315,15 @@
                     >
                       <div class="relative">
                         <!-- Pro user badge with improved color ring around profile picture -->
-                        <div 
-                          v-if="user?.follower_details?.is_pro" 
+                        <div
+                          v-if="user?.follower_details?.is_pro"
                           class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
                         ></div>
                         <img
-                          :src="user?.follower_details?.image || '/static/frontend/avatar.png'"
+                          :src="
+                            user?.follower_details?.image ||
+                            '/static/frontend/avatar.png'
+                          "
                           :alt="user?.follower_details?.name"
                           class="w-7 h-7 rounded-full mr-2 object-cover"
                         />
@@ -355,7 +367,10 @@
         class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
         @click="$emit('cancel-delete-comment')"
       >
-        <div class="bg-white rounded-lg max-w-sm w-full p-4 shadow-xl" @click.stop>
+        <div
+          class="bg-white rounded-lg max-w-sm w-full p-4 shadow-xl"
+          @click.stop
+        >
           <h3 class="text-lg font-semibold mb-2">Delete Comment</h3>
           <p class="text-gray-600 mb-4">
             Are you sure you want to delete this comment? This action cannot be
@@ -392,16 +407,18 @@
         >
           <!-- Header with close and download buttons -->
           <div class="flex items-center justify-between p-4 text-white">
-            <h3 class="font-medium text-lg truncate">{{ activePhotoViewer.title || 'Photo' }}</h3>
+            <h3 class="font-medium text-lg truncate">
+              {{ activePhotoViewer.title || "Photo" }}
+            </h3>
             <div class="flex items-center gap-3">
-              <button 
+              <button
                 @click="downloadImage(activePhotoViewer.currentPhoto)"
                 class="p-2 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
                 title="Download"
               >
                 <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5" />
               </button>
-              <button 
+              <button
                 @click="$emit('close-photo-viewer')"
                 class="p-2 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
               >
@@ -409,27 +426,31 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Photo display -->
-          <div class="relative overflow-hidden flex-1 flex items-center justify-center">
-            <img 
-              :src="activePhotoViewer.currentPhoto" 
+          <div
+            class="relative overflow-hidden flex-1 flex items-center justify-center"
+          >
+            <img
+              :src="activePhotoViewer.currentPhoto"
               :alt="activePhotoViewer.title || 'Photo'"
               class="max-h-[70vh] max-w-full object-contain"
             />
-            
+
             <!-- Navigation buttons if multiple photos -->
-            <div 
-              v-if="activePhotoViewer.photos && activePhotoViewer.photos.length > 1"
+            <div
+              v-if="
+                activePhotoViewer.photos && activePhotoViewer.photos.length > 1
+              "
               class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4"
             >
-              <button 
+              <button
                 @click.stop="$emit('prev-photo', activePhotoViewer)"
                 class="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
               >
                 <UIcon name="i-heroicons-chevron-left" class="w-5 h-5" />
               </button>
-              <button 
+              <button
                 @click.stop="$emit('next-photo', activePhotoViewer)"
                 class="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
               >
@@ -437,10 +458,12 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Thumbnails if multiple photos -->
-          <div 
-            v-if="activePhotoViewer.photos && activePhotoViewer.photos.length > 1"
+          <div
+            v-if="
+              activePhotoViewer.photos && activePhotoViewer.photos.length > 1
+            "
             class="p-2 flex justify-center gap-2 bg-black/80"
           >
             <button
@@ -449,19 +472,29 @@
               @click.stop="$emit('select-photo', activePhotoViewer, index)"
               :class="[
                 'h-12 w-12 rounded overflow-hidden border-2',
-                activePhotoViewer.currentPhotoIndex === index 
-                  ? 'border-blue-500' 
-                  : 'border-transparent hover:border-gray-400'
+                activePhotoViewer.currentPhotoIndex === index
+                  ? 'border-blue-500'
+                  : 'border-transparent hover:border-gray-400',
               ]"
             >
               <img :src="photo" class="h-full w-full object-cover" />
             </button>
           </div>
-          
+
           <!-- Photo info -->
           <div class="p-3 text-white/80 text-sm bg-black/80">
-            <p v-if="activePhotoViewer.caption" class="mb-1">{{ activePhotoViewer.caption }}</p>
-            <p>{{ activePhotoViewer.photoIndex ? `${activePhotoViewer.photoIndex + 1}/${activePhotoViewer.totalPhotos}` : '' }}</p>
+            <p v-if="activePhotoViewer.caption" class="mb-1">
+              {{ activePhotoViewer.caption }}
+            </p>
+            <p>
+              {{
+                activePhotoViewer.photoIndex
+                  ? `${activePhotoViewer.photoIndex + 1}/${
+                      activePhotoViewer.totalPhotos
+                    }`
+                  : ""
+              }}
+            </p>
           </div>
         </div>
       </div>
@@ -508,9 +541,10 @@ defineProps({
   activePhotoViewer: {
     type: Object,
     default: null,
-  }
+  },
 });
 
+const { user: currentUser } = useAuth();
 // Export a reference to the comments container for scrolling
 const commentsContainerRef = ref(null);
 
@@ -531,7 +565,7 @@ defineEmits([
   "close-photo-viewer",
   "prev-photo",
   "next-photo",
-  "select-photo"
+  "select-photo",
 ]);
 
 defineExpose({ commentsContainerRef });
@@ -568,10 +602,10 @@ const formatTimeAgo = (dateString) => {
 // Function to download an image
 const downloadImage = (url) => {
   if (!url) return;
-  
-  const link = document.createElement('a');
+
+  const link = document.createElement("a");
   link.href = url;
-  link.download = url.split('/').pop() || 'download.jpg';
+  link.download = url.split("/").pop() || "download.jpg";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -583,10 +617,9 @@ const downloadImage = (url) => {
 .pro-border-ring {
   border-radius: 9999px; /* Ensure full circle */
   border: 2px solid transparent;
-  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) padding-box, 
-    linear-gradient(#fff 0 0);
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff)
+    border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }

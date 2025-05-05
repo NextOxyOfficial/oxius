@@ -652,10 +652,10 @@ const toggleUserFollow = async (userToFollow) => {
     const userId = userToFollow.user;
 
     if (userToFollow.isFollowing) {
-      await del(`/bn/follow/${userId}/`);
+      await del(`/bn/users/${userId}/unfollow/`);
       userToFollow.isFollowing = false;
     } else {
-      await post(`/bn/follow/${userId}/`);
+      await post(`/bn/users/${userId}/follow/`);
       userToFollow.isFollowing = true;
     }
   } catch (error) {
