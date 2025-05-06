@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3">
     <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 ">
+    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
       <div
         class="relative w-full overflow-hidden transition-all duration-700 min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
@@ -15,7 +15,7 @@
   
 
         <!-- Glassmorphic image counter indicator -->
-        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-sm border border-white/10 transform transition-all duration-300 group-hover:scale-105">
+        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-400/50 rounded-full animate-ping opacity-75"></div>
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
@@ -99,7 +99,7 @@
       <button
         v-show="canScrollLeft"
         @click="scrollThumbnails('left')"
-        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
         aria-label="Previous thumbnails"
       >
         <svg
@@ -119,8 +119,6 @@
         <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
       </button>
 
-      <!-- Premium thumbnail container with luxury glass effect -->
-      <div class="relative rounded-xl overflow-hidden bg-gradient-to-br from-white/80 via-slate-50/90 to-white/70 dark:from-slate-800/80 dark:via-slate-800/40 dark:to-slate-900/60 backdrop-blur-sm shadow-lg border border-white/50 dark:border-slate-700/50 p-3 transition-all duration-500 hover:shadow-blue-500/5 dark:hover:shadow-blue-500/5">
         <!-- Premium light beam effects -->
         <div class="absolute -inset-2 bg-grid opacity-10 dark:opacity-5 pointer-events-none"></div>
         <div class="absolute -inset-2 bg-gradient-conic opacity-5 dark:opacity-10 mix-blend-overlay pointer-events-none"></div>
@@ -209,7 +207,7 @@
       <button
         v-show="canScrollRight"
         @click="scrollThumbnails('right')"
-        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
         aria-label="Next thumbnails"
       >
         <svg
