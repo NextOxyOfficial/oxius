@@ -21,7 +21,7 @@
     >
       <!-- Sidebar Header -->
       <div
-        class="h-12 mt-2 flex items-center justify-between px-4 border-gray-100 relative"
+        class="h-12 mt-4 flex items-center justify-between px-4 border-gray-100 relative"
       >
         <button
           v-if="cart.burgerMenu"
