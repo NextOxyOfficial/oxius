@@ -535,8 +535,12 @@ const markAsSolution = async (commentId) => {
   }
 };
 
-const addComment = async (commentText) => {
-  if (!commentText.trim()) return;
+const addComment = async (commentData) => {
+  // Handle both string-only comments (backward compatibility) and object format with media
+  const commentText = typeof commentData === 'string' ? commentData : commentData.content;
+  const commentMedia = typeof commentData === 'string' ? [] : (commentData.media || []);
+  
+  if (!commentText.trim() && commentMedia.length === 0) return;
 
   // Check if the problem is already solved
   if (selectedProblem.value.status === "solved") {
@@ -552,11 +556,21 @@ const addComment = async (commentText) => {
       selectedProblem.value.mindforce_comments = [];
     }
 
+    // Create form data to handle media uploads
+    const formData = new FormData();
+    formData.append('comment', commentText);
+    
+    // Append any media files to the formData
+    commentMedia.forEach((media, index) => {
+      if (media.file) {
+        formData.append(`media_${index}`, media.file);
+      }
+    });
+
     const res = await post(
       `/bn/mindforce/${selectedProblem.value.id}/comments/`,
-      {
-        comment: commentText,
-      }
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
     );
 
     if (res.data) {

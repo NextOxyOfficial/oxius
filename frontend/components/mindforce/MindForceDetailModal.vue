@@ -315,6 +315,25 @@
                   >
                     {{ comment.content }}
                   </p>
+                  
+                  <!-- Comment Media Gallery -->
+                  <div 
+                    v-if="comment.media && comment.media.length > 0" 
+                    class="mt-3 flex flex-wrap gap-2"
+                  >
+                    <div 
+                      v-for="(media, index) in comment.media" 
+                      :key="index"
+                      class="relative h-20 w-20 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer"
+                      @click="openMediaViewer(comment, index)"
+                    >
+                      <img 
+                        :src="media.preview || media.image" 
+                        alt="Comment media" 
+                        class="h-full w-full object-cover transition-transform hover:scale-105"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -360,13 +379,57 @@
                 class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-md ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all resize-none"
                 rows="3"
               ></textarea>
+              
+              <!-- Media upload section -->
+              <div class="mt-3">
+                <div class="flex items-center space-x-2">
+                  <button
+                    @click="triggerMediaUpload"
+                    type="button"
+                    class="flex items-center space-x-1.5 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 rounded-lg transition-colors"
+                  >
+                    <ImagePlus class="h-4 w-4" />
+                    <span>Add Photo</span>
+                  </button>
+                  <span class="text-sm text-slate-500 dark:text-slate-400">{{ commentMedia.length }}/3 images</span>
+                  <input 
+                    type="file"
+                    ref="mediaFileInput"
+                    accept="image/*"
+                    class="hidden"
+                    @change="handleMediaUpload"
+                  />
+                </div>
+                
+                <!-- Media preview section -->
+                <div v-if="commentMedia.length > 0" class="mt-3 flex flex-wrap gap-2">
+                  <div 
+                    v-for="(media, index) in commentMedia" 
+                    :key="index"
+                    class="relative h-20 w-20 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 group"
+                  >
+                    <img 
+                      :src="media.preview" 
+                      alt="Media preview" 
+                      class="h-full w-full object-cover"
+                    />
+                    <button
+                      @click="removeMedia(index)"
+                      class="absolute top-1 right-1 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <X class="h-3 w-3 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
               <div class="flex justify-end mt-3 mb-10">
                 <button
                   @click="submitComment"
-                  :disabled="!newComment.trim() || isSubmittingComment"
+                  :disabled="(!newComment.trim() && commentMedia.length === 0) || isSubmittingComment"
                   :class="[
                     'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
-                    !newComment.trim() || isSubmittingComment
+                    (!newComment.trim() && commentMedia.length === 0) || isSubmittingComment
                       ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                       : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
                   ]"
@@ -464,6 +527,7 @@ import {
   Edit,
   Clock,
   LockIcon,
+  ImagePlus,
 } from "lucide-vue-next";
 
 const props = defineProps({
@@ -496,6 +560,7 @@ const emit = defineEmits([
   "mark-solution",
   "delete",
   "add-comment", // Add this event to support the parent component
+  "photo-view", // Add this event for media viewer functionality
 ]);
 
 const { user } = useAuth();
@@ -505,6 +570,8 @@ const newComment = ref("");
 const isMenuOpen = ref(false);
 const localComments = ref([]);
 const commentSubmitStatus = ref(false);
+const commentMedia = ref([]);
+const mediaFileInput = ref(null);
 
 // Computed properties
 const isOwner = computed(() => {
@@ -571,19 +638,20 @@ const toggleMenu = () => {
 };
 
 const submitComment = () => {
-  if (newComment.value.trim()) {
+  if (newComment.value.trim() || commentMedia.value.length > 0) {
     // Create temporary local comment while API call is in progress
-    const tempComment = createTempComment(newComment.value);
+    const tempComment = createTempComment(newComment.value, commentMedia.value);
     localComments.value.push(tempComment);
     commentSubmitStatus.value = true;
 
     // Emit events for backend submission
-    emit("submit-comment", { content: newComment.value });
-    emit("add-comment", newComment.value);
+    emit("submit-comment", { content: newComment.value, media: commentMedia.value });
+    emit("add-comment", { content: newComment.value, media: commentMedia.value });
 
-    // Clear input after submission
+    // Clear input and media after submission
     if (!props.isSubmittingComment) {
       newComment.value = "";
+      commentMedia.value = [];
     }
 
     // Auto-scroll to the bottom to see new comment
@@ -592,10 +660,11 @@ const submitComment = () => {
 };
 
 // Create a temporary comment while waiting for server response
-const createTempComment = (content) => {
+const createTempComment = (content, media) => {
   return {
     id: "temp-" + Date.now(),
     content: content,
+    media: media,
     created_at: new Date().toISOString(),
     author_details: {
       id: props.currentUserId,
@@ -653,6 +722,39 @@ const formatTimeAgo = (dateString) => {
   } ago`;
 };
 
+const triggerMediaUpload = () => {
+  mediaFileInput.value.click();
+};
+
+const handleMediaUpload = (event) => {
+  const files = event.target.files;
+  if (files && files.length > 0) {
+    Array.from(files).forEach((file) => {
+      if (commentMedia.value.length < 3) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          commentMedia.value.push({ file, preview: e.target.result });
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+};
+
+const removeMedia = (index) => {
+  commentMedia.value.splice(index, 1);
+};
+
+const openMediaViewer = (comment, index) => {
+  if (comment.media && comment.media.length > 0) {
+    // Emit an event to open the photo viewer with the comment media
+    emit('photo-view', {
+      media: comment.media,
+      startIndex: index
+    });
+  }
+};
+
 // Close dropdown when clicking outside
 const handleClickOutside = (event) => {
   if (isMenuOpen.value) {
@@ -685,6 +787,7 @@ watch(
       newComment.value = "";
       isMenuOpen.value = false;
       commentSubmitStatus.value = false;
+      commentMedia.value = [];
       if (props.problem?.mindforce_comments) {
         localComments.value = [...props.problem.mindforce_comments];
       }

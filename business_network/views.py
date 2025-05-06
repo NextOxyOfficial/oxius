@@ -748,12 +748,39 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
                 {"detail": "Cannot comment on solved problems"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
-        serializer = self.get_serializer(data={'author': request.user.id, 'mindforce_problem': mindforce_id, 'content': request.data['comment']})
+        
+        # Create comment with initial data
+        serializer = self.get_serializer(data={
+            'author': request.user.id, 
+            'mindforce_problem': mindforce_id, 
+            'content': request.data.get('comment', '')
+        })
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        comment = serializer.save()
+        
+        # Process any media files
+        media_files = request.FILES.items()
+        for field_name, file in media_files:
+            if field_name.startswith('media_'):
+                # Create a media object
+                media = BusinessNetworkMindforceMedia.objects.create(image=file)
+                # Add it to the comment's media
+                comment.media.add(media)
+        
+        # Handle base64 encoded media that might be sent from the frontend
+        for key, value in request.data.items():
+            if key.startswith('media_') and isinstance(value, str) and value.startswith('data:image'):
+                try:
+                    image_file = base64ToFile(value)
+                    media = BusinessNetworkMindforceMedia.objects.create(image=image_file)
+                    comment.media.add(media)
+                except Exception as e:
+                    print(f"Error processing base64 image: {str(e)}")
+        
+        # Re-serialize with the media included
+        updated_serializer = self.get_serializer(comment)
+        headers = self.get_success_headers(updated_serializer.data)
+        return Response(updated_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
 
 

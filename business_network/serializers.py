@@ -143,9 +143,11 @@ class BusinessNetworkMindforceMediaSerializer(serializers.ModelSerializer):
         
 class BusinessNetworkMindforceCommentSerializer(serializers.ModelSerializer):
     author_details = UserSerializer(source='author', read_only=True)
+    media = BusinessNetworkMindforceMediaSerializer(many=True, read_only=True)
+    
     class Meta:
         model = BusinessNetworkMindforceComment
-        fields = '__all__'
+        fields = ['id', 'mindforce_problem', 'author', 'author_details', 'content', 'media', 'is_solved', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at']
         
 class BusinessNetworkMindforceSerializer(serializers.ModelSerializer):
