@@ -29,8 +29,9 @@
       <div class="relative w-full max-w-4xl px-4" @click.stop>
         <img
           :src="getPhotoUrl(photos[currentPhotoIndex])"
-          alt="Problem photo"
+          alt="Photo"
           class="mx-auto max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl"
+          @error="handleImageError"
         />
 
         <div
@@ -78,6 +79,7 @@
 
 <script setup>
 import { X, ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { ref } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -96,6 +98,49 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'update:currentIndex']);
 
+// Track image load errors
+const imageError = ref(false);
+
+const getPhotoUrl = (photo) => {
+  if (!photo) return '/placeholder.svg';
+  
+  // Reset error state when trying to get a new URL
+  imageError.value = false;
+  
+  try {
+    // Handle string URLs directly
+    if (typeof photo === 'string') return photo;
+    
+    // Handle objects with standard image properties
+    if (photo.image) return photo.image;
+    if (photo.preview) return photo.preview;
+    if (photo.url) return photo.url;
+    if (photo.src) return photo.src;
+    
+    // Handle other potential object structures
+    for (const key of Object.keys(photo)) {
+      const value = photo[key];
+      if (typeof value === 'string' && 
+          (value.startsWith('http') || 
+           value.startsWith('/') || 
+           value.startsWith('data:'))) {
+        return value;
+      }
+    }
+    
+    // If all else fails, return placeholder
+    return '/placeholder.svg';
+  } catch (err) {
+    console.error('Error processing photo URL:', err);
+    return '/placeholder.svg';
+  }
+};
+
+const handleImageError = () => {
+  imageError.value = true;
+  console.warn('Image failed to load:', props.photos[props.currentPhotoIndex]);
+};
+
 const nextPhoto = () => {
   if (props.photos.length <= 1) return;
   const newIndex = (props.currentPhotoIndex + 1) % props.photos.length;
@@ -106,16 +151,6 @@ const prevPhoto = () => {
   if (props.photos.length <= 1) return;
   const newIndex = (props.currentPhotoIndex - 1 + props.photos.length) % props.photos.length;
   emit('update:currentIndex', newIndex);
-};
-
-// Function to handle different photo object structures
-const getPhotoUrl = (photo) => {
-  if (!photo) return '';
-  // Handle different photo object structures
-  if (typeof photo === 'string') return photo;
-  if (photo.image) return photo.image;
-  if (photo.preview) return photo.preview;
-  return '';
 };
 </script>
 

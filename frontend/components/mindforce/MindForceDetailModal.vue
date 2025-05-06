@@ -24,7 +24,7 @@
       >
         <!-- Premium scrollbar styling -->
         <div
-          class="px-2 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[80vh]"
+          class="px-2 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[75vh]"
         >
           <!-- Problem Header with enhanced design -->
           <div class="flex justify-between items-start">
@@ -776,11 +776,36 @@ const removeMedia = (index) => {
 
 const getMediaUrl = (media) => {
   if (!media) return '';
+  
   // Handle different media object structures
   if (typeof media === 'string') return media;
   if (media.image) return media.image;
   if (media.preview) return media.preview;
-  return '';
+  
+  // Handle case where media is an object with URL property
+  if (typeof media === 'object') {
+    // Check for common URL properties that might be returned by the API
+    if (media.url) return media.url;
+    if (media.src) return media.src;
+    if (media.path) return media.path;
+    
+    // If it's just an object with a direct URL string value
+    const firstKey = Object.keys(media)[0];
+    if (firstKey && typeof media[firstKey] === 'string') {
+      return media[firstKey];
+    }
+  }
+  
+  // Last resort - if the object itself can be coerced to a string that looks like a URL
+  if (media.toString && typeof media.toString === 'function') {
+    const stringValue = media.toString();
+    if (stringValue.startsWith('http') || stringValue.startsWith('/')) {
+      return stringValue;
+    }
+  }
+  
+  console.log('Unable to extract URL from media object:', media);
+  return '/placeholder.svg'; // Fallback to placeholder
 };
 
 const openMediaViewer = (comment, index) => {

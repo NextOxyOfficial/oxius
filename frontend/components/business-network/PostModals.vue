@@ -8,7 +8,7 @@
         @click="$emit('close-likes-modal')"
       >
         <div
-          class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden shadow-xl"
+          class="bg-white rounded-lg max-w-md w-full max-h-[75vh] overflow-hidden shadow-xl"
           @click.stop
         >
           <div class="p-4 sm:p-5 border-b border-gray-200">
@@ -99,7 +99,7 @@
         @click="$emit('close-comments-modal')"
       >
         <div
-          class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden shadow-xl"
+          class="bg-white rounded-lg max-w-md w-full max-h-[75vh] overflow-hidden shadow-xl"
           @click.stop
         >
           <div class="p-4 sm:p-5 border-b border-gray-200">

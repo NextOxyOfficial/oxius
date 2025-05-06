@@ -200,7 +200,7 @@
             @click.stop
           >
             <div
-              class="w-full md:h-[80vh] overflow-hidden overflow-y-auto custom-scrollbar"
+              class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar"
             >
               <CommonProductDetailsCard
                 :current-product="selectedProduct"
