@@ -366,9 +366,9 @@
                 icon: 'i-healthicons:money-bag-outline',
               },
               {
-                label: $t('faq'),
-                to: '/faq',
-                icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
+                label: $t('business_network'),
+                to: '/business-network',
+                icon: 'i-lucide-globe',
               },
               {
                 label: $t('mobile_recharge'),
