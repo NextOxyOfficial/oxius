@@ -24,7 +24,7 @@
       >
         <!-- Premium scrollbar styling -->
         <div
-          class="px-2 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[80vh]"
+          class="px-2 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[75vh]"
         >
           <!-- Problem Header with enhanced design -->
           <div class="flex justify-between items-start">
@@ -349,14 +349,17 @@
                     <div 
                       v-for="(media, index) in comment.media" 
                       :key="index"
-                      class="relative h-20 w-20 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer"
+                      class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105"
                       @click="openMediaViewer(comment, index)"
                     >
                       <img 
-                        :src="media.preview || media.image" 
+                        :src="getMediaUrl(media)"
                         alt="Comment media" 
-                        class="h-full w-full object-cover transition-transform hover:scale-105"
+                        class="h-full w-full object-cover"
                       />
+                      <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="text-white text-xs font-medium px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full">View</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -771,11 +774,48 @@ const removeMedia = (index) => {
   commentMedia.value.splice(index, 1);
 };
 
+const getMediaUrl = (media) => {
+  if (!media) return '';
+  
+  // Handle different media object structures
+  if (typeof media === 'string') return media;
+  if (media.image) return media.image;
+  if (media.preview) return media.preview;
+  
+  // Handle case where media is an object with URL property
+  if (typeof media === 'object') {
+    // Check for common URL properties that might be returned by the API
+    if (media.url) return media.url;
+    if (media.src) return media.src;
+    if (media.path) return media.path;
+    
+    // If it's just an object with a direct URL string value
+    const firstKey = Object.keys(media)[0];
+    if (firstKey && typeof media[firstKey] === 'string') {
+      return media[firstKey];
+    }
+  }
+  
+  // Last resort - if the object itself can be coerced to a string that looks like a URL
+  if (media.toString && typeof media.toString === 'function') {
+    const stringValue = media.toString();
+    if (stringValue.startsWith('http') || stringValue.startsWith('/')) {
+      return stringValue;
+    }
+  }
+  
+  console.log('Unable to extract URL from media object:', media);
+  return '/placeholder.svg'; // Fallback to placeholder
+};
+
 const openMediaViewer = (comment, index) => {
   if (comment.media && comment.media.length > 0) {
+    // Extract image URLs from media objects
+    const mediaUrls = comment.media.map(media => getMediaUrl(media));
+    
     // Emit an event to open the photo viewer with the comment media
     emit('photo-view', {
-      media: comment.media,
+      mediaUrls,
       startIndex: index
     });
   }

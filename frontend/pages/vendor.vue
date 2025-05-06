@@ -464,7 +464,7 @@
       >
         <!-- Modal Container with Glass Effect -->
         <div
-          class="sm:max-w-[600px] max-h-[80vh] overflow-y-auto bg-white/90 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl w-full relative transform transition-all duration-500"
+          class="sm:max-w-[600px] max-h-[75vh] overflow-y-auto bg-white/90 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl w-full relative transform transition-all duration-500"
           :class="reviewsOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
         >
           <!-- Modal Background -->

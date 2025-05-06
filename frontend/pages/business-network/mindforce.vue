@@ -410,11 +410,22 @@ const handleSearch = () => {
   }, 500);
 };
 
-const openPhotoViewer = (problem, index) => {
-  if (problem?.media?.length) {
-    viewerPhotos.value = problem.media;
-    currentPhotoIndex.value = index;
-    isPhotoViewerOpen.value = true;
+const openPhotoViewer = (problem, photoData) => {
+  // Handle different types of input for photoData
+  if (typeof photoData === 'number') {
+    // Regular problem media - index was passed
+    if (problem?.media?.length) {
+      viewerPhotos.value = problem.media;
+      currentPhotoIndex.value = photoData;
+      isPhotoViewerOpen.value = true;
+    }
+  } else if (photoData && typeof photoData === 'object') {
+    // Comment media - object with mediaUrls was passed
+    if (photoData.mediaUrls && photoData.mediaUrls.length) {
+      viewerPhotos.value = photoData.mediaUrls.map(url => ({ image: url }));
+      currentPhotoIndex.value = photoData.startIndex || 0;
+      isPhotoViewerOpen.value = true;
+    }
   }
 };
 
