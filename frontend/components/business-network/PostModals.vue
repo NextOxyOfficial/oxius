@@ -278,7 +278,7 @@
                 </div>
               </div>
               <div class="flex-1 relative">
-                <input
+                <!-- <input
                   type="text"
                   placeholder="Add a comment..."
                   class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
@@ -293,6 +293,21 @@
                     !showMentions && $emit('add-comment', activeCommentsPost)
                   "
                   @click.stop
+                /> -->
+                <textarea
+                  ref="commentTextarea"
+                  v-model="activeCommentsPost.commentText"
+                  placeholder="Add a comment..."
+                  rows="1"
+                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+                  @input="
+                    autoResize();
+                    $emit('handle-comment-input', $event, activeCommentsPost);
+                  "
+                  @focus="activeCommentsPost.showCommentInput = true"
+                  @keydown="
+                    $emit('handle-mention-keydown', $event, activeCommentsPost)
+                  "
                 />
                 <!-- Mention suggestions dropdown -->
                 <div
@@ -341,7 +356,39 @@
                     </div>
                   </div>
                 </div>
-                <button
+                <div
+                  v-if="activeCommentsPost.commentText"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center space-x-1.5"
+                >
+                  <button
+                    class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                    @click="activeCommentsPost.commentText = ''"
+                    aria-label="Clear comment"
+                  >
+                    <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+                  </button>
+                  <button
+                    class="p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
+                    @click="$emit('add-comment', activeCommentsPost)"
+                    aria-label="Post comment"
+                  >
+                    <Send class="h-3.5 w-3.5" />
+                    <!-- Subtle glow effect -->
+                    <div
+                      class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
+                    ></div>
+                  </button>
+                  <button
+                    class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                    aria-label="Clear comment"
+                  >
+                    <UIcon
+                      name="i-material-symbols-light-featured-seasonal-and-gifts"
+                      class="h-4 w-4"
+                    />
+                  </button>
+                </div>
+                <!-- <button
                   v-if="activeCommentsPost.commentText"
                   class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
                   @click.stop="$emit('add-comment', activeCommentsPost)"
@@ -352,7 +399,7 @@
                     class="h-5 w-5 animate-spin"
                   />
                   <Send v-else class="h-3 w-3" />
-                </button>
+                </button> -->
               </div>
             </div>
           </div>
@@ -547,6 +594,7 @@ defineProps({
 const { user: currentUser } = useAuth();
 // Export a reference to the comments container for scrolling
 const commentsContainerRef = ref(null);
+const commentTextarea = ref(null);
 
 defineEmits([
   "close-likes-modal",
@@ -610,6 +658,14 @@ const downloadImage = (url) => {
   link.click();
   document.body.removeChild(link);
 };
+
+function autoResize() {
+  const el = this.$refs.commentTextarea;
+  if (el) {
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 104) + "px"; // 3 lines ~ 104px
+  }
+}
 </script>
 
 <style scoped>
@@ -622,5 +678,15 @@ const downloadImage = (url) => {
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 </style>
