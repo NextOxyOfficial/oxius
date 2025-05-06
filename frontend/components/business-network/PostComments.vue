@@ -122,16 +122,21 @@
             <div v-else>
               <!-- Gift comment with premium styling -->
               <div v-if="comment?.is_gift_comment" class="gift-comment">
-                <div class="gift-badge">
-                  <div class="diamond-container">
-                    <span class="diamond-amount">{{ comment?.diamond_amount }}</span>
-                    <span class="diamond-icon">💎</span>
-                  </div>
-                </div>
                 <div class="sparkle-container">
                   <div class="sparkle" v-for="i in 5" :key="i"></div>
                 </div>
-                <p class="gift-text">{{ comment?.content }}</p>
+                
+                <div class="gift-content">
+                  <p class="gift-text">{{ comment?.content }}</p>
+                  
+                  <!-- Diamond count moved to the right side of the comment -->
+                  <div class="diamond-badge-right">
+                    <div class="diamond-container">
+                      <span class="diamond-amount">{{ comment?.diamond_amount }}</span>
+                      <span class="diamond-icon">💎</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <!-- Regular comment -->
               <p v-else class="text-base sm:text-sm text-gray-800 dark:text-gray-200" style="word-break: break-word">
@@ -289,11 +294,10 @@ const formatTimeAgo = (dateString) => {
 }
 
 /* Diamond Badge */
-.gift-badge {
-  position: absolute;
-  top: -10px;
-  right: 10px;
-  z-index: 5;
+.diamond-badge-right {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
 }
 
 .diamond-container {
