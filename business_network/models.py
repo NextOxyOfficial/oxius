@@ -1,6 +1,31 @@
 from django.db import models
 from base.models import *
+import re
 
+# Add this helper function for generating unique slugs
+def generate_unique_slug(model_class, field_value, instance=None):
+# Handle Bangla/non-Latin slugification
+    slug = slugify(field_value)
+    if not slug or len(slug) < len(field_value) / 2:
+        slug = re.sub(r'[\'.,:!?()&*+=|\\/\`~{}\[\]<>;"“”‘’"_]', '', field_value)
+        slug = re.sub(r'\s+', '-', slug)
+        
+    unique_slug = slug
+    queryset = model_class.objects.filter(slug=unique_slug)
+
+    # Exclude the current instance if it's an update
+    if instance and instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+
+    # Keep generating slugs until a unique one is found
+    while queryset.exists():
+        suffix = f"-{random.choice(string.ascii_lowercase)}{random.randint(1, 999)}"
+        unique_slug = f"{slug}{suffix}"
+        queryset = model_class.objects.filter(slug=unique_slug)
+        if instance and instance.pk:
+            queryset = queryset.exclude(pk=instance.pk)
+
+    return unique_slug
 
 
 class BusinessNetworkMedia(models.Model):
@@ -118,7 +143,7 @@ class BusinessNetworkPost(models.Model):
         if not self.pk:
             self.id = self.generate_id()
         if not self.slug and self.title:
-            self.slug = slugify(self.title)
+            self.slug = generate_unique_slug(BusinessNetworkPost,self.title,self)
         super().save(*args, **kwargs)
 
     def __str__(self):
