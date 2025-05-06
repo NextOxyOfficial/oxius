@@ -374,22 +374,33 @@
   </div>
 
   <!-- Success notification popup -->
-  <div 
-    v-if="showSuccessPopup" 
-    class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 z-50 max-w-sm w-full"
-  >
-    <div class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center">
-      <div class="flex flex-col items-center">
-        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg">
-          <UIcon name="i-heroicons-gift-top" class="h-6 w-6 text-white" />
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="showSuccessPopup" 
+        class="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-[9999] max-w-md w-full"
+      >
+        <div class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center">
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg">
+              <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">Gift Sent Successfully!</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              You sent {{ lastGiftAmount }} diamonds to {{ post?.author_details?.name || post?.author?.name || 'User' }}
+            </p>
+          </div>
         </div>
-        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">Gift Sent Successfully!</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-300">
-          You sent {{ lastGiftAmount }} diamonds to {{ post?.author_details?.name || post?.author?.name || 'User' }}
-        </p>
       </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
