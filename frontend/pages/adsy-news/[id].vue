@@ -480,43 +480,19 @@ function getAuthorName(authorDetails) {
 }
 
 // Tips and Suggestions data
-const tipsAndSuggestions = ref([
-  {
-    title: "How to Stay Productive While Working from Home",
-    description:
-      "Discover practical tips to maintain productivity and focus while working remotely.",
-  },
-  {
-    title: "Top 5 Healthy Eating Habits",
-    description:
-      "Learn about simple and effective habits to improve your diet and overall health.",
-  },
-  {
-    title: "Effective Time Management Strategies",
-    description:
-      "Master the art of time management with these proven strategies.",
-  },
-  {
-    title: "How to Build a Morning Routine",
-    description:
-      "Start your day right with a structured and effective morning routine.",
-  },
-  {
-    title: "The Benefits of Regular Exercise",
-    description:
-      "Explore how regular exercise can improve your physical and mental health.",
-  },
-  {
-    title: "How to Manage Stress Effectively",
-    description:
-      "Learn techniques to reduce stress and improve your mental well-being.",
-  },
-  {
-    title: "Tips for Better Sleep",
-    description:
-      "Discover ways to improve your sleep quality and wake up refreshed.",
-  },
-]);
+const tipsAndSuggestions = ref([]);
+
+async function getTipsAndSuggestions() {
+  try {
+    const res = await get("/news/tips-suggestions/");
+    if (res.data) {
+      tipsAndSuggestions.value = res.data.results;
+    }
+  } catch (error) {
+    console.error("Error fetching tips and suggestions:", error);
+  }
+}
+await getTipsAndSuggestions();
 
 // State for visible tips and load more functionality
 const visibleTips = ref([]);
