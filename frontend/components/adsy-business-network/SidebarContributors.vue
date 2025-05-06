@@ -7,14 +7,13 @@
         <Users class="h-3.5 w-3.5 mr-1.5" />
         <span>Top Contributors</span>
       </div>
-      <a
-        href="/contributors"
-        class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center"
-        @click.prevent="$emit('navigation', '/contributors')"
+      <div
+        @click="showTopContributorsModal = true"
+        class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center cursor-pointer hover:text-blue-700 transition-colors"
       >
-        <span>Top 100</span>
+        <span>See All</span>
         <ChevronRight class="h-3 w-3 ml-0.5" />
-      </a>
+      </div>
     </h3>
     <div class="space-y-2">
       <div
@@ -39,6 +38,13 @@
             :alt="contributor.name"
             class="size-7 rounded-full object-cover border-2 border-white shadow-sm"
           />
+          <!-- Pro badge -->
+          <div
+            v-if="contributor.is_pro"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full w-3 h-3 flex items-center justify-center text-[6px] font-bold shadow-sm"
+          >
+            P
+          </div>
         </div>
         <div class="ml-3 min-w-0">
           <h4 class="text-sm font-medium text-gray-800 truncate">
@@ -46,9 +52,9 @@
           </h4>
           <p class="text-xs text-gray-500 flex items-center">
             <FileText class="h-3 w-3 mr-1" />
-            <span>{{ contributor.post_count }} posts</span>
+            <span>{{ contributor.post_count || 0 }} posts</span>
             <Users class="h-3 w-3 mx-1" />
-            <span>{{ contributor.follower_count }}</span>
+            <span>{{ contributor.follower_count || 0 }}</span>
           </p>
         </div>
         <div class="ml-auto">
@@ -60,11 +66,19 @@
         </div>
       </a>
     </div>
+
+    <!-- Top Contributors Modal -->
+    <TopContributorsModal 
+      :is-open="showTopContributorsModal" 
+      @close="showTopContributorsModal = false" 
+      @navigate="handleNavigation" 
+    />
   </div>
 </template>
 
 <script setup>
 import { Users, ChevronRight, FileText, Trophy } from "lucide-vue-next";
+import TopContributorsModal from './TopContributorsModal.vue';
 
 const props = defineProps({
   contributors: {
@@ -77,5 +91,25 @@ const props = defineProps({
   }
 });
 
+// State
+const showTopContributorsModal = ref(false);
+
+// Events
 const emit = defineEmits(['navigation']);
+
+// Handle contributor navigation from modal
+const handleNavigation = (path) => {
+  emit('navigation', path);
+};
 </script>
+
+<style scoped>
+/* Add subtle hover effect for contributor items */
+a {
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  transform: translateX(2px);
+}
+</style>
