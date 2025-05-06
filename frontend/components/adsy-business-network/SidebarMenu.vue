@@ -215,7 +215,7 @@ const handleMenuClick = (path) => {
 
 // New method to open create post modal
 const openCreatePostModal = () => {
-  const eventBus = useEventBus();
+  const eventBus = useEventBus('create-post-event'); // Use a specific named event bus
   eventBus.emit("open-create-post-modal");
 };
 

@@ -631,7 +631,13 @@ const selectedSuggestionIndex = ref(-1);
 
 // Listen for event from sidebar menu to open the create post modal
 onMounted(() => {
-  const eventBus = useEventBus();
+  // Use the same named event bus as in SidebarMenu.vue
+  const eventBus = useEventBus('create-post-event');
+  
+  // Clear any existing listeners first to prevent duplicates
+  eventBus.off('open-create-post-modal');
+  
+  // Add new listener
   eventBus.on('open-create-post-modal', () => {
     openCreatePostModal();
   });
