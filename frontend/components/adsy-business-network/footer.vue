@@ -19,7 +19,7 @@
           <div class="icon-wrapper">
             <Clock
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/business-network' ? 'text-blue-400' : 'text-gray-500'"
+              :class="$route.path === '/business-network' ? 'text-blue-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/business-network'" class="icon-gradient-blue"></div>
             <div class="icon-reflection"></div>
@@ -42,7 +42,7 @@
           <div class="icon-wrapper">
             <Bell
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/business-network/notifications' ? 'text-red-400' : 'text-gray-500'"
+              :class="$route.path === '/business-network/notifications' ? 'text-red-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/business-network/notifications'" class="icon-gradient-red"></div>
             <div class="icon-reflection"></div>
@@ -71,7 +71,7 @@
           <div class="icon-wrapper">
             <User
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === `/business-network/profile/${user?.user?.id}` ? 'text-purple-400' : 'text-gray-500'"
+              :class="$route.path === `/business-network/profile/${user?.user?.id}` ? 'text-purple-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === `/business-network/profile/${user?.user?.id}`" class="icon-gradient-purple"></div>
             <div class="icon-reflection"></div>
@@ -93,7 +93,7 @@
           <div class="icon-wrapper">
             <BarChart2
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/' ? 'text-green-400' : 'text-gray-500'"
+              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/'" class="icon-gradient-green"></div>
             <div class="icon-reflection"></div>
@@ -115,7 +115,7 @@
           <div class="icon-wrapper">
             <Newspaper
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/adsy-news' ? 'text-orange-400' : 'text-gray-500'"
+              :class="$route.path === '/adsy-news' ? 'text-orange-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/adsy-news'" class="icon-gradient-orange"></div>
             <div class="icon-reflection"></div>
@@ -139,7 +139,7 @@
           <div class="icon-wrapper">
             <Clock
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/business-network' ? 'text-blue-400' : 'text-gray-500'"
+              :class="$route.path === '/business-network' ? 'text-blue-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/business-network'" class="icon-gradient-blue"></div>
             <div class="icon-reflection"></div>
@@ -162,7 +162,7 @@
             <UIcon
               name="i-ic-sharp-person"
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/auth/login' ? 'text-purple-400' : 'text-gray-500'"
+              :class="$route.path === '/auth/login' ? 'text-purple-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/auth/login'" class="icon-gradient-purple"></div>
             <div class="icon-reflection"></div>
@@ -185,7 +185,7 @@
             <UIcon
               name="i-material-symbols-attach-money"
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/#micro-gigs' ? 'text-amber-400' : 'text-gray-500'"
+              :class="$route.path === '/#micro-gigs' ? 'text-amber-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/#micro-gigs'" class="icon-gradient-gold"></div>
             <div class="icon-reflection"></div>
@@ -207,7 +207,7 @@
           <div class="icon-wrapper">
             <BarChart2
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/' ? 'text-green-400' : 'text-gray-500'"
+              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/'" class="icon-gradient-green"></div>
             <div class="icon-reflection"></div>
@@ -229,7 +229,7 @@
           <div class="icon-wrapper">
             <Newspaper
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/adsy-news' ? 'text-orange-400' : 'text-gray-500'"
+              :class="$route.path === '/adsy-news' ? 'text-orange-500' : 'text-gray-500'"
             />
             <div v-if="$route.path === '/adsy-news'" class="icon-gradient-orange"></div>
             <div class="icon-reflection"></div>
