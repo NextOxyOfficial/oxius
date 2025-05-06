@@ -40,7 +40,7 @@
           >
             <div
               v-if="isCreatePostOpen"
-              class="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl"
+              class="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full max-h-[75vh] overflow-hidden overflow-y-scroll shadow-2xl"
               @click.stop
               ref="modalRef"
             >
@@ -94,7 +94,7 @@
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5"
                     >
                       <Type class="h-4 w-4 text-blue-500" />
-                      Post Title<span class="text-red-500">*</span>
+                      Post Title
                     </label>
                     <div class="relative">
                       <input
@@ -123,7 +123,7 @@
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5"
                     >
                       <AlignLeft class="h-4 w-4 text-blue-500" />
-                      Description<span class="text-red-500">*</span>
+                      Description
                     </label>
                     <div class="relative">
                       <CommonEditor
