@@ -249,6 +249,7 @@
                   },
                 },
               }"
+              ref="userButtonRef"
             >
               <span
                 v-if="user?.user?.is_pro"
@@ -284,6 +285,7 @@
                   ? 'opacity-100 scale-100 translate-y-0'
                   : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
               "
+              ref="menuRef"
             >
               <!-- Frosted glass container with modern shadow -->
               <div
@@ -698,6 +700,9 @@ const openMenu = ref(false);
 const showSearchDropdown = ref(false);
 const searchQuery = ref("");
 const searchResults = ref([]);
+const menuRef = ref(null);
+const userButtonRef = ref(null);
+const router = useRouter(); // Add router import
 
 async function getLogo() {
   const { data } = await get("/bn-logo/");
@@ -713,8 +718,8 @@ import {
   SearchIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  Newspaper, // Added for AdsyNews
-  BarChartBig, // Added for AdsyClub (closest to chart-no-axes-column)
+  Newspaper,
+  BarChartBig,
 } from "lucide-vue-next";
 
 // Navigation state
@@ -735,10 +740,12 @@ const toggleSearchDropdown = () => {
 
 // Handle clicks outside of search dropdown to close it
 const handleClickOutside = (event) => {
+  // For search dropdown
   const searchDropdown = document.querySelector(".search-dropdown-container");
   const searchButton = document.querySelector(".search-button-container");
 
   if (
+    showSearchDropdown.value &&
     searchDropdown &&
     !searchDropdown.contains(event.target) &&
     searchButton &&
@@ -746,16 +753,38 @@ const handleClickOutside = (event) => {
   ) {
     showSearchDropdown.value = false;
   }
+  
+  // For user menu dropdown
+  // Only proceed if the menu is open and we have valid refs
+  if (openMenu.value) {
+    // Get the menu element and the button that opens it
+    const menuElement = menuRef.value;
+    const userButton = userButtonRef.value?.$el || userButtonRef.value;
+    
+    // Check if click was outside both elements
+    if (
+      menuElement && 
+      userButton &&
+      !menuElement.contains(event.target) &&
+      !userButton.contains(event.target)
+    ) {
+      // Close the menu
+      openMenu.value = false;
+    }
+  }
 };
 
-// Add event listener when component is mounted
+// Use a proper lifecycle hook to add the global listener
 onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
+  // Let the DOM render first before attaching listeners
+  nextTick(() => {
+    document.addEventListener("click", handleClickOutside, true);
+  });
 });
 
-// Remove event listener when component is unmounted
+// Clean up event listeners
 onUnmounted(() => {
-  document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener("click", handleClickOutside, true);
 });
 
 function upgradeToPro() {
