@@ -68,7 +68,10 @@
             </div>
 
             <div class="flex items-center gap-1">
-              <div v-if="user?.user && problem.user === user.user.id" class="relative">
+              <div
+                v-if="user?.user && problem.user === user.user.id"
+                class="relative"
+              >
                 <button
                   @click.stop="toggleMenu"
                   class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
@@ -389,7 +392,9 @@
                 <div
                   class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3"
                 >
-                  <LockIcon class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <LockIcon
+                    class="h-5 w-5 text-amber-600 dark:text-amber-400"
+                  />
                 </div>
                 <div>
                   <h4
@@ -397,10 +402,16 @@
                   >
                     Authentication Required
                   </h4>
-                  <p
-                    class="mt-1 text-sm text-amber-700 dark:text-amber-500"
-                  >
-                    Please <NuxtLink to="/auth/login" class="font-medium underline">login</NuxtLink> or <NuxtLink to="/auth/register" class="font-medium underline">register</NuxtLink> first to add your advice.
+                  <p class="mt-1 text-sm text-amber-700 dark:text-amber-500">
+                    Please
+                    <NuxtLink to="/auth/login" class="font-medium underline"
+                      >login</NuxtLink
+                    >
+                    or
+                    <NuxtLink to="/auth/register" class="font-medium underline"
+                      >register</NuxtLink
+                    >
+                    first to add your advice.
                   </p>
                 </div>
               </div>
@@ -607,27 +618,39 @@ const scrollToBottom = () => {
 };
 
 const formatTimeAgo = (dateString) => {
-  if (!dateString) return "";
-
   const date = new Date(dateString);
   const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return "just now";
-  } else if (diffInSeconds < 3600) {
-    const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
-  } else if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
-  } else if (diffInSeconds < 604800) {
-    const days = Math.floor(diffInSeconds / 86400);
-    return `${days} ${days === 1 ? "day" : "days"} ago`;
-  } else {
-    // Format as date if more than a week
-    return date.toLocaleDateString();
+    return `${Math.abs(diffInSeconds)} ${
+      diffInSeconds === 1 ? "second" : "seconds"
+    } ago`;
   }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${Math.abs(diffInMinutes)} ${
+      diffInMinutes === 1 ? "minute" : "minutes"
+    } ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${Math.abs(diffInHours)} ${
+      diffInHours === 1 ? "hour" : "hours"
+    } ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${Math.abs(diffInDays)} ${diffInDays === 1 ? "day" : "days"} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${Math.abs(diffInMonths)} ${
+    diffInMonths === 1 ? "month" : "months"
+  } ago`;
 };
 
 // Close dropdown when clicking outside

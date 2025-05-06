@@ -1,11 +1,13 @@
 <template>
-  <div class="flex items-center justify-between mb-3 bg-slate-50 py-3 rounded-xl">
+  <div
+    class="flex items-center justify-between mb-3 bg-slate-50 py-3 rounded-xl"
+  >
     <div class="flex items-center space-x-3 flex-1 pl-2">
       <div class="relative group">
         <NuxtLink :to="`/business-network/profile/${post.author}`">
           <!-- Pro user badge with improved color ring around profile picture -->
-          <div 
-            v-if="post?.author_details?.is_pro" 
+          <div
+            v-if="post?.author_details?.is_pro"
             class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
           ></div>
           <img
@@ -24,7 +26,7 @@
           <div
             :class="[
               'absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md -z-10',
-              'bg-gradient-to-r from-[#7f00ff]/20 to-[#e100ff]/20'
+              'bg-gradient-to-r from-[#7f00ff]/20 to-[#e100ff]/20',
             ]"
           ></div>
         </NuxtLink>
@@ -64,7 +66,7 @@
 
     <div class="flex items-center gap-2">
       <!-- Follow button removed from feed posts -->
-      
+
       <div class="relative">
         <button
           class="h-8 w-8 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
@@ -263,33 +265,39 @@ function editPost(post) {
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {
-  if (!dateString) return "";
-
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return `${diffInSeconds} ${diffInSeconds === 1 ? "second" : "seconds"} ago`;
+    return `${Math.abs(diffInSeconds)} ${
+      diffInSeconds === 1 ? "second" : "seconds"
+    } ago`;
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+    return `${Math.abs(diffInMinutes)} ${
+      diffInMinutes === 1 ? "minute" : "minutes"
+    } ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+    return `${Math.abs(diffInHours)} ${
+      diffInHours === 1 ? "hour" : "hours"
+    } ago`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 30) {
-    return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
+    return `${Math.abs(diffInDays)} ${diffInDays === 1 ? "day" : "days"} ago`;
   }
 
   const diffInMonths = Math.floor(diffInDays / 30);
-  return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
+  return `${Math.abs(diffInMonths)} ${
+    diffInMonths === 1 ? "month" : "months"
+  } ago`;
 };
 </script>
 
@@ -342,10 +350,9 @@ const formatTimeAgo = (dateString) => {
 .pro-border-ring {
   border-radius: 9999px; /* Ensure full circle */
   border: 2px solid transparent;
-  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff) border-box;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) padding-box, 
-    linear-gradient(#fff 0 0);
+  background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff)
+    border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
@@ -353,6 +360,6 @@ const formatTimeAgo = (dateString) => {
 /* Premium shadow effect */
 .premium-shadow {
   box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.1),
-              0 4px 8px -2px rgba(0, 0, 0, 0.05);
+    0 4px 8px -2px rgba(0, 0, 0, 0.05);
 }
 </style>

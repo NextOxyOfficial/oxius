@@ -12,8 +12,12 @@
             <h1 class="text-lg sm:text-xl font-medium flex items-center">
               <Bell class="size-5 mr-2" />
               Notifications
-              <div class="shimmer-badge ml-3 h-5 px-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xs">
-                <span v-if="unreadCount > 0" class="font-medium">{{ unreadCount }} new</span>
+              <div
+                class="shimmer-badge ml-3 h-5 px-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xs"
+              >
+                <span v-if="unreadCount > 0" class="font-medium"
+                  >{{ unreadCount }} new</span
+                >
                 <span v-else class="font-medium">All caught up</span>
               </div>
             </h1>
@@ -30,10 +34,14 @@
             class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-sm transform hover:scale-105 group relative overflow-hidden"
           >
             <span class="relative z-10 flex items-center">
-              <Check class="size-3 mr-2 group-hover:scale-110 transition-transform" />
+              <Check
+                class="size-3 mr-2 group-hover:scale-110 transition-transform"
+              />
               <span class="text-sm">Mark all as read</span>
             </span>
-            <span class="absolute inset-0 bg-gradient-to-r from-blue-100 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+            <span
+              class="absolute inset-0 bg-gradient-to-r from-blue-100 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"
+            ></span>
           </button>
         </div>
       </div>
@@ -69,7 +77,10 @@
     <!-- Notifications content -->
     <div class="space-y-4">
       <!-- Loading state -->
-      <div v-if="loading" class="py-12 flex flex-col items-center justify-center">
+      <div
+        v-if="loading"
+        class="py-12 flex flex-col items-center justify-center"
+      >
         <div class="shimmer-loader mb-4">
           <Loader2 class="h-12 w-12 text-blue-500 animate-spin" />
         </div>
@@ -84,23 +95,26 @@
         <div class="bg-blue-100 p-5 rounded-full mb-5 pulse-animation">
           <Bell class="h-12 w-12 text-blue-500" />
         </div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2">No notifications yet</h3>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">
+          No notifications yet
+        </h3>
         <p class="text-gray-600 text-sm max-w-sm text-center">
-          When someone interacts with your content or mentions you, you'll see it here
+          When someone interacts with your content or mentions you, you'll see
+          it here
         </p>
       </div>
 
       <!-- Notification list with enhanced styling -->
-      <TransitionGroup
-        name="notification-list"
-        tag="div"
-        class="space-y-3"
-      >
+      <TransitionGroup name="notification-list" tag="div" class="space-y-3">
         <div
           v-for="notification in filteredNotifications"
           :key="notification.id"
           class="bg-white rounded-lg border overflow-hidden transition-all duration-300 hover:shadow-md transform hover:translate-y-[-2px]"
-          :class="[!notification.read ? 'border-blue-200 glow-subtle' : 'border-gray-200']"
+          :class="[
+            !notification.read
+              ? 'border-blue-200 glow-subtle'
+              : 'border-gray-200',
+          ]"
         >
           <!-- Notification item with different styling based on type -->
           <div
@@ -115,13 +129,13 @@
                   :alt="notification.actor?.name"
                   class="h-12 w-12 rounded-full object-cover border-2 shadow-sm"
                   :class="[
-                    !notification.read 
-                      ? 'border-blue-500 ring-2 ring-blue-100 ring-opacity-50' 
-                      : 'border-gray-200'
+                    !notification.read
+                      ? 'border-blue-500 ring-2 ring-blue-100 ring-opacity-50'
+                      : 'border-gray-200',
                   ]"
                 />
                 <!-- Icon badge based on notification type with enhanced styling -->
-                <div 
+                <div
                   class="absolute -bottom-1 -right-1 rounded-full p-1.5 shadow-md"
                   :class="getNotificationTypeClass(notification.type)"
                 >
@@ -137,14 +151,21 @@
             <div class="flex-1 min-w-0">
               <!-- Notification content -->
               <div>
-                <p class="text-sm text-gray-900" :class="{'font-semibold': !notification.read}">
-                  <span class="font-medium" :class="{'font-bold': !notification.read}">{{ notification.actor?.name }}</span>
+                <p
+                  class="text-sm text-gray-900"
+                  :class="{ 'font-semibold': !notification.read }"
+                >
+                  <span
+                    class="font-medium"
+                    :class="{ 'font-bold': !notification.read }"
+                    >{{ notification.actor?.name }}</span
+                  >
                   <span> {{ getNotificationText(notification) }}</span>
                 </p>
-                <p 
-                  v-if="notification.content" 
+                <p
+                  v-if="notification.content"
                   class="mt-1 text-sm text-gray-600 line-clamp-1"
-                  :class="{'text-gray-800': !notification.read}"
+                  :class="{ 'text-gray-800': !notification.read }"
                 >
                   {{ notification.content }}
                 </p>
@@ -156,7 +177,7 @@
                 <span class="text-xs text-gray-500">
                   {{ formatTimeAgo(notification.created_at) }}
                 </span>
-                
+
                 <!-- Unread indicator with animation -->
                 <span
                   v-if="!notification.read"
@@ -187,10 +208,7 @@
           class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-6 py-2 shadow-sm hover:shadow-md transform hover:translate-y-[-2px]"
           :disabled="loadingMore"
         >
-          <Loader2
-            v-if="loadingMore"
-            class="h-4 w-4 mr-2 animate-spin"
-          />
+          <Loader2 v-if="loadingMore" class="h-4 w-4 mr-2 animate-spin" />
           <span v-else>Load more</span>
         </button>
       </div>
@@ -231,13 +249,13 @@ const unreadCount = ref(0);
 
 // Notification types
 const notificationTypes = {
-  FOLLOW: 'follow',
-  LIKE_POST: 'like_post',
-  LIKE_COMMENT: 'like_comment',
-  COMMENT: 'comment',
-  REPLY: 'reply',
-  MENTION: 'mention',
-  SOLUTION: 'solution',
+  FOLLOW: "follow",
+  LIKE_POST: "like_post",
+  LIKE_COMMENT: "like_comment",
+  COMMENT: "comment",
+  REPLY: "reply",
+  MENTION: "mention",
+  SOLUTION: "solution",
 };
 
 // Simplified - no filtering by tab type
@@ -253,19 +271,19 @@ async function fetchNotifications() {
   try {
     loading.value = true;
     const res = await get(`/bn/notifications/?page=${page.value}`);
-    
+
     if (res.data) {
       notifications.value = res.data.results;
       hasMoreNotifications.value = !!res.data.next;
-      
+
       // Count unread notifications
-      unreadCount.value = notifications.value.filter(n => !n.read).length;
+      unreadCount.value = notifications.value.filter((n) => !n.read).length;
     }
   } catch (error) {
-    console.error('Error fetching notifications:', error);
-    toast.add({ 
-      title: 'Failed to load notifications',
-      color: 'red'
+    console.error("Error fetching notifications:", error);
+    toast.add({
+      title: "Failed to load notifications",
+      color: "red",
     });
   } finally {
     loading.value = false;
@@ -275,22 +293,22 @@ async function fetchNotifications() {
 // Load more notifications
 async function loadMoreNotifications() {
   if (loadingMore.value || !hasMoreNotifications.value) return;
-  
+
   try {
     loadingMore.value = true;
     page.value += 1;
-    
+
     const res = await get(`/bn/notifications/?page=${page.value}`);
-    
+
     if (res.data) {
       notifications.value = [...notifications.value, ...res.data.results];
       hasMoreNotifications.value = !!res.data.next;
     }
   } catch (error) {
-    console.error('Error loading more notifications:', error);
+    console.error("Error loading more notifications:", error);
     toast.add({
-      title: 'Failed to load more notifications',
-      color: 'red'
+      title: "Failed to load more notifications",
+      color: "red",
     });
   } finally {
     loadingMore.value = false;
@@ -301,41 +319,41 @@ async function loadMoreNotifications() {
 async function markAsRead(id) {
   try {
     await put(`/bn/notifications/${id}/read/`, {
-      read: true
+      read: true,
     });
-    
+
     // Update local state
-    const notification = notifications.value.find(n => n.id === id);
+    const notification = notifications.value.find((n) => n.id === id);
     if (notification) {
       notification.read = true;
       unreadCount.value = Math.max(0, unreadCount.value - 1);
     }
   } catch (error) {
-    console.error('Error marking notification as read:', error);
+    console.error("Error marking notification as read:", error);
   }
 }
 
 // Mark all notifications as read
 async function markAllAsRead() {
   try {
-    await put('/bn/notifications/mark-all-read/');
-    
+    await put("/bn/notifications/mark-all-read/");
+
     // Update local state
-    notifications.value.forEach(notification => {
+    notifications.value.forEach((notification) => {
       notification.read = true;
     });
-    
+
     unreadCount.value = 0;
-    
+
     toast.add({
-      title: 'All notifications marked as read',
-      color: 'green'
+      title: "All notifications marked as read",
+      color: "green",
     });
   } catch (error) {
-    console.error('Error marking all notifications as read:', error);
+    console.error("Error marking all notifications as read:", error);
     toast.add({
-      title: 'Failed to mark all as read',
-      color: 'red'
+      title: "Failed to mark all as read",
+      color: "red",
     });
   }
 }
@@ -344,19 +362,19 @@ async function markAllAsRead() {
 function getNotificationTypeClass(type) {
   switch (type) {
     case notificationTypes.FOLLOW:
-      return 'bg-blue-500';
+      return "bg-blue-500";
     case notificationTypes.LIKE_POST:
     case notificationTypes.LIKE_COMMENT:
-      return 'bg-red-500';
+      return "bg-red-500";
     case notificationTypes.COMMENT:
     case notificationTypes.REPLY:
-      return 'bg-green-500';
+      return "bg-green-500";
     case notificationTypes.MENTION:
-      return 'bg-purple-500';
+      return "bg-purple-500";
     case notificationTypes.SOLUTION:
-      return 'bg-amber-500';
+      return "bg-amber-500";
     default:
-      return 'bg-gray-500';
+      return "bg-gray-500";
   }
 }
 
@@ -384,21 +402,21 @@ function getNotificationIcon(type) {
 function getNotificationText(notification) {
   switch (notification.type) {
     case notificationTypes.FOLLOW:
-      return ' started following you';
+      return " started following you";
     case notificationTypes.LIKE_POST:
-      return ' liked your post';
+      return " liked your post";
     case notificationTypes.LIKE_COMMENT:
-      return ' liked your comment';
+      return " liked your comment";
     case notificationTypes.COMMENT:
-      return ' commented on your post';
+      return " commented on your post";
     case notificationTypes.REPLY:
-      return ' replied to your comment';
+      return " replied to your comment";
     case notificationTypes.MENTION:
-      return ' mentioned you in a post';
+      return " mentioned you in a post";
     case notificationTypes.SOLUTION:
-      return ' marked your advice as a solution';
+      return " marked your advice as a solution";
     default:
-      return ' interacted with your content';
+      return " interacted with your content";
   }
 }
 
@@ -408,7 +426,7 @@ function openNotification(notification) {
   if (!notification.read) {
     markAsRead(notification.id);
   }
-  
+
   // Navigate to the appropriate page based on notification type
   switch (notification.type) {
     case notificationTypes.FOLLOW:
@@ -427,40 +445,46 @@ function openNotification(notification) {
       navigateTo(`/business-network/mindforce/${notification.target_id}`);
       break;
     default:
-      navigateTo('/business-network');
+      navigateTo("/business-network");
   }
 }
 
-// Format time ago 
-function formatTimeAgo(dateString) {
-  if (!dateString) return "";
-
+// Format time ago
+const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return `${diffInSeconds} ${diffInSeconds === 1 ? "second" : "seconds"} ago`;
+    return `${Math.abs(diffInSeconds)} ${
+      diffInSeconds === 1 ? "second" : "seconds"
+    } ago`;
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+    return `${Math.abs(diffInMinutes)} ${
+      diffInMinutes === 1 ? "minute" : "minutes"
+    } ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+    return `${Math.abs(diffInHours)} ${
+      diffInHours === 1 ? "hour" : "hours"
+    } ago`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 30) {
-    return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
+    return `${Math.abs(diffInDays)} ${diffInDays === 1 ? "day" : "days"} ago`;
   }
 
   const diffInMonths = Math.floor(diffInDays / 30);
-  return `${diffInMonths} ${diffInMonths === 1 ? "month" : "months"} ago`;
-}
+  return `${Math.abs(diffInMonths)} ${
+    diffInMonths === 1 ? "month" : "months"
+  } ago`;
+};
 </script>
 
 <style scoped>
@@ -483,7 +507,8 @@ function formatTimeAgo(dateString) {
 
 /* Premium Animations */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -492,7 +517,8 @@ function formatTimeAgo(dateString) {
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.2;
   }
@@ -503,7 +529,8 @@ function formatTimeAgo(dateString) {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -521,7 +548,8 @@ function formatTimeAgo(dateString) {
 }
 
 @keyframes pulse-dot {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -588,7 +616,12 @@ function formatTimeAgo(dateString) {
 }
 
 .shimmer-badge {
-  background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.1)
+  );
   background-size: 200% 100%;
   animation: shimmer 3s infinite linear;
 }
@@ -600,19 +633,28 @@ function formatTimeAgo(dateString) {
 }
 
 .shimmer-loader::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   right: -50%;
   bottom: -50%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   animation: shimmer 2s infinite linear;
 }
 
 /* Background pattern for header */
 .bg-grid-pattern {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 1px,
+    transparent 1px
+  );
   background-size: 20px 20px;
 }
 </style>
