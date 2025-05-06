@@ -40,7 +40,7 @@
           "
           @focus="post.showCommentInput = true"
           @keydown="$emit('handle-mention-keydown', $event, post)"
-        />
+        ></textarea>
 
         <!-- Subtle gradient line under input on focus -->
         <div
@@ -179,9 +179,8 @@ defineProps({
   },
 });
 
-const commentTextarea = ref(null);
 function autoResize() {
-  const el = this.$refs.commentTextarea;
+  const el = this.$refs?.post.commentText;
   if (el) {
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 104) + "px"; // 3 lines ~ 104px

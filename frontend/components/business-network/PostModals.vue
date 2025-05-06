@@ -295,7 +295,6 @@
                   @click.stop
                 /> -->
                 <textarea
-                  ref="commentTextarea"
                   v-model="activeCommentsPost.commentText"
                   placeholder="Add a comment..."
                   rows="1"
@@ -594,7 +593,6 @@ defineProps({
 const { user: currentUser } = useAuth();
 // Export a reference to the comments container for scrolling
 const commentsContainerRef = ref(null);
-const commentTextarea = ref(null);
 
 defineEmits([
   "close-likes-modal",
@@ -660,7 +658,7 @@ const downloadImage = (url) => {
 };
 
 function autoResize() {
-  const el = this.$refs.commentTextarea;
+  const el = this.$refs.activeCommentsPost.commentTextarea;
   if (el) {
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 104) + "px"; // 3 lines ~ 104px
