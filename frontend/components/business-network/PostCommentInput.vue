@@ -16,14 +16,14 @@
     </div>
 
     <!-- Comment input with glassmorphism -->
-    <div class="flex-1 relative">
-      <div class="relative group">
+    <div class="flex-1 relative flex items-center gap-2">
+      <div class="relative group flex-1">
         <textarea
           ref="commentTextarea"
           v-model="post.commentText"
           placeholder="Add a comment..."
           rows="1"
-          class="w-full text-sm py-2.5 pr-[88px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+          class="w-full text-sm py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
           @input="
             autoResize();
             $emit('handle-comment-input', $event, post);
@@ -36,263 +36,265 @@
         <div
           class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300"
         ></div>
-      </div>
-
-      <!-- Action buttons with premium styling -->
-      <div
-        v-if="post.commentText"
-        class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
-      >
-        <button
-          class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-          @click="post.commentText = ''"
-          aria-label="Clear comment"
+        
+        <!-- Action buttons with premium styling (inside input) -->
+        <div
+          v-if="post.commentText"
+          class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
         >
-          <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
-        </button>
-        <button
-          class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-          @click="$emit('add-comment', post)"
-          aria-label="Post comment"
-        >
-          <Send class="h-3.5 w-3.5" />
-          <!-- Subtle glow effect -->
-          <div
-            class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
-          ></div>
-        </button>
-        <div class="relative">
           <button
-            ref="giftButtonRef"
             class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-            aria-label="Post Gift comment"
-            @click="toggleDiamondDropup"
+            @click="post.commentText = ''"
+            aria-label="Clear comment"
           >
-            <UIcon name="i-streamline-gift-2" class="size-4 text-pink-500" />
-            <span v-if="showDiamondDropup" class="sr-only">Close diamond purchase</span>
+            <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
           </button>
-          
-          <!-- Diamond Purchase Dropup -->
-          <div 
-            v-if="showDiamondDropup"
-            ref="dropupRef"
-            class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
+          <button
+            class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
+            @click="$emit('add-comment', post)"
+            aria-label="Post comment"
           >
-            <!-- Main gift interface -->
-            <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
-              <!-- Header with diamond icon and balance -->
-              <div class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50">
-                <div class="flex items-center">
-                  <div class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2">
-                    <UIcon name="i-heroicons-gift" class="h-5 w-5 text-pink-500" />
-                  </div>
-                  <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
-                    Send Gift to {{ post?.author_details?.name || post?.author?.name || 'User' }}
-                  </h3>
+            <Send class="h-3.5 w-3.5" />
+            <!-- Subtle glow effect -->
+            <div
+              class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
+            ></div>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Gift button moved outside of input -->
+      <div class="relative">
+        <button
+          ref="giftButtonRef"
+          class="px-2 pt-2 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 bg-pink-50/80 dark:bg-pink-900/20 hover:bg-pink-100/80 dark:hover:bg-pink-900/30 transition-all duration-300 shadow-sm hover:shadow"
+          aria-label="Send Gift"
+          @click="toggleDiamondDropup"
+        >
+          <UIcon name="i-streamline-gift-2" class="size-5" />
+          <span v-if="showDiamondDropup" class="sr-only">Close diamond purchase</span>
+        </button>
+        
+        <!-- Diamond Purchase Dropup -->
+        <div 
+          v-if="showDiamondDropup"
+          ref="dropupRef"
+          class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
+        >
+          <!-- Main gift interface -->
+          <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
+            <!-- Header with diamond icon and balance -->
+            <div class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50">
+              <div class="flex items-center">
+                <div class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2">
+                  <UIcon name="i-heroicons-gift" class="h-5 w-5 text-pink-500" />
                 </div>
-                <button 
-                  @click="closeDiamondDropup" 
-                  class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
-                >
-                  <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-                </button>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
+                  Send Gift to {{ post?.author_details?.name || post?.author?.name || 'User' }}
+                </h3>
+              </div>
+              <button 
+                @click="closeDiamondDropup" 
+                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
+              >
+                <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+              </button>
+            </div>
+            
+            <!-- Available Balance Card with Animated Background -->
+            <div class="relative px-4 py-4 mt-3 mb-4 mx-4 rounded-xl overflow-hidden diamond-balance-card">
+              <!-- Animated shimmer background -->
+              <div class="absolute inset-0 bg-gradient-to-r from-pink-50/80 via-purple-50/80 to-pink-50/80 dark:from-pink-900/10 dark:via-purple-900/15 dark:to-pink-900/10 shimmer-background"></div>
+              
+              <!-- Diamond icon decoration -->
+              <div class="absolute -right-4 -top-4 opacity-10">
+                <UIcon name="i-heroicons-gem" class="h-20 w-20 text-pink-500" />
               </div>
               
-              <!-- Available Balance Card with Animated Background -->
-              <div class="relative px-4 py-4 mt-3 mb-4 mx-4 rounded-xl overflow-hidden diamond-balance-card">
-                <!-- Animated shimmer background -->
-                <div class="absolute inset-0 bg-gradient-to-r from-pink-50/80 via-purple-50/80 to-pink-50/80 dark:from-pink-900/10 dark:via-purple-900/15 dark:to-pink-900/10 shimmer-background"></div>
-                
-                <!-- Diamond icon decoration -->
-                <div class="absolute -right-4 -top-4 opacity-10">
-                  <UIcon name="i-heroicons-gem" class="h-20 w-20 text-pink-500" />
+              <!-- Centered diamonds display -->
+              <div class="relative flex flex-col items-center justify-center">
+                <div class="flex items-center justify-center mb-1">
+                  <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">Available Diamonds</span>
                 </div>
-                
-                <!-- Centered diamonds display -->
-                <div class="relative flex flex-col items-center justify-center">
-                  <div class="flex items-center justify-center mb-1">
-                    <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">Available Diamonds</span>
-                  </div>
-                  <div class="flex items-center justify-center">
-                    <span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400">{{ user.user.diamond_balance }}</span>
-                    <UIcon name="i-heroicons-gem" class="h-5 w-5 text-pink-400 ml-1.5" />
-                  </div>
+                <div class="flex items-center justify-center">
+                  <span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400">{{ user.user.diamond_balance }}</span>
+                  <UIcon name="i-heroicons-gem" class="h-5 w-5 text-pink-400 ml-1.5" />
                 </div>
-                
-                <!-- Buy button -->
-                <button 
-                  @click.stop="showBuyDiamonds = true"
-                  class="absolute top-1.5 right-2 px-2.5 py-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs font-medium rounded-full shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
-                >
-                  <UIcon name="i-heroicons-plus" class="h-3 w-3 mr-1" />
-                  Buy
-                </button>
               </div>
               
-              <!-- Use Available Balance Section -->
-              <div class="px-4 mb-4">
-                <div class="flex flex-col">
+              <!-- Buy button -->
+              <button 
+                @click.stop="showBuyDiamonds = true"
+                class="absolute top-1.5 right-2 px-2.5 py-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs font-medium rounded-full shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
+              >
+                <UIcon name="i-heroicons-plus" class="h-3 w-3 mr-1" />
+                Buy
+              </button>
+            </div>
+            
+            <!-- Use Available Balance Section -->
+            <div class="px-4 mb-4">
+              <div class="flex flex-col">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                  Send gift diamonds
+                </label>
+                <div class="relative">
+                  <input 
+                    type="number" 
+                    v-model.number="sendFromBalance"
+                    placeholder="Enter diamond amount"
+                    :max="availableDiamonds"
+                    min="1"
+                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
+                  />
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
+                  </div>
+                </div>
+                
+                <!-- Gift message input -->
+                <div class="mt-3">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                    Send gift diamonds
+                    Gift message
                   </label>
                   <div class="relative">
-                    <input 
-                      type="number" 
-                      v-model.number="sendFromBalance"
-                      placeholder="Enter diamond amount"
-                      :max="availableDiamonds"
-                      min="1"
-                      class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
-                    />
-                    <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                      <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
-                    </div>
-                  </div>
-                  
-                  <!-- Gift message input -->
-                  <div class="mt-3">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                      Gift message
-                    </label>
-                    <div class="relative">
-                      <textarea 
-                        v-model="giftMessage"
-                        placeholder="Add a gift message... (optional)"
-                        rows="2"
-                        class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80 resize-none"
-                      ></textarea>
-                    </div>
+                    <textarea 
+                      v-model="giftMessage"
+                      placeholder="Add a gift message... (optional)"
+                      rows="2"
+                      class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80 resize-none"
+                    ></textarea>
                   </div>
                 </div>
+              </div>
+              
+              <div class="mt-4 space-y-3">
+                <!-- Send Gift Button -->
+                <button 
+                  @click="sendGift"
+                  class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
+                >
+                  <UIcon name="i-heroicons-gift-top" class="h-4 w-4 mr-1.5" />
+                  Send Gift
+                </button>
                 
-                <div class="mt-4 space-y-3">
-                  <!-- Send Gift Button -->
-                  <button 
-                    @click="sendGift"
-                    class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
-                  >
-                    <UIcon name="i-heroicons-gift-top" class="h-4 w-4 mr-1.5" />
-                    Send Gift
-                  </button>
-                  
-                  <!-- No Balance Message -->
-                  <div v-if="availableDiamonds === 0" class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-400 py-1.5">
-                    <UIcon name="i-heroicons-exclamation-circle" class="h-4 w-4 text-pink-400" />
-                    <span>You need diamonds to send a gift</span>
-                  </div>
+                <!-- No Balance Message -->
+                <div v-if="availableDiamonds === 0" class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-400 py-1.5">
+                  <UIcon name="i-heroicons-exclamation-circle" class="h-4 w-4 text-pink-400" />
+                  <span>You need diamonds to send a gift</span>
                 </div>
               </div>
             </div>
-            
-            <!-- Buy diamonds interface -->
-            <div v-else class="pt-2 pb-3">
-              <!-- Header with diamond icon -->
-              <div class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50 mb-2">
-                <div class="flex items-center">
-                  <div class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2">
-                    <UIcon name="i-heroicons-shopping-bag" class="h-5 w-5 text-pink-500" />
-                  </div>
-                  <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
-                    Buy Diamonds
-                  </h3>
+          </div>
+          
+          <!-- Buy diamonds interface -->
+          <div v-else class="pt-2 pb-3">
+            <!-- Header with diamond icon -->
+            <div class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50 mb-2">
+              <div class="flex items-center">
+                <div class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2">
+                  <UIcon name="i-heroicons-shopping-bag" class="h-5 w-5 text-pink-500" />
                 </div>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
+                  Buy Diamonds
+                </h3>
+              </div>
+              <button 
+                @click.stop="showBuyDiamonds = false" 
+                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
+              >
+                <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
+              </button>
+            </div>
+            
+            <!-- Diamond package options with improved design -->
+            <div class="px-4 pt-1">
+              <!-- Available Balance Display -->
+              <div class="flex items-center justify-between mb-3 pb-3 border-b border-pink-100/50 dark:border-slate-700/50">
+                <div class="flex items-center">
+                  <UIcon name="i-heroicons-wallet" class="h-4 w-4 text-pink-500 mr-1.5" />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Account Funds:</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="text-md font-bold text-gray-800 dark:text-gray-200">{{ user.user.balance }}</span>
+                  <span class="text-md font-bold text-gray-700 dark:text-gray-300 ml-1">৳</span>
+                  <button 
+                    @click="navigateToFunds"
+                    class="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-full shadow-sm hover:shadow transition-all duration-200"
+                  >
+                    Add Funds
+                  </button>
+                </div>
+              </div>
+              
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                Purchase diamond packages (10 diamonds = 1 BDT)
+              </p>
+              
+              <!-- Diamond packages -->
+              <div class="grid grid-cols-2 gap-3 mb-5">
                 <button 
-                  @click.stop="showBuyDiamonds = false" 
-                  class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
+                  v-for="(pkg, index) in diamondPackages" 
+                  :key="index"
+                  @click="selectDiamondPackage(pkg.amount)"
+                  :class="[
+                    'relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200',
+                    selectedPackage === pkg.amount 
+                      ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-md' 
+                      : 'border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-800 hover:bg-pink-50/30 dark:hover:bg-pink-900/5'
+                  ]"
                 >
-                  <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
+                  <div class="flex items-center">
+                    <span class="text-pink-500 font-bold text-xl">
+                      {{ pkg.amount }}
+                    </span>
+                    <UIcon name="i-heroicons-sparkles" class="h-4 w-4 ml-1 text-pink-400" />
+                  </div>
+                  <span class="text-xs text-gray-600 dark:text-gray-300 mt-1">{{ pkg.price }} BDT</span>
+                  
+                  <!-- Selection indicator -->
+                  <div v-if="selectedPackage === pkg.amount" class="absolute -top-1.5 -right-1.5 h-5 w-5 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                    <UIcon name="i-heroicons-check" class="h-3 w-3 text-white" />
+                  </div>
                 </button>
               </div>
               
-              <!-- Diamond package options with improved design -->
-              <div class="px-4 pt-1">
-                <!-- Available Balance Display -->
-                <div class="flex items-center justify-between mb-3 pb-3 border-b border-pink-100/50 dark:border-slate-700/50">
-                  <div class="flex items-center">
-                    <UIcon name="i-heroicons-wallet" class="h-4 w-4 text-pink-500 mr-1.5" />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Account Funds:</span>
-                  </div>
-                  <div class="flex items-center">
-                    <span class="text-md font-bold text-gray-800 dark:text-gray-200">{{ user.user.balance }}</span>
-                    <span class="text-md font-bold text-gray-700 dark:text-gray-300 ml-1">৳</span>
-                    <button 
-                      @click="navigateToFunds"
-                      class="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-full shadow-sm hover:shadow transition-all duration-200"
-                    >
-                      Add Funds
-                    </button>
-                  </div>
-                </div>
-                
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  Purchase diamond packages (10 diamonds = 1 BDT)
-                </p>
-                
-                <!-- Diamond packages -->
-                <div class="grid grid-cols-2 gap-3 mb-5">
-                  <button 
-                    v-for="(pkg, index) in diamondPackages" 
-                    :key="index"
-                    @click="selectDiamondPackage(pkg.amount)"
-                    :class="[
-                      'relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200',
-                      selectedPackage === pkg.amount 
-                        ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-md' 
-                        : 'border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-800 hover:bg-pink-50/30 dark:hover:bg-pink-900/5'
-                    ]"
-                  >
-                    <div class="flex items-center">
-                      <span class="text-pink-500 font-bold text-xl">
-                        {{ pkg.amount }}
-                      </span>
-                      <UIcon name="i-heroicons-sparkles" class="h-4 w-4 ml-1 text-pink-400" />
-                    </div>
-                    <span class="text-xs text-gray-600 dark:text-gray-300 mt-1">{{ pkg.price }} BDT</span>
-                    
-                    <!-- Selection indicator -->
-                    <div v-if="selectedPackage === pkg.amount" class="absolute -top-1.5 -right-1.5 h-5 w-5 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
-                      <UIcon name="i-heroicons-check" class="h-3 w-3 text-white" />
-                    </div>
-                  </button>
-                </div>
-                
-                <!-- Custom amount input -->
-                <div class="mb-5">
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                    Custom Amount
-                  </label>
-                  <div class="relative">
-                    <input 
-                      type="number" 
-                      v-model="customDiamondAmount"
-                      placeholder="Enter diamond amount"
-                      min="10"
-                      class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
-                      @input="onCustomAmountInput"
-                    />
-                    <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                      <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between mt-1.5">
-                    <p class="text-xs text-gray-500">Minimum 10 diamonds</p>
-                    <p class="text-xs text-gray-500">
-                      ≈ {{ calculatePrice(customDiamondAmount || 0) }} BDT
-                    </p>
+              <!-- Custom amount input -->
+              <div class="mb-5">
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                  Custom Amount
+                </label>
+                <div class="relative">
+                  <input 
+                    type="number" 
+                    v-model="customDiamondAmount"
+                    placeholder="Enter diamond amount"
+                    min="10"
+                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
+                    @input="onCustomAmountInput"
+                  />
+                  <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
                   </div>
                 </div>
-                
-                <!-- Purchase button -->
-                <button 
-                  @click="purchaseDiamonds"
-                  class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
-                  :disabled="!canPurchase"
-                  :class="{ 'opacity-60 cursor-not-allowed': !canPurchase }"
-                >
-                  <UIcon name="i-heroicons-shopping-cart" class="h-4 w-4 mr-1.5" />
-                  Purchase Diamonds
-                </button>
+                <div class="flex items-center justify-between mt-1.5">
+                  <p class="text-xs text-gray-500">Minimum 10 diamonds</p>
+                  <p class="text-xs text-gray-500">
+                    ≈ {{ calculatePrice(customDiamondAmount || 0) }} BDT
+                  </p>
+                </div>
               </div>
+              
+              <!-- Purchase button -->
+              <button 
+                @click="purchaseDiamonds"
+                class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
+                :disabled="!canPurchase"
+                :class="{ 'opacity-60 cursor-not-allowed': !canPurchase }"
+              >
+                <UIcon name="i-heroicons-shopping-cart" class="h-4 w-4 mr-1.5" />
+                Purchase Diamonds
+              </button>
             </div>
           </div>
         </div>

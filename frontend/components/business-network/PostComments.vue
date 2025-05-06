@@ -118,14 +118,26 @@
               </div>
             </div>
 
-            <!-- Comment content with premium styling -->
-            <p
-              v-else
-              class="text-base sm:text-sm text-gray-800 dark:text-gray-200"
-              style="word-break: break-word"
-            >
-              {{ comment?.content }}
-            </p>
+            <!-- Comment content with premium styling and special gift display -->
+            <div v-else>
+              <!-- Gift comment with premium styling -->
+              <div v-if="comment?.is_gift_comment" class="gift-comment">
+                <div class="gift-badge">
+                  <div class="diamond-container">
+                    <span class="diamond-amount">{{ comment?.diamond_amount }}</span>
+                    <span class="diamond-icon">💎</span>
+                  </div>
+                </div>
+                <div class="sparkle-container">
+                  <div class="sparkle" v-for="i in 5" :key="i"></div>
+                </div>
+                <p class="gift-text">{{ comment?.content }}</p>
+              </div>
+              <!-- Regular comment -->
+              <p v-else class="text-base sm:text-sm text-gray-800 dark:text-gray-200" style="word-break: break-word">
+                {{ comment?.content }}
+              </p>
+            </div>
           </div>
 
           <!-- Timestamp with premium styling -->
@@ -238,6 +250,203 @@ const formatTimeAgo = (dateString) => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Premium Gift Comment Styling */
+.gift-comment {
+  position: relative;
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #fff1f9 0%, #fffafd 50%, #f0f7ff 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 192, 203, 0.3);
+  overflow: hidden;
+  transform-origin: center;
+  box-shadow: 
+    0 4px 15px -3px rgba(255, 105, 180, 0.15),
+    0 2px 6px -2px rgba(142, 68, 173, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  animation: giftPulse 3s infinite ease-in-out;
+}
+
+.dark .gift-comment {
+  background: linear-gradient(135deg, rgba(85, 10, 70, 0.4) 0%, rgba(61, 15, 79, 0.4) 50%, rgba(20, 30, 90, 0.4) 100%);
+  border: 1px solid rgba(255, 105, 180, 0.15);
+  box-shadow: 
+    0 4px 15px -3px rgba(255, 105, 180, 0.2),
+    0 2px 6px -2px rgba(142, 68, 173, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+.gift-comment:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 
+    0 6px 20px -3px rgba(255, 105, 180, 0.25),
+    0 4px 8px -2px rgba(142, 68, 173, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+
+/* Diamond Badge */
+.gift-badge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  z-index: 5;
+}
+
+.diamond-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 24px;
+  background: linear-gradient(135deg, #ff73c8 0%, #b08fff 100%);
+  border-radius: 12px;
+  padding: 2px 10px;
+  box-shadow: 0 2px 6px rgba(255, 105, 180, 0.35);
+  transform-style: preserve-3d;
+  transform: perspective(100px) rotateX(5deg);
+  animation: floatBadge 3s ease-in-out infinite;
+}
+
+.dark .diamond-container {
+  background: linear-gradient(135deg, #ff4db2 0%, #9c66ff 100%);
+  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.5);
+}
+
+.diamond-amount {
+  font-weight: bold;
+  font-size: 12px;
+  color: white;
+  margin-right: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.diamond-icon {
+  font-size: 12px;
+  margin-left: 1px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+/* Gift Text */
+.gift-text {
+  position: relative;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #8046a5;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+  z-index: 2;
+}
+
+.dark .gift-text {
+  color: #da9eff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Sparkling Animation */
+.sparkle-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 0 10px 2px rgba(255, 192, 203, 0.8);
+  opacity: 0;
+}
+
+.sparkle:nth-child(1) {
+  top: 20%;
+  left: 10%;
+  animation: sparkleAnimation 4s infinite 0.5s;
+}
+
+.sparkle:nth-child(2) {
+  top: 60%;
+  left: 85%;
+  animation: sparkleAnimation 5s infinite 1s;
+}
+
+.sparkle:nth-child(3) {
+  top: 30%;
+  left: 60%;
+  animation: sparkleAnimation 4.5s infinite 1.5s;
+}
+
+.sparkle:nth-child(4) {
+  top: 70%;
+  left: 20%;
+  animation: sparkleAnimation 6s infinite 2s;
+}
+
+.sparkle:nth-child(5) {
+  top: 10%;
+  left: 90%;
+  animation: sparkleAnimation 5s infinite 2.5s;
+}
+
+/* Animations */
+@keyframes giftPulse {
+  0% {
+    box-shadow: 0 4px 15px -3px rgba(255, 105, 180, 0.15), 0 2px 6px -2px rgba(142, 68, 173, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.7);
+  }
+  50% {
+    box-shadow: 0 4px 20px -3px rgba(255, 105, 180, 0.25), 0 2px 8px -2px rgba(142, 68, 173, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 4px 15px -3px rgba(255, 105, 180, 0.15), 0 2px 6px -2px rgba(142, 68, 173, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.7);
+  }
+}
+
+@keyframes floatBadge {
+  0%, 100% {
+    transform: perspective(100px) rotateX(5deg) translateY(0px);
+  }
+  50% {
+    transform: perspective(100px) rotateX(5deg) translateY(-3px);
+  }
+}
+
+@keyframes sparkleAnimation {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  40% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  80% {
+    transform: scale(0.5);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
   }
 }
 </style>
