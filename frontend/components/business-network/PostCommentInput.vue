@@ -33,7 +33,7 @@
           v-model="post.commentText"
           placeholder="Add a comment..."
           rows="1"
-          class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+          class="w-full text-sm py-2.5 pr-[88px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
           @input="
             autoResize();
             $emit('handle-comment-input', $event, post);
@@ -51,17 +51,17 @@
       <!-- Action buttons with premium styling -->
       <div
         v-if="post.commentText"
-        class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center space-x-1.5"
+        class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
       >
         <button
-          class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+          class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
           @click="post.commentText = ''"
           aria-label="Clear comment"
         >
-          <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+          <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
         </button>
         <button
-          class="p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
+          class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
           @click="$emit('add-comment', post)"
           aria-label="Post comment"
         >
@@ -72,13 +72,10 @@
           ></div>
         </button>
         <button
-          class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+          class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
           aria-label="Clear comment"
         >
-          <UIcon
-            name="i-material-symbols-light-featured-seasonal-and-gifts"
-            class="h-4 w-4"
-          />
+          <UIcon name="i-streamline-gift-2" class="size-4 text-pink-500" />
         </button>
       </div>
 
