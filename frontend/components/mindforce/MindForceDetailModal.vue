@@ -172,23 +172,27 @@
 
           <!-- Problem photos gallery -->
           <div v-if="problem.media && problem.media.length > 0" class="mt-5">
-            <h3 class="text-lg font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center">
+            <h3
+              class="text-lg font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center"
+            >
               <Image class="h-5 w-5 mr-2 text-blue-500" />
               Photos
             </h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              <div 
-                v-for="(photo, index) in problem.media" 
-                :key="index" 
+            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div
+                v-for="(photo, index) in problem.media"
+                :key="photo.id"
                 class="aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-all transform hover:scale-[1.02] relative group"
                 @click="$emit('photo-view', index)"
               >
-                <img 
-                  :src="photo" 
-                  alt="Problem photo" 
-                  class="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                <img
+                  :src="photo.image"
+                  alt="Problem photo"
+                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2"
+                >
                   <span class="text-white text-sm font-medium">View</span>
                 </div>
               </div>
@@ -340,25 +344,30 @@
                   >
                     {{ comment.content }}
                   </p>
-                  
+
                   <!-- Comment Media Gallery -->
-                  <div 
-                    v-if="comment.media && comment.media.length > 0" 
+                  <div
+                    v-if="comment.media && comment.media.length > 0"
                     class="mt-3 flex flex-wrap gap-2"
                   >
-                    <div 
-                      v-for="(media, index) in comment.media" 
+                    <div
+                      v-for="(media, index) in comment.media"
                       :key="index"
                       class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105"
                       @click="openMediaViewer(comment, index)"
                     >
-                      <img 
-                        :src="getMediaUrl(media)"
-                        alt="Comment media" 
+                      <img
+                        :src="media.image"
+                        alt="Comment media"
                         class="h-full w-full object-cover"
                       />
-                      <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span class="text-white text-xs font-medium px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full">View</span>
+                      <div
+                        class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
+                      >
+                        <span
+                          class="text-white text-xs font-medium px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full"
+                          >View</span
+                        >
                       </div>
                     </div>
                   </div>
@@ -407,7 +416,7 @@
                 class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-md ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all resize-none"
                 rows="3"
               ></textarea>
-              
+
               <!-- Media upload section -->
               <div class="mt-3">
                 <div class="flex items-center space-x-2">
@@ -419,8 +428,10 @@
                     <ImagePlus class="h-4 w-4" />
                     <span>Add Photo</span>
                   </button>
-                  <span class="text-sm text-slate-500 dark:text-slate-400">{{ commentMedia.length }}/3 images</span>
-                  <input 
+                  <span class="text-sm text-slate-500 dark:text-slate-400"
+                    >{{ commentMedia.length }}/3 images</span
+                  >
+                  <input
                     type="file"
                     ref="mediaFileInput"
                     accept="image/*"
@@ -428,17 +439,20 @@
                     @change="handleMediaUpload"
                   />
                 </div>
-                
+
                 <!-- Media preview section -->
-                <div v-if="commentMedia.length > 0" class="mt-3 flex flex-wrap gap-2">
-                  <div 
-                    v-for="(media, index) in commentMedia" 
+                <div
+                  v-if="commentMedia.length > 0"
+                  class="mt-3 flex flex-wrap gap-2"
+                >
+                  <div
+                    v-for="(media, index) in commentMedia"
                     :key="index"
                     class="relative h-20 w-20 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 group"
                   >
-                    <img 
-                      :src="media.preview" 
-                      alt="Media preview" 
+                    <img
+                      :src="media.preview"
+                      alt="Media preview"
                       class="h-full w-full object-cover"
                     />
                     <button
@@ -450,14 +464,18 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="flex justify-end mt-3 mb-10">
                 <button
                   @click="submitComment"
-                  :disabled="(!newComment.trim() && commentMedia.length === 0) || isSubmittingComment"
+                  :disabled="
+                    (!newComment.trim() && commentMedia.length === 0) ||
+                    isSubmittingComment
+                  "
                   :class="[
                     'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
-                    (!newComment.trim() && commentMedia.length === 0) || isSubmittingComment
+                    (!newComment.trim() && commentMedia.length === 0) ||
+                    isSubmittingComment
                       ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                       : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
                   ]"
@@ -674,8 +692,14 @@ const submitComment = () => {
     commentSubmitStatus.value = true;
 
     // Emit events for backend submission
-    emit("submit-comment", { content: newComment.value, media: commentMedia.value });
-    emit("add-comment", { content: newComment.value, media: commentMedia.value });
+    emit("submit-comment", {
+      content: newComment.value,
+      images: commentMedia.value,
+    });
+    emit("add-comment", {
+      content: newComment.value,
+      images: commentMedia.value,
+    });
 
     // Clear input and media after submission
     if (!props.isSubmittingComment) {
@@ -775,48 +799,48 @@ const removeMedia = (index) => {
 };
 
 const getMediaUrl = (media) => {
-  if (!media) return '';
-  
+  if (!media) return "";
+
   // Handle different media object structures
-  if (typeof media === 'string') return media;
+  if (typeof media === "string") return media;
   if (media.image) return media.image;
   if (media.preview) return media.preview;
-  
+
   // Handle case where media is an object with URL property
-  if (typeof media === 'object') {
+  if (typeof media === "object") {
     // Check for common URL properties that might be returned by the API
     if (media.url) return media.url;
     if (media.src) return media.src;
     if (media.path) return media.path;
-    
+
     // If it's just an object with a direct URL string value
     const firstKey = Object.keys(media)[0];
-    if (firstKey && typeof media[firstKey] === 'string') {
+    if (firstKey && typeof media[firstKey] === "string") {
       return media[firstKey];
     }
   }
-  
+
   // Last resort - if the object itself can be coerced to a string that looks like a URL
-  if (media.toString && typeof media.toString === 'function') {
+  if (media.toString && typeof media.toString === "function") {
     const stringValue = media.toString();
-    if (stringValue.startsWith('http') || stringValue.startsWith('/')) {
+    if (stringValue.startsWith("http") || stringValue.startsWith("/")) {
       return stringValue;
     }
   }
-  
-  console.log('Unable to extract URL from media object:', media);
-  return '/placeholder.svg'; // Fallback to placeholder
+
+  console.log("Unable to extract URL from media object:", media);
+  return "/placeholder.svg"; // Fallback to placeholder
 };
 
 const openMediaViewer = (comment, index) => {
   if (comment.media && comment.media.length > 0) {
     // Extract image URLs from media objects
-    const mediaUrls = comment.media.map(media => getMediaUrl(media));
-    
+    const mediaUrls = comment.media.map((media) => getMediaUrl(media));
+
     // Emit an event to open the photo viewer with the comment media
-    emit('photo-view', {
+    emit("photo-view", {
       mediaUrls,
-      startIndex: index
+      startIndex: index,
     });
   }
 };

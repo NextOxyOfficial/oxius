@@ -739,9 +739,12 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
 
     def create(self, request, *args, **kwargs):
         # Check if problem is already solved before allowing comment
+        images_data = request.data.pop('images', None)
+        data = request.data
+        data['author'] = request.user.id
         mindforce_id = kwargs['mindforce_id']
         mindforce_problem = get_object_or_404(BusinessNetworkMindforce, id=mindforce_id)
-        
+        data['mindforce_problem'] = mindforce_id
         # If the problem is already solved, prevent commenting
         if mindforce_problem.status == 'solved':
             return Response(
@@ -750,37 +753,28 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
             )
         
         # Create comment with initial data
-        serializer = self.get_serializer(data={
-            'author': request.user.id, 
-            'mindforce_problem': mindforce_id, 
-            'content': request.data.get('comment', '')
-        })
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        comment = serializer.save()
+        comment= serializer.save()
         
         # Process any media files
-        media_files = request.FILES.items()
-        for field_name, file in media_files:
-            if field_name.startswith('media_'):
-                # Create a media object
-                media = BusinessNetworkMindforceMedia.objects.create(image=file)
-                # Add it to the comment's media
-                comment.media.add(media)
-        
-        # Handle base64 encoded media that might be sent from the frontend
-        for key, value in request.data.items():
-            if key.startswith('media_') and isinstance(value, str) and value.startswith('data:image'):
+        if images_data:
+        # Handle both list of images and single image
+            if not isinstance(images_data, list):
+                images_data = [images_data]
+                                
+            for image_data in images_data:
                 try:
-                    image_file = base64ToFile(value)
-                    media = BusinessNetworkMindforceMedia.objects.create(image=image_file)
-                    comment.media.add(media)
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # Process base64 image
+                        image_file = base64ToFile(image_data)
+                        mindforce_comment_media =BusinessNetworkMindforceCommentMedia.objects.create(image=image_file)
+                        comment.media.add(mindforce_comment_medi)
                 except Exception as e:
-                    print(f"Error processing base64 image: {str(e)}")
-        
-        # Re-serialize with the media included
-        updated_serializer = self.get_serializer(comment)
-        headers = self.get_success_headers(updated_serializer.data)
-        return Response(updated_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+                    # Log error but continue processing
+                    print(f"Error processing image: {str(e)}")
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
 
 

@@ -293,14 +293,14 @@ const createForm = ref({
 const tabs = computed(() => {
   const baseTabs = [
     { label: "Active Problems", value: "active" },
-    { label: "Solved Problems", value: "solved" }
+    { label: "Solved Problems", value: "solved" },
   ];
-  
+
   // Only add My Problems tab if user is logged in
   if (user.value?.user) {
     baseTabs.push({ label: "My Problems", value: "my-problems" });
   }
-  
+
   return baseTabs;
 });
 
@@ -412,17 +412,17 @@ const handleSearch = () => {
 
 const openPhotoViewer = (problem, photoData) => {
   // Handle different types of input for photoData
-  if (typeof photoData === 'number') {
+  if (typeof photoData === "number") {
     // Regular problem media - index was passed
     if (problem?.media?.length) {
       viewerPhotos.value = problem.media;
       currentPhotoIndex.value = photoData;
       isPhotoViewerOpen.value = true;
     }
-  } else if (photoData && typeof photoData === 'object') {
+  } else if (photoData && typeof photoData === "object") {
     // Comment media - object with mediaUrls was passed
     if (photoData.mediaUrls && photoData.mediaUrls.length) {
-      viewerPhotos.value = photoData.mediaUrls.map(url => ({ image: url }));
+      viewerPhotos.value = photoData.mediaUrls.map((url) => ({ image: url }));
       currentPhotoIndex.value = photoData.startIndex || 0;
       isPhotoViewerOpen.value = true;
     }
@@ -455,49 +455,51 @@ const handleCreateProblem = async (formData) => {
   try {
     // Create a FormData object to handle file uploads
     const apiFormData = new FormData();
-    
+
     // Add text fields
-    apiFormData.append('title', formData.title);
-    apiFormData.append('description', formData.description);
-    apiFormData.append('category', formData.category);
-    apiFormData.append('payment_option', formData.payment_option);
-    
-    if (formData.payment_option === 'paid' && formData.payment_amount) {
-      apiFormData.append('payment_amount', formData.payment_amount);
+    apiFormData.append("title", formData.title);
+    apiFormData.append("description", formData.description);
+    apiFormData.append("category", formData.category);
+    apiFormData.append("payment_option", formData.payment_option);
+
+    if (formData.payment_option === "paid" && formData.payment_amount) {
+      apiFormData.append("payment_amount", formData.payment_amount);
     }
-    
+
     // Handle image uploads - convert base64 strings to files
     if (formData.images && formData.images.length > 0) {
       formData.images.forEach((imageData, index) => {
-        if (imageData.startsWith('data:')) {
+        if (imageData.startsWith("data:")) {
           // Convert base64 to file
-          const byteString = atob(imageData.split(',')[1]);
+          const byteString = atob(imageData.split(",")[1]);
           const ab = new ArrayBuffer(byteString.length);
           const ia = new Uint8Array(ab);
-          
+
           for (let i = 0; i < byteString.length; i++) {
             ia[i] = byteString.charCodeAt(i);
           }
-          
-          const blob = new Blob([ab], { type: 'image/jpeg' });
-          const file = new File([blob], `image-${index}.jpg`, { type: 'image/jpeg' });
-          apiFormData.append('media', file);
+
+          const blob = new Blob([ab], { type: "image/jpeg" });
+          const file = new File([blob], `image-${index}.jpg`, {
+            type: "image/jpeg",
+          });
+          apiFormData.append("media", file);
         }
       });
     }
-    
+
     const res = await post("/bn/mindforce/", apiFormData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+        "Content-Type": "multipart/form-data",
+      },
     });
-    
+
     if (res.data) {
       isCreateModalOpen.value = false;
-      
+
       // Add the new problem to the problems list directly
       problems.value = [res.data, ...problems.value];
-      
+
       // Reset form
       createForm.value = {
         title: "",
@@ -507,12 +509,12 @@ const handleCreateProblem = async (formData) => {
         payment_amount: "",
         images: [],
       };
-      
+
       // Show success message
       toast.add({
         title: "Success",
         description: "Your problem has been posted successfully",
-        color: "green"
+        color: "green",
       });
     }
   } catch (error) {
@@ -520,7 +522,7 @@ const handleCreateProblem = async (formData) => {
     toast.add({
       title: "Error",
       description: "Failed to create problem. Please try again.",
-      color: "red"
+      color: "red",
     });
   } finally {
     isSubmittingCreate.value = false;
@@ -603,10 +605,8 @@ const markAsSolution = async (commentId) => {
 
 const addComment = async (commentData) => {
   // Handle both string-only comments (backward compatibility) and object format with media
-  const commentText = typeof commentData === 'string' ? commentData : commentData.content;
-  const commentMedia = typeof commentData === 'string' ? [] : (commentData.media || []);
-  
-  if (!commentText.trim() && commentMedia.length === 0) return;
+
+  if (!commentData.content.trim() && commentData.images.length === 0) return;
 
   // Check if the problem is already solved
   if (selectedProblem.value.status === "solved") {
@@ -622,21 +622,9 @@ const addComment = async (commentData) => {
       selectedProblem.value.mindforce_comments = [];
     }
 
-    // Create form data to handle media uploads
-    const formData = new FormData();
-    formData.append('comment', commentText);
-    
-    // Append any media files to the formData
-    commentMedia.forEach((media, index) => {
-      if (media.file) {
-        formData.append(`media_${index}`, media.file);
-      }
-    });
-
     const res = await post(
       `/bn/mindforce/${selectedProblem.value.id}/comments/`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      { content: commentData.content, images: commentData.images }
     );
 
     if (res.data) {
