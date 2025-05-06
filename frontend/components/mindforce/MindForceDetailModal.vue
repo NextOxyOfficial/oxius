@@ -170,6 +170,31 @@
             {{ problem.description }}
           </div>
 
+          <!-- Problem photos gallery -->
+          <div v-if="problem.media && problem.media.length > 0" class="mt-5">
+            <h3 class="text-lg font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center">
+              <Image class="h-5 w-5 mr-2 text-blue-500" />
+              Photos
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div 
+                v-for="(photo, index) in problem.media" 
+                :key="index" 
+                class="aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-all transform hover:scale-[1.02] relative group"
+                @click="$emit('photo-view', index)"
+              >
+                <img 
+                  :src="photo" 
+                  alt="Problem photo" 
+                  class="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
+                  <span class="text-white text-sm font-medium">View</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Problem Stats - Enhanced styling -->
           <div
             class="mt-6 flex items-center justify-between border-t border-b border-slate-200 dark:border-slate-700 py-3"
@@ -528,6 +553,7 @@ import {
   Clock,
   LockIcon,
   ImagePlus,
+  Image,
 } from "lucide-vue-next";
 
 const props = defineProps({

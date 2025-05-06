@@ -442,10 +442,51 @@ const handleCreateProblem = async (formData) => {
   isSubmittingCreate.value = true;
 
   try {
-    const res = await post("/bn/mindforce/", formData);
+    // Create a FormData object to handle file uploads
+    const apiFormData = new FormData();
+    
+    // Add text fields
+    apiFormData.append('title', formData.title);
+    apiFormData.append('description', formData.description);
+    apiFormData.append('category', formData.category);
+    apiFormData.append('payment_option', formData.payment_option);
+    
+    if (formData.payment_option === 'paid' && formData.payment_amount) {
+      apiFormData.append('payment_amount', formData.payment_amount);
+    }
+    
+    // Handle image uploads - convert base64 strings to files
+    if (formData.images && formData.images.length > 0) {
+      formData.images.forEach((imageData, index) => {
+        if (imageData.startsWith('data:')) {
+          // Convert base64 to file
+          const byteString = atob(imageData.split(',')[1]);
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          
+          const blob = new Blob([ab], { type: 'image/jpeg' });
+          const file = new File([blob], `image-${index}.jpg`, { type: 'image/jpeg' });
+          apiFormData.append('media', file);
+        }
+      });
+    }
+    
+    const res = await post("/bn/mindforce/", apiFormData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+    
     if (res.data) {
       isCreateModalOpen.value = false;
-      await fetchProblems();
+      
+      // Add the new problem to the problems list directly
+      problems.value = [res.data, ...problems.value];
+      
       // Reset form
       createForm.value = {
         title: "",
@@ -455,7 +496,21 @@ const handleCreateProblem = async (formData) => {
         payment_amount: "",
         images: [],
       };
+      
+      // Show success message
+      toast.add({
+        title: "Success",
+        description: "Your problem has been posted successfully",
+        color: "green"
+      });
     }
+  } catch (error) {
+    console.error("Error creating problem:", error);
+    toast.add({
+      title: "Error",
+      description: "Failed to create problem. Please try again.",
+      color: "red"
+    });
   } finally {
     isSubmittingCreate.value = false;
   }
