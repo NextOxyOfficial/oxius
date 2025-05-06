@@ -356,20 +356,21 @@
                 icon: 'i-heroicons-home',
               },
               {
-                label: $t('classified_service'),
-                to: '/#classified-services',
-                icon: 'i-heroicons-clipboard-document-list',
+                label: $t('business_network'),
+                to: '/business-network',
+                icon: 'i-lucide-globe',
+              },
+              {
+                label: $t('adsy_news'),
+                to: '/adsy-news',
+                icon: 'i-lucide-newspaper',
               },
               {
                 label: $t('earn_money'),
                 to: '/#micro-gigs',
                 icon: 'i-healthicons:money-bag-outline',
               },
-              {
-                label: $t('business_network'),
-                to: '/business-network',
-                icon: 'i-lucide-globe',
-              },
+
               {
                 label: $t('mobile_recharge'),
                 to: '/mobile-recharge',
