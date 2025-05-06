@@ -103,8 +103,6 @@
             
             <!-- Available Balance Card with Animated Background -->
             <div class="relative px-4 py-4 mt-3 mb-4 mx-4 rounded-xl overflow-hidden diamond-balance-card">
-              <!-- Animated shimmer background -->
-              <div class="absolute inset-0 bg-gradient-to-r from-pink-50/80 via-purple-50/80 to-pink-50/80 dark:from-pink-900/10 dark:via-purple-900/15 dark:to-pink-900/10 shimmer-background"></div>
               
               <!-- Diamond icon decoration -->
               <div class="absolute -right-4 -top-4 opacity-10">
@@ -802,22 +800,7 @@ defineEmits([
   overflow: hidden;
 }
 
-.shimmer-background {
-  background-size: 200% 100%;
-  animation: shimmer 2.5s ease-in-out infinite;
-}
 
-@keyframes shimmer {
-  0% {
-    background-position: -100% 0;
-  }
-  50% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: -100% 0;
-  }
-}
 .gift-comment {
   background: linear-gradient(to right, #fff8f8, #fff0f8);
   border-radius: 10px;
@@ -829,4 +812,24 @@ defineEmits([
   font-weight: 500;
   color: #ff3399;
 }
+
+/* Animation for success popup */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pop-in {
+  animation: popIn 0.3s ease-out forwards;
+}
+
 </style>
