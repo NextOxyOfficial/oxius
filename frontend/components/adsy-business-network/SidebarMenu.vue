@@ -3,20 +3,8 @@
     <div
       class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30 rounded-lg backdrop-blur-sm z-0"
     ></div>
-    <div class="relative z-10">
-      <h3
-        class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center"
-      >
-        <div
-          class="p-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md mr-2"
-        >
-          <Menu class="h-3 w-3 text-white" />
-        </div>
-        <span>Menu</span>
-      </h3>
-      
-      <!-- Create Post Button (Added at top of menu) -->
-      <button
+    <!-- Create Post Button (Added at top of menu) -->
+    <button
         @click="openCreatePostModal"
         class="w-full flex items-center px-3 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-md transition-all duration-200 group relative overflow-hidden"
       >
@@ -33,6 +21,19 @@
           Create Post
         </span>
       </button>
+    <div class="relative z-10">
+      <h3
+        class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center"
+      >
+        <div
+          class="p-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md mr-2"
+        >
+          <Menu class="h-3 w-3 text-white" />
+        </div>
+        <span>Menu</span>
+      </h3>
+      
+      
       
       <nav class="space-y-1 px-2">
         <NuxtLink
