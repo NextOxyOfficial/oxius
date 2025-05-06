@@ -729,7 +729,6 @@
                 v-if="!isLoadingPosts"
                 :posts="posts.results"
                 :id="currentUser?.user?.id"
-                class="animate-fadeIn"
               />
 
               <!-- No posts indicator -->
