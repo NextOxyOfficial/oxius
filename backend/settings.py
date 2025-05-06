@@ -208,12 +208,8 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'base.tasks.check_and_auto_approve_tasks',
         'schedule': timedelta(minutes=30),  # Run every 30 minutes
     },
+    'deactivate-expired-subscriptions': {
+        'task': 'subscription.tasks.deactivate_expired_subscriptions',
+        'schedule': timedelta(days=1),  # Run once every day
+    },
 }
-
-SP_USERNAME="lyriczsoft"
-SP_PASSWORD="lyrikskdzprvz&ud"
-SP_ENDPOINT="https://engine.shurjopayment.com"
-SP_RETURN="https://adsyclub.com/verify-payment"
-SP_CANCEL="https://adsyclub.com/deposit-withdraw/"
-SP_PREFIX="ADSYCLUB_"
-API_SMS = 'SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd'
