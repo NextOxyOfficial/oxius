@@ -87,7 +87,7 @@
               <textarea
                 :id="`comment-edit-${comment.id}`"
                 v-model="comment.editText"
-                class="w-full text-sm p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
+                class="w-full text-base p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
                 rows="2"
               ></textarea>
               <div class="flex justify-end space-x-2 mt-2">
