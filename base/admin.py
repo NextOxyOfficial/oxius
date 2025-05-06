@@ -80,7 +80,7 @@ class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     
-    list_display = ('email','first_name','balance','age','gender','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity','is_topcontributor', 'store_name','store_username','store_logo','store_banner','store_address','store_description')
+    list_display = ('email','first_name','balance','diamond_balance','age','gender','pending_balance','address',  'phone', 'kyc',  'is_active', 'date_joined', 'is_pro', 'pro_validity','is_topcontributor', 'store_name','store_username','store_logo','store_banner','store_address','store_description')
     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
     
     def get_fieldsets(self, request, obj=None):
@@ -116,6 +116,7 @@ class CustomUserAdmin(UserAdmin):
             'zip',
             'balance',
             'pending_balance',
+            'diamond_balance',
             'user_type',
             'refer',
             'refer_count',
@@ -340,3 +341,15 @@ admin.site.register(ProductFAQ)
 admin.site.register(ProductTrustBadge)
 admin.site.register(BNLogo)
 admin.site.register(NewsLogo)
+
+class DiamondTransactionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'to_user', 'transaction_type', 'amount', 'cost', 'completed', 'approved', 'rejected', 'created_at')
+    list_filter = ('transaction_type', 'completed', 'approved', 'rejected')
+    search_fields = ('user__email', 'user__username', 'to_user__email', 'to_user__username', 'post_id')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    @admin.display(ordering='-created_at')
+    def created_at(self, obj):
+        return obj.created_at
+
+admin.site.register(DiamondTransaction, DiamondTransactionAdmin)

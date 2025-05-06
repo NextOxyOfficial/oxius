@@ -69,6 +69,7 @@ class User(AbstractUser):
   zip=models.CharField(max_length=256,blank=True, default="")
   balance =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
   pending_balance =  models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+  diamond_balance = models.IntegerField(default=0)
   USER_TYPES = [
       ('admin', 'Admin'),
       ('user', 'User'),
@@ -742,6 +743,84 @@ class BNLogo(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"BN Logo {self.id}"
+
+class DiamondTransaction(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='diamond_transactions')
+    to_user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='received_diamonds')
+    
+    TRANSACTION_TYPE_CHOICES = [
+        ('purchase', 'Purchase'),
+        ('gift', 'Gift'),
+        ('bonus', 'Bonus'),
+        ('refund', 'Refund'),
+        ('admin', 'Admin Adjustment')
+    ]
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
+    
+    amount = models.IntegerField()  # Number of diamonds
+    cost = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)  # Cost in BDT
+    
+    completed = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
+    
+    post_id = models.CharField(max_length=100, blank=True, null=True)  # For gifts to specific posts
+    payment_method = models.CharField(max_length=50, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user}'s Diamond {self.transaction_type}: {self.amount}"
+    
+    def save(self, *args, **kwargs):
+        # Diamond purchase from balance
+        if self.transaction_type == 'purchase' and not self.completed:
+            if self.user.balance >= self.cost:
+                self.user.balance -= self.cost
+                self.user.diamond_balance += self.amount
+                self.completed = True
+                self.approved = True
+                self.user.save()
+            else:
+                raise ValidationError("Insufficient balance for diamond purchase")
+        
+        # Gift diamonds to another user
+        if self.transaction_type == 'gift' and self.to_user and not self.completed:
+            if self.user.diamond_balance >= self.amount:
+                self.user.diamond_balance -= self.amount
+                self.to_user.diamond_balance += self.amount
+                self.completed = True
+                self.approved = True
+                self.user.save()
+                self.to_user.save()
+            else:
+                raise ValidationError("Insufficient diamond balance for gifting")
+                
+        # Admin adjustment
+        if self.transaction_type == 'admin' and not self.completed:
+            self.user.diamond_balance += self.amount  # Can be positive or negative
+            self.completed = True
+            self.approved = True
+            self.user.save()
+            
+        # Bonus diamonds
+        if self.transaction_type == 'bonus' and not self.completed:
+            self.user.diamond_balance += self.amount
+            self.completed = True
+            self.approved = True
+            self.user.save()
+            
+        # Mark as completed if approved
+        if self.approved and not self.completed:
+            self.completed = True
+            
+        super(DiamondTransaction, self).save(*args, **kwargs)
     
 class NewsLogo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
