@@ -21,7 +21,7 @@
           Create Post
         </span>
       </button>
-    <div class="relative z-10">
+    <div class="relative z-10 mt-4">
       <h3
         class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center"
       >
