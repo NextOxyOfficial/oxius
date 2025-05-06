@@ -615,6 +615,7 @@ const { user } = useAuth();
 const { post, get, patch } = useApi();
 const auth = useAuth();
 const emit = defineEmits(["post-created"]);
+const route = useRoute();
 
 // Form data
 const form = ref({
@@ -1039,6 +1040,7 @@ async function handleCreatePost() {
 
     // Show success toast notification
     showSuccessToast.value = true;
+    route.path.includes("profile") && window.location.reload();
     setTimeout(() => {
       showSuccessToast.value = false;
     }, 5000);
