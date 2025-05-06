@@ -252,7 +252,7 @@
                 </p>
               </UFormGroup>
             </div>
-            <div class="grid gap-4">
+            <div class="grid grid-cols-2 gap-4">
               <div class="col-span-2 md:col-auto">
                 <UFormGroup
                   label=""
@@ -262,16 +262,18 @@
                     },
                   }"
                 >
-                  <UInput
-                    type="text"
-                    size="md"
+                  <USelectMenu
+                    v-model="form.state"
                     color="white"
-                    placeholder="City"
-                    v-model="form.city"
+                    size="md"
+                    :options="regions"
+                    placeholder="State"
                     :ui="{
                       placeholder:
                         'placeholder-gray-400 dark:placeholder-gray-200',
                     }"
+                    option-attribute="name_eng"
+                    value-attribute="name_eng"
                   />
                 </UFormGroup>
               </div>
@@ -284,16 +286,42 @@
                     },
                   }"
                 >
-                  <UInput
-                    type="text"
-                    size="md"
+                  <USelectMenu
+                    v-model="form.city"
                     color="white"
-                    placeholder="State"
-                    v-model="form.state"
+                    size="md"
+                    :options="cities"
+                    placeholder="City"
                     :ui="{
                       placeholder:
                         'placeholder-gray-400 dark:placeholder-gray-200',
                     }"
+                    option-attribute="name_eng"
+                    value-attribute="name_eng"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="col-span-2 md:col-auto">
+                <UFormGroup
+                  label=""
+                  :ui="{
+                    label: {
+                      base: 'block font-medium text-gray-700 dark:text-slate-700',
+                    },
+                  }"
+                >
+                  <USelectMenu
+                    v-model="form.upazila"
+                    color="white"
+                    size="md"
+                    :options="upazilas"
+                    placeholder="Area/Upazila"
+                    :ui="{
+                      placeholder:
+                        'placeholder-gray-400 dark:placeholder-gray-200',
+                    }"
+                    option-attribute="name_eng"
+                    value-attribute="name_eng"
                   />
                 </UFormGroup>
               </div>
@@ -377,7 +405,7 @@
 </template>
 
 <script setup>
-const Api = useApi();
+const { get, post } = useApi();
 const { login } = useAuth();
 const isPassword = ref(true);
 const isLoading = ref(false);
@@ -392,6 +420,10 @@ const form = ref({
   age: "",
   gender: "",
   refer: "",
+  country: "Bangladesh",
+  state: "",
+  city: "",
+  upazila: "",
 });
 
 const userProfile = ref({});
@@ -405,6 +437,62 @@ if (route.query.ref) {
 }
 
 const toast = useToast();
+
+// geo filter
+
+const regions = ref([]);
+const cities = ref();
+const upazilas = ref();
+
+const regions_response = await get(
+  `/geo/regions/?country_name_eng=${form.value.country}`
+);
+regions.value = regions_response.data;
+
+if (form.value.state) {
+  const cities_response = await get(
+    `/geo/cities/?region_name_eng=${form.value.state}`
+  );
+  cities.value = cities_response.data;
+  console.log(cities_response.data);
+}
+if (form.value.city) {
+  const thana_response = await get(
+    `/geo/upazila/?city_name_eng=${form.value.city}`
+  );
+  upazilas.value = thana_response.data;
+  console.log(thana_response.data);
+}
+
+watch(
+  () => form.value.state,
+  async (newState) => {
+    console.log(newState);
+    if (newState) {
+      const cities_response = await get(
+        `/geo/cities/?region_name_eng=${newState}`
+      );
+      cities.value = cities_response.data;
+      console.log(cities_response.data);
+    }
+  }
+);
+
+watch(
+  () => form.value.city,
+  async (newCity) => {
+    console.log(newCity);
+    if (newCity) {
+      const thana_response = await get(
+        `/geo/upazila/?city_name_eng=${newCity}`
+      );
+      upazilas.value = thana_response.data;
+      console.log(thana_response.data);
+    }
+  }
+);
+
+// geo filter
 
 // Handle form submission
 async function handleSubmit() {
@@ -460,21 +548,23 @@ async function handleSubmit() {
     age: +form.value.age,
     gender: form.value.gender,
     // image: userProfile.value.image,
+    country: form.value.country,
     city: form.value.city,
     state: form.value.state,
+    upazila: form.value.upazila,
     zip: form.value.zip,
     address: form.value.address,
   };
 
   try {
-    const res = await Api.post("/auth/register/", formData);
+    const res = await post("/auth/register/", formData);
     console.log(res);
 
     if (res?.data?.message) {
       error.value = "";
       const res2 = await login(form.value.email, form.value.password);
       if (res2) {
-        const res = await Api.post(`/send-sms/?phone=${form.value.phone}`);
+        const res = await post(`/send-sms/?phone=${form.value.phone}`);
         toast.add({ title: "Login successful!" });
         navigateTo("/");
       }
