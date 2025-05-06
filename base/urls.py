@@ -124,4 +124,8 @@ urlpatterns = [
   path('referred-users/', referred_users, name='referred-users'),
   path('bn-logo/', BNLogoView.as_view(), name='bn-logo'),
   path('news-logo/', NewsLogoView.as_view(), name='news-logo'),
+
+  # Diamond API endpoints
+  path('diamonds/purchase/', PurchaseDiamondsView.as_view(), name='purchase_diamonds'),
+  path('business-network/send-diamond-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
 ]

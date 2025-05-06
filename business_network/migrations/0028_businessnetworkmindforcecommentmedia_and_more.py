@@ -3,6 +3,17 @@
 from django.db import migrations, models
 
 
+def clear_media_relations(apps, schema_editor):
+    """
+    This function clears existing media relations before changing the model structure.
+    We need to do this to avoid foreign key constraint violations.
+    """
+    BusinessNetworkMindforceComment = apps.get_model('business_network', 'BusinessNetworkMindforceComment')
+    # Clear all media relations to avoid FK constraint errors 
+    for comment in BusinessNetworkMindforceComment.objects.all():
+        comment.media.clear()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,6 +21,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # First clear out all the existing media relations to avoid FK violations
+        migrations.RunPython(clear_media_relations, migrations.RunPython.noop),
+        
+        # Then create the new model
         migrations.CreateModel(
             name='BusinessNetworkMindforceCommentMedia',
             fields=[
@@ -18,6 +33,8 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
+        
+        # After clearing relations and creating the new model, we can safely alter the field
         migrations.AlterField(
             model_name='businessnetworkmindforcecomment',
             name='media',

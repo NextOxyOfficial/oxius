@@ -405,9 +405,8 @@ const accountBalance = computed(() => {
 
 // Available diamonds - this will be different from account funds
 const availableDiamonds = computed(() => {
-  // In the future, you might have a separate diamonds field
-  // For now using the same balance field, but this provides separation
-  return userStore.user?.balance || 0;
+  // Using diamond_balance field for diamonds
+  return userStore.user?.diamond_balance || 0;
 });
 
 // Diamond packages (10 diamonds = 1 BDT)
@@ -540,42 +539,60 @@ const sendGift = async () => {
 
 // Purchase diamonds
 const purchaseDiamonds = async () => {
-  const amount = selectedPackage.value || customDiamondAmount.value;
-  if (!amount) return;
+  const diamondAmount = selectedPackage.value || customDiamondAmount.value;
+  if (!diamondAmount) return;
   
+  // Calculate cost in BDT (10 diamonds = 1 BDT)
+  const costInBDT = calculatePrice(diamondAmount);
+  
+  // Check if user has sufficient balance
+  if (accountBalance.value < costInBDT) {
+    if (window.$nuxt && window.$nuxt.$toast) {
+      window.$nuxt.$toast.error(`Insufficient balance. Please add funds.`);
+    } else {
+      alert(`Insufficient balance. Please add funds.`);
+    }
+    return;
+  }
+
   try {
-    // Call API to purchase diamonds
-    // This would typically redirect to a payment gateway
-    const response = await $fetch('/api/balance/deposit', {
+    // Call API to purchase diamonds directly from balance
+    const response = await $fetch('/api/diamonds/purchase', {
       method: 'POST',
       body: {
-        amount: amount,
-        payable_amount: calculatePrice(amount) * 10,
-        transaction_type: 'deposit'
+        diamond_amount: diamondAmount,
+        cost_amount: costInBDT,
       }
     });
     
-    // Handle payment redirect or completion
-    if (response.redirectUrl) {
-      window.location.href = response.redirectUrl;
-    } else {
-      // If no redirect, update local balance and go back to gift screen
-      await userStore.fetchUserData();
-      showBuyDiamonds.value = false;
-      
-      // Show success notification
-      if (window.$nuxt && window.$nuxt.$toast) {
-        window.$nuxt.$toast.success(`Successfully purchased ${amount} diamonds!`);
-      } else {
-        alert(`Successfully purchased ${amount} diamonds!`);
-      }
+    // Update UI immediately for better user experience
+    if (userStore.user) {
+      // Deduct the cost from the balance
+      userStore.user.balance -= costInBDT;
+      // Add diamonds to the diamond balance
+      userStore.user.diamond_balance = (userStore.user.diamond_balance || 0) + diamondAmount;
     }
+    
+    // Show success message with animation
+    if (window.$nuxt && window.$nuxt.$toast) {
+      window.$nuxt.$toast.success(`Successfully purchased ${diamondAmount} diamonds!`);
+    } else {
+      alert(`Successfully purchased ${diamondAmount} diamonds!`);
+    }
+    
+    // Reset the form and return to gift view
+    showBuyDiamonds.value = false;
+    selectedPackage.value = null;
+    customDiamondAmount.value = null;
+    
+    // Refresh user data to ensure consistency with server
+    await userStore.fetchUserData();
   } catch (error) {
     console.error('Error purchasing diamonds:', error);
     if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.error('Failed to process payment. Please try again.');
+      window.$nuxt.$toast.error(error.message || 'Failed to purchase diamonds. Please try again.');
     } else {
-      alert('Failed to process payment. Please try again.');
+      alert(error.message || 'Failed to purchase diamonds. Please try again.');
     }
   }
 };
