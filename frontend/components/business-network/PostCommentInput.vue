@@ -114,7 +114,7 @@
                     <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">Available Diamonds</span>
                   </div>
                   <div class="flex items-center justify-center">
-                    <span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400">{{ availableDiamonds }}</span>
+                    <span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400">{{ user.user.diamond_balance }}</span>
                     <UIcon name="i-heroicons-gem" class="h-5 w-5 text-pink-400 ml-1.5" />
                   </div>
                 </div>
