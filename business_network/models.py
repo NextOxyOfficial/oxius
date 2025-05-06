@@ -206,6 +206,8 @@ class BusinessNetworkPostComment(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_gift_comment = models.BooleanField(default=False) 
+    diamond_amount = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']

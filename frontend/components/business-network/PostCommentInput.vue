@@ -87,7 +87,7 @@
                     <UIcon name="i-heroicons-gift" class="h-5 w-5 text-pink-500" />
                   </div>
                   <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
-                    Send Gift
+                    Send Gift to {{ post?.author_details?.name || post?.author?.name || 'User' }}
                   </h3>
                 </div>
                 <button 
@@ -138,7 +138,7 @@
                   <div class="relative">
                     <input 
                       type="number" 
-                      v-model="sendFromBalance"
+                      v-model.number="sendFromBalance"
                       placeholder="Enter diamond amount"
                       :max="availableDiamonds"
                       min="1"
@@ -148,6 +148,21 @@
                       <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
                     </div>
                   </div>
+                  
+                  <!-- Gift message input -->
+                  <div class="mt-3">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                      Gift message
+                    </label>
+                    <div class="relative">
+                      <textarea 
+                        v-model="giftMessage"
+                        placeholder="Add a gift message... (optional)"
+                        rows="2"
+                        class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80 resize-none"
+                      ></textarea>
+                    </div>
+                  </div>
                 </div>
                 
                 <div class="mt-4 space-y-3">
@@ -155,8 +170,6 @@
                   <button 
                     @click="sendGift"
                     class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
-                    :disabled="!canSendGift"
-                    :class="{ 'opacity-60 cursor-not-allowed': !canSendGift }"
                   >
                     <UIcon name="i-heroicons-gift-top" class="h-4 w-4 mr-1.5" />
                     Send Gift
@@ -353,9 +366,10 @@
 </template>
 
 <script setup>
-import { Send } from "lucide-vue-next";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { Send } from "lucide-vue-next";
 import { useUserStore } from '~/store/user';
+import { useApi } from '~/composables/useApi'; // Import the API utility
 
 const props = defineProps({
   post: {
@@ -397,6 +411,7 @@ const giftButtonRef = ref(null);
 
 // Diamond sending
 const sendFromBalance = ref(null);
+const giftMessage = ref(''); // Gift message input
 
 // Account balance in BDT
 const accountBalance = computed(() => {
@@ -405,8 +420,12 @@ const accountBalance = computed(() => {
 
 // Available diamonds - this will be different from account funds
 const availableDiamonds = computed(() => {
-  // Using diamond_balance field for diamonds
-  return userStore.user?.diamond_balance || 0;
+  // Check userStore first, then fallback to props.user
+  if (userStore.user && typeof userStore.user.diamond_balance !== 'undefined') {
+    return userStore.user.diamond_balance || 0;
+  }
+  // Fallback to the props if userStore is not yet loaded
+  return props.user?.user?.diamond_balance || 0;
 });
 
 // Diamond packages (10 diamonds = 1 BDT)
@@ -426,12 +445,12 @@ const canPurchase = computed(() => {
 const canSendGift = computed(() => {
   return sendFromBalance.value && 
          sendFromBalance.value > 0 && 
-         sendFromBalance.value <= (userStore.user?.balance || 0);
+         sendFromBalance.value <= availableDiamonds.value; // Check against diamond balance, not user money balance
 });
 
 // Calculate price based on diamonds
 const calculatePrice = (diamonds) => {
-  return (diamonds / 10).toFixed(2);
+  return parseFloat((diamonds / 10).toFixed(2));
 };
 
 // Toggle diamond dropup
@@ -444,6 +463,7 @@ const toggleDiamondDropup = (e) => {
     selectedPackage.value = null;
     customDiamondAmount.value = null;
     sendFromBalance.value = null;
+    giftMessage.value = ''; // Reset gift message
     showBuyDiamonds.value = false;
     
     // Refresh user data to get latest balance
@@ -484,14 +504,24 @@ const closeDiamondDropup = () => {
 
 // Select a diamond package
 const selectDiamondPackage = (amount) => {
-  selectedPackage.value = selectedPackage.value === amount ? null : amount;
-  if (selectedPackage.value) {
+  if (amount === null || amount === undefined) {
+    selectedPackage.value = null;
+    return;
+  }
+
+  // Check if we're already selecting this package, then toggle it off
+  if (selectedPackage.value === amount) {
+    selectedPackage.value = null;
+  } else {
+    // Otherwise select the new package
+    selectedPackage.value = amount;
+    // And clear other inputs
     customDiamondAmount.value = null;
     sendFromBalance.value = null;
   }
 };
 
-// Handle custom amount input
+// Handle custom amount input with safer null checking
 const onCustomAmountInput = () => {
   if (customDiamondAmount.value) {
     selectedPackage.value = null;
@@ -501,44 +531,88 @@ const onCustomAmountInput = () => {
 
 // Send gift from available balance
 const sendGift = async () => {
-  if (!canSendGift.value) return;
+  const { post } = useApi(); // Initialize API utility
+  
+  console.log("Send Gift button clicked");
   
   try {
-    // Call API to send gift from balance
-    // This would typically be an API call to your backend
-    const response = await $fetch('/api/business-network/send-diamond-gift', {
-      method: 'POST',
-      body: {
-        amount: sendFromBalance.value,
-        postId: props.post.id,
-        recipientId: props.post.author?.id
+    // Make sure we have a valid gift amount to send
+    const giftAmount = parseInt(sendFromBalance.value);
+    
+    // Simple validation - check if we have something to send
+    if (!giftAmount || isNaN(giftAmount) || giftAmount <= 0) {
+      if (window.$nuxt && window.$nuxt.$toast) {
+        window.$nuxt.$toast.error("Please enter a valid diamond amount");
+      } else {
+        alert("Please enter a valid diamond amount");
       }
-    });
-    
-    // Refresh user data to get updated balance
-    await userStore.fetchUserData();
-    
-    // Show success notification using built-in Nuxt toast or custom solution
-    if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.success(`Successfully sent ${sendFromBalance.value} diamonds as gift!`);
-    } else {
-      alert(`Successfully sent ${sendFromBalance.value} diamonds as gift!`);
+      return;
     }
     
-    // Close the dropup after send
-    closeDiamondDropup();
-  } catch (error) {
-    console.error('Error sending gift:', error);
+    // Check if user has enough diamonds
+    if (giftAmount > availableDiamonds.value) {
+      if (window.$nuxt && window.$nuxt.$toast) {
+        window.$nuxt.$toast.error(`You only have ${availableDiamonds.value} diamonds available`);
+      } else {
+        alert(`You only have ${availableDiamonds.value} diamonds available`);
+      }
+      return;
+    }
+    
+    // Prepare the payload
+    const payload = {
+      amount: giftAmount,
+      recipientId: props.post.author?.id || props.post.author_details?.id,
+      postId: props.post.id,
+      message: giftMessage.value || `Sent ${giftAmount} diamonds as a gift! ✨`
+    };
+    
+    console.log("Sending gift with payload:", payload);
+    
+    // Call the API endpoint
+    const response = await post('/diamonds/send-gift/', payload);
+    
+    console.log("Gift sent successfully:", response);
+    
+    // Update the user's diamond balance locally
+    if (userStore.user) {
+      userStore.user.diamond_balance -= giftAmount;
+    }
+    
+    // Show success message
     if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.error('Failed to send gift. Please try again.');
+      window.$nuxt.$toast.success(`Successfully sent ${giftAmount} diamonds!`);
     } else {
-      alert('Failed to send gift. Please try again.');
+      alert(`Successfully sent ${giftAmount} diamonds!`);
+    }
+    
+    // Close the dialog
+    closeDiamondDropup();
+    
+    // Refresh user data to get updated balances
+    await userStore.fetchUserData();
+    
+  } catch (error) {
+    console.error("Error sending gift:", error);
+    
+    // Show error message
+    let errorMsg = 'Failed to send gift';
+    
+    if (error.response?.data?.error) {
+      errorMsg = error.response.data.error;
+    }
+    
+    if (window.$nuxt && window.$nuxt.$toast) {
+      window.$nuxt.$toast.error(errorMsg);
+    } else {
+      alert(errorMsg);
     }
   }
 };
 
 // Purchase diamonds
 const purchaseDiamonds = async () => {
+  const { post } = useApi(); // Initialize the API utility
   const diamondAmount = selectedPackage.value || customDiamondAmount.value;
   if (!diamondAmount) return;
   
@@ -557,12 +631,9 @@ const purchaseDiamonds = async () => {
 
   try {
     // Call API to purchase diamonds directly from balance
-    const response = await $fetch('/api/diamonds/purchase', {
-      method: 'POST',
-      body: {
-        diamond_amount: diamondAmount,
-        cost_amount: costInBDT,
-      }
+    const response = await post('/diamonds/purchase/', {
+      amount: parseInt(diamondAmount), // Convert to integer to match backend expectation
+      cost: costInBDT // Send as number, not string
     });
     
     // Update UI immediately for better user experience
@@ -570,7 +641,7 @@ const purchaseDiamonds = async () => {
       // Deduct the cost from the balance
       userStore.user.balance -= costInBDT;
       // Add diamonds to the diamond balance
-      userStore.user.diamond_balance = (userStore.user.diamond_balance || 0) + diamondAmount;
+      userStore.user.diamond_balance = (userStore.user.diamond_balance || 0) + parseInt(diamondAmount);
     }
     
     // Show success message with animation
@@ -590,9 +661,9 @@ const purchaseDiamonds = async () => {
   } catch (error) {
     console.error('Error purchasing diamonds:', error);
     if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.error(error.message || 'Failed to purchase diamonds. Please try again.');
+      window.$nuxt.$toast.error(error.response?.data?.error || 'Failed to purchase diamonds. Please try again.');
     } else {
-      alert(error.message || 'Failed to purchase diamonds. Please try again.');
+      alert(error.response?.data?.error || 'Failed to purchase diamonds. Please try again.');
     }
   }
 };
@@ -694,5 +765,16 @@ defineEmits([
   100% {
     background-position: -100% 0;
   }
+}
+.gift-comment {
+  background: linear-gradient(to right, #fff8f8, #fff0f8);
+  border-radius: 10px;
+  padding: 8px 12px;
+  border-left: 3px solid #ff66cc;
+  margin: 8px 0;
+}
+.gift-message {
+  font-weight: 500;
+  color: #ff3399;
 }
 </style>

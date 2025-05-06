@@ -12,11 +12,30 @@ class BusinessNetworkPostTagSerializer(serializers.ModelSerializer):
 
 class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
     author_details = UserSerializer(source='author', read_only=True)
+    formatted_content = serializers.SerializerMethodField()
     
     class Meta:
         model = BusinessNetworkPostComment
-        fields = ['id', 'post', 'author', 'author_details', 'content', 'created_at', 'updated_at']
+        fields = ['id', 'post', 'author', 'author_details', 'content', 'formatted_content', 'created_at', 'updated_at', 'is_gift_comment', 'diamond_amount']
         read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_formatted_content(self, obj):
+        if obj.is_gift_comment and obj.diamond_amount > 0:
+            # Create fancy gift message with emojis and styling
+            diamond_count = obj.diamond_amount
+            message = obj.content.strip() if obj.content else f"Sent a gift of {diamond_count} diamonds!"
+            
+            # Create a fancy formatted message with sparkles and diamonds
+            formatted_message = f"✨💎 {message} [{diamond_count} 💎] ✨"
+            
+            # For larger gifts, add more embellishment
+            if diamond_count >= 100:
+                formatted_message = f"🌟🎁 {message} [{diamond_count} 💎💎💎] 🎁🌟"
+            elif diamond_count >= 50:
+                formatted_message = f"🎁✨ {message} [{diamond_count} 💎💎] ✨🎁"
+            
+            return formatted_message
+        return obj.content
 
 class BusinessNetworkMediaLikeSerializer(serializers.ModelSerializer):
     user_details = UserSerializer(source='user', read_only=True)

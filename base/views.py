@@ -2402,10 +2402,20 @@ class SendDiamondGiftView(APIView):
     
     def post(self, request):
         try:
-            amount = int(request.data.get('amount', 0))
+            # Log request data for debugging
+            print("Diamond gift request received:", request.data)
+            
+            # Convert amount to integer, handling potential string input
+            try:
+                amount = int(request.data.get('amount', 0))
+            except (TypeError, ValueError):
+                return Response({'error': 'Invalid diamond amount'}, status=400)
+                
             recipient_id = request.data.get('recipientId')
             post_id = request.data.get('postId')
+            message = request.data.get('message', '')
             
+            # Basic validation
             if amount <= 0:
                 return Response({'error': 'Diamond amount must be greater than zero'}, status=400)
                 
@@ -2415,31 +2425,100 @@ class SendDiamondGiftView(APIView):
             # Find recipient user
             try:
                 recipient = User.objects.get(id=recipient_id)
+                print(f"Recipient found: {recipient.id}, {recipient.email}")
             except User.DoesNotExist:
                 return Response({'error': 'Recipient user not found'}, status=404)
             
-            # Create diamond gift transaction
+            # Check if the user has enough diamonds
+            sender = request.user
+            
+            print(f"Sender diamond balance: {sender.diamond_balance}, Trying to send: {amount}")
+            
+            if sender.diamond_balance is None or sender.diamond_balance < amount:
+                return Response({'error': 'Insufficient diamond balance'}, status=400)
+            
+            # Transfer diamonds from sender to recipient
+            sender.diamond_balance -= amount
+            sender.save()
+            
+            # Initialize recipient diamond_balance if it's NULL
+            if recipient.diamond_balance is None:
+                recipient.diamond_balance = 0
+                
+            recipient.diamond_balance += amount
+            recipient.save()
+            
+            # Create diamond transaction record
             diamond_transaction = DiamondTransaction.objects.create(
-                user=request.user,
+                user=sender,
                 to_user=recipient,
                 transaction_type='gift',
                 amount=amount,
                 post_id=post_id,
-                cost=0  # No cost for gifting, already paid when purchased
+                cost=0,  # No cost for gifting, already paid when purchased
+                description=message,
+                completed=True,
+                approved=True
             )
             
+            # Create a comment on the post if post_id exists
+            gift_comment = None
+            comment_data = None
+            
+            if post_id:
+                try:
+                    # Import the models with proper exception handling
+                    try:
+                        from business_network.models import BusinessNetworkPost, BusinessNetworkPostComment
+                        from business_network.serializers import BusinessNetworkPostCommentSerializer
+                    except ImportError as e:
+                        print(f"Import error: {str(e)}")
+                        # Continue without creating comment if imports fail
+                        pass
+                    else:
+                        # Find the post
+                        post = BusinessNetworkPost.objects.get(id=post_id)
+                        
+                        # Format gift message with emoji
+                        formatted_message = message.strip() if message.strip() else f"Sent {amount} diamonds as a gift! ✨"
+                        
+                        # Create comment with gift flag
+                        gift_comment = BusinessNetworkPostComment.objects.create(
+                            post=post,
+                            author=sender,
+                            content=formatted_message,
+                            is_gift_comment=True,
+                            diamond_amount=amount
+                        )
+                        
+                        # Serialize comment data
+                        comment_data = BusinessNetworkPostCommentSerializer(gift_comment).data
+                        
+                except BusinessNetworkPost.DoesNotExist:
+                    print(f"Post not found: {post_id}")
+                    # Continue without creating comment if post doesn't exist
+                    pass
+                except Exception as e:
+                    print(f"Error creating gift comment: {str(e)}")
+                    # Continue without comment if there's an error
+                    pass
+            
             # Return updated user balance information
-            return Response({
+            response_data = {
                 'success': True,
-                'message': f'Successfully sent {amount} diamonds to {recipient.username}',
-                'diamond_balance': request.user.diamond_balance,
-                'transaction': {
-                    'id': diamond_transaction.id,
-                    'amount': diamond_transaction.amount,
-                    'created_at': diamond_transaction.created_at
-                }
-            })
-        except ValidationError as e:
-            return Response({'error': str(e)}, status=400)
+                'message': f'Successfully sent {amount} diamonds to {recipient.name or recipient.username or recipient.email}',
+                'sender_diamond_balance': sender.diamond_balance,
+                'transaction_id': str(diamond_transaction.id)
+            }
+            
+            # Add comment data if created
+            if comment_data:
+                response_data['comment'] = comment_data
+            
+            return Response(response_data)
+            
         except Exception as e:
+            import traceback
+            print(f"Diamond gift error: {str(e)}")
+            print(traceback.format_exc())
             return Response({'error': str(e)}, status=500)
