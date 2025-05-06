@@ -829,23 +829,4 @@ defineEmits([
   font-weight: 500;
   color: #ff3399;
 }
-
-/* Animation for success popup */
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  70% {
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-pop-in {
-  animation: popIn 0.3s ease-out forwards;
-}
 </style>
