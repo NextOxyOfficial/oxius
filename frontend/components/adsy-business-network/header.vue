@@ -56,105 +56,8 @@
 
           <!-- Right Section: Search + Navigation + User Menu -->
           <div class="flex items-center sm:gap-3 relative">
-            <!-- Search Button with Animated Dropdown -->
-            <div class="relative search-button-container">
-              <button
-                class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
-                @click="toggleSearchDropdown"
-                aria-label="Search"
-              >
-                <SearchIcon
-                  class="h-[18px] w-[18px] text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-                />
-              </button>
-
-              <!-- Search Dropdown with Enhanced Animation -->
-              <Transition
-                enter-active-class="transition-all duration-300 ease-out"
-                enter-from-class="opacity-0 scale-95 -translate-y-2"
-                enter-to-class="opacity-100 scale-100 translate-y-0"
-                leave-active-class="transition-all duration-200 ease-in"
-                leave-from-class="opacity-100 scale-100 translate-y-0"
-                leave-to-class="opacity-0 scale-95 -translate-y-2"
-              >
-                <div
-                  v-if="showSearchDropdown"
-                  class="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 search-dropdown-container"
-                >
-                  <!-- Search Input with Focus Animation -->
-                  <div
-                    class="p-3 border-b border-gray-200 dark:border-gray-700"
-                  >
-                    <div class="relative">
-                      <input
-                        type="text"
-                        placeholder="Search topics..."
-                        v-model="searchQuery"
-                        class="w-full pl-9 pr-8 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-all duration-300 search-input"
-                        ref="searchInput"
-                      />
-                      <SearchIcon
-                        class="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400"
-                      />
-                      <button
-                        v-if="searchQuery"
-                        @click="clearSearch"
-                        class="absolute right-2.5 top-2.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-colors"
-                      >
-                        <XIcon
-                          class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400"
-                        />
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Search Results with Optimized Rendering -->
-                  <div
-                    v-if="searchQuery && searchResults.length > 0"
-                    class="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto"
-                  >
-                    <div
-                      v-for="result in limitedSearchResults"
-                      :key="result.id"
-                      class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150"
-                      @click="selectArticle(result)"
-                    >
-                      <p
-                        class="text-sm font-medium text-gray-900 dark:text-gray-100"
-                      >
-                        {{ result.title }}
-                      </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        <span
-                          class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs"
-                        >
-                          {{ getCategoryName(result.categoryId) }}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- No Results Message -->
-                  <div
-                    v-if="searchQuery && searchResults.length === 0"
-                    class="p-4 text-center text-gray-500 dark:text-gray-400"
-                  >
-                    No results found for "{{ searchQuery }}"
-                  </div>
-
-                  <!-- Empty State -->
-                  <div v-if="!searchQuery" class="p-4 text-center">
-                    <div class="text-gray-400 dark:text-gray-500 mb-2">
-                      <SearchIcon class="h-5 w-5 mx-auto mb-2" />
-                      Type to start searching...
-                    </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-500">
-                      Press ESC to close
-                    </div>
-                  </div>
-                </div>
-              </Transition>
-            </div>
+            <!-- Search Component -->
+            <CommonSearchDropdown ref="searchDropdownRef" />
 
             <!-- Navigation Buttons - DESKTOP ONLY (AdsyClub & AdsyNews) -->
             <div class="hidden sm:flex items-center gap-2">
@@ -690,6 +593,22 @@
 </template>
 
 <script setup>
+import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useApi } from '~/composables/useApi';
+import { useAuth } from '~/composables/useAuth';
+import { useStoreCart } from '~/store/cart';
+import { useRouter } from 'vue-router';
+import {
+  SunIcon,
+  MenuIcon,
+  XIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Newspaper,
+  BarChartBig,
+} from "lucide-vue-next";
+
 const { t } = useI18n();
 const { get } = useApi();
 const { user, logout } = useAuth();
@@ -697,12 +616,10 @@ const logo = ref([]);
 const cart = useStoreCart();
 const showQr = ref(false);
 const openMenu = ref(false);
-const showSearchDropdown = ref(false);
-const searchQuery = ref("");
-const searchResults = ref([]);
 const menuRef = ref(null);
 const userButtonRef = ref(null);
-const router = useRouter(); // Add router import
+const searchDropdownRef = ref(null);
+const router = useRouter();
 
 async function getLogo() {
   const { data } = await get("/bn-logo/");
@@ -711,49 +628,11 @@ async function getLogo() {
 
 await getLogo();
 
-import {
-  SunIcon,
-  MenuIcon,
-  XIcon,
-  SearchIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  Newspaper,
-  BarChartBig,
-} from "lucide-vue-next";
-
 // Navigation state
 const mobileMenuOpen = ref(false);
 
-// Toggle search dropdown
-const toggleSearchDropdown = () => {
-  showSearchDropdown.value = !showSearchDropdown.value;
-  if (showSearchDropdown.value) {
-    nextTick(() => {
-      const searchInput = document.querySelector(".search-input");
-      if (searchInput) {
-        searchInput.focus();
-      }
-    });
-  }
-};
-
-// Handle clicks outside of search dropdown to close it
+// Handle clicks outside of user menu dropdown to close it
 const handleClickOutside = (event) => {
-  // For search dropdown
-  const searchDropdown = document.querySelector(".search-dropdown-container");
-  const searchButton = document.querySelector(".search-button-container");
-
-  if (
-    showSearchDropdown.value &&
-    searchDropdown &&
-    !searchDropdown.contains(event.target) &&
-    searchButton &&
-    !searchButton.contains(event.target)
-  ) {
-    showSearchDropdown.value = false;
-  }
-  
   // For user menu dropdown
   // Only proceed if the menu is open and we have valid refs
   if (openMenu.value) {
