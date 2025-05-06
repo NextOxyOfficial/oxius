@@ -113,12 +113,12 @@
     <div
       class="grid grid-cols-2 my-2 gap-3 sm:gap-4 sm:hidden mt-5 max-w-sm mx-8"
     >
-      <a href="/business-network" class="btn-primary group">
+      <NuxtLink to="/business-network" class="btn-primary group">
         <span class="flex items-center justify-center gap-2">
           <Globe class="h-4 w-4 group-hover:scale-110 transition-transform" />
           <span>{{ $t("business_network") }}</span>
         </span>
-      </a>
+      </NuxtLink>
       <NuxtLink to="/adsy-news" class="btn-secondary group">
         <span class="flex items-center justify-center gap-2">
           <Newspaper
