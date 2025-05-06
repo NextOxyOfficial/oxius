@@ -14,6 +14,26 @@
         </div>
         <span>Menu</span>
       </h3>
+      
+      <!-- Create Post Button (Added at top of menu) -->
+      <button
+        @click="openCreatePostModal"
+        class="w-full flex items-center px-3 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-md transition-all duration-200 group relative overflow-hidden"
+      >
+        <!-- Background glow effect -->
+        <div class="absolute inset-0 bg-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        <!-- Icon -->
+        <div class="relative z-10 p-1.5 rounded-md mr-2 bg-white/20 flex items-center justify-center">
+          <Plus class="h-4 w-4 text-white" />
+        </div>
+        
+        <!-- Label -->
+        <span class="text-sm font-medium transition-all duration-300 group-hover:translate-x-1">
+          Create Post
+        </span>
+      </button>
+      
       <nav class="space-y-1 px-2">
         <NuxtLink
           v-for="item in menuItems"
@@ -111,6 +131,7 @@ import {
   Menu,
   Zap,
   Globe,
+  Plus,
 } from "lucide-vue-next";
 import { useNotifications } from "~/composables/useNotifications";
 
@@ -190,6 +211,12 @@ const menuItems = computed(() => {
 // Add a method to handle menu clicks with loading states
 const handleMenuClick = (path) => {
   emit('menu-click', path);
+};
+
+// New method to open create post modal
+const openCreatePostModal = () => {
+  const eventBus = useEventBus();
+  eventBus.emit("open-create-post-modal");
 };
 
 // Helper function to get dynamic colors for menu items

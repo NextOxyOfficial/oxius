@@ -1,20 +1,5 @@
 <template>
   <div>
-    <!-- Create Post Button -->
-    <button
-      class="fixed bottom-36 right-4 lg:right-[22%] md:bottom-4 rounded-full h-14 w-14 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 hover:scale-105 border-none z-40 flex items-center justify-center text-white group"
-      @click="openCreatePostModal"
-      v-if="user?.user?.id"
-    >
-      <Plus
-        class="h-6 w-6 group-hover:rotate-90 transition-transform duration-300"
-      />
-      <span
-        class="absolute opacity-0 group-hover:opacity-100 right-16 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap transition-opacity duration-200"
-        >Create Post</span
-      >
-    </button>
-
     <!-- Create Post Modal -->
     <Teleport to="body">
       <Transition
@@ -643,6 +628,14 @@ const showSuggestions = ref(false);
 const hashtagSuggestions = ref([]);
 const popularHashtags = ref([]);
 const selectedSuggestionIndex = ref(-1);
+
+// Listen for event from sidebar menu to open the create post modal
+onMounted(() => {
+  const eventBus = useEventBus();
+  eventBus.on('open-create-post-modal', () => {
+    openCreatePostModal();
+  });
+});
 
 const isEditMode = computed(() => !!props.editPost);
 const modalTitle = computed(() =>
