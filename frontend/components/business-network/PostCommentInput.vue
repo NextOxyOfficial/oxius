@@ -376,10 +376,9 @@
   <!-- Success notification popup -->
   <div 
     v-if="showSuccessPopup" 
-    class="fixed inset-0 flex items-center justify-center z-50"
-    @click="showSuccessPopup = false"
+    class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 z-50 max-w-sm w-full"
   >
-    <div class="animate-pop-in absolute bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 max-w-md text-center">
+    <div class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center">
       <div class="flex flex-col items-center">
         <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg">
           <UIcon name="i-heroicons-gift-top" class="h-6 w-6 text-white" />
