@@ -349,14 +349,17 @@
                     <div 
                       v-for="(media, index) in comment.media" 
                       :key="index"
-                      class="relative h-20 w-20 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer"
+                      class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105"
                       @click="openMediaViewer(comment, index)"
                     >
                       <img 
-                        :src="media.preview || media.image" 
+                        :src="getMediaUrl(media)"
                         alt="Comment media" 
-                        class="h-full w-full object-cover transition-transform hover:scale-105"
+                        class="h-full w-full object-cover"
                       />
+                      <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="text-white text-xs font-medium px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full">View</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -771,11 +774,23 @@ const removeMedia = (index) => {
   commentMedia.value.splice(index, 1);
 };
 
+const getMediaUrl = (media) => {
+  if (!media) return '';
+  // Handle different media object structures
+  if (typeof media === 'string') return media;
+  if (media.image) return media.image;
+  if (media.preview) return media.preview;
+  return '';
+};
+
 const openMediaViewer = (comment, index) => {
   if (comment.media && comment.media.length > 0) {
+    // Extract image URLs from media objects
+    const mediaUrls = comment.media.map(media => getMediaUrl(media));
+    
     // Emit an event to open the photo viewer with the comment media
     emit('photo-view', {
-      media: comment.media,
+      mediaUrls,
       startIndex: index
     });
   }

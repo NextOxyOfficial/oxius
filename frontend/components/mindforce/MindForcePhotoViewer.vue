@@ -10,20 +10,27 @@
     <div
       v-if="modelValue && photos?.length"
       class="fixed inset-0 z-[70] flex items-center justify-center bg-black/90"
+      @click="$emit('update:modelValue', false)"
     >
+      <!-- Enhanced close button - larger and more visible -->
       <button
-        @click="$emit('update:modelValue', false)"
-        class="absolute top-4 right-4 p-1.5 rounded-full text-white hover:bg-white/10 transition-colors"
+        @click.stop="$emit('update:modelValue', false)"
+        class="absolute top-4 right-4 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg z-50"
         aria-label="Close"
       >
         <X class="h-6 w-6" />
       </button>
 
-      <div class="relative w-full max-w-4xl px-4">
+      <!-- Close instruction text -->
+      <div class="absolute top-6 left-1/2 transform -translate-x-1/2 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+        <p class="text-white/80 text-sm">Click anywhere to close</p>
+      </div>
+
+      <div class="relative w-full max-w-4xl px-4" @click.stop>
         <img
-          :src="photos[currentPhotoIndex]?.image"
+          :src="getPhotoUrl(photos[currentPhotoIndex])"
           alt="Problem photo"
-          class="mx-auto max-h-[80vh] max-w-full object-contain"
+          class="mx-auto max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl"
         />
 
         <div
@@ -31,7 +38,7 @@
         >
           <button
             v-if="photos.length > 1"
-            @click="prevPhoto"
+            @click.stop="prevPhoto"
             class="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
             aria-label="Previous photo"
           >
@@ -40,7 +47,7 @@
           <div class="flex-1"></div>
           <button
             v-if="photos.length > 1"
-            @click="nextPhoto"
+            @click.stop="nextPhoto"
             class="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
             aria-label="Next photo"
           >
@@ -54,7 +61,7 @@
           <button
             v-for="(_, i) in photos"
             :key="i"
-            @click="$emit('update:currentIndex', i)"
+            @click.stop="$emit('update:currentIndex', i)"
             :class="[
               'w-2 h-2 rounded-full transition-all',
               currentPhotoIndex === i
@@ -100,4 +107,26 @@ const prevPhoto = () => {
   const newIndex = (props.currentPhotoIndex - 1 + props.photos.length) % props.photos.length;
   emit('update:currentIndex', newIndex);
 };
+
+// Function to handle different photo object structures
+const getPhotoUrl = (photo) => {
+  if (!photo) return '';
+  // Handle different photo object structures
+  if (typeof photo === 'string') return photo;
+  if (photo.image) return photo.image;
+  if (photo.preview) return photo.preview;
+  return '';
+};
 </script>
+
+<style scoped>
+/* Add some animation for a smoother experience */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+img {
+  animation: fadeIn 0.3s ease-out;
+}
+</style>
