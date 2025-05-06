@@ -119,6 +119,8 @@
         <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
       </button>
 
+      <!-- Premium thumbnail container with luxury glass effect -->
+      <div>
         <!-- Premium light beam effects -->
         <div class="absolute -inset-2 bg-grid opacity-10 dark:opacity-5 pointer-events-none"></div>
         <div class="absolute -inset-2 bg-gradient-conic opacity-5 dark:opacity-10 mix-blend-overlay pointer-events-none"></div>
