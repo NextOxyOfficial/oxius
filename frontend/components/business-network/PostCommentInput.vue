@@ -172,10 +172,17 @@
                 <!-- Send Gift Button -->
                 <button 
                   @click="sendGift"
+                  :disabled="isSendingGift"
                   class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
                 >
-                  <UIcon name="i-heroicons-gift-top" class="h-4 w-4 mr-1.5" />
-                  Send Gift
+                  <template v-if="isSendingGift">
+                    <div class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Sending...
+                  </template>
+                  <template v-else>
+                    <UIcon name="i-heroicons-gift-top" class="h-4 w-4 mr-1.5" />
+                    Send Gift
+                  </template>
                 </button>
                 
                 <!-- No Balance Message -->
@@ -365,10 +372,29 @@
       </div>
     </div>
   </div>
+
+  <!-- Success notification popup -->
+  <div 
+    v-if="showSuccessPopup" 
+    class="fixed inset-0 flex items-center justify-center z-50"
+    @click="showSuccessPopup = false"
+  >
+    <div class="animate-pop-in absolute bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 max-w-md text-center">
+      <div class="flex flex-col items-center">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg">
+          <UIcon name="i-heroicons-gift-top" class="h-6 w-6 text-white" />
+        </div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">Gift Sent Successfully!</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+          You sent {{ lastGiftAmount }} diamonds to {{ post?.author_details?.name || post?.author?.name || 'User' }}
+        </p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { Send } from "lucide-vue-next";
 import { useUserStore } from '~/store/user';
 import { useApi } from '~/composables/useApi'; // Import the API utility
@@ -411,9 +437,12 @@ const customDiamondAmount = ref(null);
 const dropupRef = ref(null);
 const giftButtonRef = ref(null);
 
-// Diamond sending
+// Gift sending states
 const sendFromBalance = ref(null);
 const giftMessage = ref(''); // Gift message input
+const isSendingGift = ref(false);
+const showSuccessPopup = ref(false);
+const lastGiftAmount = ref(0);
 
 // Account balance in BDT
 const accountBalance = computed(() => {
@@ -561,6 +590,9 @@ const sendGift = async () => {
       return;
     }
     
+    // Set loading state
+    isSendingGift.value = true;
+    
     // Prepare the payload
     const payload = {
       amount: giftAmount,
@@ -581,15 +613,19 @@ const sendGift = async () => {
       userStore.user.diamond_balance -= giftAmount;
     }
     
-    // Show success message
-    if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.success(`Successfully sent ${giftAmount} diamonds!`);
-    } else {
-      alert(`Successfully sent ${giftAmount} diamonds!`);
-    }
-    
     // Close the dialog
     closeDiamondDropup();
+    
+    // Store the gift amount for the success popup
+    lastGiftAmount.value = giftAmount;
+    
+    // Show success popup
+    showSuccessPopup.value = true;
+    
+    // Auto-hide popup after 3 seconds
+    setTimeout(() => {
+      showSuccessPopup.value = false;
+    }, 3000);
     
     // Refresh user data to get updated balances
     await userStore.fetchUserData();
@@ -609,6 +645,9 @@ const sendGift = async () => {
     } else {
       alert(errorMsg);
     }
+  } finally {
+    // Reset loading state
+    isSendingGift.value = false;
   }
 };
 
@@ -714,6 +753,7 @@ defineEmits([
 .diamond-dropup {
   box-shadow: 0 10px 40px rgba(255, 105, 180, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08),
     0 0 2px rgba(255, 105, 180, 0.1);
+  z-index: 40; /* Increase z-index to appear above other posts */
 }
 
 .dark .diamond-dropup {
@@ -778,5 +818,24 @@ defineEmits([
 .gift-message {
   font-weight: 500;
   color: #ff3399;
+}
+
+/* Animation for success popup */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pop-in {
+  animation: popIn 0.3s ease-out forwards;
 }
 </style>
