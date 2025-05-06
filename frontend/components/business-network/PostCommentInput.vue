@@ -385,7 +385,7 @@
     >
       <div 
         v-if="showSuccessPopup" 
-        class="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-[9999] max-w-md w-full"
+        class="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-[9999] sm:max-w-md max-w-[85%] w-full"
       >
         <div class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center">
           <div class="flex flex-col items-center">
