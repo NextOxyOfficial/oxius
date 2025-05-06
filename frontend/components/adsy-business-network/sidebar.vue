@@ -193,19 +193,27 @@ async function fetchNewsItems() {
 // Hashtags
 async function fetchHashtags() {
   try {
-    // Use the correct API endpoint for trending hashtags
-    const response = await get("/news/tags/?limit=30");
-    if (response.data && response.data.results) {
+    // Set loading state
+    const isLoadingHashtags = ref(true);
+    
+    // Use the top-tags endpoint as primary source for trending hashtags
+    const response = await get("/bn/top-tags/");
+    if (response.data && Array.isArray(response.data)) {
       // Ensure each tag has an ID and properly map the data structure
-      const hashtagData = response.data.results.map((tag) => ({
-        id: tag.id || Math.random().toString(36).substr(2, 9), // Ensure each tag has an id
-        tag: tag.tag || tag.name || "",
-        count: tag.posts_count || tag.count || 0,
+      const hashtagData = response.data.map((tag) => ({
+        id: tag.id || Math.random().toString(36).substr(2, 9), 
+        tag: tag.tag || "",
+        count: tag.count || 0,
       }));
-      tags.value = hashtagData; // This is what's displayed in the template
-      console.log("Hashtags loaded successfully:", tags.value.length);
+      
+      // Take only the top trending hashtags (sorted by count)
+      tags.value = hashtagData
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 30); // Get top 30 for potential display
+        
+      console.log("Hashtags loaded successfully from top-tags:", tags.value.length);
     } else {
-      console.warn("Unexpected hashtags response format:", response.data);
+      console.warn("Unexpected hashtags response format from top-tags:", response.data);
       // Try alternative endpoint as fallback
       const fallbackResponse = await get("/bn/trending-tags/?limit=30");
       if (fallbackResponse.data && Array.isArray(fallbackResponse.data)) {
@@ -223,7 +231,9 @@ async function fetchHashtags() {
           { id: '2', tag: 'business', count: 85 },
           { id: '3', tag: 'network', count: 74 },
           { id: '4', tag: 'tech', count: 63 },
-          { id: '5', tag: 'startup', count: 57 }
+          { id: '5', tag: 'startup', count: 57 },
+          { id: '6', tag: 'marketing', count: 49 },
+          { id: '7', tag: 'innovation', count: 43 }
         ];
         console.log("Using default hashtags as fallback");
       }
@@ -236,7 +246,9 @@ async function fetchHashtags() {
       { id: '2', tag: 'business', count: 85 },
       { id: '3', tag: 'network', count: 74 },
       { id: '4', tag: 'tech', count: 63 },
-      { id: '5', tag: 'startup', count: 57 }
+      { id: '5', tag: 'startup', count: 57 },
+      { id: '6', tag: 'marketing', count: 49 },
+      { id: '7', tag: 'innovation', count: 43 }
     ];
     console.log("Using default hashtags due to error");
   }
