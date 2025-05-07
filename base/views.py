@@ -2357,6 +2357,10 @@ def product_order_count(request, product_id):
 def index(request, **args):
     return render(request, 'index.html')
 
+class DiamondPackageListView(generics.ListAPIView):
+    queryset = DiamondPackages.objects.all()
+    serializer_class = DiamondPackagesSerializer
+
 class PurchaseDiamondsView(APIView):
     permission_classes = [IsAuthenticated]
     

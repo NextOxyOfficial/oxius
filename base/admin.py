@@ -67,6 +67,7 @@ from .models import *
 # # Register the custom admin
 # admin.site.register(User, CustomUserAdmin)
 # admin.site.register(User)
+admin.site.register(DiamondPackages)
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):

@@ -456,3 +456,8 @@ class DiamondTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiamondTransaction
         fields = '__all__'
+        
+class DiamondPackagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiamondPackages
+        fields = '__all__'

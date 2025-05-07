@@ -98,7 +98,7 @@
               aria-label="Go to Business Network"
             >
               <Globe class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>Adsy BN</span>
+              <span class="whitespace-nowrap">Adsy BN</span>
             </NuxtLink>
           </div>
         </div>

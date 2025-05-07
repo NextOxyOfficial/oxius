@@ -743,6 +743,16 @@ class BNLogo(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"BN Logo {self.id}"
+    
+class DiamondPackages(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    diamonds = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Diamonds: {self.diamonds} - Price: {self.price}"
 
 class DiamondTransaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
