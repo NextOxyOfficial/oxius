@@ -323,7 +323,7 @@
               <!-- Diamond count and top-up button for mobile -->
               <div
                 v-if="currentUser?.user?.id === user?.id"
-                class="flex items-center gap-1 mt-4 sm:hidden"
+                class="flex items-center gap-3 mt-4 sm:hidden"
               >
                 <div class="flex items-center space-x-2 py-1.5">
                   <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
