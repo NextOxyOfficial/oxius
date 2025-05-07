@@ -11,7 +11,7 @@
         >
           <div class="p-4 sm:p-5">
             <!-- Desktop Layout Skeleton -->
-            <div class="flex flex-col sm:flex-row sm:items-start gap-6">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-7">
               <!-- Profile Picture Skeleton -->
               <div class="flex flex-col items-center sm:items-start">
                 <div
@@ -266,7 +266,7 @@
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row sm:items-start gap-6">
+          <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-7">
             <!-- Profile Picture and Mobile Stats -->
             <div class="flex flex-col items-center sm:items-start">
               <div class="relative group">
