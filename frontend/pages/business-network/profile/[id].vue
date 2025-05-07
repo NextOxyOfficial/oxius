@@ -328,11 +328,11 @@
                 <div class="flex items-center space-x-2 py-1.5">
                   <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
                   <span class="font-semibold text-md"
-                    >{{ user?.diamond_count || 0 }} Diamonds</span
+                    >{{ user?.diamond_balance }} Diamonds</span
                   >
                 </div>
                 <button
-                  @click="$router.push('/diamonds/purchase')"
+                  @click="showDiamondModal = true"
                   class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
                 >
                   <UIcon name="i-heroicons-plus" class="w-3 h-3" />
@@ -456,12 +456,13 @@
                   >
                     <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
                     <span class="font-semibold">{{
-                      user?.diamond_count || 0
+                      user?.diamond_balance
                     }}</span>
                     <span>Diamonds</span>
+                    
                   </div>
                   <button
-                    @click="$router.push('/diamonds/purchase')"
+                    @click="showDiamondModal = true"
                     class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
                   >
                     <UIcon name="i-heroicons-plus" class="w-3 h-3" />
@@ -921,6 +922,10 @@
         </div>
       </div>
     </div>
+    <BusinessNetworkDiamondPurchaseModal
+      :modelValue="showDiamondModal"
+      @close="showDiamondModal = false"
+    />
   </div>
 </template>
 
@@ -929,6 +934,7 @@ definePageMeta({
   layout: "adsy-business-network",
 });
 
+import BusinessNetworkDiamondPurchaseModal from "~/components/business-network/DiamondPurchaseModal.vue";
 import {
   Camera,
   Edit,
@@ -993,6 +999,7 @@ const savedPosts = ref([]);
 const allMedia = ref([]);
 const followLoading = ref(false);
 const isFollowing = ref(false);
+const showDiamondModal = ref(false);
 
 // Set up event listener for navigation events
 onMounted(() => {

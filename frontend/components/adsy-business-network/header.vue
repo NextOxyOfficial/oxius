@@ -2,7 +2,7 @@
   <div class="fixed top-0 left-0 right-0 z-[9999999999999] w-full mx-auto">
     <header class="backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-sm">
       <div class="max-w-5xl mx-auto pl-1 pr-2 sm:px-4">
-        <div class="flex items-center justify-between h-16 sm:h-18">
+        <div class="flex items-center justify-between h-16 sm:h-18 bg-gray-100/40">
           <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
           <div class="flex items-center space-x-1 sm:gap-5">
             <!-- Sidebar Toggle Button - MOBILE ONLY -->
