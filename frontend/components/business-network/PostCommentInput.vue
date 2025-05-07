@@ -723,7 +723,7 @@ const purchaseDiamonds = async () => {
 const goToDeposit = () => {
   // Close the dropdown and navigate to the deposit page
   showDiamondDropup.value = false;
-  navigateTo('/account/deposit');
+  navigateTo('/deposit-withdraw');
 };
 
 function autoResize() {

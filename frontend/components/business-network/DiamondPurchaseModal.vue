@@ -31,13 +31,15 @@
             <div>
               <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Available Diamonds</div>
               <div class="flex items-center">
-                <span class="text-xl font-bold mr-2">{{ user.user.diamond_balance }}</span>
+                <span class="text-xl font-bold mr-2">
+                  <UIcon name="material-symbols:diamond-outline" class="size-5 text-pink-500" />
+                  {{ user.user.diamond_balance }}</span>
                 <UIcon name="i-heroicons-gem" class="h-5 w-5 text-pink-500" />
               </div>
             </div>
             <div>
               <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Account funds</div>
-              <div class="text-xl font-bold">৳{{ user.user.balance }}</div>
+              <div class="text-xl font-bold"><span class="text-2xl font-bold">৳</span> {{ user.user.balance }}</div>
             </div>
             
           </div>
@@ -60,7 +62,7 @@
               ]"
             >
               <div class="absolute top-2 right-2 text-xs font-semibold bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300 px-1.5 py-0.5 rounded-full">
-                ৳{{ pkg.price }}
+                <span class="text-lg font-medium">৳</span>{{ pkg.price }}
               </div>
               
               <UIcon name="i-heroicons-gem" class="h-8 w-8 text-pink-500 mb-1" />
@@ -107,7 +109,7 @@
             </div>
             
             <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-sm text-blue-800 dark:text-blue-200">
-              You will be charged ৳{{ calculateTotal }} from your account balance
+              You will be charged <span class="text-lg font-medium">৳</span>{{ calculateTotal }} from your account balance
             </div>
           </div>
 
@@ -297,7 +299,7 @@ const purchaseDiamonds = async () => {
 // Navigate to deposit page
 const goToDeposit = () => {
   closeModal()
-  navigateTo('/account/deposit')
+  navigateTo('/deposit-withdraw')
 }
 
 // Reset form values
