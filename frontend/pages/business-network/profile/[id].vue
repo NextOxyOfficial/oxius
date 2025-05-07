@@ -310,6 +310,21 @@
                   <div class="text-xs text-gray-500">Following</div>
                 </div>
               </div>
+              
+              <!-- Diamond count and top-up button for mobile -->
+              <div v-if="currentUser?.user?.id === user?.id" class="flex items-center mt-4 sm:hidden">
+                <div class="flex items-center space-x-2 mb-2">
+                  <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
+                  <span class="font-semibold text-md">{{ user?.diamond_count || 0 }} Diamonds</span>
+                </div>
+                <button 
+                  @click="$router.push('/diamonds/purchase')" 
+                  class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
+                >
+                  <UIcon name="i-heroicons-plus" class="w-3 h-3" />
+                  <span>Top Up</span>
+                </button>
+              </div>
             </div>
 
             <!-- User Info -->
@@ -418,7 +433,20 @@
                     }}</span>
                     <span class="text-gray-500 ml-1.5">Following</span>
                   </div>
+                  
                 </div>
+                <!-- Diamond count and top-up button for desktop -->
+                <div v-if="currentUser?.user?.id === user?.id" class="flex items-center space-x-2">
+                    <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
+                    <span class="font-semibold text-md">{{ user?.diamond_count || 0 }} Diamonds</span>
+                    <button 
+                      @click="$router.push('/diamonds/purchase')" 
+                      class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
+                    >
+                      <UIcon name="i-heroicons-plus" class="w-3 h-3" />
+                      <span>Top Up</span>
+                    </button>
+                  </div>
               </div>
 
               <!-- Bio -->
