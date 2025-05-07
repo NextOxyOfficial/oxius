@@ -1,5 +1,75 @@
 <template>
   <div class="space-y-2.5 px-2 pt-1">
+    <!-- Top gift comment pinned section - Shows only the highest diamond gift -->
+    <div v-if="highestGiftComment" class="mb-3">
+      <div class="flex items-center gap-2 mb-1.5">
+        <UIcon name="i-heroicons-star" class="w-3.5 h-3.5 text-amber-500" />
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Top Gift</span>
+      </div>
+      <div class="flex items-start space-x-2.5 w-full">
+        <NuxtLink :to="`/business-network/profile/${highestGiftComment?.author}`">
+          <div class="relative group">
+            <div class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-pink-500 opacity-50 blur-sm animate-pulse"></div>
+            <img
+              :src="highestGiftComment.author_details?.image"
+              :alt="highestGiftComment.author_details?.name"
+              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border-2 border-amber-300 dark:border-amber-500/80 shadow-sm group-hover:shadow-md transition-all duration-300 relative z-10"
+            />
+          </div>
+        </NuxtLink>
+
+        <div class="flex-1">
+          <div
+            class="bg-gradient-to-r from-amber-50/80 to-pink-50/80 dark:from-amber-900/20 dark:to-pink-900/20 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-amber-200/50 dark:border-amber-700/30"
+          >
+            <div class="flex items-center justify-between mb-0.5">
+              <div class="flex items-center gap-1">
+                <NuxtLink
+                  :to="`/business-network/profile/${highestGiftComment.author}`"
+                  class="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                >
+                  {{ highestGiftComment.author_details?.name }}
+                </NuxtLink>
+                <!-- Verified Badge -->
+                <div
+                  v-if="highestGiftComment.author_details?.kyc"
+                  class="text-blue-500 flex items-center"
+                >
+                  <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Gift content with sender info -->
+            <div class="gift-comment-premium">
+              <div class="gift-label flex items-center gap-1 mb-1">
+                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500" />
+                <span class="text-sm font-medium text-pink-600 dark:text-pink-400">
+                  sent {{ highestGiftComment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
+                </span>
+              </div>
+              
+              <!-- Gift message if available -->
+              <div class="gift-message-container">
+                <p class="gift-message-text">{{ extractGiftMessage(highestGiftComment?.content) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timestamp with premium styling -->
+          <div class="flex items-center mt-1 pl-1">
+            <UIcon
+              name="i-heroicons-clock"
+              class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
+            />
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              {{ formatTimeAgo(highestGiftComment?.created_at) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- See all comments button with smaller hover effect -->
     <button
       v-if="post?.post_comments?.length > 3"
@@ -15,7 +85,7 @@
 
     <!-- Comments with premium glassmorphism design -->
     <div
-      v-for="(comment, index) in [...post.post_comments].slice(0, 3).reverse()"
+      v-for="(comment, index) in displayedComments"
       :key="comment.id"
       class="flex items-start space-x-2.5"
     >
@@ -116,18 +186,19 @@
 
             <!-- Comment content with premium styling and special gift display -->
             <div v-else>
-              <!-- Gift comment with premium styling -->
+              <!-- Gift comment with enhanced styling -->
               <div v-if="comment?.is_gift_comment" class="gift-comment">
+                <!-- "Sent X diamonds" label -->
+                <div class="gift-sender-info flex items-center gap-1 mb-2">
+                  <UIcon name="material-symbols:diamond-outline" class="w-4 h-4 text-pink-500" />
+                  <span class="text-sm font-medium text-pink-600 dark:text-pink-400">
+                    sent {{ comment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
+                  </span>
+                </div>
+                
+                <!-- Gift message content with improved styling -->
                 <div class="gift-content">
-                  <p class="gift-text">{{ comment?.content }}</p>
-                  
-                  <!-- Diamond count moved to the right side of the comment -->
-                  <div class="diamond-badge-right">
-                    <div class="diamond-container">
-                      <span class="diamond-amount">{{ comment?.diamond_amount }}</span>
-                      <span class="diamond-icon">💎</span>
-                    </div>
-                  </div>
+                  <p class="gift-message-text">{{ extractGiftMessage(comment?.content) }}</p>
                 </div>
               </div>
               <!-- Regular comment -->
@@ -155,6 +226,7 @@
 
 <script setup>
 import { Loader2 } from "lucide-vue-next";
+import { computed } from "vue";
 
 const props = defineProps({
   post: {
@@ -174,6 +246,47 @@ const emit = defineEmits([
   "cancel-edit-comment",
   "save-edit-comment",
 ]);
+
+// Find the comment with highest diamond amount for pinning at the top
+const highestGiftComment = computed(() => {
+  // Only if we have any gift comments
+  if (!props.post?.post_comments?.length) return null;
+  
+  // Find all gift comments and sort by diamond amount
+  const giftComments = props.post.post_comments.filter(comment => comment.is_gift_comment);
+  
+  if (giftComments.length === 0) return null;
+  
+  // Sort by diamond amount in descending order and return the highest
+  return [...giftComments].sort((a, b) => b.diamond_amount - a.diamond_amount)[0];
+});
+
+// Filter out the highest gift comment from regular comments to avoid duplication
+const displayedComments = computed(() => {
+  if (!props.post?.post_comments?.length) return [];
+  
+  let comments = [...props.post.post_comments];
+  
+  // If there's a highest gift comment, remove it from the regular comments list
+  if (highestGiftComment.value) {
+    comments = comments.filter(comment => comment.id !== highestGiftComment.value.id);
+  }
+  
+  // Return up to 3 most recent comments (excluding the pinned one)
+  return comments.slice(0, 3).reverse();
+});
+
+// Extract clean gift message from content
+const extractGiftMessage = (content) => {
+  if (!content) return '';
+  
+  // Remove common prefixes like "Sent X diamonds as a gift! ✨"
+  if (content.includes('diamonds as a gift')) {
+    return content.replace(/^Sent \d+ diamonds as a gift! ✨/, '').trim();
+  }
+  
+  return content;
+};
 
 // Direct helper functions for comment actions
 const editComment = (post, comment) => {
@@ -240,88 +353,35 @@ const formatTimeAgo = (dateString) => {
 <style scoped>
 /* Premium Gift Comment Styling */
 .gift-comment {
-  position: relative;
-  margin: 0.5rem 0;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #fff1f9 0%, #fffafd 50%, #f0f7ff 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 192, 203, 0.3);
-  overflow: hidden;
-  box-shadow: 0 2px 8px -3px rgba(255, 105, 180, 0.15);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  @apply relative my-2 p-3 rounded-xl overflow-hidden bg-gradient-to-r from-pink-100/90 via-pink-50/80 to-fuchsia-100/70 border border-pink-200/60 shadow-sm transition-all duration-300;
 }
 
 .dark .gift-comment {
-  background: linear-gradient(135deg, rgba(85, 10, 70, 0.4) 0%, rgba(61, 15, 79, 0.4) 50%, rgba(20, 30, 90, 0.4) 100%);
-  border: 1px solid rgba(255, 105, 180, 0.15);
-  box-shadow: 0 2px 8px -3px rgba(255, 105, 180, 0.2);
+  @apply from-pink-900/30 via-pink-800/25 to-fuchsia-900/30 border-pink-700/40;
 }
 
 .gift-comment:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px -3px rgba(255, 105, 180, 0.25);
+  @apply -translate-y-0.5 shadow-md;
 }
 
-/* Diamond Badge */
-.diamond-badge-right {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
+/* Gift sender info styling */
+.gift-sender-info {
+  @apply text-xs text-pink-600 dark:text-pink-400;
 }
 
-.diamond-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  height: 24px;
-  background: linear-gradient(135deg, #ff73c8 0%, #b08fff 100%);
-  border-radius: 12px;
-  padding: 2px 10px;
-  box-shadow: 0 2px 6px rgba(255, 105, 180, 0.25);
-  animation: floatBadge 3s ease-in-out infinite;
+/* Gift message styling */
+.gift-message-text {
+  @apply text-base leading-relaxed text-gray-800 dark:text-gray-200 mt-1;
 }
 
-.dark .diamond-container {
-  background: linear-gradient(135deg, #ff4db2 0%, #9c66ff 100%);
-  box-shadow: 0 2px 6px rgba(255, 105, 180, 0.35);
+/* Top Gift Comment Styling */
+.gift-comment-premium {
+  @apply relative p-3 rounded-xl overflow-hidden border-pink-300/40 shadow-sm transition-all duration-300;
+  background: linear-gradient(135deg, rgba(253, 242, 248, 0.9) 0%, rgba(249, 168, 212, 0.15) 50%, rgba(253, 242, 248, 0.7) 100%);
 }
 
-.diamond-amount {
-  font-weight: bold;
-  font-size: 12px;
-  color: white;
-  margin-right: 2px;
-}
-
-.diamond-icon {
-  font-size: 12px;
-  margin-left: 1px;
-}
-
-/* Gift Text */
-.gift-text {
-  position: relative;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.4;
-  color: #8046a5;
-  margin-top: 0.5rem;
-  margin-bottom: 0.25rem;
-  word-break: break-word;
-}
-
-.dark .gift-text {
-  color: #da9eff;
-}
-
-/* Animation for floating badge */
-@keyframes floatBadge {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
+.dark .gift-comment-premium {
+  @apply border-pink-700/40;
+  background: linear-gradient(135deg, rgba(131, 24, 67, 0.3) 0%, rgba(219, 39, 119, 0.2) 50%, rgba(131, 24, 67, 0.3) 100%);
 }
 </style>
