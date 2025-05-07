@@ -450,3 +450,9 @@ class NewsLogoSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsLogo
         fields = ['id', 'image', 'created_at', 'updated_at']
+        
+
+class DiamondTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiamondTransaction
+        fields = '__all__'

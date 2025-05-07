@@ -2361,41 +2361,51 @@ class PurchaseDiamondsView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        try:
-            amount = int(request.data.get('amount', 0))
-            cost = float(request.data.get('cost', 0))
+        data = request.data
+        data['user'] = request.user.id
+        data['transaction_type'] = 'purchase'
+        purchage_diamonds_serializer = DiamondTransactionSerializer(data=data)
+        if purchage_diamonds_serializer.is_valid():
+            purchage_diamonds_serializer.save()
+            return Response(purchage_diamonds_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print(purchage_diamonds_serializer.errors)
+            return Response(purchage_diamonds_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # try:
+        #     amount = int(request.data.get('amount', 0))
+        #     cost = float(request.data.get('cost', 0))
             
-            if amount <= 0:
-                return Response({'error': 'Diamond amount must be greater than zero'}, status=400)
+        #     if amount <= 0:
+        #         return Response({'error': 'Diamond amount must be greater than zero'}, status=400)
                 
-            if cost <= 0:
-                return Response({'error': 'Cost must be greater than zero'}, status=400)
+        #     if cost <= 0:
+        #         return Response({'error': 'Cost must be greater than zero'}, status=400)
             
-            # Create diamond transaction
-            diamond_transaction = DiamondTransaction.objects.create(
-                user=request.user,
-                transaction_type='purchase',
-                amount=amount,
-                cost=cost
-            )
+        #     # Create diamond transaction
+        #     diamond_transaction = DiamondTransaction.objects.create(
+        #         user=request.user.id,
+        #         transaction_type='purchase',
+        #         amount=amount,
+        #         cost=cost
+        #     )
             
-            # Return updated user balance information
-            return Response({
-                'success': True,
-                'message': f'Successfully purchased {amount} diamonds',
-                'balance': request.user.balance,
-                'diamond_balance': request.user.diamond_balance,
-                'transaction': {
-                    'id': diamond_transaction.id,
-                    'amount': diamond_transaction.amount,
-                    'cost': diamond_transaction.cost,
-                    'created_at': diamond_transaction.created_at
-                }
-            })
-        except ValidationError as e:
-            return Response({'error': str(e)}, status=400)
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
+        #     # Return updated user balance information
+        #     return Response({
+        #         'success': True,
+        #         'message': f'Successfully purchased {amount} diamonds',
+        #         'balance': request.user.balance,
+        #         'diamond_balance': request.user.diamond_balance,
+        #         'transaction': {
+        #             'id': diamond_transaction.id,
+        #             'amount': diamond_transaction.amount,
+        #             'cost': diamond_transaction.cost,
+        #             'created_at': diamond_transaction.created_at
+        #         }
+        #     })
+        # except ValidationError as e:
+        #     return Response({'error': str(e)}, status=400)
+        # except Exception as e:
+        #     return Response({'error': str(e)}, status=500)
             
 class SendDiamondGiftView(APIView):
     permission_classes = [IsAuthenticated]
