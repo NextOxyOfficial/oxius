@@ -369,8 +369,8 @@ const handleNavigation = (path) => {
     document.body.style.overflow = "";
   }
 
-  // In a real app, you would use router.push(path) here
-  console.log(`Navigating to: ${path}`);
+  // Use router to navigate to the path
+  navigateTo(path);
 };
 
 // Add a method to handle menu clicks with loading states
