@@ -45,7 +45,7 @@
               <div class="gift-label flex items-center gap-1 mb-1">
                 <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500" />
                 <span class="text-sm font-medium text-pink-600 dark:text-pink-400">
-                  sent {{ highestGiftComment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
+                  Sent {{ highestGiftComment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
                 </span>
               </div>
               
@@ -213,7 +213,7 @@
                 <div class="gift-sender-info flex items-center gap-1 mb-2">
                   <UIcon name="material-symbols:diamond-outline" class="w-4 h-4 text-pink-500" />
                   <span class="text-sm font-medium text-pink-600 dark:text-pink-400">
-                    sent {{ comment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
+                    Sent {{ comment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
                   </span>
                 </div>
                 
