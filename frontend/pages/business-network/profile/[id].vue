@@ -200,6 +200,14 @@
             <div>
               <h1 class="text-xl font-bold flex items-center gap-1.5">
                 {{ user?.name }}
+                <div class="relative inline-flex tooltip-container">
+                  <UIcon
+                    v-if="user?.kyc"
+                    name="i-mdi-check-decagram"
+                    class="w-4 h-4 text-blue-600 animate-pulse-subtle"
+                  />
+                  <div class="tooltip-content">Verified</div>
+                </div>
                 <!-- Pro badge for mobile -->
                 <div class="inline-flex" v-if="user?.is_pro">
                   <span
@@ -211,15 +219,16 @@
                     </div>
                   </span>
                 </div>
+                <span
+                  v-if="user?.is_topcontributor"
+                  class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
+                >
+                  <div class="flex items-center gap-1">
+                    <Trophy class="size-3" />
+                    <span class="text-2xs">Top Contributor</span>
+                  </div>
+                </span>
                 <!-- Verified badge for mobile -->
-                <div class="relative inline-flex tooltip-container">
-                  <UIcon
-                    v-if="user?.kyc"
-                    name="i-mdi-check-decagram"
-                    class="w-4 h-4 text-blue-600 animate-pulse-subtle"
-                  />
-                  <div class="tooltip-content">Verified</div>
-                </div>
               </h1>
               <p class="text-sm font-medium text-slate-600 mb-0.5">
                 {{ user?.profession }}
@@ -269,7 +278,7 @@
 
                   <!-- Profile image container -->
                   <div
-                    class="size-32 sm:size-40 rounded-full border-4 border-white shadow-sm bg-white overflow-hidden relative z-10"
+                    class="size-44 rounded-full border-4 border-white shadow-sm bg-white overflow-hidden relative z-10"
                   >
                     <img
                       :src="
@@ -288,26 +297,26 @@
                 <div
                   class="text-center hover:scale-105 transition-transform cursor-pointer"
                 >
-                  <div class="text-md font-semibold">
+                  <div class="text-base font-semibold">
                     {{ user?.post_count || 0 }}
                   </div>
-                  <div class="text-xs text-gray-500">Posts</div>
+                  <div class="text-sm font-medium text-gray-500">Posts</div>
                 </div>
                 <div
                   class="text-center hover:scale-105 transition-transform cursor-pointer"
                 >
-                  <div class="text-md font-semibold">
+                  <div class="text-base font-semibold">
                     {{ user?.followers_count || 0 }}
                   </div>
-                  <div class="text-xs text-gray-500">Followers</div>
+                  <div class="text-sm font-medium text-gray-500">Followers</div>
                 </div>
                 <div
                   class="text-center hover:scale-105 transition-transform cursor-pointer"
                 >
-                  <div class="text-md font-semibold">
+                  <div class="text-base font-semibold">
                     {{ user?.following_count || 0 }}
                   </div>
-                  <div class="text-xs text-gray-500">Following</div>
+                  <div class="text-sm font-medium text-gray-500">Following</div>
                 </div>
               </div>
 
@@ -341,6 +350,16 @@
                 <div>
                   <div class="flex items-center flex-wrap gap-1.5">
                     <h1 class="text-xl font-bold">{{ user?.name }}</h1>
+                    <!-- Verified badge -->
+                    <div class="relative inline-flex tooltip-container">
+                      <UIcon
+                        v-if="user?.kyc"
+                        name="i-mdi-check-decagram"
+                        class="w-4 h-4 text-blue-600 animate-pulse-subtle"
+                        data-tooltip="Verified"
+                      />
+                      <div class="tooltip-content">Verified</div>
+                    </div>
 
                     <!-- Pro badge -->
                     <span
@@ -363,17 +382,6 @@
                         <span class="text-2xs">Top Contributor</span>
                       </div>
                     </span>
-
-                    <!-- Verified badge -->
-                    <div class="relative inline-flex tooltip-container">
-                      <UIcon
-                        v-if="user?.kyc"
-                        name="i-mdi-check-decagram"
-                        class="w-4 h-4 text-blue-600 animate-pulse-subtle"
-                        data-tooltip="Verified"
-                      />
-                      <div class="tooltip-content">Verified</div>
-                    </div>
                   </div>
                   <p class="text-sm font-medium text-slate-600 mb-0.5">
                     {{ user?.profession }}
@@ -438,6 +446,11 @@
                     }}</span>
                     <span class="text-gray-500 ml-1.5">Following</span>
                   </div>
+                </div>
+                <div
+                  v-if="currentUser?.user?.id === user?.id"
+                  class="flex items-center space-x-2"
+                >
                   <div
                     class="flex items-center hover:scale-105 transition-transform cursor-pointer gap-1"
                   >
@@ -447,11 +460,6 @@
                     }}</span>
                     <span>Diamonds</span>
                   </div>
-                </div>
-                <div
-                  v-if="currentUser?.user?.id === user?.id"
-                  class="flex items-center space-x-2"
-                >
                   <button
                     @click="$router.push('/diamonds/purchase')"
                     class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
