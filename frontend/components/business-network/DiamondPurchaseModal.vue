@@ -2,7 +2,12 @@
   <UModal 
     v-model="isOpen" 
     @update:modelValue="$emit('update:modelValue', $event)"
-    :ui="{ width: 'w-full max-w-lg' }"
+    :ui="{ 
+      width: 'w-full max-w-lg', 
+      container: 'max-h-[75vh]', 
+      wrapper: 'z-[9999] mt-16', 
+      base: 'mt-16'
+    }"
   >
     <!-- Modal contents with premium styling -->
     <div class="rounded-xl overflow-hidden">
@@ -21,7 +26,7 @@
         </div>
       </div>
 
-      <div class="p-6 bg-white dark:bg-slate-800">
+      <div class="p-6 bg-white dark:bg-slate-800 overflow-y-auto">
         <!-- Balance Information with shimmer effect -->
         <div class="relative p-4 mb-6 rounded-xl overflow-hidden diamond-balance-card">
           <!-- Animated shimmer background -->
