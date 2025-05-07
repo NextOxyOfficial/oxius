@@ -310,15 +310,20 @@
                   <div class="text-xs text-gray-500">Following</div>
                 </div>
               </div>
-              
+
               <!-- Diamond count and top-up button for mobile -->
-              <div v-if="currentUser?.user?.id === user?.id" class="flex items-center mt-4 sm:hidden">
-                <div class="flex items-center space-x-2 mb-2">
+              <div
+                v-if="currentUser?.user?.id === user?.id"
+                class="flex items-center gap-1 mt-4 sm:hidden"
+              >
+                <div class="flex items-center space-x-2 py-1.5">
                   <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
-                  <span class="font-semibold text-md">{{ user?.diamond_count || 0 }} Diamonds</span>
+                  <span class="font-semibold text-md"
+                    >{{ user?.diamond_count || 0 }} Diamonds</span
+                  >
                 </div>
-                <button 
-                  @click="$router.push('/diamonds/purchase')" 
+                <button
+                  @click="$router.push('/diamonds/purchase')"
                   class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
                 >
                   <UIcon name="i-heroicons-plus" class="w-3 h-3" />
@@ -406,9 +411,9 @@
 
               <!-- User Stats (Desktop) -->
               <div
-                class="hidden sm:flex items-center mt-3 mb-3 border-b border-gray-100 pb-3"
+                class="hidden sm:flex sm:flex-col items-start mt-3 mb-3 gap-1 border-b border-gray-100 pb-3"
               >
-                <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-3 text-sm">
                   <div
                     class="flex items-center hover:scale-105 transition-transform cursor-pointer"
                   >
@@ -433,21 +438,30 @@
                     }}</span>
                     <span class="text-gray-500 ml-1.5">Following</span>
                   </div>
-                  
-                </div>
-                <!-- Diamond count and top-up button for desktop -->
-                <div v-if="currentUser?.user?.id === user?.id" class="flex items-center space-x-2">
+                  <div
+                    class="flex items-center hover:scale-105 transition-transform cursor-pointer gap-1"
+                  >
                     <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
-                    <span class="font-semibold text-md">{{ user?.diamond_count || 0 }} Diamonds</span>
-                    <button 
-                      @click="$router.push('/diamonds/purchase')" 
-                      class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
-                    >
-                      <UIcon name="i-heroicons-plus" class="w-3 h-3" />
-                      <span>Top Up</span>
-                    </button>
+                    <span class="font-semibold">{{
+                      user?.diamond_count || 0
+                    }}</span>
+                    <span>Diamonds</span>
                   </div>
+                </div>
+                <div
+                  v-if="currentUser?.user?.id === user?.id"
+                  class="flex items-center space-x-2"
+                >
+                  <button
+                    @click="$router.push('/diamonds/purchase')"
+                    class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-4 py-1.5 hover:from-pink-600 hover:to-purple-600 flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
+                  >
+                    <UIcon name="i-heroicons-plus" class="w-3 h-3" />
+                    <span>Top Up</span>
+                  </button>
+                </div>
               </div>
+              <!-- Diamond count and top-up button for desktop -->
 
               <!-- Bio -->
               <div
