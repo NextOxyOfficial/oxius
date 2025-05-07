@@ -256,6 +256,7 @@ const notificationTypes = {
   REPLY: "reply",
   MENTION: "mention",
   SOLUTION: "solution",
+  GIFT_DIAMONDS: "gift_diamonds", // Added new notification type
 };
 
 // Simplified - no filtering by tab type
@@ -373,6 +374,8 @@ function getNotificationTypeClass(type) {
       return "bg-purple-500";
     case notificationTypes.SOLUTION:
       return "bg-amber-500";
+    case notificationTypes.GIFT_DIAMONDS:
+      return "bg-teal-500";
     default:
       return "bg-gray-500";
   }
@@ -393,6 +396,8 @@ function getNotificationIcon(type) {
       return Send;
     case notificationTypes.SOLUTION:
       return Star;
+    case notificationTypes.GIFT_DIAMONDS:
+      return BadgeCheck;
     default:
       return Bell;
   }
@@ -415,6 +420,8 @@ function getNotificationText(notification) {
       return " mentioned you in a post";
     case notificationTypes.SOLUTION:
       return " marked your advice as a solution";
+    case notificationTypes.GIFT_DIAMONDS:
+      return " sent you gift diamonds";
     default:
       return " interacted with your content";
   }
