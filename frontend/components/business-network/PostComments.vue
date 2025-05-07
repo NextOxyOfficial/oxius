@@ -124,27 +124,48 @@
               <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
               <div
                 v-if="comment.author === user?.user?.id"
-                class="flex items-center pl-3"
+                class="relative"
               >
                 <button
                   type="button"
-                  @click.prevent="editComment(post, comment)"
-                  class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-blue-50/70 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                  @click.stop="toggleDropdown(comment)"
+                  class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                  aria-label="Comment options"
                 >
-                  <UIcon name="i-heroicons-pencil-square" class="size-3.5" />
+                  <UIcon name="i-heroicons-ellipsis-horizontal" class="size-4" />
                 </button>
-                <button
-                  type="button"
-                  @click.prevent="deleteComment(post, comment)"
-                  class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-50/70 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-all flex items-center justify-center"
-                  :disabled="comment.isDeleting"
+                
+                <!-- Dropdown menu -->
+                <div
+                  v-if="comment.showDropdown"
+                  class="absolute right-0 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
+                  @click.stop
                 >
-                  <Loader2
-                    v-if="comment.isDeleting"
-                    class="h-3.5 w-3.5 animate-spin text-red-500"
-                  />
-                  <UIcon v-else name="i-heroicons-trash" class="size-3.5" />
-                </button>
+                  <div class="py-1">
+                    <button
+                      @click.stop="editComment(post, comment); comment.showDropdown = false;"
+                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                    >
+                      <UIcon name="i-heroicons-pencil-square" class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
+                      <span>Edit</span>
+                    </button>
+                    
+                    <button
+                      @click.stop="deleteComment(post, comment); comment.showDropdown = false;"
+                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                      :disabled="comment.isDeleting"
+                    >
+                      <div v-if="comment.isDeleting" class="mr-2">
+                        <Loader2 class="h-4 w-4 text-red-500 animate-spin" />
+                      </div>
+                      <UIcon v-else name="i-heroicons-trash" class="h-4 w-4 mr-2 text-red-500 dark:text-red-400" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Click outside directive to close dropdown -->
+                <div v-if="comment.showDropdown" class="fixed inset-0 z-10" @click="comment.showDropdown = false"></div>
               </div>
             </div>
 
@@ -347,6 +368,25 @@ const formatTimeAgo = (dateString) => {
   return `${Math.abs(diffInMonths)} ${
     diffInMonths === 1 ? "month" : "months"
   } ago`;
+};
+
+// Toggle dropdown visibility
+const toggleDropdown = (comment) => {
+  // First, close all other dropdowns
+  if (props.post?.post_comments) {
+    props.post.post_comments.forEach(c => {
+      if (c.id !== comment.id) {
+        c.showDropdown = false;
+      }
+    });
+  }
+  
+  // Toggle this dropdown
+  if (comment.showDropdown === undefined) {
+    comment.showDropdown = true;
+  } else {
+    comment.showDropdown = !comment.showDropdown;
+  }
 };
 </script>
 
