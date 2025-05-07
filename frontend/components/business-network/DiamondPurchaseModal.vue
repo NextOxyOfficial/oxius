@@ -2,15 +2,14 @@
   <UModal 
     v-model="isOpen" 
     @update:modelValue="$emit('update:modelValue', $event)"
+    fullscreen
     :ui="{ 
-      width: 'w-full max-w-lg', 
-      container: 'h-[75vh] overflow-y-auto mt-20', 
-      wrapper: 'z-[9999] mt-20', 
-      base: 'mt-20'
+      fullscreen:'max-w-2xl w-[95%] h-[82vh] overflow-hidden'
+      
     }"
   >
     <!-- Modal contents with premium styling -->
-    <div class="rounded-xl overflow-hidden">
+    <div class="rounded-sm overflow-hidden overflow-y-auto">
       <!-- Header with gradient background -->
       <div class="p-5 bg-gradient-to-r from-pink-500 to-purple-500 text-white">
         <div class="flex items-center justify-between">
