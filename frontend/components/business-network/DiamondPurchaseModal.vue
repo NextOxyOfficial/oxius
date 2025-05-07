@@ -624,35 +624,138 @@ const loadPurchaseHistory = async () => {
   const { get } = useApi();
   isLoadingHistory.value = true;
   historyError.value = null;
+  isRefreshing.value = true;
+  
   try {
-    const response = await get(`/diamonds/history?page=${currentPage.value}`);
-    purchaseHistory.value = response.data.history;
-    totalPages.value = response.data.total_pages;
+    // First attempt: Get diamond transactions directly from the user API endpoint
+    // This is the most reliable way to get the real transaction data
+    const userResponse = await get(`/user/${user.value?.user?.id || 'me'}/`);
+    
+    if (userResponse.data && 
+        userResponse.data.diamond_transactions && 
+        Array.isArray(userResponse.data.diamond_transactions)) {
+      
+      // Process the real transaction data from the backend
+      const transactions = userResponse.data.diamond_transactions;
+      console.log("Found diamond transactions:", transactions);
+      
+      // Sort to ensure newest transactions are first
+      const sortedTransactions = [...transactions].sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      
+      // Calculate pagination
+      const total = sortedTransactions.length;
+      totalPages.value = Math.max(1, Math.ceil(total / 5));
+      
+      // Apply pagination
+      const startIndex = (currentPage.value - 1) * 5;
+      const endIndex = startIndex + 5;
+      purchaseHistory.value = sortedTransactions.slice(startIndex, endIndex);
+      return;
+    }
+    
+    // Second attempt: Try the diamond transactions API directly
+    const response = await get(`/api/diamond-transactions/?user_id=${user.value?.user?.id}`);
+    if (response.data && Array.isArray(response.data.results || response.data)) {
+      const transactions = response.data.results || response.data;
+      purchaseHistory.value = transactions;
+      
+      if (response.data.count) {
+        totalPages.value = Math.ceil(response.data.count / 5);
+      } else {
+        totalPages.value = Math.max(1, Math.ceil(transactions.length / 5));
+      }
+      return;
+    }
+    
+    // Third attempt: Try accessing user balance history for diamond-related transactions
+    const balanceResponse = await get(`/user-balance/${user.value?.user?.email || user.value?.user?.id || 'me'}/`);
+    if (balanceResponse.data && Array.isArray(balanceResponse.data)) {
+      // Filter transactions related to diamonds
+      const diamondTransactions = balanceResponse.data
+        .filter(tx => 
+          (tx.description && tx.description.toLowerCase().includes('diamond')) ||
+          tx.transaction_type === 'diamond_purchase' ||
+          tx.transaction_type === 'purchase_diamonds'
+        )
+        .map(tx => ({
+          id: tx.id,
+          transaction_type: 'purchase',
+          amount: calculateDiamondAmount(tx.payable_amount),
+          cost: parseFloat(tx.payable_amount || 0),
+          created_at: tx.created_at,
+          status: tx.bank_status || 'completed',
+          description: tx.description || 'Diamond purchase'
+        }));
+      
+      if (diamondTransactions.length > 0) {
+        // Sort by newest first
+        diamondTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        // Apply pagination
+        const startIndex = (currentPage.value - 1) * 5;
+        const endIndex = startIndex + 5;
+        purchaseHistory.value = diamondTransactions.slice(startIndex, endIndex);
+        totalPages.value = Math.ceil(diamondTransactions.length / 5);
+        return;
+      }
+    }
+    
+    // Last attempt: Try direct API endpoint that might exist
+    try {
+      const directResponse = await get(`/diamonds/history/`);
+      if (directResponse.data && (directResponse.data.transactions || Array.isArray(directResponse.data))) {
+        const transactions = directResponse.data.transactions || directResponse.data;
+        purchaseHistory.value = transactions;
+        
+        if (directResponse.data.total_pages) {
+          totalPages.value = directResponse.data.total_pages;
+        } else {
+          totalPages.value = Math.max(1, Math.ceil(transactions.length / 5));
+        }
+        return;
+      }
+    } catch (directError) {
+      console.log("Direct endpoint not available:", directError);
+    }
+    
+    // If we got here, all attempts failed
+    historyError.value = "Failed to load transaction history from the server";
+    
   } catch (error) {
-    historyError.value =
-      error.response?.data?.error || "Failed to load history";
+    console.error("Error loading diamond history:", error);
+    historyError.value = "Error connecting to server";
   } finally {
     isLoadingHistory.value = false;
+    isRefreshing.value = false;
   }
 };
 
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-    loadPurchaseHistory();
-  }
+// Helper function to calculate diamond amount from payment amount (10 diamonds = 1 BDT)
+const calculateDiamondAmount = (paymentAmount) => {
+  if (!paymentAmount) return 0;
+  // Ensure precise conversion using the exact 10:1 ratio
+  return Math.round(parseFloat(paymentAmount) * 10);
 };
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-    loadPurchaseHistory();
+// Format transaction date for display
+const formatDate = (dateString) => {
+  if (!dateString) return 'Unknown date';
+  
+  try {
+    const date = new Date(dateString);
+    const options = { 
+      year: "numeric", 
+      month: "short", 
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    };
+    return date.toLocaleDateString(undefined, options);
+  } catch (e) {
+    return 'Invalid date';
   }
-};
-
-const formatDate = (date) => {
-  const options = { year: "numeric", month: "short", day: "numeric" };
-  return new Date(date).toLocaleDateString(undefined, options);
 };
 </script>
 
