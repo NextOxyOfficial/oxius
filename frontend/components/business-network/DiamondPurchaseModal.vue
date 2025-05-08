@@ -131,10 +131,10 @@
               <button
                 v-for="(pkg, index) in diamondPackages"
                 :key="index"
-                @click="selectDiamondPackage(pkg.amount)"
+                @click="selectDiamondPackage(pkg.diamonds)"
                 :class="[
                   'relative flex flex-col items-center justify-center p-2 rounded-lg border transition-all duration-200',
-                  selectedPackage === pkg.amount
+                  selectedPackage === pkg.diamonds
                     ? 'bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-pink-300 dark:border-pink-700 shadow'
                     : 'bg-white dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 hover:border-pink-200 dark:hover:border-pink-800',
                 ]"
@@ -152,13 +152,13 @@
                 <div
                   class="text-base font-bold text-gray-800 dark:text-gray-100"
                 >
-                  {{ pkg.amount }}
+                  {{ pkg.diamonds }}
                 </div>
                 <div class="text-2xs text-gray-500">diamonds</div>
 
                 <!-- Selected indicator -->
                 <div
-                  v-if="selectedPackage === pkg.amount"
+                  v-if="selectedPackage === pkg.diamonds"
                   class="absolute -top-1 -right-1 h-4 w-4 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm"
                 >
                   <UIcon
@@ -435,7 +435,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 const { user } = useAuth();
-const { post } = useApi();
+const { post, get } = useApi();
 
 const props = defineProps({
   modelValue: {
@@ -469,22 +469,25 @@ const customDiamondAmount = ref(null);
 const isLoading = ref(false);
 
 // Diamond packages (10 diamonds = 1 BDT)
-const diamondPackages = [
-  { amount: 50, price: 5 },
-  { amount: 100, price: 10 },
-  { amount: 250, price: 25 },
-  { amount: 500, price: 50 },
-];
+const diamondPackages = ref([]);
 
-// User balances
-const userBalance = computed(() => user.value?.user?.balance || 0);
+async function getDiamondsPackges(params) {
+  try {
+    const response = await get("/diamonds/packages/");
+    if (response.data) {
+      diamondPackages.value = response.data;
+    }
+  } catch (error) {}
+}
+await getDiamondsPackges();
 
 // Calculate purchase total
 const calculateTotal = computed(() => {
   if (selectedPackage.value) {
     return (
-      diamondPackages.find((pkg) => pkg.amount === selectedPackage.value)
-        ?.price || 0
+      +diamondPackages.value.find(
+        (pkg) => pkg.diamonds === selectedPackage.value
+      ).price || 0
     );
   }
   if (customDiamondAmount.value) {
@@ -500,7 +503,10 @@ const canPurchase = computed(() => {
     selectedPackage.value ||
     (customDiamondAmount.value && customDiamondAmount.value >= 10);
   // Check if user has enough balance
-  const hasBalance = userBalance.value >= calculateTotal.value;
+  const hasBalance = user.value?.user?.balance >= calculateTotal.value;
+  console.log("hasBalance", hasBalance);
+  console.log("calculateTotal.value", calculateTotal.value);
+  console.log("hasAmount", hasAmount);
 
   return hasAmount && hasBalance && calculateTotal.value > 0;
 });
@@ -541,7 +547,7 @@ const purchaseDiamonds = async () => {
   const costInBDT = calculatePrice(diamondAmount);
 
   // Check if user has sufficient balance
-  if (userBalance.value < costInBDT) {
+  if (user.value?.user?.balance < costInBDT) {
     toast.add({
       title: "Insufficient balance",
       description: "Please add funds to your account",
@@ -625,42 +631,48 @@ const loadPurchaseHistory = async () => {
   isLoadingHistory.value = true;
   historyError.value = null;
   isRefreshing.value = true;
-  
+
   try {
     // First attempt: Get diamond transactions directly from the user API endpoint
     // This is the most reliable way to get the real transaction data
-    const userResponse = await get(`/user/${user.value?.user?.id || 'me'}/`);
-    
-    if (userResponse.data && 
-        userResponse.data.diamond_transactions && 
-        Array.isArray(userResponse.data.diamond_transactions)) {
-      
+    const userResponse = await get(`/user/${user.value?.user?.id || "me"}/`);
+
+    if (
+      userResponse.data &&
+      userResponse.data.diamond_transactions &&
+      Array.isArray(userResponse.data.diamond_transactions)
+    ) {
       // Process the real transaction data from the backend
       const transactions = userResponse.data.diamond_transactions;
       console.log("Found diamond transactions:", transactions);
-      
+
       // Sort to ensure newest transactions are first
-      const sortedTransactions = [...transactions].sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
+      const sortedTransactions = [...transactions].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
-      
+
       // Calculate pagination
       const total = sortedTransactions.length;
       totalPages.value = Math.max(1, Math.ceil(total / 5));
-      
+
       // Apply pagination
       const startIndex = (currentPage.value - 1) * 5;
       const endIndex = startIndex + 5;
       purchaseHistory.value = sortedTransactions.slice(startIndex, endIndex);
       return;
     }
-    
+
     // Second attempt: Try the diamond transactions API directly
-    const response = await get(`/api/diamond-transactions/?user_id=${user.value?.user?.id}`);
-    if (response.data && Array.isArray(response.data.results || response.data)) {
+    const response = await get(
+      `/api/diamond-transactions/?user_id=${user.value?.user?.id}`
+    );
+    if (
+      response.data &&
+      Array.isArray(response.data.results || response.data)
+    ) {
       const transactions = response.data.results || response.data;
       purchaseHistory.value = transactions;
-      
+
       if (response.data.count) {
         totalPages.value = Math.ceil(response.data.count / 5);
       } else {
@@ -668,31 +680,39 @@ const loadPurchaseHistory = async () => {
       }
       return;
     }
-    
+
     // Third attempt: Try accessing user balance history for diamond-related transactions
-    const balanceResponse = await get(`/user-balance/${user.value?.user?.email || user.value?.user?.id || 'me'}/`);
+    const balanceResponse = await get(
+      `/user-balance/${
+        user.value?.user?.email || user.value?.user?.id || "me"
+      }/`
+    );
     if (balanceResponse.data && Array.isArray(balanceResponse.data)) {
       // Filter transactions related to diamonds
       const diamondTransactions = balanceResponse.data
-        .filter(tx => 
-          (tx.description && tx.description.toLowerCase().includes('diamond')) ||
-          tx.transaction_type === 'diamond_purchase' ||
-          tx.transaction_type === 'purchase_diamonds'
+        .filter(
+          (tx) =>
+            (tx.description &&
+              tx.description.toLowerCase().includes("diamond")) ||
+            tx.transaction_type === "diamond_purchase" ||
+            tx.transaction_type === "purchase_diamonds"
         )
-        .map(tx => ({
+        .map((tx) => ({
           id: tx.id,
-          transaction_type: 'purchase',
+          transaction_type: "purchase",
           amount: calculateDiamondAmount(tx.payable_amount),
           cost: parseFloat(tx.payable_amount || 0),
           created_at: tx.created_at,
-          status: tx.bank_status || 'completed',
-          description: tx.description || 'Diamond purchase'
+          status: tx.bank_status || "completed",
+          description: tx.description || "Diamond purchase",
         }));
-      
+
       if (diamondTransactions.length > 0) {
         // Sort by newest first
-        diamondTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        
+        diamondTransactions.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+
         // Apply pagination
         const startIndex = (currentPage.value - 1) * 5;
         const endIndex = startIndex + 5;
@@ -701,14 +721,18 @@ const loadPurchaseHistory = async () => {
         return;
       }
     }
-    
+
     // Last attempt: Try direct API endpoint that might exist
     try {
       const directResponse = await get(`/diamonds/history/`);
-      if (directResponse.data && (directResponse.data.transactions || Array.isArray(directResponse.data))) {
-        const transactions = directResponse.data.transactions || directResponse.data;
+      if (
+        directResponse.data &&
+        (directResponse.data.transactions || Array.isArray(directResponse.data))
+      ) {
+        const transactions =
+          directResponse.data.transactions || directResponse.data;
         purchaseHistory.value = transactions;
-        
+
         if (directResponse.data.total_pages) {
           totalPages.value = directResponse.data.total_pages;
         } else {
@@ -719,10 +743,9 @@ const loadPurchaseHistory = async () => {
     } catch (directError) {
       console.log("Direct endpoint not available:", directError);
     }
-    
+
     // If we got here, all attempts failed
     historyError.value = "Failed to load transaction history from the server";
-    
   } catch (error) {
     console.error("Error loading diamond history:", error);
     historyError.value = "Error connecting to server";
@@ -741,20 +764,20 @@ const calculateDiamondAmount = (paymentAmount) => {
 
 // Format transaction date for display
 const formatDate = (dateString) => {
-  if (!dateString) return 'Unknown date';
-  
+  if (!dateString) return "Unknown date";
+
   try {
     const date = new Date(dateString);
-    const options = { 
-      year: "numeric", 
-      month: "short", 
+    const options = {
+      year: "numeric",
+      month: "short",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     };
     return date.toLocaleDateString(undefined, options);
   } catch (e) {
-    return 'Invalid date';
+    return "Invalid date";
   }
 };
 </script>
