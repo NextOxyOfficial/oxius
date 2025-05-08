@@ -3,8 +3,9 @@
     <div
       class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30 rounded-lg backdrop-blur-sm z-0"
     ></div>
-    <!-- Create Post Button (Added at top of menu) -->
+    <!-- Create Post Button (Added at top of menu) - Now only shown for logged in users -->
     <button
+        v-if="user?.user"
         @click="openCreatePostModal"
         class="w-full flex items-center px-3 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-md transition-all duration-200 group relative overflow-hidden"
       >
