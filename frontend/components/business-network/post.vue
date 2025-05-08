@@ -516,7 +516,7 @@ const addComment = async (postToComment) => {
   if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
     return;
   }
-
+  console.log("add", postToComment);
   postToComment.isCommentLoading = true;
 
   try {

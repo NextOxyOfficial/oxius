@@ -19,15 +19,11 @@
     <div class="flex-1 relative flex items-center gap-2">
       <div class="relative group flex-1">
         <textarea
-          ref="commentTextarea"
           v-model="post.commentText"
           placeholder="Add a comment..."
           rows="1"
           class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
-          @input="
-            autoResize();
-            $emit('handle-comment-input', $event, post);
-          "
+          @input="$emit('handle-comment-input', $event, post)"
           @focus="post.showCommentInput = true"
           @keydown="$emit('handle-mention-keydown', $event, post)"
         ></textarea>
@@ -501,7 +497,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { Send } from "lucide-vue-next";
 
-const { get, post } = useApi();
+const { get, post: postApi } = useApi();
 const { user, jwtLogin } = useAuth();
 const toast = useToast();
 
@@ -673,7 +669,7 @@ const onCustomAmountInput = () => {
 
 // Send gift from available balance
 const sendGift = async () => {
-  const { post } = useApi(); // Initialize API utility
+  // Initialize API utility
 
   console.log("Send Gift button clicked");
 
@@ -717,7 +713,7 @@ const sendGift = async () => {
     console.log("Sending gift with payload:", payload);
 
     // Call the API endpoint
-    const response = await post("/diamonds/send-gift/", payload);
+    const response = await postApi("/diamonds/send-gift/", payload);
 
     console.log("Gift sent successfully:", response);
 
@@ -783,7 +779,7 @@ const purchaseDiamonds = async () => {
 
   try {
     // Call API to purchase diamonds
-    const response = await post("/diamonds/purchase/", {
+    const response = await postApi("/diamonds/purchase/", {
       amount: parseInt(diamondAmount),
       cost: costInBDT,
     });
@@ -815,16 +811,6 @@ const goToDeposit = () => {
   showDiamondDropup.value = false;
   navigateTo("/deposit-withdraw");
 };
-
-function autoResize() {
-  const textarea = document.querySelector(
-    'textarea[placeholder="Add a comment..."]'
-  );
-  if (textarea) {
-    textarea.style.height = "auto";
-    textarea.style.height = Math.min(textarea.scrollHeight, 104) + "px"; // 3 lines ~ 104px
-  }
-}
 
 // Navigate to funds page
 const navigateToFunds = () => {
