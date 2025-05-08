@@ -11,7 +11,9 @@
         >
           <div class="p-4 sm:p-5">
             <!-- Desktop Layout Skeleton -->
-            <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-7">
+            <div
+              class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-7"
+            >
               <!-- Profile Picture Skeleton -->
               <div class="flex flex-col items-center sm:items-start">
                 <div
@@ -459,7 +461,6 @@
                       user?.diamond_balance
                     }}</span>
                     <span>Diamonds</span>
-                    
                   </div>
                   <button
                     @click="showDiamondModal = true"

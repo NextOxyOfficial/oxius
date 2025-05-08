@@ -795,6 +795,7 @@ const purchaseDiamonds = async () => {
       toast.add({
         title: "Purchase successful",
         description: `You've purchased ${diamondAmount} diamonds!`,
+        color: "green",
       });
       showBuyDiamonds.value = false;
     }

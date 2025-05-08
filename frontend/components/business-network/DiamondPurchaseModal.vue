@@ -434,7 +434,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-const { user } = useAuth();
+const { user, jwtLogin } = useAuth();
 const { post, get } = useApi();
 
 const props = defineProps({
