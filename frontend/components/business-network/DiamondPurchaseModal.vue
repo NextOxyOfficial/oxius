@@ -568,6 +568,7 @@ const purchaseDiamonds = async () => {
     // Update UI immediately for better UX
     if (response.data) {
       jwtLogin();
+      window.location.reload();
     }
 
     // Show success message
