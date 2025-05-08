@@ -2,7 +2,9 @@
   <div class="fixed top-0 left-0 right-0 z-[9999999999999] w-full mx-auto">
     <header class="backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-sm">
       <div class="max-w-5xl mx-auto pl-1 pr-2 sm:px-4">
-        <div class="flex items-center justify-between h-16 sm:h-18 bg-gray-100/40">
+        <div
+          class="flex items-center justify-between h-16 sm:h-18 bg-gray-100/40"
+        >
           <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
           <div class="flex items-center space-x-1 sm:gap-5">
             <!-- Sidebar Toggle Button - MOBILE ONLY -->
@@ -138,7 +140,7 @@
               @click="openMenu = !openMenu"
               :ui="{
                 gap: {
-                  sm: 'gap-x-1 md:gap-x-1.5',
+                  sm: 'gap-x-0.5',
                 },
                 size: {
                   sm: 'text-xs sm:text-sm',
@@ -156,13 +158,10 @@
             >
               <span
                 v-if="user?.user?.is_pro"
-                class="text-xs px-0.5 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
+                class="text-xs px-0.5 py-0.5 text-blue-800 rounded-full font-medium shadow-sm"
               >
                 <div class="flex items-center">
-                  <UIcon
-                    name="i-heroicons-shield-check"
-                    class="size-4 text-white"
-                  />
+                  <UIcon name="i-heroicons-shield-check" class="size-4" />
                 </div>
               </span>
               <UIcon
@@ -593,12 +592,12 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useApi } from '~/composables/useApi';
-import { useAuth } from '~/composables/useAuth';
-import { useStoreCart } from '~/store/cart';
-import { useRouter } from 'vue-router';
+import { ref, nextTick, onMounted, onUnmounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useApi } from "~/composables/useApi";
+import { useAuth } from "~/composables/useAuth";
+import { useStoreCart } from "~/store/cart";
+import { useRouter } from "vue-router";
 import {
   SunIcon,
   MenuIcon,
@@ -639,10 +638,10 @@ const handleClickOutside = (event) => {
     // Get the menu element and the button that opens it
     const menuElement = menuRef.value;
     const userButton = userButtonRef.value?.$el || userButtonRef.value;
-    
+
     // Check if click was outside both elements
     if (
-      menuElement && 
+      menuElement &&
       userButton &&
       !menuElement.contains(event.target) &&
       !userButton.contains(event.target)

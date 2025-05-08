@@ -149,7 +149,7 @@
                 <!-- Dropdown menu -->
                 <div
                   v-if="comment.showDropdown"
-                  class="absolute right-0 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
+                  class="absolute right-8 -top-1 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 z-50 transition-all duration-200 origin-top-right"
                   @click.stop
                 >
                   <div class="py-1">
