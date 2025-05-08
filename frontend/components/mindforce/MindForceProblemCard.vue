@@ -23,7 +23,7 @@
     <div class="flex justify-between items-start mb-2 relative">
       <div class="flex items-center">
         <div
-          class="h-9 w-9 sm:h-11 sm:w-11 rounded-full border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
+          class="size-12 rounded-full border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
         >
           <!-- Pro user border with gradient effect -->
           <div
@@ -58,18 +58,26 @@
         </div>
         <div class="ml-2 sm:ml-3">
           <div class="inline-flex items-center space-x-1">
-            <p class="text-md sm:text-base font-medium dark:text-white">
+            <h1 class="text-xl font-bold flex items-center gap-1.5">
               {{ problem?.user_details?.name }}
-            </p>
-            <div
-              v-if="problem?.user_details?.kyc"
-              class="text-blue-500 flex items-center"
-            >
-              <UIcon
-                name="i-mdi-check-decagram"
-                class="w-3.5 h-3.5 animate-pulse-subtle"
-              />
-            </div>
+              <div class="relative inline-flex tooltip-container">
+                <UIcon
+                  v-if="problem?.user_details?.kyc"
+                  name="i-mdi-check-decagram"
+                  class="w-4 h-4 text-blue-600 animate-pulse-subtle"
+                />
+              </div>
+              <span
+                v-if="problem?.user_details?.is_topcontributor"
+                class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
+              >
+                <div class="flex items-center gap-1">
+                  <Trophy class="size-3" />
+                  <span class="text-2xs">Top Contributor</span>
+                </div>
+              </span>
+              <!-- Verified badge for mobile -->
+            </h1>
           </div>
           <div class="flex items-center text-sm text-slate-500">
             <Clock class="h-3 w-3 mr-1" />
@@ -170,7 +178,13 @@
 </template>
 
 <script setup>
-import { MessageSquare, Eye, CheckCircle, Clock } from "lucide-vue-next";
+import {
+  MessageSquare,
+  Eye,
+  CheckCircle,
+  Clock,
+  Trophy,
+} from "lucide-vue-next";
 import { computed } from "vue";
 
 const props = defineProps({

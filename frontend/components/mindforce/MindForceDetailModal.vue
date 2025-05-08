@@ -30,7 +30,7 @@
           <div class="flex justify-between items-start">
             <div class="flex items-center">
               <div
-                class="h-12 w-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
+                class="size-14 rounded-full border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
               >
                 <!-- Pro user border with gradient effect -->
                 <div
@@ -57,9 +57,26 @@
                 </div>
               </div>
               <div class="ml-3">
-                <p class="text-md font-medium dark:text-white">
-                  {{ problem.user_details?.name }}
-                </p>
+                <h1 class="text-xl font-bold flex items-center gap-1.5">
+                  {{ problem?.user_details?.name }}
+                  <div class="relative inline-flex tooltip-container">
+                    <UIcon
+                      v-if="problem?.user_details?.kyc"
+                      name="i-mdi-check-decagram"
+                      class="w-4 h-4 text-blue-600 animate-pulse-subtle"
+                    />
+                  </div>
+                  <span
+                    v-if="problem?.user_details?.is_topcontributor"
+                    class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
+                  >
+                    <div class="flex items-center gap-1">
+                      <Trophy class="size-3" />
+                      <span class="text-2xs">Top Contributor</span>
+                    </div>
+                  </span>
+                  <!-- Verified badge for mobile -->
+                </h1>
                 <div class="flex items-center text-sm text-slate-500">
                   <Clock class="h-3 w-3 mr-1" />
                   <span>{{ formatTimeAgo(problem.created_at) }}</span>
@@ -575,6 +592,7 @@ import {
   LockIcon,
   ImagePlus,
   Image,
+  Trophy,
 } from "lucide-vue-next";
 
 const props = defineProps({

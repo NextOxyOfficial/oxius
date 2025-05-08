@@ -4,12 +4,18 @@
     <div v-if="highestGiftComment" class="mb-3">
       <div class="flex items-center gap-2 mb-1.5">
         <UIcon name="i-heroicons-star" class="w-3.5 h-3.5 text-amber-500" />
-        <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Top Gift</span>
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-400"
+          >Top Gift</span
+        >
       </div>
       <div class="flex items-start space-x-2.5 w-full">
-        <NuxtLink :to="`/business-network/profile/${highestGiftComment?.author}`">
+        <NuxtLink
+          :to="`/business-network/profile/${highestGiftComment?.author}`"
+        >
           <div class="relative group">
-            <div class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-pink-500 opacity-50 blur-sm animate-pulse"></div>
+            <div
+              class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-pink-500 opacity-50 blur-sm animate-pulse"
+            ></div>
             <img
               :src="highestGiftComment.author_details?.image"
               :alt="highestGiftComment.author_details?.name"
@@ -44,14 +50,19 @@
             <div class="gift-comment-premium">
               <div class="gift-label flex items-center gap-1 mb-1">
                 <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500" />
-                <span class="text-sm font-medium text-pink-600 dark:text-pink-400">
-                  Sent {{ highestGiftComment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
+                <span
+                  class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                >
+                  Sent {{ highestGiftComment?.diamond_amount }} diamonds to
+                  {{ post?.author_details?.name || post?.author?.name }}
                 </span>
               </div>
-              
+
               <!-- Gift message if available -->
               <div class="gift-message-container">
-                <p class="gift-message-text">{{ extractGiftMessage(highestGiftComment?.content) }}</p>
+                <p class="gift-message-text">
+                  {{ extractGiftMessage(highestGiftComment?.content) }}
+                </p>
               </div>
             </div>
           </div>
@@ -122,19 +133,19 @@
               </div>
 
               <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
-              <div
-                v-if="comment.author === user?.user?.id"
-                class="relative"
-              >
+              <div v-if="comment.author === user?.user?.id" class="relative">
                 <button
                   type="button"
                   @click.stop="toggleDropdown(comment)"
                   class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
                   aria-label="Comment options"
                 >
-                  <UIcon name="i-heroicons-ellipsis-horizontal" class="size-4" />
+                  <UIcon
+                    name="i-heroicons-ellipsis-horizontal"
+                    class="size-4"
+                  />
                 </button>
-                
+
                 <!-- Dropdown menu -->
                 <div
                   v-if="comment.showDropdown"
@@ -143,29 +154,46 @@
                 >
                   <div class="py-1">
                     <button
-                      @click.stop="editComment(post, comment); comment.showDropdown = false;"
+                      @click.stop="
+                        editComment(post, comment);
+                        comment.showDropdown = false;
+                      "
                       class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
                     >
-                      <UIcon name="i-heroicons-pencil-square" class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
+                      <UIcon
+                        name="i-heroicons-pencil-square"
+                        class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400"
+                      />
                       <span>Edit</span>
                     </button>
-                    
+
                     <button
-                      @click.stop="deleteComment(post, comment); comment.showDropdown = false;"
+                      @click.stop="
+                        deleteComment(post, comment);
+                        comment.showDropdown = false;
+                      "
                       class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
                       :disabled="comment.isDeleting"
                     >
                       <div v-if="comment.isDeleting" class="mr-2">
                         <Loader2 class="h-4 w-4 text-red-500 animate-spin" />
                       </div>
-                      <UIcon v-else name="i-heroicons-trash" class="h-4 w-4 mr-2 text-red-500 dark:text-red-400" />
+                      <UIcon
+                        v-else
+                        name="i-heroicons-trash"
+                        class="h-4 w-4 mr-2 text-red-500 dark:text-red-400"
+                      />
                       <span>Delete</span>
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Click outside directive to close dropdown -->
-                <div v-if="comment.showDropdown" class="fixed inset-0 z-10" @click="comment.showDropdown = false"></div>
+                <div
+                  v-if="comment.showDropdown"
+                  class="fixed inset-0 z-10"
+                  @click="comment.showDropdown = false"
+                ></div>
               </div>
             </div>
 
@@ -211,19 +239,31 @@
               <div v-if="comment?.is_gift_comment" class="gift-comment">
                 <!-- "Sent X diamonds" label -->
                 <div class="gift-sender-info flex items-center gap-1 mb-2">
-                  <UIcon name="material-symbols:diamond-outline" class="w-4 h-4 text-pink-500" />
-                  <span class="text-sm font-medium text-pink-600 dark:text-pink-400">
-                    Sent {{ comment?.diamond_amount }} diamonds to {{ post?.author_details?.name || post?.author?.name }}
+                  <UIcon
+                    name="material-symbols:diamond-outline"
+                    class="w-4 h-4 text-pink-500"
+                  />
+                  <span
+                    class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                  >
+                    Sent {{ comment?.diamond_amount }} diamonds to
+                    {{ post?.author_details?.name || post?.author?.name }}
                   </span>
                 </div>
-                
+
                 <!-- Gift message content with improved styling -->
                 <div class="gift-content">
-                  <p class="gift-message-text">{{ extractGiftMessage(comment?.content) }}</p>
+                  <p class="gift-message-text">
+                    {{ extractGiftMessage(comment?.content) }}
+                  </p>
                 </div>
               </div>
               <!-- Regular comment -->
-              <p v-else class="text-base sm:text-sm text-gray-800 dark:text-gray-200" style="word-break: break-word">
+              <p
+                v-else
+                class="text-base sm:text-sm text-gray-800 dark:text-gray-200"
+                style="word-break: break-word"
+              >
                 {{ comment?.content }}
               </p>
             </div>
@@ -272,40 +312,46 @@ const emit = defineEmits([
 const highestGiftComment = computed(() => {
   // Only if we have any gift comments
   if (!props.post?.post_comments?.length) return null;
-  
+
   // Find all gift comments and sort by diamond amount
-  const giftComments = props.post.post_comments.filter(comment => comment.is_gift_comment);
-  
+  const giftComments = props.post.post_comments.filter(
+    (comment) => comment.is_gift_comment
+  );
+
   if (giftComments.length === 0) return null;
-  
+
   // Sort by diamond amount in descending order and return the highest
-  return [...giftComments].sort((a, b) => b.diamond_amount - a.diamond_amount)[0];
+  return [...giftComments].sort(
+    (a, b) => b.diamond_amount - a.diamond_amount
+  )[0];
 });
 
 // Filter out the highest gift comment from regular comments to avoid duplication
 const displayedComments = computed(() => {
   if (!props.post?.post_comments?.length) return [];
-  
+
   let comments = [...props.post.post_comments];
-  
+
   // If there's a highest gift comment, remove it from the regular comments list
   if (highestGiftComment.value) {
-    comments = comments.filter(comment => comment.id !== highestGiftComment.value.id);
+    comments = comments.filter(
+      (comment) => comment.id !== highestGiftComment.value.id
+    );
   }
-  
+
   // Return up to 3 most recent comments (excluding the pinned one)
   return comments.slice(0, 3).reverse();
 });
 
 // Extract clean gift message from content
 const extractGiftMessage = (content) => {
-  if (!content) return '';
-  
+  if (!content) return "";
+
   // Remove common prefixes like "Sent X diamonds as a gift! ✨"
-  if (content.includes('diamonds as a gift')) {
-    return content.replace(/^Sent \d+ diamonds as a gift! ✨/, '').trim();
+  if (content.includes("diamonds as a gift")) {
+    return content.replace(/^Sent \d+ diamonds as a gift! ✨/, "").trim();
   }
-  
+
   return content;
 };
 
@@ -374,13 +420,13 @@ const formatTimeAgo = (dateString) => {
 const toggleDropdown = (comment) => {
   // First, close all other dropdowns
   if (props.post?.post_comments) {
-    props.post.post_comments.forEach(c => {
+    props.post.post_comments.forEach((c) => {
       if (c.id !== comment.id) {
         c.showDropdown = false;
       }
     });
   }
-  
+
   // Toggle this dropdown
   if (comment.showDropdown === undefined) {
     comment.showDropdown = true;
@@ -417,11 +463,21 @@ const toggleDropdown = (comment) => {
 /* Top Gift Comment Styling */
 .gift-comment-premium {
   @apply relative p-3 rounded-xl overflow-hidden border-pink-300/40 shadow-sm transition-all duration-300;
-  background: linear-gradient(135deg, rgba(253, 242, 248, 0.9) 0%, rgba(249, 168, 212, 0.15) 50%, rgba(253, 242, 248, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(253, 242, 248, 0.9) 0%,
+    rgba(249, 168, 212, 0.15) 50%,
+    rgba(253, 242, 248, 0.7) 100%
+  );
 }
 
 .dark .gift-comment-premium {
   @apply border-pink-700/40;
-  background: linear-gradient(135deg, rgba(131, 24, 67, 0.3) 0%, rgba(219, 39, 119, 0.2) 50%, rgba(131, 24, 67, 0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(131, 24, 67, 0.3) 0%,
+    rgba(219, 39, 119, 0.2) 50%,
+    rgba(131, 24, 67, 0.3) 100%
+  );
 }
 </style>

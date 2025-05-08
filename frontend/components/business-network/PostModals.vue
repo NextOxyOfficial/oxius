@@ -120,45 +120,36 @@
             ref="commentsContainerRef"
             class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3"
           >
+            <!-- Comments with premium glassmorphism design -->
             <div
-              v-for="comment in [...activeCommentsPost.post_comments].reverse()"
+              v-for="(comment, index) in [
+                ...activeCommentsPost.post_comments,
+              ].reverse()"
               :key="comment.id"
-              class="flex items-start space-x-2"
+              class="flex items-start space-x-2.5"
             >
-              <div class="flex items-start space-x-2">
+              <div class="flex items-start space-x-2.5 w-full">
                 <NuxtLink :to="`/business-network/profile/${comment?.author}`">
-                  <div class="relative">
-                    <!-- Pro user badge with improved color ring around profile picture -->
-                    <div
-                      v-if="comment.author_details?.is_pro"
-                      class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                    ></div>
+                  <div class="relative group">
                     <img
-                      :src="
-                        comment.author_details?.image ||
-                        '/static/frontend/avatar.png'
-                      "
+                      :src="comment.author_details?.image"
                       :alt="comment.author_details?.name"
-                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover"
+                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-md transition-all duration-300"
                     />
-                    <!-- Pro text badge -->
-                    <div
-                      v-if="comment.author_details?.is_pro"
-                      class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-[7px] font-bold"
-                    >
-                      PRO
-                    </div>
                   </div>
                 </NuxtLink>
+
                 <div class="flex-1">
-                  <div class="bg-gray-50 rounded-lg pt-1 px-2">
-                    <div class="flex items-center justify-between mb-1">
-                      <div class="flex items-center gap-1.5">
+                  <div
+                    class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
+                  >
+                    <div class="flex items-center justify-between mb-0.5">
+                      <div class="flex items-center gap-1">
                         <NuxtLink
-                          :to="`/business-network/profile/${comment?.author}`"
-                          class="text-sm font-medium hover:underline flex items-center gap-1"
+                          :to="`/business-network/profile/${comment.author}`"
+                          class="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
-                          {{ comment.author_details.name }}
+                          {{ comment.author_details?.name }}
                         </NuxtLink>
                         <!-- Verified Badge -->
                         <div
@@ -169,65 +160,98 @@
                         </div>
                       </div>
 
-                      <!-- Only edit/delete buttons for comment owner -->
+                      <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
                       <div
                         v-if="comment.author === user?.user?.id"
-                        class="flex items-center space-x-1"
+                        class="relative"
                       >
                         <button
-                          @click="
-                            $emit('edit-comment', activeCommentsPost, comment)
-                          "
-                          class="px-0.5 pt-1 text-gray-500 hover:text-blue-600"
+                          type="button"
+                          @click.stop="toggleDropdown(comment)"
+                          class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                          aria-label="Comment options"
                         >
                           <UIcon
-                            name="i-heroicons-pencil-square"
+                            name="i-heroicons-ellipsis-horizontal"
                             class="size-4"
                           />
                         </button>
-                        <button
-                          @click="
-                            $emit('delete-comment', activeCommentsPost, comment)
-                          "
-                          class="px-0.5 text-gray-500 hover:text-red-600 flex items-center"
-                          :disabled="comment.isDeleting"
+
+                        <!-- Dropdown menu -->
+                        <div
+                          v-if="comment.showDropdown"
+                          class="absolute right-0 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
+                          @click.stop
                         >
-                          <Loader2
-                            v-if="comment.isDeleting"
-                            class="h-4 w-4 animate-spin text-red-500"
-                          />
-                          <UIcon
-                            v-else
-                            name="i-heroicons-trash"
-                            class="size-4"
-                          />
-                        </button>
+                          <div class="py-1">
+                            <button
+                              @click.stop="
+                                editComment(activeCommentsPost, comment);
+                                comment.showDropdown = false;
+                              "
+                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                            >
+                              <UIcon
+                                name="i-heroicons-pencil-square"
+                                class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400"
+                              />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              @click.stop="
+                                deleteComment(activeCommentsPost, comment);
+                                comment.showDropdown = false;
+                              "
+                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                              :disabled="comment.isDeleting"
+                            >
+                              <div v-if="comment.isDeleting" class="mr-2">
+                                <Loader2
+                                  class="h-4 w-4 text-red-500 animate-spin"
+                                />
+                              </div>
+                              <UIcon
+                                v-else
+                                name="i-heroicons-trash"
+                                class="h-4 w-4 mr-2 text-red-500 dark:text-red-400"
+                              />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Click outside directive to close dropdown -->
+                        <div
+                          v-if="comment.showDropdown"
+                          class="fixed inset-0 z-10"
+                          @click="comment.showDropdown = false"
+                        ></div>
                       </div>
                     </div>
-                    <!-- Editable comment content -->
+
+                    <!-- Comment editing form with glassmorphism -->
                     <div v-if="comment.isEditing">
                       <textarea
                         :id="`comment-edit-${comment.id}`"
                         v-model="comment.editText"
-                        class="w-full text-sm p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                        class="w-full text-base p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
                         rows="2"
                       ></textarea>
-                      <div class="flex justify-end space-x-2 mt-1">
+                      <div class="flex justify-end space-x-2 mt-2">
                         <button
-                          @click="$emit('cancel-edit-comment', comment)"
-                          class="text-xs text-gray-500 hover:underline"
+                          type="button"
+                          @click.prevent="$emit('cancel-edit-comment', comment)"
+                          class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                         >
                           Cancel
                         </button>
                         <button
-                          @click="
-                            $emit(
-                              'save-edit-comment',
-                              activeCommentsPost,
-                              comment
-                            )
+                          type="button"
+                          @click.prevent="
+                            saveEditComment(activeCommentsPost, comment)
                           "
-                          class="text-xs bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-md px-3 py-1 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-sm"
+                          class="text-xs bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg px-3 py-1.5 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 disabled:opacity-50 shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
                           :disabled="
                             !comment.editText?.trim() ||
                             comment.editText === comment.content ||
@@ -243,13 +267,55 @@
                         </button>
                       </div>
                     </div>
-                    <p v-else class="text-sm" style="word-break: break-word">
-                      {{ comment.content }}
-                    </p>
+
+                    <!-- Comment content with premium styling and special gift display -->
+                    <div v-else>
+                      <!-- Gift comment with enhanced styling -->
+                      <div v-if="comment?.is_gift_comment" class="gift-comment">
+                        <!-- "Sent X diamonds" label -->
+                        <div
+                          class="gift-sender-info flex items-center gap-1 mb-2"
+                        >
+                          <UIcon
+                            name="material-symbols:diamond-outline"
+                            class="w-4 h-4 text-pink-500"
+                          />
+                          <span
+                            class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                          >
+                            Sent {{ comment?.diamond_amount }} diamonds to
+                            {{
+                              post?.author_details?.name || post?.author?.name
+                            }}
+                          </span>
+                        </div>
+
+                        <!-- Gift message content with improved styling -->
+                        <div class="gift-content">
+                          <p class="gift-message-text">
+                            {{ extractGiftMessage(comment?.content) }}
+                          </p>
+                        </div>
+                      </div>
+                      <!-- Regular comment -->
+                      <p
+                        v-else
+                        class="text-base sm:text-sm text-gray-800 dark:text-gray-200"
+                        style="word-break: break-word"
+                      >
+                        {{ comment?.content }}
+                      </p>
+                    </div>
                   </div>
-                  <div class="flex items-center mt-1 space-x-3">
-                    <span class="text-sm text-gray-500">
-                      {{ formatTimeAgo(comment.created_at) }}
+
+                  <!-- Timestamp with premium styling -->
+                  <div class="flex items-center mt-1 pl-1">
+                    <UIcon
+                      name="i-heroicons-clock"
+                      class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
+                    />
+                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ formatTimeAgo(comment?.created_at) }}
                     </span>
                   </div>
                 </div>
@@ -551,7 +617,7 @@
 <script setup>
 import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
 
-defineProps({
+const props = defineProps({
   activeLikesPost: {
     type: Object,
     default: null,
@@ -594,7 +660,7 @@ const { user: currentUser } = useAuth();
 // Export a reference to the comments container for scrolling
 const commentsContainerRef = ref(null);
 
-defineEmits([
+const emit = defineEmits([
   "close-likes-modal",
   "toggle-user-follow",
   "close-comments-modal",
@@ -672,6 +738,54 @@ function autoResize() {
     el.style.height = Math.min(el.scrollHeight, 104) + "px"; // 3 lines ~ 104px
   }
 }
+
+// Extract clean gift message from content
+const extractGiftMessage = (content) => {
+  if (!content) return "";
+
+  // Remove common prefixes like "Sent X diamonds as a gift! ✨"
+  if (content.includes("diamonds as a gift")) {
+    return content.replace(/^Sent \d+ diamonds as a gift! ✨/, "").trim();
+  }
+
+  return content;
+};
+
+// Toggle dropdown visibility
+const toggleDropdown = (comment) => {
+  // First, close all other dropdowns
+  if (props.activeCommentsPost?.post_comments) {
+    props.activeCommentsPost?.post_comments.forEach((c) => {
+      if (c.id !== comment.id) {
+        c.showDropdown = false;
+      }
+    });
+  }
+
+  // Toggle this dropdown
+  if (comment.showDropdown === undefined) {
+    comment.showDropdown = true;
+  } else {
+    comment.showDropdown = !comment.showDropdown;
+  }
+};
+
+const editComment = (post, comment) => {
+  // Initialize edit text if not already set
+  if (!comment.editText) {
+    comment.editText = comment.content;
+  }
+
+  // Set editing state
+  comment.isEditing = true;
+
+  // Emit event for parent components
+  emit("edit-comment", post, comment);
+};
+const saveEditComment = (post, comment) => {
+  // Emit save event to parent
+  emit("save-edit-comment", post, comment);
+};
 </script>
 
 <style scoped>
@@ -694,5 +808,49 @@ function autoResize() {
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Premium Gift Comment Styling */
+.gift-comment {
+  @apply relative my-2 p-3 rounded-xl overflow-hidden bg-gradient-to-r from-pink-100/90 via-pink-50/80 to-fuchsia-100/70 border border-pink-200/60 shadow-sm transition-all duration-300;
+}
+
+.dark .gift-comment {
+  @apply from-pink-900/30 via-pink-800/25 to-fuchsia-900/30 border-pink-700/40;
+}
+
+.gift-comment:hover {
+  @apply -translate-y-0.5 shadow-md;
+}
+
+/* Gift sender info styling */
+.gift-sender-info {
+  @apply text-xs text-pink-600 dark:text-pink-400;
+}
+
+/* Gift message styling */
+.gift-message-text {
+  @apply text-base leading-relaxed text-gray-800 dark:text-gray-200 mt-1;
+}
+
+/* Top Gift Comment Styling */
+.gift-comment-premium {
+  @apply relative p-3 rounded-xl overflow-hidden border-pink-300/40 shadow-sm transition-all duration-300;
+  background: linear-gradient(
+    135deg,
+    rgba(253, 242, 248, 0.9) 0%,
+    rgba(249, 168, 212, 0.15) 50%,
+    rgba(253, 242, 248, 0.7) 100%
+  );
+}
+
+.dark .gift-comment-premium {
+  @apply border-pink-700/40;
+  background: linear-gradient(
+    135deg,
+    rgba(131, 24, 67, 0.3) 0%,
+    rgba(219, 39, 119, 0.2) 50%,
+    rgba(131, 24, 67, 0.3) 100%
+  );
 }
 </style>

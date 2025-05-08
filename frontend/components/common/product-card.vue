@@ -308,11 +308,12 @@ function closeProductModal() {
 }
 
 async function increaseProductViews() {
+  console.log(product.views);
   try {
     const { data } = await patch(`/products/${product.slug}/`, {
       views: product.views + 1,
     });
-    console.log({ data });
+    console.log("patch", data);
   } catch (error) {
     console.log(error);
   }

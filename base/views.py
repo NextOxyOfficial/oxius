@@ -1480,6 +1480,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+    permission_classes = [IsAuthenticated]
     
     def update(self, request, *args, **kwargs):
         try:
@@ -1492,13 +1493,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
             
-            # Check permissions
-            user = self.request.user
-            if not user.is_authenticated:
-                return Response({"error":"You must be logged in to update this product."})
-                
-            if user != instance.owner and not user.is_staff and not user.is_superuser:
-                return Response({"error":"You don't have permission to update this product."})
+            print(request.data)
             
             # Update the main product data
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -1587,24 +1582,9 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     def perform_update(self, serializer):
-        """
-        Ensure the user has permission to update the product
-        and handle the update process
-        """
-        instance = self.get_object()
-        user = self.request.user
+
+        serializer.save()
         
-        # Check if user is authenticated
-        if not user.is_authenticated:
-            return Response({"error":"You must be logged in to update this product."})
-            
-        # Check if user is either owner or admin
-        if user == instance.owner or user.is_staff or user.is_superuser:
-            # User is authorized, proceed with update
-            serializer.save()
-        else:
-            # User is not authorized
-            return Response({"error":"You don't have permission to update this product. Only the owner or admin can modify products."})
     
     def perform_destroy(self, instance):
         """

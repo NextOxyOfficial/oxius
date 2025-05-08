@@ -434,7 +434,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-const { user, jwtLogin } = useAuth();
+const { user } = useAuth();
 const { post, get } = useApi();
 
 const props = defineProps({
@@ -567,7 +567,6 @@ const purchaseDiamonds = async () => {
 
     // Update UI immediately for better UX
     if (response.data) {
-      jwtLogin();
       window.location.reload();
     }
 
