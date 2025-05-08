@@ -36,7 +36,7 @@
         <div
           class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300"
         ></div>
-        
+
         <!-- Action buttons with premium styling (inside input) -->
         <div
           v-if="post.commentText"
@@ -62,7 +62,7 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Gift button moved outside of input -->
       <div class="relative">
         <button
@@ -72,11 +72,13 @@
           @click="toggleDiamondDropup"
         >
           <UIcon name="i-streamline-gift-2" class="size-5" />
-          <span v-if="showDiamondDropup" class="sr-only">Close diamond purchase</span>
+          <span v-if="showDiamondDropup" class="sr-only"
+            >Close diamond purchase</span
+          >
         </button>
-        
+
         <!-- Diamond Purchase Dropup -->
-        <div 
+        <div
           v-if="showDiamondDropup"
           ref="dropupRef"
           class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
@@ -84,46 +86,71 @@
           <!-- Main gift interface -->
           <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
             <!-- Header with diamond icon and balance -->
-            <div class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50">
+            <div
+              class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50"
+            >
               <div class="flex items-center">
-                <div class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2">
-                  <UIcon name="i-heroicons-gift" class="h-5 w-5 text-pink-500" />
+                <div
+                  class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2"
+                >
+                  <UIcon
+                    name="i-heroicons-gift"
+                    class="h-5 w-5 text-pink-500"
+                  />
                 </div>
-                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
-                  Send Gift to {{ post?.author_details?.name || post?.author?.name || 'User' }}
+                <h3
+                  class="text-base font-semibold text-gray-800 dark:text-gray-200"
+                >
+                  Send Gift to
+                  {{
+                    post?.author_details?.name || post?.author?.name || "User"
+                  }}
                 </h3>
               </div>
-              <button 
-                @click="closeDiamondDropup" 
+              <button
+                @click="closeDiamondDropup"
                 class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
               >
                 <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
               </button>
             </div>
-            
+
             <!-- Available Balance Card with Animated Background -->
-            <div class="relative px-4 py-4 mt-3 mb-4 mx-4 rounded-xl overflow-hidden diamond-balance-card">
+            <div
+              class="relative px-4 py-4 mt-3 mb-4 mx-4 rounded-xl overflow-hidden diamond-balance-card"
+            >
               <!-- Animated shimmer background -->
-              <div class="absolute inset-0 bg-gradient-to-r from-pink-50/80 via-purple-50/80 to-pink-50/80 dark:from-pink-900/10 dark:via-purple-900/15 dark:to-pink-900/10 shimmer-background"></div>
-              
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-pink-50/80 via-purple-50/80 to-pink-50/80 dark:from-pink-900/10 dark:via-purple-900/15 dark:to-pink-900/10 shimmer-background"
+              ></div>
+
               <!-- Diamond icon decoration -->
               <div class="absolute -right-4 -top-4 opacity-10">
                 <UIcon name="i-heroicons-gem" class="h-20 w-20 text-pink-500" />
               </div>
-              
+
               <!-- Centered diamonds display -->
               <div class="relative flex flex-col items-center justify-center">
                 <div class="flex items-center justify-center mb-1">
-                  <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">Available Diamonds</span>
+                  <span
+                    class="text-sm text-gray-700 dark:text-gray-300 font-medium"
+                    >Available Diamonds</span
+                  >
                 </div>
                 <div class="flex items-center justify-center">
-                  <span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400">{{ user.user.diamond_balance }}</span>
-                  <UIcon name="i-heroicons-gem" class="h-5 w-5 text-pink-400 ml-1.5" />
+                  <span
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400"
+                    >{{ user.user.diamond_balance }}</span
+                  >
+                  <UIcon
+                    name="i-heroicons-gem"
+                    class="h-5 w-5 text-pink-400 ml-1.5"
+                  />
                 </div>
               </div>
-              
+
               <!-- Buy button -->
-              <button 
+              <button
                 @click.stop="showBuyDiamonds = true"
                 class="absolute top-1.5 right-2 px-2.5 py-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs font-medium rounded-full shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
               >
@@ -131,34 +158,43 @@
                 Buy
               </button>
             </div>
-            
+
             <!-- Use Available Balance Section -->
             <div class="px-4 mb-4">
               <div class="flex flex-col">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1"
+                >
                   Send gift diamonds
                 </label>
                 <div class="relative">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     v-model.number="sendFromBalance"
                     placeholder="Enter diamond amount"
                     :max="availableDiamonds"
                     min="1"
                     class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
                   />
-                  <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                    <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
+                  <div
+                    class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-sparkles"
+                      class="h-4 w-4 text-pink-400 mr-1"
+                    />
                   </div>
                 </div>
-                
+
                 <!-- Gift message input -->
                 <div class="mt-3">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1"
+                  >
                     Gift message
                   </label>
                   <div class="relative">
-                    <textarea 
+                    <textarea
                       v-model="giftMessage"
                       placeholder="Add a gift message... (optional)"
                       rows="2"
@@ -167,16 +203,18 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="mt-4 space-y-3">
                 <!-- Send Gift Button -->
-                <button 
+                <button
                   @click="sendGift"
                   :disabled="isSendingGift"
                   class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
                 >
                   <template v-if="isSendingGift">
-                    <div class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div
+                      class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+                    ></div>
                     Sending...
                   </template>
                   <template v-else>
@@ -184,48 +222,76 @@
                     Send Gift
                   </template>
                 </button>
-                
+
                 <!-- No Balance Message -->
-                <div v-if="availableDiamonds === 0" class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-400 py-1.5">
-                  <UIcon name="i-heroicons-exclamation-circle" class="h-4 w-4 text-pink-400" />
+                <div
+                  v-if="availableDiamonds === 0"
+                  class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-400 py-1.5"
+                >
+                  <UIcon
+                    name="i-heroicons-exclamation-circle"
+                    class="h-4 w-4 text-pink-400"
+                  />
                   <span>You need diamonds to send a gift</span>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Buy diamonds interface -->
           <div v-else class="pt-2 pb-3">
             <!-- Header with diamond icon -->
-            <div class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50 mb-2">
+            <div
+              class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50 mb-2"
+            >
               <div class="flex items-center">
-                <div class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2">
-                  <UIcon name="i-heroicons-shopping-bag" class="h-5 w-5 text-pink-500" />
+                <div
+                  class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2"
+                >
+                  <UIcon
+                    name="i-heroicons-shopping-bag"
+                    class="h-5 w-5 text-pink-500"
+                  />
                 </div>
-                <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
+                <h3
+                  class="text-base font-semibold text-gray-800 dark:text-gray-200"
+                >
                   Buy Diamonds
                 </h3>
               </div>
-              <button 
-                @click.stop="showBuyDiamonds = false" 
+              <button
+                @click.stop="showBuyDiamonds = false"
                 class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
               >
                 <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
               </button>
             </div>
-            
+
             <!-- Diamond package options with improved design -->
             <div class="px-4 pt-1">
               <!-- Available Balance Display -->
-              <div class="flex items-center justify-between mb-3 pb-3 border-b border-pink-100/50 dark:border-slate-700/50">
+              <div
+                class="flex items-center justify-between mb-3 pb-3 border-b border-pink-100/50 dark:border-slate-700/50"
+              >
                 <div class="flex items-center">
-                  <UIcon name="i-heroicons-wallet" class="h-4 w-4 text-pink-500 mr-1.5" />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">Account Funds:</span>
+                  <UIcon
+                    name="i-heroicons-wallet"
+                    class="h-4 w-4 text-pink-500 mr-1.5"
+                  />
+                  <span class="text-sm text-gray-700 dark:text-gray-300"
+                    >Account Funds:</span
+                  >
                 </div>
                 <div class="flex items-center">
-                  <span class="text-md font-bold text-gray-800 dark:text-gray-200">{{ user.user.balance }}</span>
-                  <span class="text-md font-bold text-gray-700 dark:text-gray-300 ml-1">৳</span>
-                  <button 
+                  <span
+                    class="text-md font-bold text-gray-800 dark:text-gray-200"
+                    >{{ user.user.balance }}</span
+                  >
+                  <span
+                    class="text-md font-bold text-gray-700 dark:text-gray-300 ml-1"
+                    >৳</span
+                  >
+                  <button
                     @click="navigateToFunds"
                     class="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-full shadow-sm hover:shadow transition-all duration-200"
                   >
@@ -233,55 +299,73 @@
                   </button>
                 </div>
               </div>
-              
+
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
                 Purchase diamond packages (10 diamonds = 1 BDT)
               </p>
-              
+
               <!-- Diamond packages -->
               <div class="grid grid-cols-2 gap-3 mb-5">
-                <button 
-                  v-for="(pkg, index) in diamondPackages" 
+                <button
+                  v-for="(pkg, index) in diamondPackages"
                   :key="index"
-                  @click="selectDiamondPackage(pkg.amount)"
+                  @click="selectDiamondPackage(pkg.diamonds)"
                   :class="[
                     'relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200',
-                    selectedPackage === pkg.amount 
-                      ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-md' 
-                      : 'border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-800 hover:bg-pink-50/30 dark:hover:bg-pink-900/5'
+                    selectedPackage === pkg.diamonds
+                      ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-800 hover:bg-pink-50/30 dark:hover:bg-pink-900/5',
                   ]"
                 >
                   <div class="flex items-center">
                     <span class="text-pink-500 font-bold text-xl">
-                      {{ pkg.amount }}
+                      {{ pkg.diamonds }}
                     </span>
-                    <UIcon name="i-heroicons-sparkles" class="h-4 w-4 ml-1 text-pink-400" />
+                    <UIcon
+                      name="i-heroicons-sparkles"
+                      class="h-4 w-4 ml-1 text-pink-400"
+                    />
                   </div>
-                  <span class="text-xs text-gray-600 dark:text-gray-300 mt-1">{{ pkg.price }} BDT</span>
-                  
+                  <span class="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                    >{{ pkg.price }} BDT</span
+                  >
+
                   <!-- Selection indicator -->
-                  <div v-if="selectedPackage === pkg.amount" class="absolute -top-1.5 -right-1.5 h-5 w-5 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
-                    <UIcon name="i-heroicons-check" class="h-3 w-3 text-white" />
+                  <div
+                    v-if="selectedPackage === pkg.amount"
+                    class="absolute -top-1.5 -right-1.5 h-5 w-5 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm"
+                  >
+                    <UIcon
+                      name="i-heroicons-check"
+                      class="h-3 w-3 text-white"
+                    />
                   </div>
                 </button>
               </div>
-              
+
               <!-- Custom amount input -->
               <div class="mb-5">
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1"
+                >
                   Custom Amount
                 </label>
                 <div class="relative">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     v-model="customDiamondAmount"
                     placeholder="Enter diamond amount"
                     min="10"
                     class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
                     @input="onCustomAmountInput"
                   />
-                  <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                    <UIcon name="i-heroicons-sparkles" class="h-4 w-4 text-pink-400 mr-1" />
+                  <div
+                    class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-sparkles"
+                      class="h-4 w-4 text-pink-400 mr-1"
+                    />
                   </div>
                 </div>
                 <div class="flex items-center justify-between mt-1.5">
@@ -291,15 +375,18 @@
                   </p>
                 </div>
               </div>
-              
+
               <!-- Purchase button -->
-              <button 
+              <button
                 @click="purchaseDiamonds"
                 class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
                 :disabled="!canPurchase"
                 :class="{ 'opacity-60 cursor-not-allowed': !canPurchase }"
               >
-                <UIcon name="i-heroicons-shopping-cart" class="h-4 w-4 mr-1.5" />
+                <UIcon
+                  name="i-heroicons-shopping-cart"
+                  class="h-4 w-4 mr-1.5"
+                />
                 Purchase Diamonds
               </button>
             </div>
@@ -383,18 +470,25 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95"
     >
-      <div 
-        v-if="showSuccessPopup" 
+      <div
+        v-if="showSuccessPopup"
         class="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-[9999] sm:max-w-md max-w-[85%] w-full"
       >
-        <div class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center">
+        <div
+          class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center"
+        >
           <div class="flex flex-col items-center">
-            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg">
+            <div
+              class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg"
+            >
               <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
             </div>
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">Gift Sent Successfully!</h3>
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">
+              Gift Sent Successfully!
+            </h3>
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              You sent {{ lastGiftAmount }} diamonds to {{ post?.author_details?.name || post?.author?.name || 'User' }}
+              You sent {{ lastGiftAmount }} diamonds to
+              {{ post?.author_details?.name || post?.author?.name || "User" }}
             </p>
           </div>
         </div>
@@ -406,8 +500,10 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { Send } from "lucide-vue-next";
-import { useUserStore } from '~/store/user';
-import { useApi } from '~/composables/useApi'; // Import the API utility
+
+const { get, post } = useApi();
+const { user, jwtLogin } = useAuth();
+const toast = useToast();
 
 const props = defineProps({
   post: {
@@ -436,9 +532,6 @@ const props = defineProps({
   },
 });
 
-// Get user store to access balance
-const userStore = useUserStore();
-
 // Diamond dropup state
 const showDiamondDropup = ref(false);
 const showBuyDiamonds = ref(false);
@@ -449,44 +542,57 @@ const giftButtonRef = ref(null);
 
 // Gift sending states
 const sendFromBalance = ref(null);
-const giftMessage = ref(''); // Gift message input
+const giftMessage = ref(""); // Gift message input
 const isSendingGift = ref(false);
 const showSuccessPopup = ref(false);
 const lastGiftAmount = ref(0);
 
 // Account balance in BDT
 const accountBalance = computed(() => {
-  return userStore.user?.balance || 0;
+  return user.value.user?.balance || 0;
 });
 
 // Available diamonds - this will be different from account funds
 const availableDiamonds = computed(() => {
   // Check userStore first, then fallback to props.user
-  if (userStore.user && typeof userStore.user.diamond_balance !== 'undefined') {
-    return userStore.user.diamond_balance || 0;
+  if (
+    user.value.user &&
+    typeof user.value.user.diamond_balance !== "undefined"
+  ) {
+    return user.value.user.diamond_balance || 0;
   }
   // Fallback to the props if userStore is not yet loaded
   return props.user?.user?.diamond_balance || 0;
 });
 
 // Diamond packages (10 diamonds = 1 BDT)
-const diamondPackages = [
-  { amount: 50, price: 5 },
-  { amount: 100, price: 10 },
-  { amount: 250, price: 25 },
-  { amount: 500, price: 50 },
-];
+const diamondPackages = ref([]);
+
+async function getDiamondsPackges(params) {
+  try {
+    const response = await get("/diamonds/packages/");
+    if (response.data) {
+      diamondPackages.value = response.data;
+    }
+  } catch (error) {}
+}
+await getDiamondsPackges();
 
 // Calculate if purchase is possible
 const canPurchase = computed(() => {
-  return selectedPackage.value || (customDiamondAmount.value && customDiamondAmount.value >= 10);
+  return (
+    selectedPackage.value ||
+    (customDiamondAmount.value && customDiamondAmount.value >= 10)
+  );
 });
 
 // Calculate if sending gift is possible
 const canSendGift = computed(() => {
-  return sendFromBalance.value && 
-         sendFromBalance.value > 0 && 
-         sendFromBalance.value <= availableDiamonds.value; // Check against diamond balance, not user money balance
+  return (
+    sendFromBalance.value &&
+    sendFromBalance.value > 0 &&
+    sendFromBalance.value <= availableDiamonds.value
+  ); // Check against diamond balance, not user money balance
 });
 
 // Calculate price based on diamonds
@@ -498,27 +604,26 @@ const calculatePrice = (diamonds) => {
 const toggleDiamondDropup = (e) => {
   e.stopPropagation(); // Prevent event bubbling
   showDiamondDropup.value = !showDiamondDropup.value;
-  
+
   // Reset all selections when opening the dropdown
   if (showDiamondDropup.value) {
     selectedPackage.value = null;
     customDiamondAmount.value = null;
     sendFromBalance.value = null;
-    giftMessage.value = ''; // Reset gift message
+    giftMessage.value = ""; // Reset gift message
     showBuyDiamonds.value = false;
-    
+
     // Refresh user data to get latest balance
-    userStore.fetchUserData();
   }
 };
 
 // Handle clicks outside to close dropdown
 const handleClickOutside = (event) => {
   if (
-    showDiamondDropup.value && 
-    dropupRef.value && 
-    !dropupRef.value.contains(event.target) && 
-    giftButtonRef.value && 
+    showDiamondDropup.value &&
+    dropupRef.value &&
+    !dropupRef.value.contains(event.target) &&
+    giftButtonRef.value &&
     !giftButtonRef.value.contains(event.target)
   ) {
     showDiamondDropup.value = false;
@@ -527,15 +632,11 @@ const handleClickOutside = (event) => {
 
 // Setup event listeners for click outside detection
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-  // Ensure we have the latest user data
-  if (!userStore.user) {
-    userStore.initializeFromStorage();
-  }
+  document.addEventListener("click", handleClickOutside);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
 
 // Close diamond dropup
@@ -573,13 +674,13 @@ const onCustomAmountInput = () => {
 // Send gift from available balance
 const sendGift = async () => {
   const { post } = useApi(); // Initialize API utility
-  
+
   console.log("Send Gift button clicked");
-  
+
   try {
     // Make sure we have a valid gift amount to send
     const giftAmount = parseInt(sendFromBalance.value);
-    
+
     // Simple validation - check if we have something to send
     if (!giftAmount || isNaN(giftAmount) || giftAmount <= 0) {
       if (window.$nuxt && window.$nuxt.$toast) {
@@ -589,67 +690,67 @@ const sendGift = async () => {
       }
       return;
     }
-    
+
     // Check if user has enough diamonds
     if (giftAmount > availableDiamonds.value) {
       if (window.$nuxt && window.$nuxt.$toast) {
-        window.$nuxt.$toast.error(`You only have ${availableDiamonds.value} diamonds available`);
+        window.$nuxt.$toast.error(
+          `You only have ${availableDiamonds.value} diamonds available`
+        );
       } else {
         alert(`You only have ${availableDiamonds.value} diamonds available`);
       }
       return;
     }
-    
+
     // Set loading state
     isSendingGift.value = true;
-    
+
     // Prepare the payload
     const payload = {
       amount: giftAmount,
       recipientId: props.post.author?.id || props.post.author_details?.id,
       postId: props.post.id,
-      message: giftMessage.value || `Sent ${giftAmount} diamonds as a gift! ✨`
+      message: giftMessage.value || `Sent ${giftAmount} diamonds as a gift! ✨`,
     };
-    
+
     console.log("Sending gift with payload:", payload);
-    
+
     // Call the API endpoint
-    const response = await post('/diamonds/send-gift/', payload);
-    
+    const response = await post("/diamonds/send-gift/", payload);
+
     console.log("Gift sent successfully:", response);
-    
+
     // Update the user's diamond balance locally
-    if (userStore.user) {
-      userStore.user.diamond_balance -= giftAmount;
+    if (user.value.user) {
+      user.value.user.diamond_balance -= giftAmount;
     }
-    
+
     // Close the dialog
     closeDiamondDropup();
-    
+
     // Store the gift amount for the success popup
     lastGiftAmount.value = giftAmount;
-    
+
     // Show success popup
     showSuccessPopup.value = true;
-    
+
     // Auto-hide popup after 3 seconds
     setTimeout(() => {
       showSuccessPopup.value = false;
     }, 3000);
-    
+
     // Refresh user data to get updated balances
-    await userStore.fetchUserData();
-    
   } catch (error) {
     console.error("Error sending gift:", error);
-    
+
     // Show error message
-    let errorMsg = 'Failed to send gift';
-    
+    let errorMsg = "Failed to send gift";
+
     if (error.response?.data?.error) {
       errorMsg = error.response.data.error;
     }
-    
+
     if (window.$nuxt && window.$nuxt.$toast) {
       window.$nuxt.$toast.error(errorMsg);
     } else {
@@ -663,59 +764,47 @@ const sendGift = async () => {
 
 // Purchase diamonds
 const purchaseDiamonds = async () => {
-  const { post } = useApi(); // Initialize the API utility
+  // Initialize the API utility
+  console.log(selectedPackage.value, customDiamondAmount.value);
   const diamondAmount = selectedPackage.value || customDiamondAmount.value;
   if (!diamondAmount) return;
-  
+
   // Calculate cost in BDT (10 diamonds = 1 BDT)
   const costInBDT = calculatePrice(diamondAmount);
-  
+
   // Check if user has sufficient balance
-  if (accountBalance.value < costInBDT) {
-    if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.error(`Insufficient balance. Please add funds.`);
-    } else {
-      alert(`Insufficient balance. Please add funds.`);
-    }
+  if (user.value?.user?.balance < costInBDT) {
+    toast.add({
+      title: "Insufficient balance",
+      description: "Please add funds to your account",
+    });
     return;
   }
 
   try {
-    // Call API to purchase diamonds directly from balance
-    const response = await post('/diamonds/purchase/', {
-      amount: parseInt(diamondAmount), // Convert to integer to match backend expectation
-      cost: costInBDT // Send as number, not string
+    // Call API to purchase diamonds
+    const response = await post("/diamonds/purchase/", {
+      amount: parseInt(diamondAmount),
+      cost: costInBDT,
     });
-    
-    // Update UI immediately for better user experience
-    if (userStore.user) {
-      // Deduct the cost from the balance
-      userStore.user.balance -= costInBDT;
-      // Add diamonds to the diamond balance
-      userStore.user.diamond_balance = (userStore.user.diamond_balance || 0) + parseInt(diamondAmount);
+
+    // Update UI immediately for better UX
+    if (response.data) {
+      jwtLogin();
+      // Show success message
+      toast.add({
+        title: "Purchase successful",
+        description: `You've purchased ${diamondAmount} diamonds!`,
+      });
+      showBuyDiamonds.value = false;
     }
-    
-    // Show success message with animation
-    if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.success(`Successfully purchased ${diamondAmount} diamonds!`);
-    } else {
-      alert(`Successfully purchased ${diamondAmount} diamonds!`);
-    }
-    
-    // Reset the form and return to gift view
-    showBuyDiamonds.value = false;
-    selectedPackage.value = null;
-    customDiamondAmount.value = null;
-    
-    // Refresh user data to ensure consistency with server
-    await userStore.fetchUserData();
   } catch (error) {
-    console.error('Error purchasing diamonds:', error);
-    if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.error(error.response?.data?.error || 'Failed to purchase diamonds. Please try again.');
-    } else {
-      alert(error.response?.data?.error || 'Failed to purchase diamonds. Please try again.');
-    }
+    console.error("Error purchasing diamonds:", error);
+    toast.add({
+      title: "Purchase failed",
+      description: error.response?.data?.error || "Failed to purchase diamonds",
+      color: "red",
+    });
   }
 };
 
@@ -723,11 +812,13 @@ const purchaseDiamonds = async () => {
 const goToDeposit = () => {
   // Close the dropdown and navigate to the deposit page
   showDiamondDropup.value = false;
-  navigateTo('/deposit-withdraw');
+  navigateTo("/deposit-withdraw");
 };
 
 function autoResize() {
-  const textarea = document.querySelector('textarea[placeholder="Add a comment..."]');
+  const textarea = document.querySelector(
+    'textarea[placeholder="Add a comment..."]'
+  );
   if (textarea) {
     textarea.style.height = "auto";
     textarea.style.height = Math.min(textarea.scrollHeight, 104) + "px"; // 3 lines ~ 104px
@@ -736,7 +827,7 @@ function autoResize() {
 
 // Navigate to funds page
 const navigateToFunds = () => {
-  navigateTo('/deposit-withdraw');
+  navigateTo("/deposit-withdraw");
 };
 
 defineEmits([
@@ -761,14 +852,14 @@ defineEmits([
 
 /* Diamond dropup special styling */
 .diamond-dropup {
-  box-shadow: 0 10px 40px rgba(255, 105, 180, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08),
-    0 0 2px rgba(255, 105, 180, 0.1);
+  box-shadow: 0 10px 40px rgba(255, 105, 180, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.08), 0 0 2px rgba(255, 105, 180, 0.1);
   z-index: 40; /* Increase z-index to appear above other posts */
 }
 
 .dark .diamond-dropup {
-  box-shadow: 0 10px 40px rgba(255, 105, 180, 0.15), 0 4px 12px rgba(0, 0, 0, 0.25),
-    0 0 2px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px rgba(255, 105, 180, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.25), 0 0 2px rgba(255, 255, 255, 0.05);
 }
 
 /* Animation for mention dropdown */
@@ -848,5 +939,4 @@ defineEmits([
 .animate-pop-in {
   animation: popIn 0.3s ease-out forwards;
 }
-
 </style>
