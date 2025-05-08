@@ -616,10 +616,10 @@ const closeModal = () => {
 const activeTab = ref("purchase");
 const isLoadingHistory = ref(false);
 const historyError = ref(null);
-const purchaseHistory = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const isRefreshing = ref(false);
+const purchaseHistory = ref([]);
 
 const setHistoryTab = () => {
   activeTab.value = "history";
@@ -627,134 +627,32 @@ const setHistoryTab = () => {
 };
 
 const loadPurchaseHistory = async () => {
-  const { get } = useApi();
-  isLoadingHistory.value = true;
-  historyError.value = null;
-  isRefreshing.value = true;
-
   try {
-    // First attempt: Get diamond transactions directly from the user API endpoint
-    // This is the most reliable way to get the real transaction data
-    const userResponse = await get(`/user/${user.value?.user?.id || "me"}/`);
-
-    if (
-      userResponse.data &&
-      userResponse.data.diamond_transactions &&
-      Array.isArray(userResponse.data.diamond_transactions)
-    ) {
-      // Process the real transaction data from the backend
-      const transactions = userResponse.data.diamond_transactions;
-      console.log("Found diamond transactions:", transactions);
-
-      // Sort to ensure newest transactions are first
-      const sortedTransactions = [...transactions].sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
-
-      // Calculate pagination
-      const total = sortedTransactions.length;
-      totalPages.value = Math.max(1, Math.ceil(total / 5));
-
-      // Apply pagination
-      const startIndex = (currentPage.value - 1) * 5;
-      const endIndex = startIndex + 5;
-      purchaseHistory.value = sortedTransactions.slice(startIndex, endIndex);
-      return;
-    }
-
-    // Second attempt: Try the diamond transactions API directly
     const response = await get(
-      `/api/diamond-transactions/?user_id=${user.value?.user?.id}`
+      "/diamonds-transactions/?page=" + currentPage.value
     );
-    if (
-      response.data &&
-      Array.isArray(response.data.results || response.data)
-    ) {
-      const transactions = response.data.results || response.data;
-      purchaseHistory.value = transactions;
-
-      if (response.data.count) {
-        totalPages.value = Math.ceil(response.data.count / 5);
-      } else {
-        totalPages.value = Math.max(1, Math.ceil(transactions.length / 5));
-      }
-      return;
+    if (response.data) {
+      console.log(response.data);
+      purchaseHistory.value = response.data.results;
+      totalPages.value = response.data?.count / response.data?.results?.length;
     }
-
-    // Third attempt: Try accessing user balance history for diamond-related transactions
-    const balanceResponse = await get(
-      `/user-balance/${
-        user.value?.user?.email || user.value?.user?.id || "me"
-      }/`
-    );
-    if (balanceResponse.data && Array.isArray(balanceResponse.data)) {
-      // Filter transactions related to diamonds
-      const diamondTransactions = balanceResponse.data
-        .filter(
-          (tx) =>
-            (tx.description &&
-              tx.description.toLowerCase().includes("diamond")) ||
-            tx.transaction_type === "diamond_purchase" ||
-            tx.transaction_type === "purchase_diamonds"
-        )
-        .map((tx) => ({
-          id: tx.id,
-          transaction_type: "purchase",
-          amount: calculateDiamondAmount(tx.payable_amount),
-          cost: parseFloat(tx.payable_amount || 0),
-          created_at: tx.created_at,
-          status: tx.bank_status || "completed",
-          description: tx.description || "Diamond purchase",
-        }));
-
-      if (diamondTransactions.length > 0) {
-        // Sort by newest first
-        diamondTransactions.sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
-
-        // Apply pagination
-        const startIndex = (currentPage.value - 1) * 5;
-        const endIndex = startIndex + 5;
-        purchaseHistory.value = diamondTransactions.slice(startIndex, endIndex);
-        totalPages.value = Math.ceil(diamondTransactions.length / 5);
-        return;
-      }
-    }
-
-    // Last attempt: Try direct API endpoint that might exist
-    try {
-      const directResponse = await get(`/diamonds/history/`);
-      if (
-        directResponse.data &&
-        (directResponse.data.transactions || Array.isArray(directResponse.data))
-      ) {
-        const transactions =
-          directResponse.data.transactions || directResponse.data;
-        purchaseHistory.value = transactions;
-
-        if (directResponse.data.total_pages) {
-          totalPages.value = directResponse.data.total_pages;
-        } else {
-          totalPages.value = Math.max(1, Math.ceil(transactions.length / 5));
-        }
-        return;
-      }
-    } catch (directError) {
-      console.log("Direct endpoint not available:", directError);
-    }
-
-    // If we got here, all attempts failed
-    historyError.value = "Failed to load transaction history from the server";
   } catch (error) {
-    console.error("Error loading diamond history:", error);
-    historyError.value = "Error connecting to server";
-  } finally {
-    isLoadingHistory.value = false;
-    isRefreshing.value = false;
+    console.log(error);
   }
 };
 
+function prevPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    loadPurchaseHistory();
+  }
+}
+function nextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    loadPurchaseHistory();
+  }
+}
 // Helper function to calculate diamond amount from payment amount (10 diamonds = 1 BDT)
 const calculateDiamondAmount = (paymentAmount) => {
   if (!paymentAmount) return 0;

@@ -128,6 +128,7 @@ urlpatterns = [
   # Diamond API endpoints
   path('diamonds/packages/', DiamondPackageListView.as_view(), name='diamond_package_list'),
   path('diamonds/purchase/', PurchaseDiamondsView.as_view(), name='purchase_diamonds'),
+  path('diamonds-transactions/', DiamondTransactionListView.as_view(), name='diamond_transactions'),
   path('business-network/send-diamond-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
   path('diamonds/send-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
 ]

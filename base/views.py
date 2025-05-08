@@ -29,6 +29,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
+from .pagination import *
 
 # Create your views here.
 
@@ -2360,6 +2361,14 @@ def index(request, **args):
 class DiamondPackageListView(generics.ListAPIView):
     queryset = DiamondPackages.objects.all()
     serializer_class = DiamondPackagesSerializer
+
+class DiamondTransactionListView(generics.ListAPIView):
+    serializer_class = DiamondTransactionSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        return DiamondTransaction.objects.filter(user=self.request.user)
 
 class PurchaseDiamondsView(APIView):
     permission_classes = [IsAuthenticated]
