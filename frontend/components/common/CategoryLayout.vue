@@ -73,7 +73,7 @@
             <h2 class="text-lg font-bold text-gray-800">New & Hot Arrivals</h2>
             <div class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-full">Just In</div>
           </div>
-          <a href="#" class="text-emerald-600 hover:underline flex items-center text-sm font-medium">
+          <a href="/eshop" class="text-emerald-600 hover:underline flex items-center text-sm font-medium">
             View All
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="m9 18 6-6-6-6"/></svg>
           </a>
@@ -86,7 +86,7 @@
             <div 
               v-for="(card, index) in newArrivalsCards" 
               :key="index"
-              class="flex-shrink-0 w-[calc(25%-1.5px)] md:w-[calc(12.5%-1.5px)] bg-white rounded-lg overflow-visible shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 snap-start card-hover"
+              class="flex-shrink-0 w-[26%] sm:w-[11%] space-x-2 bg-white rounded-lg overflow-visible shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 snap-start card-hover"
             >
               <a :href="card.link" class="block">
                 <div class="relative h-[70px] overflow-hidden rounded-t-lg">
