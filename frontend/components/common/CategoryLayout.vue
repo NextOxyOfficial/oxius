@@ -1,10 +1,6 @@
 <template>
   <div class="w-full max-w-7xl sm:px-4 mx-auto bg-gradient-to-br from-slate-50 via-white to-slate-50">
-    <!-- Subtle Background Elements -->
-    <div class="fixed inset-0 bg-pattern opacity-5 z-0"></div>
-    <div class="fixed top-0 left-0 w-full h-64 bg-gradient-to-r from-rose-100/20 via-purple-100/20 to-cyan-100/20 z-0"></div>
-    
-    <!-- Content Container -->
+       <!-- Content Container -->
     <div class="relative z-10">
       
       <!-- 1. Main Carousel -->
