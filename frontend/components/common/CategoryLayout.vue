@@ -112,7 +112,7 @@
             
             <!-- Scrollable Cards Container -->
             <div class="flex-1 overflow-hidden">
-              <div class="flex space-x-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory hot-deals-container">
+              <div class="flex py-2 space-x-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory hot-deals-container">
                 <!-- Dynamic Hot Deals Cards -->
                 <div 
                   v-for="(card, index) in hotDealsCards" 
