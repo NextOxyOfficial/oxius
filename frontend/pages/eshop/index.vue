@@ -445,7 +445,7 @@
       <div
         v-else
         :class="{
-          'grid gap-x-4 gap-y-8 sm:gap-6': true,
+          'grid gap-x-4 gap-y-8 sm:gap-6 mt-4': true,
           'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5':
             viewMode === 'grid',
           'grid-cols-1 gap-y-4': viewMode === 'list',
@@ -749,6 +749,15 @@ async function fetchProducts() {
     const res = await get(`/all-products/?${queryParams}`);
     products.value = res.data;
     totalProducts.value = res.data.count;
+    
+    // Reset allProducts and populate with initial results
+    if (currentPage.value === 1) {
+      allProducts.value = res.data.results || [];
+    }
+    
+    // Update hasMoreProducts status
+    hasMoreProducts.value = res.data.results && res.data.results.length === itemsPerPage.value;
+    
   } catch (error) {
     console.error("Error fetching products:", error);
     toast.add({
