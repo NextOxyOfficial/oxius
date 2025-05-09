@@ -130,7 +130,7 @@
                   color="white"
                   variant="solid"
                   size="md"
-                  class="mt-4 w-full font-medium shadow-sm group-hover:shadow-md transition-all"
+                  class="mt-4 w-full font-medium shadow-sm group-hover:shadow-sm transition-all"
                   @click="goToSellerRegistration"
                 >
                   <UIcon name="i-heroicons-arrow-right" class="mr-1.5 size-4 transition-transform group-hover:translate-x-0.5" />
@@ -199,89 +199,97 @@
       
       <CommonHotDealsSection/>
       <!-- Premium Search & Filters Section -->
-      <div class="mb-3 space-y-3">
-        <!-- Elegant Search Bar -->
-        <div class="flex gap-2 items-center">
-          <!-- Sidebar Toggle Button -->
-          <button 
-            @click="toggleSidebar"
-            class="inline-flex items-center justify-center p-2.5 rounded-md border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors shadow-sm flex-shrink-0"
-            :class="{'text-emerald-500': isSidebarOpen}"
-          >
-            <UIcon 
-              name="i-heroicons-bars-3" 
-              class="size-5" 
-            />
-          </button>
-          
-          <div class="relative flex-1">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search premium products..."
-              class="text-base w-full px-5 py-2.5 pl-12 pr-12 rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/60 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-md"
-              @input="debouncedSearch"
-            />
-            <UIcon
-              name="i-heroicons-magnifying-glass"
-              class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 size-5"
-            />
-            <button
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+      <div class="mb-5">
+        <!-- Elegant Search Bar & Price Range - Responsive Layout -->
+        <div class="flex flex-col lg:flex-row gap-3">
+          <!-- Search Section -->
+          <div class="flex gap-3 items-center lg:flex-1">
+            <!-- Sidebar Toggle Button -->
+            <button 
+              @click="toggleSidebar"
+              class="inline-flex items-center justify-center p-2.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all duration-200 shadow-sm hover:shadow flex-shrink-0 group"
+              :class="{'text-emerald-500 border-emerald-200 dark:border-emerald-800/50': isSidebarOpen}"
             >
-              <UIcon name="i-heroicons-x-mark" class="size-5" />
+              <span class="sr-only">Toggle categories</span>
+              <UIcon 
+                name="i-heroicons-bars-3" 
+                class="size-5 transition-transform group-hover:scale-110" 
+              />
             </button>
+            
+            <div class="relative flex-1">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search products, brands, categories..."
+                class="text-base w-full px-5 py-3 pl-12 pr-12 rounded-xl border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                @input="debouncedSearch"
+              />
+              <UIcon
+                name="i-heroicons-magnifying-glass"
+                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 size-5"
+              />
+              <button
+                v-if="searchQuery"
+                @click="clearSearch"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                <UIcon name="i-heroicons-x-mark" class="size-5" />
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-1 sm:items-center">
-          <h3
-            class="text-base font-medium text-gray-700 dark:text-gray-300 flex items-center"
-          >
-            <UIcon
-              name="i-heroicons-banknotes"
-              class="mr-2 size-4 text-emerald-500"
-            />
-            Price Range:
-          </h3>
-
-          <div class="flex items-center space-x-3">
-            <div class="relative flex-1">
-              <span
-                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600"
-                >৳</span
-              >
-              <input
-                v-model="minPrice"
-                type="number"
-                placeholder="Min"
-                class="w-full pl-8 pr-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/60 focus:ring-1 focus:ring-emerald-400"
-                @change="applyPriceFilter"
-              />
-            </div>
-            <div class="relative flex-1">
-              <span
-                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600"
-                >৳</span
-              >
-              <input
-                v-model="maxPrice"
-                type="number"
-                placeholder="Max"
-                class="w-full pl-8 pr-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white/60 dark:bg-gray-800/60 focus:ring-1 focus:ring-emerald-400"
-                @change="applyPriceFilter"
-              />
-            </div>
-            <UButton
-              color="emerald"
-              variant="soft"
-              @click="applyPriceFilter"
-              class="whitespace-nowrap px-4"
+          
+          <!-- Price Range Section - Desktop: Right side of search -->
+          <div class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center">
+            <h3
+              class="text-base font-medium text-gray-700 dark:text-gray-300 flex items-center lg:whitespace-nowrap"
             >
-              Apply
-            </UButton>
+              <UIcon
+                name="i-heroicons-banknotes"
+                class="mr-2 size-4.5 text-emerald-500"
+              />
+              Price Range
+            </h3>
+
+            <div class="flex items-center gap-3 flex-1">
+              <div class="relative flex-1">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 font-medium"
+                  >৳</span
+                >
+                <input
+                  v-model="minPrice"
+                  type="number"
+                  placeholder="Min"
+                  class="w-full pl-8 pr-3 py-2.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
+                  @change="applyPriceFilter"
+                />
+              </div>
+              
+              <div class="flex-shrink-0 text-gray-400">—</div>
+              
+              <div class="relative flex-1">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 font-medium"
+                  >৳</span
+                >
+                <input
+                  v-model="maxPrice"
+                  type="number"
+                  placeholder="Max"
+                  class="w-full pl-8 pr-3 py-2.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
+                  @change="applyPriceFilter"
+                />
+              </div>
+              <UButton
+                color="emerald"
+                variant="soft"
+                @click="applyPriceFilter"
+                class="whitespace-nowrap px-4 py-2.5 shadow-sm hover:shadow font-medium"
+              >
+                Apply Filter
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
