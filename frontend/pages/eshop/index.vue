@@ -5,7 +5,7 @@
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
       <UContainer>
-        <div class="relative overflow-hidden rounded-xl shadow-sm">
+        <div class="relative overflow-hidden rounded-xl shadow-md">
           <!-- Background pattern for premium look -->
           <div
             class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
