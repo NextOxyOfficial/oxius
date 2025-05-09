@@ -1,7 +1,7 @@
 <template>
   <UContainer class="relative py-2">
     <!-- Header with Premium Styling -->
-    <div class="flex items-center justify-between mt-1 mb-6">
+    <div class="flex items-center justify-between mt-1 mb-4">
       <div class="flex items-center gap-2">
         <div
           class="p-1.5 rounded bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/30 text-primary relative overflow-hidden"
@@ -36,6 +36,8 @@
         />
       </NuxtLink>
     </div>
+
+    <CommonCategoryLayout/>
 
     <!-- Product Carousel Section -->
     <div v-if="isLoading" class="flex justify-center py-8">
@@ -245,6 +247,8 @@
 </template>
 
 <script setup>
+import { CommonCategoryLayout } from '#components';
+
 const { get } = useApi();
 
 // Core state
