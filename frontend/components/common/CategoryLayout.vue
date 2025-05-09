@@ -29,18 +29,7 @@
               >
                 <div class="absolute inset-0 bg-gradient-to-r" :class="slide.gradientClass" :style="slide.gradientStyle"></div>
                 <div class="absolute inset-0 bg-cover bg-center" :style="{ backgroundImage: `url('${slide.backgroundImage}')` }"></div>
-                <div class="absolute inset-0 flex items-center justify-center z-20 text-white text-center p-2">
-                  <div class="animate-fade-in">
-                    <h3 class="text-xl md:text-3xl font-bold mb-2">{{ slide.title }}</h3>
-                    <p class="mb-4 text-sm md:text-base">{{ slide.description }}</p>
-                    <button 
-                      class="px-4 py-1 md:px-6 sm:px-6 md:py-2 rounded-full font-medium transition-colors text-sm shadow-md hover:shadow-lg"
-                      :class="slide.buttonClass"
-                    >
-                      {{ slide.buttonText }}
-                    </button>
-                  </div>
-                </div>
+                
               </div>
             </div>
 
