@@ -5,7 +5,7 @@
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
       <UContainer>
-        <div class="relative overflow-hidden rounded-sm shadow-sm">
+        <div class="relative overflow-hidden rounded-xl shadow-lg">
           <!-- Background pattern for premium look -->
           <div
             class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
@@ -26,7 +26,7 @@
                   <img
                     :src="banner.image"
                     :alt="banner.title"
-                    class="w-full h-44 sm:h-72 md:h-80 object-cover"
+                    class="relative h-[200px] sm:h-[250px] md:h-[300px] w-full overflow-hidden"
                   />
                 </div>
               </div>
@@ -37,6 +37,7 @@
     </div>
 
     <UContainer>
+      <CommonHotDealsSection/>
       <!-- Premium Search & Filters Section -->
       <div class="mb-3 space-y-3">
         <!-- Elegant Search Bar -->
@@ -305,6 +306,7 @@
 </template>
 
 <script setup>
+import { CommonHotDealsSection } from "#components";
 import { ref, computed, watch, onMounted } from "vue";
 const { get } = useApi();
 const products = ref({});
