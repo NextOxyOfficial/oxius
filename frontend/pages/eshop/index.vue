@@ -41,115 +41,150 @@
       <transition name="slide">
         <div 
           v-if="isSidebarOpen" 
-          class="fixed top-0 left-0 h-full z-40 bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700 w-72 overflow-hidden flex flex-col"
+          class="fixed top-0 left-0 h-full z-40 bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700 w-80 overflow-hidden flex flex-col"
         >
-          <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-            <h2 class="text-lg font-medium text-gray-800 dark:text-gray-200 flex items-center">
-              <UIcon name="i-heroicons-squares-2x2" class="mr-2 size-5 text-emerald-500" />
-              Categories
-            </h2>
-            <button 
-              @click="toggleSidebar" 
-              class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
-            >
-              <UIcon name="i-heroicons-x-mark" class="size-5" />
-            </button>
+          <div class="pt-safe sticky top-0 z-10">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white/95 dark:bg-gray-900/95 backdrop-blur-md mt-[60px] sm:mt-0">
+              <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                <UIcon name="i-heroicons-circle-stack" class="mr-2.5 size-5 text-emerald-500" />
+                Categories
+              </h2>
+              <button 
+                @click="toggleSidebar" 
+                class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+              >
+                <UIcon name="i-heroicons-x-mark" class="size-5" />
+              </button>
+            </div>
           </div>
           
-          <div class="overflow-y-auto flex-1 py-4 px-3">
-            <ul class="space-y-1">
-              <li v-for="category in displayedCategories" :key="category.id">
-                <button 
-                  @click="selectCategoryAndCloseSidebar(category.id)"
-                  class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors"
-                  :class="selectedCategory === category.id 
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' 
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-300'"
+          <div class="overflow-y-auto flex-1 py-4 px-4">
+            <!-- Featured Categories Section -->
+            <div class="mb-4">
+              <p class="text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-3 ml-1">BROWSE CATEGORIES</p>
+              <ul class="space-y-0.5">
+                <li v-for="category in displayedCategories" :key="category.id">
+                  <button 
+                    @click="selectCategoryAndCloseSidebar(category.id)"
+                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3.5 transition-all"
+                    :class="selectedCategory === category.id 
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium' 
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-300'"
+                  >
+                    <div class="flex-shrink-0 size-8 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800">
+                      <UIcon 
+                        :name="getCategoryIcon(category.name)" 
+                        class="size-4.5"
+                        :class="selectedCategory === category.id ? 'text-emerald-500' : 'text-gray-600 dark:text-gray-400'" 
+                      />
+                    </div>
+                    <span class="truncate font-medium">{{ category.name }}</span>
+                    <div 
+                      v-if="selectedCategory === category.id"
+                      class="ml-auto flex-shrink-0 size-2 rounded-full bg-emerald-500"
+                    ></div>
+                  </button>
+                </li>
+              </ul>
+              
+              <div v-if="hasMoreCategoriesToLoad" class="pt-4 pb-2 flex justify-center">
+                <UButton
+                  @click="loadMoreCategories"
+                  color="gray"
+                  variant="soft"
+                  size="sm"
+                  class="w-full"
                 >
-                  <div class="flex-shrink-0 size-7 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800">
-                    <UIcon 
-                      :name="getCategoryIcon(category.name)" 
-                      class="size-4"
-                      :class="selectedCategory === category.id ? 'text-emerald-500' : 'text-gray-500 dark:text-gray-400'" 
-                    />
-                  </div>
-                  <span class="truncate">{{ category.name }}</span>
-                  <span 
-                    v-if="selectedCategory === category.id"
-                    class="ml-auto flex-shrink-0 size-2 rounded-full bg-emerald-500"
-                  ></span>
-                </button>
-              </li>
-            </ul>
-            
-            <div v-if="hasMoreCategoriesToLoad" class="pt-4 pb-2 flex justify-center">
-              <UButton
-                @click="loadMoreCategories"
-                color="gray"
-                variant="soft"
-                size="sm"
-                class="w-full"
-              >
-                <UIcon name="i-heroicons-arrow-down" class="size-4 mr-1" />
-                Load more
-              </UButton>
+                  <UIcon name="i-heroicons-arrow-down" class="size-4 mr-1" />
+                  Load more categories
+                </UButton>
+              </div>
             </div>
             
-            <!-- Sell on eShop Section -->
-            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700/60">
-              <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-xl p-4 shadow-sm">
-                <h3 class="font-medium text-emerald-700 dark:text-emerald-400 flex items-center">
-                  <UIcon name="i-heroicons-shopping-bag" class="mr-2 size-5" />
-                  Want to sell your products in our eShop? Contact us today
-                </h3>
-                <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">
-                  Join our marketplace and start selling your products to thousands of customers.
-                </p>
+            <!-- Divider -->
+            <div class="border-t border-gray-200 dark:border-gray-700/60 my-6"></div>
+            
+            <!-- Sell on eShop Section - Enhanced Design -->
+            <div class="relative overflow-hidden rounded-xl shadow-sm group">
+              <!-- Gradient background with pattern -->
+              <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/90 via-emerald-600 to-emerald-700 opacity-90"></div>
+              <!-- Background pattern -->
+              <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)]" style="background-size: 10px 10px;"></div>
+              
+              <div class="relative p-5 text-white">
+                <div class="flex items-start">
+                  <div class="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg mr-3">
+                    <UIcon name="i-heroicons-shopping-bag" class="size-6" />
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-lg text-white">
+                      Become a Seller
+                    </h3>
+                    <p class="text-sm mt-1.5 text-white/90 leading-relaxed">
+                      Start selling your products in our marketplace and reach thousands of customers.
+                    </p>
+                  </div>
+                </div>
+                
                 <UButton
-                  color="emerald"
+                  color="white"
                   variant="solid"
-                  size="sm"
-                  class="mt-3 w-full"
+                  size="md"
+                  class="mt-4 w-full font-medium shadow-sm group-hover:shadow-md transition-all"
                   @click="goToSellerRegistration"
                 >
-                  Become a Seller
+                  <UIcon name="i-heroicons-arrow-right" class="mr-1.5 size-4 transition-transform group-hover:translate-x-0.5" />
+                  Start Selling Today
                 </UButton>
               </div>
             </div>
             
             <!-- Customer Support Section -->
-            <div class="mt-6">
-              <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-4 shadow-sm">
-                <h3 class="font-medium text-blue-700 dark:text-blue-400 flex items-center">
-                  <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2 size-5" />
-                  Need Help?
-                </h3>
-                <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">
-                  Our customer support team is here to assist you with any questions or issues.
-                </p>
-                <div class="mt-3 flex gap-2">
-                  <UButton
-                    color="blue"
-                    variant="soft"
-                    size="sm"
-                    class="flex-1"
-                    @click="contactSupport('chat')"
-                  >
-                    <UIcon name="i-heroicons-chat-bubble-oval-left" class="mr-1" />
-                    Live Chat
-                  </UButton>
-                  <UButton
-                    color="white"
-                    variant="solid"
-                    size="sm"
-                    class="flex-1"
-                    @click="contactSupport('email')"
-                  >
-                    <UIcon name="i-heroicons-envelope" class="mr-1" />
-                    Email
-                  </UButton>
-                </div>
+            <div class="mt-5 rounded-xl bg-white dark:bg-gray-800/70 border border-gray-100 dark:border-gray-700/50 shadow-sm p-4">
+              <h3 class="font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2 size-5 text-blue-500" />
+                Customer Support
+              </h3>
+              <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">
+                Our team is here to help you with any questions about your orders or products.
+              </p>
+              <div class="mt-3 flex gap-2">
+                <UButton
+                  color="blue"
+                  variant="soft"
+                  size="sm"
+                  class="flex-1"
+                  @click="contactSupport('chat')"
+                >
+                  <UIcon name="i-heroicons-chat-bubble-oval-left" class="mr-1.5" />
+                  Live Chat
+                </UButton>
+                <UButton
+                  color="gray"
+                  variant="outline"
+                  size="sm"
+                  class="flex-1"
+                  @click="contactSupport('email')"
+                >
+                  <UIcon name="i-heroicons-envelope" class="mr-1.5" />
+                  Email
+                </UButton>
               </div>
+            </div>
+            
+            <!-- eShop Manager Button -->
+            <div class="mt-6 mb-20 ">
+              <UButton
+                color="indigo"
+                variant="solid"
+                class="w-full group py-3 font-medium"
+                @click="navigateToEshopManager"
+              >
+                <div class="flex items-center justify-center">
+                  <UIcon name="i-heroicons-building-storefront" class="size-5 mr-2" />
+                  eShop Manager
+                </div>
+              </UButton>
             </div>
           </div>
         </div>
@@ -215,7 +250,7 @@
           <div class="flex items-center space-x-3">
             <div class="relative flex-1">
               <span
-                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500"
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600"
                 >৳</span
               >
               <input
@@ -228,7 +263,7 @@
             </div>
             <div class="relative flex-1">
               <span
-                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500"
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600"
                 >৳</span
               >
               <input
@@ -262,7 +297,7 @@
               class="text-base font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center"
             >
               <UIcon
-                name="i-heroicons-squares-2x2"
+                name="i-heroicons-circle-stack"
                 class="mr-2 size-4 text-emerald-500"
               />
               Categories
@@ -361,7 +396,7 @@
               class="w-full h-full rounded-full border-4 border-t-emerald-500 animate-spin absolute top-0 left-0"
             ></div>
           </div>
-          <p class="text-center text-gray-500 mt-6 font-medium">
+          <p class="text-center text-gray-600 mt-6 font-medium">
             Loading premium collection...
           </p>
         </div>
@@ -383,7 +418,7 @@
         <h3 class="mt-6 text-xl font-medium text-gray-900 dark:text-gray-100">
           No products found
         </h3>
-        <p class="mt-2 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+        <p class="mt-2 text-gray-600 dark:text-gray-400 max-w-md mx-auto">
           We couldn't find products matching your criteria. Try adjusting your
           filters.
         </p>
@@ -431,7 +466,7 @@
             default: {
               size: 'size-10',
               inactive:
-                'bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700',
+                'bg-white dark:bg-gray-800 text-gray-600 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700',
               active:
                 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 font-semibold',
             },
@@ -635,7 +670,7 @@ async function loadMoreCategories() {
 // Seller registration function
 function goToSellerRegistration() {
   // Navigate to seller registration page
-  navigateTo('/seller/register');
+  navigateTo('/eshop-manager');
   toggleSidebar();
 }
 
@@ -655,6 +690,11 @@ function contactSupport(type) {
     navigateTo('/contact-us');
     toggleSidebar();
   }
+}
+
+// Navigate to eShop Manager
+function navigateToEshopManager() {
+  navigateTo('/eshop-manager');
 }
 
 // Data fetching
