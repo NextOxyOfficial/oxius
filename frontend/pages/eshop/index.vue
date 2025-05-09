@@ -5,7 +5,7 @@
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
       <UContainer>
-        <div class="relative overflow-hidden rounded-xl shadow-md">
+        <div class="relative overflow-hidden rounded-xl shadow-sm">
           <!-- Background pattern for premium look -->
           <div
             class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
@@ -41,7 +41,7 @@
       <transition name="slide">
         <div 
           v-if="isSidebarOpen" 
-          class="fixed top-0 left-0 h-full z-40 bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700 w-80 overflow-hidden flex flex-col"
+          class="fixed top-0 left-0 h-full z-40 bg-white dark:bg-gray-900 shadow-sm border-r border-gray-200 dark:border-gray-700 w-80 overflow-hidden flex flex-col"
         >
           <div class="pt-safe sticky top-0 z-10">
             <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white/95 dark:bg-gray-900/95 backdrop-blur-md mt-[60px] sm:mt-0">
