@@ -207,7 +207,7 @@
             <!-- Sidebar Toggle Button -->
             <button 
               @click="toggleSidebar"
-              class="inline-flex items-center justify-center p-2.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all duration-200 shadow-sm hover:shadow flex-shrink-0 group"
+              class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all duration-200 shadow-sm hover:shadow flex-shrink-0 group"
               :class="{'text-emerald-500 border-emerald-200 dark:border-emerald-800/50': isSidebarOpen}"
             >
               <span class="sr-only">Toggle categories</span>
@@ -222,7 +222,7 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search products, brands, categories..."
-                class="text-base w-full px-5 py-3 pl-12 pr-12 rounded-xl border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-md placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 @input="debouncedSearch"
               />
               <UIcon
@@ -261,7 +261,7 @@
                   v-model="minPrice"
                   type="number"
                   placeholder="Min"
-                  class="w-full pl-8 pr-3 py-2.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
+                  class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
                   @change="applyPriceFilter"
                 />
               </div>
@@ -277,7 +277,7 @@
                   v-model="maxPrice"
                   type="number"
                   placeholder="Max"
-                  class="w-full pl-8 pr-3 py-2.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
+                  class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
                   @change="applyPriceFilter"
                 />
               </div>
@@ -285,7 +285,7 @@
                 color="emerald"
                 variant="soft"
                 @click="applyPriceFilter"
-                class="whitespace-nowrap px-4 py-2.5 shadow-sm hover:shadow font-medium"
+                class="whitespace-nowrap px-4 py-1.5 shadow-sm hover:shadow font-medium"
               >
                 Apply Filter
               </UButton>
@@ -453,7 +453,7 @@
         class="relative z-0"
       >
         <div
-          v-for="product in products?.results"
+          v-for="product in allProducts"
           :key="product.id"
           class="premium-product-card group"
         >
@@ -461,26 +461,22 @@
         </div>
       </div>
 
-      <!-- Enhanced Pagination -->
-      <div class="mt-14 mb-8 flex justify-center">
-        <UPagination
-          v-model="currentPage"
-          :total="totalProducts"
-          :page-count="5"
-          :items-per-page="itemsPerPage"
-          :ui="{
-            wrapper: 'flex items-center gap-1',
-            base: 'rounded-lg transition-colors flex items-center justify-center',
-            default: {
-              size: 'size-10',
-              inactive:
-                'bg-white dark:bg-gray-800 text-gray-600 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700',
-              active:
-                'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 font-semibold',
-            },
-          }"
-          @change="handlePageChange"
-        />
+      <!-- Infinity Loader -->
+      <div ref="loadMoreTrigger" class="flex justify-center py-10 mt-6">
+        <div v-if="isLoadingMore" class="flex flex-col items-center">
+          <div class="w-10 h-10 relative">
+            <div
+              class="w-full h-full rounded-full border-3 border-emerald-100 dark:border-emerald-800/20"
+            ></div>
+            <div
+              class="w-full h-full rounded-full border-3 border-t-emerald-500 animate-spin absolute top-0 left-0"
+            ></div>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">Loading more products...</p>
+        </div>
+        <div v-else-if="!hasMoreProducts && allProducts.length > 0" class="text-center py-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">You've reached the end of the list</p>
+        </div>
       </div>
     </UContainer>
   </div>
@@ -496,10 +492,14 @@ const isLoading = ref(true);
 const toast = useToast();
 const viewMode = ref("grid");
 
-// Pagination
+// Pagination and infinite scroll variables
 const currentPage = ref(1);
-const itemsPerPage = ref(20); // 4 rows of 5 products in grid view
+const itemsPerPage = ref(20); // Products per page
 const totalProducts = ref(0);
+const allProducts = ref([]);
+const isLoadingMore = ref(false);
+const hasMoreProducts = ref(true);
+const loadMoreTrigger = ref(null);
 
 // Banner state
 const currentSlide = ref(0);
@@ -762,10 +762,83 @@ async function fetchProducts() {
   }
 }
 
+// Load more products function
+async function loadMoreProducts() {
+  if (isLoadingMore.value || !hasMoreProducts.value) return;
+  
+  try {
+    isLoadingMore.value = true;
+    currentPage.value++;
+    
+    // Build query parameters
+    let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
+    
+    if (selectedCategory.value) {
+      queryParams += `&category=${selectedCategory.value}`;
+    }
+    
+    if (searchQuery.value) {
+      queryParams += `&name=${encodeURIComponent(searchQuery.value)}`;
+    }
+    
+    if (minPrice.value) {
+      queryParams += `&min_price=${minPrice.value}`;
+    }
+    
+    if (maxPrice.value) {
+      queryParams += `&max_price=${maxPrice.value}`;
+    }
+    
+    const res = await get(`/all-products/?${queryParams}`);
+    const newProducts = res.data.results;
+    
+    // Add new products to the existing list
+    if (newProducts && newProducts.length > 0) {
+      allProducts.value = [...allProducts.value, ...newProducts];
+    }
+    
+    // Check if there are more products to load
+    hasMoreProducts.value = newProducts.length === itemsPerPage.value;
+    
+  } catch (error) {
+    console.error("Error loading more products:", error);
+    toast.add({
+      title: "Error loading more products",
+      description: "Could not load additional products. Please try again later.",
+      color: "red",
+      timeout: 3000,
+    });
+  } finally {
+    isLoadingMore.value = false;
+  }
+}
+
+// Initialize infinite scroll
+function initInfiniteScroll() {
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.1
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !isLoadingMore.value && hasMoreProducts.value) {
+        loadMoreProducts();
+      }
+    });
+  }, options);
+  
+  if (loadMoreTrigger.value) {
+    observer.observe(loadMoreTrigger.value);
+  }
+}
+
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);
-onMounted(async () => {
+onMounted(() => {
   startSliderInterval();
+  initInfiniteScroll();
 });
 
 // Clean up slider interval
