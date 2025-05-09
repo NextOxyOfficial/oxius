@@ -518,8 +518,11 @@ class Faq(models.Model):
 class ProductCategory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=256)
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    icon = models.CharField(max_length=255, blank = True, null = True)
+    special_offer= models.BooleanField(default=False)
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):

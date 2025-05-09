@@ -1764,6 +1764,22 @@ class ProductCategoryListCreateView(generics.ListCreateAPIView):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
     search_fields = ['name']
+    
+    def get_queryset(self):
+        queryset = ProductCategory.objects.all()
+        special_offer = self.request.query_params.get('special_offer', None)
+        
+        if special_offer is not None:
+            # Convert string to boolean
+            is_special = special_offer.lower() == 'true'
+            queryset = queryset.filter(special_offer=is_special)
+            
+        return queryset.order_by('-created_at')
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        else:
+            return [IsAuthenticated()]
 
 # Category Retrieve, Update, Delete
 class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
