@@ -1,5 +1,30 @@
 <template>
   <div class="post-sale-container">
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
+        <div class="text-center">
+          <div class="mb-4 flex justify-center">
+            <div class="rounded-full bg-green-100 p-3">
+              <Icon name="heroicons:check-circle" class="h-10 w-10 text-green-500" />
+            </div>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Post Submitted Successfully!</h3>
+          <p class="text-sm text-gray-500 mb-4">
+            Your listing has been submitted and is now under review. We'll notify you once it's approved.
+          </p>
+          <div class="flex justify-center">
+            <button 
+              @click="closeSuccessModal" 
+              class="bg-primary text-white px-6 py-2.5 rounded-md hover:bg-primary/90 transition"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="bg-white rounded-lg">
       <!-- Progress Steps Indicator -->
       <div class="px-2 sm:px-4 pt-6">
@@ -10,7 +35,7 @@
             class="flex flex-col items-center relative w-full"
           >
             <div 
-              :class="[
+              :class="[ 
                 'w-8 h-8 rounded-full flex items-center justify-center z-10 relative mb-1',
                 currentStep > index ? 'bg-green-500 text-white' : 
                 currentStep === index ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
@@ -25,7 +50,7 @@
             <!-- Connector line -->
             <div 
               v-if="index < formSteps.length - 1"
-              :class="[
+              :class="[ 
                 'absolute top-4 left-1/2 h-0.5 w-full',
                 currentStep > index ? 'bg-green-500' : 'bg-gray-200'
               ]"
@@ -111,7 +136,7 @@
               <label 
                 v-for="condition in conditions" 
                 :key="condition.value" 
-                :class="[
+                :class="[ 
                   'flex items-center px-4 py-2.5 border rounded-md cursor-pointer transition-colors',
                   formData.condition === condition.value 
                     ? 'border-primary bg-primary/10 text-primary' 
@@ -132,7 +157,7 @@
         </div>
 
         <!-- Step 2: Category-specific fields -->
-        <div v-if="currentStep === 1" class="fade-transition px-6 pb-6">
+        <div v-if="currentStep === 1" class="fade-transition px-2 sm:px-6 pb-6">
           <h3 class="text-xl font-medium text-gray-800 mb-4">
             {{ getCategoryName(formData.category) }} Details
           </h3>
@@ -479,7 +504,7 @@
         </div>
 
         <!-- Step 3: Price and Location -->
-        <div v-if="currentStep === 2" class="fade-transition px-6 pb-6">
+        <div v-if="currentStep === 2" class="fade-transition px-2 sm:px-6 pb-6">
           <h3 class="text-xl font-medium text-gray-800 mb-4">Pricing & Location</h3>
           
           <!-- Price -->
@@ -602,7 +627,7 @@
         </div>
 
         <!-- Step 4: Images Upload -->
-        <div v-if="currentStep === 3" class="fade-transition px-6 pb-6">
+        <div v-if="currentStep === 3" class="fade-transition px-2 sm:px-6 pb-6">
           <h3 class="text-xl font-medium text-gray-800 mb-4">Upload Photos</h3>
           
           <p class="text-sm text-gray-500 mb-4">
@@ -620,7 +645,7 @@
             >
               <input 
                 type="file" 
-                :ref="'fileInput' + (n-1)" 
+                :ref="el => { if(el) fileInputRefs[`fileInput${n-1}`] = el }"
                 class="hidden" 
                 accept="image/*" 
                 @change="handleFileUpload($event, n - 1)"
@@ -666,6 +691,29 @@
             <Icon name="heroicons:information-circle" class="text-blue-500" />
             <p class="text-xs text-gray-500">Recommended: Upload at least 3 images from different angles</p>
           </div>
+
+          <!-- Terms and Conditions Acceptance -->
+          <div class="mt-6 border-t pt-5">
+            <label class="flex items-start gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                v-model="formData.termsAccepted" 
+                class="rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                required
+              />
+              <div>
+                <span class="text-sm text-gray-700">I agree to the</span>
+                <a href="#" class="text-sm text-primary hover:underline ml-1">Terms and Conditions</a>
+                <span class="text-sm text-gray-700">, </span>
+                <a href="#" class="text-sm text-primary hover:underline">Privacy Policy</a>
+                <span class="text-red-500 ml-0.5">*</span>
+                <p class="mt-1 text-xs text-gray-500 group-hover:text-gray-700 transition-colors">
+                  By posting, you confirm that this ad complies with our policies and you own or have rights to the content you're posting.
+                </p>
+              </div>
+            </label>
+            <p v-if="errors.termsAccepted" class="mt-1 text-red-500 text-sm">{{ errors.termsAccepted }}</p>
+          </div>
         </div>
 
         <!-- Action Buttons -->
@@ -703,7 +751,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 
 // Categories from parent component or from API
 const props = defineProps({
@@ -719,6 +767,9 @@ const props = defineProps({
     ]
   }
 });
+
+// Success modal state
+const showSuccessModal = ref(false);
 
 // Multi-step form
 const formSteps = ['Basic Info', 'Details', 'Price & Location', 'Photos'];
@@ -828,6 +879,7 @@ const formData = reactive({
   phone: '',
   email: '',
   images: [],
+  termsAccepted: false,
   
   // Property specific fields
   propertyType: '',
@@ -867,16 +919,13 @@ const formData = reactive({
 // Image preview URLs for display
 const imagePreviewUrls = ref([]);
 
-// File input references
-const fileInputRefs = {};
-for (let i = 0; i < 8; i++) {
-  fileInputRefs[`fileInput${i}`] = ref(null);
-}
+// File input references - fixed implementation
+const fileInputRefs = reactive({});
 
 // Open file upload dialog
 const openFileUpload = (index) => {
-  if (fileInputRefs[`fileInput${index}`] && fileInputRefs[`fileInput${index}`].value) {
-    fileInputRefs[`fileInput${index}`].value.click();
+  if (fileInputRefs[`fileInput${index}`]) {
+    fileInputRefs[`fileInput${index}`].click();
   }
 };
 
@@ -898,10 +947,16 @@ const handleFileUpload = (event, index) => {
     
     // Create URL for preview
     const imageUrl = URL.createObjectURL(file);
-    imagePreviewUrls.value[index] = imageUrl;
     
-    // Store file in form data
-    formData.images[index] = file;
+    // Create a new array if needed to maintain reactivity
+    const newImagePreviewUrls = [...imagePreviewUrls.value];
+    newImagePreviewUrls[index] = imageUrl;
+    imagePreviewUrls.value = newImagePreviewUrls;
+    
+    // Update images array while preserving reactivity
+    const newImages = [...formData.images];
+    newImages[index] = file;
+    formData.images = newImages;
     
     // Clear error if any
     if (errors.images) {
@@ -916,13 +971,18 @@ const removeImage = (index) => {
     // Revoke URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviewUrls.value[index]);
     
-    // Remove image from arrays
-    formData.images[index] = null;
-    imagePreviewUrls.value[index] = null;
+    // Remove image from arrays while preserving reactivity
+    const newImagePreviewUrls = [...imagePreviewUrls.value];
+    newImagePreviewUrls[index] = null;
+    imagePreviewUrls.value = newImagePreviewUrls;
+    
+    const newImages = [...formData.images];
+    newImages[index] = null;
+    formData.images = newImages;
     
     // Reset file input
-    if (fileInputRefs[`fileInput${index}`] && fileInputRefs[`fileInput${index}`].value) {
-      fileInputRefs[`fileInput${index}`].value.value = '';
+    if (fileInputRefs[`fileInput${index}`]) {
+      fileInputRefs[`fileInput${index}`].value = '';
     }
   }
 };
@@ -1043,8 +1103,13 @@ const validateStep = () => {
       return;
     }
     
-    // Submit the form
-    submitForm();
+    // Validate terms acceptance
+    errors.termsAccepted = !formData.termsAccepted ? 'You must accept the terms and conditions' : '';
+    
+    if (!errors.images && !errors.termsAccepted) {
+      // Submit the form
+      submitForm();
+    }
   }
 };
 
@@ -1079,11 +1144,8 @@ const submitForm = async () => {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Success message
-    alert('Your sale post has been submitted successfully!');
-    
-    // Reset form and go back to first step
-    resetForm();
+    // Show success modal instead of alert
+    showSuccessModal.value = true;
   } catch (error) {
     console.error('Error submitting form:', error);
     alert('There was an error submitting your form. Please try again.');
@@ -1092,11 +1154,20 @@ const submitForm = async () => {
   }
 };
 
+// Close success modal and reset form
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  resetForm();
+};
+
 // Reset form to initial state
 const resetForm = () => {
   // Reset all form fields
   Object.keys(formData).forEach(key => {
-    if (typeof formData[key] === 'object' && formData[key] !== null) {
+    if (key === 'termsAccepted') {
+      formData[key] = false;
+    }
+    else if (typeof formData[key] === 'object' && formData[key] !== null) {
       if (Array.isArray(formData[key])) {
         formData[key] = [];
       } else {
@@ -1118,16 +1189,16 @@ const resetForm = () => {
   imagePreviewUrls.value.forEach((url, index) => {
     if (url) {
       URL.revokeObjectURL(url);
-      imagePreviewUrls.value[index] = null;
     }
   });
+  imagePreviewUrls.value = [];
   
   // Reset file inputs
-  for (let i = 0; i < 8; i++) {
-    if (fileInputRefs[`fileInput${i}`] && fileInputRefs[`fileInput${i}`].value) {
-      fileInputRefs[`fileInput${i}`].value.value = '';
+  Object.keys(fileInputRefs).forEach(key => {
+    if (fileInputRefs[key]) {
+      fileInputRefs[key].value = '';
     }
-  }
+  });
   
   // Reset errors
   Object.keys(errors).forEach(key => {
