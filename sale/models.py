@@ -9,6 +9,7 @@ class SalePost(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending Review'),
         ('active', 'Active'),
+        ('stop', 'Stop'),
         ('sold', 'Sold'),
         ('expired', 'Expired'),
         ('rejected', 'Rejected'),

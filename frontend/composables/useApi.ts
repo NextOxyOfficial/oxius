@@ -60,18 +60,37 @@ export function useApi() {
   };
 
   const patch = async (endpoint: string, postData: object) => {
-    const { data, pending, error, refresh } = await useFetch<any>(
-      baseURL + endpoint,
-      {
-        headers: head.value,
-        method: "patch",
-        body: JSON.stringify(postData),
+    // Create headers with content type for JSON data
+    const headers = { ...head.value, "Content-Type": "application/json" } as HeadersInit;
+    
+    try {
+      console.log('PATCH request to:', baseURL + endpoint);
+      console.log('Request body:', JSON.stringify(postData));
+      
+      const { data, error } = await useFetch<any>(
+        baseURL + endpoint,
+        {
+          headers,
+          method: "patch",
+          body: JSON.stringify(postData)
+        }
+      );
+      
+      if (error.value) {
+        console.error('PATCH error response:', error.value);
       }
-    );
-    return {
-      data: data.value,
-      error: error.value,
-    };
+      
+      return {
+        data: data.value,
+        error: error.value,
+      };
+    } catch (err) {
+      console.error('PATCH request failed with exception:', err);
+      return {
+        data: null,
+        error: err,
+      };
+    }
   };
 
   const del = async (endpoint: string) => {

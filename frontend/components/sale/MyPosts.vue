@@ -219,10 +219,16 @@
                     >
                       <Icon name="heroicons:pencil-square" size="16px" />
                     </button>
+                    <!-- Status change button with visible disabled styling for pending posts -->
                     <button 
                       @click="updateStatus(post, $event)"
-                      class="text-blue-500 hover:text-blue-700 p-1"
-                      title="Change Status"
+                      :class="[
+                        'p-1',
+                        post.status === 'pending' 
+                          ? 'text-blue-300 cursor-not-allowed' 
+                          : 'text-blue-500 hover:text-blue-700'
+                      ]"
+                      :title="post.status === 'pending' ? 'Status change not available until approved' : 'Change Status'"
                     >
                       <Icon name="heroicons:document-check" size="16px" />
                     </button>
@@ -433,28 +439,12 @@ const availableStatuses = [
     bgColor: 'bg-green-100'
   },
   { 
-    value: 'pending', 
-    label: 'Pending', 
-    description: 'Listing is awaiting approval',
-    icon: 'heroicons:clock',
-    iconColor: 'text-yellow-600',
-    bgColor: 'bg-yellow-100' 
-  },
-  { 
     value: 'sold', 
     label: 'Sold', 
-    description: 'Item has been sold',
+    description: 'Item has been sold and listing is no longer active',
     icon: 'heroicons:banknotes',
     iconColor: 'text-blue-600',
     bgColor: 'bg-blue-100'
-  },
-  { 
-    value: 'expired', 
-    label: 'Expired', 
-    description: 'Listing has expired',
-    icon: 'heroicons:pause',
-    iconColor: 'text-gray-600',
-    bgColor: 'bg-gray-100'
   }
 ];
 
@@ -577,6 +567,7 @@ const getStatusClass = (status) => {
   switch (status.toLowerCase()) {
     case 'active': return 'bg-green-100 text-green-800';
     case 'pending': return 'bg-yellow-100 text-yellow-800';
+    case 'stop': return 'bg-gray-100 text-gray-800';
     case 'sold': return 'bg-blue-100 text-blue-800';
     case 'expired': return 'bg-gray-100 text-gray-800';
     case 'rejected': return 'bg-red-100 text-red-800';
@@ -610,6 +601,15 @@ const fetchPosts = async () => {
 
 // Status update modal
 const updateStatus = (post, event) => {
+  // Only allow status changes if post is not in pending status
+  if (post.status === 'pending') {
+    showNotification({
+      type: 'info',
+      message: 'You cannot change the status until your post is approved by an admin.'
+    });
+    return;
+  }
+  
   selectedPost.value = post;
   newStatus.value = post.status;
   console.log('Opening status modal for post:', post.id, 'Current status:', post.status);
@@ -623,10 +623,19 @@ const saveStatusChange = async () => {
     if (selectedPost.value && newStatus.value) {
       console.log('Updating post status:', selectedPost.value.id, 'New status:', newStatus.value);
       
-      // Call the API to update the post status
-      const updatedPost = await updateSalePost(selectedPost.value.id, { 
-        status: newStatus.value 
-      });
+      let updatedPost;
+      
+      // Use the specific mark_as_sold endpoint if we're changing to "sold" status
+      if (newStatus.value === 'sold') {
+        console.log('Using mark_as_sold endpoint');
+        updatedPost = await api.post(`/sale-posts/${selectedPost.value.id}/mark_as_sold/`, {});
+      } else {
+        // For other status changes, use the regular update method
+        console.log('Using regular PATCH endpoint');
+        updatedPost = await updateSalePost(selectedPost.value.id, { 
+          status: newStatus.value 
+        });
+      }
       
       console.log('Status update response:', updatedPost);
       
@@ -699,6 +708,10 @@ const deletePost = async () => {
 
 // View and edit handlers
 const editPost = (post) => {
+  console.log('Editing post:', post.id);
+  // Navigate to the edit page with the post's ID
+  router.push(`/sale/edit/${post.id}`);
+  // Also emit the event in case a parent component needs to handle it
   emit('edit-post', post);
 };
 
