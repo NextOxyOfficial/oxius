@@ -5,9 +5,7 @@
       <div class="section-header mb-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
           <h2 class="text-xl md:text-xl font-semibold">For Sale</h2>
-          <NuxtLink :to="{path: '/sale/for-sale'}" class="text-primary hover:text-primary/80 text-sm flex items-center gap-0.5">
-            View All <Icon name="heroicons:arrow-right" size="14px" />
-          </NuxtLink>
+          
         </div>
         <div class="flex gap-2 sm:gap-3">
           <button 
