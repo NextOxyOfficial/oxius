@@ -1,7 +1,7 @@
 <template>
   <div class="my-posts-container">
     <!-- Top Header Section -->
-    <div class="mb-4 bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
       <div class="bg-gradient-to-r from-primary to-primary/80 p-4 text-white">
         <h2 class="text-xl font-bold">My Listings</h2>
         <p class="text-white/80 text-sm mt-1">Manage your sale posts and track their performance</p>
@@ -168,13 +168,14 @@
 
       <!-- Posts List View -->
       <div v-else class="bg-white">
-        <div class="space-y-3 p-4">
+        <div class="space-y-3 p-1">
           <div 
             v-for="post in filteredPosts" 
             :key="post.id"
-            class="border border-gray-200 rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
+            class="border border-gray-200 rounded-lg overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer"
+            @click="navigateToPost(post)"
           >
-            <div class="flex p-3">
+            <div class="flex p-1">
               <!-- Post Image -->
               <div class="h-20 w-20 flex-shrink-0">
                 <img 
@@ -213,7 +214,7 @@
                     <span>{{ formatDate(post.postedDate) }}</span>
                   </div>
                   
-                  <div class="flex space-x-3">
+                  <div class="flex space-x-3" @click.stop>
                     <button 
                       @click="editPost(post)"
                       class="text-primary hover:text-primary/80 p-1"
@@ -222,7 +223,7 @@
                       <Icon name="heroicons:pencil-square" size="16px" />
                     </button>
                     <button 
-                      @click="updateStatus(post)"
+                      @click="updateStatus(post, $event)"
                       class="text-blue-500 hover:text-blue-700 p-1"
                       title="Change Status"
                     >
@@ -291,91 +292,87 @@
       </div>
     </div>
 
-    <!-- Status Update Modal -->
-    <div v-if="showStatusModal" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="showStatusModal = false"></div>
-        
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden">
-          <div class="p-4 border-b border-gray-200">
-            <h3 class="text-base font-medium text-gray-900">Change Status</h3>
+    <!-- Status Update Modal - Standard Centered Modal -->
+    <div v-if="showStatusModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="showStatusModal = false"></div>
+      
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden relative">
+        <div class="p-4 border-b border-gray-200">
+          <h3 class="text-base font-medium text-gray-900 text-left">Change Status</h3>
+        </div>
+        <div class="p-4 space-y-3">
+          <p class="text-gray-600 text-sm text-left">Select the new status for "<span class="font-medium">{{ selectedPost?.title }}</span>"</p>
+          
+          <div class="space-y-2">
+            <label 
+              v-for="status in availableStatuses" 
+              :key="status.value"
+              class="flex items-center p-3 border rounded-lg cursor-pointer transition-colors"
+              :class="newStatus === status.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'"
+            >
+              <input 
+                type="radio" 
+                :value="status.value" 
+                v-model="newStatus" 
+                class="hidden" 
+              />
+              <div :class="`rounded-full p-2 ${status.bgColor} mr-3`">
+                <Icon :name="status.icon" class="h-4 w-4" :class="status.iconColor" />
+              </div>
+              <div class="text-left">
+                <div class="font-medium text-sm">{{ status.label }}</div>
+                <div class="text-xs text-gray-500">{{ status.description }}</div>
+              </div>
+            </label>
           </div>
-          <div class="p-4 space-y-3">
-            <p class="text-gray-600 text-sm">Select the new status for "<span class="font-medium">{{ selectedPost?.title }}</span>"</p>
-            
-            <div class="space-y-2">
-              <label 
-                v-for="status in availableStatuses" 
-                :key="status.value"
-                class="flex items-center p-3 border rounded-lg cursor-pointer transition-colors"
-                :class="newStatus === status.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'"
-              >
-                <input 
-                  type="radio" 
-                  :value="status.value" 
-                  v-model="newStatus" 
-                  class="hidden" 
-                />
-                <div :class="`rounded-full p-2 ${status.bgColor} mr-3`">
-                  <Icon :name="status.icon" class="h-4 w-4" :class="status.iconColor" />
-                </div>
-                <div>
-                  <div class="font-medium text-sm">{{ status.label }}</div>
-                  <div class="text-xs text-gray-500">{{ status.description }}</div>
-                </div>
-              </label>
-            </div>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50">
+          <button 
+            @click="showStatusModal = false"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="saveStatusChange"
+            :disabled="isSubmitting"
+            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 text-sm flex items-center gap-2"
+          >
+            <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+            <span>{{ isSubmitting ? 'Saving...' : 'Save Changes' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal - Centered -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
+      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="showDeleteModal = false"></div>
+      
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden">
+        <div class="p-5">
+          <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+            <Icon name="heroicons:exclamation-triangle" class="h-6 w-6 text-red-600" />
           </div>
-          <div class="flex justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50">
+          <h3 class="text-lg font-medium text-center text-gray-900 mb-2">Confirm Deletion</h3>
+          <p class="text-gray-600 text-center mb-5 text-sm">
+            Are you sure you want to delete "<span class="font-medium">{{ selectedPost?.title }}</span>"? This action cannot be undone.
+          </p>
+          <div class="flex justify-center gap-3">
             <button 
-              @click="showStatusModal = false"
+              @click="showDeleteModal = false"
               class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
             >
               Cancel
             </button>
             <button 
-              @click="saveStatusChange"
+              @click="deletePost"
               :disabled="isSubmitting"
-              class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 text-sm flex items-center gap-2"
+              class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center gap-2"
             >
               <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-              <span>{{ isSubmitting ? 'Saving...' : 'Save Changes' }}</span>
+              <span>{{ isSubmitting ? 'Deleting...' : 'Delete' }}</span>
             </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="showDeleteModal = false"></div>
-        
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden">
-          <div class="p-5">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-              <Icon name="heroicons:exclamation-triangle" class="h-6 w-6 text-red-600" />
-            </div>
-            <h3 class="text-lg font-medium text-center text-gray-900 mb-2">Confirm Deletion</h3>
-            <p class="text-gray-600 text-center mb-5 text-sm">
-              Are you sure you want to delete "<span class="font-medium">{{ selectedPost?.title }}</span>"? This action cannot be undone.
-            </p>
-            <div class="flex justify-center gap-3">
-              <button 
-                @click="showDeleteModal = false"
-                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
-              >
-                Cancel
-              </button>
-              <button 
-                @click="deletePost"
-                :disabled="isSubmitting"
-                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center gap-2"
-              >
-                <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                <span>{{ isSubmitting ? 'Deleting...' : 'Delete' }}</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -418,6 +415,7 @@ const showStatusModal = ref(false);
 const showDeleteModal = ref(false);
 const selectedPost = ref(null);
 const newStatus = ref(null);
+const modalPosition = ref({ top: 0, left: 0 });
 
 // Status options
 const availableStatuses = [
@@ -675,9 +673,10 @@ const getStatusClass = (status) => {
 };
 
 // Status update modal
-const updateStatus = (post) => {
+const updateStatus = (post, event) => {
   selectedPost.value = post;
   newStatus.value = post.status;
+  
   showStatusModal.value = true;
 };
 
@@ -726,6 +725,14 @@ const deletePost = () => {
 // View and edit handlers
 const editPost = (post) => {
   emit('edit-post', post);
+};
+
+const navigateToPost = (post) => {
+  // Navigate to the post details page using the post ID
+  // You can replace this with your actual routing logic
+  window.location.href = `/post/${post.id}`;
+  // If using Vue Router, use something like:
+  // router.push(`/post/${post.id}`);
 };
 
 // Simulate loading data from API
