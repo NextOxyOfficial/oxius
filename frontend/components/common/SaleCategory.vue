@@ -2,7 +2,7 @@
   <div class="for-sale-section py-6 bg-white">
     <div class="container mx-auto px-2">
       <!-- Updated section header with linked buttons -->
-      <div class="section-header mb-4 flex justify-between items-center">
+      <div class="section-header sm:mb-8 mb:5 flex justify-between items-center">
         <div class="flex items-center gap-3">
           <h2 class="text-xl md:text-xl font-semibold">For Sale</h2>
           
@@ -26,7 +26,7 @@
       </div>
       
       <!-- Dynamic banner ads with responsive layout -->
-      <div class="banner-container mb-4">
+      <div class="banner-container mb-4 sm:mb-8">
         <div class="flex flex-col md:flex-row gap-2">
           <!-- Show loading placeholder when banners are loading -->
           <template v-if="isLoadingBanners">
