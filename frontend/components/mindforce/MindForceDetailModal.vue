@@ -57,7 +57,7 @@
                 </div>
               </div>
               <div class="ml-3">
-                <h1 class="text-xl font-bold flex items-center gap-1.5">
+                <h1 class="text-base font-medium flex items-center gap-1.5">
                   {{ problem?.user_details?.name }}
                   <div class="relative inline-flex tooltip-container">
                     <UIcon
@@ -91,7 +91,7 @@
               >
                 <button
                   @click.stop="toggleMenu"
-                  class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
+                  class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
                 >
                   <MoreHorizontal
                     class="h-4 w-4 text-slate-600 dark:text-slate-300"
@@ -112,13 +112,13 @@
                   >
                     <div class="py-1">
                       <button
-                        class="flex w-full items-center px-4 py-2 text-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        class="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                       >
                         <Edit class="h-4 w-4 mr-2" /> Edit Problem
                       </button>
                       <button
                         @click="$emit('delete')"
-                        class="flex w-full items-center px-4 py-2 text-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
                       </button>
@@ -140,14 +140,14 @@
           <!-- Problem Category & Payment - Enhanced styling -->
           <div class="flex flex-wrap gap-2 mt-4">
             <span
-              class="inline-flex items-center rounded-full px-2.5 py-1 text-md font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm"
+              class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm"
             >
               {{ problem.category_details?.name }}
             </span>
 
             <span
               v-if="problem?.payment_option === 'paid'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+              class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
             >
               {{ problem?.payment_amount > 0 ? `I can pay ` : "Paid Help" }}
               <span
@@ -163,14 +163,14 @@
             </span>
             <span
               v-else
-              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+              class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
             >
               I need help for free
             </span>
 
             <span
               v-if="problem.status === 'solved'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-md font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
+              class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
             >
               <CheckCircle class="h-3 w-3 mr-1" />
               Solved
@@ -178,7 +178,7 @@
           </div>
 
           <!-- Problem Title & Content with improved typography -->
-          <h1 class="text-xl mt-4 font-bold text-slate-900 dark:text-white">
+          <h1 class="text-base mt-4 font-medium text-slate-900 dark:text-white">
             {{ problem.title }}
           </h1>
           <div
@@ -190,7 +190,7 @@
           <!-- Problem photos gallery -->
           <div v-if="problem.media && problem.media.length > 0" class="mt-5">
             <h3
-              class="text-lg font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center"
+              class="text-base font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center"
             >
               <Image class="h-5 w-5 mr-2 text-blue-500" />
               Photos
@@ -254,7 +254,7 @@
           <!-- Comments Section - Enhanced styling -->
           <div class="mt-6">
             <h3
-              class="text-lg font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center"
+              class="text-base font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center"
             >
               <MessageSquare class="h-5 w-5 mr-2 text-blue-500" />
               Advice ({{ localComments.length || 0 }})
@@ -341,7 +341,7 @@
                       @click="$emit('mark-solution', comment.id)"
                       :disabled="processingCommentIds.includes(comment.id)"
                       :class="[
-                        'inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
+                        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
                         processingCommentIds.includes(comment.id)
                           ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
@@ -357,7 +357,7 @@
                   </div>
 
                   <p
-                    class="mt-2 sm:mt-3 text-md text-slate-700 dark:text-slate-300 leading-relaxed"
+                    class="mt-2 sm:mt-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
                   >
                     {{ comment.content }}
                   </p>
@@ -422,7 +422,7 @@
               v-if="currentUserId && problem.status !== 'solved'"
             >
               <h4
-                class="text-md font-medium mb-2 text-slate-700 dark:text-slate-300 flex items-center"
+                class="text-sm font-medium mb-2 text-slate-700 dark:text-slate-300 flex items-center"
               >
                 <Send class="h-4 w-4 mr-2 text-blue-500" />
                 Write an advice
@@ -430,7 +430,7 @@
               <textarea
                 v-model="newComment"
                 placeholder="Share your solution or ask for clarification..."
-                class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-md ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all resize-none"
+                class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all resize-none"
                 rows="3"
               ></textarea>
 
@@ -490,7 +490,7 @@
                     isSubmittingComment
                   "
                   :class="[
-                    'inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
+                    'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
                     (!newComment.trim() && commentMedia.length === 0) ||
                     isSubmittingComment
                       ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
@@ -524,7 +524,7 @@
                 </div>
                 <div>
                   <h4
-                    class="text-md font-medium text-amber-800 dark:text-amber-400"
+                    class="text-sm font-medium text-amber-800 dark:text-amber-400"
                   >
                     Authentication Required
                   </h4>
@@ -558,7 +558,7 @@
                 </div>
                 <div>
                   <h4
-                    class="text-md font-medium text-emerald-800 dark:text-emerald-400"
+                    class="text-sm font-medium text-emerald-800 dark:text-emerald-400"
                   >
                     This problem has been marked as solved
                   </h4>

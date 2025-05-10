@@ -43,7 +43,7 @@
           <!-- Pro text badge with increased z-index -->
           <div
             v-if="problem?.user_details?.is_pro"
-            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-medium"
             style="border: 1px solid rgba(255, 255, 255, 0.5)"
           >
             PRO
@@ -58,7 +58,7 @@
         </div>
         <div class="ml-2 sm:ml-3">
           <div class="inline-flex items-center space-x-1">
-            <h1 class="text-xl font-bold flex items-center gap-1.5">
+            <h1 class="text-base font-medium flex items-center gap-1.5">
               {{ problem?.user_details?.name }}
               <div class="relative inline-flex tooltip-container">
                 <UIcon
@@ -85,7 +85,22 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col items-end gap-1">
+      
+    </div>
+
+    <h3
+      class="text-base sm:text-base font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+      :class="{
+        'group-hover:text-emerald-600 dark:group-hover:text-emerald-400':
+          problem.status === 'solved',
+        'group-hover:text-indigo-600 dark:group-hover:text-indigo-400':
+          isOwnerProblem,
+      }"
+    >
+      {{ problem?.title }}
+    </h3>
+
+    <div class="flex items-center mt-1 gap-1">
         <span
           v-if="problem?.payment_option === 'paid'"
           class="inline-flex items-center rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm"
@@ -114,24 +129,10 @@
           {{ problem?.category_details?.name }}
         </span>
       </div>
-    </div>
-
-    <h3
-      class="text-base sm:text-lg font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
-      :class="{
-        'group-hover:text-emerald-600 dark:group-hover:text-emerald-400':
-          problem.status === 'solved',
-        'group-hover:text-indigo-600 dark:group-hover:text-indigo-400':
-          isOwnerProblem,
-      }"
-    >
-      {{ problem?.title }}
-    </h3>
-
     <!-- Description preview with truncation -->
-    <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+    <!-- <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
       {{ problem?.description }}
-    </p>
+    </p> -->
 
     <div class="mt-4 flex items-center justify-between relative">
       <div class="flex items-center space-x-4">

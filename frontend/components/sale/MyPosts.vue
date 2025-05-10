@@ -2,13 +2,10 @@
   <div class="my-posts-container">
     <!-- Top Header Section -->
     <div class="mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
-      <div class="bg-gradient-to-r from-primary to-primary/80 p-4 text-white">
-        <h2 class="text-xl font-bold">My Listings</h2>
-        <p class="text-white/80 text-sm mt-1">Manage your sale posts and track their performance</p>
-      </div>
+      
       
       <!-- Stats Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-2">
         <div class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
