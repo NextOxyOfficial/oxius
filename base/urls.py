@@ -56,6 +56,8 @@ urlpatterns = [
   path('update-task-by-micro-gig-post/<uuid:gig_id>/tasks/', update_microgigpost_tasks, name='microgigpost-tasks-update'),
 
   path('user-balance/<str:email>/',UserBalance.as_view()),
+  path('received-transfers/', ReceivedTransfersView.as_view(), name='received-transfers'),
+  
   path('add-user-balance/',postBalance),
   path('get-user-nid/',get_nid),
   path('add-user-nid/',add_nid),
@@ -88,7 +90,6 @@ urlpatterns = [
   path('api/auth/reset-password/', reset_password_request),
   path('api/auth/verify-reset-otp/', verify_reset_otp),
   path('api/auth/set-new-password/', set_new_password),
-  path('received-transfers/', ReceivedTransfersView.as_view(), name='received-transfers'),
   #product 
       # Product URLs
   path('all-products/', AllProductsListView.as_view(), name='all-products'),

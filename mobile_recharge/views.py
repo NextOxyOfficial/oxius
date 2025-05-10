@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from .models import *
 from .serializers import *
 
+from base.models import Balance
+
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
@@ -84,6 +86,17 @@ class RechargeListCreateView(generics.ListCreateAPIView):
         # Deduct amount from user balance
         user.balance -= amount
         user.save()
+        
+        # Create transaction history record
+        Balance.objects.create(
+            user=user,
+            amount=amount,
+            transaction_type='mobile_recharge',
+            completed=True,
+            approved=True,
+            bank_status='completed',
+            description=f"Mobile recharge for {serializer.validated_data['phone_number']}"
+        )
         
         # Create the recharge record
         return serializer.save(user=user)

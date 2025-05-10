@@ -1286,6 +1286,21 @@ def subscribeToPro(request):
     # Check if this is the user's first subscription (only pay commission once)
     is_first_time = not Subscription.objects.filter(user=user).exists()
     
+    # Convert total to Decimal for calculations
+    total_decimal = Decimal(total)
+    
+    # Create transaction record for the subscription purchase
+    Balance.objects.create(
+        user=user,
+        amount=total_decimal,
+        payable_amount=total_decimal,
+        transaction_type='pro_subscription',
+        completed=True,
+        approved=True,
+        bank_status='completed',
+        description=f"Pro subscription purchase for {months} month(s)"
+    )
+    
     # Create the subscription record
     subscription = Subscription.objects.create(user=user, months=months, total=total)
     
@@ -1295,7 +1310,6 @@ def subscribeToPro(request):
         try:
             referrer = user.refer
             # Calculate 5% commission
-            total_decimal = Decimal(total)
             commission_amount = total_decimal * Decimal('0.05')  # 5% commission
             
             # Update referrer's balance
@@ -1355,7 +1369,7 @@ def set_new_password(request):
 
 class ReceivedTransfersView(generics.ListAPIView):
     """View for seeing all transfers received by the current user"""
-    serializer_class = ReceivedTransferSerializer
+    serializer_class = BalanceSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -1363,7 +1377,6 @@ class ReceivedTransfersView(generics.ListAPIView):
         # Use Django ORM instead of raw SQL for better compatibility with DRF
         return Balance.objects.filter(
             to_user=self.request.user,
-            transaction_type__iexact='transfer',  # Case-insensitive match
             completed=True
         ).select_related('user').order_by('-updated_at')
     
@@ -1957,7 +1970,7 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                 Balance.objects.create(
                     user=buyer,  # The buyer who is making the payment
                     to_user=product_owner,
-                    amount=-total_amount,  # Negative amount as it's a deduction
+                    amount=total_amount,  # Negative amount as it's a deduction
                     transaction_type='order_payment',
                     completed=True,
                     bank_status='completed',
@@ -1975,15 +1988,15 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         product_owner.save()
                         
                         # Create transaction record for the seller's receipt
-                        Balance.objects.create(
-                            user=product_owner,  # The seller receiving the payment
-                            to_user=buyer,  # The buyer who made the payment
-                            amount=payment_amount,  # Positive amount as it's a credit
-                            transaction_type='order_received',
-                            completed=True,
-                            bank_status='completed',
-                            description=f"Payment received for order #{order.id}"
-                        )
+                        # Balance.objects.create(
+                        #     user=product_owner,  # The seller receiving the payment
+                        #     to_user=buyer,  # The buyer who made the payment
+                        #     amount=payment_amount,  # Positive amount as it's a credit
+                        #     transaction_type='order_received',
+                        #     completed=True,
+                        #     bank_status='completed',
+                        #     description=f"Payment received for order #{order.id}"
+                        # )
                     except User.DoesNotExist:
                         Response({"error": f"Failed to credit seller {seller_id} for order {order.id}"})
             
