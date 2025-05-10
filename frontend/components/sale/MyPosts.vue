@@ -311,40 +311,38 @@
             <label 
               v-for="status in availableStatuses" 
               :key="status.value"
-              class="flex items-center p-3 border rounded-lg cursor-pointer transition-colors"
-              :class="newStatus === status.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'"
+              :class="[
+                'flex items-center p-3 border rounded-lg transition-colors',
+                newStatus === status.value ? 'border-primary bg-primary/5' : 'border-gray-200',
+                // Disable active option when post is already sold
+                (selectedPost?.status === 'sold' && status.value === 'active') 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:bg-gray-50 cursor-pointer'
+              ]"
+              @click="(selectedPost?.status === 'sold' && status.value === 'active') ? null : newStatus = status.value"
             >
               <input 
                 type="radio" 
                 :value="status.value" 
                 v-model="newStatus" 
-                class="hidden" 
+                class="hidden"
+                :disabled="selectedPost?.status === 'sold' && status.value === 'active'"
               />
               <div :class="`rounded-full p-2 ${status.bgColor} mr-3`">
                 <Icon :name="status.icon" class="h-4 w-4" :class="status.iconColor" />
               </div>
               <div class="text-left">
                 <div class="font-medium text-sm">{{ status.label }}</div>
-                <div class="text-xs text-gray-500">{{ status.description }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ (selectedPost?.status === 'sold' && status.value === 'active')
+                      ? 'Cannot change back to Active once sold'
+                      : status.description 
+                  }}
+                </div>
               </div>
             </label>
           </div>
         </div>
-        <div class="flex justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50">
-          <button 
-            @click="showStatusModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
-          >
-            Cancel
-          </button>
-          <button 
-            @click="saveStatusChange"
-            :disabled="isSubmitting"
-            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 text-sm flex items-center gap-2"
-          >
-            <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-            <span>{{ isSubmitting ? 'Saving...' : 'Save Changes' }}</span>
-          </button>
         </div>
       </div>
     </div>
@@ -381,7 +379,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
