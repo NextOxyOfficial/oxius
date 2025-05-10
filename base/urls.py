@@ -12,6 +12,7 @@ router.register(r'cities', CityViewSet)
 router.register(r'regions', RegionViewSet)
 router.register(r'countries', CountryViewSet)
 
+from .views import ForSaleCategoryListView, ForSaleBannerListView
 
 urlpatterns = [
   path('logo/',getLogo,name='logo'),
@@ -133,4 +134,8 @@ urlpatterns = [
   path('diamonds-transactions/', DiamondTransactionListView.as_view(), name='diamond_transactions'),
   path('business-network/send-diamond-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
   path('diamonds/send-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
+
+  # For Sale API endpoints
+  path('api/for-sale-categories/', ForSaleCategoryListView.as_view(), name='for-sale-categories'),
+  path('api/for-sale-banners/', ForSaleBannerListView.as_view(), name='for-sale-banners'),
 ]

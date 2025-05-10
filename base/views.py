@@ -2564,3 +2564,15 @@ class SendDiamondGiftView(APIView):
             print(f"Diamond gift error: {str(e)}")
             print(traceback.format_exc())
             return Response({'error': str(e)}, status=500)
+
+class ForSaleCategoryListView(APIView):
+    def get(self, request):
+        categories = ForSaleCategory.objects.all()
+        serializer = ForSaleCategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ForSaleBannerListView(APIView):
+    def get(self, request):
+        banners = ForSaleBanner.objects.all()
+        serializer = ForSaleBannerSerializer(banners, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

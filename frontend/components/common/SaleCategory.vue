@@ -25,18 +25,52 @@
         </div>
       </div>
       
-      <!-- Two banner ads with responsive layout - both with same height on mobile -->
+      <!-- Dynamic banner ads with responsive layout -->
       <div class="banner-container mb-4">
         <div class="flex flex-col md:flex-row gap-2">
-          <!-- Main banner -->
-          <div class="main-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
-            <img src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion" alt="Promotion" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
-          </div>
+          <!-- Show loading placeholder when banners are loading -->
+          <template v-if="isLoadingBanners">
+            <div class="main-banner rounded-lg overflow-hidden md:w-1/2">
+              <div class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"></div>
+            </div>
+            <div class="secondary-banner rounded-lg overflow-hidden md:w-1/2">
+              <div class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"></div>
+            </div>
+          </template>
           
-          <!-- Secondary banner -->
-          <div class="secondary-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
-            <img src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer" alt="Offer" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
-          </div>
+          <!-- Display banners when loaded -->
+          <template v-else>
+            <!-- Main banner -->
+            <div v-if="banners.length > 0" class="main-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+              <a :href="banners[0]?.link || '#'" class="block">
+                <img 
+                  :src="getImageUrl(banners[0]?.image)" 
+                  :alt="banners[0]?.title || 'Promotion'" 
+                  class="w-full h-16 sm:h-20 md:h-32 object-cover" 
+                />
+              </a>
+            </div>
+            
+            <!-- Secondary banner -->
+            <div v-if="banners.length > 1" class="secondary-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+              <a :href="banners[1]?.link || '#'" class="block">
+                <img 
+                  :src="getImageUrl(banners[1]?.image)" 
+                  :alt="banners[1]?.title || 'Offer'" 
+                  class="w-full h-16 sm:h-20 md:h-32 object-cover" 
+                />
+              </a>
+            </div>
+            
+            <!-- Fallback banners if API returns empty data -->
+            <div v-if="banners.length === 0" class="main-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+              <img src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion" alt="Promotion" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
+            </div>
+            
+            <div v-if="banners.length <= 1" class="secondary-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+              <img src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer" alt="Offer" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
+            </div>
+          </template>
         </div>
       </div>
       
@@ -65,30 +99,55 @@
             :style="{ transform: `translateX(-${scrollPosition}px)` }"
             ref="categoriesWrapper"
           >
-            <div 
-              v-for="(category, index) in categories" 
-              :key="index"
-              class="category-item flex-shrink-0"
-              :class="[isMobile ? 'w-1/5' : 'w-1/6']"
-              @click="selectCategory(category)"
-            >
+            <!-- Show category loading placeholders when categories are loading -->
+            <template v-if="isLoadingCategories">
               <div 
-                class="category-card transition-all duration-200 cursor-pointer h-full mx-1"
-                :class="{ 
-                  'category-active': selectedCategory === category.id,
-                  'category-inactive': selectedCategory !== category.id
-                }"
+                v-for="index in 6" 
+                :key="`placeholder-${index}`"
+                class="category-item flex-shrink-0"
+                :class="[isMobile ? 'w-1/5' : 'w-1/6']"
               >
-                <div class="flex items-center justify-center h-full">
-                  <div class="text-center py-2">
-                    <div class="icon-container mx-auto mb-1 flex items-center justify-center">
-                      <Icon :name="category.icon" size="22px" />
+                <div class="category-card transition-all duration-200 cursor-pointer h-full mx-1">
+                  <div class="flex items-center justify-center h-full">
+                    <div class="text-center py-2">
+                      <div class="icon-container mx-auto mb-1 flex items-center justify-center bg-gray-200 rounded-full animate-pulse">
+                        <div class="h-8 w-8"></div>
+                      </div>
+                      <div class="h-4 bg-gray-200 rounded w-16 mx-auto animate-pulse"></div>
                     </div>
-                    <span class="category-name font-medium text-xs sm:text-sm">{{ category.name }}</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </template>
+            
+            <!-- Show loaded categories -->
+            <template v-else>
+              <div 
+                v-for="(category) in categories" 
+                :key="category.id"
+                class="category-item flex-shrink-0"
+                :class="[isMobile ? 'w-1/5' : 'w-1/6']"
+                @click="selectCategory(category)"
+              >
+                <div 
+                  class="category-card transition-all duration-200 cursor-pointer h-full mx-1"
+                  :class="{ 
+                    'category-active': selectedCategory === category.id,
+                    'category-inactive': selectedCategory !== category.id
+                  }"
+                >
+                  <div class="flex items-center justify-center h-full">
+                    <div class="text-center py-2">
+                      <div class="icon-container mx-auto mb-1 flex items-center justify-center">
+                        <img v-if="category.icon" :src="getImageUrl(category.icon)" :alt="category.name" class="h-6 w-6 object-contain" />
+                        <Icon v-else :name="getCategoryIcon(category.name)" size="22px" />
+                      </div>
+                      <span class="category-name font-medium text-xs sm:text-sm">{{ category.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -216,19 +275,15 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
+import { useApi } from '~/composables/useApi';
 import PostSale from '~/components/sale/PostSale.vue';
 import MyPosts from '~/components/sale/MyPosts.vue';
 
-// Specific 6 categories with appropriate icons
-const categories = ref([
-  { id: 1, name: 'Properties', icon: 'heroicons:home-modern' },
-  { id: 2, name: 'Vehicles', icon: 'heroicons:truck' },
-  { id: 3, name: 'Electronics', icon: 'heroicons:device-phone-mobile' },
-  { id: 4, name: 'Sports', icon: 'heroicons:trophy' },
-  { id: 5, name: 'B2B', icon: 'heroicons:building-office' },
-  { id: 6, name: 'Others', icon: 'heroicons:squares-plus' },
-]);
+const { get } = useApi();
 
+// State for categories and banners now from API
+const categories = ref([]);
+const banners = ref([]);
 const selectedCategory = ref(null);
 const scrollPosition = ref(0);
 const sliderContainer = ref(null);
@@ -236,21 +291,9 @@ const categoriesWrapper = ref(null);
 const isLoading = ref(false);
 const isMobile = ref(false);
 
-// Banner data - in a real app, this might come from an API
-const banners = ref([
-  {
-    id: 1,
-    imageUrl: '/img/banners/main-banner.jpg',
-    altText: 'Promotion',
-    link: '#'
-  },
-  {
-    id: 2,
-    imageUrl: '/img/banners/secondary-banner.jpg',
-    altText: 'Offer',
-    link: '#'
-  }
-]);
+// Add loading states for initial data fetching
+const isLoadingCategories = ref(true);
+const isLoadingBanners = ref(true);
 
 // Touch handling variables
 const touchStartX = ref(0);
@@ -263,6 +306,39 @@ const isAtEnd = computed(() => {
   return scrollPosition.value + sliderContainer.value.clientWidth >= categoriesWrapper.value.scrollWidth;
 });
 
+// Helper function to construct full image URL
+const getImageUrl = (path) => {
+  if (!path) return '';
+  const { staticURL } = useApi();
+  
+  // If path already starts with http(s) or //, it's a full URL
+  if (path.match(/^(https?:)?\/\//)) {
+    return path;
+  }
+  
+  // Otherwise prepend static URL
+  return `${staticURL}${path}`;
+}
+
+// Get appropriate icon for a category based on its name
+const getCategoryIcon = (categoryName) => {
+  const iconMap = {
+    'Properties': 'heroicons:home-modern',
+    'Vehicles': 'heroicons:truck',
+    'Electronics': 'heroicons:device-phone-mobile',
+    'Sports': 'heroicons:trophy',
+    'B2B': 'heroicons:building-office',
+    'Fashion': 'heroicons:shopping-bag',
+    'Services': 'heroicons:wrench',
+    'Jobs': 'heroicons:briefcase',
+    'Pets': 'heroicons:heart',
+    'Books': 'heroicons:book-open',
+    'Furniture': 'heroicons:table',
+  };
+  
+  return iconMap[categoryName] || 'heroicons:squares-plus'; // Default to 'squares-plus' for unknown categories
+};
+
 // Select a category with lazy loading simulation
 const selectCategory = (category) => {
   if (selectedCategory.value === category.id) return;
@@ -270,7 +346,7 @@ const selectCategory = (category) => {
   isLoading.value = true;
   selectedCategory.value = category.id;
   
-  // Simulate API request delay
+  // Simulate API request delay - in a real app, you would fetch actual items for this category
   setTimeout(() => {
     isLoading.value = false;
   }, 800);
@@ -334,6 +410,61 @@ const handleSwipe = () => {
   }
 };
 
+// Fetch categories from the backend
+const fetchCategories = async () => {
+  try {
+    isLoadingCategories.value = true;
+    const response = await get('/api/for-sale-categories/');
+    if (response.data && Array.isArray(response.data)) {
+      categories.value = response.data;
+      
+      // Set initial category if available
+      if (categories.value.length > 0) {
+        selectedCategory.value = categories.value[0].id;
+      }
+    } else {
+      // Fallback to default categories if API returns invalid data
+      console.error('Invalid category data received from API');
+      setDefaultCategories();
+    }
+  } catch (error) {
+    console.error('Error fetching sale categories:', error);
+    // Fallback to default categories if API fails
+    setDefaultCategories();
+  } finally {
+    isLoadingCategories.value = false;
+  }
+};
+
+// Fetch banners from the backend
+const fetchBanners = async () => {
+  try {
+    isLoadingBanners.value = true;
+    const response = await get('/api/for-sale-banners/');
+    if (response.data && Array.isArray(response.data)) {
+      banners.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error fetching sale banners:', error);
+    // Banners will remain an empty array if API fails
+  } finally {
+    isLoadingBanners.value = false;
+  }
+};
+
+// Set default categories if API fails
+const setDefaultCategories = () => {
+  categories.value = [
+    { id: 1, name: 'Properties', icon: 'heroicons:home-modern' },
+    { id: 2, name: 'Vehicles', icon: 'heroicons:truck' },
+    { id: 3, name: 'Electronics', icon: 'heroicons:device-phone-mobile' },
+    { id: 4, name: 'Sports', icon: 'heroicons:trophy' },
+    { id: 5, name: 'B2B', icon: 'heroicons:building-office' },
+    { id: 6, name: 'Others', icon: 'heroicons:squares-plus' },
+  ];
+  selectedCategory.value = categories.value[0].id;
+};
+
 // Handle screen resize
 const checkIfMobile = () => {
   isMobile.value = window.innerWidth < 768;
@@ -345,11 +476,9 @@ const checkIfMobile = () => {
 };
 
 // Initialize on mount
-onMounted(() => {
-  // Set initial selected category
-  if (categories.value.length > 0) {
-    selectedCategory.value = categories.value[0].id;
-  }
+onMounted(async () => {
+  // Fetch data from API
+  await Promise.all([fetchCategories(), fetchBanners()]);
   
   // Check device type initially
   checkIfMobile();
@@ -359,9 +488,9 @@ onMounted(() => {
 });
 
 // Clean up event listener
-const onUnmounted = () => {
+onUnmounted(() => {
   window.removeEventListener('resize', checkIfMobile);
-};
+});
 
 // Modal states
 const showPostSaleModal = ref(false);
