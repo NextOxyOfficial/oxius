@@ -5,13 +5,15 @@
       <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
         <div class="text-center">
           <div class="mb-4 flex justify-center">
-            <div class="rounded-full bg-green-100 p-3">
-              <Icon name="heroicons:check-circle" class="h-10 w-10 text-green-500" />
+            <div class="rounded-full bg-yellow-100 p-3">
+              <Icon name="heroicons:clock" class="h-10 w-10 text-yellow-500" />
             </div>
           </div>
           <h3 class="text-lg font-medium text-gray-900 mb-2">Post Submitted Successfully!</h3>
-          <p class="text-sm text-gray-500 mb-4">
-            Your listing has been submitted and is now under review. We'll notify you once it's approved.
+          <p class="text-sm text-gray-600 mb-4">
+            Your listing has been submitted and is now 
+            <span class="font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded">under review</span>. 
+            We'll notify you once it's approved.
           </p>
           <div class="flex justify-center">
             <button 
