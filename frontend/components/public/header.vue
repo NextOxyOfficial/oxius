@@ -969,7 +969,7 @@ function dismissWarning() {
 // Open the subscription renewal page
 function renewSubscription() {
   openMenu.value = false; // Close any open menu
-  router.push("/account/subscription");
+  router.push("/upgrade-to-pro");
 }
 
 // Check localStorage on mount to see if warning was dismissed
