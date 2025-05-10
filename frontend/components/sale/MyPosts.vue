@@ -7,52 +7,52 @@
         <p class="text-white/80 text-xs">Manage your sale posts and track their performance</p>
       </div>
       
-      <!-- Stats Cards - Smaller and More Compact -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2">
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+      <!-- Stats Cards - Even Smaller -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5 p-2">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-gray-500 text-xs">Total Listings</p>
-              <p class="text-lg font-bold text-gray-800">{{ allPosts.length }}</p>
+              <p class="text-base font-bold text-gray-800">{{ allPosts.length }}</p>
             </div>
-            <div class="rounded-full bg-primary/10 p-1.5">
-              <Icon name="heroicons:document-text" class="h-4 w-4 text-primary" />
+            <div class="rounded-full bg-primary/10 p-1">
+              <Icon name="heroicons:document-text" class="h-3.5 w-3.5 text-primary" />
             </div>
           </div>
         </div>
         
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-gray-500 text-xs">Active</p>
-              <p class="text-lg font-bold text-green-600">{{ activePosts }}</p>
+              <p class="text-base font-bold text-green-600">{{ activePosts }}</p>
             </div>
-            <div class="rounded-full bg-green-100 p-1.5">
-              <Icon name="heroicons:check-circle" class="h-4 w-4 text-green-600" />
+            <div class="rounded-full bg-green-100 p-1">
+              <Icon name="heroicons:check-circle" class="h-3.5 w-3.5 text-green-600" />
             </div>
           </div>
         </div>
         
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-gray-500 text-xs">Pending</p>
-              <p class="text-lg font-bold text-yellow-600">{{ pendingPosts }}</p>
+              <p class="text-base font-bold text-yellow-600">{{ pendingPosts }}</p>
             </div>
-            <div class="rounded-full bg-yellow-100 p-1.5">
-              <Icon name="heroicons:clock" class="h-4 w-4 text-yellow-600" />
+            <div class="rounded-full bg-yellow-100 p-1">
+              <Icon name="heroicons:clock" class="h-3.5 w-3.5 text-yellow-600" />
             </div>
           </div>
         </div>
         
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-gray-500 text-xs">Sold</p>
-              <p class="text-lg font-bold text-blue-600">{{ soldPosts }}</p>
+              <p class="text-base font-bold text-blue-600">{{ soldPosts }}</p>
             </div>
-            <div class="rounded-full bg-blue-100 p-1.5">
-              <Icon name="heroicons:banknotes" class="h-4 w-4 text-blue-600" />
+            <div class="rounded-full bg-blue-100 p-1">
+              <Icon name="heroicons:banknotes" class="h-3.5 w-3.5 text-blue-600" />
             </div>
           </div>
         </div>
@@ -184,7 +184,7 @@
                 />
               </div>
               
-              <!-- Post Details -->
+              <!-- Post Details with action buttons -->
               <div class="ml-3 flex-grow flex flex-col">
                 <div class="flex justify-between items-start">
                   <h3 class="text-sm font-medium text-gray-900 line-clamp-1">{{ post.title }}</h3>
@@ -220,7 +220,7 @@
                       class="text-blue-500 hover:text-blue-700 p-1"
                       title="Change Status"
                     >
-                      <Icon name="heroicons:arrow-path" size="14px" />
+                      <Icon name="heroicons:tag" size="14px" />
                     </button>
                     <button 
                       @click="confirmDelete(post)"
