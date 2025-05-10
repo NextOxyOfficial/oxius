@@ -34,7 +34,9 @@
             >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
-            <h2 class="text-xl font-bold text-white drop-shadow-md">Hot Deals</h2>
+            <h2 class="text-xl font-bold text-white drop-shadow-md">
+              Special Deals
+            </h2>
           </div>
           <div
             class="ml-3 px-2 py-0.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-full"
@@ -47,16 +49,15 @@
       <!-- Two-column layout: Fixed Budget Finds + Scrollable Cards -->
       <div class="flex space-x-2">
         <!-- Fixed Budget Finds Card (Always visible on left) -->
-        <div
+        <!-- <div
           class="flex-shrink-0 w-20 sm:w-[12%] bg-white/90 backdrop-blur-sm rounded-lg overflow-visible shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-white/50 card-hover"
         >
-          <a :href="budgetFindsCard.link" class="block">
+          <NuxtLink :to="budgetFindsCard.link" class="block">
             <div class="relative h-[80px] overflow-hidden rounded-t-lg">
               <div
                 class="absolute inset-0 bg-gradient-to-b from-transparent"
                 :class="budgetFindsCard.gradientClass"
               ></div>
-              <!-- Static image instead of animated GIF for better performance -->
               <img
                 :src="budgetFindsCard.image"
                 :alt="budgetFindsCard.title"
@@ -73,8 +74,8 @@
             <div class="p-2 text-center">
               <h3 class="text-sm text-gray-800">{{ budgetFindsCard.title }}</h3>
             </div>
-          </a>
-        </div>
+          </NuxtLink>
+        </div> -->
 
         <!-- Scrollable Cards Container - Optimized for performance -->
         <div class="flex-1 overflow-hidden">
@@ -84,40 +85,45 @@
           >
             <!-- Dynamic Hot Deals Cards -->
             <div
-              v-for="(card, index) in hotDealsCards"
-              :key="index"
+              v-for="(deal, index) in specialDeals"
+              :key="deal.id"
               class="flex-shrink-0 w-20 sm:w-[13%] bg-white/90 backdrop-blur-sm rounded-lg overflow-visible shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-white/50 snap-start card-hover"
+              @click="handleCardClick(deal)"
             >
-              <a :href="card.link" class="block">
+              <NuxtLink :to="`/eshop/category/${deal.slug}`" class="block">
                 <div class="relative h-[80px] overflow-hidden rounded-t-lg">
                   <div
                     class="absolute inset-0 bg-gradient-to-b from-transparent"
-                    :class="card.gradientClass"
+                    :class="deal.badge_color"
                   ></div>
                   <img
-                    :src="card.image"
-                    :alt="card.title"
+                    :src="deal.image"
+                    :alt="deal.title"
                     class="w-full h-full object-cover"
                     loading="lazy"
                   />
                   <div
                     class="absolute top-0 left-0 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br z-20"
-                    :class="card.badgeClass"
+                    :class="deal.badge_color"
                   >
-                    {{ card.badge }}
+                    {{ deal.badge }}
                   </div>
                 </div>
                 <div class="p-2 text-center">
-                  <h3 class="font-medium text-sm text-gray-800">{{ card.title }}</h3>
+                  <h3 class="font-medium text-sm text-gray-800">
+                    {{ deal.title }}
+                  </h3>
                 </div>
-              </a>
+              </NuxtLink>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Subtle scroll indicator -->
-      <div class="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
+      <div
+        class="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -139,87 +145,33 @@
 
 <script setup>
 const { get } = useApi();
-const hotDealsCardList = ref([]);
-async function fetchHotDeals() {
+const emit = defineEmits(["setCategory"]);
+const specialDeals = ref([]);
+
+async function fetchSpecialDeals() {
   try {
-    const response = get("/product-categories/?special_offer=true");
-    hotDealsCardList.value = response.data;
+    const response = await get("/product-categories/?special_offer=true");
+    specialDeals.value = response.data;
+    console.log("Special Deals:", specialDeals.value);
   } catch (error) {
     console.error("Error fetching hot deals:", error);
-    return [];
   }
 }
 
-await fetchHotDeals();
+await fetchSpecialDeals();
 
-const budgetFindsCard = {
-  title: "1 - 99 Deals",
-  badge: "1 - 99",
-  badgeClass: "bg-emerald-600",
-  image: "https://i.giphy.com/media/3o7TKTDn976rzVgky4/giphy.webp",
-  link: "#/search?category=budget-finds",
-  gradientClass: "to-emerald-500/70",
-};
+function handleCardClick(deal) {
+  emit("setCategory", deal.id);
+}
 
-// Hot Deals Cards
-const hotDealsCards = [
-  {
-    title: "Flash Deals",
-    badge: "FLASH",
-    badgeClass: "bg-rose-600",
-    image: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?q=80&w=2115",
-    link: "#/search?category=flash-deals",
-    gradientClass: "to-rose-500/70",
-  },
-  {
-    title: "Up to 80% Off",
-    badge: "80% OFF",
-    badgeClass: "bg-amber-600",
-    image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?q=80&w=2115",
-    link: "#/search?category=discounts",
-    gradientClass: "to-amber-500/70",
-  },
-  {
-    title: "Buy 1 Get 1",
-    badge: "B1G1",
-    badgeClass: "bg-purple-600",
-    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070",
-    link: "#/search?category=buy-one-get-one",
-    gradientClass: "to-purple-500/70",
-  },
-  {
-    title: "Clearance",
-    badge: "CLEAR",
-    badgeClass: "bg-cyan-600",
-    image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2070",
-    link: "#/search?category=clearance",
-    gradientClass: "to-cyan-500/70",
-  },
-  {
-    title: "Combo Deals",
-    badge: "COMBO",
-    badgeClass: "bg-blue-600",
-    image: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=2070",
-    link: "#/search?category=combo-deals",
-    gradientClass: "to-blue-500/70",
-  },
-  {
-    title: "Last Chance",
-    badge: "LAST",
-    badgeClass: "bg-pink-600",
-    image: "https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=2101",
-    link: "#/search?category=last-chance",
-    gradientClass: "to-pink-500/70",
-  },
-  {
-    title: "Season End",
-    badge: "SEASON",
-    badgeClass: "bg-indigo-600",
-    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070",
-    link: "#/search?category=season-end",
-    gradientClass: "to-indigo-500/70",
-  },
-];
+// const budgetFindsCard = {
+//   title: "1 - 99 Deals",
+//   badge: "1 - 99",
+//   badgeClass: "bg-emerald-600",
+//   image: "https://i.giphy.com/media/3o7TKTDn976rzVgky4/giphy.webp",
+//   link: "#/search?category=budget-finds",
+//   gradientClass: "to-emerald-500/70",
+// };
 
 // Get reference to hot deals container
 const hotDealsContainer = ref(null);
@@ -231,7 +183,7 @@ const startX = ref(0);
 const scrollLeft = ref(0);
 
 // Optimized start drag
-const startDrag = e => {
+const startDrag = (e) => {
   if (!hotDealsContainer.value) return;
 
   isDragging.value = true;
@@ -244,7 +196,7 @@ const startDrag = e => {
 };
 
 // Optimized drag with requestAnimationFrame for better performance
-const onDrag = e => {
+const onDrag = (e) => {
   if (!isDragging.value || !hotDealsContainer.value) return;
   e.preventDefault();
 
@@ -273,10 +225,14 @@ onMounted(() => {
     hotDealsContainer.value.style.cursor = "grab";
 
     // Use passive event listeners where possible for better performance
-    hotDealsContainer.value.addEventListener("mousedown", startDrag, { passive: false });
+    hotDealsContainer.value.addEventListener("mousedown", startDrag, {
+      passive: false,
+    });
     document.addEventListener("mousemove", onDrag, { passive: false });
     document.addEventListener("mouseup", endDrag, { passive: true });
-    hotDealsContainer.value.addEventListener("mouseleave", endDrag, { passive: true });
+    hotDealsContainer.value.addEventListener("mouseleave", endDrag, {
+      passive: true,
+    });
   }
 
   // Add entrance animation
@@ -375,11 +331,13 @@ img {
 
 /* Reduced shadow intensity for better performance */
 .shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .hover\:shadow-lg:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Cursor styles for draggable containers */

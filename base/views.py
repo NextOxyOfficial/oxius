@@ -1493,7 +1493,6 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
             
-            print(request.data)
             
             # Update the main product data
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -1768,11 +1767,17 @@ class ProductCategoryListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = ProductCategory.objects.all()
         special_offer = self.request.query_params.get('special_offer', None)
+        hot_arrival = self.request.query_params.get('hot_arrival', None)
         
         if special_offer is not None:
             # Convert string to boolean
             is_special = special_offer.lower() == 'true'
             queryset = queryset.filter(special_offer=is_special)
+            
+        if hot_arrival is not None:
+            # Convert string to boolean
+            is_hot_arrival = hot_arrival.lower() == 'true'
+            queryset = queryset.filter(hot_arrival=is_hot_arrival)
             
         return queryset.order_by('-created_at')
     def get_permissions(self):
@@ -1780,6 +1785,11 @@ class ProductCategoryListCreateView(generics.ListCreateAPIView):
             return []
         else:
             return [IsAuthenticated()]
+
+class ProductCategoryDetailsBySlug(generics.RetrieveAPIView):
+    queryset = ProductCategory.objects.all()
+    serializer_class = ProductCategorySerializer
+    lookup_field = 'slug'
 
 # Category Retrieve, Update, Delete
 class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):

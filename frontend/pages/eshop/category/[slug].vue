@@ -248,7 +248,7 @@
         @click="toggleSidebar"
       ></div>
 
-      <CommonHotDealsSection />
+      <CommonHotDealsSection @setCategory="toggleCategory" />
       <!-- Premium Search & Filters Section -->
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
@@ -546,12 +546,14 @@
 <script setup>
 import { CommonHotDealsSection } from "#components";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+const route = useRoute();
 const { get } = useApi();
 const products = ref({});
 const categories = ref([]);
 const isLoading = ref(true);
 const toast = useToast();
 const viewMode = ref("grid");
+const categoryDetails = ref({});
 
 // Pagination and infinite scroll variables
 const currentPage = ref(1);
@@ -884,6 +886,24 @@ async function loadMoreProducts() {
     isLoadingMore.value = false;
   }
 }
+async function getCategoryDetails() {
+  try {
+    const res = await get(`/product-categories/details/${route.params.slug}/`);
+    categoryDetails.value = res.data;
+    if (categoryDetails.value) {
+      toggleCategory(categoryDetails.value.id);
+    }
+  } catch (error) {
+    console.error("Error fetching category details:", error);
+    toast.add({
+      title: "Error loading category details",
+      description: "Could not load category details. Please try again later.",
+      color: "red",
+      timeout: 3000,
+    });
+  }
+}
+await getCategoryDetails();
 
 // Initialize infinite scroll
 function initInfiniteScroll() {

@@ -101,6 +101,7 @@ urlpatterns = [
   path('product/order-count/<uuid:product_id>/', product_order_count, name='product_order_count'),
   # Product Category URLs
   path('product-categories/', ProductCategoryListCreateView.as_view(), name='product-category-list-create'),
+  path('product-categories/details/<slug:slug>/', ProductCategoryDetailsBySlug.as_view(), name='product-category-details-slug'),
   path('product-categories/<int:pk>/', ProductCategoryDetailView.as_view(), name='product-category-detail'),
   path('orders/', OrderListCreate.as_view(), name='order-list-create'),
   path('orders/<uuid:id>/', OrderDetail.as_view(), name='order-detail'),
