@@ -1,58 +1,58 @@
 <template>
   <div class="my-posts-container">
-    <!-- Top Header Section with Stats - More Compact -->
-    <div class="mb-3 bg-white rounded-lg shadow-md overflow-hidden">
-      <div class="bg-gradient-to-r from-primary to-primary/80 p-3 text-white">
-        <h2 class="text-lg font-bold">My Listings</h2>
-        <p class="text-white/80 text-xs">Manage your sale posts and track their performance</p>
+    <!-- Top Header Section -->
+    <div class="mb-4 bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="bg-gradient-to-r from-primary to-primary/80 p-4 text-white">
+        <h2 class="text-xl font-bold">My Listings</h2>
+        <p class="text-white/80 text-sm mt-1">Manage your sale posts and track their performance</p>
       </div>
       
-      <!-- Stats Cards - Even Smaller -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5 p-2">
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-gray-500 text-xs">Total Listings</p>
-              <p class="text-base font-bold text-gray-800">{{ allPosts.length }}</p>
+              <p class="text-gray-500 text-sm">Total Listings</p>
+              <p class="text-lg font-bold text-gray-800">{{ allPosts.length }}</p>
             </div>
-            <div class="rounded-full bg-primary/10 p-1">
-              <Icon name="heroicons:document-text" class="h-3.5 w-3.5 text-primary" />
+            <div class="rounded-full bg-primary/10 p-1.5">
+              <Icon name="heroicons:document-text" class="h-4 w-4 text-primary" />
             </div>
           </div>
         </div>
         
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-gray-500 text-xs">Active</p>
-              <p class="text-base font-bold text-green-600">{{ activePosts }}</p>
+              <p class="text-gray-500 text-sm">Active</p>
+              <p class="text-lg font-bold text-green-600">{{ activePosts }}</p>
             </div>
-            <div class="rounded-full bg-green-100 p-1">
-              <Icon name="heroicons:check-circle" class="h-3.5 w-3.5 text-green-600" />
+            <div class="rounded-full bg-green-100 p-1.5">
+              <Icon name="heroicons:check-circle" class="h-4 w-4 text-green-600" />
             </div>
           </div>
         </div>
         
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-gray-500 text-xs">Pending</p>
-              <p class="text-base font-bold text-yellow-600">{{ pendingPosts }}</p>
+              <p class="text-gray-500 text-sm">Pending</p>
+              <p class="text-lg font-bold text-yellow-600">{{ pendingPosts }}</p>
             </div>
-            <div class="rounded-full bg-yellow-100 p-1">
-              <Icon name="heroicons:clock" class="h-3.5 w-3.5 text-yellow-600" />
+            <div class="rounded-full bg-yellow-100 p-1.5">
+              <Icon name="heroicons:clock" class="h-4 w-4 text-yellow-600" />
             </div>
           </div>
         </div>
         
-        <div class="stat-card bg-white border border-gray-100 rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-gray-500 text-xs">Sold</p>
-              <p class="text-base font-bold text-blue-600">{{ soldPosts }}</p>
+              <p class="text-gray-500 text-sm">Sold</p>
+              <p class="text-lg font-bold text-blue-600">{{ soldPosts }}</p>
             </div>
-            <div class="rounded-full bg-blue-100 p-1">
-              <Icon name="heroicons:banknotes" class="h-3.5 w-3.5 text-blue-600" />
+            <div class="rounded-full bg-blue-100 p-1.5">
+              <Icon name="heroicons:banknotes" class="h-4 w-4 text-blue-600" />
             </div>
           </div>
         </div>
@@ -60,28 +60,28 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
-      <!-- Search and Filter Controls - More Compact -->
-      <div class="p-3 border-b border-gray-100">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <!-- Search and Filter Controls -->
+      <div class="p-4 border-b border-gray-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <!-- Search Input -->
           <div class="relative flex-grow max-w-md">
             <input 
               type="text"
               v-model="searchQuery"
               placeholder="Search your listings..."
-              class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 focus:ring-primary focus:border-primary text-sm"
+              class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:ring-primary focus:border-primary text-sm"
             >
-            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <Icon name="heroicons:magnifying-glass" class="text-gray-400" size="14px" />
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Icon name="heroicons:magnifying-glass" class="text-gray-400" size="16px" />
             </div>
           </div>
           
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <!-- Sort Dropdown -->
             <div class="relative">
               <select 
                 v-model="sortOption"
-                class="appearance-none border border-gray-300 rounded-lg pl-2 pr-7 py-1.5 bg-white focus:ring-primary focus:border-primary text-xs"
+                class="appearance-none border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white focus:ring-primary focus:border-primary text-sm"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -89,30 +89,30 @@
                 <option value="price_low">Price: Low to High</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <Icon name="heroicons:chevron-down" class="text-gray-400" size="12px" />
+                <Icon name="heroicons:chevron-down" class="text-gray-400" size="14px" />
               </div>
             </div>
             
             <!-- Create New Post Button -->
             <button 
               @click="$emit('create-post')"
-              class="flex-shrink-0 bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors text-xs flex items-center gap-1"
+              class="flex-shrink-0 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-1.5"
             >
-              <Icon name="heroicons:plus" size="12px" />
+              <Icon name="heroicons:plus" size="14px" />
               <span>New Listing</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Custom Tabs - More Compact -->
-      <div class="px-3 pt-1 bg-gray-50">
+      <!-- Custom Tabs -->
+      <div class="px-4 pt-2 bg-gray-50">
         <div class="flex flex-wrap overflow-x-auto hide-scrollbar">
           <button 
             v-for="(tab, index) in tabs" 
             :key="index"
             :class="[
-              'mr-1 px-3 py-2 border-b-2 text-xs font-medium transition-all',
+              'mr-2 px-4 py-2.5 border-b-2 text-sm font-medium transition-all',
               activeTab === tab.id 
                 ? 'border-primary text-primary bg-white rounded-t-lg' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -122,7 +122,7 @@
             {{ tab.name }}
             <span 
               :class="[
-                'ml-1 px-1.5 py-0.5 rounded-full text-xs',
+                'ml-1.5 px-2 py-0.5 rounded-full text-xs',
                 activeTab === tab.id 
                   ? 'bg-primary/10 text-primary' 
                   : 'bg-gray-100 text-gray-600'
@@ -134,22 +134,22 @@
         </div>
       </div>
 
-      <!-- Loading State - More Compact -->
-      <div v-if="isLoading" class="py-6 text-center bg-white">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="py-12 text-center bg-white">
         <div class="inline-flex flex-col items-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-2"></div>
-          <p class="text-gray-600 text-xs">Loading your listings...</p>
+          <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mb-3"></div>
+          <p class="text-gray-600 text-sm">Loading your listings...</p>
         </div>
       </div>
 
-      <!-- Empty State - More Compact -->
-      <div v-else-if="!filteredPosts.length" class="py-8 text-center bg-white">
+      <!-- Empty State -->
+      <div v-else-if="!filteredPosts.length" class="py-12 text-center bg-white">
         <div class="inline-flex flex-col items-center">
-          <div class="bg-gray-100 rounded-full p-3 mb-3">
-            <Icon name="heroicons:document-plus" size="32px" class="text-gray-400" />
+          <div class="bg-gray-100 rounded-full p-4 mb-4">
+            <Icon name="heroicons:document-plus" size="36px" class="text-gray-400" />
           </div>
-          <h3 class="text-sm font-medium text-gray-800 mb-1">No listings found</h3>
-          <p class="text-gray-500 mb-4 max-w-md mx-auto text-xs">
+          <h3 class="text-base font-medium text-gray-800 mb-2">No listings found</h3>
+          <p class="text-gray-500 mb-5 max-w-md mx-auto text-sm">
             {{ 
               searchQuery 
                 ? "No listings match your search criteria. Try a different search term." 
@@ -157,40 +157,47 @@
             }}
           </p>
           <button 
-            class="bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors text-xs flex items-center gap-1"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-1.5"
             @click="$emit('create-post')"
           >
-            <Icon name="heroicons:plus-circle" size="14px" />
+            <Icon name="heroicons:plus-circle" size="16px" />
             Create a Listing
           </button>
         </div>
       </div>
 
-      <!-- Posts List View - Compact List Design -->
+      <!-- Posts List View -->
       <div v-else class="bg-white">
-        <div class="space-y-1 p-2">
+        <div class="space-y-3 p-4">
           <div 
             v-for="post in filteredPosts" 
             :key="post.id"
             class="border border-gray-200 rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
           >
-            <div class="flex p-2">
-              <!-- Post Image (Smaller) -->
-              <div class="h-16 w-16 flex-shrink-0">
+            <div class="flex p-3">
+              <!-- Post Image -->
+              <div class="h-20 w-20 flex-shrink-0">
                 <img 
                   :src="post.imageUrl" 
                   :alt="post.title" 
-                  class="h-16 w-16 object-cover rounded"
+                  class="h-20 w-20 object-cover rounded"
                 />
               </div>
               
               <!-- Post Details with action buttons -->
-              <div class="ml-3 flex-grow flex flex-col">
+              <div class="ml-4 flex-grow flex flex-col">
                 <div class="flex justify-between items-start">
-                  <h3 class="text-sm font-medium text-gray-900 line-clamp-1">{{ post.title }}</h3>
+                  <!-- Title and Price Section - Reordered for desktop -->
+                  <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+                    <!-- Price first on desktop -->
+                    <p class="order-2 md:order-1 text-primary font-bold text-sm md:text-base md:mr-3">৳{{ post.price.toLocaleString() }}</p>
+                    <!-- Title second on desktop -->
+                    <h3 class="order-1 md:order-2 text-sm md:text-base font-medium text-gray-900 line-clamp-1">{{ post.title }}</h3>
+                  </div>
+                  
                   <div 
                     :class="[
-                      'px-1.5 py-0.5 text-xs font-medium rounded-full text-xs',
+                      'px-2 py-1 text-xs md:text-sm font-medium rounded-full',
                       getStatusClass(post.status)
                     ]"
                   >
@@ -198,42 +205,41 @@
                   </div>
                 </div>
                 
-                <p class="mt-0.5 text-primary font-medium text-xs">৳{{ post.price.toLocaleString() }}</p>
-                <p class="mt-0.5 text-gray-600 line-clamp-1 text-xs">{{ post.description }}</p>
+                <p class="mt-1 text-gray-600 line-clamp-1 text-sm">{{ post.description }}</p>
                 
-                <div class="mt-1 flex justify-between items-center">
-                  <div class="flex items-center text-xs text-gray-500">
-                    <Icon name="heroicons:calendar" class="mr-1 text-gray-400" size="10px" />
+                <div class="mt-2 flex justify-between items-center">
+                  <div class="flex items-center text-sm text-gray-500">
+                    <Icon name="heroicons:calendar" class="mr-1 text-gray-400" size="14px" />
                     <span>{{ formatDate(post.postedDate) }}</span>
                   </div>
                   
-                  <div class="flex space-x-1">
+                  <div class="flex space-x-3">
                     <button 
                       @click="editPost(post)"
                       class="text-primary hover:text-primary/80 p-1"
                       title="Edit"
                     >
-                      <Icon name="heroicons:pencil-square" size="14px" />
+                      <Icon name="heroicons:pencil-square" size="16px" />
                     </button>
                     <button 
                       @click="updateStatus(post)"
                       class="text-blue-500 hover:text-blue-700 p-1"
                       title="Change Status"
                     >
-                      <Icon name="heroicons:tag" size="14px" />
+                      <Icon name="heroicons:document-check" size="16px" />
                     </button>
                     <button 
                       @click="confirmDelete(post)"
                       class="text-red-500 hover:text-red-700 p-1"
                       title="Delete"
                     >
-                      <Icon name="heroicons:trash" size="14px" />
+                      <Icon name="heroicons:trash" size="16px" />
                     </button>
                   </div>
                 </div>
                 
-                <div v-if="post.featured" class="absolute top-2 left-2">
-                  <span class="bg-yellow-400 text-yellow-900 px-1.5 py-0.5 text-xxs rounded-full shadow-sm">
+                <div v-if="post.featured" class="absolute top-3 left-3">
+                  <span class="bg-yellow-400 text-yellow-900 px-2 py-0.5 text-xs rounded-full shadow-sm">
                     Featured
                   </span>
                 </div>
@@ -243,22 +249,22 @@
         </div>
       </div>
 
-      <!-- Pagination - More Compact -->
-      <div v-if="totalPages > 1" class="p-2 bg-gray-50 border-t border-gray-100 flex justify-center">
-        <nav class="flex items-center space-x-1">
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="p-4 bg-gray-50 border-t border-gray-100 flex justify-center">
+        <nav class="flex items-center space-x-2">
           <button 
-            class="px-2 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-xs"
+            class="px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-sm"
             :disabled="currentPage === 1"
             @click="currentPage = Math.max(1, currentPage - 1)"
           >
-            <Icon name="heroicons:chevron-left" size="12px" />
+            <Icon name="heroicons:chevron-left" size="14px" />
           </button>
           
           <div v-for="page in paginationPages" :key="page" class="hidden md:block">
             <button 
               v-if="page !== '...'"
               :class="[
-                'px-2 py-1 rounded-md text-xs',
+                'px-3 py-1.5 rounded-md text-sm',
                 currentPage === page
                   ? 'bg-primary text-white'
                   : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
@@ -267,41 +273,41 @@
             >
               {{ page }}
             </button>
-            <span v-else class="px-1 py-1 text-gray-500 text-xs">...</span>
+            <span v-else class="px-1.5 py-1.5 text-gray-500 text-sm">...</span>
           </div>
           
-          <div class="md:hidden px-2 py-1 text-gray-600 text-xs">
+          <div class="md:hidden px-3 py-1.5 text-gray-600 text-sm">
             {{ currentPage }} / {{ totalPages }}
           </div>
           
           <button 
-            class="px-2 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-xs"
+            class="px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-sm"
             :disabled="currentPage === totalPages"
             @click="currentPage = Math.min(totalPages, currentPage + 1)"
           >
-            <Icon name="heroicons:chevron-right" size="12px" />
+            <Icon name="heroicons:chevron-right" size="14px" />
           </button>
         </nav>
       </div>
     </div>
 
-    <!-- Status Update Modal - More Compact -->
+    <!-- Status Update Modal -->
     <div v-if="showStatusModal" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen p-3">
+      <div class="flex items-center justify-center min-h-screen p-4">
         <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="showStatusModal = false"></div>
         
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm mx-auto z-10 overflow-hidden">
-          <div class="p-3 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-900">Change Status</h3>
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden">
+          <div class="p-4 border-b border-gray-200">
+            <h3 class="text-base font-medium text-gray-900">Change Status</h3>
           </div>
-          <div class="p-3 space-y-3">
-            <p class="text-gray-600 text-xs">Select the new status for "<span class="font-medium">{{ selectedPost?.title }}</span>"</p>
+          <div class="p-4 space-y-3">
+            <p class="text-gray-600 text-sm">Select the new status for "<span class="font-medium">{{ selectedPost?.title }}</span>"</p>
             
-            <div class="space-y-1">
+            <div class="space-y-2">
               <label 
                 v-for="status in availableStatuses" 
                 :key="status.value"
-                class="flex items-center p-2 border rounded-lg cursor-pointer transition-colors"
+                class="flex items-center p-3 border rounded-lg cursor-pointer transition-colors"
                 :class="newStatus === status.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'"
               >
                 <input 
@@ -310,60 +316,64 @@
                   v-model="newStatus" 
                   class="hidden" 
                 />
-                <div :class="`rounded-full p-1.5 ${status.bgColor} mr-2`">
-                  <Icon :name="status.icon" class="h-3 w-3" :class="status.iconColor" />
+                <div :class="`rounded-full p-2 ${status.bgColor} mr-3`">
+                  <Icon :name="status.icon" class="h-4 w-4" :class="status.iconColor" />
                 </div>
                 <div>
-                  <div class="font-medium text-xs">{{ status.label }}</div>
-                  <div class="text-xxs text-gray-500">{{ status.description }}</div>
+                  <div class="font-medium text-sm">{{ status.label }}</div>
+                  <div class="text-xs text-gray-500">{{ status.description }}</div>
                 </div>
               </label>
             </div>
           </div>
-          <div class="flex justify-end gap-2 p-3 border-t border-gray-200 bg-gray-50">
+          <div class="flex justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50">
             <button 
               @click="showStatusModal = false"
-              class="px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-xs"
+              class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
             >
               Cancel
             </button>
             <button 
               @click="saveStatusChange"
-              class="px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 text-xs"
+              :disabled="isSubmitting"
+              class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 text-sm flex items-center gap-2"
             >
-              Save Changes
+              <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+              <span>{{ isSubmitting ? 'Saving...' : 'Save Changes' }}</span>
             </button>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Delete Confirmation Modal - More Compact -->
+    <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen p-3">
+      <div class="flex items-center justify-center min-h-screen p-4">
         <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="showDeleteModal = false"></div>
         
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm mx-auto z-10 overflow-hidden">
-          <div class="p-4">
-            <div class="flex items-center justify-center w-8 h-8 mx-auto bg-red-100 rounded-full mb-3">
-              <Icon name="heroicons:exclamation-triangle" class="h-4 w-4 text-red-600" />
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden">
+          <div class="p-5">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+              <Icon name="heroicons:exclamation-triangle" class="h-6 w-6 text-red-600" />
             </div>
-            <h3 class="text-sm font-medium text-center text-gray-900 mb-1">Confirm Deletion</h3>
-            <p class="text-gray-600 text-center mb-4 text-xs">
+            <h3 class="text-lg font-medium text-center text-gray-900 mb-2">Confirm Deletion</h3>
+            <p class="text-gray-600 text-center mb-5 text-sm">
               Are you sure you want to delete "<span class="font-medium">{{ selectedPost?.title }}</span>"? This action cannot be undone.
             </p>
-            <div class="flex justify-center gap-2">
+            <div class="flex justify-center gap-3">
               <button 
                 @click="showDeleteModal = false"
-                class="px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-xs"
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
               >
                 Cancel
               </button>
               <button 
                 @click="deletePost"
-                class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs"
+                :disabled="isSubmitting"
+                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center gap-2"
               >
-                Delete
+                <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                <span>{{ isSubmitting ? 'Deleting...' : 'Delete' }}</span>
               </button>
             </div>
           </div>
@@ -396,6 +406,7 @@ const featuredPosts = computed(() => allPosts.value.filter(post => post.featured
 // UI state
 const activeTab = ref('all');
 const isLoading = ref(true);
+const isSubmitting = ref(false); // For button spinners
 const currentPage = ref(1);
 const postsPerPage = 10; // Increased posts per page for list view
 const sortOption = ref('newest');
@@ -546,7 +557,6 @@ const allPosts = ref([
 
 // Filter posts based on active tab and search query
 const filteredPosts = computed(() => {
-  // First filter by tab
   let posts = [];
   switch (activeTab.value) {
     case 'all':
@@ -608,7 +618,7 @@ const displayedPosts = computed(() => {
 
 // Generate pagination numbers with ellipsis for large page counts
 const paginationPages = computed(() => {
-  if (totalPages.value <= 5) { // Reduced from 7 to 5 to save space
+  if (totalPages.value <= 5) {
     return Array.from({ length: totalPages.value }, (_, i) => i + 1);
   }
   
@@ -672,14 +682,21 @@ const updateStatus = (post) => {
 };
 
 const saveStatusChange = () => {
-  // Update post status - in a real app, you would call an API here
-  if (selectedPost.value && newStatus.value) {
-    const postIndex = allPosts.value.findIndex(p => p.id === selectedPost.value.id);
-    if (postIndex !== -1) {
-      allPosts.value[postIndex].status = newStatus.value;
+  isSubmitting.value = true;
+  
+  // Simulate API call
+  setTimeout(() => {
+    // Update post status - in a real app, you would call an API here
+    if (selectedPost.value && newStatus.value) {
+      const postIndex = allPosts.value.findIndex(p => p.id === selectedPost.value.id);
+      if (postIndex !== -1) {
+        allPosts.value[postIndex].status = newStatus.value;
+      }
     }
-  }
-  showStatusModal.value = false;
+    
+    isSubmitting.value = false;
+    showStatusModal.value = false;
+  }, 800);
 };
 
 // Delete confirmation modal
@@ -689,14 +706,21 @@ const confirmDelete = (post) => {
 };
 
 const deletePost = () => {
-  // Delete post - in a real app, you would call an API here
-  if (selectedPost.value) {
-    emit('delete-post', selectedPost.value.id);
+  isSubmitting.value = true;
+  
+  // Simulate API call
+  setTimeout(() => {
+    // Delete post - in a real app, you would call an API here
+    if (selectedPost.value) {
+      emit('delete-post', selectedPost.value.id);
+      
+      // Remove from local state
+      allPosts.value = allPosts.value.filter(p => p.id !== selectedPost.value.id);
+    }
     
-    // Remove from local state
-    allPosts.value = allPosts.value.filter(p => p.id !== selectedPost.value.id);
-  }
-  showDeleteModal.value = false;
+    isSubmitting.value = false;
+    showDeleteModal.value = false;
+  }, 800);
 };
 
 // View and edit handlers
