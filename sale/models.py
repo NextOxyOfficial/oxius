@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+import uuid
 
 User = get_user_model()
 
@@ -90,15 +91,20 @@ class SalePost(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
+            # Generate a base slug from the title
             base_slug = slugify(self.title)
-            unique_slug = base_slug
-            counter = 1
             
-            while SalePost.objects.filter(slug=unique_slug).exists():
-                unique_slug = f"{base_slug}-{counter}"
-                counter += 1
+            # Add a unique identifier (first 8 chars of a UUID)
+            unique_id = str(uuid.uuid4()).split('-')[0]
             
-            self.slug = unique_slug
+            # Combine base slug with unique identifier
+            self.slug = f"{base_slug}-{unique_id}"
+            
+            # If the slug is too long, truncate the title part
+            max_base_length = 280  # Allow space for the unique ID and hyphen
+            if len(self.slug) > 300:
+                truncated_base = base_slug[:max_base_length]
+                self.slug = f"{truncated_base}-{unique_id}"
         
         super().save(*args, **kwargs)
 
