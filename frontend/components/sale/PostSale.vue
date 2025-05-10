@@ -758,10 +758,10 @@ import { useSalePost } from '~/composables/useSalePost';
 import { useNotifications } from '~/composables/useNotifications';
 
 // Initialize composables
-const { createSalePost, loading: apiLoading, error: apiError } = useSalePost();
+const { createSalePost, updateSalePost, loading: apiLoading, error: apiError } = useSalePost();
 const { showNotification } = useNotifications();
 
-// Categories from parent component or from API
+// Props definition
 const props = defineProps({
   categories: {
     type: Array,
@@ -773,8 +773,15 @@ const props = defineProps({
       { id: 5, name: 'B2B' },
       { id: 6, name: 'Others' }
     ]
+  },
+  editPost: {
+    type: Object,
+    default: null
   }
 });
+
+// Emit events
+const emit = defineEmits(['post-saved']);
 
 // Success modal state
 const showSuccessModal = ref(false);
@@ -1160,7 +1167,7 @@ const submitForm = async () => {
     formDataToSubmit.append('division', formData.division);
     formDataToSubmit.append('district', formData.district);
     formDataToSubmit.append('area', formData.area);
-    formDataToSubmit.append('detailed_address', formData.detailedAddress); // Fixed: camelCase to snake_case
+    formDataToSubmit.append('detailed_address', formData.detailedAddress);
     
     // Contact info
     formDataToSubmit.append('phone', formData.phone);
@@ -1221,19 +1228,41 @@ const submitForm = async () => {
     let imageCount = 0;
     formData.images.forEach((image, index) => {
       if (image) {
-        formDataToSubmit.append(`image_${imageCount}`, image);
-        imageCount++;
+        // Only append actual File objects (new uploads), not strings (existing URLs)
+        if (image instanceof File) {
+          formDataToSubmit.append(`image_${imageCount}`, image);
+          imageCount++;
+        }
       }
     });
     
     console.log('Form data prepared, sending to server...');
     
-    // Send form data to backend via the useSalePost composable
-    const result = await createSalePost(formDataToSubmit);
+    let result;
+    
+    // Check if we're editing an existing post or creating a new one
+    if (props.editPost) {
+      // If editing, include the post ID
+      formDataToSubmit.append('id', props.editPost.id);
+      
+      // Update existing post
+      result = await updateSalePost(props.editPost.id, formDataToSubmit);
+      showNotification({
+        type: 'success',
+        message: 'Post updated successfully!'
+      });
+    } else {
+      // Create new post
+      result = await createSalePost(formDataToSubmit);
+      // Show success modal for new posts
+      showSuccessModal.value = true;
+    }
+    
     console.log('Server response:', result);
     
-    // Show success modal
-    showSuccessModal.value = true;
+    // Emit event to notify parent component
+    emit('post-saved', result);
+    
   } catch (error) {
     console.error('Error submitting form:', error);
     // Display error message
@@ -1241,7 +1270,7 @@ const submitForm = async () => {
       type: 'error',
       message: typeof error === 'string' ? error : 
                (error && typeof error === 'object' && error.message) ? error.message : 
-               'Failed to create sale post. Please check your form data and try again.'
+               'Failed to save post. Please check your form data and try again.'
     });
   }
 };
@@ -1299,6 +1328,105 @@ const resetForm = () => {
   
   // Go back to first step
   currentStep.value = 0;
+};
+
+// Load edit data if available
+onMounted(() => {
+  if (props.editPost) {
+    populateFormWithEditData();
+  }
+});
+
+// Watch for changes in edit post data
+watch(() => props.editPost, (newEditPost) => {
+  if (newEditPost) {
+    populateFormWithEditData();
+  }
+});
+
+// Populate form with edit data
+const populateFormWithEditData = () => {
+  const post = props.editPost;
+  if (!post) return;
+  
+  // Basic fields
+  formData.category = post.category;
+  formData.title = post.title;
+  formData.description = post.description;
+  formData.condition = post.condition;
+  formData.price = post.price;
+  formData.negotiable = post.negotiable || false;
+  
+  // Location fields
+  formData.division = post.division;
+  formData.district = post.district;
+  formData.area = post.area;
+  formData.detailedAddress = post.detailed_address;
+  
+  // Contact info
+  formData.phone = post.phone;
+  formData.email = post.email;
+  
+  // Category-specific fields
+  if (post.category === 1) { // Properties
+    formData.propertyType = post.property_type;
+    formData.size = post.size;
+    formData.unit = post.unit || 'sqft';
+    formData.bedrooms = post.bedrooms;
+    formData.bathrooms = post.bathrooms;
+    
+    // Amenities
+    if (post.amenities) {
+      try {
+        const amenities = typeof post.amenities === 'string' 
+          ? JSON.parse(post.amenities) 
+          : post.amenities;
+          
+        formData.amenities = {
+          parking: amenities.parking || false,
+          elevator: amenities.elevator || false,
+          generator: amenities.generator || false,
+          security: amenities.security || false
+        };
+      } catch (e) {
+        console.error('Error parsing amenities:', e);
+      }
+    }
+  } 
+  else if (post.category === 2) { // Vehicles
+    formData.vehicleType = post.vehicle_type;
+    formData.make = post.make;
+    formData.model = post.model;
+    formData.year = post.year;
+    formData.mileage = post.mileage;
+    formData.fuelType = post.fuel_type;
+    formData.transmission = post.transmission;
+    formData.registrationYear = post.registration_year;
+  }
+  else if (post.category === 3) { // Electronics
+    formData.electronicsType = post.electronics_type;
+    formData.brand = post.brand;
+    formData.model = post.model;
+    formData.ageValue = post.age_value;
+    formData.ageUnit = post.age_unit || 'months';
+    formData.warranty = post.warranty;
+  }
+  else if ([4, 5, 6].includes(post.category)) { // Other categories
+    formData.itemType = post.item_type;
+    formData.itemQuality = post.item_quality;
+  }
+  
+  // Set existing images if available
+  if (post.images && Array.isArray(post.images)) {
+    post.images.forEach((image, index) => {
+      if (index < 8) { // Maximum 8 images
+        imagePreviewUrls.value[index] = image.image || image;
+      }
+    });
+  }
+  
+  // Accept terms by default when editing
+  formData.termsAccepted = true;
 };
 </script>
 

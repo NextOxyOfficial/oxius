@@ -142,7 +142,7 @@
                         <img v-if="category.icon" :src="getImageUrl(category.icon)" :alt="category.name" class="size-9 object-contain" />
                         <Icon v-else :name="getCategoryIcon(category.name)" size="22px" />
                       </div>
-                      <span class="category-name font-medium text-xs sm:text-sm">{{ category.name }}</span>
+                      <span class="category-name font-medium text-sm">{{ category.name }}</span>
                     </div>
                   </div>
                 </div>

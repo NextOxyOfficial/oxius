@@ -708,10 +708,11 @@ const deletePost = async () => {
 // View and edit handlers
 const editPost = (post) => {
   console.log('Editing post:', post.id);
-  // Navigate to the edit page with the post's ID
-  router.push(`/sale/edit/${post.id}`);
-  // Also emit the event in case a parent component needs to handle it
+  // Emit the edit-post event to the parent component
   emit('edit-post', post);
+  // Close any open modals
+  showStatusModal.value = false;
+  showDeleteModal.value = false;
 };
 
 const navigateToPost = (post) => {

@@ -294,7 +294,11 @@
                     <Icon name="heroicons:x-mark" size="24px" />
                   </button>
                 </div>
-                <PostSale :categories="categories" />
+                <PostSale 
+                  :categories="categories" 
+                  :edit-post="postToEdit" 
+                  @post-saved="handlePostSaved"
+                />
               </div>
             </div>
           </div>
@@ -707,17 +711,28 @@ const switchToPostSaleModal = () => {
 };
 
 // Post actions
+const postToEdit = ref(null);
+
 const handleEditPost = (post) => {
-  // Here you would implement edit functionality, possibly pre-filling the PostSale form
-  console.log('Edit post:', post);
-  // For now, just open the post sale modal
-  openPostSaleModal();
+  console.log('Edit post received:', post);
+  // Set the post to be edited
+  postToEdit.value = post;
+  // Open the post sale modal with the post data
+  showPostSaleModal.value = true;
+  // Close the MyPosts modal if it's open
+  showMyPostsModal.value = false;
 };
 
 const handleDeletePost = (postId) => {
   // Here you would implement delete functionality, possibly making an API call
   console.log('Delete post with ID:', postId);
   // In a real app, you would remove the post from the listings after successful deletion
+};
+
+const handlePostSaved = () => {
+  console.log('Post saved successfully');
+  // Close the modal after saving the post
+  closePostSaleModal();
 };
 
 // Initialize
