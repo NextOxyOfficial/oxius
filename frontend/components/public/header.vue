@@ -1,9 +1,9 @@
 <template>
   <div
-    class="py-3 z-[99999999] bg-slate-100/90 shadow-sm rounded-xl mx-2 dark:bg-black max-w-[1280px] md:mx-auto"
+    class="py-3 z-[99999999] bg-slate-100/90 shadow-sm rounded-lg mx-2 dark:bg-black max-w-[1280px] md:mx-auto"
     :class="
       isScrolled
-        ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-2xl'
+        ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-lg'
         : 'sticky'
     "
   >

@@ -1,15 +1,24 @@
 <template>
   <div class="for-sale-section py-6 bg-white">
     <div class="container mx-auto px-2">
-      <!-- Updated section header with left-aligned title and right-aligned buttons with swapped order -->
+      <!-- Updated section header with linked buttons -->
       <div class="section-header mb-4 flex justify-between items-center">
-        <h2 class="text-xl md:text-2xl font-bold">For Sale</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-xl md:text-xl font-semibold">For Sale</h2>
+          
+        </div>
         <div class="flex gap-2 sm:gap-3">
-          <button class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm flex items-center gap-1">
+          <button 
+            class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm flex items-center gap-1"
+            @click="openMyPostsModal"
+          >
             <Icon name="heroicons:document-text" size="16px" />
             My Posts
           </button>
-          <button class="post-sale-btn bg-primary hover:bg-primary/90 text-white rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm flex items-center gap-1">
+          <button 
+            class="post-sale-btn bg-primary hover:bg-primary/90 text-white rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm flex items-center gap-1"
+            @click="openPostSaleModal"
+          >
             <Icon name="heroicons:plus-circle" size="16px" />
             Post a Sale
           </button>
@@ -100,13 +109,13 @@
           <div>
             <h3 class="text-lg font-bold">{{ getSelectedCategoryName() }}</h3>
           </div>
-          <button class="view-all-btn bg-primary hover:bg-primary/90 text-white rounded-md px-3 py-1 text-sm flex items-center gap-1">
+          <NuxtLink :to="`/sale/for-sale?category=${selectedCategory}`" class="view-all-btn bg-primary hover:bg-primary/90 text-white rounded-md px-3 py-1 text-sm flex items-center gap-1">
             View All <Icon name="heroicons:arrow-right" size="14px" />
-          </button>
+          </NuxtLink>
         </div>
         
         <!-- Lazy loading skeleton when loading -->
-        <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-5 gap-2">
           <div v-for="i in (isMobile ? 4 : 5)" :key="i" class="item-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 animate-pulse">
             <div class="h-32 bg-gray-200"></div>
             <div class="p-3">
@@ -121,7 +130,7 @@
         </div>
         
         <!-- Placeholder for items in the selected category -->
-        <div v-else class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div v-else class="grid grid-cols-2 md:grid-cols-5 gap-2">
           <div v-for="i in (isMobile ? 4 : 5)" :key="i" class="item-card bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100">
             <div class="relative h-32 bg-gradient-to-br from-gray-200 to-gray-100">
               <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-md">Sale</span>
@@ -141,10 +150,74 @@
       </div>
     </div>
   </div>
+
+  <!-- Post Sale Modal -->
+  <div v-if="showPostSaleModal" class="fixed inset-0 z-50 overflow-y-auto pt-16"> <!-- Added pt-16 for header spacing -->
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" @click="closePostSaleModal">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+              <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Post a Sale</h3>
+                <button 
+                  type="button" 
+                  class="text-gray-400 hover:text-gray-500"
+                  @click="closePostSaleModal"
+                >
+                  <Icon name="heroicons:x-mark" size="24px" />
+                </button>
+              </div>
+              <PostSale :categories="categories" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- My Posts Modal -->
+  <div v-if="showMyPostsModal" class="fixed inset-0 z-50 overflow-y-auto pt-16"> <!-- Added pt-16 for header spacing -->
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" @click="closeMyPostsModal">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+              <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">My Posts</h3>
+                <button 
+                  type="button" 
+                  class="text-gray-400 hover:text-gray-500"
+                  @click="closeMyPostsModal"
+                >
+                  <Icon name="heroicons:x-mark" size="24px" />
+                </button>
+              </div>
+              <MyPosts 
+                @create-post="switchToPostSaleModal"
+                @edit-post="handleEditPost"
+                @delete-post="handleDeletePost"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
+import PostSale from '~/components/sale/PostSale.vue';
+import MyPosts from '~/components/sale/MyPosts.vue';
 
 // Specific 6 categories with appropriate icons
 const categories = ref([
@@ -288,6 +361,48 @@ onMounted(() => {
 // Clean up event listener
 const onUnmounted = () => {
   window.removeEventListener('resize', checkIfMobile);
+};
+
+// Modal states
+const showPostSaleModal = ref(false);
+const showMyPostsModal = ref(false);
+
+// Open modals for buttons
+const openMyPostsModal = () => {
+  showMyPostsModal.value = true;
+  showPostSaleModal.value = false;
+};
+
+const closeMyPostsModal = () => {
+  showMyPostsModal.value = false;
+};
+
+const openPostSaleModal = () => {
+  showPostSaleModal.value = true;
+  showMyPostsModal.value = false;
+};
+
+const closePostSaleModal = () => {
+  showPostSaleModal.value = false;
+};
+
+const switchToPostSaleModal = () => {
+  showMyPostsModal.value = false;
+  showPostSaleModal.value = true;
+};
+
+// Post actions
+const handleEditPost = (post) => {
+  // Here you would implement edit functionality, possibly pre-filling the PostSale form
+  console.log('Edit post:', post);
+  // For now, just open the post sale modal
+  openPostSaleModal();
+};
+
+const handleDeletePost = (postId) => {
+  // Here you would implement delete functionality, possibly making an API call
+  console.log('Delete post with ID:', postId);
+  // In a real app, you would remove the post from the listings after successful deletion
 };
 </script>
 
