@@ -8,6 +8,7 @@
         class="relative"
       >
         <CommonHeroBanner />
+        <CommonSaleCategory/>
         <!-- Premium decorative elements -->
         <div
           class="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl -z-10"
@@ -34,7 +35,7 @@
 
           <!-- Premium search container with glass effect -->
           <div
-            class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl h-12 sm:h-14 shadow-md border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-sm group"
+            class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl h-12 sm:h-14 shadow-sm border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-sm group"
           >
             <!-- Accent line animation -->
             <div
