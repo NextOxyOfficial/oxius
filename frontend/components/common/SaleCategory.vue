@@ -9,14 +9,14 @@
         </div>
         <div class="flex gap-2 sm:gap-3">
           <button 
-            class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm flex items-center gap-1"
+            class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
             @click="openMyPostsModal"
           >
             <Icon name="heroicons:document-text" size="16px" />
             My Posts
           </button>
           <button 
-            class="post-sale-btn bg-primary hover:bg-primary/90 text-white rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm flex items-center gap-1"
+            class="post-sale-btn bg-primary hover:bg-primary/90 text-white rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
             @click="openPostSaleModal"
           >
             <Icon name="heroicons:plus-circle" size="16px" />
@@ -63,7 +63,7 @@
             </div>
             
             <!-- Fallback banners if API returns empty data -->
-            <div v-if="banners.length === 0" class="main-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+            <div v-if="banners.length === 0" class="main-banner rounded-md overflow-hidden cursor-pointer md:w-1/2">
               <img src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion" alt="Promotion" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
             </div>
             
@@ -95,7 +95,7 @@
           @touchend="handleTouchEnd"
         >
           <div 
-            class="categories-wrapper flex transition-all duration-500 ease-out"
+            class="categories-wrapper flex transition-all duration-500 ease-out mt-3"
             :style="{ transform: `translateX(-${scrollPosition}px)` }"
             ref="categoriesWrapper"
           >
@@ -139,7 +139,7 @@
                   <div class="flex items-center justify-center h-full">
                     <div class="text-center py-2">
                       <div class="icon-container mx-auto mb-1 flex items-center justify-center">
-                        <img v-if="category.icon" :src="getImageUrl(category.icon)" :alt="category.name" class="h-6 w-6 object-contain" />
+                        <img v-if="category.icon" :src="getImageUrl(category.icon)" :alt="category.name" class="size-9 object-contain" />
                         <Icon v-else :name="getCategoryIcon(category.name)" size="22px" />
                       </div>
                       <span class="category-name font-medium text-xs sm:text-sm">{{ category.name }}</span>
