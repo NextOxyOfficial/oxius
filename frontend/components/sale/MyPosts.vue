@@ -389,10 +389,12 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSalePost } from '~/composables/useSalePost';
 import { useNotifications } from '~/composables/useNotifications';
+import { useApi } from '~/composables/useApi';
 
 const router = useRouter();
 const { getMyPosts, updateSalePost, deleteSalePost, loading: apiLoading } = useSalePost();
 const { showNotification } = useNotifications();
+const api = useApi();
 
 const emit = defineEmits(['create-post', 'edit-post', 'delete-post']);
 
