@@ -754,6 +754,12 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { useSalePost } from '~/composables/useSalePost';
+import { useNotifications } from '~/composables/useNotifications';
+
+// Initialize composables
+const { createSalePost, loading: apiLoading, error: apiError } = useSalePost();
+const { showNotification } = useNotifications();
 
 // Categories from parent component or from API
 const props = defineProps({
@@ -863,7 +869,7 @@ const areasForSelectedDistrict = computed(() => {
 });
 
 // Status variables
-const isSubmitting = ref(false);
+const isSubmitting = computed(() => apiLoading.value);
 const errors = reactive({});
 
 // Form data with all fields for different categories
@@ -916,6 +922,26 @@ const formData = reactive({
   // Other categories fields
   itemType: '',
   itemQuality: ''
+});
+
+// Watch for API errors and update local error state
+watch(() => apiError.value, (newError) => {
+  if (newError) {
+    // Process validation errors from the API
+    if (typeof newError === 'object') {
+      Object.keys(newError).forEach(key => {
+        errors[key] = Array.isArray(newError[key]) 
+          ? newError[key][0] 
+          : newError[key];
+      });
+    } else {
+      // Handle general error messages
+      showNotification({
+        type: 'error',
+        message: typeof newError === 'string' ? newError : 'An error occurred while submitting your form'
+      });
+    }
+  }
 });
 
 // Image preview URLs for display
@@ -1117,42 +1143,106 @@ const validateStep = () => {
 
 // Submit form
 const submitForm = async () => {
-  isSubmitting.value = true;
-  
   try {
+    console.log('Starting form submission process...');
     // Prepare data for submission
     const formDataToSubmit = new FormData();
     
-    // Add basic fields
-    Object.keys(formData).forEach(key => {
-      if (key !== 'images' && key !== 'amenities') {
-        formDataToSubmit.append(key, formData[key]);
+    // Ensure category is sent as a number
+    formDataToSubmit.append('category', Number(formData.category));
+    
+    // Add basic fields - make sure to use snake_case for field names
+    formDataToSubmit.append('title', formData.title);
+    formDataToSubmit.append('description', formData.description);
+    formDataToSubmit.append('condition', formData.condition);
+    
+    // Location fields
+    formDataToSubmit.append('division', formData.division);
+    formDataToSubmit.append('district', formData.district);
+    formDataToSubmit.append('area', formData.area);
+    formDataToSubmit.append('detailed_address', formData.detailedAddress); // Fixed: camelCase to snake_case
+    
+    // Contact info
+    formDataToSubmit.append('phone', formData.phone);
+    if (formData.email) {
+      formDataToSubmit.append('email', formData.email);
+    }
+    
+    // Handle price and negotiable fields correctly
+    if (formData.negotiable) {
+      formDataToSubmit.append('negotiable', true);
+      if (formData.price) {
+        formDataToSubmit.append('price', formData.price);
       }
-    });
+    } else {
+      formDataToSubmit.append('negotiable', false);
+      formDataToSubmit.append('price', formData.price || 0);
+    }
+    
+    // Add category-specific fields based on selected category
+    if (formData.category === 1) {
+      // Property fields
+      if (formData.propertyType) formDataToSubmit.append('property_type', formData.propertyType);
+      if (formData.size) formDataToSubmit.append('size', formData.size);
+      if (formData.unit) formDataToSubmit.append('unit', formData.unit);
+      if (formData.bedrooms) formDataToSubmit.append('bedrooms', formData.bedrooms);
+      if (formData.bathrooms) formDataToSubmit.append('bathrooms', formData.bathrooms);
+    } 
+    else if (formData.category === 2) {
+      // Vehicle fields
+      if (formData.vehicleType) formDataToSubmit.append('vehicle_type', formData.vehicleType);
+      if (formData.make) formDataToSubmit.append('make', formData.make);
+      if (formData.model) formDataToSubmit.append('model', formData.model);
+      if (formData.year) formDataToSubmit.append('year', formData.year);
+      if (formData.mileage) formDataToSubmit.append('mileage', formData.mileage);
+      if (formData.fuelType) formDataToSubmit.append('fuel_type', formData.fuelType);
+      if (formData.transmission) formDataToSubmit.append('transmission', formData.transmission);
+      if (formData.registrationYear) formDataToSubmit.append('registration_year', formData.registrationYear);
+    }
+    else if (formData.category === 3) {
+      // Electronics fields
+      if (formData.electronicsType) formDataToSubmit.append('electronics_type', formData.electronicsType);
+      if (formData.brand) formDataToSubmit.append('brand', formData.brand);
+      if (formData.model) formDataToSubmit.append('model', formData.model);
+      if (formData.ageValue) formDataToSubmit.append('age_value', formData.ageValue);
+      if (formData.ageUnit) formDataToSubmit.append('age_unit', formData.ageUnit);
+      if (formData.warranty) formDataToSubmit.append('warranty', formData.warranty);
+    }
+    else if ([4, 5, 6].includes(formData.category)) {
+      // Other categories
+      if (formData.itemType) formDataToSubmit.append('item_type', formData.itemType);
+      if (formData.itemQuality) formDataToSubmit.append('item_quality', formData.itemQuality);
+    }
     
     // Add amenities as JSON
-    formDataToSubmit.append('amenities', JSON.stringify(formData.amenities));
+    formDataToSubmit.append('amenities', JSON.stringify(formData.amenities || {}));
     
     // Add images
+    let imageCount = 0;
     formData.images.forEach((image, index) => {
       if (image) {
-        formDataToSubmit.append(`image_${index}`, image);
+        formDataToSubmit.append(`image_${imageCount}`, image);
+        imageCount++;
       }
     });
     
-    // In a real app, you would send this to your API endpoint
-    console.log('Form data submitted:', formDataToSubmit);
+    console.log('Form data prepared, sending to server...');
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Send form data to backend via the useSalePost composable
+    const result = await createSalePost(formDataToSubmit);
+    console.log('Server response:', result);
     
-    // Show success modal instead of alert
+    // Show success modal
     showSuccessModal.value = true;
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('There was an error submitting your form. Please try again.');
-  } finally {
-    isSubmitting.value = false;
+    // Display error message
+    showNotification({
+      type: 'error',
+      message: typeof error === 'string' ? error : 
+               (error && typeof error === 'object' && error.message) ? error.message : 
+               'Failed to create sale post. Please check your form data and try again.'
+    });
   }
 };
 
