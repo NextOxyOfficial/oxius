@@ -101,12 +101,14 @@ export function useSalePost() {
         queryString = '?' + new URLSearchParams(params).toString();
       }
       
-      const response = await api.get('/sale-posts/my-posts/' + queryString);
+      // The correct URL format for an action in Django REST Framework ViewSet
+      const response = await api.get('/sale-posts/my_posts/' + queryString);
       
       if (response.error) {
         throw response.error;
       }
       
+      console.log('My posts data:', response.data); // Debugging log
       salePosts.value = response.data.results || response.data;
       return salePosts.value;
     } catch (err) {
@@ -124,15 +126,24 @@ export function useSalePost() {
     error.value = null;
     
     try {
-      // Use patch or put based on the data type
-      const response = data instanceof FormData 
-        ? await api.post(`/sale-posts/${id}/`, data) // Use post for FormData
-        : await api.patch(`/sale-posts/${id}/`, data);
+      console.log('Updating sale post:', id, data);
+      let response;
+      
+      // Use different methods based on the data type
+      if (data instanceof FormData) {
+        // For FormData (used when updating with files/images), use post method
+        response = await api.post(`/sale-posts/${id}/`, data);
+      } else {
+        // For JSON data (used for simple updates like status), use patch method
+        response = await api.patch(`/sale-posts/${id}/`, data);
+      }
       
       if (response.error) {
+        console.error('API error response:', response.error);
         throw response.error;
       }
       
+      console.log('Update successful:', response.data);
       salePost.value = response.data;
       return response.data;
     } catch (err) {

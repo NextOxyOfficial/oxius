@@ -118,7 +118,7 @@ class SalePostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalePost
         fields = [
-            'id', 'title', 'slug', 'condition', 'category',
+            'id', 'title', 'slug', 'description', 'condition', 'category',
             'price', 'negotiable', 'division', 'district', 'area', 
             'status', 'featured', 'view_count', 'created_at', 
             'main_image', 'image_count', 'user_name'

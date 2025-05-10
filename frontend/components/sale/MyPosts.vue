@@ -176,7 +176,7 @@
               <!-- Post Image -->
               <div class="h-20 w-20 flex-shrink-0">
                 <img 
-                  :src="post.imageUrl" 
+                  :src="getMainImage(post)" 
                   :alt="post.title" 
                   class="h-20 w-20 object-cover rounded"
                 />
@@ -188,7 +188,7 @@
                   <!-- Title and Price Section - Reordered for desktop -->
                   <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
                     <!-- Price first on desktop -->
-                    <p class="order-2 md:order-1 text-primary font-bold text-sm md:text-base md:mr-3">৳{{ post.price.toLocaleString() }}</p>
+                    <p class="order-2 md:order-1 text-primary font-bold text-sm md:text-base md:mr-3">৳{{ post.price?.toLocaleString() }}</p>
                     <!-- Title second on desktop -->
                     <h3 class="order-1 md:order-2 text-sm md:text-base font-medium text-gray-900 line-clamp-1">{{ post.title }}</h3>
                   </div>
@@ -199,7 +199,7 @@
                       getStatusClass(post.status)
                     ]"
                   >
-                    {{ post.status }}
+                    {{ formatStatus(post.status) }}
                   </div>
                 </div>
                 
@@ -208,7 +208,7 @@
                 <div class="mt-2 flex justify-between items-center">
                   <div class="flex items-center text-sm text-gray-500">
                     <Icon name="heroicons:calendar" class="mr-1 text-gray-400" size="14px" />
-                    <span>{{ formatDate(post.postedDate) }}</span>
+                    <span>{{ formatDate(post.created_at) }}</span>
                   </div>
                   
                   <div class="flex space-x-3" @click.stop>
@@ -234,6 +234,7 @@
                       <Icon name="heroicons:trash" size="16px" />
                     </button>
                   </div>
+                
                 </div>
                 
                 <div v-if="post.featured" class="absolute top-3 left-3">
@@ -379,6 +380,13 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useSalePost } from '~/composables/useSalePost';
+import { useNotifications } from '~/composables/useNotifications';
+
+const router = useRouter();
+const { getMyPosts, updateSalePost, deleteSalePost, loading: apiLoading } = useSalePost();
+const { showNotification } = useNotifications();
 
 const emit = defineEmits(['create-post', 'edit-post', 'delete-post']);
 
@@ -392,9 +400,9 @@ const tabs = computed(() => [
 ]);
 
 // Stats computed properties
-const activePosts = computed(() => allPosts.value.filter(post => post.status === 'Active').length);
-const pendingPosts = computed(() => allPosts.value.filter(post => post.status === 'Pending').length);
-const soldPosts = computed(() => allPosts.value.filter(post => post.status === 'Sold').length);
+const activePosts = computed(() => allPosts.value.filter(post => post.status === 'active').length);
+const pendingPosts = computed(() => allPosts.value.filter(post => post.status === 'pending').length);
+const soldPosts = computed(() => allPosts.value.filter(post => post.status === 'sold').length);
 const featuredPosts = computed(() => allPosts.value.filter(post => post.featured).length);
 
 // UI state
@@ -417,7 +425,7 @@ const modalPosition = ref({ top: 0, left: 0 });
 // Status options
 const availableStatuses = [
   { 
-    value: 'Active', 
+    value: 'active', 
     label: 'Active', 
     description: 'Listing is live and visible to all users',
     icon: 'heroicons:check-circle',
@@ -425,7 +433,7 @@ const availableStatuses = [
     bgColor: 'bg-green-100'
   },
   { 
-    value: 'Pending', 
+    value: 'pending', 
     label: 'Pending', 
     description: 'Listing is awaiting approval',
     icon: 'heroicons:clock',
@@ -433,7 +441,7 @@ const availableStatuses = [
     bgColor: 'bg-yellow-100' 
   },
   { 
-    value: 'Sold', 
+    value: 'sold', 
     label: 'Sold', 
     description: 'Item has been sold',
     icon: 'heroicons:banknotes',
@@ -441,114 +449,17 @@ const availableStatuses = [
     bgColor: 'bg-blue-100'
   },
   { 
-    value: 'Paused', 
-    label: 'Paused', 
-    description: 'Temporarily hide the listing',
+    value: 'expired', 
+    label: 'Expired', 
+    description: 'Listing has expired',
     icon: 'heroicons:pause',
     iconColor: 'text-gray-600',
     bgColor: 'bg-gray-100'
   }
 ];
 
-// Mock data for posts - this would come from an API in a real app
-const allPosts = ref([
-  {
-    id: 1,
-    title: 'iPhone 12 Pro Max - Like New',
-    description: 'Selling my iPhone 12 Pro Max 256GB. Pacific Blue color. Like new condition with no scratches.',
-    price: 75000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=iPhone+12',
-    location: 'Gulshan, Dhaka',
-    status: 'Active',
-    featured: true,
-    views: 128,
-    postedDate: new Date(2025, 4, 5) // May 5, 2025
-  },
-  {
-    id: 2,
-    title: 'Samsung 65" QLED Smart TV',
-    description: 'Samsung 65" QLED 4K Smart TV with warranty until 2026. Perfect condition.',
-    price: 120000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=Samsung+TV',
-    location: 'Banani, Dhaka',
-    status: 'Active',
-    featured: false,
-    views: 87,
-    postedDate: new Date(2025, 4, 1) // May 1, 2025
-  },
-  {
-    id: 3,
-    title: 'MacBook Pro 16" M2 Pro',
-    description: 'MacBook Pro 16-inch with M2 Pro chip, 32GB RAM, 1TB SSD. Space Gray.',
-    price: 250000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=MacBook+Pro',
-    location: 'Dhanmondi, Dhaka',
-    status: 'Pending',
-    featured: false,
-    views: 42,
-    postedDate: new Date(2025, 4, 8) // May 8, 2025
-  },
-  {
-    id: 4,
-    title: 'Sony A7 III Camera with 2 Lenses',
-    description: 'Sony A7 III mirrorless camera with 24-70mm and 70-200mm lenses.',
-    price: 180000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=Sony+Camera',
-    location: 'Uttara, Dhaka',
-    status: 'Sold',
-    featured: false,
-    views: 204,
-    postedDate: new Date(2025, 3, 15) // Apr 15, 2025
-  },
-  {
-    id: 5,
-    title: 'Yamaha Acoustic Guitar',
-    description: 'Yamaha F310 Acoustic Guitar. Great sound quality. Minor scratches.',
-    price: 12000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=Guitar',
-    location: 'Mirpur, Dhaka',
-    status: 'Active',
-    featured: false,
-    views: 76,
-    postedDate: new Date(2025, 4, 3) // May 3, 2025
-  },
-  {
-    id: 6,
-    title: 'Royal Enfield Classic 350',
-    description: 'Royal Enfield Classic 350 in Stealth Black. 2023 model with only 5000 km.',
-    price: 350000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=Royal+Enfield',
-    location: 'Mohammadpur, Dhaka',
-    status: 'Active',
-    featured: true,
-    views: 158,
-    postedDate: new Date(2025, 3, 25) // Apr 25, 2025
-  },
-  {
-    id: 7,
-    title: 'PS5 with Extra Controller and Games',
-    description: 'PlayStation 5 Disc Edition with extra DualSense controller and 5 games.',
-    price: 65000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=PS5',
-    location: 'Bashundhara, Dhaka',
-    status: 'Sold',
-    featured: false,
-    views: 112,
-    postedDate: new Date(2025, 3, 10) // Apr 10, 2025
-  },
-  {
-    id: 8,
-    title: 'Dyson V11 Vacuum Cleaner',
-    description: 'Dyson V11 Absolute cordless vacuum cleaner. Used for 6 months only.',
-    price: 45000,
-    imageUrl: 'https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=Dyson+Vacuum',
-    location: 'Lalmatia, Dhaka',
-    status: 'Active',
-    featured: false,
-    views: 68,
-    postedDate: new Date(2025, 4, 7) // May 7, 2025
-  }
-]);
+// Posts data 
+const allPosts = ref([]);
 
 // Filter posts based on active tab and search query
 const filteredPosts = computed(() => {
@@ -558,13 +469,13 @@ const filteredPosts = computed(() => {
       posts = [...allPosts.value];
       break;
     case 'active':
-      posts = allPosts.value.filter(post => post.status === 'Active');
+      posts = allPosts.value.filter(post => post.status === 'active');
       break;
     case 'pending':
-      posts = allPosts.value.filter(post => post.status === 'Pending');
+      posts = allPosts.value.filter(post => post.status === 'pending');
       break;
     case 'sold':
-      posts = allPosts.value.filter(post => post.status === 'Sold');
+      posts = allPosts.value.filter(post => post.status === 'sold');
       break;
     case 'featured':
       posts = allPosts.value.filter(post => post.featured);
@@ -579,23 +490,25 @@ const filteredPosts = computed(() => {
     posts = posts.filter(post => 
       post.title.toLowerCase().includes(query) || 
       post.description.toLowerCase().includes(query) ||
-      post.location.toLowerCase().includes(query)
+      post.division?.toLowerCase().includes(query) ||
+      post.district?.toLowerCase().includes(query) ||
+      post.area?.toLowerCase().includes(query)
     );
   }
   
   // Sort posts
   switch (sortOption.value) {
     case 'newest':
-      posts.sort((a, b) => b.postedDate - a.postedDate);
+      posts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       break;
     case 'oldest':
-      posts.sort((a, b) => a.postedDate - b.postedDate);
+      posts.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       break;
     case 'price_high':
-      posts.sort((a, b) => b.price - a.price);
+      posts.sort((a, b) => (b.price || 0) - (a.price || 0));
       break;
     case 'price_low':
-      posts.sort((a, b) => a.price - b.price);
+      posts.sort((a, b) => (a.price || 0) - (b.price || 0));
       break;
   }
   
@@ -647,7 +560,8 @@ watch([activeTab, searchQuery, sortOption], () => {
 });
 
 // Format date helper
-const formatDate = (date) => {
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
   
@@ -664,8 +578,33 @@ const getStatusClass = (status) => {
     case 'active': return 'bg-green-100 text-green-800';
     case 'pending': return 'bg-yellow-100 text-yellow-800';
     case 'sold': return 'bg-blue-100 text-blue-800';
-    case 'paused': return 'bg-gray-100 text-gray-800';
+    case 'expired': return 'bg-gray-100 text-gray-800';
+    case 'rejected': return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Format status for display
+const formatStatus = (status) => {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
+// Fetch posts from API
+const fetchPosts = async () => {
+  isLoading.value = true;
+  try {
+    const data = await getMyPosts();
+    console.log('Posts data from API:', data); // Debug log to examine what we're getting from the backend
+    allPosts.value = data || [];
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    showNotification({
+      type: 'error',
+      message: 'Failed to load your listings. Please try again.'
+    });
+    allPosts.value = [];
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -673,50 +612,89 @@ const getStatusClass = (status) => {
 const updateStatus = (post, event) => {
   selectedPost.value = post;
   newStatus.value = post.status;
-  
+  console.log('Opening status modal for post:', post.id, 'Current status:', post.status);
   showStatusModal.value = true;
 };
 
-const saveStatusChange = () => {
+const saveStatusChange = async () => {
   isSubmitting.value = true;
   
-  // Simulate API call
-  setTimeout(() => {
-    // Update post status - in a real app, you would call an API here
+  try {
     if (selectedPost.value && newStatus.value) {
+      console.log('Updating post status:', selectedPost.value.id, 'New status:', newStatus.value);
+      
+      // Call the API to update the post status
+      const updatedPost = await updateSalePost(selectedPost.value.id, { 
+        status: newStatus.value 
+      });
+      
+      console.log('Status update response:', updatedPost);
+      
+      // Update local state
       const postIndex = allPosts.value.findIndex(p => p.id === selectedPost.value.id);
       if (postIndex !== -1) {
-        allPosts.value[postIndex].status = newStatus.value;
+        allPosts.value[postIndex] = {
+          ...allPosts.value[postIndex],
+          status: newStatus.value
+        };
       }
+      
+      showNotification({
+        type: 'success',
+        message: 'Status updated successfully!'
+      });
     }
-    
+  } catch (error) {
+    console.error('Error updating status:', error);
+    showNotification({
+      type: 'error',
+      message: 'Failed to update status. Please try again.'
+    });
+  } finally {
     isSubmitting.value = false;
     showStatusModal.value = false;
-  }, 800);
+  }
 };
 
 // Delete confirmation modal
 const confirmDelete = (post) => {
   selectedPost.value = post;
+  console.log('Opening delete confirmation for post:', post.id);
   showDeleteModal.value = true;
 };
 
-const deletePost = () => {
+const deletePost = async () => {
   isSubmitting.value = true;
   
-  // Simulate API call
-  setTimeout(() => {
-    // Delete post - in a real app, you would call an API here
+  try {
+    // Call the API to delete the post
     if (selectedPost.value) {
-      emit('delete-post', selectedPost.value.id);
+      console.log('Deleting post:', selectedPost.value.id);
+      
+      await deleteSalePost(selectedPost.value.id);
+      
+      console.log('Post deleted successfully');
       
       // Remove from local state
       allPosts.value = allPosts.value.filter(p => p.id !== selectedPost.value.id);
+      
+      showNotification({
+        type: 'success',
+        message: 'Post deleted successfully!'
+      });
+      
+      emit('delete-post', selectedPost.value.id);
     }
-    
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    showNotification({
+      type: 'error',
+      message: 'Failed to delete post. Please try again.'
+    });
+  } finally {
     isSubmitting.value = false;
     showDeleteModal.value = false;
-  }, 800);
+  }
 };
 
 // View and edit handlers
@@ -725,19 +703,25 @@ const editPost = (post) => {
 };
 
 const navigateToPost = (post) => {
-  // Navigate to the post details page using the post ID
-  // You can replace this with your actual routing logic
-  window.location.href = `/post/${post.id}`;
-  // If using Vue Router, use something like:
-  // router.push(`/post/${post.id}`);
+  // Navigate to the post details page using the slug for SEO friendly URLs
+  router.push(`/sale/${post.slug}`);
 };
 
-// Simulate loading data from API
+// Get post main image
+const getMainImage = (post) => {
+  if (post.images && post.images.length > 0) {
+    // Find the main image
+    const mainImage = post.images.find(img => img.is_main);
+    return mainImage ? mainImage.image : post.images[0].image;
+  }
+  
+  // Fallback to a placeholder image
+  return `https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=${encodeURIComponent(post.title.substring(0, 10))}`;
+};
+
+// Fetch data when component mounts
 onMounted(() => {
-  // Simulate loading data from API
-  setTimeout(() => {
-    isLoading.value = false;
-  }, 1000);
+  fetchPosts();
 });
 </script>
 
