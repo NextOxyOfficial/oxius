@@ -46,7 +46,7 @@
                 <img 
                   :src="getImageUrl(banners[0]?.image)" 
                   :alt="banners[0]?.title || 'Promotion'" 
-                  class="w-full h-16 sm:h-20 md:h-32 object-cover" 
+                  class="w-full h-20 sm:h-20 md:h-32 object-cover" 
                 />
               </a>
             </div>
@@ -57,7 +57,7 @@
                 <img 
                   :src="getImageUrl(banners[1]?.image)" 
                   :alt="banners[1]?.title || 'Offer'" 
-                  class="w-full h-16 sm:h-20 md:h-32 object-cover" 
+                  class="w-full h-20 sm:h-20 md:h-32 object-cover" 
                 />
               </a>
             </div>
