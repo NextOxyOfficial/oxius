@@ -17,11 +17,11 @@
           
           <!-- Post Sale Button -->
           <button 
-            class="border border-primary text-primary hover:bg-primary/5 rounded-md py-2 px-4 flex items-center gap-2 shadow-sm transition-colors duration-200 font-medium"
+            class="border border-primary text-primary hover:bg-primary/5 rounded-md py-1.5 px-3 flex items-center gap-2 shadow-sm transition-colors duration-200 font-medium"
             @click="openPostSaleModal"
           >
-            <UIcon name="i-heroicons-plus-circle" class="size-5" />
-            Post a Sale
+            <UIcon name="i-heroicons-plus-circle" class="size-4" />
+            <span class="text-md font-medium">Post a Sale</span>
           </button>
         </div>
       </UContainer>
@@ -489,7 +489,7 @@
             'lg:block'
           ]"
         >
-          <div class="p-5 pt-20 border-b border-gray-100 bg-white z-10">
+          <div class="p-5 max-sm:pt-20 border-b border-gray-100 bg-white z-10">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-bold text-gray-800">Filters</h2>
               <button 
@@ -694,15 +694,15 @@
     </UContainer>
     
     <!-- Post Sale Modal -->
-    <UModal v-model="showPostSaleModal" :ui="{ width: 'max-w-4xl' }">
-      <UCard :ui="{ body: { padding: 'p-0' } }">
+    <UModal v-model="showPostSaleModal" :ui="{ width: 'w-full max-w-3xl' }">
+      <UCard :ui="{ body: { padding: 'p-0' }, ring: '', rounded: 'rounded-lg' }">
         <template #header>
           <div class="flex justify-between items-center">
-            <h2 class="text-lg font-medium">Post a Sale</h2>
+            <h2 class="text-lg font-medium text-gray-900">Post a Sale</h2>
             <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="showPostSaleModal = false" />
           </div>
         </template>
-        <div class="max-h-[80vh] overflow-y-auto p-1">
+        <div class="max-h-[80vh] overflow-y-auto p-4">
           <PostSale :categories="categories" @post-saved="onPostSaved" />
         </div>
       </UCard>
