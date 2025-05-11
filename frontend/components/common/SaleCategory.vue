@@ -7,7 +7,7 @@
           <h2 class="text-xl md:text-xl font-semibold">For Sale</h2>
           
         </div>
-        <div class="flex gap-2 sm:gap-3">
+        <div  v-if="user" class="flex gap-2 sm:gap-3">
           <button 
             class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
             @click="openMyPostsModal"
@@ -217,7 +217,7 @@
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
 
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+      <div v-if="user?.user" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
         <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
@@ -246,7 +246,7 @@
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
 
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+      <div v-if="user?.user" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
         <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
@@ -278,6 +278,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useApi } from '~/composables/useApi';
 import PostSale from '~/components/sale/PostSale.vue';
 import MyPosts from '~/components/sale/MyPosts.vue';
+const {user} =useAuth()
 
 const { get } = useApi();
 
