@@ -321,7 +321,7 @@
               ]"
               @click="(selectedPost?.status === 'sold' && status.value === 'active') ? null : newStatus = status.value"
             >
-              <input 
+              <input  
                 type="radio" 
                 :value="status.value" 
                 v-model="newStatus" 
@@ -342,6 +342,22 @@
               </div>
             </label>
           </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+          <button 
+            @click="showStatusModal = false"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="saveStatusChange"
+            :disabled="isSubmitting || !newStatus || newStatus === selectedPost?.status"
+            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 text-sm flex items-center gap-2"
+          >
+            <div v-if="isSubmitting" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+            <span>{{ isSubmitting ? 'Saving...' : 'Save Changes' }}</span>
+          </button>
         </div>
         </div>
       </div>
@@ -722,14 +738,70 @@ const navigateToPost = (post) => {
 
 // Get post main image
 const getMainImage = (post) => {
+  const { staticURL } = useApi();
+  console.log('Post ID:', post.id);
+  console.log('Static URL base:', staticURL);
+  
   if (post.images && post.images.length > 0) {
-    // Find the main image
+    // Find the main image or use the first one
     const mainImage = post.images.find(img => img.is_main);
-    return mainImage ? mainImage.image : post.images[0].image;
+    let imageUrl;
+    
+    try {
+      if (mainImage) {
+        // Handle different possible structures
+        if (typeof mainImage === 'string') {
+          imageUrl = mainImage;
+        } else if (typeof mainImage.image === 'string') {
+          imageUrl = mainImage.image;
+        } else if (mainImage.image && typeof mainImage.image === 'object') {
+          imageUrl = mainImage.image.url || mainImage.url;
+        } else {
+          imageUrl = mainImage;
+        }
+      } else if (post.images[0]) {
+        // Same approach for first image if no main image
+        if (typeof post.images[0] === 'string') {
+          imageUrl = post.images[0];
+        } else if (typeof post.images[0].image === 'string') {
+          imageUrl = post.images[0].image;
+        } else if (post.images[0].image && typeof post.images[0].image === 'object') {
+          imageUrl = post.images[0].image.url || post.images[0].url;
+        } else {
+          imageUrl = post.images[0];
+        }
+      }
+      
+      // Construct full URL with the static base URL if it's a relative path
+      if (imageUrl) {
+        // If it's already an absolute URL, return it as is
+        if (imageUrl.startsWith('http')) {
+          console.log('Full image URL:', imageUrl);
+          return imageUrl;
+        }
+        
+        // Remove leading slash if present in both the base URL and the image URL
+        if (staticURL.endsWith('/') && imageUrl.startsWith('/')) {
+          imageUrl = imageUrl.substring(1);
+        }
+        // Add slash if neither has one
+        else if (!staticURL.endsWith('/') && !imageUrl.startsWith('/')) {
+          imageUrl = '/' + imageUrl;
+        }
+        
+        const fullUrl = staticURL + imageUrl;
+        console.log('Constructed image URL:', fullUrl);
+        return fullUrl;
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+    }
+  } else {
+    console.warn('No images array found for post:', post.id);
   }
   
   // Fallback to a placeholder image
-  return `https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=${encodeURIComponent(post.title.substring(0, 10))}`;
+  return `https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=${encodeURIComponent(post.title?.substring(0, 10) || 'No Image')}`;
 };
 
 // Fetch data when component mounts

@@ -1,16 +1,16 @@
 <template>
-  <div class="post-sale-container">
+  <div class="post-sale-container max-w-4xl mx-auto">
     <!-- Success Modal -->
-    <div v-if="showSuccessModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
+    <div v-if="showSuccessModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/60">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-8 transform transition-all">
         <div class="text-center">
-          <div class="mb-4 flex justify-center">
-            <div class="rounded-full bg-yellow-100 p-3">
-              <Icon name="heroicons:clock" class="h-10 w-10 text-yellow-500" />
+          <div class="mb-5 flex justify-center">
+            <div class="rounded-full bg-yellow-100 p-4">
+              <Icon name="heroicons:clock" class="h-12 w-12 text-yellow-500" />
             </div>
           </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Post Submitted Successfully!</h3>
-          <p class="text-sm text-gray-600 mb-4">
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Post Submitted Successfully!</h3>
+          <p class="text-gray-600 mb-5">
             Your listing has been submitted and is now 
             <span class="font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded">under review</span>. 
             We'll notify you once it's approved.
@@ -18,7 +18,7 @@
           <div class="flex justify-center">
             <button 
               @click="closeSuccessModal" 
-              class="bg-primary text-white px-6 py-2.5 rounded-md hover:bg-primary/90 transition"
+              class="bg-primary text-white px-8 py-3 rounded-md hover:bg-primary/90 transition font-medium"
             >
               Got it
             </button>
@@ -27,10 +27,10 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-lg">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
       <!-- Progress Steps Indicator -->
-      <div class="px-2 sm:px-4 pt-6">
-        <div class="flex justify-between mb-6">
+      <div class="px-6 sm:px-8 pt-8">
+        <div class="flex justify-between mb-8">
           <div 
             v-for="(step, index) in formSteps" 
             :key="index" 
@@ -38,22 +38,22 @@
           >
             <div 
               :class="[ 
-                'w-8 h-8 rounded-full flex items-center justify-center z-10 relative mb-1',
+                'w-10 h-10 rounded-full flex items-center justify-center z-10 relative mb-2 shadow-sm',
                 currentStep > index ? 'bg-green-500 text-white' : 
-                currentStep === index ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
+                currentStep === index ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'
               ]"
             >
               <span v-if="currentStep > index">
-                <Icon name="heroicons:check" class="w-4 h-4" />
+                <Icon name="heroicons:check" class="w-5 h-5" />
               </span>
-              <span v-else>{{ index + 1 }}</span>
+              <span v-else class="font-medium">{{ index + 1 }}</span>
             </div>
-            <span class="text-xs text-gray-500 text-center">{{ step }}</span>
+            <span class="text-sm font-medium text-center" :class="currentStep >= index ? 'text-gray-700' : 'text-gray-400'">{{ step }}</span>
             <!-- Connector line -->
             <div 
               v-if="index < formSteps.length - 1"
               :class="[ 
-                'absolute top-4 left-1/2 h-0.5 w-full',
+                'absolute top-5 left-1/2 h-0.5 w-full',
                 currentStep > index ? 'bg-green-500' : 'bg-gray-200'
               ]"
             ></div>
@@ -63,17 +63,17 @@
 
       <form @submit.prevent="validateStep">
         <!-- Step 1: Basic Details -->
-        <div v-if="currentStep === 0" class="fade-transition px-2 pb-6">
-          <h3 class="text-xl font-medium text-gray-800 mb-4">Basic Details</h3>
+        <div v-if="currentStep === 0" class="fade-transition px-6 sm:px-8 pb-8">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">Basic Details</h3>
           
           <!-- Category Selection -->
-          <div class="mb-5">
-            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category <span class="text-red-500">*</span></label>
             <div class="relative">
               <select 
                 id="category" 
                 v-model="formData.category" 
-                class="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700"
+                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
                 required
                 @change="handleCategoryChange"
               >
@@ -82,22 +82,22 @@
                   {{ category.name }}
                 </option>
               </select>
-              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                 <Icon name="heroicons:chevron-down" class="h-5 w-5 text-gray-400" />
               </div>
             </div>
-            <p v-if="errors.category" class="mt-1 text-red-500 text-sm">{{ errors.category }}</p>
+            <p v-if="errors.category" class="mt-2 text-red-500 text-sm">{{ errors.category }}</p>
           </div>
 
           <!-- Title -->
-          <div class="mb-5">
-            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title <span class="text-red-500">*</span></label>
             <div class="relative">
               <input 
                 type="text" 
                 id="title" 
                 v-model="formData.title" 
-                class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2.5 focus:ring-primary focus:border-primary"
+                class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 placeholder="Enter a descriptive title"
                 required
                 maxlength="100"
@@ -105,43 +105,43 @@
               <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <Icon name="heroicons:document-text" class="h-5 w-5 text-gray-400" />
               </div>
-              <div class="absolute right-3 bottom-1 text-xs text-gray-400">
+              <div class="absolute right-3 bottom-3 text-xs text-gray-400">
                 {{ formData.title.length }}/100
               </div>
             </div>
-            <p v-if="errors.title" class="mt-1 text-red-500 text-sm">{{ errors.title }}</p>
+            <p v-if="errors.title" class="mt-2 text-red-500 text-sm">{{ errors.title }}</p>
           </div>
 
           <!-- Description -->
-          <div class="mb-5">
-            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description <span class="text-red-500">*</span></label>
             <div class="relative">
               <textarea 
                 id="description" 
                 v-model="formData.description" 
-                class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 rows="5"
                 placeholder="Describe what you're selling in detail"
                 required
               ></textarea>
-              <div class="absolute right-3 bottom-1 text-xs text-gray-400">
+              <div class="absolute right-3 bottom-3 text-xs text-gray-400">
                 {{ formData.description.length }}/1000
               </div>
             </div>
-            <p v-if="errors.description" class="mt-1 text-red-500 text-sm">{{ errors.description }}</p>
+            <p v-if="errors.description" class="mt-2 text-red-500 text-sm">{{ errors.description }}</p>
           </div>
 
           <!-- Condition -->
-          <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Condition <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Condition <span class="text-red-500">*</span></label>
             <div class="flex flex-wrap gap-3">
               <label 
                 v-for="condition in conditions" 
                 :key="condition.value" 
                 :class="[ 
-                  'flex items-center px-4 py-2.5 border rounded-md cursor-pointer transition-colors',
+                  'flex items-center px-5 py-3 border rounded-md cursor-pointer transition-colors',
                   formData.condition === condition.value 
-                    ? 'border-primary bg-primary/10 text-primary' 
+                    ? 'border-primary bg-primary/10 text-primary font-medium shadow-sm' 
                     : 'border-gray-300 hover:bg-gray-50'
                 ]"
               >
@@ -154,25 +154,25 @@
                 <span>{{ condition.label }}</span>
               </label>
             </div>
-            <p v-if="errors.condition" class="mt-1 text-red-500 text-sm">{{ errors.condition }}</p>
+            <p v-if="errors.condition" class="mt-2 text-red-500 text-sm">{{ errors.condition }}</p>
           </div>
         </div>
 
         <!-- Step 2: Category-specific fields -->
-        <div v-if="currentStep === 1" class="fade-transition px-2 sm:px-6 pb-6">
-          <h3 class="text-xl font-medium text-gray-800 mb-4">
+        <div v-if="currentStep === 1" class="fade-transition px-6 sm:px-8 pb-8">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">
             {{ getCategoryName(formData.category) }} Details
           </h3>
 
           <!-- Property Fields -->
-          <div v-if="formData.category === 1" class="space-y-5">
+          <div v-if="formData.category === 1" class="space-y-6">
             <!-- Property Type -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Property Type <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Property Type <span class="text-red-500">*</span></label>
               <div class="relative">
                 <select 
                   v-model="formData.propertyType" 
-                  class="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700"
+                  class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
                   required
                 >
                   <option value="" disabled>Select property type</option>
@@ -182,32 +182,32 @@
                   <option value="commercial">Commercial Space</option>
                   <option value="office">Office Space</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                   <Icon name="heroicons:chevron-down" class="h-5 w-5 text-gray-400" />
                 </div>
               </div>
-              <p v-if="errors.propertyType" class="mt-1 text-red-500 text-sm">{{ errors.propertyType }}</p>
+              <p v-if="errors.propertyType" class="mt-2 text-red-500 text-sm">{{ errors.propertyType }}</p>
             </div>
 
             <!-- Size and Unit -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Size <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Size <span class="text-red-500">*</span></label>
                 <input 
                   type="number" 
                   v-model="formData.size" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Size"
                   required
                   min="1"
                 />
-                <p v-if="errors.size" class="mt-1 text-red-500 text-sm">{{ errors.size }}</p>
+                <p v-if="errors.size" class="mt-2 text-red-500 text-sm">{{ errors.size }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
                 <select 
                   v-model="formData.unit" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   required
                 >
                   <option value="sqft">Square Feet</option>
@@ -222,10 +222,10 @@
             <!-- Bedrooms & Bathrooms for apartments/houses -->
             <div v-if="['apartment', 'house'].includes(formData.propertyType)" class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
                 <select 
                   v-model="formData.bedrooms" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 >
                   <option value="">Select</option>
                   <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
@@ -233,10 +233,10 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
                 <select 
                   v-model="formData.bathrooms" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 >
                   <option value="">Select</option>
                   <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
@@ -247,21 +247,21 @@
 
             <!-- Amenities -->
             <div v-if="['apartment', 'house', 'commercial', 'office'].includes(formData.propertyType)">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Amenities</label>
-              <div class="grid grid-cols-2 gap-3">
-                <label class="flex items-center gap-2">
+              <label class="block text-sm font-medium text-gray-700 mb-3">Amenities</label>
+              <div class="grid grid-cols-2 gap-4">
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
                   <input type="checkbox" v-model="formData.amenities.parking" class="rounded text-primary focus:ring-primary h-4 w-4">
                   <span class="text-sm text-gray-700">Parking</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
                   <input type="checkbox" v-model="formData.amenities.elevator" class="rounded text-primary focus:ring-primary h-4 w-4">
                   <span class="text-sm text-gray-700">Elevator</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
                   <input type="checkbox" v-model="formData.amenities.generator" class="rounded text-primary focus:ring-primary h-4 w-4">
                   <span class="text-sm text-gray-700">Generator</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
                   <input type="checkbox" v-model="formData.amenities.security" class="rounded text-primary focus:ring-primary h-4 w-4">
                   <span class="text-sm text-gray-700">Security</span>
                 </label>
@@ -270,14 +270,14 @@
           </div>
 
           <!-- Vehicle Fields -->
-          <div v-if="formData.category === 2" class="space-y-5">
+          <div v-if="formData.category === 2" class="space-y-6">
             <!-- Vehicle Type -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle Type <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type <span class="text-red-500">*</span></label>
               <div class="relative">
                 <select 
                   v-model="formData.vehicleType" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
                   required
                 >
                   <option value="" disabled>Select vehicle type</option>
@@ -288,69 +288,69 @@
                   <option value="bus">Bus</option>
                   <option value="other">Other Vehicle</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                   <Icon name="heroicons:chevron-down" class="h-5 w-5 text-gray-400" />
                 </div>
               </div>
-              <p v-if="errors.vehicleType" class="mt-1 text-red-500 text-sm">{{ errors.vehicleType }}</p>
+              <p v-if="errors.vehicleType" class="mt-2 text-red-500 text-sm">{{ errors.vehicleType }}</p>
             </div>
 
             <!-- Make, Model, Year -->
             <div class="grid grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Make <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Make <span class="text-red-500">*</span></label>
                 <input 
                   type="text" 
                   v-model="formData.make" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. Toyota"
                   required
                 />
-                <p v-if="errors.make" class="mt-1 text-red-500 text-sm">{{ errors.make }}</p>
+                <p v-if="errors.make" class="mt-2 text-red-500 text-sm">{{ errors.make }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Model <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Model <span class="text-red-500">*</span></label>
                 <input 
                   type="text" 
                   v-model="formData.model" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. Corolla"
                   required
                 />
-                <p v-if="errors.model" class="mt-1 text-red-500 text-sm">{{ errors.model }}</p>
+                <p v-if="errors.model" class="mt-2 text-red-500 text-sm">{{ errors.model }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Year <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Year <span class="text-red-500">*</span></label>
                 <input 
                   type="number" 
                   v-model="formData.year" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. 2022"
                   min="1900" 
                   :max="new Date().getFullYear()"
                   required
                 />
-                <p v-if="errors.year" class="mt-1 text-red-500 text-sm">{{ errors.year }}</p>
+                <p v-if="errors.year" class="mt-2 text-red-500 text-sm">{{ errors.year }}</p>
               </div>
             </div>
 
             <!-- Mileage & Fuel Type -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mileage (km)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Mileage (km)</label>
                 <input 
                   type="number" 
                   v-model="formData.mileage" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. 15000"
                   min="0"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Fuel Type</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
                 <select 
                   v-model="formData.fuelType" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 >
                   <option value="">Select fuel type</option>
                   <option value="petrol">Petrol</option>
@@ -366,10 +366,10 @@
             <!-- Transmission & Registration -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Transmission</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Transmission</label>
                 <select 
                   v-model="formData.transmission" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 >
                   <option value="">Select transmission</option>
                   <option value="manual">Manual</option>
@@ -378,11 +378,11 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Registration Year</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Registration Year</label>
                 <input 
                   type="number" 
                   v-model="formData.registrationYear" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. 2022"
                   min="1900" 
                   :max="new Date().getFullYear()"
@@ -392,71 +392,76 @@
           </div>
 
           <!-- Electronics Fields -->
-          <div v-if="formData.category === 3" class="space-y-5">
+          <div v-if="formData.category === 3" class="space-y-6">
             <!-- Electronics Type -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Electronics Type <span class="text-red-500">*</span></label>
-              <select 
-                v-model="formData.electronicsType" 
-                class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
-                required
-              >
-                <option value="" disabled>Select type</option>
-                <option value="smartphone">Smartphone</option>
-                <option value="laptop">Laptop</option>
-                <option value="tablet">Tablet</option>
-                <option value="desktop">Desktop Computer</option>
-                <option value="camera">Camera</option>
-                <option value="tv">Television</option>
-                <option value="audio">Audio Equipment</option>
-                <option value="gaming">Gaming Console</option>
-                <option value="appliance">Home Appliance</option>
-                <option value="other">Other Electronics</option>
-              </select>
-              <p v-if="errors.electronicsType" class="mt-1 text-red-500 text-sm">{{ errors.electronicsType }}</p>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Electronics Type <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <select 
+                  v-model="formData.electronicsType" 
+                  class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+                  required
+                >
+                  <option value="" disabled>Select type</option>
+                  <option value="smartphone">Smartphone</option>
+                  <option value="laptop">Laptop</option>
+                  <option value="tablet">Tablet</option>
+                  <option value="desktop">Desktop Computer</option>
+                  <option value="camera">Camera</option>
+                  <option value="tv">Television</option>
+                  <option value="audio">Audio Equipment</option>
+                  <option value="gaming">Gaming Console</option>
+                  <option value="appliance">Home Appliance</option>
+                  <option value="other">Other Electronics</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                  <Icon name="heroicons:chevron-down" class="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
+              <p v-if="errors.electronicsType" class="mt-2 text-red-500 text-sm">{{ errors.electronicsType }}</p>
             </div>
 
             <!-- Brand & Model -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Brand <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Brand <span class="text-red-500">*</span></label>
                 <input 
                   type="text" 
                   v-model="formData.brand" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. Samsung"
                   required
                 />
-                <p v-if="errors.brand" class="mt-1 text-red-500 text-sm">{{ errors.brand }}</p>
+                <p v-if="errors.brand" class="mt-2 text-red-500 text-sm">{{ errors.brand }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Model <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Model <span class="text-red-500">*</span></label>
                 <input 
                   type="text" 
                   v-model="formData.model" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="E.g. Galaxy S23"
                   required
                 />
-                <p v-if="errors.model" class="mt-1 text-red-500 text-sm">{{ errors.model }}</p>
+                <p v-if="errors.model" class="mt-2 text-red-500 text-sm">{{ errors.model }}</p>
               </div>
             </div>
 
             <!-- Age & Warranty -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                <div class="flex">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                <div class="flex shadow-sm">
                   <input 
                     type="number" 
                     v-model="formData.ageValue" 
-                    class="w-2/3 border border-gray-300 rounded-l-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                    class="w-2/3 border border-gray-300 rounded-l-md px-4 py-3 focus:ring-primary focus:border-primary"
                     placeholder="Age"
                     min="0"
                   />
                   <select 
                     v-model="formData.ageUnit" 
-                    class="w-1/3 border-l-0 border border-gray-300 rounded-r-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                    class="w-1/3 border-l-0 border border-gray-300 rounded-r-md px-2 py-3 focus:ring-primary focus:border-primary"
                   >
                     <option value="days">Days</option>
                     <option value="months">Months</option>
@@ -465,10 +470,10 @@
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Warranty Status</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Warranty Status</label>
                 <select 
                   v-model="formData.warranty" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 >
                   <option value="">Select status</option>
                   <option value="under-warranty">Under Warranty</option>
@@ -480,25 +485,25 @@
           </div>
 
           <!-- Sports & B2B & Others -->
-          <div v-if="[4, 5, 6].includes(formData.category)" class="space-y-5">
+          <div v-if="[4, 5, 6].includes(formData.category)" class="space-y-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Type/Brand <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Type/Brand <span class="text-red-500">*</span></label>
               <input 
                 type="text" 
                 v-model="formData.itemType" 
-                class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 placeholder="Enter type or brand"
                 required
               />
-              <p v-if="errors.itemType" class="mt-1 text-red-500 text-sm">{{ errors.itemType }}</p>
+              <p v-if="errors.itemType" class="mt-2 text-red-500 text-sm">{{ errors.itemType }}</p>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Age/Quality</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Age/Quality</label>
               <input 
                 type="text" 
                 v-model="formData.itemQuality" 
-                class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                 placeholder="Describe age or quality"
               />
             </div>
@@ -506,12 +511,12 @@
         </div>
 
         <!-- Step 3: Price and Location -->
-        <div v-if="currentStep === 2" class="fade-transition px-2 sm:px-6 pb-6">
-          <h3 class="text-xl font-medium text-gray-800 mb-4">Pricing & Location</h3>
+        <div v-if="currentStep === 2" class="fade-transition px-6 sm:px-8 pb-8">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">Pricing & Location</h3>
           
           <!-- Price -->
-          <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Price <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Price <span class="text-red-500">*</span></label>
             <div class="flex items-center">
               <div class="relative flex-grow">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -520,82 +525,82 @@
                 <input 
                   type="number" 
                   v-model="formData.price" 
-                  class="w-full border border-gray-300 rounded-l-md pl-10 pr-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-l-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Enter your price"
                   min="0"
                   :disabled="formData.negotiable"
                   required
                 />
               </div>
-              <label class="flex items-center border border-l-0 border-gray-300 rounded-r-md px-3 py-2.5 bg-gray-50 hover:bg-gray-100 cursor-pointer">
+              <label class="flex items-center border border-l-0 border-gray-300 rounded-r-md px-4 py-3 bg-gray-50 hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" v-model="formData.negotiable" class="rounded text-primary focus:ring-primary h-4 w-4 mr-2">
-                <span class="text-sm">Negotiable</span>
+                <span class="text-sm font-medium">Negotiable</span>
               </label>
             </div>
-            <p v-if="errors.price" class="mt-1 text-red-500 text-sm">{{ errors.price }}</p>
+            <p v-if="errors.price" class="mt-2 text-red-500 text-sm">{{ errors.price }}</p>
           </div>
           
           <!-- Location Selection -->
-          <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Location <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Location <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <select 
                   v-model="formData.division" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   required
                 >
                   <option value="" disabled>Select Division</option>
                   <option v-for="division in divisions" :key="division" :value="division">{{ division }}</option>
                 </select>
-                <p v-if="errors.division" class="mt-1 text-red-500 text-sm">{{ errors.division }}</p>
+                <p v-if="errors.division" class="mt-2 text-red-500 text-sm">{{ errors.division }}</p>
               </div>
               
               <div>
                 <select 
                   v-model="formData.district" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   required
                   :disabled="!formData.division"
                 >
                   <option value="" disabled>Select District</option>
                   <option v-for="district in districtsForSelectedDivision" :key="district" :value="district">{{ district }}</option>
                 </select>
-                <p v-if="errors.district" class="mt-1 text-red-500 text-sm">{{ errors.district }}</p>
+                <p v-if="errors.district" class="mt-2 text-red-500 text-sm">{{ errors.district }}</p>
               </div>
               
               <div>
                 <select 
                   v-model="formData.area" 
-                  class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   required
                   :disabled="!formData.district"
                 >
                   <option value="" disabled>Select Area</option>
                   <option v-for="area in areasForSelectedDistrict" :key="area" :value="area">{{ area }}</option>
                 </select>
-                <p v-if="errors.area" class="mt-1 text-red-500 text-sm">{{ errors.area }}</p>
+                <p v-if="errors.area" class="mt-2 text-red-500 text-sm">{{ errors.area }}</p>
               </div>
             </div>
           </div>
           
           <!-- Detailed Address -->
-          <div class="mb-5">
-            <label for="detailedAddress" class="block text-sm font-medium text-gray-700 mb-1">Detailed Address <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label for="detailedAddress" class="block text-sm font-medium text-gray-700 mb-2">Detailed Address <span class="text-red-500">*</span></label>
             <textarea 
               id="detailedAddress" 
               v-model="formData.detailedAddress" 
-              class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus:ring-primary focus:border-primary"
-              rows="2"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
+              rows="3"
               placeholder="Provide specific location details"
               required
             ></textarea>
-            <p v-if="errors.detailedAddress" class="mt-1 text-red-500 text-sm">{{ errors.detailedAddress }}</p>
+            <p v-if="errors.detailedAddress" class="mt-2 text-red-500 text-sm">{{ errors.detailedAddress }}</p>
           </div>
           
           <!-- Contact Info -->
-          <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Contact Information <span class="text-red-500">*</span></label>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Contact Information <span class="text-red-500">*</span></label>
             
             <div class="space-y-4">
               <div class="relative">
@@ -605,12 +610,12 @@
                 <input 
                   type="tel" 
                   v-model="formData.phone" 
-                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Phone Number"
                   required
                   pattern="[0-9]{11}"
                 />
-                <p v-if="errors.phone" class="mt-1 text-red-500 text-sm">{{ errors.phone }}</p>
+                <p v-if="errors.phone" class="mt-2 text-red-500 text-sm">{{ errors.phone }}</p>
               </div>
               
               <div class="relative">
@@ -620,7 +625,7 @@
                 <input 
                   type="email" 
                   v-model="formData.email" 
-                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2.5 focus:ring-primary focus:border-primary"
+                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Email (optional)"
                 />
               </div>
@@ -629,19 +634,19 @@
         </div>
 
         <!-- Step 4: Images Upload -->
-        <div v-if="currentStep === 3" class="fade-transition px-2 sm:px-6 pb-6">
-          <h3 class="text-xl font-medium text-gray-800 mb-4">Upload Photos</h3>
+        <div v-if="currentStep === 3" class="fade-transition px-6 sm:px-8 pb-8">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">Upload Photos</h3>
           
-          <p class="text-sm text-gray-500 mb-4">
+          <p class="text-sm text-gray-600 mb-6">
             Upload clear photos to get more responses. You can upload up to 8 images.
             <span class="font-medium text-primary">First image will be the main image.</span>
           </p>
           
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-6">
             <div 
               v-for="n in 8" 
               :key="n" 
-              class="aspect-square relative border-2 border-dashed rounded-lg group hover:border-primary transition-all"
+              class="aspect-square relative border-2 border-dashed rounded-lg group transition-all shadow-sm hover:shadow"
               :class="formData.images[n - 1] ? 'border-primary bg-primary/5' : 'border-gray-300 bg-gray-50'"
               @click="openFileUpload(n - 1)"
             >
@@ -655,10 +660,10 @@
               
               <div 
                 v-if="!formData.images[n - 1]" 
-                class="absolute inset-0 flex flex-col items-center justify-center p-2 text-center"
+                class="absolute inset-0 flex flex-col items-center justify-center p-3 text-center"
               >
-                <Icon name="heroicons:photo" class="text-gray-400 text-2xl mb-1 group-hover:text-primary transition-colors" />
-                <div class="text-xs text-gray-500 group-hover:text-primary transition-colors">
+                <Icon name="heroicons:photo" class="text-gray-400 text-3xl mb-2 group-hover:text-primary transition-colors" />
+                <div class="text-sm text-gray-500 group-hover:text-primary transition-colors">
                   {{ n === 1 ? 'Add main photo' : 'Add photo' }}
                 </div>
               </div>
@@ -673,77 +678,82 @@
               <button 
                 v-if="formData.images[n - 1]" 
                 type="button" 
-                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                 @click.stop="removeImage(n - 1)"
               >
-                <Icon name="heroicons:x-mark" size="16px" />
+                <Icon name="heroicons:x-mark" size="18px" />
               </button>
               
               <div 
                 v-if="n === 1" 
-                class="absolute top-1 left-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded">
+                class="absolute top-2 left-2 bg-primary text-white text-xs px-2.5 py-1 rounded font-medium shadow-sm">
                 Main
               </div>
             </div>
           </div>
           
-          <p v-if="errors.images" class="mt-3 text-red-500 text-sm">{{ errors.images }}</p>
+          <p v-if="errors.images" class="mt-2 text-red-500 text-sm">{{ errors.images }}</p>
           
-          <div class="flex items-center gap-2 mt-4">
-            <Icon name="heroicons:information-circle" class="text-blue-500" />
-            <p class="text-xs text-gray-500">Recommended: Upload at least 3 images from different angles</p>
+          <div class="flex items-center gap-2 mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <Icon name="heroicons:information-circle" class="text-blue-500 h-5 w-5 flex-shrink-0" />
+            <p class="text-sm text-blue-700">
+              Recommended: Upload at least 3 high-quality images from different angles for better responses
+            </p>
           </div>
 
           <!-- Terms and Conditions Acceptance -->
-          <div class="mt-6 border-t pt-5">
-            <label class="flex items-start gap-2 cursor-pointer group">
+          <div class="mt-8 border-t border-gray-200 pt-6">
+            <label class="flex items-start gap-3 cursor-pointer group">
               <input 
                 type="checkbox" 
                 v-model="formData.termsAccepted" 
-                class="rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                class="rounded border-gray-300 text-primary focus:ring-primary mt-1 h-5 w-5"
                 required
               />
               <div>
                 <span class="text-sm text-gray-700">I agree to the</span>
-                <a href="#" class="text-sm text-primary hover:underline ml-1">Terms and Conditions</a>
-                <span class="text-sm text-gray-700">, </span>
-                <a href="#" class="text-sm text-primary hover:underline">Privacy Policy</a>
+                <a href="#" class="text-sm text-primary hover:underline ml-1 font-medium">Terms and Conditions</a>
+                <span class="text-sm text-gray-700">,</span>
+                <a href="#" class="text-sm text-primary hover:underline ml-1 font-medium">Privacy Policy</a>
                 <span class="text-red-500 ml-0.5">*</span>
-                <p class="mt-1 text-xs text-gray-500 group-hover:text-gray-700 transition-colors">
+                <p class="mt-1.5 text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
                   By posting, you confirm that this ad complies with our policies and you own or have rights to the content you're posting.
                 </p>
               </div>
             </label>
-            <p v-if="errors.termsAccepted" class="mt-1 text-red-500 text-sm">{{ errors.termsAccepted }}</p>
+            <p v-if="errors.termsAccepted" class="mt-2 text-red-500 text-sm">{{ errors.termsAccepted }}</p>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="px-6 py-4 bg-gray-50 border-t flex justify-between">
+        <div class="px-8 py-5 bg-gray-50 border-t flex justify-between">
           <button 
             v-if="currentStep > 0"
             type="button" 
-            class="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-50"
+            class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition font-medium"
             @click="goToPreviousStep"
           >
+            <Icon name="heroicons:arrow-left" class="w-5 h-5 mr-1.5 inline-block" />
             Previous
           </button>
           <div v-else></div>
           
           <button 
             type="submit" 
-            class="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90"
+            class="bg-primary text-white px-8 py-2.5 rounded-md hover:bg-primary/90 transition font-medium shadow-sm"
             :disabled="isSubmitting"
           >
-            <span v-if="isSubmitting">
-              <Icon name="heroicons:arrow-path" class="animate-spin inline-block mr-1" />
+            <span v-if="isSubmitting" class="flex items-center">
+              <Icon name="heroicons:arrow-path" class="animate-spin w-5 h-5 mr-1.5" />
               Processing...
             </span>
-            <span v-else-if="currentStep < formSteps.length - 1">
+            <span v-else-if="currentStep < formSteps.length - 1" class="flex items-center">
               Next
+              <Icon name="heroicons:arrow-right" class="w-5 h-5 ml-1.5" />
             </span>
-            <span v-else>
+            <span v-else class="flex items-center">
               Post Sale
+              <Icon name="heroicons:paper-airplane" class="w-5 h-5 ml-1.5" />
             </span>
           </button>
         </div>
