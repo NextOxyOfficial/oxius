@@ -215,7 +215,7 @@
         <!-- Step 2: Category-specific fields -->
         <div v-if="currentStep === 1" class="fade-transition px-6 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-800 mb-6">
-            {{ getCategoryName(formData.category) }} Details
+            {{ formData.category }} Details
           </h3>
 
           <!-- Property Fields -->

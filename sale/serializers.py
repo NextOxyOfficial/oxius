@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import SalePost, SalePostImage
+from base.serializers import ForSaleCategorySerializer
 
 
 class SalePostImageSerializer(serializers.ModelSerializer):
@@ -36,6 +37,7 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
     # Make price and size fields accept string values
     price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
     size = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+    category = ForSaleCategorySerializer(read_only=True)
     
     class Meta:
         model = SalePost
