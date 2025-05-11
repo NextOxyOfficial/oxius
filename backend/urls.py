@@ -17,9 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from base.views import index
+
+# First set up the media files
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Then add the actual URL patterns
 urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
     path('tinymce/', include('tinymce.urls')),
@@ -41,3 +46,7 @@ urlpatterns = urlpatterns + [
     path('<str:param>/<str:param2>/<str:param3>/<str:param4>', index, name='index2'),
     path('<str:param>/<str:param2>/<str:param3>/<str:param4>/', index, name='index2'),
 ]
+
+# Add static file handling in development
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
