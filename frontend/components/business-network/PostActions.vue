@@ -1,12 +1,11 @@
 <template>  <div
-    class="flex items-center justify-between pt-3.5 pb-1.5 border-t border-gray-200/70 dark:border-slate-700/50 mb-4 max-w-2xl mx-auto"
+    class="flex items-center justify-between pt-3.5 px-2 pb-1.5 border-t border-gray-200/70 dark:border-slate-700/50 mb-4 max-w-2xl mx-auto"
   >
     <!-- Left Side Actions: Like, Comment, Share -->
     <div class="flex items-center space-x-4">
       <!-- Like button with counter -->
-      <div class="flex items-center group">
-        <button
-          class="p-1.5 rounded-full hover:bg-rose-50/80 dark:hover:bg-rose-900/20 transition-all duration-300 disabled:opacity-60 transform hover:scale-105 relative"
+      <div class="flex items-center group">        <button
+          class="p-1.5 rounded-full transition-colors disabled:opacity-60 relative"
           @click="$emit('toggle-like', post)"
           :disabled="post.isLikeLoading"
           title="Like"
@@ -16,24 +15,16 @@
             <Loader2
               class="h-5 w-5 text-rose-400 dark:text-rose-300 animate-spin"
             />
-          </div>
-
-          <!-- Heart icon with premium effects -->
+          </div>          <!-- Heart icon with modern styling -->
           <div v-else class="relative">
-            <!-- Pulse effect for liked posts - enhanced effect -->
-            <div
-              v-if="
-                post.post_likes?.find((like) => like?.user === user?.user?.id)
-              "
-              class="absolute inset-0 rounded-full bg-rose-500/30 animate-ping-premium opacity-80"
-            ></div>
 
-            <Heart
+            <UIcon
+              :name="post.post_likes?.find((like) => like.user === user?.user?.id) ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
               :class="[
-                'size-5 transition-all duration-300',
+                'size-5 transition-colors',
                 post.post_likes?.find((like) => like.user === user?.user?.id)
-                  ? 'text-rose-500 dark:text-rose-400 fill-rose-500 dark:fill-rose-400 animate-heartbeat-premium'
-                  : 'text-rose-400 dark:text-rose-300 group-hover:text-rose-500 dark:group-hover:text-rose-400',
+                  ? 'text-rose-500 dark:text-rose-400'
+                  : 'text-gray-600 dark:text-gray-400 group-hover:text-rose-500 dark:group-hover:text-rose-400',
               ]"
             />
           </div>
@@ -42,90 +33,67 @@
         <!-- Like counter (small) -->
         <span 
           @click="$emit('open-likes-modal', post)" 
-          class="text-xs ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
+          class="text-base ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
         >
           {{ formatCount(post?.post_likes?.length || 0) }}
         </span>
       </div>
 
       <!-- Comment button with counter -->
-      <div class="flex items-center group">
-        <button
-          class="p-1.5 rounded-full hover:bg-blue-50/80 dark:hover:bg-blue-900/20 transition-all duration-300 transform hover:scale-105"
+      <div class="flex items-center group">        <button
+          class="p-1.5 rounded-full transition-colors"
           @click="$emit('open-comments-modal', post)"
           title="Comment"
-        >
-          <div class="relative">
-            <MessageCircle
-              class="size-5 text-blue-500/90 dark:text-blue-400/90 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors duration-300"
+        ><div class="relative">
+            <UIcon
+              name="i-heroicons-chat-bubble-oval-left"
+              class="size-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
             />
-            <!-- Enhanced glow effect on hover -->
-            <div
-              class="absolute inset-0 rounded-full bg-blue-400/0 group-hover:bg-blue-400/30 blur-md transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"
-            ></div>
           </div>
         </button>
         
         <!-- Comment counter (small) -->
         <span 
           @click="$emit('open-comments-modal', post)" 
-          class="text-xs ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+          class="text-base ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
         >
           {{ formatCount(post?.post_comments?.length || 0) }}
         </span>
+      </div>      <!-- Share button (icon only) -->
+      <div class="flex items-center group">
+        <button
+          class="p-1.5 rounded-full transition-colors"
+          @click="$emit('share-post', post)"
+          title="Share"
+        >
+          <div class="relative">
+            <UIcon
+              name="ion-paper-plane-outline"
+              class="size-5 mt-1 text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors"
+            />
+          </div>
+        </button>
       </div>
-
-      <!-- Share button (icon only) -->
-      <button
-        class="p-1.5 rounded-full hover:bg-emerald-50/80 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-105"
-        @click="$emit('share-post', post)"
-        title="Share"
-      >
-        <div class="relative">
-          <Share2
-            class="h-5 w-5 text-emerald-500/90 dark:text-emerald-400/90 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors duration-300"
-          />
-          <!-- Enhanced glow effect on hover -->
-          <div
-            class="absolute inset-0 rounded-full bg-emerald-400/0 group-hover:bg-emerald-400/30 blur-md transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"
-          ></div>
-        </div>
-      </button>
     </div>
 
-    <!-- Right Side: Save Button -->
-    <button
-      class="p-1.5 rounded-full hover:bg-indigo-50/80 dark:hover:bg-indigo-900/20 transition-all duration-300 transform hover:scale-105"
+    <!-- Right Side: Save Button -->    <button
+      class="p-1.5 rounded-full transition-colors"
       @click="$emit('toggle-save', post)"
       title="Save"
-    >
-      <div class="relative">
-        <!-- Enhanced pulse effect for saved posts -->
-        <div
-          v-if="
-            post.isSaved ||
-            savedPosts.some(
-              (i) => i.post === post.id && i.user === user?.user?.id
-            )
-          "
-          class="absolute inset-0 rounded-full bg-indigo-500/30 animate-pulse-premium opacity-80"
-        ></div>
+    ><div class="relative">
 
-        <Bookmark
+        <UIcon
+          :name="(post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id)) ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
           :class="[
-            'h-5 w-5 transition-all duration-300',
+            'h-5 w-5 transition-colors',
             post.isSaved ||
             savedPosts.some(
               (i) => i.post === post.id && i.user === user?.user?.id
             )
-              ? 'text-indigo-600 dark:text-indigo-400 fill-indigo-600 dark:fill-indigo-400'
-              : 'text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-300',
+              ? 'text-indigo-600 dark:text-indigo-400'
+              : 'text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400',
           ]"
         />
-        <!-- Enhanced glow effect on hover -->
-        <div
-          class="absolute inset-0 rounded-full bg-indigo-400/0 group-hover:bg-indigo-400/30 blur-md transition-opacity duration-300 -z-10 opacity-0 group-hover:opacity-100"
-        ></div>
       </div>
     </button>
   </div>
@@ -133,11 +101,7 @@
 
 <script setup>
 import {
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
-  Loader2,
+  Loader2
 } from "lucide-vue-next";
 
 const { post } = defineProps({
