@@ -189,33 +189,59 @@
         </div>
         
         <!-- Display actual posts from the database -->
-        <div v-else-if="categoryPosts.length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <div v-else-if="categoryPosts.length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-3">
           <NuxtLink 
             v-for="post in categoryPosts" 
             :key="post.id"
             :to="`/sale/${post.slug}`"
-            class="item-card bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
+            class="item-card bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 flex flex-col h-full transform hover:-translate-y-1 hover:border-primary/20"
           >
-            <div class="relative h-32 bg-gray-50">
-              <!-- Post image -->
-              <img 
-                :src="getPostImage(post)" 
-                :alt="post.title"
-                class="w-full h-full object-cover"
-                loading="lazy"
-              />
-              <!-- Status badges -->
-              <span v-if="post.featured" class="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-md">Featured</span>
-              <span v-else-if="post.status === 'active'" class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-md">Active</span>
-              <span v-else-if="post.status === 'sold'" class="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-md">Sold</span>
+            <div class="relative">
+              <!-- Price overlay in top right -->
+              <div class="absolute top-0 right-0 m-2 z-10">
+                <div class="px-2 py-1 bg-primary text-white text-sm font-bold rounded shadow-sm">
+                  ৳{{ post.price?.toLocaleString() || 'Negotiable' }}
+                </div>
+              </div>
+              
+              <!-- Status badges in top left -->
+              <div class="absolute top-0 left-0 m-2 z-10">
+                <span v-if="post.featured" class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded">Featured</span>
+                <span v-else-if="post.status === 'sold'" class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded">Sold</span>
+              </div>
+              
+              <!-- Image with gradient overlay -->
+              <div class="h-36 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"></div>
+                <img 
+                  :src="getPostImage(post)" 
+                  :alt="post.title"
+                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
             </div>
-            <div class="p-3">
-              <h4 class="font-medium text-sm line-clamp-1 mb-1">{{ post.title }}</h4>
-              <p class="text-primary font-bold text-sm mb-2">৳{{ post.price?.toLocaleString() || 'Negotiable' }}</p>
-              <div class="flex justify-between items-center">
-                <div class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ post.condition }}</div>
-                <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Icon name="heroicons:map-pin" size="12px" class="text-gray-400" />
+            
+            <div class="p-3 flex-grow flex flex-col">
+              <!-- Title with truncation -->
+              <h4 class="font-medium text-gray-900 line-clamp-1 text-sm">{{ post.title }}</h4>
+              
+              <!-- Address with location icon -->
+              <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
+                <Icon name="heroicons:map-pin" class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-400" />
+                <span class="line-clamp-1">{{ post.area }}, {{ post.district }}</span>
+              </div>
+              
+              <div class="mt-auto flex justify-between items-center pt-1">
+                <!-- Condition tag -->
+                <div class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  {{ post.condition }}
+                </div>
+                
+                <!-- Date or other secondary info -->
+                <div class="text-xs text-gray-500 flex items-center">
+                  <Icon name="heroicons:clock" class="h-3 w-3 mr-1 text-gray-400" />
+                  {{ formatDate(post.created_at) }}
                 </div>
               </div>
             </div>
@@ -622,6 +648,21 @@ const getPostImage = (post) => {
   }
   
   return 'https://via.placeholder.com/300/3b82f6/FFFFFF?text=No+Image';
+};
+
+// Helper function for formatting dates
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 };
 </script>
 
