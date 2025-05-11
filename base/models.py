@@ -115,6 +115,12 @@ class User(AbstractUser):
                     break
       if self.balance < 0:
         raise ValueError("Balance can't be negative")
+      
+      # Check if pro_validity has passed and update is_pro accordingly
+      if self.pro_validity and self.is_pro:
+          if timezone.now() > self.pro_validity:
+              self.is_pro = False
+              
       super(User, self).save(*args, **kwargs)
 
 class Subscription(models.Model):
