@@ -185,7 +185,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist/static')
+    os.path.join(BASE_DIR, 'frontend/dist/assets')  # Updated path to match Nuxt output structure
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -194,6 +194,12 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
+
+# For production environment
+WHITENOISE_MAX_AGE = 31536000  # 1 year in seconds
+WHITENOISE_MIMETYPES = {
+    'application/javascript': 'text/javascript',
+}
 
 MEDIA_URL = 'https://adsyclub.com/media/'
 # MEDIA_URL = 'http://127.0.0.1:8000//media/'
