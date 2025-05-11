@@ -4,7 +4,7 @@
       <div class="max-w-7xl mx-auto">
         <!-- Main Navigation - REVISED LAYOUT -->
         <div
-          class="flex items-center justify-between px-4 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
+          class="flex items-center justify-between pl-1 pr-3 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
         >
           <!-- Logo - Now in the same row with increased size -->
           <NuxtLink to="/adsy-news" class="flex-shrink-0 mr-3">
@@ -72,7 +72,7 @@
           </nav>
 
           <!-- Right side actions - search and buttons -->
-          <div class="flex items-center space-x-1.5 sm:space-x-3">
+          <div class="flex items-center space-x-1 sm:space-x-3">
             <!-- Search icon -->
             <button
               @click="toggleSearch"
