@@ -63,7 +63,7 @@
             </div>
             
             <!-- Fallback banners if API returns empty data -->
-            <div v-if="banners.length === 0" class="main-banner rounded-md overflow-hidden cursor-pointer md:w-1/2">
+            <div v-if="banners.length === 0" class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
               <img src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion" alt="Promotion" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
             </div>
             
