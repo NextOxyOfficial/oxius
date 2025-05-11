@@ -280,7 +280,7 @@
                   class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"
                 ></div>
                 <img
-                  :src="getPostImage(post)"
+                  :src="post.main_image"
                   :alt="post.title"
                   class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   loading="lazy"
@@ -721,39 +721,6 @@ const handleDeletePost = (postId) => {
   // Here you would implement delete functionality, possibly making an API call
   console.log("Delete post with ID:", postId);
   // In a real app, you would remove the post from the listings after successful deletion
-};
-
-// Helper function to get post image
-const getPostImage = (post) => {
-  const { staticURL } = useApi();
-
-  // Handle main_image from API response
-  if (post.main_image) {
-    return post.main_image.startsWith("http")
-      ? post.main_image
-      : `${staticURL}${post.main_image}`;
-  }
-
-  // Handle images array if provided
-  if (post.images && post.images.length > 0) {
-    // Find main image or use first image
-    const mainImage = post.images.find((img) => img.is_main) || post.images[0];
-
-    // Handle different image data structures
-    if (typeof mainImage === "string") {
-      return mainImage.startsWith("http")
-        ? mainImage
-        : `${staticURL}${mainImage}`;
-    } else if (mainImage.image) {
-      const imgUrl =
-        typeof mainImage.image === "string"
-          ? mainImage.image
-          : mainImage.image.url || "";
-      return imgUrl.startsWith("http") ? imgUrl : `${staticURL}${imgUrl}`;
-    }
-  }
-
-  return "https://via.placeholder.com/300/3b82f6/FFFFFF?text=No+Image";
 };
 
 // Helper function for formatting dates
