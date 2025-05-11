@@ -1978,11 +1978,10 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                 # 1. Deduct total amount from buyer's balance
                 buyer.balance -= total_amount
                 buyer.save()
-                
-                # 2. Create a transaction record for the buyer's payment
+                  # 2. Create a transaction record for the buyer's payment
                 Balance.objects.create(
                     user=buyer,  # The buyer who is making the payment
-                    to_user=product_owner,
+                    to_user=product_owner,  # No specific seller at this point, just tracking the payment
                     amount=total_amount,  # Negative amount as it's a deduction
                     transaction_type='order_payment',
                     completed=True,
@@ -2163,10 +2162,9 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
 
             # Delete items marked for removal
             for item in items_to_remove:
-                item.delete()
-
-            # Process payment adjustments
-            buyer = request.user
+                item.delete()            # Process payment adjustments
+            # Use the order's user as the buyer, not the currently logged in user
+            buyer = order.user
             if total_additional_amount > 0:
                 # Handle additional payment needed
                 if order.payment_method == 'balance':
@@ -2178,13 +2176,12 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                     
                     # Deduct additional amount from buyer's balance
                     buyer.balance -= total_additional_amount
-                    buyer.save()
-
-                    # Create transaction record for additional payment
+                    buyer.save()                    # Create transaction record for additional payment
                     Balance.objects.create(
                         user=buyer,
+                        to_user=None,  # No specific seller at this point
                         amount=-total_additional_amount,
-                        transaction_type='order_update_payment',
+                        transaction_type='order_update',
                         completed=True,
                         bank_status='completed',
                         description=f"Payment adjustment for order {order.id}"
@@ -2198,32 +2195,21 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         if payment_amount > 0:
                             # Update seller balance (only for positive adjustments)
                             seller.balance += payment_amount
-                            seller.save()
-
-                            # Create transaction record
-                            Balance.objects.create(
-                                user=seller,
-                                to_user=buyer,
-                                amount=payment_amount,
-                                transaction_type='order_update_received',
-                                completed=True,
-                                bank_status='completed',
-                                description=f"Additional payment for order {order.id}"
-                            )
+                            seller.save()                            # Create transaction record
+                           
             elif total_additional_amount < 0 and order.payment_method == 'balance':
                 # Handle refund for reduced items
                 refund_amount = -total_additional_amount  # Make positive for refund
                 
                 # Add refund to buyer's balance
                 buyer.balance += refund_amount
-                buyer.save()
-                
-                # Create transaction record for refund
+                buyer.save()                # Create transaction record for refund
                 Balance.objects.create(
                     user=buyer,
-                    to_user=product_owner,
+                    # No specific seller is needed here as this is a refund to the buyer
+                    to_user=None,
                     amount=refund_amount,
-                    transaction_type='order_update_refund',
+                    transaction_type='order_refund',
                     completed=True,
                     bank_status='completed',
                     description=f"Refund for order {order.id} updates"
@@ -2239,13 +2225,12 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         deduction_amount = -payment_amount
                         seller.balance -= deduction_amount
                         seller.save()
-                        
-                        # Create transaction record
+                          # Create transaction record
                         Balance.objects.create(
                             user=seller,
                             to_user=buyer,
                             amount=-deduction_amount,  # Negative amount for deduction
-                            transaction_type='order_update_deduction',
+                            transaction_type='order_deduction',
                             completed=True,
                             bank_status='completed',
                             description=f"Payment adjustment for order {order.id}"
