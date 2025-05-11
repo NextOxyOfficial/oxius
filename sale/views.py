@@ -16,7 +16,7 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 class SalePostViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
