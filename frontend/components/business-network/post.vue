@@ -32,9 +32,7 @@
               "
               :post="post.post_details ? post.post_details : post"
               @open-media="openMedia"
-            />
-
-            <!-- Post Actions -->
+            />            <!-- Post Actions -->
             <BusinessNetworkPostActions
               :post="post.post_details ? post.post_details : post"
               :user="user"
@@ -45,6 +43,27 @@
               @toggle-save="toggleSave"
             />
             
+            <!-- Tags with clean styling -->
+            <div
+              v-if="
+                post?.post_details
+                  ? post.post_details?.post_tags?.length > 0
+                  : post?.post_tags?.length > 0
+              "
+              class="flex flex-wrap gap-1.5 mb-2 px-2"
+            >
+              <NuxtLink
+                v-for="(tag, idx) in post?.post_details
+                  ? post.post_details?.post_tags
+                  : post?.post_tags"
+                :key="idx"
+                :to="`/business-network/posts/tag/${tag.tag}`"
+                class="text-xs text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full transition-colors hover:text-blue-800 dark:hover:text-blue-300 hashtag"
+              >
+                #{{ tag.tag }}
+              </NuxtLink>
+            </div>
+            
             <!-- Post Title with enhanced styling -->
             <NuxtLink
               :to="`/business-network/posts/${post?.post ? post.post : post.id}`"
@@ -52,26 +71,6 @@
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
-
-            <!-- Tags with premium styling -->
-            <div
-              v-if="
-                post?.post_details
-                  ? post.post_details?.post_tags?.length > 0
-                  : post?.post_tags?.length > 0
-              "
-              class="flex flex-wrap gap-1.5 mb-3 px-2"
-            >
-              <span
-                v-for="(tag, idx) in post?.post_details
-                  ? post.post_details?.post_tags
-                  : post?.post_tags"
-                :key="idx"
-                class="text-xs bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full shadow-sm border border-blue-200/30 dark:border-blue-700/30 hover:shadow-md transition-all duration-300 transform hover:scale-105"
-              >
-                #{{ tag.tag }}
-              </span>
-            </div>
 
             <!-- Post Content with improved styling -->
             <div class="mb-3 min-w-full px-2">
@@ -931,7 +930,15 @@ const sharePost = postToShare => {
 
 /* Add frosted glass effect base classes */
 .glass-effect {
-  @apply backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border border-white/20 dark:border-slate-700/20 shadow-lg;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-effect {
+  background-color: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.2);
 }
 
 .premium-shadow {
@@ -942,6 +949,29 @@ const sharePost = postToShare => {
 .dark .premium-shadow {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.2),
     0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Hashtag styling */
+.hashtag {
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.hashtag:hover {
+  text-decoration: underline;
+}
+
+.hashtag:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 5%;
+  width: 90%;
+  height: 1px;
+  background-color: currentColor;
+  transform-origin: center;
+  transition: transform 0.2s ease;
 }
 
 /* Add viewport control for mobile */

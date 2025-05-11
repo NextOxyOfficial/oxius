@@ -36,9 +36,8 @@
         <NuxtLink
           :to="`/business-network/profile/${post.author}`"
           class="font-semibold text-gray-900 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
-        >
-          <p class="truncate max-w-[220px]">
-            {{ post?.author_details?.name }}
+        >          <p class="truncate max-w-[220px]">
+            {{ capitalizeNames(post?.author_details?.name) }}
           </p>
           <!-- Removed Pro text badge next to username -->
           <div
@@ -222,6 +221,14 @@ const toast = useToast();
 const selectedEditPost = ref(null);
 const isCreatePostOpen = ref(false);
 
+// Function to capitalize first letter of each word in a name
+function capitalizeNames(name) {
+  if (!name) return '';
+  return name.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 defineProps({
   post: {
     type: Object,
@@ -353,6 +360,7 @@ const formatTimeAgo = (dateString) => {
   background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff)
     border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
