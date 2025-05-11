@@ -2,8 +2,13 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 import uuid
+from base.models import ForSaleCategory
+import time
+import random
 
 User = get_user_model()
+def generate_unique_id():
+  return int(time.time() * 1) + random.randint(0, 999)
 
 class SalePost(models.Model):
     STATUS_CHOICES = (
@@ -28,7 +33,7 @@ class SalePost(models.Model):
     slug = models.SlugField(max_length=300, unique=True, blank=True)
     description = models.TextField()
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
-    category = models.IntegerField(help_text="Category ID (1=Properties, 2=Vehicles, 3=Electronics, etc)")
+    category = models.ForeignKey(ForSaleCategory, on_delete=models.SET_NULL, null=True, blank=True)
     
     # Price info
     price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)

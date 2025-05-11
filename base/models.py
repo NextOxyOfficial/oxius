@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
 from decimal import Decimal
-import random
+
 import string
 from django.utils import timezone
 from datetime import timedelta
@@ -15,6 +15,12 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 import re
 
+import time
+import random
+
+
+def generate_unique_id():
+  return int(time.time() * 1) + random.randint(0, 999)
 # Add this helper function for generating unique slugs
 def generate_unique_slug(model_class, field_value, instance=None):
 # Handle Bangla/non-Latin slugification
@@ -846,6 +852,7 @@ class NewsLogo(models.Model):
         return f"BN Logo {self.id}"
 
 class ForSaleCategory(models.Model):
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
     name = models.CharField(max_length=255)
     icon = models.ImageField(upload_to='category_icons/', null=True, blank=True)
 
