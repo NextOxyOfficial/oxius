@@ -101,6 +101,7 @@ SIMPLE_JWT = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise middleware right after security middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,6 +110,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Whitenoise configuration
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_SERVE_MANIFEST = True
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -129,17 +135,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 
 DATABASES = {
@@ -188,12 +183,27 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist/static')
-]
+# Force Django to serve admin static files correctly
+STATIC_URL = '/static/'
+STATICFILES_DIRS = []  # Empty to avoid conflicts
+
+# Make sure static root is clearly defined
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Make sure admin files are included even in production
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# WhiteNoise configuration for serving static files
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_ROOT = STATIC_ROOT
+WHITENOISE_INDEX_FILE = True
+WHITENOISE_MANIFEST_STRICT = False
+
+# This enables compression and caching
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = 'https://adsyclub.com/media/'
 # MEDIA_URL = 'http://127.0.0.1:8000//media/'

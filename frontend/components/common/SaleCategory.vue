@@ -52,7 +52,7 @@
             </div>
             
             <!-- Secondary banner -->
-            <div v-if="banners.length > 1" class="secondary-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+            <div v-if="banners.length > 1" class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
               <a :href="banners[1]?.link || '#'" class="block">
                 <img 
                   :src="getImageUrl(banners[1]?.image)" 
@@ -67,7 +67,7 @@
               <img src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion" alt="Promotion" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
             </div>
             
-            <div v-if="banners.length <= 1" class="secondary-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+            <div v-if="banners.length <= 1" class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
               <img src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer" alt="Offer" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
             </div>
           </template>
