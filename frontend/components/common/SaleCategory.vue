@@ -41,7 +41,7 @@
           <!-- Display banners when loaded -->
           <template v-else>
             <!-- Main banner -->
-            <div v-if="banners.length > 0" class="main-banner rounded-lg overflow-hidden cursor-pointer md:w-1/2">
+            <div v-if="banners.length > 0" class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
               <a :href="banners[0]?.link || '#'" class="block">
                 <img 
                   :src="getImageUrl(banners[0]?.image)" 
