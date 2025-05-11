@@ -183,23 +183,27 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Force Django to serve admin static files correctly
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist/assets')  # Updated path to match Nuxt output structure
-]
+STATICFILES_DIRS = []  # Empty to avoid conflicts
+
+# Make sure static root is clearly defined
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Ensure static files are properly handled in production
+# Make sure admin files are included even in production
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-# For production environment
-WHITENOISE_MAX_AGE = 31536000  # 1 year in seconds
-WHITENOISE_MIMETYPES = {
-    'application/javascript': 'text/javascript',
-}
+# WhiteNoise configuration for serving static files
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_ROOT = STATIC_ROOT
+WHITENOISE_INDEX_FILE = True
+WHITENOISE_MANIFEST_STRICT = False
+
+# This enables compression and caching
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = 'https://adsyclub.com/media/'
 # MEDIA_URL = 'http://127.0.0.1:8000//media/'
