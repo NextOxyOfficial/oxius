@@ -5,7 +5,7 @@
     <div class="flex items-center space-x-4">
       <!-- Like button with counter -->
       <div class="flex items-center group">        <button
-          class="p-1.5 rounded-full transition-colors disabled:opacity-60 relative"
+          class="p-1.5 pt-3 rounded-full transition-colors disabled:opacity-60 relative"
           @click="$emit('toggle-like', post)"
           :disabled="post.isLikeLoading"
           title="Like"
@@ -41,7 +41,7 @@
 
       <!-- Comment button with counter -->
       <div class="flex items-center group">        <button
-          class="p-1.5 rounded-full transition-colors"
+          class="p-1.5 pt-3 rounded-full transition-colors"
           @click="$emit('open-comments-modal', post)"
           title="Comment"
         ><div class="relative">
@@ -62,14 +62,14 @@
       </div>      <!-- Share button (icon only) -->
       <div class="flex items-center group">
         <button
-          class="p-1.5 rounded-full transition-colors"
+          class="p-1.5 pt-3 rounded-full transition-colors"
           @click="$emit('share-post', post)"
           title="Share"
         >
           <div class="relative">
             <UIcon
               name="ion-paper-plane-outline"
-              class="size-5 mt-1 text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors"
+              class="size-5 text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors"
             />
           </div>
         </button>

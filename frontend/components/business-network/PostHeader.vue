@@ -69,7 +69,7 @@
 
       <div class="relative">
         <button
-          class="h-8 w-8 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
+          class="h-8 w-8 pr-3 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
           @click.stop="$emit('toggle-dropdown', post)"
         >
           <MoreHorizontal class="h-4 w-4 text-gray-600 dark:text-gray-300" />
