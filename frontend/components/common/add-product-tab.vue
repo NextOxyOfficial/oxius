@@ -71,6 +71,7 @@
                     v-model="form.category"
                     :options="categories"
                     option-attribute="name"
+                    multiple
                     value-attribute="id"
                     placeholder="Select Category"
                     class="relative block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500 py-2"
@@ -730,7 +731,7 @@ const categories = ref([]);
 const form = ref(
   props.product || {
     name: "",
-    category: "",
+    category: [],
     description: "",
     short_description: "",
     images: [],

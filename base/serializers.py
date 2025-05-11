@@ -337,7 +337,7 @@ class ProductTrustBadgeSerializer(serializers.ModelSerializer):
         read_only_fields = ['slug']
 
 class ProductSerializer(serializers.ModelSerializer):
-    category_details = ProductCategorySerializer(source='category', read_only=True)
+    category_details = ProductCategorySerializer(source='category',many=True, read_only=True)
     image_details = ProductMediaSerializer(source='image', many=True, read_only=True)
     owner_details = UserSerializer(source='owner', read_only=True)
     faqs = ProductFAQSerializer(many=True, read_only=True)

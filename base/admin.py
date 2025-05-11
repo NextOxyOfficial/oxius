@@ -317,7 +317,7 @@ admin.site.register(ProductCategory)
 admin.site.register(ProductMedia)
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category','owner__store_name', 'sale_price','regular_price','created_at', 'updated_at')
+    list_display = ('name','owner__store_name', 'sale_price','regular_price','created_at', 'updated_at')
 
 admin.site.register(Product, ProductAdmin)
 

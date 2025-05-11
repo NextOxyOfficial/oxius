@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.exceptions import NotFound
 import base64
-
+import uuid
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -1390,6 +1390,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         # Extract data from request
+        category_data = request.data.pop('category', None)
         images_data = request.data.pop('images', None)
         benefits_data = request.data.pop('benefits', None)
         faqs_data = request.data.pop('faqs', None)
@@ -1399,6 +1400,14 @@ class ProductListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         product = serializer.save(owner=request.user)
+        
+        # Process category
+        if category_data:
+            for category in category_data:
+                product_category= ProductCategory.objects.get(id=category)
+                product.category.add(product_category)
+
+        
         
         # Process images if provided
         if images_data:
@@ -1648,27 +1657,31 @@ class AllProductsListView(generics.ListAPIView):
     def get_queryset(self):
         """Return all available products with optional filtering"""
         queryset = Product.objects.filter(is_active=True).order_by('-created_at')
-        
-        # Add optional filtering by category
+
+        # Optional filtering by category (ManyToMany)
         category = self.request.query_params.get('category', None)
         if category:
-            queryset = queryset.filter(category=category)
-            
-        # Add optional search by name
+            # Assuming the input is a single category ID
+            queryset = queryset.filter(category__id=category)
+            # If using slugs instead, use: category__slug=category
+
+        # Optional search by name
         name = self.request.query_params.get('name', None)
         if name:
             queryset = queryset.filter(name__icontains=name)
-            
-        # Add optional filtering by price range
+
+        # Optional filtering by price range
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
-        
+
         if min_price:
             queryset = queryset.filter(sale_price__gte=min_price)
         if max_price:
             queryset = queryset.filter(sale_price__lte=max_price)
-            
+
         return queryset
+
+
  
 class StoreDetailsView(generics.RetrieveUpdateAPIView):
     queryset=User.objects.all()

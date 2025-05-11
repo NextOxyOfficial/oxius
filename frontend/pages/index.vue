@@ -8,7 +8,7 @@
         class="relative"
       >
         <CommonHeroBanner />
-        <CommonSaleCategory/>
+        <CommonSaleCategory />
         <!-- Premium decorative elements -->
         <div
           class="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl -z-10"

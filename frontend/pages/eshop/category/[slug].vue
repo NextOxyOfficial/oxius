@@ -814,6 +814,7 @@ async function fetchProducts() {
     const res = await get(`/all-products/?${queryParams}`);
     products.value = res.data;
     totalProducts.value = res.data.count;
+    console.log("Products:", res.data);
 
     // Reset allProducts and populate with initial results
     if (currentPage.value === 1) {
