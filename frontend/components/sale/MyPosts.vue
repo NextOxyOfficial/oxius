@@ -206,9 +206,17 @@
                 <p class="mt-1 text-gray-600 line-clamp-1 text-sm">{{ post.description }}</p>
                 
                 <div class="mt-2 flex justify-between items-center">
-                  <div class="flex items-center text-sm text-gray-500">
-                    <Icon name="heroicons:calendar" class="mr-1 text-gray-400" size="14px" />
-                    <span>{{ formatDate(post.created_at) }}</span>
+                  <div class="flex items-center gap-2">
+                    <div class="flex items-center text-sm text-gray-500">
+                      <Icon name="heroicons:calendar" class="mr-1 text-gray-400" size="14px" />
+                      <span>{{ formatDate(post.created_at) }}</span>
+                    </div>
+                    
+                    <!-- Category tag moved here, next to the date -->
+                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full inline-flex items-center">
+                      <Icon name="heroicons:tag" class="mr-1 text-gray-500" size="12px" />
+                      {{ getCategoryName(post.category) }}
+                    </span>
                   </div>
                   
                   <div class="flex space-x-3" @click.stop>
@@ -240,7 +248,6 @@
                       <Icon name="heroicons:trash" size="16px" />
                     </button>
                   </div>
-                
                 </div>
                 
                 <div v-if="post.featured" class="absolute top-3 left-3">
@@ -802,6 +809,32 @@ const getMainImage = (post) => {
   
   // Fallback to a placeholder image
   return `https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=${encodeURIComponent(post.title?.substring(0, 10) || 'No Image')}`;
+};
+
+// Get category name helper
+const getCategoryName = (categoryId) => {
+  const categoryMap = {
+    1: 'Properties',
+    2: 'Vehicles', 
+    3: 'Electronics',
+    4: 'Sports',
+    5: 'B2B',
+    6: 'Fashion',
+    7: 'Services',
+    8: 'Jobs',
+    9: 'Pets',
+    10: 'Books',
+    11: 'Furniture',
+    12: 'Others'
+  };
+  
+  // If we receive an object with name property, use that directly
+  if (categoryId && typeof categoryId === 'object' && categoryId.name) {
+    return categoryId.name;
+  }
+  
+  // Otherwise look up by ID in our map
+  return categoryMap[categoryId] || 'Uncategorized';
 };
 
 // Fetch data when component mounts
