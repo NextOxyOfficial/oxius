@@ -13,8 +13,7 @@
               'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)',
           }"
         >
-          <div class="sm:px-4 pb-5 pt-0">
-            <!-- Post Header -->
+          <div class="sm:px-4 pb-5 pt-0">            <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post?.post_details ? post.post_details : post"
               :user="user"
@@ -24,6 +23,28 @@
               @copy-link="copyLink"
             />
 
+            <!-- Media Gallery -->
+            <BusinessNetworkPostMediaGallery
+              v-if="
+                post?.post_details
+                  ? post.post_details.post_media.length > 0
+                  : post?.post_media?.length > 0
+              "
+              :post="post.post_details ? post.post_details : post"
+              @open-media="openMedia"
+            />
+
+            <!-- Post Actions -->
+            <BusinessNetworkPostActions
+              :post="post.post_details ? post.post_details : post"
+              :user="user"
+              @toggle-like="toggleLike"
+              @open-likes-modal="openLikesModal"
+              @open-comments-modal="openCommentsModal"
+              @share-post="sharePost"
+              @toggle-save="toggleSave"
+            />
+            
             <!-- Post Title with enhanced styling -->
             <NuxtLink
               :to="`/business-network/posts/${post?.post ? post.post : post.id}`"
@@ -81,28 +102,6 @@
                 />
               </button>
             </div>
-
-            <!-- Media Gallery -->
-            <BusinessNetworkPostMediaGallery
-              v-if="
-                post?.post_details
-                  ? post.post_details.post_media.length > 0
-                  : post?.post_media?.length > 0
-              "
-              :post="post.post_details ? post.post_details : post"
-              @open-media="openMedia"
-            />
-
-            <!-- Post Actions -->
-            <BusinessNetworkPostActions
-              :post="post.post_details ? post.post_details : post"
-              :user="user"
-              @toggle-like="toggleLike"
-              @open-likes-modal="openLikesModal"
-              @open-comments-modal="openCommentsModal"
-              @share-post="sharePost"
-              @toggle-save="toggleSave"
-            />
 
             <!-- Comments Preview -->
             <BusinessNetworkPostComments
@@ -783,24 +782,7 @@ const editComment = async (post, comment) => {
   }
   comment.isEditing = true;
 
-  // try {
-  //   // Set the comment text to the editText
-  //   comment.content = comment.editText;
-  //   const res = await put(`/bn/comments/${comment.id}/`, {
-  //     ...comment,
-  //     content: comment.editText,
-  //   });
-  //   if (res.data) {
-  //     toast.add({
-  //       title: "Comment edited successfully",
-  //     });
-  //   }
-  // } catch (error) {
-  //   console.error("Error editing comment:", error);
-  //   toast.add({
-  //     title: "Failed to edit comment",
-  //   });
-  // }
+ 
 };
 
 const deleteComment = (post, comment) => {

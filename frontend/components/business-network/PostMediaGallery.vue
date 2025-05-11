@@ -1,23 +1,21 @@
 <template>
-  <div class="mb-3">
-    <!-- Main content area with enhanced premium image display -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group transform transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
+  <div class="mb-3">    <!-- Main content area -->
+    <div class="relative overflow-hidden rounded-xl shadow-sm group">
       <div
-        class="relative w-full overflow-hidden transition-all duration-700 min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
+        class="relative w-full overflow-hidden min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
-        <!-- Main image with premium hover effects -->
+        <!-- Main image -->
         <img
           :src="post.post_media[activeIndex].image"
           alt="Media"
-          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain transition-all duration-700"
+          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain"
         />
 
   
 
-        <!-- Glassmorphic image counter indicator -->
-        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10 transform transition-all duration-300 group-hover:scale-105">
+        <!-- Image counter indicator -->
+        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10">
           <div class="relative w-3 h-3">
-            <div class="absolute inset-0 bg-blue-400/50 rounded-full animate-ping opacity-75"></div>
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
           </div>
           <div class="flex items-center">
@@ -26,21 +24,20 @@
             <span>{{ post.post_media.length }}</span>
           </div>
         </div>
-        
-        <!-- Download button with premium styling - kept only on main image -->
+          <!-- Download button -->
         <button 
           @click.stop="downloadImage(post.post_media[activeIndex].image)"
-          class="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/30 backdrop-blur-md text-white opacity-0 group-hover:opacity-100 hover:bg-black/50 transition-all duration-300 shadow-lg border border-white/10"
+          class="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/30 backdrop-blur-md text-white shadow-lg border border-white/10"
           title="Download image"
         >
           <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
         </button>
         
-        <!-- Navigation arrows for quick navigation on main image -->
+        <!-- Navigation arrows -->
         <button
           v-if="post.post_media.length > 1"
           @click.stop="navigateMedia('prev')"
-          class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:-translate-x-0.5 border border-white/10 shadow-lg"
+          class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center border border-white/10 shadow-lg"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -50,42 +47,35 @@
         <button
           v-if="post.post_media.length > 1"
           @click.stop="navigateMedia('next')"
-          class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform hover:translate-x-0.5 border border-white/10 shadow-lg"
+          class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center border border-white/10 shadow-lg"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
           </svg>
         </button>
       </div>
-    </div>
-
-    <!-- Enhanced thumbnail gallery with premium styling - only show if there's more than one media item -->
+    </div>    <!-- Thumbnail gallery - only show if there's more than one media item -->
     <div v-if="post.post_media.length > 1" class="relative px-0.5 mt-5">
-      <!-- Premium Gallery Heading with glass effect -->
-      <div class="flex items-center px-4 justify-between mb-4 relative">
-        <div class="absolute -inset-2 bg-gradient-to-r from-purple-500/5 via-blue-500/10 to-emerald-500/5 rounded-lg blur-xl opacity-50 dark:opacity-30"></div>
-        
-        <h3 class="font-medium text-slate-800 dark:text-slate-100 flex items-center space-x-2 relative backdrop-blur-sm">
-          <span class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-md shadow-md shadow-blue-500/20 dark:shadow-blue-400/10">
+      <!-- Gallery Heading -->
+      <div class="flex items-center px-4 justify-between mb-4 relative">        
+        <h3 class="font-medium text-slate-800 dark:text-slate-100 flex items-center space-x-2 relative">
+          <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-md shadow-md">
             <UIcon name="i-heroicons-photo" class="w-3.5 h-3.5" />
           </span>
-          <span class="relative">
+          <span>
             Gallery
-            <span class="absolute -bottom-1 left-0 h-0.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded opacity-70"></span>
           </span>
-          <span class="text-xs flex items-center px-2 py-0.5 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full text-blue-700 dark:text-blue-300 font-medium shadow-sm">
+          <span class="text-xs flex items-center px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-700 dark:text-blue-300 font-medium">
             {{ post.post_media.length }} items
           </span>
         </h3>
         
-        <!-- Media counter with luxury styling -->
-        <div class="relative group">
-          <div class="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div class="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/90 rounded-lg text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-100/50 dark:border-blue-800/50 shadow-md relative group-hover:shadow-blue-500/10 dark:shadow-blue-800/5 group-hover:scale-[1.02] transition-all duration-300">
+        <!-- Media counter -->
+        <div class="relative">
+          <div class="px-3 py-1.5 bg-blue-50 dark:bg-slate-800 rounded-lg text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-100/50 dark:border-blue-800/50 shadow-md">
             <span class="flex items-center space-x-1.5">
-              <UIcon name="i-heroicons-viewfinder-circle" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 animate-pulse" />
-              <span class="relative">
-                <span class="opacity-0 absolute top-0 -translate-y-full text-[10px] text-blue-500 dark:text-blue-400 font-normal whitespace-nowrap bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded shadow-sm border border-blue-100/70 dark:border-blue-900/50 group-hover:opacity-100 transition-opacity duration-300 left-1/2 -translate-x-1/2">Current position</span>
+              <UIcon name="i-heroicons-viewfinder-circle" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+              <span>
                 {{ activeIndex + 1 }}
                 <span class="text-blue-400/80 dark:text-blue-500/70 font-normal mx-0.5">/</span>
                 {{ post.post_media.length }}
@@ -94,12 +84,11 @@
           </div>
         </div>
       </div>
-      
-      <!-- Left navigation arrow with premium glass styling -->
+        <!-- Left navigation arrow -->
       <button
         v-show="canScrollLeft"
         @click="scrollThumbnails('left')"
-        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:-translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-700"
         aria-label="Previous thumbnails"
       >
         <svg
@@ -116,14 +105,10 @@
             d="M15.75 19.5 8.25 12l7.5-7.5"
           />
         </svg>
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
       </button>
 
-      <!-- Premium thumbnail container with luxury glass effect -->
+      <!-- Thumbnail container -->
       <div>
-        <!-- Premium light beam effects -->
-        <div class="absolute -inset-2 bg-grid opacity-10 dark:opacity-5 pointer-events-none"></div>
-        <div class="absolute -inset-2 bg-gradient-conic opacity-5 dark:opacity-10 mix-blend-overlay pointer-events-none"></div>
         
         <div
           class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 dark:from-slate-900/90 to-transparent z-[1] pointer-events-none backdrop-blur-md"
@@ -133,9 +118,7 @@
         <div
           class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 dark:from-slate-900/90 to-transparent z-[1] pointer-events-none backdrop-blur-md"
           v-if="canScrollRight"
-        ></div>
-
-        <div
+        ></div>        <div
           ref="thumbnailsContainer"
           class="grid grid-cols-5 md:grid-cols-7 gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 relative"
           @scroll="updateScrollIndicators"
@@ -143,57 +126,38 @@
           <div
             v-for="(media, mediaIndex) in post.post_media"
             :key="media.id"
-            class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] rounded-lg transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] group/thumb"
+            class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] rounded-lg"
             :class="{
-              'ring-2 ring-blue-500/70 dark:ring-blue-500/80 shadow-lg scale-[1.03] z-10 premium-thumb-active':
+              'ring-2 ring-blue-500 dark:ring-blue-500 shadow-lg z-10':
                 activeIndex === mediaIndex,
-              'opacity-90 hover:opacity-100 hover:shadow-md ring-1 ring-white/70 dark:ring-slate-700/90':
+              'ring-1 ring-white/70 dark:ring-slate-700/90':
                 activeIndex !== mediaIndex,
             }"
             @click="setActiveMedia(mediaIndex)"
           >
-            <!-- Fancy gradient border for non-active items -->
-            <div 
-              v-if="activeIndex !== mediaIndex"
-              class="absolute inset-0 rounded-lg p-[1px] opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300"
-            >
-              <div class="absolute inset-0 rounded-lg border border-blue-200 dark:border-blue-900/40 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300"></div>
-            </div>
-
             <div class="h-full w-full overflow-hidden rounded-md">
               <img
                 :src="media.image"
                 :alt="`Media ${mediaIndex + 1}`"
-                class="h-full w-full object-cover transition-transform duration-700 group-hover/thumb:scale-110"
+                class="h-full w-full object-cover"
               />
             </div>
 
-            <!-- Premium active thumbnail indicator with advanced animation -->
+            <!-- Active thumbnail indicator -->
             <div
               v-if="activeIndex === mediaIndex"
-              class="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-blue-600 shadow-glow-premium"
-            >
-              <div class="absolute inset-0 bg-shimmer"></div>
-            </div>
-
-            <!-- Premium hover overlay with advanced glassmorphism -->
-            <div class="absolute inset-0 opacity-0 group-hover/thumb:opacity-100 transition-all duration-500">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-              <div class="absolute inset-0 bg-grid opacity-10 mix-blend-overlay"></div>
-            </div>
-
-            <!-- Premium media counter badge on thumbnails -->
+              class="absolute bottom-0 left-0 right-0 h-1.5 bg-blue-500"
+            ></div>            <!-- Media counter badge on thumbnails -->
             <div 
-              class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-md rounded-full text-white text-[10px] font-medium opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300 shadow-lg border border-white/10 flex items-center"
+              class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 rounded-full text-white text-[10px] font-medium shadow-sm border border-white/10 flex items-center"
             >
-              <span class="relative z-10">{{ mediaIndex + 1 }}</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/80 rounded-full opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 z-0"></div>
+              <span>{{ mediaIndex + 1 }}</span>
             </div>
             
-            <!-- Premium selection indicator -->
+            <!-- Selection indicator -->
             <div
               v-if="activeIndex === mediaIndex" 
-              class="absolute top-1 left-1 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-md"
+              class="absolute top-1 left-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shadow-md"
             >
               <span class="text-white text-[8px]">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-2.5 h-2.5">
@@ -203,13 +167,11 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Right navigation arrow with premium glass styling -->
+      </div>      <!-- Right navigation arrow -->
       <button
         v-show="canScrollRight"
         @click="scrollThumbnails('right')"
-        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-br from-white/80 to-white/40 dark:from-slate-800/90 dark:to-slate-900/80 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-xl border border-white/30 dark:border-white/5 transition-all duration-300 hover:translate-x-0.5 hover:shadow-blue-500/10 backdrop-blur-md"
+        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-700"
         aria-label="Next thumbnails"
       >
         <svg
@@ -226,7 +188,6 @@
             d="m8.25 4.5 7.5 7.5-7.5 7.5"
           />
         </svg>
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
       </button>
     </div>
   </div>
