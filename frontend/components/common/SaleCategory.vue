@@ -2,20 +2,21 @@
   <div class="for-sale-section py-6 bg-white">
     <div class="container mx-auto px-2">
       <!-- Updated section header with linked buttons -->
-      <div class="section-header sm:mb-8 mb-5 flex justify-between items-center">
+      <div
+        class="section-header sm:mb-8 mb-5 flex justify-between items-center"
+      >
         <div class="flex items-center gap-3">
           <h2 class="text-xl md:text-xl font-semibold">For Sale</h2>
-          
         </div>
-        <div  v-if="user" class="flex gap-2 sm:gap-3">
-          <button 
+        <div v-if="user" class="flex gap-2 sm:gap-3">
+          <button
             class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
             @click="openMyPostsModal"
           >
             <Icon name="heroicons:document-text" size="16px" />
             My Posts
           </button>
-          <button 
+          <button
             class="post-sale-btn bg-primary hover:bg-primary/90 text-white rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
             @click="openPostSaleModal"
           >
@@ -24,62 +25,86 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Dynamic banner ads with responsive layout -->
       <div class="banner-container mb-4 sm:mb-8">
         <div class="flex flex-col md:flex-row gap-2">
           <!-- Show loading placeholder when banners are loading -->
           <template v-if="isLoadingBanners">
             <div class="main-banner rounded-lg overflow-hidden md:w-1/2">
-              <div class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"></div>
+              <div
+                class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"
+              ></div>
             </div>
             <div class="secondary-banner rounded-lg overflow-hidden md:w-1/2">
-              <div class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"></div>
+              <div
+                class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"
+              ></div>
             </div>
           </template>
-          
+
           <!-- Display banners when loaded -->
           <template v-else>
             <!-- Main banner -->
-            <div v-if="banners.length > 0" class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
+            <div
+              v-if="banners.length > 0"
+              class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2"
+            >
               <a :href="banners[0]?.link || '#'" class="block">
-                <img 
-                  :src="getImageUrl(banners[0]?.image)" 
-                  :alt="banners[0]?.title || 'Promotion'" 
-                  class="w-full h-20 sm:h-20 md:h-32 object-cover" 
+                <img
+                  :src="getImageUrl(banners[0]?.image)"
+                  :alt="banners[0]?.title || 'Promotion'"
+                  class="w-full h-20 sm:h-20 md:h-32 object-cover"
                 />
               </a>
             </div>
-            
+
             <!-- Secondary banner -->
-            <div v-if="banners.length > 1" class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
+            <div
+              v-if="banners.length > 1"
+              class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2"
+            >
               <a :href="banners[1]?.link || '#'" class="block">
-                <img 
-                  :src="getImageUrl(banners[1]?.image)" 
-                  :alt="banners[1]?.title || 'Offer'" 
-                  class="w-full h-20 sm:h-20 md:h-32 object-cover" 
+                <img
+                  :src="getImageUrl(banners[1]?.image)"
+                  :alt="banners[1]?.title || 'Offer'"
+                  class="w-full h-20 sm:h-20 md:h-32 object-cover"
                 />
               </a>
             </div>
-            
+
             <!-- Fallback banners if API returns empty data -->
-            <div v-if="banners.length === 0" class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
-              <img src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion" alt="Promotion" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
+            <div
+              v-if="banners.length === 0"
+              class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2"
+            >
+              <img
+                src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion"
+                alt="Promotion"
+                class="w-full h-16 sm:h-20 md:h-32 object-cover"
+              />
             </div>
-            
-            <div v-if="banners.length <= 1" class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2">
-              <img src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer" alt="Offer" class="w-full h-16 sm:h-20 md:h-32 object-cover" />
+
+            <div
+              v-if="banners.length <= 1"
+              class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2"
+            >
+              <img
+                src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer"
+                alt="Offer"
+                class="w-full h-16 sm:h-20 md:h-32 object-cover"
+              />
             </div>
           </template>
         </div>
       </div>
-      
+
       <div class="category-tabs relative mb-6">
         <!-- Navigation buttons (only visible on mobile) -->
-        <button 
+        <button
           v-if="isMobile"
-          @click="slideLeft" 
-          class="slider-nav-btn left-0 transition-opacity duration-300 opacity-25 hover:opacity-70" 
+          @click="slideLeft"
+          class="slider-nav-btn left-0 transition-opacity duration-300 opacity-25 hover:opacity-70"
           :class="{ 'cursor-not-allowed': isAtStart }"
           :disabled="isAtStart"
         >
@@ -87,62 +112,81 @@
         </button>
 
         <!-- Categories slider with touch events -->
-        <div 
-          class="overflow-hidden" 
+        <div
+          class="overflow-hidden"
           ref="sliderContainer"
           @touchstart="handleTouchStart"
           @touchmove="handleTouchMove"
           @touchend="handleTouchEnd"
         >
-          <div 
+          <div
             class="categories-wrapper flex transition-all duration-500 ease-out mt-3"
             :style="{ transform: `translateX(-${scrollPosition}px)` }"
             ref="categoriesWrapper"
           >
             <!-- Show category loading placeholders when categories are loading -->
             <template v-if="isLoadingCategories">
-              <div 
-                v-for="index in 6" 
+              <div
+                v-for="index in 6"
                 :key="`placeholder-${index}`"
                 class="category-item flex-shrink-0"
                 :class="[isMobile ? 'w-1/5' : 'w-1/6']"
               >
-                <div class="category-card transition-all duration-200 cursor-pointer h-full mx-1">
+                <div
+                  class="category-card transition-all duration-200 cursor-pointer h-full mx-1"
+                >
                   <div class="flex items-center justify-center h-full">
                     <div class="text-center py-2">
-                      <div class="icon-container mx-auto mb-1 flex items-center justify-center bg-gray-200 rounded-full animate-pulse">
+                      <div
+                        class="icon-container mx-auto mb-1 flex items-center justify-center bg-gray-200 rounded-full animate-pulse"
+                      >
                         <div class="h-8 w-8"></div>
                       </div>
-                      <div class="h-4 bg-gray-200 rounded w-16 mx-auto animate-pulse"></div>
+                      <div
+                        class="h-4 bg-gray-200 rounded w-16 mx-auto animate-pulse"
+                      ></div>
                     </div>
                   </div>
                 </div>
               </div>
             </template>
-            
+
             <!-- Show loaded categories -->
             <template v-else>
-              <div 
-                v-for="(category) in categories" 
+              <div
+                v-for="category in categories"
                 :key="category.id"
                 class="category-item flex-shrink-0"
                 :class="[isMobile ? 'w-1/5' : 'w-1/6']"
                 @click="selectCategory(category)"
               >
-                <div 
+                <div
                   class="category-card transition-all duration-200 cursor-pointer h-full mx-1"
-                  :class="{ 
+                  :class="{
                     'category-active': selectedCategory === category.id,
-                    'category-inactive': selectedCategory !== category.id
+                    'category-inactive': selectedCategory !== category.id,
                   }"
                 >
                   <div class="flex items-center justify-center h-full">
                     <div class="text-center py-2">
-                      <div class="icon-container mx-auto mb-1 flex items-center justify-center">
-                        <img v-if="category.icon" :src="getImageUrl(category.icon)" :alt="category.name" class="size-9 object-contain" />
-                        <Icon v-else :name="getCategoryIcon(category.name)" size="22px" />
+                      <div
+                        class="icon-container mx-auto mb-1 flex items-center justify-center"
+                      >
+                        <img
+                          v-if="category.icon"
+                          :src="getImageUrl(category.icon)"
+                          :alt="category.name"
+                          class="size-9 object-contain"
+                        />
+                        <Icon
+                          v-else
+                          :name="getCategoryIcon(category.name)"
+                          size="22px"
+                        />
                       </div>
-                      <span class="category-name font-medium text-sm">{{ category.name }}</span>
+                      <span class="category-name font-medium text-sm">{{
+                        category.name
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -151,9 +195,9 @@
           </div>
         </div>
 
-        <button 
+        <button
           v-if="isMobile"
-          @click="slideRight" 
+          @click="slideRight"
           class="slider-nav-btn right-0 transition-opacity duration-300 opacity-25 hover:opacity-70"
           :class="{ 'cursor-not-allowed': isAtEnd }"
           :disabled="isAtEnd"
@@ -168,14 +212,21 @@
           <div>
             <h3 class="text-lg font-bold">{{ getSelectedCategoryName() }}</h3>
           </div>
-          <NuxtLink :to="`/sale/for-sale?category=${selectedCategory}`" class="view-all-btn bg-primary hover:bg-primary/90 text-white rounded-md px-3 py-1 text-sm flex items-center gap-1">
+          <NuxtLink
+            :to="`/sale/for-sale?category=${selectedCategory}`"
+            class="view-all-btn bg-primary hover:bg-primary/90 text-white rounded-md px-3 py-1 text-sm flex items-center gap-1"
+          >
             View All <Icon name="heroicons:arrow-right" size="14px" />
           </NuxtLink>
         </div>
-        
+
         <!-- Lazy loading skeleton when loading -->
         <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-5 gap-2">
-          <div v-for="i in (isMobile ? 4 : 5)" :key="i" class="item-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 animate-pulse">
+          <div
+            v-for="i in isMobile ? 4 : 5"
+            :key="i"
+            class="item-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 animate-pulse"
+          >
             <div class="h-32 bg-gray-200"></div>
             <div class="p-3">
               <div class="h-4 bg-gray-200 rounded mb-2"></div>
@@ -187,92 +238,141 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Display actual posts from the database -->
-        <div v-else-if="categoryPosts.length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <NuxtLink 
-            v-for="post in categoryPosts" 
+        <div
+          v-else-if="categoryPosts.length > 0"
+          class="grid grid-cols-2 md:grid-cols-5 gap-3"
+        >
+          <NuxtLink
+            v-for="post in categoryPosts"
             :key="post.id"
             :to="`/sale/${post.slug}`"
-            class="item-card bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 flex flex-col h-full transform hover:-translate-y-1 hover:border-primary/20"
+            class="item-card bg-white rounded-lg shadow-sm transition-shadow overflow-hidden border border-gray-100 flex flex-col h-full transform"
           >
             <div class="relative">
               <!-- Price overlay in top right -->
               <div class="absolute top-0 right-0 m-2 z-10">
-                <div class="px-2 py-1 bg-primary text-white text-sm font-bold rounded shadow-sm">
-                  ৳{{ post.price?.toLocaleString() || 'Negotiable' }}
+                <div
+                  class="px-2 py-1 bg-primary text-white text-sm font-bold rounded shadow-sm"
+                >
+                  ৳{{ post.price?.toLocaleString() || "Negotiable" }}
                 </div>
               </div>
-              
+
               <!-- Status badges in top left -->
               <div class="absolute top-0 left-0 m-2 z-10">
-                <span v-if="post.featured" class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded">Featured</span>
-                <span v-else-if="post.status === 'sold'" class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded">Sold</span>
+                <span
+                  v-if="post.featured"
+                  class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
+                  >Featured</span
+                >
+                <span
+                  v-else-if="post.status === 'sold'"
+                  class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
+                  >Sold</span
+                >
               </div>
-              
+
               <!-- Image with gradient overlay -->
               <div class="h-36 overflow-hidden relative">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"></div>
-                <img 
-                  :src="getPostImage(post)" 
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"
+                ></div>
+                <img
+                  :src="getPostImage(post)"
                   :alt="post.title"
                   class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   loading="lazy"
                 />
               </div>
             </div>
-            
+
             <div class="p-3 flex-grow flex flex-col">
               <!-- Title with truncation -->
-              <h4 class="font-medium text-gray-900 line-clamp-1 text-sm">{{ post.title }}</h4>
-              
+              <h4 class="font-medium text-gray-900 line-clamp-1 text-sm">
+                {{ post.title }}
+              </h4>
+
               <!-- Address with location icon -->
               <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
-                <Icon name="heroicons:map-pin" class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-400" />
-                <span class="line-clamp-1">{{ post.area }}, {{ post.district }}</span>
+                <Icon
+                  name="heroicons:map-pin"
+                  class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-400"
+                />
+                <span class="line-clamp-1"
+                  >{{ post.area }}, {{ post.district }}</span
+                >
               </div>
-              
+
               <div class="mt-auto flex justify-between items-center pt-1">
                 <!-- Condition tag -->
-                <div class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                <div
+                  class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"
+                >
                   {{ post.condition }}
                 </div>
-                
+
                 <!-- Date or other secondary info -->
                 <div class="text-xs text-gray-500 flex items-center">
-                  <Icon name="heroicons:clock" class="h-3 w-3 mr-1 text-gray-400" />
+                  <Icon
+                    name="heroicons:clock"
+                    class="h-3 w-3 mr-1 text-gray-400"
+                  />
                   {{ formatDate(post.created_at) }}
                 </div>
               </div>
             </div>
           </NuxtLink>
         </div>
-        
+
         <!-- No posts found message -->
-        <div v-else class="flex flex-col items-center justify-center py-8 px-4 bg-gray-50 rounded-lg">
-          <Icon name="heroicons:document-magnifying-glass" size="40px" class="text-gray-400 mb-2" />
-          <h3 class="text-base font-medium text-gray-800 mb-1">No listings found</h3>
-          <p class="text-gray-500 text-sm text-center">There are no items currently listed in this category.</p>
+        <div
+          v-else
+          class="flex flex-col items-center justify-center py-8 px-4 bg-gray-50 rounded-lg"
+        >
+          <Icon
+            name="heroicons:document-magnifying-glass"
+            size="40px"
+            class="text-gray-400 mb-2"
+          />
+          <h3 class="text-base font-medium text-gray-800 mb-1">
+            No listings found
+          </h3>
+          <p class="text-gray-500 text-sm text-center">
+            There are no items currently listed in this category.
+          </p>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Post Sale Modal -->
-  <div v-if="showPostSaleModal" class="fixed inset-0 z-50 overflow-y-auto pt-16"> <!-- Added pt-16 for header spacing -->
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+  <div
+    v-if="showPostSaleModal"
+    class="fixed inset-0 z-50 overflow-y-auto pt-16"
+  >
+    <!-- Added pt-16 for header spacing -->
+    <div
+      class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
       <div class="fixed inset-0 transition-opacity" @click="closePostSaleModal">
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
 
-      <div v-if="user?.user" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+      <div
+        v-if="user?.user"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full"
+      >
         <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
               <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Post a Sale</h3>
-                <button 
-                  type="button" 
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  Post a Sale
+                </h3>
+                <button
+                  type="button"
                   class="text-gray-400 hover:text-gray-500"
                   @click="closePostSaleModal"
                 >
@@ -286,29 +386,37 @@
       </div>
     </div>
   </div>
-  
+
   <!-- My Posts Modal -->
-  <div v-if="showMyPostsModal" class="fixed inset-0 z-50 overflow-y-auto pt-16"> <!-- Added pt-16 for header spacing -->
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+  <div v-if="showMyPostsModal" class="fixed inset-0 z-50 overflow-y-auto pt-16">
+    <!-- Added pt-16 for header spacing -->
+    <div
+      class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
       <div class="fixed inset-0 transition-opacity" @click="closeMyPostsModal">
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
 
-      <div v-if="user?.user" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+      <div
+        v-if="user?.user"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+      >
         <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
               <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">My Posts</h3>
-                <button 
-                  type="button" 
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  My Posts
+                </h3>
+                <button
+                  type="button"
                   class="text-gray-400 hover:text-gray-500"
                   @click="closeMyPostsModal"
                 >
                   <Icon name="heroicons:x-mark" size="24px" />
                 </button>
               </div>
-              <MyPosts 
+              <MyPosts
                 @create-post="switchToPostSaleModal"
                 @edit-post="handleEditPost"
                 @delete-post="handleDeletePost"
@@ -322,11 +430,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
-import { useApi } from '~/composables/useApi';
-import PostSale from '~/components/sale/PostSale.vue';
-import MyPosts from '~/components/sale/MyPosts.vue';
-const {user} =useAuth()
+import PostSale from "~/components/sale/PostSale.vue";
+import MyPosts from "~/components/sale/MyPosts.vue";
+const { user } = useAuth();
 
 const { get } = useApi();
 
@@ -352,49 +458,52 @@ const minSwipeDistance = 50;
 const isAtStart = computed(() => scrollPosition.value <= 0);
 const isAtEnd = computed(() => {
   if (!categoriesWrapper.value || !sliderContainer.value) return true;
-  return scrollPosition.value + sliderContainer.value.clientWidth >= categoriesWrapper.value.scrollWidth;
+  return (
+    scrollPosition.value + sliderContainer.value.clientWidth >=
+    categoriesWrapper.value.scrollWidth
+  );
 });
 
 // Helper function to construct full image URL
 const getImageUrl = (path) => {
-  if (!path) return '';
+  if (!path) return "";
   const { staticURL } = useApi();
-  
+
   // If path already starts with http(s) or //, it's a full URL
   if (path.match(/^(https?:)?\/\//)) {
     return path;
   }
-  
+
   // Otherwise prepend static URL
   return `${staticURL}${path}`;
-}
+};
 
 // Get appropriate icon for a category based on its name
 const getCategoryIcon = (categoryName) => {
   const iconMap = {
-    'Properties': 'heroicons:home-modern',
-    'Vehicles': 'heroicons:truck',
-    'Electronics': 'heroicons:device-phone-mobile',
-    'Sports': 'heroicons:trophy',
-    'B2B': 'heroicons:building-office',
-    'Fashion': 'heroicons:shopping-bag',
-    'Services': 'heroicons:wrench',
-    'Jobs': 'heroicons:briefcase',
-    'Pets': 'heroicons:heart',
-    'Books': 'heroicons:book-open',
-    'Furniture': 'heroicons:table',
+    Properties: "heroicons:home-modern",
+    Vehicles: "heroicons:truck",
+    Electronics: "heroicons:device-phone-mobile",
+    Sports: "heroicons:trophy",
+    B2B: "heroicons:building-office",
+    Fashion: "heroicons:shopping-bag",
+    Services: "heroicons:wrench",
+    Jobs: "heroicons:briefcase",
+    Pets: "heroicons:heart",
+    Books: "heroicons:book-open",
+    Furniture: "heroicons:table",
   };
-  
-  return iconMap[categoryName] || 'heroicons:squares-plus'; // Default to 'squares-plus' for unknown categories
+
+  return iconMap[categoryName] || "heroicons:squares-plus"; // Default to 'squares-plus' for unknown categories
 };
 
 // Select a category with lazy loading simulation
 const selectCategory = (category) => {
   if (selectedCategory.value === category.id) return;
-  
+
   isLoading.value = true;
   selectedCategory.value = category.id;
-  
+
   // Simulate API request delay - in a real app, you would fetch actual items for this category
   setTimeout(() => {
     isLoading.value = false;
@@ -403,14 +512,16 @@ const selectCategory = (category) => {
 
 // Get the name of the selected category
 const getSelectedCategoryName = () => {
-  const found = categories.value.find(cat => cat.id === selectedCategory.value);
-  return found ? found.name : '';
+  const found = categories.value.find(
+    (cat) => cat.id === selectedCategory.value
+  );
+  return found ? found.name : "";
 };
 
 // Slide the categories left
 const slideLeft = () => {
   if (scrollPosition.value <= 0) return;
-  
+
   // On mobile, we show 5 categories at once out of 6
   const containerWidth = sliderContainer.value.clientWidth;
   const itemWidth = containerWidth / 5; // Show 5 items on mobile
@@ -420,12 +531,12 @@ const slideLeft = () => {
 // Slide the categories right
 const slideRight = () => {
   if (!categoriesWrapper.value || !sliderContainer.value) return;
-  
+
   const containerWidth = sliderContainer.value.clientWidth;
   const maxScroll = categoriesWrapper.value.scrollWidth - containerWidth;
-  
+
   if (scrollPosition.value >= maxScroll) return;
-  
+
   const itemWidth = containerWidth / 5; // Show 5 items on mobile
   scrollPosition.value = Math.min(maxScroll, scrollPosition.value + itemWidth);
 };
@@ -447,9 +558,9 @@ const handleTouchEnd = (e) => {
 
 const handleSwipe = () => {
   const distance = touchStartX.value - touchEndX.value;
-  
+
   if (Math.abs(distance) < minSwipeDistance) return;
-  
+
   if (distance > 0) {
     // Swipe left to right (show more categories)
     slideRight();
@@ -463,23 +574,22 @@ const handleSwipe = () => {
 const fetchCategories = async () => {
   try {
     isLoadingCategories.value = true;
-    const response = await get('/api/for-sale-categories/');
+    const response = await get("/for-sale-categories/");
+    console.log("API Response:", response.data);
     if (response.data && Array.isArray(response.data)) {
       categories.value = response.data;
-      
+
       // Set initial category if available
       if (categories.value.length > 0) {
         selectedCategory.value = categories.value[0].id;
       }
     } else {
       // Fallback to default categories if API returns invalid data
-      console.error('Invalid category data received from API');
-      setDefaultCategories();
+      console.error("Invalid category data received from API");
     }
   } catch (error) {
-    console.error('Error fetching sale categories:', error);
+    console.error("Error fetching sale categories:", error);
     // Fallback to default categories if API fails
-    setDefaultCategories();
   } finally {
     isLoadingCategories.value = false;
   }
@@ -489,12 +599,12 @@ const fetchCategories = async () => {
 const fetchBanners = async () => {
   try {
     isLoadingBanners.value = true;
-    const response = await get('/api/for-sale-banners/');
+    const response = await get("/api/for-sale-banners/");
     if (response.data && Array.isArray(response.data)) {
       banners.value = response.data;
     }
   } catch (error) {
-    console.error('Error fetching sale banners:', error);
+    console.error("Error fetching sale banners:", error);
     // Banners will remain an empty array if API fails
   } finally {
     isLoadingBanners.value = false;
@@ -505,23 +615,25 @@ const fetchBanners = async () => {
 const categoryPosts = ref([]);
 const fetchCategoryPosts = async () => {
   if (!selectedCategory.value) return;
-  
+
   try {
     isLoading.value = true;
-    console.log('Fetching posts for category:', selectedCategory.value);
-    
+    console.log("Fetching posts for category:", selectedCategory.value);
+
     // This endpoint should match your Django backend's URL structure
     // Based on your backend code, the correct endpoint is /api/sale-posts/ with category as a query parameter
-    const { data, error } = await get(`/sale-posts/?category=${selectedCategory.value}`);
-    
+    const { data, error } = await get(
+      `/sale-posts/?category=${selectedCategory.value}`
+    );
+
     if (error) {
-      console.error('Error response from API:', error);
+      console.error("Error response from API:", error);
       categoryPosts.value = [];
       return;
     }
-    
-    console.log('API response for category posts:', data);
-    
+
+    console.log("API response for category posts:", data);
+
     if (data && Array.isArray(data.results)) {
       // Handle paginated response
       categoryPosts.value = data.results;
@@ -529,11 +641,11 @@ const fetchCategoryPosts = async () => {
       // Handle non-paginated response
       categoryPosts.value = data;
     } else {
-      console.warn('Unexpected API response format:', data);
+      console.warn("Unexpected API response format:", data);
       categoryPosts.value = [];
     }
   } catch (error) {
-    console.error('Error fetching posts for category:', error);
+    console.error("Error fetching posts for category:", error);
     categoryPosts.value = [];
   } finally {
     isLoading.value = false;
@@ -542,23 +654,10 @@ const fetchCategoryPosts = async () => {
 
 watch(selectedCategory, fetchCategoryPosts);
 
-// Set default categories if API fails
-const setDefaultCategories = () => {
-  categories.value = [
-    { id: 1, name: 'Properties', icon: 'heroicons:home-modern' },
-    { id: 2, name: 'Vehicles', icon: 'heroicons:truck' },
-    { id: 3, name: 'Electronics', icon: 'heroicons:device-phone-mobile' },
-    { id: 4, name: 'Sports', icon: 'heroicons:trophy' },
-    { id: 5, name: 'B2B', icon: 'heroicons:building-office' },
-    { id: 6, name: 'Others', icon: 'heroicons:squares-plus' },
-  ];
-  selectedCategory.value = categories.value[0].id;
-};
-
 // Handle screen resize
 const checkIfMobile = () => {
   isMobile.value = window.innerWidth < 768;
-  
+
   // Reset scroll position when switching between mobile and desktop
   if (!isMobile.value) {
     scrollPosition.value = 0;
@@ -569,17 +668,17 @@ const checkIfMobile = () => {
 onMounted(async () => {
   // Fetch data from API
   await Promise.all([fetchCategories(), fetchBanners()]);
-  
+
   // Check device type initially
   checkIfMobile();
-  
+
   // Add resize event listener
-  window.addEventListener('resize', checkIfMobile);
+  window.addEventListener("resize", checkIfMobile);
 });
 
 // Clean up event listener
 onUnmounted(() => {
-  window.removeEventListener('resize', checkIfMobile);
+  window.removeEventListener("resize", checkIfMobile);
 });
 
 // Modal states
@@ -613,56 +712,63 @@ const switchToPostSaleModal = () => {
 // Post actions
 const handleEditPost = (post) => {
   // Here you would implement edit functionality, possibly pre-filling the PostSale form
-  console.log('Edit post:', post);
+  console.log("Edit post:", post);
   // For now, just open the post sale modal
   openPostSaleModal();
 };
 
 const handleDeletePost = (postId) => {
   // Here you would implement delete functionality, possibly making an API call
-  console.log('Delete post with ID:', postId);
+  console.log("Delete post with ID:", postId);
   // In a real app, you would remove the post from the listings after successful deletion
 };
 
 // Helper function to get post image
 const getPostImage = (post) => {
   const { staticURL } = useApi();
-  
+
   // Handle main_image from API response
   if (post.main_image) {
-    return post.main_image.startsWith('http') ? post.main_image : `${staticURL}${post.main_image}`;
+    return post.main_image.startsWith("http")
+      ? post.main_image
+      : `${staticURL}${post.main_image}`;
   }
-  
+
   // Handle images array if provided
   if (post.images && post.images.length > 0) {
     // Find main image or use first image
-    const mainImage = post.images.find(img => img.is_main) || post.images[0];
-    
+    const mainImage = post.images.find((img) => img.is_main) || post.images[0];
+
     // Handle different image data structures
-    if (typeof mainImage === 'string') {
-      return mainImage.startsWith('http') ? mainImage : `${staticURL}${mainImage}`;
+    if (typeof mainImage === "string") {
+      return mainImage.startsWith("http")
+        ? mainImage
+        : `${staticURL}${mainImage}`;
     } else if (mainImage.image) {
-      const imgUrl = typeof mainImage.image === 'string' ? mainImage.image : mainImage.image.url || '';
-      return imgUrl.startsWith('http') ? imgUrl : `${staticURL}${imgUrl}`;
+      const imgUrl =
+        typeof mainImage.image === "string"
+          ? mainImage.image
+          : mainImage.image.url || "";
+      return imgUrl.startsWith("http") ? imgUrl : `${staticURL}${imgUrl}`;
     }
   }
-  
-  return 'https://via.placeholder.com/300/3b82f6/FFFFFF?text=No+Image';
+
+  return "https://via.placeholder.com/300/3b82f6/FFFFFF?text=No+Image";
 };
 
 // Helper function for formatting dates
 const formatDate = (dateString) => {
-  if (!dateString) return '';
-  
+  if (!dateString) return "";
+
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-  
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
-  
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+
+  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
 };
 </script>
 
@@ -697,7 +803,7 @@ const formatDate = (dateString) => {
 }
 
 .category-active {
-  border-color: #3B82F6;
+  border-color: #3b82f6;
   background-color: rgb(249 250 251);
 }
 
@@ -719,7 +825,8 @@ const formatDate = (dateString) => {
 
 /* Animation for loading skeleton */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

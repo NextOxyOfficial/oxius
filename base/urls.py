@@ -136,6 +136,6 @@ urlpatterns = [
   path('diamonds/send-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
 
   # For Sale API endpoints
-  path('api/for-sale-categories/', ForSaleCategoryListView.as_view(), name='for-sale-categories'),
+  path('for-sale-categories/', ForSaleCategoryListView.as_view(), name='for-sale-categories'),
   path('api/for-sale-banners/', ForSaleBannerListView.as_view(), name='for-sale-banners'),
 ]
