@@ -243,11 +243,20 @@
         }"
       >
         <template #icon="{ link, isActive }">
-          <UIcon
-            :name="link.icon"
-            class="text-3xl"
-            :class="isActive ? `text-green-600` : `text-green-400`"
-          />
+          <div class="relative">
+            <UIcon
+              :name="link.icon"
+              class="text-3xl"
+              :class="isActive ? `text-green-600` : `text-green-400`"
+            />
+            <!-- Notification badge for business network icon -->
+            <div
+              v-if="link.to === '/business-network' && unreadCount > 0"
+              class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse"
+            >
+              {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </div>
+          </div>
         </template>
       </UHorizontalNavigation>
       <UHorizontalNavigation
@@ -305,9 +314,24 @@
 const { t } = useI18n();
 const toggleStatus = ref("");
 const { user } = useAuth();
+const { unreadCount, fetchUnreadCount } = useNotifications(); // Import useNotifications
 
 watch(toggleStatus, () => {
   console.log("State Changed");
+});
+
+// Fetch unread notification count when component is mounted and user is logged in
+onMounted(async () => {
+  if (user.value?.user?.id) {
+    await fetchUnreadCount();
+  }
+});
+
+// Watch for user changes and fetch notification count when user logs in
+watch(() => user.value?.user?.id, async (newValue) => {
+  if (newValue) {
+    await fetchUnreadCount();
+  }
 });
 </script>
 
