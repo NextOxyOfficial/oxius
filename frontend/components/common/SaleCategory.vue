@@ -188,23 +188,45 @@
           </div>
         </div>
         
-        <!-- Placeholder for items in the selected category -->
-        <div v-else class="grid grid-cols-2 md:grid-cols-5 gap-2">
-          <div v-for="i in (isMobile ? 4 : 5)" :key="i" class="item-card bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100">
-            <div class="relative h-32 bg-gradient-to-br from-gray-200 to-gray-100">
-              <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-md">Sale</span>
+        <!-- Display actual posts from the database -->
+        <div v-else-if="categoryPosts.length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <NuxtLink 
+            v-for="post in categoryPosts" 
+            :key="post.id"
+            :to="`/sale/${post.slug}`"
+            class="item-card bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
+          >
+            <div class="relative h-32 bg-gray-50">
+              <!-- Post image -->
+              <img 
+                :src="getPostImage(post)" 
+                :alt="post.title"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <!-- Status badges -->
+              <span v-if="post.featured" class="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-md">Featured</span>
+              <span v-else-if="post.status === 'active'" class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-md">Active</span>
+              <span v-else-if="post.status === 'sold'" class="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-md">Sold</span>
             </div>
             <div class="p-3">
-              <div class="h-4 bg-gray-100 rounded mb-2"></div>
-              <div class="h-3 bg-gray-100 rounded w-3/4 mb-2"></div>
+              <h4 class="font-medium text-sm line-clamp-1 mb-1">{{ post.title }}</h4>
+              <p class="text-primary font-bold text-sm mb-2">৳{{ post.price?.toLocaleString() || 'Negotiable' }}</p>
               <div class="flex justify-between items-center">
-                <div class="h-5 bg-primary/10 rounded-full w-1/4"></div>
+                <div class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ post.condition }}</div>
                 <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Icon name="heroicons:heart" size="12px" class="text-gray-400" />
+                  <Icon name="heroicons:map-pin" size="12px" class="text-gray-400" />
                 </div>
               </div>
             </div>
-          </div>
+          </NuxtLink>
+        </div>
+        
+        <!-- No posts found message -->
+        <div v-else class="flex flex-col items-center justify-center py-8 px-4 bg-gray-50 rounded-lg">
+          <Icon name="heroicons:document-magnifying-glass" size="40px" class="text-gray-400 mb-2" />
+          <h3 class="text-base font-medium text-gray-800 mb-1">No listings found</h3>
+          <p class="text-gray-500 text-sm text-center">There are no items currently listed in this category.</p>
         </div>
       </div>
     </div>
@@ -453,6 +475,47 @@ const fetchBanners = async () => {
   }
 };
 
+// Fetch posts for the selected category
+const categoryPosts = ref([]);
+const fetchCategoryPosts = async () => {
+  if (!selectedCategory.value) return;
+  
+  try {
+    isLoading.value = true;
+    console.log('Fetching posts for category:', selectedCategory.value);
+    
+    // This endpoint should match your Django backend's URL structure
+    // Based on your backend code, the correct endpoint is /api/sale-posts/ with category as a query parameter
+    const { data, error } = await get(`/sale-posts/?category=${selectedCategory.value}`);
+    
+    if (error) {
+      console.error('Error response from API:', error);
+      categoryPosts.value = [];
+      return;
+    }
+    
+    console.log('API response for category posts:', data);
+    
+    if (data && Array.isArray(data.results)) {
+      // Handle paginated response
+      categoryPosts.value = data.results;
+    } else if (data && Array.isArray(data)) {
+      // Handle non-paginated response
+      categoryPosts.value = data;
+    } else {
+      console.warn('Unexpected API response format:', data);
+      categoryPosts.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching posts for category:', error);
+    categoryPosts.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+watch(selectedCategory, fetchCategoryPosts);
+
 // Set default categories if API fails
 const setDefaultCategories = () => {
   categories.value = [
@@ -533,6 +596,32 @@ const handleDeletePost = (postId) => {
   // Here you would implement delete functionality, possibly making an API call
   console.log('Delete post with ID:', postId);
   // In a real app, you would remove the post from the listings after successful deletion
+};
+
+// Helper function to get post image
+const getPostImage = (post) => {
+  const { staticURL } = useApi();
+  
+  // Handle main_image from API response
+  if (post.main_image) {
+    return post.main_image.startsWith('http') ? post.main_image : `${staticURL}${post.main_image}`;
+  }
+  
+  // Handle images array if provided
+  if (post.images && post.images.length > 0) {
+    // Find main image or use first image
+    const mainImage = post.images.find(img => img.is_main) || post.images[0];
+    
+    // Handle different image data structures
+    if (typeof mainImage === 'string') {
+      return mainImage.startsWith('http') ? mainImage : `${staticURL}${mainImage}`;
+    } else if (mainImage.image) {
+      const imgUrl = typeof mainImage.image === 'string' ? mainImage.image : mainImage.image.url || '';
+      return imgUrl.startsWith('http') ? imgUrl : `${staticURL}${imgUrl}`;
+    }
+  }
+  
+  return 'https://via.placeholder.com/300/3b82f6/FFFFFF?text=No+Image';
 };
 </script>
 
