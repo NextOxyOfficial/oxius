@@ -98,10 +98,11 @@
                   ></div>
                   <img
                     :src="deal.image"
-                    :alt="deal.title"
+                    :alt="deal.name"
                     class="w-full h-full object-cover"
                     loading="lazy"
                   />
+
                   <div
                     class="absolute top-0 left-0 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br z-20"
                     :class="deal.badge_color"
@@ -111,7 +112,7 @@
                 </div>
                 <div class="p-2 text-center">
                   <h3 class="font-medium text-sm text-gray-800">
-                    {{ deal.title }}
+                    {{ deal.name }}
                   </h3>
                 </div>
               </NuxtLink>

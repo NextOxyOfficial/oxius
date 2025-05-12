@@ -158,7 +158,7 @@
                   ></div>
                   <img
                     :src="card.image"
-                    :alt="card.title"
+                    :alt="card.name"
                     class="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -171,7 +171,7 @@
                 </div>
                 <div class="p-2 text-center">
                   <h3 class="font-medium text-sm text-gray-800">
-                    {{ card.title }}
+                    {{ card.name }}
                   </h3>
                 </div>
               </NuxtLink>

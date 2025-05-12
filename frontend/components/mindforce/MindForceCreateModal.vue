@@ -186,7 +186,6 @@
                   />
                 </div>
               </div>
-
               <!-- Help Type selector with premium styling -->
               <div class="space-y-2">
                 <label

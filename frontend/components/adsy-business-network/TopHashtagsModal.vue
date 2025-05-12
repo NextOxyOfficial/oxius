@@ -1,33 +1,29 @@
 <template>
   <Teleport to="body">
-    <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+    <div
+      v-if="isOpen"
+      class="fixed inset-0 z-50 overflow-y-auto"
+      :class="{ 'animate-fade-in': isModalOpen }"
+      @click.self="closeModal"
     >
       <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[99] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden"
-        @click.self="closeModal"
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+        aria-hidden="true"
+        @click="isOpen = false"
+      ></div>
+      <div
+        class="flex items-center sm:items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 mt-0 sm:mt-20"
       >
-        <Transition
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 translate-y-8 scale-95"
-          enter-to-class="opacity-100 translate-y-0 scale-100"
-          leave-active-class="transition-all duration-200 ease-in"
-          leave-from-class="opacity-100 translate-y-0 scale-100"
-          leave-to-class="opacity-0 translate-y-8 scale-95"
+        <div
+          class="relative max-w-xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          :class="{ 'animate-modal-slide-up': isOpen }"
+          @click.stop
         >
-          <div
-            v-if="isOpen"
-            class="bg-white dark:bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
-            @click.stop
-          >
-            <!-- Modal Header -->
-            <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <!-- Modal Header -->
+          <div class="w-full overflow-hidden overflow-y-auto custom-scrollbar">
+            <div
+              class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
+            >
               <h2 class="text-xl font-bold flex items-center">
                 <Hash class="h-5 w-5 mr-2" />
                 Top 100 Trending Hashtags
@@ -40,125 +36,155 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
+          </div>
 
-            <!-- Loading State -->
-            <div
-              v-if="isLoading"
-              class="flex-1 flex flex-col items-center justify-center p-8"
+          <!-- Loading State -->
+          <div
+            v-if="isLoading"
+            class="flex-1 flex flex-col items-center justify-center p-8"
+          >
+            <div class="relative">
+              <div
+                class="h-16 w-16 rounded-full border-4 border-gray-200 dark:border-gray-700"
+              ></div>
+              <div
+                class="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-blue-600 animate-spin"
+              ></div>
+              <Hash class="h-8 w-8 text-blue-600 absolute top-4 left-4" />
+            </div>
+            <p class="mt-4 text-gray-600 dark:text-gray-400">
+              Loading trending hashtags...
+            </p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            v-else-if="error"
+            class="flex-1 flex flex-col items-center justify-center p-8 text-red-500"
+          >
+            <AlertCircle class="h-16 w-16 mb-4" />
+            <p class="text-center">{{ error }}</p>
+            <button
+              @click="fetchTopHashtags"
+              class="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
             >
+              <RefreshCw class="h-4 w-4 mr-2" />
+              Try Again
+            </button>
+          </div>
+
+          <!-- Content with Search and Filter -->
+          <div v-else class="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-800">
               <div class="relative">
-                <div class="h-16 w-16 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
-                <div class="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-blue-600 animate-spin"></div>
-                <Hash class="h-8 w-8 text-blue-600 absolute top-4 left-4" />
-              </div>
-              <p class="mt-4 text-gray-600 dark:text-gray-400">Loading trending hashtags...</p>
-            </div>
-
-            <!-- Error State -->
-            <div
-              v-else-if="error"
-              class="flex-1 flex flex-col items-center justify-center p-8 text-red-500"
-            >
-              <AlertCircle class="h-16 w-16 mb-4" />
-              <p class="text-center">{{ error }}</p>
-              <button
-                @click="fetchTopHashtags"
-                class="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
-              >
-                <RefreshCw class="h-4 w-4 mr-2" />
-                Try Again
-              </button>
-            </div>
-
-            <!-- Content with Search and Filter -->
-            <div v-else class="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <div class="p-4 border-b border-gray-200 dark:border-gray-800">
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Search class="h-5 w-5 text-gray-500" />
-                  </div>
-                  <input
-                    type="search"
-                    v-model="searchQuery"
-                    class="w-full p-2.5 pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Search hashtags..."
-                  />
+                <div
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+                >
+                  <Search class="h-5 w-5 text-gray-500" />
                 </div>
+                <input
+                  type="search"
+                  v-model="searchQuery"
+                  class="w-full p-2.5 pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Search hashtags..."
+                />
               </div>
+            </div>
 
-              <!-- Hashtags List -->
-              <div class="flex-1 overflow-y-auto p-2 hashtags-container">
-                <div class="overflow-hidden">
-                  <TransitionGroup
-                    tag="ul"
-                    class="divide-y divide-gray-200 dark:divide-gray-700"
-                    enter-active-class="transition-all duration-300 ease-out"
-                    enter-from-class="opacity-0 -translate-x-4"
-                    enter-to-class="opacity-100 translate-x-0"
-                    move-class="transition-transform duration-500"
+            <!-- Hashtags List -->
+            <div class="flex-1 overflow-y-auto p-2 hashtags-container">
+              <div class="overflow-hidden">
+                <TransitionGroup
+                  tag="ul"
+                  class="divide-y divide-gray-200 dark:divide-gray-700"
+                  enter-active-class="transition-all duration-300 ease-out"
+                  enter-from-class="opacity-0 -translate-x-4"
+                  enter-to-class="opacity-100 translate-x-0"
+                  move-class="transition-transform duration-500"
+                >
+                  <li
+                    v-for="(tag, index) in filteredHashtags"
+                    :key="tag.id"
+                    :style="{ animationDelay: `${index * 0.03}s` }"
+                    class="hashtag-item py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors group"
+                    @click="navigateToHashtag(tag)"
                   >
-                    <li
-                      v-for="(tag, index) in filteredHashtags"
-                      :key="tag.id"
-                      :style="{ animationDelay: `${index * 0.03}s` }"
-                      class="hashtag-item py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors group"
-                      @click="navigateToHashtag(tag)"
-                    >
-                      <div class="flex items-center gap-3">
-                        <!-- Rank Badge -->
-                        <div 
-                          class="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
-                          :class="getRankBadgeClass(index)"
-                        >
-                          <span class="font-bold text-sm">{{ index + 1 }}</span>
-                        </div>
-                        
-                        <!-- Hashtag Info -->
-                        <div class="flex flex-col flex-1 min-w-0">
-                          <div class="flex items-center justify-between">
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                              #{{ tag.tag }}
-                            </h3>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                              {{ tag.count }} {{ tag.count === 1 ? 'post' : 'posts' }}
-                            </span>
-                          </div>
-                          
-                          <!-- Popularity Bar -->
-                          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2 overflow-hidden">
-                            <div
-                              class="h-1.5 rounded-full popularity-bar transition-all group-hover:brightness-110"
-                              :class="getBarColorClass(index)"
-                              :style="{
-                                width: `${(tag.count / maxCount) * 100}%`,
-                              }"
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <!-- Arrow -->
-                        <ChevronRight class="h-4 w-4 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300" />
+                    <div class="flex items-center gap-3">
+                      <!-- Rank Badge -->
+                      <div
+                        class="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
+                        :class="getRankBadgeClass(index)"
+                      >
+                        <span class="font-bold text-sm">{{ index + 1 }}</span>
                       </div>
-                    </li>
-                  </TransitionGroup>
-                </div>
-                
-                <!-- Empty Result -->
-                <div v-if="filteredHashtags.length === 0" class="flex flex-col items-center justify-center py-8 text-gray-500">
-                  <Search class="h-12 w-12 mb-2 opacity-50" />
-                  <p class="text-center">No hashtags found matching "{{ searchQuery }}"</p>
-                </div>
+
+                      <!-- Hashtag Info -->
+                      <div class="flex flex-col flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                          <h3
+                            class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
+                          >
+                            #{{ tag.tag }}
+                          </h3>
+                          <span
+                            class="text-xs text-gray-500 dark:text-gray-400"
+                          >
+                            {{ tag.count }}
+                            {{ tag.count === 1 ? "post" : "posts" }}
+                          </span>
+                        </div>
+
+                        <!-- Popularity Bar -->
+                        <div
+                          class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2 overflow-hidden"
+                        >
+                          <div
+                            class="h-1.5 rounded-full popularity-bar transition-all group-hover:brightness-110"
+                            :class="getBarColorClass(index)"
+                            :style="{
+                              width: `${(tag.count / maxCount) * 100}%`,
+                            }"
+                          ></div>
+                        </div>
+                      </div>
+
+                      <!-- Arrow -->
+                      <ChevronRight
+                        class="h-4 w-4 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300"
+                      />
+                    </div>
+                  </li>
+                </TransitionGroup>
+              </div>
+
+              <!-- Empty Result -->
+              <div
+                v-if="filteredHashtags.length === 0"
+                class="flex flex-col items-center justify-center py-8 text-gray-500"
+              >
+                <Search class="h-12 w-12 mb-2 opacity-50" />
+                <p class="text-center">
+                  No hashtags found matching "{{ searchQuery }}"
+                </p>
               </div>
             </div>
           </div>
-        </Transition>
+        </div>
       </div>
-    </Transition>
+    </div>
   </Teleport>
 </template>
 
 <script setup>
-import { Hash, X, AlertCircle, RefreshCw, Search, ChevronRight, FileText } from "lucide-vue-next";
+import {
+  Hash,
+  X,
+  AlertCircle,
+  RefreshCw,
+  Search,
+  ChevronRight,
+  FileText,
+} from "lucide-vue-next";
 
 const props = defineProps({
   isOpen: {
@@ -179,25 +205,23 @@ const searchQuery = ref("");
 // Computed properties
 const maxCount = computed(() => {
   if (!hashtags.value.length) return 1;
-  return Math.max(...hashtags.value.map(tag => tag.count));
+  return Math.max(...hashtags.value.map((tag) => tag.count));
 });
 
 const filteredHashtags = computed(() => {
   if (!searchQuery.value.trim()) {
     return hashtags.value;
   }
-  
+
   const query = searchQuery.value.trim().toLowerCase();
-  return hashtags.value.filter(tag => 
-    tag.tag.toLowerCase().includes(query)
-  );
+  return hashtags.value.filter((tag) => tag.tag.toLowerCase().includes(query));
 });
 
 // Methods
 const fetchTopHashtags = async () => {
   isLoading.value = true;
   error.value = null;
-  
+
   try {
     // First try to get from top-tags endpoint
     const response = await get("/bn/top-tags/");
@@ -212,13 +236,12 @@ const fetchTopHashtags = async () => {
         throw new Error("Unexpected response format from both endpoints");
       }
     }
-    
+
     // Apply animation delay for staggered appearance
     hashtags.value = hashtags.value.map((tag, index) => ({
       ...tag,
       animationDelay: `${index * 0.05}s`, // 50ms delay between each item
     }));
-    
   } catch (err) {
     console.error("Error fetching top hashtags:", err);
     error.value = "Failed to load trending hashtags. Please try again later.";
@@ -240,9 +263,12 @@ const navigateToHashtag = (tag) => {
 
 // Get position-based styling for rank badges
 const getRankBadgeClass = (index) => {
-  if (index === 0) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"; // 1st place
-  if (index === 1) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"; // 2nd place
-  if (index === 2) return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"; // 3rd place
+  if (index === 0)
+    return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"; // 1st place
+  if (index === 1)
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"; // 2nd place
+  if (index === 2)
+    return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"; // 3rd place
   return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"; // Rest
 };
 
@@ -272,9 +298,9 @@ onMounted(() => {
       closeModal();
     }
   };
-  
+
   document.addEventListener("keydown", handleEscape);
-  
+
   onUnmounted(() => {
     document.removeEventListener("keydown", handleEscape);
   });

@@ -1,9 +1,9 @@
 <template>
   <div ref="productCardRef">
-    <div class="md:hover:-translate-y-2 transition-all duration-300">
+    <div class="md:hover:-translate-y-0.5 transition-all duration-300">
       <!-- Glass-like Card Container with Premium Shadows -->
       <div
-        class="bg-slate-100/80 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-2xl overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
+        class="bg-slate-100/80 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-lg overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
       >
         <!-- Product Image Section -->
         <div class="relative pt-[100%] overflow-hidden group">
@@ -62,7 +62,7 @@
         </div>
 
         <!-- Product Details with Improved Layout -->
-        <div class="my-4 px-2 flex-grow flex flex-col">
+        <div class="my-2 px-2 flex-grow flex flex-col">
           <!-- Store Link with Premium Style -->
           <NuxtLink
             :to="`/eshop/${
@@ -90,7 +90,7 @@
           <!-- Product Title with Premium Hover Effect -->
           <NuxtLink :to="`/product-details/${product?.slug}`" class="">
             <h3
-              class="font-medium text-slate-800 dark:text-white mb-2 line-clamp-2 flex-grow text-base first-letter:uppercase text-primary-600 transition-colors"
+              class="font-medium text-slate-800 dark:text-white mb-2 line-clamp-2 flex-grow text-base first-letter:uppercase text-primary-600 transition-colors h-12"
             >
               {{ product.name }}
             </h3>
@@ -98,10 +98,10 @@
 
           <!-- Price Section with Premium Styling -->
           <div
-            class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100/70 dark:border-slate-700/30 mr-0.5 sm:mr-3"
+            class="flex items-center justify-between mt-auto border-t border-slate-100/70 dark:border-slate-700/30 mr-0.5 sm:mr-3"
           >
             <!-- Price Section with Improved Logic - regular_price is used if sale_price is missing/0/null -->
-            <div class="flex flex-col">
+            <div class="flex flex-col h-10">
               <span
                 class="font-semibold text-slate-900 dark:text-white text-md flex items-center"
               >

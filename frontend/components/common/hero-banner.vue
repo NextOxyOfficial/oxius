@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-4">
+  <div id="home" class="mb-4">
     <div class="max-w-7xl w-full mx-auto">
       <div
         class="rounded-md overflow-hidden shadow-sm bg-gradient-to-br from-slate-50 to-white border border-gray-100"

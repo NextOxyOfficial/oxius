@@ -352,7 +352,7 @@
             :links="[
               {
                 label: $t('home'),
-                to: '/',
+                to: '/#home',
                 icon: 'i-heroicons-home',
               },
               {
