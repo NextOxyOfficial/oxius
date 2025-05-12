@@ -3,7 +3,7 @@
     <div>
       <div class="py-4 text-start relative">
         <h1
-          class="text-2xl ml-3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
+          class="text-lg ml-3 font-medium bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
         >
           {{ $t("classified_service") }}
         </h1>
@@ -57,7 +57,7 @@
         <div class="icon-plus-container">
           <UIcon
             name="i-heroicons-plus-circle"
-            class="text-2xl text-emerald-600 animate-pulse-icon"
+            class="text-lg text-emerald-600 animate-pulse-icon"
           />
         </div>
 

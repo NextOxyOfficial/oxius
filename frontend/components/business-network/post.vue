@@ -76,7 +76,7 @@
             <div class="mb-3 min-w-full px-2">
               <p
                 :class="[
-                  'text-base text-gray-700 dark:text-gray-200 leading-relaxed',
+                  'text-sm text-gray-700 dark:text-gray-200 leading-relaxed',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="post?.post_details ? post.post_details.content : post.content"

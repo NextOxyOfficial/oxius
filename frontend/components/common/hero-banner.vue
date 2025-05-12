@@ -75,7 +75,7 @@
               ></div>
 
               <h1
-                class="text-xl sm:text-xl font-semibold leading-tight text-gray-800 mb-2"
+                class="text-base sm:text-lg font-semibold leading-tight text-gray-800 mb-2"
               >
                 {{ $t("bangladesh_first_title") }}
               </h1>
