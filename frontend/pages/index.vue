@@ -240,7 +240,7 @@
     </div>
 
     <!-- Premium divider -->
-    <div class="my-8 sm:my-16 mx-auto max-w-[80%] relative">
+    <div class="my-6 sm:my-16 mx-auto max-w-[80%] relative">
       <UDivider />
       <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 px-4 py-1"
@@ -373,7 +373,7 @@
               class="flex-1 max-sm:border max-sm:mt-4 max-sm:rounded-xl min-h-[500px] flex flex-col"
             >
               <div
-                class="flex flex-col sm:flex-row justify-between items-center p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md gap-1 sm:gap-0"
+                class="flex flex-col sm:flex-row justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700 bg-slate-100/80 rounded-md gap-1 sm:gap-0"
               >
                 <div class="flex items-center gap-2">
                   <UIcon
