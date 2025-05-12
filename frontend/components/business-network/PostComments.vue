@@ -28,7 +28,7 @@
           <div
             class="bg-gradient-to-r from-amber-50/80 to-pink-50/80 dark:from-amber-900/20 dark:to-pink-900/20 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-amber-200/50 dark:border-amber-700/30"
           >
-            <div class="flex items-center justify-between mb-0.5">
+            <div class="flex items-center justify-between">
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${highestGiftComment.author}`"
@@ -115,7 +115,7 @@
           <div
             class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-1 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
           >
-            <div class="flex items-center justify-between mb-0.5">
+            <div class="flex items-center justify-between">
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${comment.author}`"
