@@ -1,572 +1,578 @@
 <template>
-  <Transition
-    enter-active-class="transition duration-300 ease-out"
-    enter-from-class="opacity-0 scale-95"
-    enter-to-class="opacity-100 scale-100"
-    leave-active-class="transition duration-200 ease-in"
-    leave-from-class="opacity-100 scale-100"
-    leave-to-class="opacity-0 scale-95"
-  >
+  <Teleport to="body">
     <div
       v-if="modelValue && problem"
-      class="fixed inset-0 z-50 flex items-center justify-center perspective-1000"
+      class="fixed inset-0 top-14 z-50 overflow-y-auto"
+      :class="{ 'animate-fade-in': isModalOpen }"
+      @click="$emit('update:modelValue', false)"
     >
       <!-- Enhanced backdrop with subtle blur effect -->
       <div
-        class="absolute inset-0 bg-gradient-to-br from-slate-900/70 to-blue-900/70 backdrop-blur-md"
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+        aria-hidden="true"
         @click="$emit('update:modelValue', false)"
       ></div>
 
-      <!-- Modal with enhanced styling -->
       <div
-        class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden border border-slate-100 dark:border-slate-700 animate-fade-in-up"
-        @click.stop
+        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
       >
-        <!-- Premium scrollbar styling -->
+        <!-- Modal with enhanced styling -->
         <div
-          class="px-2 sm:px-6 py-6 overflow-y-auto custom-scrollbar max-h-[75vh]"
+          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          :class="{ 'animate-modal-slide-up': modelValue }"
+          @click.stop
         >
-          <!-- Problem Header with enhanced design -->
-          <div class="flex justify-between items-start">
-            <div class="flex items-center">
-              <div
-                class="size-14 rounded-full border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
-              >
-                <!-- Pro user border with gradient effect -->
+          <!-- Premium scrollbar styling -->
+          <div
+            class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar p-2"
+          >
+            <!-- Problem Header with enhanced design -->
+            <div class="flex justify-between items-start">
+              <div class="flex items-center">
                 <div
-                  v-if="problem.user_details?.is_pro"
-                  class="absolute inset-0 rounded-full pro-border-ring z-20"
-                  style="pointer-events: none"
-                ></div>
-                <div
-                  class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
-                ></div>
-                <img
-                  :src="problem.user_details?.image || '/placeholder.svg'"
-                  :alt="problem.user_details?.name"
-                  class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
-                  style="object-fit: cover; aspect-ratio: 1/1"
-                />
-                <!-- Pro badge with increased z-index and white border -->
-                <div
-                  v-if="problem.user_details?.is_pro"
-                  class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-30 text-[9px] font-bold"
-                  style="border: 1px solid rgba(255, 255, 255, 0.5)"
+                  class="size-14 rounded-full border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
                 >
-                  PRO
-                </div>
-              </div>
-              <div class="ml-3">
-                <h1 class="text-base font-medium flex items-center gap-1.5">
-                  {{ problem?.user_details?.name }}
-                  <div class="relative inline-flex tooltip-container">
-                    <UIcon
-                      v-if="problem?.user_details?.kyc"
-                      name="i-mdi-check-decagram"
-                      class="w-4 h-4 text-blue-600 animate-pulse-subtle"
-                    />
-                  </div>
-                  <span
-                    v-if="problem?.user_details?.is_topcontributor"
-                    class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
-                  >
-                    <div class="flex items-center gap-1">
-                      <Trophy class="size-3" />
-                      <span class="text-2xs">Top Contributor</span>
-                    </div>
-                  </span>
-                  <!-- Verified badge for mobile -->
-                </h1>
-                <div class="flex items-center text-sm text-slate-500">
-                  <Clock class="h-3 w-3 mr-1" />
-                  <span>{{ formatTimeAgo(problem.created_at) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1">
-              <div
-                v-if="user?.user && problem.user === user.user.id"
-                class="relative"
-              >
-                <button
-                  @click.stop="toggleMenu"
-                  class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
-                >
-                  <MoreHorizontal
-                    class="h-4 w-4 text-slate-600 dark:text-slate-300"
-                  />
-                </button>
-
-                <Transition
-                  enter-active-class="transition duration-200 ease-out"
-                  enter-from-class="opacity-0 scale-95"
-                  enter-to-class="opacity-100 scale-100"
-                  leave-active-class="transition duration-100 ease-in"
-                  leave-from-class="opacity-100 scale-100"
-                  leave-to-class="opacity-0 scale-95"
-                >
+                  <!-- Pro user border with gradient effect -->
                   <div
-                    v-if="isMenuOpen"
-                    class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                    v-if="problem.user_details?.is_pro"
+                    class="absolute inset-0 rounded-full pro-border-ring z-20"
+                    style="pointer-events: none"
+                  ></div>
+                  <div
+                    class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
+                  ></div>
+                  <img
+                    :src="problem.user_details?.image || '/placeholder.svg'"
+                    :alt="problem.user_details?.name"
+                    class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
+                    style="object-fit: cover; aspect-ratio: 1/1"
+                  />
+                  <!-- Pro badge with increased z-index and white border -->
+                  <div
+                    v-if="problem.user_details?.is_pro"
+                    class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-30 text-[9px] font-bold"
+                    style="border: 1px solid rgba(255, 255, 255, 0.5)"
                   >
-                    <div class="py-1">
-                      <button
-                        class="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <Edit class="h-4 w-4 mr-2" /> Edit Problem
-                      </button>
-                      <button
-                        @click="$emit('delete')"
-                        class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
-                      </button>
-                    </div>
+                    PRO
                   </div>
-                </Transition>
-              </div>
-              <!-- Fixed X button - Made it larger and more visible -->
-              <button
-                @click.stop="$emit('update:modelValue', false)"
-                class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                aria-label="Close"
-              >
-                <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Problem Category & Payment - Enhanced styling -->
-          <div class="flex flex-wrap gap-2 mt-4">
-            <span
-              class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm"
-            >
-              {{ problem.category_details?.name }}
-            </span>
-
-            <span
-              v-if="problem?.payment_option === 'paid'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-            >
-              {{ problem?.payment_amount > 0 ? `I can pay ` : "Paid Help" }}
-              <span
-                v-if="problem?.payment_amount > 0"
-                class="inline-flex items-center"
-              >
-                <UIcon
-                  name="i-mdi-currency-bdt"
-                  class="text-emerald-600 dark:text-emerald-400"
-                />
-                {{ problem?.payment_amount }}
-              </span>
-            </span>
-            <span
-              v-else
-              class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-            >
-              I need help for free
-            </span>
-
-            <span
-              v-if="problem.status === 'solved'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
-            >
-              <CheckCircle class="h-3 w-3 mr-1" />
-              Solved
-            </span>
-          </div>
-
-          <!-- Problem Title & Content with improved typography -->
-          <h1 class="text-base mt-4 font-medium text-slate-900 dark:text-white">
-            {{ problem.title }}
-          </h1>
-          <div
-            class="mt-3 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none"
-          >
-            {{ problem.description }}
-          </div>
-
-          <!-- Problem photos gallery -->
-          <div v-if="problem.media && problem.media.length > 0" class="mt-5">
-            <h3
-              class="text-base font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center"
-            >
-              <Image class="h-5 w-5 mr-2 text-blue-500" />
-              Photos
-            </h3>
-            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-              <div
-                v-for="(photo, index) in problem.media"
-                :key="photo.id"
-                class="aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-all transform hover:scale-[1.02] relative group"
-                @click="$emit('photo-view', index)"
-              >
-                <img
-                  :src="photo.image"
-                  alt="Problem photo"
-                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2"
-                >
-                  <span class="text-white text-sm font-medium">View</span>
+                </div>
+                <div class="ml-3">
+                  <h1 class="text-base font-medium flex items-center gap-1.5">
+                    {{ problem?.user_details?.name }}
+                    <div class="relative inline-flex tooltip-container">
+                      <UIcon
+                        v-if="problem?.user_details?.kyc"
+                        name="i-mdi-check-decagram"
+                        class="w-4 h-4 text-blue-600 animate-pulse-subtle"
+                      />
+                    </div>
+                    <span
+                      v-if="problem?.user_details?.is_topcontributor"
+                      class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
+                    >
+                      <div class="flex items-center gap-1">
+                        <Trophy class="size-3" />
+                        <span class="text-2xs">Top Contributor</span>
+                      </div>
+                    </span>
+                    <!-- Verified badge for mobile -->
+                  </h1>
+                  <div class="flex items-center text-sm text-slate-500">
+                    <Clock class="h-3 w-3 mr-1" />
+                    <span>{{ formatTimeAgo(problem.created_at) }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Problem Stats - Enhanced styling -->
-          <div
-            class="mt-6 flex items-center justify-between border-t border-b border-slate-200 dark:border-slate-700 py-3"
-          >
-            <div class="flex items-center space-x-4">
+              <div class="flex items-center gap-1">
+                <div
+                  v-if="user?.user && problem.user === user.user.id"
+                  class="relative"
+                >
+                  <button
+                    @click.stop="toggleMenu"
+                    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
+                  >
+                    <MoreHorizontal
+                      class="h-4 w-4 text-slate-600 dark:text-slate-300"
+                    />
+                  </button>
+
+                  <Transition
+                    enter-active-class="transition duration-200 ease-out"
+                    enter-from-class="opacity-0 scale-95"
+                    enter-to-class="opacity-100 scale-100"
+                    leave-active-class="transition duration-100 ease-in"
+                    leave-from-class="opacity-100 scale-100"
+                    leave-to-class="opacity-0 scale-95"
+                  >
+                    <div
+                      v-if="isMenuOpen"
+                      class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                    >
+                      <div class="py-1">
+                        <button
+                          class="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <Edit class="h-4 w-4 mr-2" /> Edit Problem
+                        </button>
+                        <button
+                          @click="$emit('delete')"
+                          class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 class="h-4 w-4 mr-2" /> Delete Problem
+                        </button>
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
+                <!-- Fixed X button - Made it larger and more visible -->
+                <button
+                  @click.stop="$emit('update:modelValue', false)"
+                  class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Close"
+                >
+                  <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Problem Category & Payment - Enhanced styling -->
+            <div class="flex flex-wrap gap-2 mt-4">
               <span
-                class="text-sm text-slate-600 dark:text-slate-400 flex items-center group"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm"
               >
-                <MessageSquare
-                  class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors"
-                />
-                <span class="group-hover:text-blue-500 transition-colors">
-                  {{ localComments.length || 0 }} Advices
+                {{ problem.category_details?.name }}
+              </span>
+
+              <span
+                v-if="problem?.payment_option === 'paid'"
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+              >
+                {{ problem?.payment_amount > 0 ? `I can pay ` : "Paid Help" }}
+                <span
+                  v-if="problem?.payment_amount > 0"
+                  class="inline-flex items-center"
+                >
+                  <UIcon
+                    name="i-mdi-currency-bdt"
+                    class="text-emerald-600 dark:text-emerald-400"
+                  />
+                  {{ problem?.payment_amount }}
                 </span>
               </span>
+              <span
+                v-else
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+              >
+                I need help for free
+              </span>
 
               <span
-                class="text-sm text-slate-600 dark:text-slate-400 flex items-center"
+                v-if="problem.status === 'solved'"
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
               >
-                <Eye class="h-4 w-4 mr-1.5" />
-                {{ problem?.views || 0 }}
+                <CheckCircle class="h-3 w-3 mr-1" />
+                Solved
               </span>
             </div>
 
-            <!-- Mark as Solved button with premium styling -->
-            <button
-              v-if="isOwner && problem.status !== 'solved'"
-              @click="$emit('mark-as-solved')"
-              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+            <!-- Problem Title & Content with improved typography -->
+            <h1
+              class="text-base mt-4 font-medium text-slate-900 dark:text-white"
             >
-              <CheckCircle class="h-4 w-4 mr-1.5" />
-              Mark as Solved
-            </button>
-          </div>
-
-          <!-- Comments Section - Enhanced styling -->
-          <div class="mt-6">
-            <h3
-              class="text-base font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center"
+              {{ problem.title }}
+            </h1>
+            <div
+              class="mt-3 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none"
             >
-              <MessageSquare class="h-5 w-5 mr-2 text-blue-500" />
-              Advice ({{ localComments.length || 0 }})
-            </h3>
+              {{ problem.description }}
+            </div>
 
-            <!-- Comment List with enhanced styling -->
-            <div class="space-y-4">
-              <div v-if="localComments.length > 0" class="space-y-3">
+            <!-- Problem photos gallery -->
+            <div v-if="problem.media && problem.media.length > 0" class="mt-5">
+              <h3
+                class="text-base font-medium mb-3 text-slate-700 dark:text-slate-300 flex items-center"
+              >
+                <Image class="h-5 w-5 mr-2 text-blue-500" />
+                Photos
+              </h3>
+              <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
                 <div
-                  v-for="comment in sortedComments"
-                  :key="comment.id"
-                  :class="[
-                    'px-3 py-3 sm:py-4 rounded-lg transition-all transform hover:scale-[1.01]',
-                    comment.is_solved
-                      ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-sm'
-                      : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50',
-                    comment.is_temp ? 'opacity-70' : '',
-                  ]"
+                  v-for="(photo, index) in problem.media"
+                  :key="photo.id"
+                  class="aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-all transform hover:scale-[1.02] relative group"
+                  @click="$emit('photo-view', index)"
                 >
-                  <div class="flex justify-between">
-                    <div class="flex items-center">
-                      <div
+                  <img
+                    :src="photo.image"
+                    alt="Problem photo"
+                    class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  />
+                  <div
+                    class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2"
+                  >
+                    <span class="text-white text-sm font-medium">View</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Problem Stats - Enhanced styling -->
+            <div
+              class="mt-6 flex items-center justify-between border-t border-b border-slate-200 dark:border-slate-700 py-3"
+            >
+              <div class="flex items-center space-x-4">
+                <span
+                  class="text-sm text-slate-600 dark:text-slate-400 flex items-center group"
+                >
+                  <MessageSquare
+                    class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors"
+                  />
+                  <span class="group-hover:text-blue-500 transition-colors">
+                    {{ localComments.length || 0 }} Advices
+                  </span>
+                </span>
+
+                <span
+                  class="text-sm text-slate-600 dark:text-slate-400 flex items-center"
+                >
+                  <Eye class="h-4 w-4 mr-1.5" />
+                  {{ problem?.views || 0 }}
+                </span>
+              </div>
+
+              <!-- Mark as Solved button with premium styling -->
+              <button
+                v-if="isOwner && problem.status !== 'solved'"
+                @click="$emit('mark-as-solved')"
+                class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <CheckCircle class="h-4 w-4 mr-1.5" />
+                Mark as Solved
+              </button>
+            </div>
+
+            <!-- Comments Section - Enhanced styling -->
+            <div class="mt-6">
+              <h3
+                class="text-base font-medium mb-4 text-slate-700 dark:text-slate-300 flex items-center"
+              >
+                <MessageSquare class="h-5 w-5 mr-2 text-blue-500" />
+                Advice ({{ localComments.length || 0 }})
+              </h3>
+
+              <!-- Comment List with enhanced styling -->
+              <div class="space-y-4">
+                <div v-if="localComments.length > 0" class="space-y-3">
+                  <div
+                    v-for="comment in sortedComments"
+                    :key="comment.id"
+                    :class="[
+                      'px-3 py-3 sm:py-4 rounded-lg transition-all transform hover:scale-[1.01]',
+                      comment.is_solved
+                        ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-100 dark:border-emerald-900/30 shadow-sm'
+                        : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/50',
+                      comment.is_temp ? 'opacity-70' : '',
+                    ]"
+                  >
+                    <div class="flex justify-between">
+                      <div class="flex items-center">
+                        <div
+                          :class="[
+                            'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative',
+                            isCommentAuthorPro(comment) ? 'pro-ring' : '',
+                          ]"
+                        >
+                          <!-- Pro user border with gradient effect -->
+                          <div
+                            v-if="isCommentAuthorPro(comment)"
+                            class="absolute inset-0 rounded-full pro-border-ring z-20"
+                          ></div>
+                          <div
+                            class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
+                          ></div>
+                          <img
+                            :src="
+                              comment?.author_details?.image ||
+                              '/placeholder.svg'
+                            "
+                            :alt="comment?.author_details?.name"
+                            class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
+                            style="object-fit: cover; aspect-ratio: 1/1"
+                          />
+                          <!-- Pro text badge with fixed z-index -->
+                          <div
+                            v-if="isCommentAuthorPro(comment)"
+                            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
+                            style="border: 1px solid rgba(255, 255, 255, 0.5)"
+                          >
+                            PRO
+                          </div>
+                        </div>
+                        <div class="ml-3">
+                          <div class="flex items-center">
+                            <p
+                              class="font-medium text-slate-800 dark:text-slate-200"
+                            >
+                              {{ comment?.author_details?.name }}
+                              <span
+                                v-if="comment.is_temp"
+                                class="italic text-sm opacity-70"
+                                >(Posted!)</span
+                              >
+                            </p>
+                            <span
+                              v-if="comment.is_solved"
+                              class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
+                            >
+                              <CheckCircle class="h-3 w-3 mr-1" /> Solution
+                            </span>
+                          </div>
+                          <p class="text-sm text-slate-500 dark:text-slate-400">
+                            {{ formatTimeAgo(comment.created_at) }}
+                          </p>
+                        </div>
+                      </div>
+                      <!-- Updated Mark Solution button with spinner and conditionally showing -->
+                      <button
+                        v-if="
+                          isOwner &&
+                          problem.status !== 'solved' &&
+                          !comment.is_solved
+                        "
+                        @click="$emit('mark-solution', comment.id)"
+                        :disabled="processingCommentIds.includes(comment.id)"
                         :class="[
-                          'h-10 w-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 shadow-sm relative',
-                          isCommentAuthorPro(comment) ? 'pro-ring' : '',
+                          'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
+                          processingCommentIds.includes(comment.id)
+                            ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                            : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
                         ]"
                       >
-                        <!-- Pro user border with gradient effect -->
-                        <div
-                          v-if="isCommentAuthorPro(comment)"
-                          class="absolute inset-0 rounded-full pro-border-ring z-20"
-                        ></div>
-                        <div
-                          class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
-                        ></div>
+                        <span
+                          v-if="processingCommentIds.includes(comment.id)"
+                          class="loading-spinner mr-1.5"
+                        ></span>
+                        <CheckCircle v-else class="h-3 w-3 mr-1" />
+                        Mark Solution
+                      </button>
+                    </div>
+
+                    <p
+                      class="mt-2 sm:mt-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
+                    >
+                      {{ comment.content }}
+                    </p>
+
+                    <!-- Comment Media Gallery -->
+                    <div
+                      v-if="comment.media && comment.media.length > 0"
+                      class="mt-3 flex flex-wrap gap-2"
+                    >
+                      <div
+                        v-for="(media, index) in comment.media"
+                        :key="index"
+                        class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105"
+                        @click="openMediaViewer(comment, index)"
+                      >
                         <img
-                          :src="
-                            comment?.author_details?.image || '/placeholder.svg'
-                          "
-                          :alt="comment?.author_details?.name"
-                          class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
-                          style="object-fit: cover; aspect-ratio: 1/1"
+                          :src="media.image"
+                          alt="Comment media"
+                          class="h-full w-full object-cover"
                         />
-                        <!-- Pro text badge with fixed z-index -->
                         <div
-                          v-if="isCommentAuthorPro(comment)"
-                          class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
-                          style="border: 1px solid rgba(255, 255, 255, 0.5)"
+                          class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
                         >
-                          PRO
-                        </div>
-                      </div>
-                      <div class="ml-3">
-                        <div class="flex items-center">
-                          <p
-                            class="font-medium text-slate-800 dark:text-slate-200"
-                          >
-                            {{ comment?.author_details?.name }}
-                            <span
-                              v-if="comment.is_temp"
-                              class="italic text-sm opacity-70"
-                              >(Posted!)</span
-                            >
-                          </p>
                           <span
-                            v-if="comment.is_solved"
-                            class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
+                            class="text-white text-xs font-medium px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full"
+                            >View</span
                           >
-                            <CheckCircle class="h-3 w-3 mr-1" /> Solution
-                          </span>
                         </div>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">
-                          {{ formatTimeAgo(comment.created_at) }}
-                        </p>
                       </div>
                     </div>
-                    <!-- Updated Mark Solution button with spinner and conditionally showing -->
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-slate-400 dark:text-slate-500 mb-3"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
+                  <p class="text-slate-500 dark:text-slate-400">
+                    No advice has been posted yet. Be the first to help!
+                  </p>
+                </div>
+              </div>
+
+              <!-- Add Comment with premium styling -->
+              <div
+                class="mt-8"
+                v-if="currentUserId && problem.status !== 'solved'"
+              >
+                <h4
+                  class="text-sm font-medium mb-2 text-slate-700 dark:text-slate-300 flex items-center"
+                >
+                  <Send class="h-4 w-4 mr-2 text-blue-500" />
+                  Write an advice
+                </h4>
+                <textarea
+                  v-model="newComment"
+                  placeholder="Share your solution or ask for clarification..."
+                  class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all resize-none"
+                  rows="3"
+                ></textarea>
+
+                <!-- Media upload section -->
+                <div class="mt-3">
+                  <div class="flex items-center space-x-2">
                     <button
-                      v-if="
-                        isOwner &&
-                        problem.status !== 'solved' &&
-                        !comment.is_solved
-                      "
-                      @click="$emit('mark-solution', comment.id)"
-                      :disabled="processingCommentIds.includes(comment.id)"
-                      :class="[
-                        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 h-8 px-3 transform hover:-translate-y-0.5 active:translate-y-0',
-                        processingCommentIds.includes(comment.id)
-                          ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-                          : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300',
-                      ]"
+                      @click="triggerMediaUpload"
+                      type="button"
+                      class="flex items-center space-x-1.5 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 rounded-lg transition-colors"
                     >
-                      <span
-                        v-if="processingCommentIds.includes(comment.id)"
-                        class="loading-spinner mr-1.5"
-                      ></span>
-                      <CheckCircle v-else class="h-3 w-3 mr-1" />
-                      Mark Solution
+                      <ImagePlus class="h-4 w-4" />
+                      <span>Add Photo</span>
                     </button>
+                    <span class="text-sm text-slate-500 dark:text-slate-400"
+                      >{{ commentMedia.length }}/3 images</span
+                    >
+                    <input
+                      type="file"
+                      ref="mediaFileInput"
+                      accept="image/*"
+                      class="hidden"
+                      @change="handleMediaUpload"
+                    />
                   </div>
 
-                  <p
-                    class="mt-2 sm:mt-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
-                  >
-                    {{ comment.content }}
-                  </p>
-
-                  <!-- Comment Media Gallery -->
+                  <!-- Media preview section -->
                   <div
-                    v-if="comment.media && comment.media.length > 0"
+                    v-if="commentMedia.length > 0"
                     class="mt-3 flex flex-wrap gap-2"
                   >
                     <div
-                      v-for="(media, index) in comment.media"
+                      v-for="(media, index) in commentMedia"
                       :key="index"
-                      class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105"
-                      @click="openMediaViewer(comment, index)"
+                      class="relative h-20 w-20 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 group"
                     >
                       <img
-                        :src="media.image"
-                        alt="Comment media"
+                        :src="media.preview"
+                        alt="Media preview"
                         class="h-full w-full object-cover"
                       />
-                      <div
-                        class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
+                      <button
+                        @click="removeMedia(index)"
+                        class="absolute top-1 right-1 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
                       >
-                        <span
-                          class="text-white text-xs font-medium px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full"
-                          >View</span
-                        >
-                      </div>
+                        <X class="h-3 w-3 text-white" />
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div
-                v-else
-                class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="text-slate-400 dark:text-slate-500 mb-3"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="8" y1="12" x2="16" y2="12"></line>
-                </svg>
-                <p class="text-slate-500 dark:text-slate-400">
-                  No advice has been posted yet. Be the first to help!
-                </p>
-              </div>
-            </div>
-
-            <!-- Add Comment with premium styling -->
-            <div
-              class="mt-8"
-              v-if="currentUserId && problem.status !== 'solved'"
-            >
-              <h4
-                class="text-sm font-medium mb-2 text-slate-700 dark:text-slate-300 flex items-center"
-              >
-                <Send class="h-4 w-4 mr-2 text-blue-500" />
-                Write an advice
-              </h4>
-              <textarea
-                v-model="newComment"
-                placeholder="Share your solution or ask for clarification..."
-                class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 dark:focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all resize-none"
-                rows="3"
-              ></textarea>
-
-              <!-- Media upload section -->
-              <div class="mt-3">
-                <div class="flex items-center space-x-2">
+                <div class="flex justify-end mt-3 mb-10">
                   <button
-                    @click="triggerMediaUpload"
-                    type="button"
-                    class="flex items-center space-x-1.5 px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 rounded-lg transition-colors"
+                    @click="submitComment"
+                    :disabled="
+                      (!newComment.trim() && commentMedia.length === 0) ||
+                      isSubmittingComment
+                    "
+                    :class="[
+                      'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
+                      (!newComment.trim() && commentMedia.length === 0) ||
+                      isSubmittingComment
+                        ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                        : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
+                    ]"
                   >
-                    <ImagePlus class="h-4 w-4" />
-                    <span>Add Photo</span>
+                    <span v-if="isSubmittingComment" class="flex items-center">
+                      <span class="loading-spinner mr-2"></span>
+                      Submitting...
+                    </span>
+                    <span v-else class="flex items-center">
+                      <Send class="h-4 w-4 mr-1.5" />
+                      Submit
+                    </span>
                   </button>
-                  <span class="text-sm text-slate-500 dark:text-slate-400"
-                    >{{ commentMedia.length }}/3 images</span
-                  >
-                  <input
-                    type="file"
-                    ref="mediaFileInput"
-                    accept="image/*"
-                    class="hidden"
-                    @change="handleMediaUpload"
-                  />
                 </div>
+              </div>
 
-                <!-- Media preview section -->
-                <div
-                  v-if="commentMedia.length > 0"
-                  class="mt-3 flex flex-wrap gap-2"
-                >
+              <!-- Login prompt for non-logged in users -->
+              <div
+                v-else-if="!currentUserId && problem.status !== 'solved'"
+                class="mt-8 p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-100 dark:border-amber-900/30 mb-10"
+              >
+                <div class="flex items-center">
                   <div
-                    v-for="(media, index) in commentMedia"
-                    :key="index"
-                    class="relative h-20 w-20 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 group"
+                    class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3"
                   >
-                    <img
-                      :src="media.preview"
-                      alt="Media preview"
-                      class="h-full w-full object-cover"
+                    <LockIcon
+                      class="h-5 w-5 text-amber-600 dark:text-amber-400"
                     />
-                    <button
-                      @click="removeMedia(index)"
-                      class="absolute top-1 right-1 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  </div>
+                  <div>
+                    <h4
+                      class="text-sm font-medium text-amber-800 dark:text-amber-400"
                     >
-                      <X class="h-3 w-3 text-white" />
-                    </button>
+                      Authentication Required
+                    </h4>
+                    <p class="mt-1 text-sm text-amber-700 dark:text-amber-500">
+                      Please
+                      <NuxtLink to="/auth/login" class="font-medium underline"
+                        >login</NuxtLink
+                      >
+                      or
+                      <NuxtLink
+                        to="/auth/register"
+                        class="font-medium underline"
+                        >register</NuxtLink
+                      >
+                      first to add your advice.
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div class="flex justify-end mt-3 mb-10">
-                <button
-                  @click="submitComment"
-                  :disabled="
-                    (!newComment.trim() && commentMedia.length === 0) ||
-                    isSubmittingComment
-                  "
-                  :class="[
-                    'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2',
-                    (!newComment.trim() && commentMedia.length === 0) ||
-                    isSubmittingComment
-                      ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-                      : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
-                  ]"
-                >
-                  <span v-if="isSubmittingComment" class="flex items-center">
-                    <span class="loading-spinner mr-2"></span>
-                    Submitting...
-                  </span>
-                  <span v-else class="flex items-center">
-                    <Send class="h-4 w-4 mr-1.5" />
-                    Submit
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Login prompt for non-logged in users -->
-            <div
-              v-else-if="!currentUserId && problem.status !== 'solved'"
-              class="mt-8 p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-100 dark:border-amber-900/30 mb-10"
-            >
-              <div class="flex items-center">
-                <div
-                  class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3"
-                >
-                  <LockIcon
-                    class="h-5 w-5 text-amber-600 dark:text-amber-400"
-                  />
-                </div>
-                <div>
-                  <h4
-                    class="text-sm font-medium text-amber-800 dark:text-amber-400"
+              <!-- Message for solved problems with enhanced styling -->
+              <div
+                v-else-if="problem.status === 'solved'"
+                class="mt-8 p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-lg border border-emerald-100 dark:border-emerald-900/30 mb-10"
+              >
+                <div class="flex items-center">
+                  <div
+                    class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mr-3"
                   >
-                    Authentication Required
-                  </h4>
-                  <p class="mt-1 text-sm text-amber-700 dark:text-amber-500">
-                    Please
-                    <NuxtLink to="/auth/login" class="font-medium underline"
-                      >login</NuxtLink
+                    <CheckCircle
+                      class="h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                    />
+                  </div>
+                  <div>
+                    <h4
+                      class="text-sm font-medium text-emerald-800 dark:text-emerald-400"
                     >
-                    or
-                    <NuxtLink to="/auth/register" class="font-medium underline"
-                      >register</NuxtLink
+                      This problem has been marked as solved
+                    </h4>
+                    <p
+                      class="mt-1 text-sm text-emerald-700 dark:text-emerald-500"
                     >
-                    first to add your advice.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Message for solved problems with enhanced styling -->
-            <div
-              v-else-if="problem.status === 'solved'"
-              class="mt-8 p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-lg border border-emerald-100 dark:border-emerald-900/30 mb-10"
-            >
-              <div class="flex items-center">
-                <div
-                  class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mr-3"
-                >
-                  <CheckCircle
-                    class="h-5 w-5 text-emerald-600 dark:text-emerald-400"
-                  />
-                </div>
-                <div>
-                  <h4
-                    class="text-sm font-medium text-emerald-800 dark:text-emerald-400"
-                  >
-                    This problem has been marked as solved
-                  </h4>
-                  <p
-                    class="mt-1 text-sm text-emerald-700 dark:text-emerald-500"
-                  >
-                    New advice cannot be added to solved problems.
-                  </p>
+                      New advice cannot be added to solved problems.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -574,7 +580,7 @@
         </div>
       </div>
     </div>
-  </Transition>
+  </Teleport>
 </template>
 
 <script setup>
