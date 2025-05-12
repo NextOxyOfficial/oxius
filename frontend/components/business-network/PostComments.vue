@@ -113,7 +113,7 @@
 
         <div class="flex-1">
           <div
-            class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
+            class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-1 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
           >
             <div class="flex items-center justify-between mb-0.5">
               <div class="flex items-center gap-1">

@@ -1,6 +1,6 @@
 <template>
   <div class="mb-3">    <!-- Main content area -->
-    <div class="relative overflow-hidden rounded-xl shadow-sm group">
+    <div class="relative overflow-hidden">
       <div
         class="relative w-full overflow-hidden min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
       >
