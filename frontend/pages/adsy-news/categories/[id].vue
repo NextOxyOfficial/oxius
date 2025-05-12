@@ -61,7 +61,7 @@
                 <div class="p-4">
                   <NuxtLink :to="`/adsy-news/${article.slug}/`">
                     <h3
-                      class="text-lg font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
+                      class="text-sm font-medium mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
                     >
                       {{ article.title }}
                     </h3>
@@ -161,13 +161,13 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
+                  class="font-medium text-sm sm:text-lg mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
                 >
                   {{ article.title }}
                 </h3>
               </NuxtLink>
               <div
-                class="text-gray-600 mb-3 line-clamp-3"
+                class="text-gray-600 text-sm mb-3 line-clamp-3"
                 v-html="article.content.substring(0, 150) + '...'"
               ></div>
               <div class="flex justify-between items-center">
