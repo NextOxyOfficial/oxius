@@ -251,7 +251,7 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm font-medium text-gray-900">
-                ৳{{ order.total }}
+                ৳{{ +order.total + +order.delivery_fee }}
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -340,12 +340,9 @@
       </div>
     </div>
     <!-- Order Details Modal -->
-    <div
-      v-if="showOrderDetailsModal"
-      class="fixed inset-0 top-14 z-[9999999] overflow-y-auto md:top-0"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
+    <UModal
+      v-model="showOrderDetailsModal"
+      :ui="{ width: 'w-full sm:max-w-3xl' }"
     >
       <div
         class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
@@ -835,6 +832,7 @@
               @click="updateOrderStatus(selectedOrder.id)"
               class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-base font-medium text-white hover:from-indigo-600 hover:to-indigo-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
               :disabled="isProcessing"
+              v-if="!editOrderItems"
             >
               <span v-if="!isProcessing" class="flex items-center">
                 <RefreshCw class="h-4 w-4 mr-1.5" />
@@ -855,7 +853,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </UModal>
 
     <!-- Add Item Modal -->
     <UModal
@@ -1382,7 +1380,7 @@ const viewOrderDetails = (order) => {
   editingCustomer.phone = order.phone;
   editingCustomer.address = order.address;
 
-  // Initialize editing order items and delivery fee
+  // Initialize editing order details modalitems and delivery fee
   editingOrderItems.value = JSON.parse(JSON.stringify(order.items));
   editingDeliveryFee.value = Number(order.delivery_fee) || 0; // Convert to number and handle null/undefined
 
