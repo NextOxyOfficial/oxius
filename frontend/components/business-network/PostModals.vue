@@ -274,7 +274,7 @@
                       <div v-if="comment?.is_gift_comment" class="gift-comment">
                         <!-- "Sent X diamonds" label -->
                         <div
-                          class="gift-sender-info flex items-center gap-1 mb-2"
+                          class="gift-sender-info flex items-center gap-1"
                         >
                           <UIcon
                             name="material-symbols:diamond-outline"

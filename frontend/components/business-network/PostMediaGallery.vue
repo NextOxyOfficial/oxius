@@ -1,19 +1,17 @@
 <template>
   <div class="mb-3">    <!-- Main content area -->
-    <div class="relative overflow-hidden">
-      <div
+    <div class="relative overflow-hidden">      <div
+        ref="mediaContainer"
         class="relative w-full overflow-hidden min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
-      >
-        <!-- Main image -->
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+      ><!-- Main image with click handler for advancing to next image -->
         <img
           :src="post.post_media[activeIndex].image"
           alt="Media"
-          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain"
-        />
-
-  
-
-        <!-- Image counter indicator -->
+          class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain cursor-pointer"
+          @click="post.post_media.length > 1 && navigateMedia('next')"
+        />        <!-- Image counter indicator with interaction hint -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
@@ -24,34 +22,39 @@
             <span>{{ post.post_media.length }}</span>
           </div>
         </div>
-          <!-- Download button -->
+        
+        <!-- Interactive hint overlay (shows briefly on mount) -->
+        <div v-if="post.post_media.length > 1" class="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none opacity-0 animate-fade-out">
+          <div class="text-white text-sm flex items-center">
+            <span>Tap to browse</span>
+          </div>
+        </div><!-- Download button (invisible but still functional) -->
         <button 
           @click.stop="downloadImage(post.post_media[activeIndex].image)"
-          class="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/30 backdrop-blur-md text-white shadow-lg border border-white/10"
+          class="absolute top-3.5 right-3.5 p-2 opacity-0 pointer-events-auto"
           title="Download image"
+          aria-label="Download image"
         >
           <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
         </button>
         
-        <!-- Navigation arrows -->
+        <!-- Navigation arrows (invisible but still functional) -->
         <button
           v-if="post.post_media.length > 1"
           @click.stop="navigateMedia('prev')"
-          class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center border border-white/10 shadow-lg"
+          class="absolute left-0 top-0 w-1/4 h-full opacity-0 pointer-events-auto"
+          aria-label="Previous image"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
+          <span class="sr-only">Previous image</span>
         </button>
         
         <button
           v-if="post.post_media.length > 1"
           @click.stop="navigateMedia('next')"
-          class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 flex items-center justify-center border border-white/10 shadow-lg"
+          class="absolute right-0 top-0 w-1/4 h-full opacity-0 pointer-events-auto"
+          aria-label="Next image"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-          </svg>
+          <span class="sr-only">Next image</span>
         </button>
       </div>
     </div>    <!-- Thumbnail gallery - only show if there's more than one media item -->
@@ -208,9 +211,11 @@ defineEmits(["open-media"]);
 // References and state
 const activeIndex = ref(0);
 const thumbnailsContainer = ref(null);
+const mediaContainer = ref(null);
 const isMobile = ref(false);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
+const touchStartX = ref(0);
 
 // Set the active media
 const setActiveMedia = (index) => {
@@ -252,6 +257,11 @@ const navigateMedia = (direction) => {
   } else {
     activeIndex.value = (activeIndex.value - 1 + totalMedia) % totalMedia;
   }
+  
+  // Vibrate slightly on media change for tactile feedback (if supported)
+  if (window.navigator && window.navigator.vibrate) {
+    window.navigator.vibrate(30); // subtle vibration
+  }
 };
 
 // Function to download an image
@@ -265,6 +275,28 @@ const downloadImage = (url) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+// Touch gesture handlers for swiping through media
+const handleTouchStart = (event) => {
+  touchStartX.value = event.touches[0].clientX;
+};
+
+const handleTouchEnd = (event) => {
+  const touchEndX = event.changedTouches[0].clientX;
+  const diffX = touchEndX - touchStartX.value;
+  
+  // Detect left/right swipe (minimum 50px movement to count as a swipe)
+  if (Math.abs(diffX) > 50) {
+    // Right to left swipe (next image)
+    if (diffX < 0) {
+      navigateMedia('next');
+    } 
+    // Left to right swipe (previous image)
+    else {
+      navigateMedia('prev');
+    }
+  }
 };
 
 // Handle thumbnail scrolling with enhanced smooth behavior
@@ -437,5 +469,16 @@ watch(
   100% {
     background-position: -200% 0;
   }
+}
+
+/* Fade-out animation for interactive hint */
+@keyframes fadeOut {
+  0% { opacity: 0.7; }
+  80% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+.animate-fade-out {
+  animation: fadeOut 2s ease-out forwards;
 }
 </style>
