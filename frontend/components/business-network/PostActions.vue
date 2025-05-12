@@ -1,5 +1,5 @@
 <template>  <div
-    class="flex items-center justify-between px-2 pb-1.5 border-t border-gray-200/70 dark:border-slate-700/50 my-2 max-w-2xl mx-auto"
+    class="flex items-center justify-between px-2 border-t border-gray-200/70 dark:border-slate-700/50 mt-2 mb-1 max-w-2xl mx-auto"
   >
     <!-- Left Side Actions: Like, Comment, Share -->
     <div class="flex items-center space-x-4">
