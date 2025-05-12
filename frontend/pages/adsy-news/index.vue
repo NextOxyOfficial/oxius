@@ -26,7 +26,7 @@
               }}</span>
             </div>
             <h2
-              class="text-xl sm:text-xl md:text-2xl font-semibold mb-4 leading-tight"
+              class="text-base sm:text-base md:text-base  font-semibold mb-4 leading-tight"
             >
               <NuxtLink
                 :to="`/adsy-news/${latestArticle.slug}/`"
@@ -69,7 +69,7 @@
       <!-- Trending News Carousel -->
       <div class="mb-12">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-700">Trending News</h2>
+          <h2 class="text-base font-semibold text-gray-700">Trending News</h2>
           <div class="flex space-x-2">
             <button
               @click="prevTrending"
@@ -165,7 +165,7 @@
 
       <!-- Category Title -->
       <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-semibold text-gray-700">All News</h2>
+        <h2 class="text-base font-semibold text-gray-700">All News</h2>
         <div class="flex space-x-2">
           <button
             v-for="layout in layouts"
@@ -274,7 +274,7 @@
         </div>
         <!-- Trending Topics Section -->
         <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-4">
+          <h2 class="text-base font-semibold text-gray-700 mb-4">
             Trending Topics
           </h2>
           <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
@@ -292,7 +292,7 @@
 
         <!-- Tips and Suggestions Section -->
         <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-6">
+          <h2 class="text-base font-semibold text-gray-700 mb-6">
             Tips and Suggestions
           </h2>
           <div
@@ -346,7 +346,7 @@
             class="relative z-10 flex flex-col md:flex-row items-center justify-between"
           >
             <div class="mb-6 md:mb-0 md:mr-8">
-              <h2 class="text-xl sm:text-xl font-semibold text-white mb-2">
+              <h2 class="text-base sm:text-base font-semibold text-white mb-2">
                 Stay Updated
               </h2>
               <p class="text-white/80 max-w-md">
