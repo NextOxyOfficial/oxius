@@ -626,23 +626,33 @@ const fetchCategoryPosts = async () => {
     const response = await get(`/sale/posts/?category=${selectedCategory.value}`);
 
     if (response.error) {
-      console.error("Error response from API:", error);
+      console.error("Error response from API:", response.error);
       categoryPosts.value = [];
       return;
     }
 
     console.log("API response for category posts:", response.data);
 
-    if (response.data && Array.isArray(response.data.results)) {
-      // Handle paginated response
-      categoryPosts.value = response.data.results;
-    } else if (response.data && Array.isArray(response.data)) {
-      // Handle non-paginated response
-      categoryPosts.value = response.data;
+    // Handle different API response formats
+    if (response.data) {
+      if (Array.isArray(response.data)) {
+        // Direct array of posts
+        categoryPosts.value = response.data;
+      } else if (response.data.results && Array.isArray(response.data.results)) {
+        // Paginated response
+        categoryPosts.value = response.data.results;
+      } else if (typeof response.data === 'object') {
+        // Single post object (unlikely but handling just in case)
+        categoryPosts.value = [response.data];
+      } else {
+        console.warn("Unexpected API response format:", response.data);
+        categoryPosts.value = [];
+      }
     } else {
-      console.warn("Unexpected API response format:", response.data);
       categoryPosts.value = [];
     }
+
+    console.log("Processed category posts:", categoryPosts.value);
   } catch (error) {
     console.error("Error fetching posts for category:", error);
     categoryPosts.value = [];
