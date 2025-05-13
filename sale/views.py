@@ -2,18 +2,34 @@ from django.shortcuts import render
 from rest_framework import viewsets, mixins, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.db.models import F
 import logging
-from .models import SalePost, SalePostImage
-from .serializers import (
-    SalePostSerializer, 
-    SalePostCreateSerializer,
-    SalePostListSerializer,
-    SalePostImageSerializer
-)
+from .models import *
+from .serializers import *
+from rest_framework import generics
 
 # Set up logger
 logger = logging.getLogger(__name__)
+
+class ForSaleCategoryListView(APIView):
+    def get(self, request):
+        categories = ForSaleCategory.objects.all()
+        serializer = ForSaleCategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ForSaleBannerListView(APIView):
+    def get(self, request):
+        banners = ForSaleBanner.objects.all()
+        serializer = ForSaleBannerSerializer(banners, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+class ForSaleSubCategoryListView(APIView):
+    def get(self, request, category_id):
+        sub_categories = ForSaleSubCategory.objects.filter(category=category_id)
+        serializer = ForSaleSubCategorySerializer(sub_categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class SalePostViewSet(viewsets.ModelViewSet):
     # permission_classes = [permissions.IsAuthenticated]

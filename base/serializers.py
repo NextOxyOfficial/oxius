@@ -462,15 +462,5 @@ class DiamondPackagesSerializer(serializers.ModelSerializer):
         model = DiamondPackages
         fields = '__all__'
 
-from rest_framework import serializers
-from .models import ForSaleCategory, ForSaleBanner
 
-class ForSaleCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ForSaleCategory
-        fields = ['id', 'name', 'icon']
 
-class ForSaleBannerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ForSaleBanner
-        fields = ['id', 'title', 'image', 'link']

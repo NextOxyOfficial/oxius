@@ -1,6 +1,23 @@
 from rest_framework import serializers
-from .models import SalePost, SalePostImage
-from base.serializers import ForSaleCategorySerializer
+from .models import *
+
+
+
+class ForSaleCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForSaleCategory
+        fields = ['id', 'name', 'icon']
+
+class ForSaleBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForSaleBanner
+        fields = ['id', 'title', 'image', 'link']
+        
+class ForSaleSubCategorySerializer(serializers.ModelSerializer):
+    category_details = ForSaleCategorySerializer(source='category', read_only=True)
+    class Meta:
+        model = ForSaleSubCategory
+        fields = '__all__'
 
 
 class SalePostImageSerializer(serializers.ModelSerializer):
@@ -37,7 +54,7 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
     # Make price and size fields accept string values
     price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
     size = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
-    category = ForSaleCategorySerializer(read_only=True)
+    category = serializers.PrimaryKeyRelatedField(queryset=ForSaleCategory.objects.all())
     
     class Meta:
         model = SalePost

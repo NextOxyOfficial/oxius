@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 import uuid
-from base.models import ForSaleCategory
 import time
 import random
 
@@ -10,7 +9,32 @@ User = get_user_model()
 def generate_unique_id():
   return int(time.time() * 1) + random.randint(0, 999)
 
+
+class ForSaleCategory(models.Model):
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
+    name = models.CharField(max_length=255)
+    icon = models.ImageField(upload_to='category_icons/', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class ForSaleBanner(models.Model):
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    image = models.ImageField(upload_to='banner_images/')
+    link = models.URLField(max_length=500, null=True, blank=True)
+
+    def __str__(self):
+        return self.title or "Banner"
+    
+class ForSaleSubCategory(models.Model):
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
+    category = models.ForeignKey(ForSaleCategory, on_delete=models.CASCADE, related_name='subcategories')
+    name = models.CharField(max_length=255)
+    icon = models.ImageField(upload_to='subcategory_icons/', null=True, blank=True)
+
 class SalePost(models.Model):
+    
     STATUS_CHOICES = (
         ('pending', 'Pending Review'),
         ('active', 'Active'),
@@ -116,8 +140,9 @@ class SalePost(models.Model):
 
 
 class SalePostImage(models.Model):
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
     sale_post = models.ForeignKey(SalePost, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='sale_posts/%Y/%m/%d/')
+    image = models.ImageField(upload_to='sale_posts_images/')
     is_main = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -127,3 +152,5 @@ class SalePostImage(models.Model):
     
     def __str__(self):
         return f"Image for {self.sale_post.title}"
+
+

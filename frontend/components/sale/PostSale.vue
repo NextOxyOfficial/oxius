@@ -215,11 +215,16 @@
         <!-- Step 2: Category-specific fields -->
         <div v-if="currentStep === 1" class="fade-transition px-6 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-800 mb-6">
-            {{ formData.category }} Details
+            {{ getCategoryName(formData.category) }} Details
           </h3>
 
           <!-- Property Fields -->
-          <div v-if="formData.category === 1" class="space-y-6">
+          <div
+            v-if="
+              getCategoryName(formData.category)?.toLowerCase() === 'properties'
+            "
+            class="space-y-6"
+          >
             <!-- Property Type -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -378,7 +383,12 @@
           </div>
 
           <!-- Vehicle Fields -->
-          <div v-if="formData.category === 2" class="space-y-6">
+          <div
+            v-if="
+              getCategoryName(formData.category)?.toLowerCase() === 'vehicles'
+            "
+            class="space-y-6"
+          >
             <!-- Vehicle Type -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -529,7 +539,13 @@
           </div>
 
           <!-- Electronics Fields -->
-          <div v-if="formData.category === 3" class="space-y-6">
+          <div
+            v-if="
+              getCategoryName(formData.category)?.toLowerCase() ===
+              'electronics'
+            "
+            class="space-y-6"
+          >
             <!-- Electronics Type -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -646,7 +662,14 @@
           </div>
 
           <!-- Sports & B2B & Others -->
-          <div v-if="[4, 5, 6].includes(formData.category)" class="space-y-6">
+          <div
+            v-if="
+              ['sports', 'b2b', 'others'].includes(
+                getCategoryName(formData.category)?.toLowerCase()
+              )
+            "
+            class="space-y-6"
+          >
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2"
                 >Type/Brand <span class="text-red-500">*</span></label
@@ -735,11 +758,11 @@
                 >
                   <option value="" disabled>Select Division</option>
                   <option
-                    v-for="division in divisions"
-                    :key="division"
-                    :value="division"
+                    v-for="division in regions"
+                    :key="division.id"
+                    :value="division.name_eng"
                   >
-                    {{ division }}
+                    {{ division.name_eng }}
                   </option>
                 </select>
                 <p v-if="errors.division" class="mt-2 text-red-500 text-sm">
@@ -756,11 +779,11 @@
                 >
                   <option value="" disabled>Select District</option>
                   <option
-                    v-for="district in districtsForSelectedDivision"
-                    :key="district"
-                    :value="district"
+                    v-for="district in cities"
+                    :key="district.id"
+                    :value="district.name_eng"
                   >
-                    {{ district }}
+                    {{ district.name_eng }}
                   </option>
                 </select>
                 <p v-if="errors.district" class="mt-2 text-red-500 text-sm">
@@ -777,11 +800,11 @@
                 >
                   <option value="" disabled>Select Area</option>
                   <option
-                    v-for="area in areasForSelectedDistrict"
-                    :key="area"
-                    :value="area"
+                    v-for="area in upazilas"
+                    :key="area.id"
+                    :value="area.name_eng"
                   >
-                    {{ area }}
+                    {{ area.name_eng }}
                   </option>
                 </select>
                 <p v-if="errors.area" class="mt-2 text-red-500 text-sm">
@@ -1040,6 +1063,7 @@
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useSalePost } from "~/composables/useSalePost";
 import { useNotifications } from "~/composables/useNotifications";
+const { get } = useApi();
 
 // Initialize composables
 const {
@@ -1048,221 +1072,17 @@ const {
   loading: apiLoading,
   error: apiError,
 } = useSalePost();
-const { showNotification } = useNotifications();
 
 // Props definition
 const props = defineProps({
   categories: {
     type: Array,
-    default: () => [
-      { id: 1, name: "Properties" },
-      { id: 2, name: "Vehicles" },
-      { id: 3, name: "Electronics" },
-      { id: 4, name: "Sports" },
-      { id: 5, name: "B2B" },
-      { id: 6, name: "Others" },
-    ],
   },
   editPost: {
     type: Object,
     default: null,
   },
 });
-
-// Emit events
-const emit = defineEmits(["post-saved"]);
-
-// Success modal state
-const showSuccessModal = ref(false);
-
-// Multi-step form
-const formSteps = ["Basic Info", "Details", "Price & Location", "Photos"];
-const currentStep = ref(0);
-
-const goToNextStep = () => {
-  if (currentStep.value < formSteps.length - 1) {
-    currentStep.value++;
-  }
-};
-
-const goToPreviousStep = () => {
-  if (currentStep.value > 0) {
-    currentStep.value--;
-  }
-};
-
-// Conditions for items
-const conditions = [
-  { label: "Brand New", value: "brand-new" },
-  { label: "Like New", value: "like-new" },
-  { label: "Good", value: "good" },
-  { label: "Fair", value: "fair" },
-  { label: "For Parts", value: "for-parts" },
-];
-
-// Location data
-const divisions = [
-  "Dhaka",
-  "Chittagong",
-  "Khulna",
-  "Rajshahi",
-  "Barisal",
-  "Sylhet",
-  "Rangpur",
-  "Mymensingh",
-];
-
-const districtsByDivision = {
-  Dhaka: ["Dhaka", "Gazipur", "Narayanganj", "Tangail", "Narsingdi"],
-  Chittagong: ["Chittagong", "Cox's Bazar", "Comilla", "Chandpur"],
-  Khulna: ["Khulna", "Jessore", "Kushtia", "Bagerhat"],
-  Rajshahi: ["Rajshahi", "Bogra", "Pabna", "Sirajganj"],
-  Barisal: ["Barisal", "Bhola", "Patuakhali"],
-  Sylhet: ["Sylhet", "Moulvibazar", "Habiganj"],
-  Rangpur: ["Rangpur", "Dinajpur", "Kurigram"],
-  Mymensingh: ["Mymensingh", "Jamalpur", "Netrokona"],
-};
-
-const areasByDistrict = {
-  Dhaka: [
-    "Uttara",
-    "Mirpur",
-    "Dhanmondi",
-    "Gulshan",
-    "Mohammadpur",
-    "Bashundhara",
-    "Banani",
-    "Motijheel",
-    "Khilgaon",
-    "Rampura",
-  ],
-  Gazipur: [
-    "Gazipur Sadar",
-    "Tongi",
-    "Sreepur",
-    "Kaliganj",
-    "Kaliakair",
-    "Kapasia",
-  ],
-  Narayanganj: [
-    "Narayanganj Sadar",
-    "Rupganj",
-    "Araihazar",
-    "Sonargaon",
-    "Bandar",
-  ],
-  Tangail: ["Tangail Sadar", "Kalihati", "Ghatail", "Nagarpur", "Mirzapur"],
-  Narsingdi: ["Narsingdi Sadar", "Palash", "Shibpur", "Raipura", "Belabo"],
-  Chittagong: [
-    "Agrabad",
-    "Pahartali",
-    "Nasirabad",
-    "Halishahar",
-    "GEC",
-    "Chawkbazar",
-    "Patenga",
-    "Khulshi",
-  ],
-  "Cox's Bazar": [
-    "Cox's Bazar Sadar",
-    "Ukhiya",
-    "Teknaf",
-    "Moheshkhali",
-    "Chakaria",
-  ],
-  Comilla: ["Comilla Sadar", "Chauddagram", "Chandina", "Daudkandi", "Homna"],
-  Chandpur: ["Chandpur Sadar", "Hajiganj", "Shahrasti", "Matlab", "Faridganj"],
-  Khulna: [
-    "Khulna Sadar",
-    "Sonadanga",
-    "Khalishpur",
-    "Daulatpur",
-    "Rupsha",
-    "Khan Jahan Ali",
-  ],
-  Jessore: [
-    "Jessore Sadar",
-    "Manirampur",
-    "Jhikargacha",
-    "Abhaynagar",
-    "Keshabpur",
-  ],
-  Kushtia: ["Kushtia Sadar", "Kumarkhali", "Khoksa", "Mirpur", "Bheramara"],
-  Bagerhat: ["Bagerhat Sadar", "Morrelganj", "Mongla", "Rampal", "Fakirhat"],
-  Rajshahi: ["Rajshahi Sadar", "Boalia", "Motihar", "Shah Makhdum", "Paba"],
-  Bogra: ["Bogra Sadar", "Shibganj", "Shajahanpur", "Kahaloo", "Dupchanchia"],
-  Pabna: ["Pabna Sadar", "Ishwardi", "Bera", "Atghoria", "Chatmohar"],
-  Sirajganj: [
-    "Sirajganj Sadar",
-    "Shahjadpur",
-    "Ullapara",
-    "Kamarkhand",
-    "Raiganj",
-  ],
-  Barisal: ["Barisal Sadar", "Bakerganj", "Babuganj", "Wazirpur", "Agailjhara"],
-  Bhola: ["Bhola Sadar", "Charfesson", "Daulatkhan", "Borhanuddin", "Lalmohan"],
-  Patuakhali: ["Patuakhali Sadar", "Kalapara", "Galachipa", "Bauphal", "Dumki"],
-  Sylhet: [
-    "Sylhet Sadar",
-    "Zindabazar",
-    "Shahjalal Upashahar",
-    "Ambarkhana",
-    "Tilagor",
-    "Shibganj",
-  ],
-  Moulvibazar: [
-    "Moulvibazar Sadar",
-    "Sreemangal",
-    "Kulaura",
-    "Kamalganj",
-    "Rajnagar",
-  ],
-  Habiganj: [
-    "Habiganj Sadar",
-    "Nabiganj",
-    "Madhabpur",
-    "Chunarughat",
-    "Lakhai",
-  ],
-  Rangpur: ["Rangpur Sadar", "Gangachara", "Taraganj", "Badarganj", "Kaunia"],
-  Dinajpur: [
-    "Dinajpur Sadar",
-    "Birampur",
-    "Bochaganj",
-    "Chirirbandar",
-    "Fulbari",
-  ],
-  Kurigram: ["Kurigram Sadar", "Ulipur", "Chilmari", "Rowmari", "Rajarhat"],
-  Mymensingh: [
-    "Mymensingh Sadar",
-    "Bhaluka",
-    "Trishal",
-    "Muktagachha",
-    "Fulbaria",
-  ],
-  Jamalpur: [
-    "Jamalpur Sadar",
-    "Dewanganj",
-    "Islampur",
-    "Madarganj",
-    "Melandaha",
-  ],
-  Netrokona: ["Netrokona Sadar", "Atpara", "Barhatta", "Durgapur", "Kendua"],
-};
-
-// Computed properties for location dropdowns
-const districtsForSelectedDivision = computed(() => {
-  return formData.division ? districtsByDivision[formData.division] || [] : [];
-});
-
-const areasForSelectedDistrict = computed(() => {
-  return formData.district ? areasByDistrict[formData.district] || [] : [];
-});
-
-// Status variables
-const isSubmitting = computed(() => apiLoading.value);
-const errors = reactive({});
-
 // Form data with all fields for different categories
 const formData = reactive({
   category: "",
@@ -1315,6 +1135,96 @@ const formData = reactive({
   itemQuality: "",
 });
 
+// Emit events
+const emit = defineEmits(["post-saved"]);
+
+// Success modal state
+const showSuccessModal = ref(false);
+
+// Multi-step form
+const formSteps = ["Basic Info", "Details", "Price & Location", "Photos"];
+const currentStep = ref(0);
+
+const goToNextStep = () => {
+  if (currentStep.value < formSteps.length - 1) {
+    currentStep.value++;
+  }
+};
+
+const goToPreviousStep = () => {
+  if (currentStep.value > 0) {
+    currentStep.value--;
+  }
+};
+
+// Conditions for items
+const conditions = [
+  { label: "Brand New", value: "brand-new" },
+  { label: "Like New", value: "like-new" },
+  { label: "Good", value: "good" },
+  { label: "Fair", value: "fair" },
+  { label: "For Parts", value: "for-parts" },
+];
+
+// Location data
+// geo filter
+
+const regions = ref([]);
+const cities = ref();
+const upazilas = ref();
+
+const regions_response = await get(`/geo/regions/?country_name_eng=Bangladesh`);
+regions.value = regions_response.data;
+
+if (formData.division) {
+  const cities_response = await get(
+    `/geo/cities/?region_name_eng=${formData.division}`
+  );
+  cities.value = cities_response.data;
+  console.log(cities_response.data);
+}
+if (formData.district) {
+  const thana_response = await get(
+    `/geo/upazila/?city_name_eng=${formData.district}`
+  );
+  upazilas.value = thana_response.data;
+  console.log(thana_response.data);
+}
+
+watch(
+  () => formData.division,
+  async (newState) => {
+    console.log(newState);
+    if (newState) {
+      const cities_response = await get(
+        `/geo/cities/?region_name_eng=${newState}`
+      );
+      cities.value = cities_response.data;
+      console.log(cities_response.data);
+    }
+  }
+);
+
+watch(
+  () => formData.district,
+  async (newCity) => {
+    console.log(newCity);
+    if (newCity) {
+      const thana_response = await get(
+        `/geo/upazila/?city_name_eng=${newCity}`
+      );
+      upazilas.value = thana_response.data;
+      console.log(thana_response.data);
+    }
+  }
+);
+
+// geo filter
+
+// Status variables
+const isSubmitting = computed(() => apiLoading.value);
+const errors = reactive({});
+
 // Watch for API errors and update local error state
 watch(
   () => apiError.value,
@@ -1329,13 +1239,7 @@ watch(
         });
       } else {
         // Handle general error messages
-        showNotification({
-          type: "error",
-          message:
-            typeof newError === "string"
-              ? newError
-              : "An error occurred while submitting your form",
-        });
+        console.log("Sometthing went wrong");
       }
     }
   }
@@ -1476,7 +1380,7 @@ const validateStep = () => {
     }
   } else if (currentStep.value === 1) {
     // Validate category-specific fields
-    if (formData.category === 1) {
+    if (getCategoryName(formData.category)?.toLowerCase() === "properties") {
       // Properties
       errors.propertyType = !formData.propertyType
         ? "Please select property type"
@@ -1486,7 +1390,9 @@ const validateStep = () => {
       if (!errors.propertyType && !errors.size) {
         goToNextStep();
       }
-    } else if (formData.category === 2) {
+    } else if (
+      getCategoryName(formData.category)?.toLowerCase() === "vehicles"
+    ) {
       // Vehicles
       errors.vehicleType = !formData.vehicleType
         ? "Please select vehicle type"
@@ -1503,7 +1409,9 @@ const validateStep = () => {
       ) {
         goToNextStep();
       }
-    } else if (formData.category === 3) {
+    } else if (
+      getCategoryName(formData.category)?.toLowerCase() === "electronics"
+    ) {
       // Electronics
       errors.electronicsType = !formData.electronicsType
         ? "Please select electronics type"
@@ -1565,146 +1473,83 @@ const validateStep = () => {
   }
 };
 
-// Submit form
 const submitForm = async () => {
   try {
     console.log("Starting form submission process...");
-    // Prepare data for submission
-    const formDataToSubmit = new FormData();
 
-    // Ensure category is sent as a number
-    formDataToSubmit.append("category", Number(formData.category));
+    const payload = {
+      category: formData.category,
+      title: formData.title,
+      images: formData.images,
+      description: formData.description,
+      condition: formData.condition,
+      division: formData.division,
+      district: formData.district,
+      area: formData.area,
+      detailed_address: formData.detailedAddress,
+      phone: formData.phone,
+      email: formData.email || null,
+      negotiable: formData.negotiable,
+      price: formData.negotiable ? formData.price || 0 : formData.price || 0,
+      amenities: formData.amenities || {},
+    };
 
-    // Add basic fields - make sure to use snake_case for field names
-    formDataToSubmit.append("title", formData.title);
-    formDataToSubmit.append("description", formData.description);
-    formDataToSubmit.append("condition", formData.condition);
+    // Add category-specific fields
+    const categoryName = getCategoryName(formData.category)?.toLowerCase();
 
-    // Location fields
-    formDataToSubmit.append("division", formData.division);
-    formDataToSubmit.append("district", formData.district);
-    formDataToSubmit.append("area", formData.area);
-    formDataToSubmit.append("detailed_address", formData.detailedAddress);
-
-    // Contact info
-    formDataToSubmit.append("phone", formData.phone);
-    if (formData.email) {
-      formDataToSubmit.append("email", formData.email);
-    }
-
-    // Handle price and negotiable fields correctly
-    if (formData.negotiable) {
-      formDataToSubmit.append("negotiable", true);
-      if (formData.price) {
-        formDataToSubmit.append("price", formData.price);
-      }
-    } else {
-      formDataToSubmit.append("negotiable", false);
-      formDataToSubmit.append("price", formData.price || 0);
-    }
-
-    // Add category-specific fields based on selected category
-    if (formData.category === 1) {
-      // Property fields
-      if (formData.propertyType)
-        formDataToSubmit.append("property_type", formData.propertyType);
-      if (formData.size) formDataToSubmit.append("size", formData.size);
-      if (formData.unit) formDataToSubmit.append("unit", formData.unit);
-      if (formData.bedrooms)
-        formDataToSubmit.append("bedrooms", formData.bedrooms);
-      if (formData.bathrooms)
-        formDataToSubmit.append("bathrooms", formData.bathrooms);
-    } else if (formData.category === 2) {
-      // Vehicle fields
-      if (formData.vehicleType)
-        formDataToSubmit.append("vehicle_type", formData.vehicleType);
-      if (formData.make) formDataToSubmit.append("make", formData.make);
-      if (formData.model) formDataToSubmit.append("model", formData.model);
-      if (formData.year) formDataToSubmit.append("year", formData.year);
-      if (formData.mileage)
-        formDataToSubmit.append("mileage", formData.mileage);
-      if (formData.fuelType)
-        formDataToSubmit.append("fuel_type", formData.fuelType);
-      if (formData.transmission)
-        formDataToSubmit.append("transmission", formData.transmission);
-      if (formData.registrationYear)
-        formDataToSubmit.append("registration_year", formData.registrationYear);
-    } else if (formData.category === 3) {
-      // Electronics fields
-      if (formData.electronicsType)
-        formDataToSubmit.append("electronics_type", formData.electronicsType);
-      if (formData.brand) formDataToSubmit.append("brand", formData.brand);
-      if (formData.model) formDataToSubmit.append("model", formData.model);
-      if (formData.ageValue)
-        formDataToSubmit.append("age_value", formData.ageValue);
-      if (formData.ageUnit)
-        formDataToSubmit.append("age_unit", formData.ageUnit);
-      if (formData.warranty)
-        formDataToSubmit.append("warranty", formData.warranty);
-    } else if ([4, 5, 6].includes(formData.category)) {
-      // Other categories
-      if (formData.itemType)
-        formDataToSubmit.append("item_type", formData.itemType);
-      if (formData.itemQuality)
-        formDataToSubmit.append("item_quality", formData.itemQuality);
-    }
-
-    // Add amenities as JSON
-    formDataToSubmit.append(
-      "amenities",
-      JSON.stringify(formData.amenities || {})
-    );
-
-    // Add images
-    let imageCount = 0;
-    formData.images.forEach((image, index) => {
-      if (image) {
-        // Only append actual File objects (new uploads), not strings (existing URLs)
-        if (image instanceof File) {
-          formDataToSubmit.append(`image_${imageCount}`, image);
-          imageCount++;
-        }
-      }
-    });
-
-    console.log("Form data prepared, sending to server...");
-
-    let result;
-
-    // Check if we're editing an existing post or creating a new one
-    if (props.editPost) {
-      // If editing, include the post ID
-      formDataToSubmit.append("id", props.editPost.id);
-
-      // Update existing post
-      result = await updateSalePost(props.editPost.id, formDataToSubmit);
-      showNotification({
-        type: "success",
-        message: "Post updated successfully!",
+    if (categoryName === "properties") {
+      Object.assign(payload, {
+        property_type: formData.propertyType,
+        size: formData.size,
+        unit: formData.unit,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
       });
+    } else if (categoryName === "vehicles") {
+      Object.assign(payload, {
+        vehicle_type: formData.vehicleType,
+        make: formData.make,
+        model: formData.model,
+        year: formData.year,
+        mileage: formData.mileage,
+        fuel_type: formData.fuelType,
+        transmission: formData.transmission,
+        registration_year: formData.registrationYear,
+      });
+    } else if (categoryName === "electronics") {
+      Object.assign(payload, {
+        electronics_type: formData.electronicsType,
+        brand: formData.brand,
+        model: formData.model,
+        age_value: formData.ageValue,
+        age_unit: formData.ageUnit,
+        warranty: formData.warranty,
+      });
+    } else if (["sports", "b2b", "others"].includes(categoryName)) {
+      Object.assign(payload, {
+        item_type: formData.itemType,
+        item_quality: formData.itemQuality,
+      });
+    }
+
+    // Handle image uploads separately if needed
+    // If images need to be uploaded, do it in a separate API call before or after this
+    // Or convert images to base64 if the server accepts that (not recommended for large files)
+    let result;
+    if (props.editPost) {
+      payload.id = props.editPost.id;
+      result = await updateSalePost(props.editPost.id, payload);
     } else {
-      // Create new post
-      result = await createSalePost(formDataToSubmit);
-      // Show success modal for new posts
+      console.log("Payload to submit", payload);
+      result = await createSalePost(payload);
       showSuccessModal.value = true;
     }
 
     console.log("Server response:", result);
-
-    // Emit event to notify parent component
     emit("post-saved", result);
   } catch (error) {
     console.error("Error submitting form:", error);
     // Display error message
-    showNotification({
-      type: "error",
-      message:
-        typeof error === "string"
-          ? error
-          : error && typeof error === "object" && error.message
-          ? error.message
-          : "Failed to save post. Please check your form data and try again.",
-    });
   }
 };
 

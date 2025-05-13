@@ -355,27 +355,5 @@ class DiamondTransactionAdmin(admin.ModelAdmin):
 
 admin.site.register(DiamondTransaction, DiamondTransactionAdmin)
 
-# Register For Sale models
-class ForSaleCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'icon_display')
-    
-    def icon_display(self, obj):
-        if obj.icon:
-            return format_html('<img src="{}" style="height: 30px;" />', obj.icon.url)
-        return "No Icon"
-    
-    icon_display.short_description = 'Icon'
 
-admin.site.register(ForSaleCategory, ForSaleCategoryAdmin)
 
-class ForSaleBannerAdmin(admin.ModelAdmin):
-    list_display = ('title', 'image_display', 'link')
-    
-    def image_display(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" style="height: 50px;" />', obj.image.url)
-        return "No Image"
-    
-    image_display.short_description = 'Banner Image'
-
-admin.site.register(ForSaleBanner, ForSaleBannerAdmin)

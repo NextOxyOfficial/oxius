@@ -574,7 +574,7 @@ const handleSwipe = () => {
 const fetchCategories = async () => {
   try {
     isLoadingCategories.value = true;
-    const response = await get("/for-sale-categories/");
+    const response = await get("/sale/for-sale-categories/");
     console.log("API Response:", response.data);
     if (response.data && Array.isArray(response.data)) {
       categories.value = response.data;
@@ -599,7 +599,7 @@ const fetchCategories = async () => {
 const fetchBanners = async () => {
   try {
     isLoadingBanners.value = true;
-    const response = await get("/api/for-sale-banners/");
+    const response = await get("/sale/for-sale-banners/");
     if (response.data && Array.isArray(response.data)) {
       banners.value = response.data;
     }
@@ -623,7 +623,7 @@ const fetchCategoryPosts = async () => {
     // This endpoint should match your Django backend's URL structure
     // Based on your backend code, the correct endpoint is /api/sale-posts/ with category as a query parameter
     const { data, error } = await get(
-      `/sale-posts/?category=${selectedCategory.value}`
+      `/sale/sale-posts/?category=${selectedCategory.value}`
     );
 
     if (error) {

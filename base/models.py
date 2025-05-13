@@ -857,18 +857,3 @@ class NewsLogo(models.Model):
     def __str__(self):
         return f"BN Logo {self.id}"
 
-class ForSaleCategory(models.Model):
-    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
-    name = models.CharField(max_length=255)
-    icon = models.ImageField(upload_to='category_icons/', null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-class ForSaleBanner(models.Model):
-    title = models.CharField(max_length=255, null=True, blank=True)
-    image = models.ImageField(upload_to='banner_images/')
-    link = models.URLField(max_length=500, null=True, blank=True)
-
-    def __str__(self):
-        return self.title or "Banner"
