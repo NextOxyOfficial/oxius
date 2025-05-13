@@ -1,532 +1,206 @@
 <template>
   <div class="my-posts-container">
-    <!-- Top Header Section -->
-    <div class="mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 p-2">
-        <div
-          class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm">Total Listings</p>
-              <p class="text-lg font-bold text-gray-800">
-                {{ allPosts.length }}
-              </p>
-            </div>
-            <div class="rounded-full bg-primary/10 p-1.5">
-              <Icon
-                name="heroicons:document-text"
-                class="h-4 w-4 text-primary"
-              />
-            </div>
+    <!-- Empty state with create button -->
+    <div v-if="!posts.length && !isLoading" class="text-center py-10">
+      <div class="mb-6">
+        <div class="flex justify-center">
+          <div class="p-4 bg-gray-100 rounded-full inline-block">
+            <Icon name="heroicons:clipboard-document-list" class="h-10 w-10 text-gray-500" />
           </div>
         </div>
+        <h3 class="text-lg font-semibold mt-4">No posts yet</h3>
+        <p class="text-gray-600 mt-1">Create your first post to start selling!</p>
+      </div>
+      <button
+        @click="$emit('create-post')"
+        class="bg-primary hover:bg-primary/90 text-white font-medium px-5 py-2 rounded-md flex items-center gap-2 mx-auto"
+      >
+        <Icon name="heroicons:plus-circle" size="18px" />
+        Create Post
+      </button>
+    </div>
 
-        <div
-          class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm">Active</p>
-              <p class="text-lg font-bold text-green-600">{{ activePosts }}</p>
-            </div>
-            <div class="rounded-full bg-green-100 p-1.5">
-              <Icon
-                name="heroicons:check-circle"
-                class="h-4 w-4 text-green-600"
-              />
-            </div>
+    <!-- Loading state -->
+    <div v-else-if="isLoading" class="p-6">
+      <div v-for="i in 3" :key="i" class="mb-4 animate-pulse">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-gray-200 rounded"></div>
+          <div class="flex-1">
+            <div class="h-5 bg-gray-200 rounded mb-2 w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
-        </div>
-
-        <div
-          class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm">Pending</p>
-              <p class="text-lg font-bold text-yellow-600">
-                {{ pendingPosts }}
-              </p>
-            </div>
-            <div class="rounded-full bg-yellow-100 p-1.5">
-              <Icon name="heroicons:clock" class="h-4 w-4 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="stat-card bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm">Sold</p>
-              <p class="text-lg font-bold text-blue-600">{{ soldPosts }}</p>
-            </div>
-            <div class="rounded-full bg-blue-100 p-1.5">
-              <Icon name="heroicons:banknotes" class="h-4 w-4 text-blue-600" />
-            </div>
+          <div class="flex gap-2">
+            <div class="w-8 h-8 bg-gray-200 rounded"></div>
+            <div class="w-8 h-8 bg-gray-200 rounded"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-      <!-- Search and Filter Controls -->
-      <div class="p-4 border-b border-gray-100">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+    <!-- Post listing -->
+    <div v-else>
+      <!-- Filters and controls -->
+      <div class="flex justify-between mb-4">
+        <div class="flex items-center">
+          <select
+            v-model="statusFilter"
+            class="border border-gray-300 rounded-md py-1 px-2 text-sm"
+          >
+            <option value="">All posts</option>
+            <option value="pending">Pending review</option>
+            <option value="active">Active</option>
+            <option value="sold">Sold</option>
+            <option value="expired">Expired</option>
+          </select>
+        </div>
+        <button
+          @click="$emit('create-post')"
+          class="bg-primary hover:bg-primary/90 text-white text-sm px-3 py-1 rounded-md flex items-center gap-1"
         >
-          <!-- Search Input -->
-          <div class="relative flex-grow max-w-md">
-            <input
-              type="text"
-              v-model="searchQuery"
-              placeholder="Search your listings..."
-              class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:ring-primary focus:border-primary text-sm"
+          <Icon name="heroicons:plus-circle" size="16px" />
+          New Post
+        </button>
+      </div>
+
+      <!-- Post items -->
+      <div class="divide-y divide-gray-200">
+        <div v-for="post in filteredPosts" :key="post.id" class="py-4 flex gap-4">
+          <!-- Post image -->
+          <NuxtLink :to="`/sale/${post.slug}`" class="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+            <img
+              v-if="post.main_image"
+              :src="post.main_image"
+              :alt="post.title"
+              class="w-full h-full object-cover rounded-md"
             />
-            <div
-              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-            >
-              <Icon
-                name="heroicons:magnifying-glass"
-                class="text-gray-400"
-                size="16px"
-              />
+            <div v-else class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+              <Icon name="heroicons:photo" class="h-8 w-8 text-gray-400" />
+            </div>
+            
+            <!-- Status badge -->
+            <div class="absolute top-0 left-0">
+              <span
+                :class="{
+                  'bg-yellow-500': post.status === 'pending',
+                  'bg-green-500': post.status === 'active',
+                  'bg-blue-500': post.status === 'sold',
+                  'bg-red-500': post.status === 'expired'
+                }"
+                class="text-white text-xs px-2 py-0.5 rounded-sm"
+              >
+                {{ formatStatus(post.status) }}
+              </span>
+            </div>
+          </NuxtLink>
+
+          <!-- Post details -->
+          <div class="flex-1 min-w-0">
+            <NuxtLink :to="`/sale/${post.slug}`">
+              <h3 class="text-base font-medium line-clamp-1">{{ post.title }}</h3>
+            </NuxtLink>
+            <div class="mt-1 flex items-center text-sm text-gray-500">
+              <Icon name="heroicons:currency-bangladeshi" class="h-4 w-4 mr-1" />
+              <span>{{ post.price ? `৳${post.price.toLocaleString()}` : 'Negotiable' }}</span>
+              <span class="mx-2">•</span>
+              <span>{{ formatDate(post.created_at) }}</span>
+            </div>
+            <div class="mt-1 flex items-center text-sm text-gray-500">
+              <Icon name="heroicons:map-pin" class="h-4 w-4 mr-1" />
+              <span class="line-clamp-1">{{ post.area }}, {{ post.district }}</span>
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
-            <!-- Sort Dropdown -->
-            <div class="relative">
-              <select
-                v-model="sortOption"
-                class="appearance-none border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white focus:ring-primary focus:border-primary text-sm"
+          <!-- Action buttons -->
+          <div class="flex flex-col gap-2 items-end">
+            <div class="flex gap-2">
+              <button
+                @click="$emit('edit-post', post)"
+                class="p-1.5 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
+                title="Edit post"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price_high">Price: High to Low</option>
-                <option value="price_low">Price: Low to High</option>
-              </select>
+                <Icon name="heroicons:pencil-square" size="18px" />
+              </button>
+              <button
+                v-if="post.status !== 'sold'"
+                @click="markAsSold(post.id)"
+                class="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-gray-100 rounded-full transition-colors"
+                title="Mark as sold"
+              >
+                <Icon name="heroicons:tag" size="18px" />
+              </button>
+              <button
+                @click="confirmDelete(post.id, post.title)"
+                class="p-1.5 text-gray-600 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
+                title="Delete post"
+              >
+                <Icon name="heroicons:trash" size="18px" />
+              </button>
+            </div>
+            <div class="text-xs text-gray-500">
+              {{ post.view_count }} views
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Load more button -->
+      <div v-if="hasMorePosts" class="mt-6 text-center">
+        <button
+          @click="loadMorePosts"
+          class="px-4 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50"
+          :disabled="isLoadingMore"
+        >
+          <span v-if="isLoadingMore">Loading...</span>
+          <span v-else>Load more</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
+      <div
+        class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
+      >
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+        <div
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+        >
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
               <div
-                class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
               >
-                <Icon
-                  name="heroicons:chevron-down"
-                  class="text-gray-400"
-                  size="14px"
-                />
+                <Icon name="heroicons:exclamation-triangle" class="h-6 w-6 text-red-600" />
               </div>
-            </div>
-
-            <!-- Create New Post Button -->
-            <button
-              @click="$emit('create-post')"
-              class="flex-shrink-0 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-1.5"
-            >
-              <Icon name="heroicons:plus" size="14px" />
-              <span>New Listing</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Custom Tabs -->
-      <div class="px-4 pt-2 bg-gray-50">
-        <div class="flex flex-wrap overflow-x-auto hide-scrollbar">
-          <button
-            v-for="(tab, index) in tabs"
-            :key="index"
-            :class="[
-              'mr-2 px-4 py-2.5 border-b-2 text-sm font-medium transition-all',
-              activeTab === tab.id
-                ? 'border-primary text-primary bg-white rounded-t-lg'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-            ]"
-            @click="activeTab = tab.id"
-          >
-            {{ tab.name }}
-            <span
-              :class="[
-                'ml-1.5 px-2 py-0.5 rounded-full text-xs',
-                activeTab === tab.id
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-gray-100 text-gray-600',
-              ]"
-            >
-              {{ tab.count }}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div v-if="isLoading" class="py-12 text-center bg-white">
-        <div class="inline-flex flex-col items-center">
-          <div
-            class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mb-3"
-          ></div>
-          <p class="text-gray-600 text-sm">Loading your listings...</p>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="!filteredPosts.length" class="py-12 text-center bg-white">
-        <div class="inline-flex flex-col items-center">
-          <div class="bg-gray-100 rounded-full p-4 mb-4">
-            <Icon
-              name="heroicons:document-plus"
-              size="36px"
-              class="text-gray-400"
-            />
-          </div>
-          <h3 class="text-base font-medium text-gray-800 mb-2">
-            No listings found
-          </h3>
-          <p class="text-gray-500 mb-5 max-w-md mx-auto text-sm">
-            {{
-              searchQuery
-                ? "No listings match your search criteria. Try a different search term."
-                : "You don't have any listings in this category yet. Create your first listing now!"
-            }}
-          </p>
-          <button
-            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-1.5"
-            @click="$emit('create-post')"
-          >
-            <Icon name="heroicons:plus-circle" size="16px" />
-            Create a Listing
-          </button>
-        </div>
-      </div>
-
-      <!-- Posts List View -->
-      <div v-else class="bg-white">
-        <div class="space-y-3 p-1">
-          <div
-            v-for="post in filteredPosts"
-            :key="post.id"
-            class="border border-gray-200 rounded-lg overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer"
-            @click="navigateToPost(post)"
-          >
-            <div class="flex p-1">
-              <!-- Post Image -->
-              <div class="h-20 w-20 flex-shrink-0">
-                <img
-                  :src="post.main_image"
-                  :alt="post.title"
-                  class="h-20 w-20 object-cover rounded"
-                />
-              </div>
-
-              <!-- Post Details with action buttons -->
-              <div class="ml-4 flex-grow flex flex-col">
-                <div class="flex justify-between items-start">
-                  <!-- Title and Price Section - Reordered for desktop -->
-                  <div
-                    class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3"
-                  >
-                    <!-- Price first on desktop -->
-                    <p
-                      class="order-2 md:order-1 text-primary font-bold text-sm md:text-base md:mr-3"
-                    >
-                      ৳{{ post.price?.toLocaleString() }}
-                    </p>
-                    <!-- Title second on desktop -->
-                    <h3
-                      class="order-1 md:order-2 text-sm md:text-base font-medium text-gray-900 line-clamp-1"
-                    >
-                      {{ post.title }}
-                    </h3>
-                  </div>
-
-                  <div
-                    :class="[
-                      'px-2 py-1 text-xs md:text-sm font-medium rounded-full',
-                      getStatusClass(post.status),
-                    ]"
-                  >
-                    {{ formatStatus(post.status) }}
-                  </div>
-                </div>
-
-                <p class="mt-1 text-gray-600 line-clamp-1 text-sm">
-                  {{ post.description }}
-                </p>
-
-                <div class="mt-2 flex justify-between items-center">
-                  <div class="flex items-center gap-2">
-                    <div class="flex items-center text-sm text-gray-500">
-                      <Icon
-                        name="heroicons:calendar"
-                        class="mr-1 text-gray-400"
-                        size="14px"
-                      />
-                      <span>{{ formatDate(post.created_at) }}</span>
-                    </div>
-
-                    <!-- Category tag moved here, next to the date -->
-                    <span
-                      class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full inline-flex items-center"
-                    >
-                      <Icon
-                        name="heroicons:tag"
-                        class="mr-1 text-gray-500"
-                        size="12px"
-                      />
-                      {{ getCategoryName(post.category) }}
-                    </span>
-                  </div>
-
-                  <div class="flex space-x-3" @click.stop>
-                    <button
-                      @click="editPost(post)"
-                      class="text-primary hover:text-primary/80 p-1"
-                      title="Edit"
-                    >
-                      <Icon name="heroicons:pencil-square" size="16px" />
-                    </button>
-                    <!-- Status change button with visible disabled styling for pending posts -->
-                    <button
-                      @click="updateStatus(post, $event)"
-                      :class="[
-                        'p-1',
-                        post.status === 'pending'
-                          ? 'text-blue-300 cursor-not-allowed'
-                          : 'text-blue-500 hover:text-blue-700',
-                      ]"
-                      :title="
-                        post.status === 'pending'
-                          ? 'Status change not available until approved'
-                          : 'Change Status'
-                      "
-                    >
-                      <Icon name="heroicons:document-check" size="16px" />
-                    </button>
-                    <button
-                      @click="confirmDelete(post)"
-                      class="text-red-500 hover:text-red-700 p-1"
-                      title="Delete"
-                    >
-                      <Icon name="heroicons:trash" size="16px" />
-                    </button>
-                  </div>
-                </div>
-
-                <div v-if="post.featured" class="absolute top-3 left-3">
-                  <span
-                    class="bg-yellow-400 text-yellow-900 px-2 py-0.5 text-xs rounded-full shadow-sm"
-                  >
-                    Featured
-                  </span>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  Delete Post
+                </h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">
+                    Are you sure you want to delete "{{ postToDeleteTitle }}"? This action cannot be undone.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Pagination -->
-      <div
-        v-if="totalPages > 1"
-        class="p-4 bg-gray-50 border-t border-gray-100 flex justify-center"
-      >
-        <nav class="flex items-center space-x-2">
-          <button
-            class="px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-sm"
-            :disabled="currentPage === 1"
-            @click="currentPage = Math.max(1, currentPage - 1)"
-          >
-            <Icon name="heroicons:chevron-left" size="14px" />
-          </button>
-
-          <div
-            v-for="page in paginationPages"
-            :key="page"
-            class="hidden md:block"
-          >
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
-              v-if="page !== '...'"
-              :class="[
-                'px-3 py-1.5 rounded-md text-sm',
-                currentPage === page
-                  ? 'bg-primary text-white'
-                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50',
-              ]"
-              @click="currentPage = page"
+              type="button"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+              @click="deletePost"
             >
-              {{ page }}
+              Delete
             </button>
-            <span v-else class="px-1.5 py-1.5 text-gray-500 text-sm">...</span>
-          </div>
-
-          <div class="md:hidden px-3 py-1.5 text-gray-600 text-sm">
-            {{ currentPage }} / {{ totalPages }}
-          </div>
-
-          <button
-            class="px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-sm"
-            :disabled="currentPage === totalPages"
-            @click="currentPage = Math.min(totalPages, currentPage + 1)"
-          >
-            <Icon name="heroicons:chevron-right" size="14px" />
-          </button>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Status Update Modal - Standard Centered Modal -->
-    <div
-      v-if="showStatusModal"
-      class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"
-    >
-      <div
-        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        @click="showStatusModal = false"
-      ></div>
-
-      <div
-        class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden relative"
-      >
-        <div class="p-4 border-b border-gray-200">
-          <h3 class="text-base font-medium text-gray-900 text-left">
-            Change Status
-          </h3>
-        </div>
-        <div class="p-4 space-y-3">
-          <p class="text-gray-600 text-sm text-left">
-            Select the new status for "<span class="font-medium">{{
-              selectedPost?.title
-            }}</span
-            >"
-          </p>
-
-          <div class="space-y-2">
-            <label
-              v-for="status in availableStatuses"
-              :key="status.value"
-              :class="[
-                'flex items-center p-3 border rounded-lg transition-colors',
-                newStatus === status.value
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-200',
-                // Disable active option when post is already sold
-                selectedPost?.status === 'sold' && status.value === 'active'
-                  ? 'opacity-50 cursor-not-allowed'
-                  : 'hover:bg-gray-50 cursor-pointer',
-              ]"
-              @click="
-                selectedPost?.status === 'sold' && status.value === 'active'
-                  ? null
-                  : (newStatus = status.value)
-              "
+            <button
+              type="button"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              @click="showDeleteModal = false"
             >
-              <input
-                type="radio"
-                :value="status.value"
-                v-model="newStatus"
-                class="hidden"
-                :disabled="
-                  selectedPost?.status === 'sold' && status.value === 'active'
-                "
-              />
-              <div :class="`rounded-full p-2 ${status.bgColor} mr-3`">
-                <Icon
-                  :name="status.icon"
-                  class="h-4 w-4"
-                  :class="status.iconColor"
-                />
-              </div>
-              <div class="text-left">
-                <div class="font-medium text-sm">{{ status.label }}</div>
-                <div class="text-xs text-gray-500">
-                  {{
-                    selectedPost?.status === "sold" && status.value === "active"
-                      ? "Cannot change back to Active once sold"
-                      : status.description
-                  }}
-                </div>
-              </div>
-            </label>
+              Cancel
+            </button>
           </div>
-        </div>
-        <div
-          class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3"
-        >
-          <button
-            @click="showStatusModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
-          >
-            Cancel
-          </button>
-          <button
-            @click="saveStatusChange"
-            :disabled="
-              isSubmitting || !newStatus || newStatus === selectedPost?.status
-            "
-            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 text-sm flex items-center gap-2"
-          >
-            <div
-              v-if="isSubmitting"
-              class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-            ></div>
-            <span>{{ isSubmitting ? "Saving..." : "Save Changes" }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Delete Confirmation Modal - Centered -->
-  <div
-    v-if="showDeleteModal"
-    class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
-  >
-    <div
-      class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-      @click="showDeleteModal = false"
-    ></div>
-
-    <div
-      class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto z-10 overflow-hidden"
-    >
-      <div class="p-5">
-        <div
-          class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4"
-        >
-          <Icon
-            name="heroicons:exclamation-triangle"
-            class="h-6 w-6 text-red-600"
-          />
-        </div>
-        <h3 class="text-lg font-medium text-center text-gray-900 mb-2">
-          Confirm Deletion
-        </h3>
-        <p class="text-gray-600 text-center mb-5 text-sm">
-          Are you sure you want to delete "<span class="font-medium">{{
-            selectedPost?.title
-          }}</span
-          >"? This action cannot be undone.
-        </p>
-        <div class="flex justify-center gap-3">
-          <button
-            @click="showDeleteModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
-          >
-            Cancel
-          </button>
-          <button
-            @click="deletePost"
-            :disabled="isSubmitting"
-            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center gap-2"
-          >
-            <div
-              v-if="isSubmitting"
-              class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-            ></div>
-            <span>{{ isSubmitting ? "Deleting..." : "Delete" }}</span>
-          </button>
         </div>
       </div>
     </div>
@@ -534,510 +208,214 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
-import { useSalePost } from "~/composables/useSalePost";
-import { useNotifications } from "~/composables/useNotifications";
-import { useApi } from "~/composables/useApi";
+import { ref, computed, watch, onMounted } from "vue";
 
-const router = useRouter();
-const {
-  getMyPosts,
-  updateSalePost,
-  deleteSalePost,
-  loading: apiLoading,
-} = useSalePost();
+const { get, post, deleteReq } = useApi();
+const { user } = useAuth();
 const { showNotification } = useNotifications();
-const api = useApi();
 
-const emit = defineEmits(["create-post", "edit-post", "delete-post"]);
+const emit = defineEmits(['create-post', 'edit-post', 'delete-post']);
 
-// Tab options with dynamic counts from filtered posts
-const tabs = computed(() => [
-  { id: "all", name: "All Listings", count: allPosts.value.length },
-  { id: "active", name: "Active", count: activePosts.value },
-  { id: "pending", name: "Pending", count: pendingPosts.value },
-  { id: "sold", name: "Sold", count: soldPosts.value },
-  { id: "featured", name: "Featured", count: featuredPosts.value },
-]);
-
-// Stats computed properties
-const activePosts = computed(
-  () => allPosts.value.filter((post) => post.status === "active").length
-);
-const pendingPosts = computed(
-  () => allPosts.value.filter((post) => post.status === "pending").length
-);
-const soldPosts = computed(
-  () => allPosts.value.filter((post) => post.status === "sold").length
-);
-const featuredPosts = computed(
-  () => allPosts.value.filter((post) => post.featured).length
-);
-
-// UI state
-const activeTab = ref("all");
+// State
+const posts = ref([]);
 const isLoading = ref(true);
-const isSubmitting = ref(false); // For button spinners
+const isLoadingMore = ref(false);
+const statusFilter = ref("");
 const currentPage = ref(1);
-const postsPerPage = 10; // Increased posts per page for list view
-const sortOption = ref("newest");
-const searchQuery = ref("");
-const openDropdown = ref(null);
+const hasMorePosts = ref(false);
+const pagination = ref(null);
 
-// Modals
-const showStatusModal = ref(false);
+// Delete confirmation state
 const showDeleteModal = ref(false);
-const selectedPost = ref(null);
-const newStatus = ref(null);
-const modalPosition = ref({ top: 0, left: 0 });
+const postToDeleteId = ref(null);
+const postToDeleteTitle = ref("");
 
-// Status options
-const availableStatuses = [
-  {
-    value: "active",
-    label: "Active",
-    description: "Listing is live and visible to all users",
-    icon: "heroicons:check-circle",
-    iconColor: "text-green-600",
-    bgColor: "bg-green-100",
-  },
-  {
-    value: "sold",
-    label: "Sold",
-    description: "Item has been sold and listing is no longer active",
-    icon: "heroicons:banknotes",
-    iconColor: "text-blue-600",
-    bgColor: "bg-blue-100",
-  },
-];
-
-// Posts data
-const allPosts = ref([]);
-
-// Filter posts based on active tab and search query
+// Filter posts based on status
 const filteredPosts = computed(() => {
-  let posts = [];
-  switch (activeTab.value) {
-    case "all":
-      posts = [...allPosts.value];
-      break;
-    case "active":
-      posts = allPosts.value.filter((post) => post.status === "active");
-      break;
-    case "pending":
-      posts = allPosts.value.filter((post) => post.status === "pending");
-      break;
-    case "sold":
-      posts = allPosts.value.filter((post) => post.status === "sold");
-      break;
-    case "featured":
-      posts = allPosts.value.filter((post) => post.featured);
-      break;
-    default:
-      posts = [...allPosts.value];
+  if (!statusFilter.value) {
+    return posts.value;
   }
-
-  // Then filter by search query
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase();
-    posts = posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(query) ||
-        post.description.toLowerCase().includes(query) ||
-        post.division?.toLowerCase().includes(query) ||
-        post.district?.toLowerCase().includes(query) ||
-        post.area?.toLowerCase().includes(query)
-    );
-  }
-
-  // Sort posts
-  switch (sortOption.value) {
-    case "newest":
-      posts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      break;
-    case "oldest":
-      posts.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      break;
-    case "price_high":
-      posts.sort((a, b) => (b.price || 0) - (a.price || 0));
-      break;
-    case "price_low":
-      posts.sort((a, b) => (a.price || 0) - (b.price || 0));
-      break;
-  }
-
-  return posts;
+  return posts.value.filter(post => post.status === statusFilter.value);
 });
-
-// Pagination logic
-const totalPages = computed(() =>
-  Math.ceil(filteredPosts.value.length / postsPerPage)
-);
-
-const displayedPosts = computed(() => {
-  const startIndex = (currentPage.value - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  return filteredPosts.value.slice(startIndex, endIndex);
-});
-
-// Generate pagination numbers with ellipsis for large page counts
-const paginationPages = computed(() => {
-  if (totalPages.value <= 5) {
-    return Array.from({ length: totalPages.value }, (_, i) => i + 1);
-  }
-
-  const pages = [];
-
-  if (currentPage.value <= 3) {
-    // Near beginning: show first 3 pages, then ellipsis, then last page
-    for (let i = 1; i <= 3; i++) pages.push(i);
-    pages.push("...");
-    pages.push(totalPages.value);
-  } else if (currentPage.value >= totalPages.value - 2) {
-    // Near end: show first page, then ellipsis, then last 3 pages
-    pages.push(1);
-    pages.push("...");
-    for (let i = totalPages.value - 2; i <= totalPages.value; i++)
-      pages.push(i);
-  } else {
-    // In middle: show first page, ellipsis, current, ellipsis, last page
-    pages.push(1);
-    pages.push("...");
-    pages.push(currentPage.value);
-    pages.push("...");
-    pages.push(totalPages.value);
-  }
-
-  return pages;
-});
-
-// Reset to page 1 when filters change
-watch([activeTab, searchQuery, sortOption], () => {
-  currentPage.value = 1;
-});
-
-// Format date helper
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-
-  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-};
-
-// Status badge color helper
-const getStatusClass = (status) => {
-  switch (status.toLowerCase()) {
-    case "active":
-      return "bg-green-100 text-green-800";
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "stop":
-      return "bg-gray-100 text-gray-800";
-    case "sold":
-      return "bg-blue-100 text-blue-800";
-    case "expired":
-      return "bg-gray-100 text-gray-800";
-    case "rejected":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
 
 // Format status for display
 const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  switch(status) {
+    case 'pending': return 'Pending';
+    case 'active': return 'Active';
+    case 'sold': return 'Sold';
+    case 'expired': return 'Expired';
+    default: return status;
+  }
 };
 
-// Fetch posts from API
-const fetchPosts = async () => {
-  isLoading.value = true;
+// Format date for display
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays <= 1) {
+    return 'Today';
+  } else if (diffDays <= 2) {
+    return 'Yesterday';
+  } else if (diffDays <= 7) {
+    return `${diffDays} days ago`;
+  } else {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+};
+
+// Fetch user's posts
+const fetchPosts = async (page = 1) => {
+  if (page === 1) {
+    isLoading.value = true;
+  } else {
+    isLoadingMore.value = true;
+  }
+  
   try {
-    const data = await getMyPosts();
-    console.log("Posts data from API:", data); // Debug log to examine what we're getting from the backend
-    allPosts.value = data || [];
+    const response = await get(`/sale/posts/my_posts/?page=${page}`);
+    
+    if (response.data) {
+      if ('results' in response.data) {
+        // Paginated response
+        pagination.value = {
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous
+        };
+        
+        if (page === 1) {
+          posts.value = response.data.results;
+        } else {
+          posts.value = [...posts.value, ...response.data.results];
+        }
+        
+        hasMorePosts.value = !!response.data.next;
+      } else if (Array.isArray(response.data)) {
+        // Non-paginated response
+        posts.value = response.data;
+        hasMorePosts.value = false;
+      }
+    }
   } catch (error) {
     console.error("Error fetching posts:", error);
     showNotification({
-      type: "error",
-      message: "Failed to load your listings. Please try again.",
+      title: "Error",
+      message: "Failed to load your posts. Please try again later.",
+      type: "error"
     });
-    allPosts.value = [];
   } finally {
     isLoading.value = false;
+    isLoadingMore.value = false;
   }
 };
 
-// Status update modal
-const updateStatus = (post, event) => {
-  // Only allow status changes if post is not in pending status
-  if (post.status === "pending") {
-    showNotification({
-      type: "info",
-      message:
-        "You cannot change the status until your post is approved by an admin.",
-    });
-    return;
+// Load more posts
+const loadMorePosts = () => {
+  if (hasMorePosts.value) {
+    currentPage.value++;
+    fetchPosts(currentPage.value);
   }
-
-  selectedPost.value = post;
-  newStatus.value = post.status;
-  console.log(
-    "Opening status modal for post:",
-    post.id,
-    "Current status:",
-    post.status
-  );
-  showStatusModal.value = true;
 };
 
-const saveStatusChange = async () => {
-  isSubmitting.value = true;
-
+// Mark a post as sold
+const markAsSold = async (postId) => {
   try {
-    if (selectedPost.value && newStatus.value) {
-      console.log(
-        "Updating post status:",
-        selectedPost.value.id,
-        "New status:",
-        newStatus.value
-      );
-
-      let updatedPost;
-
-      // Use the specific mark_as_sold endpoint if we're changing to "sold" status
-      if (newStatus.value === "sold") {
-        console.log("Using mark_as_sold endpoint");
-        updatedPost = await api.post(
-          `/sale-posts/${selectedPost.value.id}/mark_as_sold/`,
-          {}
-        );
-      } else {
-        // For other status changes, use the regular update method
-        console.log("Using regular PATCH endpoint");
-        updatedPost = await updateSalePost(selectedPost.value.id, {
-          status: newStatus.value,
-        });
-      }
-
-      console.log("Status update response:", updatedPost);
-
-      // Update local state
-      const postIndex = allPosts.value.findIndex(
-        (p) => p.id === selectedPost.value.id
-      );
+    const response = await post(`/sale/posts/${postId}/mark_as_sold/`);
+    
+    if (response.data) {
+      // Update post in the local state
+      const postIndex = posts.value.findIndex(p => p.id === postId);
       if (postIndex !== -1) {
-        allPosts.value[postIndex] = {
-          ...allPosts.value[postIndex],
-          status: newStatus.value,
-        };
+        posts.value[postIndex].status = 'sold';
       }
-
+      
       showNotification({
-        type: "success",
-        message: "Status updated successfully!",
+        title: "Success",
+        message: "Post has been marked as sold!",
+        type: "success"
       });
     }
   } catch (error) {
-    console.error("Error updating status:", error);
+    console.error("Error marking post as sold:", error);
     showNotification({
-      type: "error",
-      message: "Failed to update status. Please try again.",
+      title: "Error",
+      message: "Failed to mark post as sold. Please try again later.",
+      type: "error"
     });
-  } finally {
-    isSubmitting.value = false;
-    showStatusModal.value = false;
   }
 };
 
-// Delete confirmation modal
-const confirmDelete = (post) => {
-  selectedPost.value = post;
-  console.log("Opening delete confirmation for post:", post.id);
+// Confirm delete action
+const confirmDelete = (id, title) => {
+  postToDeleteId.value = id;
+  postToDeleteTitle.value = title;
   showDeleteModal.value = true;
 };
 
+// Delete post
 const deletePost = async () => {
-  isSubmitting.value = true;
-
+  if (!postToDeleteId.value) return;
+  
   try {
-    // Call the API to delete the post
-    if (selectedPost.value) {
-      console.log("Deleting post:", selectedPost.value.id);
-
-      await deleteSalePost(selectedPost.value.id);
-
-      console.log("Post deleted successfully");
-
-      // Remove from local state
-      allPosts.value = allPosts.value.filter(
-        (p) => p.id !== selectedPost.value.id
-      );
-
-      showNotification({
-        type: "success",
-        message: "Post deleted successfully!",
-      });
-
-      emit("delete-post", selectedPost.value.id);
-    }
+    await deleteReq(`/sale/posts/${postToDeleteId.value}/`);
+    
+    // Remove post from local state
+    posts.value = posts.value.filter(p => p.id !== postToDeleteId.value);
+    
+    // Emit event
+    emit('delete-post', postToDeleteId.value);
+    
+    showNotification({
+      title: "Success",
+      message: "Post deleted successfully!",
+      type: "success"
+    });
   } catch (error) {
     console.error("Error deleting post:", error);
     showNotification({
-      type: "error",
-      message: "Failed to delete post. Please try again.",
+      title: "Error",
+      message: "Failed to delete post. Please try again later.",
+      type: "error"
     });
   } finally {
-    isSubmitting.value = false;
     showDeleteModal.value = false;
+    postToDeleteId.value = null;
+    postToDeleteTitle.value = "";
   }
 };
 
-// View and edit handlers
-const editPost = (post) => {
-  console.log("Editing post:", post.id);
-  // Emit the edit-post event to the parent component
-  emit("edit-post", post);
-  // Close any open modals
-  showStatusModal.value = false;
-  showDeleteModal.value = false;
-};
-
-const navigateToPost = (post) => {
-  // Navigate to the post details page using the slug for SEO friendly URLs
-  router.push(`/sale/${post.slug}`);
-};
-
-// Get post main image
-const getMainImage = (post) => {
-  const { staticURL } = useApi();
-  console.log("Post ID:", post.id);
-  console.log("Static URL base:", staticURL);
-
-  if (post.images && post.images.length > 0) {
-    // Find the main image or use the first one
-    const mainImage = post.images.find((img) => img.is_main);
-    let imageUrl;
-
-    try {
-      if (mainImage) {
-        // Handle different possible structures
-        if (typeof mainImage === "string") {
-          imageUrl = mainImage;
-        } else if (typeof mainImage.image === "string") {
-          imageUrl = mainImage.image;
-        } else if (mainImage.image && typeof mainImage.image === "object") {
-          imageUrl = mainImage.image.url || mainImage.url;
-        } else {
-          imageUrl = mainImage;
-        }
-      } else if (post.images[0]) {
-        // Same approach for first image if no main image
-        if (typeof post.images[0] === "string") {
-          imageUrl = post.images[0];
-        } else if (typeof post.images[0].image === "string") {
-          imageUrl = post.images[0].image;
-        } else if (
-          post.images[0].image &&
-          typeof post.images[0].image === "object"
-        ) {
-          imageUrl = post.images[0].image.url || post.images[0].url;
-        } else {
-          imageUrl = post.images[0];
-        }
-      }
-
-      // Construct full URL with the static base URL if it's a relative path
-      if (imageUrl) {
-        // If it's already an absolute URL, return it as is
-        if (imageUrl.startsWith("http")) {
-          console.log("Full image URL:", imageUrl);
-          return imageUrl;
-        }
-
-        // Remove leading slash if present in both the base URL and the image URL
-        if (staticURL.endsWith("/") && imageUrl.startsWith("/")) {
-          imageUrl = imageUrl.substring(1);
-        }
-        // Add slash if neither has one
-        else if (!staticURL.endsWith("/") && !imageUrl.startsWith("/")) {
-          imageUrl = "/" + imageUrl;
-        }
-
-        const fullUrl = staticURL + imageUrl;
-        console.log("Constructed image URL:", fullUrl);
-        return fullUrl;
-      }
-    } catch (error) {
-      console.error("Error processing image:", error);
-    }
-  } else {
-    console.warn("No images array found for post:", post.id);
+// Watch for user change to reload posts
+watch(() => user.value?.id, (newId) => {
+  if (newId) {
+    fetchPosts();
   }
+});
 
-  // Fallback to a placeholder image
-  return `https://via.placeholder.com/300x300/3b82f6/FFFFFF?text=${encodeURIComponent(
-    post.title?.substring(0, 10) || "No Image"
-  )}`;
-};
-
-// Get category name helper
-const getCategoryName = (categoryId) => {
-  const categoryMap = {
-    1: "Properties",
-    2: "Vehicles",
-    3: "Electronics",
-    4: "Sports",
-    5: "B2B",
-    6: "Fashion",
-    7: "Services",
-    8: "Jobs",
-    9: "Pets",
-    10: "Books",
-    11: "Furniture",
-    12: "Others",
-  };
-
-  // If we receive an object with name property, use that directly
-  if (categoryId && typeof categoryId === "object" && categoryId.name) {
-    return categoryId.name;
-  }
-
-  // Otherwise look up by ID in our map
-  return categoryMap[categoryId] || "Uncategorized";
-};
-
-// Fetch data when component mounts
+// Load posts on component mount
 onMounted(() => {
-  fetchPosts();
+  if (user.value?.id) {
+    fetchPosts();
+  }
 });
 </script>
 
 <style scoped>
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
-}
-
-.text-xxs {
-  font-size: 0.65rem;
-  line-height: 1rem;
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

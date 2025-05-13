@@ -1,38 +1,55 @@
 from django.shortcuts import render
-from rest_framework import viewsets, mixins, status, permissions
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import F
 import logging
-from .models import *
-from .serializers import *
-from rest_framework import generics
+import base64
+from django.core.files.base import ContentFile
+import hashlib
+from django.utils import timezone
+import datetime
+
+from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage
+from .serializers import (
+    SaleCategorySerializer, SaleChildCategorySerializer,
+    SalePostListSerializer, SalePostDetailSerializer, SalePostCreateSerializer
+)
 
 # Set up logger
 logger = logging.getLogger(__name__)
 
-class ForSaleCategoryListView(APIView):
-    def get(self, request):
-        categories = ForSaleCategory.objects.all()
-        serializer = ForSaleCategorySerializer(categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class SaleCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for listing and retrieving sale categories"""
+    queryset = SaleCategory.objects.all()
+    serializer_class = SaleCategorySerializer
+    
+    @action(detail=True, methods=['get'])
+    def child_categories(self, request, pk=None):
+        """Get child categories for a parent category"""
+        category = self.get_object()
+        child_categories = SaleChildCategory.objects.filter(parent=category)
+        serializer = SaleChildCategorySerializer(child_categories, many=True)
+        return Response(serializer.data)
 
-class ForSaleBannerListView(APIView):
-    def get(self, request):
-        banners = ForSaleBanner.objects.all()
-        serializer = ForSaleBannerSerializer(banners, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class SaleChildCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for listing and retrieving child categories"""
+    queryset = SaleChildCategory.objects.all()
+    serializer_class = SaleChildCategorySerializer
     
-    
-class ForSaleSubCategoryListView(APIView):
-    def get(self, request, category_id):
-        sub_categories = ForSaleSubCategory.objects.filter(category=category_id)
-        serializer = ForSaleSubCategorySerializer(sub_categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        queryset = SaleChildCategory.objects.all()
+        parent_id = self.request.query_params.get('parent_id')
+        
+        if parent_id:
+            queryset = queryset.filter(parent_id=parent_id)
+            
+        return queryset
 
 class SalePostViewSet(viewsets.ModelViewSet):
-    # permission_classes = [permissions.IsAuthenticated]
+    """ViewSet for handling sale posts"""
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
@@ -46,6 +63,10 @@ class SalePostViewSet(viewsets.ModelViewSet):
         category = self.request.query_params.get('category')
         if category:
             queryset = queryset.filter(category=category)
+            
+        child_category = self.request.query_params.get('child_category')
+        if child_category:
+            queryset = queryset.filter(child_category=child_category)
             
         division = self.request.query_params.get('division')
         if division:
@@ -71,14 +92,19 @@ class SalePostViewSet(viewsets.ModelViewSet):
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
             
+        # Title search
+        title = self.request.query_params.get('title')
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+            
         return queryset
     
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'create' or self.action == 'update' or self.action == 'partial_update':
             return SalePostCreateSerializer
         elif self.action == 'list':
             return SalePostListSerializer
-        return SalePostSerializer
+        return SalePostDetailSerializer
         
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -95,38 +121,66 @@ class SalePostViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         logger.info(f"Creating sale post with data: {request.data}")
         try:
-            # Log the keys received in the request
-            logger.info(f"Request data keys: {request.data.keys()}")
+            # Handle base64 image data
+            data_copy = request.data.copy()
+            images_data = []
             
-            serializer = self.get_serializer(data=request.data)
-            if not serializer.is_valid():
-                logger.error(f"Serializer validation errors: {serializer.errors}")
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Process base64 images if they exist
+            if 'images' in data_copy:
+                images = data_copy.getlist('images')
+                for image_data in images:
+                    if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        # It's a base64 string
+                        format, imgstr = image_data.split(';base64,')
+                        ext = format.split('/')[-1]
+                        data = base64.b64decode(imgstr)
+                        file_content = ContentFile(data)
+                        images_data.append(file_content)
+                    else:
+                        # It's a file upload
+                        images_data.append(image_data)
                 
-            sale_post = serializer.save()
-            logger.info(f"Sale post created with ID: {sale_post.id}")
+                # Remove images from data to avoid serializer errors
+                del data_copy['images']
             
-            # Handle image uploads
-            image_files = []
-            for key in request.FILES.keys():
-                if key.startswith('image_'):
-                    image_files.append(request.FILES[key])
-                    
-            logger.info(f"Found {len(image_files)} images to upload")
+            # Generate a submission hash to prevent duplicates
+            user_id = request.user.id
+            title = data_copy.get('title', '')
+            description = data_copy.get('description', '')[:100]  # Use first 100 chars of description
+            category = data_copy.get('category', '')
             
-            for i, image_file in enumerate(image_files):
-                is_main = (i == 0)  # First image is the main image
-                SalePostImage.objects.create(
-                    sale_post=sale_post,
-                    image=image_file,
-                    is_main=is_main,
-                    order=i
-                )
+            hash_data = f"{user_id}:{title}:{description}:{category}"
             
-            # Return the full post data with images
-            response_serializer = SalePostSerializer(sale_post, context={'request': request})
+            
+            # Check if a post with this hash already exists (within 5 minutes)
+            time_threshold = timezone.now() - datetime.timedelta(minutes=5)
+            existing_post = SalePost.objects.filter(
+                user=request.user,
+                
+                created_at__gte=time_threshold
+            ).first()
+            
+            if existing_post:
+                logger.info(f"Detected duplicate submission. Returning existing post ID: {existing_post.id}")
+                response_serializer = SalePostDetailSerializer(existing_post, context={'request': request})
+                return Response(response_serializer.data, status=status.HTTP_200_OK)
+            
+            # Add submission hash
+           
+            
+            # Add images back to data if they exist
+            if images_data:
+                data_copy['images'] = images_data
+            
+            serializer = self.get_serializer(data=data_copy)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            
+            # Get the newly created post with full data
+            post = SalePost.objects.get(pk=serializer.instance.id)
+            response_serializer = SalePostDetailSerializer(post, context={'request': request})
+            
             headers = self.get_success_headers(serializer.data)
-            logger.info(f"Successfully created sale post ID: {sale_post.id}")
             return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             
         except Exception as e:
@@ -136,6 +190,9 @@ class SalePostViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def my_posts(self, request):
         """Get all posts for the current user regardless of status."""
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            
         queryset = SalePost.objects.filter(user=request.user)
         
         # Apply status filter if provided
@@ -164,5 +221,5 @@ class SalePostViewSet(viewsets.ModelViewSet):
         post.status = 'sold'
         post.save(update_fields=['status'])
         
-        serializer = SalePostSerializer(post, context={'request': request})
+        serializer = SalePostDetailSerializer(post, context={'request': request})
         return Response(serializer.data)

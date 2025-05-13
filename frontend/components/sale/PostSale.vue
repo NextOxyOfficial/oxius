@@ -84,7 +84,7 @@
             Basic Details
           </h3>
 
-          <!-- Category Selection -->
+          <!-- Parent Category Selection -->
           <div class="mb-6">
             <label
               for="category"
@@ -120,6 +120,39 @@
             <p v-if="errors.category" class="mt-2 text-red-500 text-sm">
               {{ errors.category }}
             </p>
+          </div>
+
+          <!-- Child Category Selection -->
+          <div class="mb-6" v-if="formData.category && childCategories.length">
+            <label
+              for="childCategory"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Sub-Category</label
+            >
+            <div class="relative">
+              <select
+                id="childCategory"
+                v-model="formData.childCategory"
+                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+              >
+                <option value="">Select a sub-category (optional)</option>
+                <option
+                  v-for="childCategory in childCategories"
+                  :key="childCategory.id"
+                  :value="childCategory.id"
+                >
+                  {{ childCategory.name }}
+                </option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none"
+              >
+                <Icon
+                  name="heroicons:chevron-down"
+                  class="h-5 w-5 text-gray-400"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Title -->
@@ -212,496 +245,8 @@
           </div>
         </div>
 
-        <!-- Step 2: Category-specific fields -->
+        <!-- Step 2: Price and Location -->
         <div v-if="currentStep === 1" class="fade-transition px-6 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-800 mb-6">
-            {{ getCategoryName(formData.category) }} Details
-          </h3>
-
-          <!-- Property Fields -->
-          <div
-            v-if="
-              getCategoryName(formData.category)?.toLowerCase() === 'properties'
-            "
-            class="space-y-6"
-          >
-            <!-- Property Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Property Type <span class="text-red-500">*</span></label
-              >
-              <div class="relative">
-                <select
-                  v-model="formData.propertyType"
-                  class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
-                  required
-                >
-                  <option value="" disabled>Select property type</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="house">House</option>
-                  <option value="land">Land</option>
-                  <option value="commercial">Commercial Space</option>
-                  <option value="office">Office Space</option>
-                </select>
-                <div
-                  class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none"
-                >
-                  <Icon
-                    name="heroicons:chevron-down"
-                    class="h-5 w-5 text-gray-400"
-                  />
-                </div>
-              </div>
-              <p v-if="errors.propertyType" class="mt-2 text-red-500 text-sm">
-                {{ errors.propertyType }}
-              </p>
-            </div>
-
-            <!-- Size and Unit -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Size <span class="text-red-500">*</span></label
-                >
-                <input
-                  type="number"
-                  v-model="formData.size"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="Size"
-                  required
-                  min="1"
-                />
-                <p v-if="errors.size" class="mt-2 text-red-500 text-sm">
-                  {{ errors.size }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Unit</label
-                >
-                <select
-                  v-model="formData.unit"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  required
-                >
-                  <option value="sqft">Square Feet</option>
-                  <option value="sqm">Square Meter</option>
-                  <option value="katha">Katha</option>
-                  <option value="bigha">Bigha</option>
-                  <option value="acre">Acre</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Bedrooms & Bathrooms for apartments/houses -->
-            <div
-              v-if="['apartment', 'house'].includes(formData.propertyType)"
-              class="grid grid-cols-2 gap-4"
-            >
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Bedrooms</label
-                >
-                <select
-                  v-model="formData.bedrooms"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                >
-                  <option value="">Select</option>
-                  <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
-                  <option value="10+">10+</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Bathrooms</label
-                >
-                <select
-                  v-model="formData.bathrooms"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                >
-                  <option value="">Select</option>
-                  <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
-                  <option value="10+">10+</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Amenities -->
-            <div
-              v-if="
-                ['apartment', 'house', 'commercial', 'office'].includes(
-                  formData.propertyType
-                )
-              "
-            >
-              <label class="block text-sm font-medium text-gray-700 mb-3"
-                >Amenities</label
-              >
-              <div class="grid grid-cols-2 gap-4">
-                <label
-                  class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    v-model="formData.amenities.parking"
-                    class="rounded text-primary focus:ring-primary h-4 w-4"
-                  />
-                  <span class="text-sm text-gray-700">Parking</span>
-                </label>
-                <label
-                  class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    v-model="formData.amenities.elevator"
-                    class="rounded text-primary focus:ring-primary h-4 w-4"
-                  />
-                  <span class="text-sm text-gray-700">Elevator</span>
-                </label>
-                <label
-                  class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    v-model="formData.amenities.generator"
-                    class="rounded text-primary focus:ring-primary h-4 w-4"
-                  />
-                  <span class="text-sm text-gray-700">Generator</span>
-                </label>
-                <label
-                  class="flex items-center gap-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    v-model="formData.amenities.security"
-                    class="rounded text-primary focus:ring-primary h-4 w-4"
-                  />
-                  <span class="text-sm text-gray-700">Security</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Vehicle Fields -->
-          <div
-            v-if="
-              getCategoryName(formData.category)?.toLowerCase() === 'vehicles'
-            "
-            class="space-y-6"
-          >
-            <!-- Vehicle Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Vehicle Type <span class="text-red-500">*</span></label
-              >
-              <div class="relative">
-                <select
-                  v-model="formData.vehicleType"
-                  class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
-                  required
-                >
-                  <option value="" disabled>Select vehicle type</option>
-                  <option value="car">Car</option>
-                  <option value="motorcycle">Motorcycle</option>
-                  <option value="bicycle">Bicycle</option>
-                  <option value="truck">Truck</option>
-                  <option value="bus">Bus</option>
-                  <option value="other">Other Vehicle</option>
-                </select>
-                <div
-                  class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none"
-                >
-                  <Icon
-                    name="heroicons:chevron-down"
-                    class="h-5 w-5 text-gray-400"
-                  />
-                </div>
-              </div>
-              <p v-if="errors.vehicleType" class="mt-2 text-red-500 text-sm">
-                {{ errors.vehicleType }}
-              </p>
-            </div>
-
-            <!-- Make, Model, Year -->
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Make <span class="text-red-500">*</span></label
-                >
-                <input
-                  type="text"
-                  v-model="formData.make"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. Toyota"
-                  required
-                />
-                <p v-if="errors.make" class="mt-2 text-red-500 text-sm">
-                  {{ errors.make }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Model <span class="text-red-500">*</span></label
-                >
-                <input
-                  type="text"
-                  v-model="formData.model"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. Corolla"
-                  required
-                />
-                <p v-if="errors.model" class="mt-2 text-red-500 text-sm">
-                  {{ errors.model }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Year <span class="text-red-500">*</span></label
-                >
-                <input
-                  type="number"
-                  v-model="formData.year"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. 2022"
-                  min="1900"
-                  :max="new Date().getFullYear()"
-                  required
-                />
-                <p v-if="errors.year" class="mt-2 text-red-500 text-sm">
-                  {{ errors.year }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Mileage & Fuel Type -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Mileage (km)</label
-                >
-                <input
-                  type="number"
-                  v-model="formData.mileage"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. 15000"
-                  min="0"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Fuel Type</label
-                >
-                <select
-                  v-model="formData.fuelType"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                >
-                  <option value="">Select fuel type</option>
-                  <option value="petrol">Petrol</option>
-                  <option value="diesel">Diesel</option>
-                  <option value="cng">CNG</option>
-                  <option value="electric">Electric</option>
-                  <option value="hybrid">Hybrid</option>
-                  <option value="lpg">LPG</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Transmission & Registration -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Transmission</label
-                >
-                <select
-                  v-model="formData.transmission"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                >
-                  <option value="">Select transmission</option>
-                  <option value="manual">Manual</option>
-                  <option value="automatic">Automatic</option>
-                  <option value="semi-auto">Semi-Automatic</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Registration Year</label
-                >
-                <input
-                  type="number"
-                  v-model="formData.registrationYear"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. 2022"
-                  min="1900"
-                  :max="new Date().getFullYear()"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Electronics Fields -->
-          <div
-            v-if="
-              getCategoryName(formData.category)?.toLowerCase() ===
-              'electronics'
-            "
-            class="space-y-6"
-          >
-            <!-- Electronics Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Electronics Type <span class="text-red-500">*</span></label
-              >
-              <div class="relative">
-                <select
-                  v-model="formData.electronicsType"
-                  class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
-                  required
-                >
-                  <option value="" disabled>Select type</option>
-                  <option value="smartphone">Smartphone</option>
-                  <option value="laptop">Laptop</option>
-                  <option value="tablet">Tablet</option>
-                  <option value="desktop">Desktop Computer</option>
-                  <option value="camera">Camera</option>
-                  <option value="tv">Television</option>
-                  <option value="audio">Audio Equipment</option>
-                  <option value="gaming">Gaming Console</option>
-                  <option value="appliance">Home Appliance</option>
-                  <option value="other">Other Electronics</option>
-                </select>
-                <div
-                  class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none"
-                >
-                  <Icon
-                    name="heroicons:chevron-down"
-                    class="h-5 w-5 text-gray-400"
-                  />
-                </div>
-              </div>
-              <p
-                v-if="errors.electronicsType"
-                class="mt-2 text-red-500 text-sm"
-              >
-                {{ errors.electronicsType }}
-              </p>
-            </div>
-
-            <!-- Brand & Model -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Brand <span class="text-red-500">*</span></label
-                >
-                <input
-                  type="text"
-                  v-model="formData.brand"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. Samsung"
-                  required
-                />
-                <p v-if="errors.brand" class="mt-2 text-red-500 text-sm">
-                  {{ errors.brand }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Model <span class="text-red-500">*</span></label
-                >
-                <input
-                  type="text"
-                  v-model="formData.model"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                  placeholder="E.g. Galaxy S23"
-                  required
-                />
-                <p v-if="errors.model" class="mt-2 text-red-500 text-sm">
-                  {{ errors.model }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Age & Warranty -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Age</label
-                >
-                <div class="flex shadow-sm">
-                  <input
-                    type="number"
-                    v-model="formData.ageValue"
-                    class="w-2/3 border border-gray-300 rounded-l-md px-4 py-3 focus:ring-primary focus:border-primary"
-                    placeholder="Age"
-                    min="0"
-                  />
-                  <select
-                    v-model="formData.ageUnit"
-                    class="w-1/3 border-l-0 border border-gray-300 rounded-r-md px-2 py-3 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="days">Days</option>
-                    <option value="months">Months</option>
-                    <option value="years">Years</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Warranty Status</label
-                >
-                <select
-                  v-model="formData.warranty"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                >
-                  <option value="">Select status</option>
-                  <option value="under-warranty">Under Warranty</option>
-                  <option value="expired">Warranty Expired</option>
-                  <option value="no-warranty">No Warranty</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sports & B2B & Others -->
-          <div
-            v-if="
-              ['sports', 'b2b', 'others'].includes(
-                getCategoryName(formData.category)?.toLowerCase()
-              )
-            "
-            class="space-y-6"
-          >
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Type/Brand <span class="text-red-500">*</span></label
-              >
-              <input
-                type="text"
-                v-model="formData.itemType"
-                class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                placeholder="Enter type or brand"
-                required
-              />
-              <p v-if="errors.itemType" class="mt-2 text-red-500 text-sm">
-                {{ errors.itemType }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Age/Quality</label
-              >
-              <input
-                type="text"
-                v-model="formData.itemQuality"
-                class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
-                placeholder="Describe age or quality"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3: Price and Location -->
-        <div v-if="currentStep === 2" class="fade-transition px-6 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-800 mb-6">
             Pricing & Location
           </h3>
@@ -880,8 +425,8 @@
           </div>
         </div>
 
-        <!-- Step 4: Images Upload -->
-        <div v-if="currentStep === 3" class="fade-transition px-6 sm:px-8 pb-8">
+        <!-- Step 3: Images Upload -->
+        <div v-if="currentStep === 2" class="fade-transition px-6 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-800 mb-6">
             Upload Photos
           </h3>
@@ -1083,9 +628,11 @@ const props = defineProps({
     default: null,
   },
 });
-// Form data with all fields for different categories
+
+// Form data with simplified fields
 const formData = reactive({
   category: "",
+  childCategory: "",
   title: "",
   description: "",
   condition: "",
@@ -1098,42 +645,11 @@ const formData = reactive({
   phone: "",
   email: "",
   images: [],
-  termsAccepted: false,
-
-  // Property specific fields
-  propertyType: "",
-  size: "",
-  unit: "sqft",
-  bedrooms: "",
-  bathrooms: "",
-  amenities: {
-    parking: false,
-    elevator: false,
-    generator: false,
-    security: false,
-  },
-
-  // Vehicle specific fields
-  vehicleType: "",
-  make: "",
-  model: "",
-  year: "",
-  mileage: "",
-  fuelType: "",
-  transmission: "",
-  registrationYear: "",
-
-  // Electronics specific fields
-  electronicsType: "",
-  brand: "",
-  ageValue: "",
-  ageUnit: "months",
-  warranty: "",
-
-  // Other categories fields
-  itemType: "",
-  itemQuality: "",
+  termsAccepted: false
 });
+
+// Child categories based on selected parent category
+const childCategories = ref([]);
 
 // Emit events
 const emit = defineEmits(["post-saved"]);
@@ -1141,8 +657,8 @@ const emit = defineEmits(["post-saved"]);
 // Success modal state
 const showSuccessModal = ref(false);
 
-// Multi-step form
-const formSteps = ["Basic Info", "Details", "Price & Location", "Photos"];
+// Multi-step form - simplified to 3 steps
+const formSteps = ["Basic Info", "Price & Location", "Photos"];
 const currentStep = ref(0);
 
 const goToNextStep = () => {
@@ -1166,60 +682,63 @@ const conditions = [
   { label: "For Parts", value: "for-parts" },
 ];
 
-// Location data
-// geo filter
-
+// Location data 
 const regions = ref([]);
-const cities = ref();
-const upazilas = ref();
+const cities = ref([]);
+const upazilas = ref([]);
 
-const regions_response = await get(`/geo/regions/?country_name_eng=Bangladesh`);
-regions.value = regions_response.data;
+// Load regions (divisions)
+const loadRegions = async () => {
+  try {
+    const regions_response = await get(`/geo/regions/?country_name_eng=Bangladesh`);
+    regions.value = regions_response.data;
+  } catch (error) {
+    console.error("Error loading regions:", error);
+  }
+};
 
-if (formData.division) {
-  const cities_response = await get(
-    `/geo/cities/?region_name_eng=${formData.division}`
-  );
-  cities.value = cities_response.data;
-  console.log(cities_response.data);
-}
-if (formData.district) {
-  const thana_response = await get(
-    `/geo/upazila/?city_name_eng=${formData.district}`
-  );
-  upazilas.value = thana_response.data;
-  console.log(thana_response.data);
-}
+// Load regions on component mount
+loadRegions();
 
+// Watch for division change to load cities
 watch(
   () => formData.division,
-  async (newState) => {
-    console.log(newState);
-    if (newState) {
-      const cities_response = await get(
-        `/geo/cities/?region_name_eng=${newState}`
-      );
-      cities.value = cities_response.data;
-      console.log(cities_response.data);
+  async (newDivision) => {
+    if (newDivision) {
+      try {
+        const cities_response = await get(
+          `/geo/cities/?region_name_eng=${newDivision}`
+        );
+        cities.value = cities_response.data;
+        formData.district = ""; // Reset district when division changes
+        formData.area = ""; // Reset area when division changes
+      } catch (error) {
+        console.error("Error loading cities:", error);
+      }
+    } else {
+      cities.value = [];
     }
   }
 );
 
+// Watch for district change to load areas (upazilas)
 watch(
   () => formData.district,
-  async (newCity) => {
-    console.log(newCity);
-    if (newCity) {
-      const thana_response = await get(
-        `/geo/upazila/?city_name_eng=${newCity}`
-      );
-      upazilas.value = thana_response.data;
-      console.log(thana_response.data);
+  async (newDistrict) => {
+    if (newDistrict) {
+      try {
+        const thana_response = await get(
+          `/geo/upazila/?city_name_eng=${newDistrict}`
+        );
+        upazilas.value = thana_response.data;
+      } catch (error) {
+        console.error("Error loading upazilas:", error);
+      }
+    } else {
+      upazilas.value = [];
     }
   }
 );
-
-// geo filter
 
 // Status variables
 const isSubmitting = computed(() => apiLoading.value);
@@ -1239,7 +758,7 @@ watch(
         });
       } else {
         // Handle general error messages
-        console.log("Sometthing went wrong");
+        console.error("Error occurred:", newError);
       }
     }
   }
@@ -1248,7 +767,7 @@ watch(
 // Image preview URLs for display
 const imagePreviewUrls = ref([]);
 
-// File input references - fixed implementation
+// File input references
 const fileInputRefs = reactive({});
 
 // Open file upload dialog
@@ -1278,13 +797,13 @@ function handleFileUpload(event, index) {
   const reader = new FileReader();
 
   reader.onload = () => {
-    // Update preview URL
+    // Update preview URL and store base64 data
     const newImagePreviewUrls = [...imagePreviewUrls.value];
     newImagePreviewUrls[index] = reader.result;
     imagePreviewUrls.value = newImagePreviewUrls;
 
-    // Update formData.images (reactive object)
-    formData.images[index] = file;
+    // Store the base64 data for API submission
+    formData.images[index] = reader.result;
 
     // Clear errors if any
     errors.images = "";
@@ -1301,17 +820,12 @@ function handleFileUpload(event, index) {
 // Remove image
 function removeImage(index) {
   if (formData.images[index]) {
-    // Clear preview and revoke object URL if applicable
-    const previewUrl = imagePreviewUrls.value[index];
-    if (previewUrl?.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
+    // Update preview URLs
     const newImagePreviewUrls = [...imagePreviewUrls.value];
     newImagePreviewUrls[index] = null;
     imagePreviewUrls.value = newImagePreviewUrls;
 
-    // Remove image file from reactive formData
+    // Remove image from formData
     formData.images[index] = null;
 
     // Clear the file input value
@@ -1330,130 +844,52 @@ const getCategoryName = (categoryId) => {
   return category ? category.name : "";
 };
 
-// Reset category-specific fields when category changes
-const handleCategoryChange = () => {
-  // Reset property fields
-  formData.propertyType = "";
-  formData.size = "";
-  formData.unit = "sqft";
-  formData.bedrooms = "";
-  formData.bathrooms = "";
-  formData.amenities = {
-    parking: false,
-    elevator: false,
-    generator: false,
-    security: false,
-  };
-
-  // Reset vehicle fields
-  formData.vehicleType = "";
-  formData.make = "";
-  formData.model = "";
-  formData.year = "";
-  formData.mileage = "";
-  formData.fuelType = "";
-  formData.transmission = "";
-  formData.registrationYear = "";
-
-  // Reset electronics fields
-  formData.electronicsType = "";
-  formData.brand = "";
-  formData.ageValue = "";
-  formData.ageUnit = "months";
-  formData.warranty = "";
-
-  // Reset other categories fields
-  formData.itemType = "";
-  formData.itemQuality = "";
+// Handle parent category change - load child categories
+const handleCategoryChange = async () => {
+  formData.childCategory = ""; // Reset child category
+  
+  if (formData.category) {
+    try {
+      const response = await get(`/sale/child-categories/?parent_id=${formData.category}`);
+      childCategories.value = response.data || [];
+    } catch (error) {
+      console.error("Error loading child categories:", error);
+      childCategories.value = [];
+    }
+  } else {
+    childCategories.value = [];
+  }
 };
 
 // Validate current step
 const validateStep = () => {
-  errors.category = !formData.category ? "Please select a category" : "";
-
+  // Reset errors for this step
+  Object.keys(errors).forEach(key => errors[key] = '');
+  
   if (currentStep.value === 0) {
-    errors.title = !formData.title ? "Please enter a title" : "";
-    errors.description = !formData.description
-      ? "Please enter a description"
-      : "";
-    errors.condition = !formData.condition ? "Please select a condition" : "";
+    // Validate basic details
+    if (!formData.category) errors.category = "Please select a category";
+    if (!formData.title) errors.title = "Please enter a title";
+    if (!formData.description) errors.description = "Please enter a description";
+    if (!formData.condition) errors.condition = "Please select condition";
 
-    if (
-      !errors.category &&
-      !errors.title &&
-      !errors.description &&
-      !errors.condition
-    ) {
+    if (!errors.category && !errors.title && !errors.description && !errors.condition) {
       goToNextStep();
     }
   } else if (currentStep.value === 1) {
-    // Validate category-specific fields
-    if (getCategoryName(formData.category)?.toLowerCase() === "properties") {
-      // Properties
-      errors.propertyType = !formData.propertyType
-        ? "Please select property type"
-        : "";
-      errors.size = !formData.size ? "Please enter property size" : "";
-
-      if (!errors.propertyType && !errors.size) {
-        goToNextStep();
-      }
-    } else if (
-      getCategoryName(formData.category)?.toLowerCase() === "vehicles"
-    ) {
-      // Vehicles
-      errors.vehicleType = !formData.vehicleType
-        ? "Please select vehicle type"
-        : "";
-      errors.make = !formData.make ? "Please enter make" : "";
-      errors.model = !formData.model ? "Please enter model" : "";
-      errors.year = !formData.year ? "Please enter year" : "";
-
-      if (
-        !errors.vehicleType &&
-        !errors.make &&
-        !errors.model &&
-        !errors.year
-      ) {
-        goToNextStep();
-      }
-    } else if (
-      getCategoryName(formData.category)?.toLowerCase() === "electronics"
-    ) {
-      // Electronics
-      errors.electronicsType = !formData.electronicsType
-        ? "Please select electronics type"
-        : "";
-      errors.brand = !formData.brand ? "Please enter brand" : "";
-      errors.model = !formData.model ? "Please enter model" : "";
-
-      if (!errors.electronicsType && !errors.brand && !errors.model) {
-        goToNextStep();
-      }
-    } else {
-      errors.itemType = !formData.itemType ? "Please enter type or brand" : "";
-
-      if (!errors.itemType) {
-        goToNextStep();
-      }
+    // Validate price and location
+    if (!formData.negotiable && !formData.price) {
+      errors.price = "Please enter a price or mark as negotiable";
     }
-  } else if (currentStep.value === 2) {
-    if (!formData.negotiable) {
-      errors.price = !formData.price
-        ? "Please enter a price or mark as negotiable"
-        : "";
-    }
-
-    errors.division = !formData.division ? "Please select division" : "";
-    errors.district = !formData.district ? "Please select district" : "";
-    errors.area = !formData.area ? "Please select area" : "";
-    errors.detailedAddress = !formData.detailedAddress
-      ? "Please enter detailed address"
-      : "";
-    errors.phone = !formData.phone ? "Please enter phone number" : "";
+    
+    if (!formData.division) errors.division = "Please select division";
+    if (!formData.district) errors.district = "Please select district";
+    if (!formData.area) errors.area = "Please select area";
+    if (!formData.detailedAddress) errors.detailedAddress = "Please enter detailed address";
+    if (!formData.phone) errors.phone = "Please enter phone number";
 
     if (
-      (!errors.price || formData.negotiable) &&
+      (!errors.price) &&
       !errors.division &&
       !errors.district &&
       !errors.area &&
@@ -1462,35 +898,43 @@ const validateStep = () => {
     ) {
       goToNextStep();
     }
-  } else if (currentStep.value === 3) {
+  } else if (currentStep.value === 2) {
     // Check if at least one image is uploaded
-    if (!formData.images.some((img) => img)) {
+    if (!formData.images.some(img => img)) {
       errors.images = "Please upload at least one image";
       return;
     }
 
     // Validate terms acceptance
-    errors.termsAccepted = !formData.termsAccepted
-      ? "You must accept the terms and conditions"
-      : "";
+    if (!formData.termsAccepted) {
+      errors.termsAccepted = "You must accept the terms and conditions";
+      return;
+    }
 
+    // Submit the form if all validations pass
     if (!errors.images && !errors.termsAccepted) {
-      // Submit the form
       submitForm();
     }
   }
 };
 
 const submitForm = async () => {
+  // Check if already submitting to prevent duplicate submissions
+  if (isSubmitting.value) {
+    console.log("Form submission already in progress, preventing duplicate submission");
+    return;
+  }
+
   try {
     console.log("Starting form submission process...");
 
     const payload = {
       category: formData.category,
+      child_category: formData.childCategory || null,
       title: formData.title,
-      images: formData.images,
       description: formData.description,
       condition: formData.condition,
+      images: formData.images.filter(img => img), // Filter out null images
       division: formData.division,
       district: formData.district,
       area: formData.area,
@@ -1498,59 +942,21 @@ const submitForm = async () => {
       phone: formData.phone,
       email: formData.email || null,
       negotiable: formData.negotiable,
-      price: formData.negotiable ? formData.price || 0 : formData.price || 0,
-      amenities: formData.amenities || {},
+      price: formData.negotiable ? null : formData.price,
     };
 
-    // Add category-specific fields
-    const categoryName = getCategoryName(formData.category)?.toLowerCase();
-
-    if (categoryName === "properties") {
-      Object.assign(payload, {
-        property_type: formData.propertyType,
-        size: formData.size,
-        unit: formData.unit,
-        bedrooms: formData.bedrooms,
-        bathrooms: formData.bathrooms,
-      });
-    } else if (categoryName === "vehicles") {
-      Object.assign(payload, {
-        vehicle_type: formData.vehicleType,
-        make: formData.make,
-        model: formData.model,
-        year: formData.year,
-        mileage: formData.mileage,
-        fuel_type: formData.fuelType,
-        transmission: formData.transmission,
-        registration_year: formData.registrationYear,
-      });
-    } else if (categoryName === "electronics") {
-      Object.assign(payload, {
-        electronics_type: formData.electronicsType,
-        brand: formData.brand,
-        model: formData.model,
-        age_value: formData.ageValue,
-        age_unit: formData.ageUnit,
-        warranty: formData.warranty,
-      });
-    } else if (["sports", "b2b", "others"].includes(categoryName)) {
-      Object.assign(payload, {
-        item_type: formData.itemType,
-        item_quality: formData.itemQuality,
-      });
-    }
-
-    // Handle image uploads separately if needed
-    // If images need to be uploaded, do it in a separate API call before or after this
-    // Or convert images to base64 if the server accepts that (not recommended for large files)
     let result;
     if (props.editPost) {
       payload.id = props.editPost.id;
       result = await updateSalePost(props.editPost.id, payload);
     } else {
-      console.log("Payload to submit", payload);
       result = await createSalePost(payload);
       showSuccessModal.value = true;
+      
+      // Auto-close modal after 3 seconds
+      setTimeout(() => {
+        closeSuccessModal();
+      }, 3000);
     }
 
     console.log("Server response:", result);
@@ -1565,6 +971,15 @@ const submitForm = async () => {
 const closeSuccessModal = () => {
   showSuccessModal.value = false;
   resetForm();
+  
+  // Show success notification
+  const { showNotification } = useNotifications();
+  showNotification({
+    title: "Success!",
+    message: "Your listing has been submitted successfully and is under review.",
+    type: "success",
+    timeout: 5000
+  });
 };
 
 // Reset form to initial state
@@ -1573,30 +988,16 @@ const resetForm = () => {
   Object.keys(formData).forEach((key) => {
     if (key === "termsAccepted") {
       formData[key] = false;
-    } else if (typeof formData[key] === "object" && formData[key] !== null) {
-      if (Array.isArray(formData[key])) {
-        formData[key] = [];
-      } else {
-        Object.keys(formData[key]).forEach((subKey) => {
-          formData[key][subKey] = false;
-        });
-      }
+    } else if (key === "negotiable") {
+      formData[key] = false;
+    } else if (key === "images") {
+      formData[key] = [];
     } else {
       formData[key] = "";
     }
   });
 
-  formData.category = "";
-  formData.negotiable = false;
-  formData.unit = "sqft";
-  formData.ageUnit = "months";
-
   // Clean up image previews
-  imagePreviewUrls.value.forEach((url, index) => {
-    if (url) {
-      URL.revokeObjectURL(url);
-    }
-  });
   imagePreviewUrls.value = [];
 
   // Reset file inputs
@@ -1610,6 +1011,9 @@ const resetForm = () => {
   Object.keys(errors).forEach((key) => {
     errors[key] = "";
   });
+
+  // Reset child categories
+  childCategories.value = [];
 
   // Go back to first step
   currentStep.value = 0;
@@ -1633,12 +1037,23 @@ watch(
 );
 
 // Populate form with edit data
-const populateFormWithEditData = () => {
+const populateFormWithEditData = async () => {
   const post = props.editPost;
   if (!post) return;
 
+  // Load child categories
+  if (post.category) {
+    try {
+      const response = await get(`/sale/child-categories/?parent_id=${post.category}`);
+      childCategories.value = response.data || [];
+    } catch (error) {
+      console.error("Error loading child categories:", error);
+    }
+  }
+
   // Basic fields
   formData.category = post.category;
+  formData.childCategory = post.child_category || "";
   formData.title = post.title;
   formData.description = post.description;
   formData.condition = post.condition;
@@ -1655,63 +1070,15 @@ const populateFormWithEditData = () => {
   formData.phone = post.phone;
   formData.email = post.email;
 
-  // Category-specific fields
-  if (post.category === 1) {
-    // Properties
-    formData.propertyType = post.property_type;
-    formData.size = post.size;
-    formData.unit = post.unit || "sqft";
-    formData.bedrooms = post.bedrooms;
-    formData.bathrooms = post.bathrooms;
-
-    // Amenities
-    if (post.amenities) {
-      try {
-        const amenities =
-          typeof post.amenities === "string"
-            ? JSON.parse(post.amenities)
-            : post.amenities;
-
-        formData.amenities = {
-          parking: amenities.parking || false,
-          elevator: amenities.elevator || false,
-          generator: amenities.generator || false,
-          security: amenities.security || false,
-        };
-      } catch (e) {
-        console.error("Error parsing amenities:", e);
-      }
-    }
-  } else if (post.category === 2) {
-    // Vehicles
-    formData.vehicleType = post.vehicle_type;
-    formData.make = post.make;
-    formData.model = post.model;
-    formData.year = post.year;
-    formData.mileage = post.mileage;
-    formData.fuelType = post.fuel_type;
-    formData.transmission = post.transmission;
-    formData.registrationYear = post.registration_year;
-  } else if (post.category === 3) {
-    // Electronics
-    formData.electronicsType = post.electronics_type;
-    formData.brand = post.brand;
-    formData.model = post.model;
-    formData.ageValue = post.age_value;
-    formData.ageUnit = post.age_unit || "months";
-    formData.warranty = post.warranty;
-  } else if ([4, 5, 6].includes(post.category)) {
-    // Other categories
-    formData.itemType = post.item_type;
-    formData.itemQuality = post.item_quality;
-  }
-
   // Set existing images if available
   if (post.images && Array.isArray(post.images)) {
     post.images.forEach((image, index) => {
-      if (index < 8) {
-        // Maximum 8 images
-        imagePreviewUrls.value[index] = image.image || image;
+      if (index < 8) { // Maximum 8 images
+        const imageUrl = image.image || image;
+        imagePreviewUrls.value[index] = imageUrl;
+        // For editing, we just need to display the existing images
+        // The backend already has them, so we don't need to upload them again
+        formData.images[index] = imageUrl;
       }
     });
   }
