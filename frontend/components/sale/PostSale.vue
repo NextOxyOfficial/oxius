@@ -123,19 +123,20 @@
           </div>
 
           <!-- Child Category Selection -->
-          <div class="mb-6" v-if="formData.category && childCategories.length">
+          <div class="mb-6" v-if="formData.category">
             <label
               for="childCategory"
               class="block text-sm font-medium text-gray-700 mb-2"
-              >Sub-Category</label
+              >Sub Category <span v-if="childCategories.length" class="text-red-500">*</span></label
             >
             <div class="relative">
               <select
                 id="childCategory"
                 v-model="formData.childCategory"
                 class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+                :required="childCategories.length > 0"
               >
-                <option value="">Select a sub-category (optional)</option>
+                <option value="" disabled>{{ childCategories.length ? 'Select a sub category' : 'No sub categories available' }}</option>
                 <option
                   v-for="childCategory in childCategories"
                   :key="childCategory.id"
@@ -153,6 +154,9 @@
                 />
               </div>
             </div>
+            <p v-if="errors.childCategory" class="mt-2 text-red-500 text-sm">
+              {{ errors.childCategory }}
+            </p>
           </div>
 
           <!-- Title -->
@@ -607,7 +611,6 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useSalePost } from "~/composables/useSalePost";
-import { useNotifications } from "~/composables/useNotifications";
 const { get } = useApi();
 
 // Initialize composables
@@ -869,11 +872,17 @@ const validateStep = () => {
   if (currentStep.value === 0) {
     // Validate basic details
     if (!formData.category) errors.category = "Please select a category";
+    
+    // Validate child category if options are available
+    if (childCategories.value.length > 0 && !formData.childCategory) {
+      errors.childCategory = "Please select a sub category";
+    }
+    
     if (!formData.title) errors.title = "Please enter a title";
     if (!formData.description) errors.description = "Please enter a description";
     if (!formData.condition) errors.condition = "Please select condition";
 
-    if (!errors.category && !errors.title && !errors.description && !errors.condition) {
+    if (!errors.category && !errors.childCategory && !errors.title && !errors.description && !errors.condition) {
       goToNextStep();
     }
   } else if (currentStep.value === 1) {
@@ -927,30 +936,48 @@ const submitForm = async () => {
 
   try {
     console.log("Starting form submission process...");
-
-    const payload = {
+    
+    // Prepare form data as a regular object (not FormData)
+    const formDataObj = {
       category: formData.category,
-      child_category: formData.childCategory || null,
       title: formData.title,
       description: formData.description,
       condition: formData.condition,
-      images: formData.images.filter(img => img), // Filter out null images
       division: formData.division,
       district: formData.district,
       area: formData.area,
       detailed_address: formData.detailedAddress,
       phone: formData.phone,
-      email: formData.email || null,
       negotiable: formData.negotiable,
-      price: formData.negotiable ? null : formData.price,
     };
+    
+    // Add optional fields only if they have values
+    if (formData.childCategory) {
+      formDataObj.child_category = formData.childCategory;
+    }
+    
+    if (formData.email) {
+      formDataObj.email = formData.email;
+    }
+    
+    if (!formData.negotiable && formData.price) {
+      formDataObj.price = formData.price;
+    }
+    
+    // Convert base64 image strings to array of image data
+    // This depends on how your backend API expects images
+    // For now, we'll include them as base64 strings
+    if (formData.images && formData.images.filter(img => img).length > 0) {
+      formDataObj.images = formData.images.filter(img => img);
+    }
+
+    console.log("Submitting form data:", formDataObj);
 
     let result;
     if (props.editPost) {
-      payload.id = props.editPost.id;
-      result = await updateSalePost(props.editPost.id, payload);
+      result = await updateSalePost(props.editPost.id, formDataObj);
     } else {
-      result = await createSalePost(payload);
+      result = await createSalePost(formDataObj);
       showSuccessModal.value = true;
       
       // Auto-close modal after 3 seconds
@@ -963,7 +990,14 @@ const submitForm = async () => {
     emit("post-saved", result);
   } catch (error) {
     console.error("Error submitting form:", error);
-    // Display error message
+    // Use toast instead of showNotification since it doesn't exist in your composable
+    const toast = useToast();
+    toast.add({
+      title: "Error",
+      description: "Failed to submit your listing. Please try again.",
+      color: "red",
+      timeout: 5000
+    });
   }
 };
 

@@ -41,6 +41,23 @@ class SaleChildCategory(models.Model):
     def __str__(self):
         return f"{self.name} ({self.parent.name})"
 
+class SaleBanner(models.Model):
+    """Banner images for sale section"""
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ImageField(upload_to='sale_banners/')
+    link = models.URLField(max_length=500, blank=True, null=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Sale Banner'
+        verbose_name_plural = 'Sale Banners'
+        
+    def __str__(self):
+        return self.title or f"Banner {self.id}"
+
 class SalePost(models.Model):
     """Sale post model with simplified structure"""
     CONDITION_CHOICES = (

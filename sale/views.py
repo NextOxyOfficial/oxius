@@ -11,10 +11,11 @@ import hashlib
 from django.utils import timezone
 import datetime
 
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage
+from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner
 from .serializers import (
     SaleCategorySerializer, SaleChildCategorySerializer,
-    SalePostListSerializer, SalePostDetailSerializer, SalePostCreateSerializer
+    SalePostListSerializer, SalePostDetailSerializer, SalePostCreateSerializer,
+    SaleBannerSerializer
 )
 
 # Set up logger
@@ -46,6 +47,11 @@ class SaleChildCategoryViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(parent_id=parent_id)
             
         return queryset
+
+class SaleBannerViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for listing and retrieving sale banners"""
+    queryset = SaleBanner.objects.all().order_by('order')
+    serializer_class = SaleBannerSerializer
 
 class SalePostViewSet(viewsets.ModelViewSet):
     """ViewSet for handling sale posts"""
@@ -122,23 +128,36 @@ class SalePostViewSet(viewsets.ModelViewSet):
         logger.info(f"Creating sale post with data: {request.data}")
         try:
             # Handle base64 image data
-            data_copy = request.data.copy()
+            data_copy = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
             images_data = []
             
             # Process base64 images if they exist
             if 'images' in data_copy:
-                images = data_copy.getlist('images')
+                # Handle both list and direct access for images
+                if hasattr(data_copy, 'getlist'):
+                    images = data_copy.getlist('images')
+                else:
+                    images = data_copy['images'] if isinstance(data_copy['images'], list) else [data_copy['images']]
+                
+                logger.info(f"Processing {len(images)} images")
+                
                 for image_data in images:
                     if isinstance(image_data, str) and image_data.startswith('data:image'):
                         # It's a base64 string
-                        format, imgstr = image_data.split(';base64,')
-                        ext = format.split('/')[-1]
-                        data = base64.b64decode(imgstr)
-                        file_content = ContentFile(data)
-                        images_data.append(file_content)
+                        try:
+                            format, imgstr = image_data.split(';base64,')
+                            ext = format.split('/')[-1]
+                            data = base64.b64decode(imgstr)
+                            file_name = f"sale_image_{timezone.now().strftime('%Y%m%d%H%M%S')}.{ext}"
+                            file_content = ContentFile(data, name=file_name)
+                            images_data.append(file_content)
+                            logger.info(f"Successfully processed base64 image: {file_name}")
+                        except Exception as e:
+                            logger.error(f"Error processing base64 image: {str(e)}")
                     else:
                         # It's a file upload
                         images_data.append(image_data)
+                        logger.info("Added non-base64 image")
                 
                 # Remove images from data to avoid serializer errors
                 del data_copy['images']
@@ -151,12 +170,11 @@ class SalePostViewSet(viewsets.ModelViewSet):
             
             hash_data = f"{user_id}:{title}:{description}:{category}"
             
-            
             # Check if a post with this hash already exists (within 5 minutes)
             time_threshold = timezone.now() - datetime.timedelta(minutes=5)
             existing_post = SalePost.objects.filter(
                 user=request.user,
-                
+                title=title,
                 created_at__gte=time_threshold
             ).first()
             
@@ -165,15 +183,22 @@ class SalePostViewSet(viewsets.ModelViewSet):
                 response_serializer = SalePostDetailSerializer(existing_post, context={'request': request})
                 return Response(response_serializer.data, status=status.HTTP_200_OK)
             
-            # Add submission hash
-           
-            
             # Add images back to data if they exist
             if images_data:
                 data_copy['images'] = images_data
             
+            # Ensure boolean fields are correctly parsed
+            if 'negotiable' in data_copy and isinstance(data_copy['negotiable'], str):
+                data_copy['negotiable'] = data_copy['negotiable'].lower() == 'true'
+            
+            logger.info(f"Final data being sent to serializer: {data_copy}")
+            
             serializer = self.get_serializer(data=data_copy)
-            serializer.is_valid(raise_exception=True)
+            
+            if not serializer.is_valid():
+                logger.error(f"Serializer validation errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
             self.perform_create(serializer)
             
             # Get the newly created post with full data

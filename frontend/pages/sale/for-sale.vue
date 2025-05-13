@@ -947,7 +947,8 @@ watch(currentPage, (newPage) => {
 // Fetch categories from the API
 async function fetchCategories() {
   try {
-    const response = await get('/for-sale-categories/');
+    // Update to use the correct endpoint
+    const response = await get('/sale/categories/');
     if (response && Array.isArray(response.data)) {
       categories.value = response.data;
     } else {
@@ -988,32 +989,49 @@ async function loadPosts(page = 1) {
     const queryParams = {
       page,
       page_size: perPage.value,
-      status: 'active' // Only show active listings
+      ordering: filters.value.sort === '' ? '-created_at' : filters.value.sort
     };
     
-    // Add filter parameters
-    if (filters.value.category) queryParams.category = filters.value.category;
-    if (filters.value.division) queryParams.division = filters.value.division;
-    if (filters.value.district) queryParams.district = filters.value.district;
-    if (filters.value.area) queryParams.area = filters.value.area;
-    if (filters.value.minPrice) queryParams.min_price = filters.value.minPrice;
-    if (filters.value.maxPrice) queryParams.max_price = filters.value.maxPrice;
-    if (filters.value.condition) queryParams.condition = filters.value.condition;
-    if (filters.value.search) queryParams.search = filters.value.search;
+    // Add category filter
+    if (filters.value.category) {
+      queryParams.category = filters.value.category;
+    }
     
-    // Add subcategory filters based on category
+    // Add child category filter if available
     if (filters.value.subcategory) {
-      switch (parseInt(filters.value.category)) {
-        case 1:
-          queryParams.property_type = filters.value.subcategory;
-          break;
-        case 2:
-          queryParams.vehicle_type = filters.value.subcategory;
-          break;
-        case 3:
-          queryParams.electronics_type = filters.value.subcategory;
-          break;
-      }
+      queryParams.child_category = filters.value.subcategory;
+    }
+    
+    // Add condition filter
+    if (filters.value.condition) {
+      queryParams.condition = filters.value.condition;
+    }
+    
+    // Add price range
+    if (filters.value.minPrice) {
+      queryParams.min_price = filters.value.minPrice;
+    }
+    
+    if (filters.value.maxPrice) {
+      queryParams.max_price = filters.value.maxPrice;
+    }
+    
+    // Add location filters
+    if (filters.value.division) {
+      queryParams.division = filters.value.division;
+    }
+    
+    if (filters.value.district) {
+      queryParams.district = filters.value.district;
+    }
+    
+    if (filters.value.area) {
+      queryParams.area = filters.value.area;
+    }
+    
+    // Add specific category type filters if needed
+    if (filters.value.category === 'electronics' && filters.value.subcategory) {
+      queryParams.electronics_type = filters.value.subcategory;
     }
     
     // Add sorting
@@ -1034,7 +1052,8 @@ async function loadPosts(page = 1) {
         queryParams.ordering = '-created_at'; // newest first (default)
     }
     
-    const response = await get('/sale-posts/', { params: queryParams });
+    // Use the correct API endpoint
+    const response = await get('/sale/posts/', { params: queryParams });
     
     if (response && response.data) {
       const data = response.data;
@@ -1049,11 +1068,6 @@ async function loadPosts(page = 1) {
         posts.value = data;
         totalPosts.value = data.length;
       }
-      // Empty response
-      else {
-        posts.value = [];
-        totalPosts.value = 0;
-      }
     } else {
       posts.value = [];
       totalPosts.value = 0;
@@ -1064,7 +1078,7 @@ async function loadPosts(page = 1) {
     totalPosts.value = 0;
     showNotification({
       title: 'Error',
-      text: 'Failed to load listings. Please try again later.',
+      content: 'Failed to load listings. Please try again.',
       type: 'error'
     });
   } finally {

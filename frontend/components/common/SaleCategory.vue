@@ -574,8 +574,9 @@ const handleSwipe = () => {
 const fetchCategories = async () => {
   try {
     isLoadingCategories.value = true;
-    const response = await get("/sale/for-sale-categories/");
-    console.log("API Response:", response.data);
+    // Update to the correct API endpoint
+    const response = await get("/sale/categories/");
+    console.log("API Response for categories:", response.data);
     if (response.data && Array.isArray(response.data)) {
       categories.value = response.data;
 
@@ -599,7 +600,8 @@ const fetchCategories = async () => {
 const fetchBanners = async () => {
   try {
     isLoadingBanners.value = true;
-    const response = await get("/sale/for-sale-banners/");
+    // Update to the correct API endpoint
+    const response = await get("/sale/banners/");
     if (response.data && Array.isArray(response.data)) {
       banners.value = response.data;
     }
@@ -620,28 +622,25 @@ const fetchCategoryPosts = async () => {
     isLoading.value = true;
     console.log("Fetching posts for category:", selectedCategory.value);
 
-    // This endpoint should match your Django backend's URL structure
-    // Based on your backend code, the correct endpoint is /api/sale-posts/ with category as a query parameter
-    const { data, error } = await get(
-      `/sale/sale-posts/?category=${selectedCategory.value}`
-    );
+    // Update to the correct API endpoint
+    const response = await get(`/sale/posts/?category=${selectedCategory.value}`);
 
-    if (error) {
+    if (response.error) {
       console.error("Error response from API:", error);
       categoryPosts.value = [];
       return;
     }
 
-    console.log("API response for category posts:", data);
+    console.log("API response for category posts:", response.data);
 
-    if (data && Array.isArray(data.results)) {
+    if (response.data && Array.isArray(response.data.results)) {
       // Handle paginated response
-      categoryPosts.value = data.results;
-    } else if (data && Array.isArray(data)) {
+      categoryPosts.value = response.data.results;
+    } else if (response.data && Array.isArray(response.data)) {
       // Handle non-paginated response
-      categoryPosts.value = data;
+      categoryPosts.value = response.data;
     } else {
-      console.warn("Unexpected API response format:", data);
+      console.warn("Unexpected API response format:", response.data);
       categoryPosts.value = [];
     }
   } catch (error) {

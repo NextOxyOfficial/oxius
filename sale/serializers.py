@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage
+from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner
 
 class SaleCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,6 +17,12 @@ class SaleImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = SaleImage
         fields = ['id', 'image', 'is_main', 'order']
+        read_only_fields = ['id']
+
+class SaleBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SaleBanner
+        fields = ['id', 'title', 'image', 'link', 'order']
         read_only_fields = ['id']
 
 class SalePostListSerializer(serializers.ModelSerializer):

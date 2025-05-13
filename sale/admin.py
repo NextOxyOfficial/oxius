@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage
+from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner
 
 class SaleImageInline(admin.TabularInline):
     model = SaleImage
@@ -76,6 +76,20 @@ class SaleImageAdmin(admin.ModelAdmin):
     list_filter = ('is_main', 'created_at')
     list_editable = ('is_main', 'order')
     search_fields = ('post__title',)
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height: 50px;" />', obj.image.url)
+        return "No Image"
+    
+    image_preview.short_description = 'Preview'
+
+@admin.register(SaleBanner)
+class SaleBannerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'image_preview', 'link', 'order', 'created_at')
+    list_filter = ('created_at',)
+    list_editable = ('title', 'link', 'order')
+    search_fields = ('title',)
     
     def image_preview(self, obj):
         if obj.image:

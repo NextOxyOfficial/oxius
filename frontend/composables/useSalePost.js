@@ -18,10 +18,23 @@ export function useSalePost() {
 
     try {
       console.log("Submitting sale post data...", formData);
-      // Send to server - using api directly without additional headers
-      const response = await api.post("/sale/sale-posts/", formData);
+
+      // Log authentication state for debugging
+      console.log(
+        "Authentication state:",
+        user.value ? "Logged in" : "Not logged in"
+      );
+
+      // Send to server with explicit authentication headers
+      const response = await api.post("/sale/posts/", formData, {
+        headers: {
+          // Ensure proper content type is set
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.error) {
+        console.error("API Error:", response.error);
         throw response.error;
       }
 
@@ -30,7 +43,18 @@ export function useSalePost() {
       return response.data;
     } catch (err) {
       console.error("Error creating sale post:", err);
-      error.value = err.response?.data || err || "Failed to create sale post";
+      // Provide more detailed error information
+      if (err.response) {
+        console.error("Response status:", err.response.status);
+        console.error("Response data:", err.response.data);
+        error.value =
+          err.response.data || "Server error: " + err.response.status;
+      } else if (err.request) {
+        console.error("No response received");
+        error.value = "No response from server. Please check your connection.";
+      } else {
+        error.value = err.message || "Failed to create sale post";
+      }
       throw error.value;
     } finally {
       loading.value = false;
@@ -49,7 +73,7 @@ export function useSalePost() {
         queryString = "?" + new URLSearchParams(params).toString();
       }
 
-      const response = await api.get("/sale/sale-posts/" + queryString);
+      const response = await api.get("/sale/posts/" + queryString);
 
       if (response.error) {
         throw response.error;
@@ -72,7 +96,7 @@ export function useSalePost() {
     error.value = null;
 
     try {
-      const response = await api.get(`/sale/sale-posts/${id}/`);
+      const response = await api.get(`/sale/posts/${id}/`);
 
       if (response.error) {
         throw response.error;
@@ -102,9 +126,7 @@ export function useSalePost() {
       }
 
       // The correct URL format for an action in Django REST Framework ViewSet
-      const response = await api.get(
-        "/sale/sale-posts/my_posts/" + queryString
-      );
+      const response = await api.get("/sale/posts/my_posts/" + queryString);
 
       if (response.error) {
         throw response.error;
@@ -134,10 +156,10 @@ export function useSalePost() {
       // Use different methods based on the data type
       if (data instanceof FormData) {
         // For FormData (used when updating with files/images), use post method
-        response = await api.post(`/sale/sale-posts/${id}/`, data);
+        response = await api.post(`/sale/posts/${id}/`, data);
       } else {
         // For JSON data (used for simple updates like status), use patch method
-        response = await api.patch(`/sale/sale-posts/${id}/`, data);
+        response = await api.patch(`/sale/posts/${id}/`, data);
       }
 
       if (response.error) {
@@ -163,7 +185,7 @@ export function useSalePost() {
     error.value = null;
 
     try {
-      const response = await api.del(`/sale/sale-posts/${id}/`);
+      const response = await api.del(`/sale/posts/${id}/`);
 
       if (response.error) {
         throw response.error;
