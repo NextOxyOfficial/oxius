@@ -11,11 +11,11 @@ import hashlib
 from django.utils import timezone
 import datetime
 
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner
+from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner, SaleCondition
 from .serializers import (
     SaleCategorySerializer, SaleChildCategorySerializer,
     SalePostListSerializer, SalePostDetailSerializer, SalePostCreateSerializer,
-    SaleBannerSerializer
+    SaleBannerSerializer, SaleConditionSerializer
 )
 
 # Set up logger
@@ -52,6 +52,11 @@ class SaleBannerViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving sale banners"""
     queryset = SaleBanner.objects.all().order_by('order')
     serializer_class = SaleBannerSerializer
+
+class SaleConditionViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for listing available conditions for sale items"""
+    queryset = SaleCondition.objects.filter(is_active=True).order_by('order', 'name')
+    serializer_class = SaleConditionSerializer
 
 class SalePostViewSet(viewsets.ModelViewSet):
     """ViewSet for handling sale posts"""
@@ -130,6 +135,21 @@ class SalePostViewSet(viewsets.ModelViewSet):
             # Handle base64 image data
             data_copy = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
             images_data = []
+            
+            # Debug condition values
+            logger.info(f"Condition value received: {data_copy.get('condition')}")
+            
+            # Check if the condition exists in the database
+            from .models import SaleCondition
+            condition_value = data_copy.get('condition')
+            if condition_value:
+                condition_obj = SaleCondition.objects.filter(value=condition_value).first()
+                logger.info(f"Found matching condition object: {condition_obj}")
+                if not condition_obj:
+                    logger.warning(f"No matching condition found in database for value: {condition_value}")
+                    # List all available conditions for debugging
+                    all_conditions = SaleCondition.objects.all()
+                    logger.info(f"Available conditions: {list(all_conditions.values_list('value', flat=True))}")
             
             # Process base64 images if they exist
             if 'images' in data_copy:

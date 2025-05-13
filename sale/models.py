@@ -58,8 +58,27 @@ class SaleBanner(models.Model):
     def __str__(self):
         return self.title or f"Banner {self.id}"
 
+class SaleCondition(models.Model):
+    """Condition options for sale items that can be managed from the admin panel"""
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
+    name = models.CharField(max_length=100, help_text="Display name (e.g., 'Brand New')")
+    value = models.CharField(max_length=100, unique=True, help_text="Value for database (e.g., 'brand-new')")
+    description = models.TextField(blank=True, null=True, help_text="Optional description of this condition")
+    order = models.PositiveIntegerField(default=0, help_text="Display order in the dropdown")
+    is_active = models.BooleanField(default=True, help_text="Whether this condition is currently available for selection")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = 'Sale Condition'
+        verbose_name_plural = 'Sale Conditions'
+        
+    def __str__(self):
+        return self.name
+
 class SalePost(models.Model):
     """Sale post model with simplified structure"""
+    # Keeping CONDITION_CHOICES for backward compatibility and as fallback
     CONDITION_CHOICES = (
         ('brand-new', 'Brand New'),
         ('like-new', 'Like New'),
@@ -83,7 +102,17 @@ class SalePost(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=300, unique=True, blank=True)
     description = models.TextField()
-    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
+    
+    # Changed to allow any value to support dynamic conditions from SaleCondition model
+    condition = models.CharField(max_length=100)
+    condition_object = models.ForeignKey(
+        SaleCondition, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='posts',
+        verbose_name="Condition"
+    )
     
     # Price information
     price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
@@ -130,6 +159,15 @@ class SalePost(models.Model):
                 truncated_base = base_slug[:max_base_length]
                 self.slug = f"{truncated_base}-{unique_id}"
         
+        # Link to condition object if available
+        if self.condition and not self.condition_object:
+            try:
+                condition_obj = SaleCondition.objects.filter(value=self.condition).first()
+                if condition_obj:
+                    self.condition_object = condition_obj
+            except:
+                pass
+                
         super().save(*args, **kwargs)
 
 class SaleImage(models.Model):

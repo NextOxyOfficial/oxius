@@ -677,13 +677,40 @@ const goToPreviousStep = () => {
 };
 
 // Conditions for items
-const conditions = [
-  { label: "Brand New", value: "brand-new" },
-  { label: "Like New", value: "like-new" },
-  { label: "Good", value: "good" },
-  { label: "Fair", value: "fair" },
-  { label: "For Parts", value: "for-parts" },
-];
+const conditions = ref([]);
+
+// Load all available conditions from backend
+const loadConditions = async () => {
+  try {
+    const response = await get('/sale/conditions/');
+    if (response && Array.isArray(response.data)) {
+      conditions.value = response.data.map(condition => ({
+        label: condition.name,
+        value: condition.value,
+        description: condition.description
+      }));
+    } else {
+      // Fallback to hardcoded conditions if API fails
+      conditions.value = [
+        { label: "Brand New", value: "brand-new" },
+        { label: "Like New", value: "like-new" },
+        { label: "Good", value: "good" },
+        { label: "Fair", value: "fair" },
+        { label: "For Parts", value: "for-parts" }
+      ];
+    }
+  } catch (error) {
+    console.error("Error loading conditions:", error);
+    // Use fallback conditions
+    conditions.value = [
+      { label: "Brand New", value: "brand-new" },
+      { label: "Like New", value: "like-new" },
+      { label: "Good", value: "good" },
+      { label: "Fair", value: "fair" },
+      { label: "For Parts", value: "for-parts" }
+    ];
+  }
+};
 
 // Location data 
 const regions = ref([]);
@@ -702,6 +729,9 @@ const loadRegions = async () => {
 
 // Load regions on component mount
 loadRegions();
+
+// Load conditions on component mount
+loadConditions();
 
 // Watch for division change to load cities
 watch(
@@ -950,6 +980,10 @@ const submitForm = async () => {
       phone: formData.phone,
       negotiable: formData.negotiable,
     };
+    
+    // Debug condition value
+    console.log("Condition value being sent:", formData.condition);
+    console.log("Available conditions:", conditions.value);
     
     // Add optional fields only if they have values
     if (formData.childCategory) {

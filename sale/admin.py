@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner
+from .models import (
+    SaleCategory, SaleChildCategory, SalePost, 
+    SaleImage, SaleBanner, SaleCondition
+)
 
 class SaleImageInline(admin.TabularInline):
     model = SaleImage
@@ -15,10 +18,15 @@ class SaleImageInline(admin.TabularInline):
     
     image_preview.short_description = 'Preview'
 
+class SaleChildCategoryInline(admin.TabularInline):
+    model = SaleChildCategory
+    extra = 1
+
 @admin.register(SaleCategory)
 class SaleCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'icon_preview', 'created_at')
+    list_display = ('name', 'icon_preview', 'id', 'created_at')
     search_fields = ('name',)
+    inlines = [SaleChildCategoryInline]
     
     def icon_preview(self, obj):
         if obj.icon:
@@ -29,7 +37,7 @@ class SaleCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(SaleChildCategory)
 class SaleChildCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent', 'icon_preview', 'created_at')
+    list_display = ('name', 'parent', 'icon_preview', 'id', 'created_at')
     list_filter = ('parent',)
     search_fields = ('name', 'parent__name')
     
@@ -40,10 +48,18 @@ class SaleChildCategoryAdmin(admin.ModelAdmin):
     
     icon_preview.short_description = 'Icon'
 
+@admin.register(SaleCondition)
+class SaleConditionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'value', 'order', 'is_active', 'created_at')
+    search_fields = ('name', 'value', 'description')
+    list_filter = ('is_active',)
+    ordering = ('order', 'name')
+    list_editable = ('order', 'is_active')
+
 @admin.register(SalePost)
 class SalePostAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'category', 'child_category', 'price', 'negotiable', 'status', 'created_at')
-    list_filter = ('status', 'category', 'child_category', 'condition', 'negotiable')
+    list_filter = ('status', 'category', 'child_category', 'condition', 'negotiable', 'created_at', 'condition_object')
     search_fields = ('title', 'description', 'user__username', 'user__email')
     readonly_fields = ('slug', 'view_count', 'created_at', 'updated_at' )
     inlines = [SaleImageInline]
@@ -64,6 +80,7 @@ class SalePostAdmin(admin.ModelAdmin):
             'fields': ('user', 'status', 'view_count', 'created_at', 'updated_at')
         }),
     )
+    date_hierarchy = 'created_at'
     
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object

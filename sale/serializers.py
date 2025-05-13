@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner
+from .models import (
+    SaleCategory, SaleChildCategory, SalePost, 
+    SaleImage, SaleBanner, SaleCondition
+)
 
 class SaleCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +27,12 @@ class SaleBannerSerializer(serializers.ModelSerializer):
         model = SaleBanner
         fields = ['id', 'title', 'image', 'link', 'order']
         read_only_fields = ['id']
+
+class SaleConditionSerializer(serializers.ModelSerializer):
+    """Serializer for condition options available for sale posts"""
+    class Meta:
+        model = SaleCondition
+        fields = ['id', 'name', 'value', 'description']
 
 class SalePostListSerializer(serializers.ModelSerializer):
     """Serializer for listing sale posts with minimal information"""
@@ -125,6 +134,18 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         # Handle negotiable price
         if validated_data.get('negotiable') and not validated_data.get('price'):
             validated_data['price'] = None
+        
+        # Find matching condition_object if applicable
+        from .models import SaleCondition
+        condition_value = validated_data.get('condition')
+        if condition_value:
+            try:
+                # Look up the condition object by value
+                condition_object = SaleCondition.objects.filter(value=condition_value).first()
+                if condition_object:
+                    validated_data['condition_object'] = condition_object
+            except Exception as e:
+                print(f"Error finding condition object: {e}")
             
         # Create the post
         post = SalePost.objects.create(**validated_data)
