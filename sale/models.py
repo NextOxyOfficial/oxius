@@ -32,6 +32,12 @@ class ForSaleSubCategory(models.Model):
     category = models.ForeignKey(ForSaleCategory, on_delete=models.CASCADE, related_name='subcategories')
     name = models.CharField(max_length=255)
     icon = models.ImageField(upload_to='subcategory_icons/', null=True, blank=True)
+    
+class SalePostImage(models.Model):
+    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
+    image = models.ImageField(upload_to='sale_posts_images/')
+    is_main = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class SalePost(models.Model):
     
@@ -58,6 +64,7 @@ class SalePost(models.Model):
     description = models.TextField()
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     category = models.ForeignKey(ForSaleCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    images = models.ManyToManyField(SalePostImage, blank=True,related_name='sale_posts')
     
     # Price info
     price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
@@ -139,18 +146,6 @@ class SalePost(models.Model):
         super().save(*args, **kwargs)
 
 
-class SalePostImage(models.Model):
-    id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
-    sale_post = models.ForeignKey(SalePost, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='sale_posts_images/')
-    is_main = models.BooleanField(default=False)
-    order = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
     
-    class Meta:
-        ordering = ['order']
-    
-    def __str__(self):
-        return f"Image for {self.sale_post.title}"
 
 

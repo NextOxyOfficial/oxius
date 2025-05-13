@@ -1259,62 +1259,70 @@ const openFileUpload = (index) => {
 };
 
 // Handle file upload
-const handleFileUpload = (event, index) => {
+function handleFileUpload(event, index) {
   const file = event.target.files[0];
-  if (file) {
-    // Validate file type
-    if (!file.type.match("image.*")) {
-      errors.images = "Please upload only image files";
-      return;
-    }
+  if (!file) return;
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      errors.images = "Image size should be less than 5MB";
-      return;
-    }
+  // Validate file type
+  if (!file.type.match("image.*")) {
+    errors.images = "Please upload only image files";
+    return;
+  }
 
-    // Create URL for preview
-    const imageUrl = URL.createObjectURL(file);
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    errors.images = "Image size should be less than 5MB";
+    return;
+  }
 
-    // Create a new array if needed to maintain reactivity
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    // Update preview URL
     const newImagePreviewUrls = [...imagePreviewUrls.value];
-    newImagePreviewUrls[index] = imageUrl;
+    newImagePreviewUrls[index] = reader.result;
     imagePreviewUrls.value = newImagePreviewUrls;
 
-    // Update images array while preserving reactivity
-    const newImages = [...formData.images];
-    newImages[index] = file;
-    formData.images = newImages;
+    // Update formData.images (reactive object)
+    formData.images[index] = file;
 
-    // Clear error if any
-    if (errors.images) {
-      errors.images = "";
-    }
-  }
-};
+    // Clear errors if any
+    errors.images = "";
+  };
+
+  reader.onerror = (error) => {
+    errors.images = "Failed to read image file.";
+    console.error("FileReader error:", error);
+  };
+
+  reader.readAsDataURL(file);
+}
 
 // Remove image
-const removeImage = (index) => {
+function removeImage(index) {
   if (formData.images[index]) {
-    // Revoke URL to prevent memory leaks
-    URL.revokeObjectURL(imagePreviewUrls.value[index]);
+    // Clear preview and revoke object URL if applicable
+    const previewUrl = imagePreviewUrls.value[index];
+    if (previewUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
 
-    // Remove image from arrays while preserving reactivity
     const newImagePreviewUrls = [...imagePreviewUrls.value];
     newImagePreviewUrls[index] = null;
     imagePreviewUrls.value = newImagePreviewUrls;
 
-    const newImages = [...formData.images];
-    newImages[index] = null;
-    formData.images = newImages;
+    // Remove image file from reactive formData
+    formData.images[index] = null;
 
-    // Reset file input
+    // Clear the file input value
     if (fileInputRefs[`fileInput${index}`]) {
       fileInputRefs[`fileInput${index}`].value = "";
     }
+
+    // Clear any error
+    errors.images = "";
   }
-};
+}
 
 // Get category name
 const getCategoryName = (categoryId) => {

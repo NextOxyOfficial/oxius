@@ -3,17 +3,7 @@ from django.utils.safestring import mark_safe
 from .models import *
 from django.utils.html import format_html
 
-class SalePostImageInline(admin.TabularInline):
-    model = SalePostImage
-    extra = 1
-    readonly_fields = ['image_preview']
-    
-    def image_preview(self, obj):
-        if obj.image:
-            return mark_safe(f'<img src="{obj.image.url}" style="max-height: 100px; max-width: 100px;" />')
-        return 'No image'
-    
-    image_preview.short_description = 'Preview'
+
 
 @admin.register(SalePost)
 class SalePostAdmin(admin.ModelAdmin):
@@ -22,7 +12,6 @@ class SalePostAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description', 'user__username', 'user__email']
     readonly_fields = ('created_at', 'updated_at', 'slug', 'view_count')  # Changed to tuple
     date_hierarchy = 'created_at'
-    inlines = [SalePostImageInline]
     fieldsets = (
         ('Basic Information', {
             'fields': ('title', 'slug', 'description', 'condition', 'category')
@@ -62,19 +51,8 @@ class SalePostAdmin(admin.ModelAdmin):
             return self.readonly_fields + ('user',)  # This works with tuples
         return self.readonly_fields
 
-@admin.register(SalePostImage)
-class SalePostImageAdmin(admin.ModelAdmin):
-    list_display = ['sale_post', 'is_main', 'order', 'created_at', 'image_preview']
-    list_filter = ['is_main', 'created_at']
-    search_fields = ['sale_post__title']
-    
-    def image_preview(self, obj):
-        if obj.image:
-            return mark_safe(f'<img src="{obj.image.url}" style="max-height: 50px; max-width: 50px;" />')
-        return 'No image'
-    
-    image_preview.short_description = 'Preview'
-    
+admin.site.register(SalePostImage)
+
     
 # Register For Sale models
 class ForSaleCategoryAdmin(admin.ModelAdmin):
