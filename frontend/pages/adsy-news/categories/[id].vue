@@ -161,7 +161,7 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="font-medium text-sm sm:text-lg mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
+                  class="font-medium text-sm sm:text-base mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
                 >
                   {{ article.title }}
                 </h3>

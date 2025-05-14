@@ -3,7 +3,7 @@
     <div>
       <div class="py-4 text-start relative">
         <h1
-          class="text-lg ml-3 font-medium bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
+          class="text-lg sm:text-xl ml-3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
         >
           {{ $t("classified_service") }}
         </h1>
