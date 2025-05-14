@@ -19,16 +19,6 @@
         </div>
         
         <div class="flex items-center gap-2">
-          <button 
-            @click="openSearchFilters = !openSearchFilters" 
-            class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md border border-gray-200 transition-colors text-sm"
-          >
-            <Filter class="h-3.5 w-3.5 text-gray-600" />
-            <span>Filters</span>
-            <ChevronDown v-if="!openSearchFilters" class="h-3.5 w-3.5 text-gray-600" />
-            <ChevronUp v-else class="h-3.5 w-3.5 text-gray-600" />
-          </button>
-          
           <NuxtLink 
             :to="`/business-network`"
             class="flex items-center gap-2 px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:underline transition-colors text-sm"
@@ -38,76 +28,9 @@
           </NuxtLink>
         </div>
       </div>
-      
-      <!-- Filter Panel -->      <transition
-        enter-active-class="transition-all duration-300 ease-out"
-        enter-from-class="opacity-0 max-h-0"
-        enter-to-class="opacity-100 max-h-96"
-        leave-active-class="transition-all duration-200 ease-in"
-        leave-from-class="opacity-100 max-h-96"
-        leave-to-class="opacity-0 max-h-0"
-      >
-        <div v-if="openSearchFilters" class="px-6 pb-4 border-t border-gray-100 overflow-hidden filter-scrollbar max-h-96">
-          <div class="pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">            <!-- Sort order filter -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
-              <select 
-                v-model="sortBy" 
-                class="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-10 text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                @change="applyFilters"
-              >
-                <option value="relevance">Most Relevant</option>
-                <option value="recent">Most Recent</option>
-                <option value="popular">Most Popular</option>
-              </select>
-            </div>
-            
-            <!-- Hashtag filter -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Hashtags</label>
-              <select 
-                v-model="hashtagFilter" 
-                class="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-10 text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                @change="applyFilters"
-              >
-                <option value="">All Hashtags</option>
-                <option v-for="tag in popularHashtags" :key="tag" :value="tag">{{ tag }}</option>
-              </select>
-            </div>
-            
-            <!-- Engagement filter (replacing time period) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Engagement</label>
-              <select 
-                v-model="engagementFilter" 
-                class="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-10 text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                @change="applyFilters"
-              >
-                <option value="">Any Engagement</option>
-                <option value="high">High Engagement</option>
-                <option value="medium">Medium Engagement</option>
-                <option value="low">Low Engagement</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="flex items-center justify-end mt-4">
-            <button 
-              @click="resetFilters" 
-              class="text-sm text-gray-600 hover:text-gray-800 mr-3"
-            >
-              Reset
-            </button>
-            <button 
-              @click="applyFilters" 
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      </transition>
-    </div>    <!-- Enhanced skeleton loaders -->
+    </div>
+    
+    <!-- Enhanced skeleton loaders -->
     <template v-if="loading && !loadingMore && allPosts.length === 0">
       <div class="p-4">
         <div class="relative mb-8">
@@ -176,7 +99,9 @@
           </div>
         </div>
       </div>
-    </template>    <!-- Actual posts displayed after loading -->
+    </template>
+    
+    <!-- Actual posts displayed after loading -->
     <div class="relative">
       <!-- Search result count when posts are loaded -->
       <div v-if="!loading && displayedPosts.length > 0" class="mb-4 text-sm text-gray-500 px-1">
@@ -190,7 +115,9 @@
         class="result-card"
         @gift-sent="handleGiftSent"
       />
-    </div><!-- Enhanced load more indicator with improved skeleton -->
+    </div>
+
+    <!-- Enhanced load more indicator with improved skeleton -->
     <div v-if="loadingMore && !loading" class="pb-6">
       <div class="flex justify-center items-center py-4">
         <div class="relative">
@@ -232,7 +159,9 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Enhanced end of results indicator -->
+    </div>
+    
+    <!-- Enhanced end of results indicator -->
     <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center"
@@ -375,8 +304,6 @@ import {
   Loader2,
   Check,
   ChevronUp,
-  ChevronDown,
-  Filter,
   Home,
   Image,
 } from "lucide-vue-next";
@@ -392,29 +319,8 @@ const { user } = useAuth();
 const eventBus = useEventBus();
 const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplicates
 
-// Filter and search state
-const openSearchFilters = ref(false);
+// Search state
 const newSearchQuery = ref("");
-const sortBy = ref("relevance");
-const hashtagFilter = ref("");
-const engagementFilter = ref("");
-
-// Popular hashtags list
-const popularHashtags = [
-  "#Marketing",
-  "#Finance",
-  "#Operations",
-  "#Leadership",
-  "#Technology",
-  "#HR",
-  "#Sales",
-  "#Strategy",
-  "#Innovation",
-  "#Entrepreneurship",
-  "#Management",
-  "#Digital",
-  "#Networking",
-];
 
 // Batch size and pagination
 const POSTS_PER_BATCH = 5;
@@ -446,17 +352,6 @@ async function getPosts(isLoadingMore = false, page = 1) {
     if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
-    }    // Add filter parameters if present
-    if (sortBy.value && sortBy.value !== "relevance") {
-      params.sort = sortBy.value;
-    }
-    
-    if (hashtagFilter.value) {
-      params.hashtag = hashtagFilter.value;
-    }
-    
-    if (engagementFilter.value) {
-      params.engagement = engagementFilter.value;
     }
 
     console.log("Fetching posts with params:", params);
@@ -636,8 +531,6 @@ onMounted(() => {
     loadData();
   });
 
-  // Listen for the specific recent posts loading event
-
   // Clean up event listeners when component is unmounted
   onUnmounted(() => {
     eventBus.off("start-loading-posts");
@@ -672,43 +565,6 @@ const handleNewPost = (newPost) => {
   }
 };
 
-// Filter methods
-const applyFilters = () => {
-  // Reset pagination state when applying new filters
-  page.value = 1;
-  loadedPostIds.value.clear();
-  
-  // Build query parameters for filtered search
-  const params = {
-    sort: sortBy.value,
-    hashtag: hashtagFilter.value,
-    engagement: engagementFilter.value,
-  };
-
-  // Reload posts with filters
-  loading.value = true;
-  
-  // Simulate API call with filters
-  setTimeout(() => {
-    getPosts(false, 1);
-    openSearchFilters.value = false;
-    
-    // Show toast notification for applied filters
-    useToast().add({
-      title: "Filters Applied",
-      description: "Search results have been updated",
-      color: "blue",
-      timeout: 2000,
-    });
-  }, 600);
-};
-
-const resetFilters = () => {
-  sortBy.value = "relevance";
-  hashtagFilter.value = "";
-  engagementFilter.value = "";
-};
-
 // Handle new search from end of results or no results section
 const handleNewSearch = () => {
   if (newSearchQuery.value && newSearchQuery.value.trim() !== '') {
@@ -728,13 +584,6 @@ const recentSearches = ref([
 ]);
 const selectedCategories = ref([]);
 const searchInputRef = ref(null);
-
-// These are already defined at the top level of the component
-// const openSearchFilters = ref(false);
-// const newSearchQuery = ref("");
-// const sortBy = ref("relevance");
-// const hashtagFilter = ref("");
-// const engagementFilter = ref("");
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
