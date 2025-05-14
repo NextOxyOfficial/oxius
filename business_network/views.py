@@ -339,7 +339,7 @@ class BusinessNetworkPostTagDestroyView(generics.DestroyAPIView):
 class BusinessNetworkPostSearchView(generics.ListAPIView):
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         query = self.request.query_params.get('q', '')

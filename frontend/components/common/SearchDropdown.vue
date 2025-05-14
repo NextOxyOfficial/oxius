@@ -33,7 +33,9 @@
               class="w-full pl-9 pr-8 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-all duration-300 search-input"
               ref="searchInput"
             />
-            <SearchIcon class="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <SearchIcon
+              class="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400"
+            />
             <button
               v-if="searchQuery"
               @click="clearSearch"
@@ -60,11 +62,23 @@
             </p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
               <span
-                class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs"
+                class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
               >
-                {{ getCategoryName(result.categoryId) }}
+                <span v-for="tag in result.post_tags" :key="tag.id"
+                  >#{{ tag.tag }}</span
+                >
               </span>
             </p>
+          </div>
+          <div class="flex justify-center p-3">
+            <UButton
+              label="View All"
+              variant="link"
+              color="blue"
+              icon="i-heroicons-arrow-right"
+              :trailing="true"
+              :to="`/business-network/search-results/${searchQuery}`"
+            />
           </div>
         </div>
 
@@ -82,7 +96,9 @@
             <SearchIcon class="h-5 w-5 mx-auto mb-2" />
             Type to start searching...
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-500">Press ESC to close</div>
+          <div class="text-xs text-gray-500 dark:text-gray-500">
+            Press ESC to close
+          </div>
         </div>
       </div>
     </Transition>
@@ -90,7 +106,6 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed } from "vue";
 import { SearchIcon, XIcon } from "lucide-vue-next";
 const { get } = useApi();
 const showSearchDropdown = ref(false);
@@ -128,19 +143,19 @@ const clearSearch = () => {
 };
 
 // This function would need to be implemented based on your actual data structure
-const getCategoryName = categoryId => {
+const getCategoryName = (categoryId) => {
   // Placeholder - implement based on your actual categories data
   return "Category";
 };
 
 // This function would need to be implemented based on your navigation logic
-const selectArticle = article => {
+const selectArticle = (article) => {
   // Placeholder - implement based on your navigation needs
   showSearchDropdown.value = false;
 };
 
 // Handle clicks outside of search dropdown to close it
-const handleClickOutside = event => {
+const handleClickOutside = (event) => {
   const searchDropdown = document.querySelector(".search-dropdown-container");
   const searchButton = document.querySelector(".search-button-container");
 
@@ -161,7 +176,7 @@ onMounted(() => {
     document.addEventListener("click", handleClickOutside, true);
 
     // Add keyboard event listener for ESC key
-    document.addEventListener("keydown", e => {
+    document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && showSearchDropdown.value) {
         showSearchDropdown.value = false;
       }
@@ -171,7 +186,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside, true);
-  document.removeEventListener("keydown", e => {
+  document.removeEventListener("keydown", (e) => {
     if (e.key === "Escape" && showSearchDropdown.value) {
       showSearchDropdown.value = false;
     }
@@ -186,12 +201,13 @@ defineExpose({
   searchResults,
 });
 
-watch(searchQuery, async newValue => {
+watch(searchQuery, async (newValue) => {
   // Trigger search logic here
   if (newValue) {
     // Fetch search results
-    const res = await get(`/bn/mindforce/?search=${newValue}`);
-    searchResults.value = res.data;
+    const res = await get(`/bn/posts/search/?q=${newValue}&page=1`);
+
+    searchResults.value = res.data?.results;
   } else {
     searchResults.value = [];
   }
@@ -206,7 +222,8 @@ watch(searchQuery, async newValue => {
 
 /* Custom shadow for dropdown */
 .search-dropdown-container {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05);
 }
 
 /* Improved search input focus styles */
