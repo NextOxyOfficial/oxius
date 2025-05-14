@@ -61,6 +61,7 @@ class SaleConditionViewSet(viewsets.ReadOnlyModelViewSet):
 class SalePostViewSet(viewsets.ModelViewSet):
     """ViewSet for handling sale posts"""
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    lookup_field='slug'
     
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:

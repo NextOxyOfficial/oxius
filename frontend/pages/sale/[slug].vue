@@ -6,43 +6,72 @@
       <nav class="flex mb-5" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
           <li class="inline-flex items-center">
-            <NuxtLink to="/" class="inline-flex items-center text-sm text-gray-500 hover:text-primary">
+            <NuxtLink
+              to="/"
+              class="inline-flex items-center text-sm text-gray-500 hover:text-primary"
+            >
               <UIcon name="i-heroicons-home" class="size-4 mr-2" />
               Home
             </NuxtLink>
           </li>
           <li>
             <div class="flex items-center">
-              <UIcon name="i-heroicons-chevron-right" class="size-3 mx-1 text-gray-400" />
-              <NuxtLink to="/sale/for-sale" class="text-sm text-gray-500 hover:text-primary">
+              <UIcon
+                name="i-heroicons-chevron-right"
+                class="size-3 mx-1 text-gray-400"
+              />
+              <NuxtLink
+                to="/sale/for-sale"
+                class="text-sm text-gray-500 hover:text-primary"
+              >
                 Sale Posts
               </NuxtLink>
             </div>
           </li>
           <li aria-current="page">
             <div class="flex items-center">
-              <UIcon name="i-heroicons-chevron-right" class="size-3 mx-1 text-gray-400" />
-              <span class="text-sm text-gray-600 font-medium">{{ post.title || 'Loading...' }}</span>
+              <UIcon
+                name="i-heroicons-chevron-right"
+                class="size-3 mx-1 text-gray-400"
+              />
+              <span class="text-sm text-gray-600 font-medium">{{
+                post.title || "Loading..."
+              }}</span>
             </div>
           </li>
         </ol>
       </nav>
 
       <!-- Loading State -->
-      <div v-if="loading" class="py-20 bg-white rounded-lg shadow-sm border border-gray-100">
+      <div
+        v-if="loading"
+        class="py-20 bg-white rounded-lg shadow-sm border border-gray-100"
+      >
         <div class="flex flex-col items-center justify-center">
           <div class="w-16 h-16 relative">
-            <div class="w-full h-full rounded-full border-4 border-primary-100"></div>
-            <div class="w-full h-full rounded-full border-4 border-t-primary-500 animate-spin absolute top-0 left-0"></div>
+            <div
+              class="w-full h-full rounded-full border-4 border-primary-100"
+            ></div>
+            <div
+              class="w-full h-full rounded-full border-4 border-t-primary-500 animate-spin absolute top-0 left-0"
+            ></div>
           </div>
-          <p class="text-center text-gray-600 mt-6 font-medium">Loading post details...</p>
+          <p class="text-center text-gray-600 mt-6 font-medium">
+            Loading post details...
+          </p>
         </div>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="py-16 text-center bg-white rounded-lg shadow-sm border border-gray-100">
+      <div
+        v-else-if="error"
+        class="py-16 text-center bg-white rounded-lg shadow-sm border border-gray-100"
+      >
         <div class="max-w-md mx-auto">
-          <UIcon name="i-heroicons-exclamation-triangle" class="h-16 w-16 mx-auto text-amber-500" />
+          <UIcon
+            name="i-heroicons-exclamation-triangle"
+            class="h-16 w-16 mx-auto text-amber-500"
+          />
           <h3 class="mt-4 text-lg font-medium text-gray-700">Post not found</h3>
           <p class="mt-2 text-gray-500">
             The post you're looking for doesn't exist or has been removed.
@@ -63,10 +92,14 @@
         <!-- Left Column - Main Content -->
         <div class="lg:col-span-2">
           <!-- Images Gallery Card -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6"
+          >
             <!-- Main Image -->
-            <div class="relative aspect-video overflow-hidden mb-4 rounded-lg border border-gray-100">
-              <img 
+            <div
+              class="relative aspect-video overflow-hidden mb-4 rounded-lg border border-gray-100"
+            >
+              <img
                 :src="selectedImage || getMainImage()"
                 :alt="post.title"
                 class="w-full h-full object-contain"
@@ -74,25 +107,40 @@
               />
 
               <!-- Sale Status Badge -->
-              <div v-if="post.status === 'sold'" class="absolute top-0 right-0 m-4 z-10">
-                <span class="bg-blue-500 text-white text-sm font-bold px-3 py-1.5 rounded shadow-sm">SOLD</span>
+              <div
+                v-if="post.status === 'sold'"
+                class="absolute top-0 right-0 m-4 z-10"
+              >
+                <span
+                  class="bg-blue-500 text-white text-sm font-bold px-3 py-1.5 rounded shadow-sm"
+                  >SOLD</span
+                >
               </div>
               <div v-if="post.featured" class="absolute top-0 left-0 m-4 z-10">
-                <span class="bg-amber-500 text-white text-sm font-bold px-3 py-1.5 rounded shadow-sm">FEATURED</span>
+                <span
+                  class="bg-amber-500 text-white text-sm font-bold px-3 py-1.5 rounded shadow-sm"
+                  >FEATURED</span
+                >
               </div>
             </div>
 
             <!-- Thumbnails Gallery -->
-            <div v-if="post.images && post.images.length > 1" class="grid grid-cols-5 gap-2">
-              <div 
-                v-for="(image, index) in post.images" 
-                :key="index" 
+            <div
+              v-if="post.images && post.images.length > 1"
+              class="grid grid-cols-5 gap-2"
+            >
+              <div
+                v-for="(image, index) in post.images"
+                :key="index"
                 class="aspect-square overflow-hidden rounded-md border cursor-pointer transition-all hover:opacity-90"
-                :class="{ 'ring-2 ring-primary border-primary': selectedImage === getImageSrc(image) }"
+                :class="{
+                  'ring-2 ring-primary border-primary':
+                    selectedImage === getImageSrc(image),
+                }"
                 @click="selectedImage = getImageSrc(image)"
               >
-                <img 
-                  :src="getImageSrc(image)" 
+                <img
+                  :src="getImageSrc(image)"
                   :alt="`${post.title} image ${index + 1}`"
                   class="w-full h-full object-cover"
                 />
@@ -100,22 +148,36 @@
             </div>
 
             <!-- No Images -->
-            <div v-if="!post.images || post.images.length === 0" class="text-center text-gray-500 italic text-sm mt-4">
+            <div
+              v-if="!post.images || post.images.length === 0"
+              class="text-center text-gray-500 italic text-sm mt-4"
+            >
               No images available for this listing
             </div>
           </div>
 
           <!-- Title, Price, and Details Card -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
+          >
+            <div
+              class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6"
+            >
               <h1 class="text-2xl font-bold text-gray-800">{{ post.title }}</h1>
               <div class="flex flex-col items-end">
                 <div class="text-2xl font-bold text-primary">
                   <span v-if="post.negotiable && !post.price">Negotiable</span>
-                  <span v-else-if="post.price">৳{{ formatPrice(post.price) }}</span>
+                  <span v-else-if="post.price"
+                    >৳{{ formatPrice(post.price) }}</span
+                  >
                   <span v-else>Contact for Price</span>
                 </div>
-                <div v-if="post.negotiable && post.price" class="text-sm text-gray-500">Negotiable</div>
+                <div
+                  v-if="post.negotiable && post.price"
+                  class="text-sm text-gray-500"
+                >
+                  Negotiable
+                </div>
               </div>
             </div>
 
@@ -123,144 +185,207 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-6">
               <!-- Category -->
               <div class="flex items-start">
-                <UIcon name="i-heroicons-tag" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                <UIcon
+                  name="i-heroicons-tag"
+                  class="size-5 mt-0.5 mr-3 text-gray-500"
+                />
                 <div>
                   <span class="text-gray-500 text-sm">Category</span>
-                  <p class="text-gray-800 font-medium">{{ getCategoryName(post.category) }}</p>
+                  <p class="text-gray-800 font-medium">
+                    {{ getCategoryName(post.category) }}
+                  </p>
                 </div>
               </div>
-              
+
               <!-- Condition -->
               <div class="flex items-start">
-                <UIcon name="i-heroicons-sparkles" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                <UIcon
+                  name="i-heroicons-sparkles"
+                  class="size-5 mt-0.5 mr-3 text-gray-500"
+                />
                 <div>
                   <span class="text-gray-500 text-sm">Condition</span>
-                  <p class="text-gray-800 font-medium">{{ getConditionLabel(post.condition) }}</p>
+                  <p class="text-gray-800 font-medium">
+                    {{ getConditionLabel(post.condition) }}
+                  </p>
                 </div>
               </div>
-              
+
               <!-- Location -->
               <div class="flex items-start">
-                <UIcon name="i-heroicons-map-pin" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                <UIcon
+                  name="i-heroicons-map-pin"
+                  class="size-5 mt-0.5 mr-3 text-gray-500"
+                />
                 <div>
                   <span class="text-gray-500 text-sm">Location</span>
-                  <p class="text-gray-800">{{ post.area }}, {{ post.district }}</p>
+                  <p class="text-gray-800">
+                    {{ post.area }}, {{ post.district }}
+                  </p>
                 </div>
               </div>
 
               <!-- Posted Date -->
               <div class="flex items-start">
-                <UIcon name="i-heroicons-calendar" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                <UIcon
+                  name="i-heroicons-calendar"
+                  class="size-5 mt-0.5 mr-3 text-gray-500"
+                />
                 <div>
                   <span class="text-gray-500 text-sm">Posted</span>
-                  <p class="text-gray-800">{{ formatDateFull(post.created_at) }}</p>
+                  <p class="text-gray-800">
+                    {{ formatDateFull(post.created_at) }}
+                  </p>
                 </div>
               </div>
-              
+
               <!-- Property-specific fields -->
               <template v-if="post.category === 1">
                 <div v-if="post.property_type" class="flex items-start">
-                  <UIcon name="i-heroicons-home" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-home"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Property Type</span>
-                    <p class="text-gray-800 font-medium">{{ propertyTypeLabel(post.property_type) }}</p>
+                    <p class="text-gray-800 font-medium">
+                      {{ propertyTypeLabel(post.property_type) }}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.size" class="flex items-start">
-                  <UIcon name="i-heroicons-square-3-stack-3d" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-square-3-stack-3d"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Size</span>
-                    <p class="text-gray-800 font-medium">{{ post.size }} {{ post.unit || 'sqft' }}</p>
+                    <p class="text-gray-800 font-medium">
+                      {{ post.size }} {{ post.unit || "sqft" }}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.bedrooms" class="flex items-start">
-                  <UIcon name="i-heroicons-bed" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-bed"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Bedrooms</span>
                     <p class="text-gray-800 font-medium">{{ post.bedrooms }}</p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.bathrooms" class="flex items-start">
-                  <UIcon name="i-heroicons-beaker" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-beaker"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Bathrooms</span>
-                    <p class="text-gray-800 font-medium">{{ post.bathrooms }}</p>
+                    <p class="text-gray-800 font-medium">
+                      {{ post.bathrooms }}
+                    </p>
                   </div>
                 </div>
               </template>
-              
+
               <!-- Vehicle-specific fields -->
               <template v-if="post.category === 2">
                 <div v-if="post.make" class="flex items-start">
-                  <UIcon name="i-heroicons-truck" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-truck"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Make</span>
                     <p class="text-gray-800 font-medium">{{ post.make }}</p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.model" class="flex items-start">
-                  <UIcon name="i-heroicons-tag" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-tag"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Model</span>
                     <p class="text-gray-800 font-medium">{{ post.model }}</p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.year" class="flex items-start">
-                  <UIcon name="i-heroicons-calendar" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-calendar"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Year</span>
                     <p class="text-gray-800 font-medium">{{ post.year }}</p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.mileage" class="flex items-start">
-                  <UIcon name="i-heroicons-arrow-path-rounded-square" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-arrow-path-rounded-square"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Mileage</span>
-                    <p class="text-gray-800 font-medium">{{ post.mileage }} {{ post.mileage_unit || 'km' }}</p>
+                    <p class="text-gray-800 font-medium">
+                      {{ post.mileage }} {{ post.mileage_unit || "km" }}
+                    </p>
                   </div>
                 </div>
               </template>
-              
+
               <!-- Electronics-specific fields -->
               <template v-if="post.category === 3">
                 <div v-if="post.brand" class="flex items-start">
-                  <UIcon name="i-heroicons-building-storefront" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-building-storefront"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Brand</span>
                     <p class="text-gray-800 font-medium">{{ post.brand }}</p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.model" class="flex items-start">
-                  <UIcon name="i-heroicons-tag" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-tag"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Model</span>
                     <p class="text-gray-800 font-medium">{{ post.model }}</p>
                   </div>
                 </div>
-                
+
                 <div v-if="post.warranty" class="flex items-start">
-                  <UIcon name="i-heroicons-shield-check" class="size-5 mt-0.5 mr-3 text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-shield-check"
+                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                  />
                   <div>
                     <span class="text-gray-500 text-sm">Warranty</span>
-                    <p class="text-gray-800 font-medium">{{ warrantyLabel(post.warranty) }}</p>
+                    <p class="text-gray-800 font-medium">
+                      {{ warrantyLabel(post.warranty) }}
+                    </p>
                   </div>
                 </div>
               </template>
             </div>
-            
+
             <!-- Tags -->
             <div v-if="post.tags && post.tags.length > 0" class="mb-6">
               <h3 class="text-gray-700 font-medium mb-2">Tags</h3>
               <div class="flex flex-wrap gap-2">
-                <UBadge 
-                  v-for="tag in post.tags" 
+                <UBadge
+                  v-for="tag in post.tags"
                   :key="tag"
                   color="gray"
                   variant="outline"
@@ -273,18 +398,24 @@
 
             <!-- Description Section -->
             <div class="border-t border-gray-100 pt-6">
-              <h3 class="text-lg font-medium text-gray-800 mb-4">Description</h3>
-              <div 
-                class="prose max-w-none text-gray-600" 
+              <h3 class="text-lg font-medium text-gray-800 mb-4">
+                Description
+              </h3>
+              <div
+                class="prose max-w-none text-gray-600"
                 v-html="post.description"
               ></div>
             </div>
           </div>
 
           <!-- Map Location Card (if coordinates available) -->
-          <div v-if="post.latitude && post.longitude" class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          <div
+            v-if="post.latitude && post.longitude"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
+          >
             <h3 class="text-lg font-medium text-gray-800 mb-4">
-              <UIcon name="i-heroicons-map" class="size-5 mr-2 inline-block" /> Location
+              <UIcon name="i-heroicons-map" class="size-5 mr-2 inline-block" />
+              Location
             </h3>
             <div class="h-80 bg-gray-100 rounded-lg overflow-hidden">
               <!-- Map component would be added here -->
@@ -293,11 +424,16 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Safety Tips Card -->
-          <div class="bg-amber-50 rounded-lg shadow-sm border border-amber-100 p-6">
+          <div
+            class="bg-amber-50 rounded-lg shadow-sm border border-amber-100 p-6"
+          >
             <h3 class="text-amber-800 font-medium flex items-center mb-4">
-              <UIcon name="i-heroicons-shield-exclamation" class="size-5 mr-2" />
+              <UIcon
+                name="i-heroicons-shield-exclamation"
+                class="size-5 mr-2"
+              />
               Safety Tips for Buyers
             </h3>
             <ul class="space-y-2 text-amber-700 text-sm list-disc list-inside">
@@ -314,28 +450,43 @@
         <!-- Right Column - Sidebar -->
         <div class="lg:col-span-1">
           <!-- Seller Contact Card -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">Seller Information</h3>
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
+          >
+            <h3 class="text-lg font-medium text-gray-800 mb-4">
+              Seller Information
+            </h3>
             <div class="flex items-center mb-4">
               <div class="mr-3">
-                <div class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                  <img 
-                    v-if="post.seller?.profile_picture" 
-                    :src="post.seller.profile_picture" 
-                    :alt="post.seller?.name || 'Seller'" 
+                <div
+                  class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
+                >
+                  <img
+                    v-if="post.seller?.profile_picture"
+                    :src="post.seller.profile_picture"
+                    :alt="post.seller?.name || 'Seller'"
                     class="w-full h-full object-cover"
                   />
-                  <UIcon v-else name="i-heroicons-user" class="size-8 text-gray-400" />
+                  <UIcon
+                    v-else
+                    name="i-heroicons-user"
+                    class="size-8 text-gray-400"
+                  />
                 </div>
               </div>
               <div>
-                <h4 class="font-medium text-gray-700">{{ post.seller?.name || 'Anonymous Seller' }}</h4>
-                <p v-if="post.seller?.member_since" class="text-xs text-gray-500">
+                <h4 class="font-medium text-gray-700">
+                  {{ post.seller?.name || "Anonymous Seller" }}
+                </h4>
+                <p
+                  v-if="post.seller?.member_since"
+                  class="text-xs text-gray-500"
+                >
                   Member since {{ formatDate(post.seller.member_since) }}
                 </p>
               </div>
             </div>
-            
+
             <!-- Contact Buttons -->
             <div class="space-y-3">
               <UButton
@@ -348,7 +499,7 @@
               >
                 Call Seller
               </UButton>
-              
+
               <UButton
                 v-if="post.allows_messaging"
                 color="primary"
@@ -369,7 +520,7 @@
                 :loading="copying"
                 @click="copyPostLink"
               >
-                {{ copying ? 'Copied!' : 'Copy Link' }}
+                {{ copying ? "Copied!" : "Copy Link" }}
               </UButton>
 
               <!-- Report Button -->
@@ -386,9 +537,13 @@
           </div>
 
           <!-- Related Posts Card -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">Similar Listings</h3>
-            
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
+          >
+            <h3 class="text-lg font-medium text-gray-800 mb-4">
+              Similar Listings
+            </h3>
+
             <div v-if="loading" class="animate-pulse space-y-4">
               <div v-for="i in 3" :key="i" class="flex space-x-3">
                 <div class="w-16 h-16 bg-gray-200 rounded"></div>
@@ -398,32 +553,46 @@
                 </div>
               </div>
             </div>
-            
-            <div v-else-if="relatedPosts.length === 0" class="text-gray-500 text-sm italic text-center py-4">
+
+            <div
+              v-else-if="relatedPosts.length === 0"
+              class="text-gray-500 text-sm italic text-center py-4"
+            >
               No similar listings found
             </div>
-            
+
             <div v-else class="space-y-4">
-              <div 
-                v-for="relatedPost in relatedPosts" 
+              <div
+                v-for="relatedPost in relatedPosts"
                 :key="relatedPost.id"
                 class="group"
               >
-                <NuxtLink :to="`/sale/${relatedPost.slug}`" class="flex space-x-3">
-                  <div class="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 border border-gray-100">
-                    <img 
-                      :src="getMainImage(relatedPost)" 
-                      :alt="relatedPost.title" 
+                <NuxtLink
+                  :to="`/sale/${relatedPost.slug}`"
+                  class="flex space-x-3"
+                >
+                  <div
+                    class="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 border border-gray-100"
+                  >
+                    <img
+                      :src="getMainImage(relatedPost)"
+                      :alt="relatedPost.title"
                       class="w-full h-full object-cover transition-transform group-hover:scale-110"
                     />
                   </div>
                   <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors line-clamp-2">
+                    <h4
+                      class="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors line-clamp-2"
+                    >
                       {{ relatedPost.title }}
                     </h4>
                     <p class="text-primary text-sm font-medium mt-1">
-                      <span v-if="relatedPost.negotiable && !relatedPost.price">Negotiable</span>
-                      <span v-else-if="relatedPost.price">৳{{ formatPrice(relatedPost.price) }}</span>
+                      <span v-if="relatedPost.negotiable && !relatedPost.price"
+                        >Negotiable</span
+                      >
+                      <span v-else-if="relatedPost.price"
+                        >৳{{ formatPrice(relatedPost.price) }}</span
+                      >
                       <span v-else>Contact for Price</span>
                     </p>
                   </div>
@@ -431,12 +600,20 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Safety Verification Badge -->
-          <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg shadow-sm border border-green-100 p-5 mb-6 text-center">
-            <UIcon name="i-heroicons-shield-check" class="size-8 mx-auto text-green-500 mb-2" />
+          <div
+            class="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg shadow-sm border border-green-100 p-5 mb-6 text-center"
+          >
+            <UIcon
+              name="i-heroicons-shield-check"
+              class="size-8 mx-auto text-green-500 mb-2"
+            />
             <h4 class="font-medium text-green-800 mb-1">Safety Verified</h4>
-            <p class="text-xs text-green-600">This listing has been verified by our team and meets our community standards.</p>
+            <p class="text-xs text-green-600">
+              This listing has been verified by our team and meets our community
+              standards.
+            </p>
           </div>
         </div>
       </div>
@@ -446,33 +623,38 @@
     <UModal v-model="openLightbox" :ui="{ width: 'max-w-7xl' }">
       <div class="bg-black py-6 px-4 rounded-xl relative">
         <!-- Close Button -->
-        <button 
+        <button
           class="absolute top-4 right-4 text-white z-10 bg-gray-800/50 rounded-full p-2 hover:bg-gray-700/50 transition-colors"
           @click="openLightbox = false"
         >
           <UIcon name="i-heroicons-x-mark" class="size-5" />
         </button>
-        
+
         <div class="max-h-[80vh] flex items-center justify-center">
-          <img 
-            :src="selectedImage || getMainImage()" 
-            :alt="post.title" 
+          <img
+            :src="selectedImage || getMainImage()"
+            :alt="post.title"
             class="max-w-full max-h-[80vh] object-contain"
           />
         </div>
-        
+
         <!-- Thumbnails for Lightbox -->
-        <div v-if="post.images && post.images.length > 1" class="flex justify-center mt-4 gap-2 overflow-x-auto pb-2">
-          <button 
-            v-for="(image, index) in post.images" 
-            :key="index" 
+        <div
+          v-if="post.images && post.images.length > 1"
+          class="flex justify-center mt-4 gap-2 overflow-x-auto pb-2"
+        >
+          <button
+            v-for="(image, index) in post.images"
+            :key="index"
             class="flex-shrink-0 w-16 h-16 border border-gray-300 rounded overflow-hidden"
-            :class="{ 'ring-2 ring-primary': selectedImage === getImageSrc(image) }"
+            :class="{
+              'ring-2 ring-primary': selectedImage === getImageSrc(image),
+            }"
             @click="selectedImage = getImageSrc(image)"
           >
-            <img 
-              :src="getImageSrc(image)" 
-              :alt="`${post.title} thumbnail ${index + 1}`" 
+            <img
+              :src="getImageSrc(image)"
+              :alt="`${post.title} thumbnail ${index + 1}`"
               class="w-full h-full object-cover"
             />
           </button>
@@ -486,24 +668,39 @@
         <template #header>
           <div class="flex justify-between items-center">
             <h3 class="text-lg font-medium text-gray-800">Message Seller</h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="showContactForm = false" />
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark"
+              @click="showContactForm = false"
+            />
           </div>
         </template>
-        
+
         <form @submit.prevent="sendMessage">
           <div class="space-y-4">
             <UFormGroup label="Your Name" required>
-              <UInput v-model="contactForm.name" placeholder="Enter your name" />
+              <UInput
+                v-model="contactForm.name"
+                placeholder="Enter your name"
+              />
             </UFormGroup>
-            
+
             <UFormGroup label="Your Email" required>
-              <UInput v-model="contactForm.email" placeholder="Enter your email" type="email" />
+              <UInput
+                v-model="contactForm.email"
+                placeholder="Enter your email"
+                type="email"
+              />
             </UFormGroup>
-            
+
             <UFormGroup label="Phone Number">
-              <UInput v-model="contactForm.phone" placeholder="Enter your phone number (optional)" />
+              <UInput
+                v-model="contactForm.phone"
+                placeholder="Enter your phone number (optional)"
+              />
             </UFormGroup>
-            
+
             <UFormGroup label="Message" required>
               <UTextarea
                 v-model="contactForm.message"
@@ -514,10 +711,10 @@
               ></UTextarea>
             </UFormGroup>
           </div>
-          
+
           <div class="mt-6">
             <UButton type="submit" color="primary" block :loading="sending">
-              {{ sending ? 'Sending...' : 'Send Message' }}
+              {{ sending ? "Sending..." : "Send Message" }}
             </UButton>
           </div>
         </form>
@@ -530,40 +727,41 @@
         <template #header>
           <div class="flex justify-between items-center">
             <h3 class="text-lg font-medium text-gray-800">Report Listing</h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="showReportModal = false" />
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark"
+              @click="showReportModal = false"
+            />
           </div>
         </template>
-        
+
         <form @submit.prevent="reportPost">
           <div class="space-y-4">
             <UFormGroup label="Reason for Report" required>
-              <URadio 
-                v-model="reportForm.reason" 
+              <URadio
+                v-model="reportForm.reason"
                 value="inappropriate"
                 label="Inappropriate content"
               />
-              <URadio 
-                v-model="reportForm.reason" 
+              <URadio
+                v-model="reportForm.reason"
                 value="fraud"
                 label="Fraudulent listing"
               />
-              <URadio 
-                v-model="reportForm.reason" 
+              <URadio
+                v-model="reportForm.reason"
                 value="duplicate"
                 label="Duplicate listing"
               />
-              <URadio 
-                v-model="reportForm.reason" 
+              <URadio
+                v-model="reportForm.reason"
                 value="misrepresentation"
                 label="Misrepresentation"
               />
-              <URadio 
-                v-model="reportForm.reason" 
-                value="other"
-                label="Other"
-              />
+              <URadio v-model="reportForm.reason" value="other" label="Other" />
             </UFormGroup>
-            
+
             <UFormGroup label="Additional Details">
               <UTextarea
                 v-model="reportForm.details"
@@ -573,10 +771,10 @@
               ></UTextarea>
             </UFormGroup>
           </div>
-          
+
           <div class="mt-6">
             <UButton type="submit" color="red" block :loading="reporting">
-              {{ reporting ? 'Submitting...' : 'Submit Report' }}
+              {{ reporting ? "Submitting..." : "Submit Report" }}
             </UButton>
           </div>
         </form>
@@ -586,10 +784,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { useApi } from '~/composables/useApi';
-import { useNotifications } from '~/composables/useNotifications';
+import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useApi } from "~/composables/useApi";
+import { useNotifications } from "~/composables/useNotifications";
 
 // API and notifications
 const { get, postData } = useApi();
@@ -614,34 +812,34 @@ const reporting = ref(false);
 
 // Form state
 const contactForm = ref({
-  name: '',
-  email: '',
-  phone: '',
-  message: ''
+  name: "",
+  email: "",
+  phone: "",
+  message: "",
 });
 
 const reportForm = ref({
-  reason: 'inappropriate',
-  details: ''
+  reason: "inappropriate",
+  details: "",
 });
 
 // Categories (same as in for-sale.vue)
 const categories = ref([
-  { id: 1, name: 'Properties' },
-  { id: 2, name: 'Vehicles' },
-  { id: 3, name: 'Electronics' },
-  { id: 4, name: 'Sports' },
-  { id: 5, name: 'B2B' },
-  { id: 6, name: 'Others' }
+  { id: 1, name: "Properties" },
+  { id: 2, name: "Vehicles" },
+  { id: 3, name: "Electronics" },
+  { id: 4, name: "Sports" },
+  { id: 5, name: "B2B" },
+  { id: 6, name: "Others" },
 ]);
 
 // Conditions
 const conditions = [
-  { label: 'Brand New', value: 'brand-new' },
-  { label: 'Like New', value: 'like-new' },
-  { label: 'Good', value: 'good' },
-  { label: 'Fair', value: 'fair' },
-  { label: 'For Parts', value: 'for-parts' }
+  { label: "Brand New", value: "brand-new" },
+  { label: "Like New", value: "like-new" },
+  { label: "Good", value: "good" },
+  { label: "Fair", value: "fair" },
+  { label: "For Parts", value: "for-parts" },
 ];
 
 // Fetch post data on component mount
@@ -653,31 +851,32 @@ onMounted(async () => {
 async function fetchPostDetails() {
   loading.value = true;
   error.value = false;
-  
+
   try {
     // API request to get post details
-    const response = await get(`/sale-posts/${slug.value}/`);
-    
+    const response = await get(`/sale/posts/${slug.value}/`);
+
     if (response && response.data) {
       post.value = response.data;
-      
+
       // Set default selected image
       if (post.value.images && post.value.images.length > 0) {
         // Find the main image or use the first one
-        const mainImage = post.value.images.find(img => img.is_main) || post.value.images[0];
+        const mainImage =
+          post.value.images.find((img) => img.is_main) || post.value.images[0];
         selectedImage.value = getImageSrc(mainImage);
       }
-      
+
       // Increment view count in background
       incrementViewCount();
-      
+
       // Fetch related posts
       fetchRelatedPosts();
     } else {
       error.value = true;
     }
   } catch (err) {
-    console.error('Error fetching post details:', err);
+    console.error("Error fetching post details:", err);
     error.value = true;
   } finally {
     loading.value = false;
@@ -687,27 +886,27 @@ async function fetchPostDetails() {
 // Fetch related posts based on category and exclude current post
 async function fetchRelatedPosts() {
   try {
-    const response = await get('/sale-posts/', {
+    const response = await get("/sale-posts/", {
       params: {
         category: post.value.category,
         exclude: post.value.id,
         page_size: 3,
-        status: 'active'
-      }
+        status: "active",
+      },
     });
-    
+
     if (response && response.data) {
       // Handle paginated response
       if (response.data.results && Array.isArray(response.data.results)) {
         relatedPosts.value = response.data.results;
-      } 
+      }
       // Handle non-paginated response
       else if (Array.isArray(response.data)) {
         relatedPosts.value = response.data;
       }
     }
   } catch (err) {
-    console.error('Error fetching related posts:', err);
+    console.error("Error fetching related posts:", err);
     relatedPosts.value = [];
   }
 }
@@ -717,37 +916,37 @@ async function incrementViewCount() {
   try {
     await postData(`/sale-posts/${post.value.id}/view/`);
   } catch (err) {
-    console.error('Error incrementing view count:', err);
+    console.error("Error incrementing view count:", err);
   }
 }
 
 // Send message to seller
 async function sendMessage() {
   sending.value = true;
-  
+
   try {
     await postData(`/sale-posts/${post.value.id}/contact/`, contactForm.value);
-    
+
     showNotification({
-      title: 'Message Sent',
-      text: 'Your message has been sent to the seller.',
-      type: 'success'
+      title: "Message Sent",
+      text: "Your message has been sent to the seller.",
+      type: "success",
     });
-    
+
     // Reset form and close modal
     contactForm.value = {
-      name: '',
-      email: '',
-      phone: '',
-      message: ''
+      name: "",
+      email: "",
+      phone: "",
+      message: "",
     };
     showContactForm.value = false;
   } catch (err) {
-    console.error('Error sending message:', err);
+    console.error("Error sending message:", err);
     showNotification({
-      title: 'Error',
-      text: 'Failed to send message. Please try again later.',
-      type: 'error'
+      title: "Error",
+      text: "Failed to send message. Please try again later.",
+      type: "error",
     });
   } finally {
     sending.value = false;
@@ -757,28 +956,28 @@ async function sendMessage() {
 // Report post
 async function reportPost() {
   reporting.value = true;
-  
+
   try {
     await postData(`/sale-posts/${post.value.id}/report/`, reportForm.value);
-    
+
     showNotification({
-      title: 'Report Submitted',
-      text: 'Thank you for your report. Our team will review it shortly.',
-      type: 'success'
+      title: "Report Submitted",
+      text: "Thank you for your report. Our team will review it shortly.",
+      type: "success",
     });
-    
+
     // Reset form and close modal
     reportForm.value = {
-      reason: 'inappropriate',
-      details: ''
+      reason: "inappropriate",
+      details: "",
     };
     showReportModal.value = false;
   } catch (err) {
-    console.error('Error reporting post:', err);
+    console.error("Error reporting post:", err);
     showNotification({
-      title: 'Error',
-      text: 'Failed to submit report. Please try again later.',
-      type: 'error'
+      title: "Error",
+      text: "Failed to submit report. Please try again later.",
+      type: "error",
     });
   } finally {
     reporting.value = false;
@@ -798,96 +997,105 @@ function copyPostLink() {
 
 // Helper functions
 function getCategoryName(categoryId) {
-  if (!categoryId) return '';
-  const category = categories.value.find(c => c.id === parseInt(categoryId));
-  return category ? category.name : '';
+  if (!categoryId) return "";
+  const category = categories.value.find((c) => c.id === parseInt(categoryId));
+  return category ? category.name : "";
 }
 
 function getConditionLabel(conditionValue) {
-  const condition = conditions.find(c => c.value === conditionValue);
-  return condition ? condition.label : 'Unknown';
+  const condition = conditions.find((c) => c.value === conditionValue);
+  return condition ? condition.label : "Unknown";
 }
 
 function formatPrice(price) {
-  return new Intl.NumberFormat('en-IN').format(price);
+  return new Intl.NumberFormat("en-IN").format(price);
 }
 
 function formatDate(dateString) {
-  if (!dateString) return '';
-  
+  if (!dateString) return "";
+
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-  
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
-  
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+
+  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
 }
 
 function formatDateFull(dateString) {
-  if (!dateString) return '';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function getMainImage(postData = post.value) {
   // Get API static URL from composable
   const { staticURL } = useApi();
-  
+
   // Handle main_image from API response
   if (postData.main_image) {
-    return postData.main_image.startsWith('http') ? postData.main_image : `${staticURL}${postData.main_image}`;
+    return postData.main_image.startsWith("http")
+      ? postData.main_image
+      : `${staticURL}${postData.main_image}`;
   }
-  
+
   // Handle images array if provided
   if (postData.images && postData.images.length > 0) {
     // Find main image or use first image
-    const mainImage = postData.images.find(img => img.is_main) || postData.images[0];
-    
+    const mainImage =
+      postData.images.find((img) => img.is_main) || postData.images[0];
+
     // Handle different image data structures
-    if (typeof mainImage === 'string') {
-      return mainImage.startsWith('http') ? mainImage : `${staticURL}${mainImage}`;
+    if (typeof mainImage === "string") {
+      return mainImage.startsWith("http")
+        ? mainImage
+        : `${staticURL}${mainImage}`;
     } else if (mainImage.image) {
-      const imgUrl = typeof mainImage.image === 'string' ? mainImage.image : mainImage.image.url || '';
-      return imgUrl.startsWith('http') ? imgUrl : `${staticURL}${imgUrl}`;
+      const imgUrl =
+        typeof mainImage.image === "string"
+          ? mainImage.image
+          : mainImage.image.url || "";
+      return imgUrl.startsWith("http") ? imgUrl : `${staticURL}${imgUrl}`;
     }
   }
-  
+
   // Fallback image
-  return 'https://via.placeholder.com/800/3b82f6/FFFFFF?text=No+Image';
+  return "https://via.placeholder.com/800/3b82f6/FFFFFF?text=No+Image";
 }
 
 function getImageSrc(image) {
   // Get API static URL from composable
   const { staticURL } = useApi();
-  
+
   // Handle different image data structures
-  if (typeof image === 'string') {
-    return image.startsWith('http') ? image : `${staticURL}${image}`;
+  if (typeof image === "string") {
+    return image.startsWith("http") ? image : `${staticURL}${image}`;
   } else if (image.image) {
-    const imgUrl = typeof image.image === 'string' ? image.image : image.image.url || '';
-    return imgUrl.startsWith('http') ? imgUrl : `${staticURL}${imgUrl}`;
+    const imgUrl =
+      typeof image.image === "string" ? image.image : image.image.url || "";
+    return imgUrl.startsWith("http") ? imgUrl : `${staticURL}${imgUrl}`;
   }
-  
+
   // Fallback image
-  return 'https://via.placeholder.com/800/3b82f6/FFFFFF?text=No+Image';
+  return "https://via.placeholder.com/800/3b82f6/FFFFFF?text=No+Image";
 }
 
 // Property type formatter
 function propertyTypeLabel(type) {
   const labels = {
-    'apartment': 'Apartment',
-    'house': 'House',
-    'land': 'Land',
-    'commercial': 'Commercial Space',
-    'office': 'Office Space'
+    apartment: "Apartment",
+    house: "House",
+    land: "Land",
+    commercial: "Commercial Space",
+    office: "Office Space",
   };
   return labels[type] || type;
 }
@@ -895,9 +1103,9 @@ function propertyTypeLabel(type) {
 // Warranty formatter
 function warrantyLabel(warranty) {
   const labels = {
-    'under-warranty': 'Under Warranty',
-    'expired': 'Warranty Expired',
-    'no-warranty': 'No Warranty'
+    "under-warranty": "Under Warranty",
+    expired: "Warranty Expired",
+    "no-warranty": "No Warranty",
   };
   return labels[warranty] || warranty;
 }

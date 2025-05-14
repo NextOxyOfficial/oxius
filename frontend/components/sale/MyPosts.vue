@@ -5,11 +5,16 @@
       <div class="mb-6">
         <div class="flex justify-center">
           <div class="p-4 bg-gray-100 rounded-full inline-block">
-            <Icon name="heroicons:clipboard-document-list" class="h-10 w-10 text-gray-500" />
+            <Icon
+              name="heroicons:clipboard-document-list"
+              class="h-10 w-10 text-gray-500"
+            />
           </div>
         </div>
         <h3 class="text-lg font-semibold mt-4">No posts yet</h3>
-        <p class="text-gray-600 mt-1">Create your first post to start selling!</p>
+        <p class="text-gray-600 mt-1">
+          Create your first post to start selling!
+        </p>
       </div>
       <button
         @click="$emit('create-post')"
@@ -64,19 +69,29 @@
 
       <!-- Post items -->
       <div class="divide-y divide-gray-200">
-        <div v-for="post in filteredPosts" :key="post.id" class="py-4 flex gap-4">
+        <div
+          v-for="post in filteredPosts"
+          :key="post.id"
+          class="py-4 flex gap-4"
+        >
           <!-- Post image -->
-          <NuxtLink :to="`/sale/${post.slug}`" class="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+          <NuxtLink
+            :to="`/sale/${post.slug}`"
+            class="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0"
+          >
             <img
               v-if="post.main_image"
               :src="post.main_image"
               :alt="post.title"
               class="w-full h-full object-cover rounded-md"
             />
-            <div v-else class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+            <div
+              v-else
+              class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center"
+            >
               <Icon name="heroicons:photo" class="h-8 w-8 text-gray-400" />
             </div>
-            
+
             <!-- Status badge -->
             <div class="absolute top-0 left-0">
               <span
@@ -84,7 +99,7 @@
                   'bg-yellow-500': post.status === 'pending',
                   'bg-green-500': post.status === 'active',
                   'bg-blue-500': post.status === 'sold',
-                  'bg-red-500': post.status === 'expired'
+                  'bg-red-500': post.status === 'expired',
                 }"
                 class="text-white text-xs px-2 py-0.5 rounded-sm"
               >
@@ -96,17 +111,26 @@
           <!-- Post details -->
           <div class="flex-1 min-w-0">
             <NuxtLink :to="`/sale/${post.slug}`">
-              <h3 class="text-base font-medium line-clamp-1">{{ post.title }}</h3>
+              <h3 class="text-base font-medium line-clamp-1">
+                {{ post.title }}
+              </h3>
             </NuxtLink>
             <div class="mt-1 flex items-center text-sm text-gray-500">
-              <Icon name="heroicons:currency-bangladeshi" class="h-4 w-4 mr-1" />
-              <span>{{ post.price ? `৳${post.price.toLocaleString()}` : 'Negotiable' }}</span>
+              <Icon
+                name="heroicons:currency-bangladeshi"
+                class="h-4 w-4 mr-1"
+              />
+              <span>{{
+                post.price ? `৳${post.price.toLocaleString()}` : "Negotiable"
+              }}</span>
               <span class="mx-2">•</span>
               <span>{{ formatDate(post.created_at) }}</span>
             </div>
             <div class="mt-1 flex items-center text-sm text-gray-500">
               <Icon name="heroicons:map-pin" class="h-4 w-4 mr-1" />
-              <span class="line-clamp-1">{{ post.area }}, {{ post.district }}</span>
+              <span class="line-clamp-1"
+                >{{ post.area }}, {{ post.district }}</span
+              >
             </div>
           </div>
 
@@ -136,9 +160,7 @@
                 <Icon name="heroicons:trash" size="18px" />
               </button>
             </div>
-            <div class="text-xs text-gray-500">
-              {{ post.view_count }} views
-            </div>
+            <div class="text-xs text-gray-500">{{ post.view_count }} views</div>
           </div>
         </div>
       </div>
@@ -161,7 +183,9 @@
       <div
         class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
       >
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        ></div>
 
         <div
           class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
@@ -171,7 +195,10 @@
               <div
                 class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
               >
-                <Icon name="heroicons:exclamation-triangle" class="h-6 w-6 text-red-600" />
+                <Icon
+                  name="heroicons:exclamation-triangle"
+                  class="h-6 w-6 text-red-600"
+                />
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg leading-6 font-medium text-gray-900">
@@ -179,7 +206,8 @@
                 </h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500">
-                    Are you sure you want to delete "{{ postToDeleteTitle }}"? This action cannot be undone.
+                    Are you sure you want to delete "{{ postToDeleteTitle }}"?
+                    This action cannot be undone.
                   </p>
                 </div>
               </div>
@@ -210,11 +238,11 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 
-const { get, post, deleteReq } = useApi();
+const { get, post, del } = useApi();
 const { user } = useAuth();
 const { showNotification } = useNotifications();
 
-const emit = defineEmits(['create-post', 'edit-post', 'delete-post']);
+const emit = defineEmits(["create-post", "edit-post", "delete-post"]);
 
 // State
 const posts = ref([]);
@@ -235,37 +263,42 @@ const filteredPosts = computed(() => {
   if (!statusFilter.value) {
     return posts.value;
   }
-  return posts.value.filter(post => post.status === statusFilter.value);
+  return posts.value.filter((post) => post.status === statusFilter.value);
 });
 
 // Format status for display
 const formatStatus = (status) => {
-  switch(status) {
-    case 'pending': return 'Pending';
-    case 'active': return 'Active';
-    case 'sold': return 'Sold';
-    case 'expired': return 'Expired';
-    default: return status;
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "active":
+      return "Active";
+    case "sold":
+      return "Sold";
+    case "expired":
+      return "Expired";
+    default:
+      return status;
   }
 };
 
 // Format date for display
 const formatDate = (dateString) => {
-  if (!dateString) return '';
-  
+  if (!dateString) return "";
+
   const date = new Date(dateString);
   const now = new Date();
   const diffTime = Math.abs(now - date);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays <= 1) {
-    return 'Today';
+    return "Today";
   } else if (diffDays <= 2) {
-    return 'Yesterday';
+    return "Yesterday";
   } else if (diffDays <= 7) {
     return `${diffDays} days ago`;
   } else {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
 };
 
@@ -276,25 +309,26 @@ const fetchPosts = async (page = 1) => {
   } else {
     isLoadingMore.value = true;
   }
-  
+
   try {
-    const response = await get(`/sale/posts/my_posts/?page=${page}`);
-    
+    const response = await get(`/sale/posts/`);
+    console.log("Response data:", response.data);
+
     if (response.data) {
-      if ('results' in response.data) {
+      if ("results" in response.data) {
         // Paginated response
         pagination.value = {
           count: response.data.count,
           next: response.data.next,
-          previous: response.data.previous
+          previous: response.data.previous,
         };
-        
+
         if (page === 1) {
           posts.value = response.data.results;
         } else {
           posts.value = [...posts.value, ...response.data.results];
         }
-        
+
         hasMorePosts.value = !!response.data.next;
       } else if (Array.isArray(response.data)) {
         // Non-paginated response
@@ -307,7 +341,7 @@ const fetchPosts = async (page = 1) => {
     showNotification({
       title: "Error",
       message: "Failed to load your posts. Please try again later.",
-      type: "error"
+      type: "error",
     });
   } finally {
     isLoading.value = false;
@@ -327,18 +361,18 @@ const loadMorePosts = () => {
 const markAsSold = async (postId) => {
   try {
     const response = await post(`/sale/posts/${postId}/mark_as_sold/`);
-    
+
     if (response.data) {
       // Update post in the local state
-      const postIndex = posts.value.findIndex(p => p.id === postId);
+      const postIndex = posts.value.findIndex((p) => p.id === postId);
       if (postIndex !== -1) {
-        posts.value[postIndex].status = 'sold';
+        posts.value[postIndex].status = "sold";
       }
-      
+
       showNotification({
         title: "Success",
         message: "Post has been marked as sold!",
-        type: "success"
+        type: "success",
       });
     }
   } catch (error) {
@@ -346,7 +380,7 @@ const markAsSold = async (postId) => {
     showNotification({
       title: "Error",
       message: "Failed to mark post as sold. Please try again later.",
-      type: "error"
+      type: "error",
     });
   }
 };
@@ -361,27 +395,27 @@ const confirmDelete = (id, title) => {
 // Delete post
 const deletePost = async () => {
   if (!postToDeleteId.value) return;
-  
+
   try {
-    await deleteReq(`/sale/posts/${postToDeleteId.value}/`);
-    
+    await del(`/sale/posts/${postToDeleteId.value}/`);
+
     // Remove post from local state
-    posts.value = posts.value.filter(p => p.id !== postToDeleteId.value);
-    
+    posts.value = posts.value.filter((p) => p.id !== postToDeleteId.value);
+
     // Emit event
-    emit('delete-post', postToDeleteId.value);
-    
+    emit("delete-post", postToDeleteId.value);
+
     showNotification({
       title: "Success",
       message: "Post deleted successfully!",
-      type: "success"
+      type: "success",
     });
   } catch (error) {
     console.error("Error deleting post:", error);
     showNotification({
       title: "Error",
       message: "Failed to delete post. Please try again later.",
-      type: "error"
+      type: "error",
     });
   } finally {
     showDeleteModal.value = false;
@@ -391,15 +425,18 @@ const deletePost = async () => {
 };
 
 // Watch for user change to reload posts
-watch(() => user.value?.id, (newId) => {
-  if (newId) {
-    fetchPosts();
+watch(
+  () => user.value?.id,
+  (newId) => {
+    if (newId) {
+      fetchPosts();
+    }
   }
-});
+);
 
 // Load posts on component mount
 onMounted(() => {
-  if (user.value?.id) {
+  if (user.value?.user.id) {
     fetchPosts();
   }
 });
@@ -411,7 +448,8 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
