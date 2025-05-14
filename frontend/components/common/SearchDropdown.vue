@@ -69,9 +69,49 @@
           </div>
         </div>
 
+        <!-- Search Tabs for Content Types -->
+        <div v-if="searchQuery && (posts.length > 0 || people.length > 0)" 
+             class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <button 
+            class="flex-1 py-2 text-xs font-medium transition-colors"
+            :class="activeTab === 'all' ? 
+              'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 
+              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+            @click="activeTab = 'all'"
+          >
+            All
+          </button>
+          
+          <button 
+            class="flex-1 py-2 text-xs font-medium transition-colors"
+            :class="activeTab === 'posts' ? 
+              'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 
+              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+            @click="activeTab = 'posts'"
+          >
+            Posts
+            <span v-if="posts.length" class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+              {{ posts.length }}
+            </span>
+          </button>
+          
+          <button 
+            class="flex-1 py-2 text-xs font-medium transition-colors"
+            :class="activeTab === 'people' ? 
+              'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 
+              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+            @click="activeTab = 'people'"
+          >
+            People
+            <span v-if="people.length" class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+              {{ people.length }}
+            </span>
+          </button>
+        </div>
+
         <!-- Enhanced Search Results with Improved Rendering and Keyword Highlighting -->
         <div
-          v-if="searchQuery && searchResults.length > 0"
+          v-if="searchQuery && (filteredResults.length > 0)"
           class="max-h-80 overflow-y-auto search-results-container"
         >
           <div class="py-2 px-1">
@@ -79,47 +119,112 @@
               Results for "<span class="font-medium text-blue-600 dark:text-blue-400">{{ searchQuery }}</span>"
               <span v-if="usingFuzzySearch" class="text-xs ml-1 text-gray-400 dark:text-gray-500">(including similar words)</span>
             </p>
-          
-            <div
-              v-for="(result, index) in limitedSearchResults"
-              :key="result.id"
-              class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
-              @click="selectArticle(result)"
-              :class="{'border-b border-gray-100 dark:border-gray-800': index < limitedSearchResults.length - 1}"
-            >
-              <div class="flex items-start justify-between">
-                <div class="flex-1 min-w-0">
-                  <!-- Highlighted title with keyword matches -->
-                  <p class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                    <span v-html="highlightMatches(result.title, searchQuery)"></span>
-                  </p>
-                  
-                  <!-- Content preview with highlighted matches (if available) -->
-                  <p v-if="result.post_text" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                    <span v-html="getContentPreview(result.post_text, searchQuery)"></span>
-                  </p>
-                  
-                  <div class="flex flex-wrap gap-1 mt-1.5">
-                    <span
-                      v-for="tag in result.post_tags"
-                      :key="tag.id"
-                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                      :class="isTagMatched(tag.tag, searchQuery) ? 
-                        'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' : 
-                        'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'"
-                    >
-                      #<span v-html="highlightMatches(tag.tag, searchQuery)"></span>
-                    </span>
+            
+            <!-- Posts section -->
+            <template v-if="showPosts">
+              <div v-if="filteredPosts.length > 0 && activeTab === 'all'" class="px-3 pt-1 pb-2">
+                <h4 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">Posts ({{ filteredPosts.length }})</h4>
+              </div>
+            
+              <div
+                v-for="(result, index) in limitedFilteredPosts"
+                :key="'post-' + result.id"
+                class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
+                @click="navigateToPost(result)"
+                :class="{'border-b border-gray-100 dark:border-gray-800': index < limitedFilteredPosts.length - 1}"
+              >
+                <!-- Post content -->
+                <div class="flex items-start justify-between">
+                  <div class="flex-1 min-w-0">
+                    <!-- Highlighted title with keyword matches -->
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                      <span v-html="highlightMatches(result.title, searchQuery)"></span>
+                    </p>
+                    
+                    <!-- Content preview with highlighted matches (if available) -->
+                    <p v-if="result.post_text" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                      <span v-html="getContentPreview(result.post_text, searchQuery)"></span>
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-1 mt-1.5">
+                      <span
+                        v-for="tag in result.post_tags"
+                        :key="tag.id"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                        :class="isTagMatched(tag.tag, searchQuery) ? 
+                          'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' : 
+                          'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'"
+                      >
+                        #<span v-html="highlightMatches(tag.tag, searchQuery)"></span>
+                      </span>
+                    </div>
                   </div>
-                </div>
-                
-                <div class="flex-shrink-0 ml-3">
-                  <div class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors">
-                    <ArrowRight class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                  
+                  <div class="flex-shrink-0 ml-3">
+                    <div class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors">
+                      <ArrowRight class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </template>
+            
+            <!-- People section -->
+            <template v-if="showPeople">
+              <div v-if="filteredPeople.length > 0 && activeTab === 'all'" class="px-3 pt-3 pb-2">
+                <h4 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">People ({{ filteredPeople.length }})</h4>
+              </div>
+            
+              <div
+                v-for="(person, index) in limitedFilteredPeople"
+                :key="'person-' + (person.id || index)"
+                class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
+                @click="navigateToProfile(person)"
+                :class="{'border-b border-gray-100 dark:border-gray-800': index < limitedFilteredPeople.length - 1}"
+              >
+                <!-- Person card with avatar and details -->
+                <div class="flex items-center">
+                  <!-- Avatar with fallback -->
+                  <div class="flex-shrink-0 relative">
+                    <img 
+                      :src="person.avatar_url || '/img/default-avatar.png'" 
+                      :alt="person.name || 'User'" 
+                      class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                      @error="$event.target.src = '/img/default-avatar.png'"
+                    />
+                    <div v-if="person.is_online" class="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-400 rounded-full border-2 border-white dark:border-gray-800"></div>
+                  </div>
+                  
+                  <!-- User info with more detailed display -->
+                  <div class="ml-3 flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <span v-html="highlightMatches(person.name || person.username || 'Unknown User', searchQuery)"></span>
+                    </p>
+                    <div class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400">
+                      <span v-if="person.followers !== undefined">
+                        {{ person.followers }} {{ person.followers === 1 ? 'follower' : 'followers' }}
+                      </span>
+                      <span v-if="person.title" class="flex items-center">
+                        <span class="mx-1.5">•</span>
+                        <span class="truncate" v-html="highlightMatches(person.title, searchQuery)"></span>
+                      </span>
+                      <span v-if="person.username && !person.title" class="flex items-center">
+                        <span class="mx-1.5">•</span>
+                        <span class="text-gray-400 dark:text-gray-500">@{{ person.username }}</span>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Action button -->
+                  <div class="flex-shrink-0">
+                    <div class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors">
+                      <UserPlus v-if="!person.is_following" class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      <User v-else class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
           
           <div class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
@@ -135,7 +240,7 @@
 
         <!-- Enhanced No Results Message -->
         <div
-          v-if="searchQuery && !isLoading && searchResults.length === 0"
+          v-if="searchQuery && !isLoading && filteredResults.length === 0"
           class="p-6 text-center"
         >
           <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-3 flex items-center justify-center">
@@ -186,7 +291,7 @@
 
         <!-- Loading State -->
         <div
-          v-if="searchQuery && isLoading && searchResults.length === 0"
+          v-if="searchQuery && isLoading && filteredResults.length === 0"
           class="p-8 text-center"
         >
           <div class="loading-spinner mx-auto mb-3"></div>
@@ -198,14 +303,19 @@
 </template>
 
 <script setup>
-import { SearchIcon, XIcon, ArrowRightIcon as ArrowRight } from "lucide-vue-next";
+import { SearchIcon, XIcon, ArrowRightIcon as ArrowRight, UserIcon as User, UserPlusIcon as UserPlus } from "lucide-vue-next";
 const { get } = useApi();
+const router = useRouter();
 const showSearchDropdown = ref(false);
 const searchQuery = ref("");
-const searchResults = ref([]);
 const isLoading = ref(false);
 const spellingSuggestion = ref("");
 const usingFuzzySearch = ref(false);
+
+// Separate arrays for posts and people
+const posts = ref([]);
+const people = ref([]);
+const activeTab = ref('all'); // 'all', 'posts', or 'people'
 
 // Add the annotation icon for suggestions
 const AnnotationIcon = {
@@ -296,6 +406,88 @@ const commonBusinessTerms = [
   "team", "collaboration", "communication", "leadership", "executive",
   "director", "manager", "consultant", "advisor", "professional"
 ];
+
+// Computed properties for filtered results based on active tab
+const filteredPosts = computed(() => {
+  if (activeTab.value === 'all' || activeTab.value === 'posts') {
+    return posts.value;
+  }
+  return [];
+});
+
+const filteredPeople = computed(() => {
+  if (activeTab.value === 'all' || activeTab.value === 'people') {
+    return people.value;
+  }
+  return [];
+});
+
+// Updated limits: 4 posts and 6 people
+const limitedFilteredPosts = computed(() => {
+  // In "all" mode, limit to 4 posts
+  if (activeTab.value === 'all') {
+    return filteredPosts.value.slice(0, 4);
+  }
+  // In "posts" mode, show up to 8 posts
+  return filteredPosts.value.slice(0, 8);
+});
+
+const limitedFilteredPeople = computed(() => {
+  // In "all" mode, limit to 6 people
+  if (activeTab.value === 'all') {
+    return filteredPeople.value.slice(0, 6);
+  }
+  // In "people" mode, show up to 8 people
+  return filteredPeople.value.slice(0, 8);
+});
+
+const filteredResults = computed(() => {
+  if (activeTab.value === 'all') {
+    return [...filteredPosts.value, ...filteredPeople.value];
+  } else if (activeTab.value === 'posts') {
+    return filteredPosts.value;
+  } else {
+    return filteredPeople.value;
+  }
+});
+
+// Show sections based on available results
+const showPosts = computed(() => {
+  return filteredPosts.value.length > 0;
+});
+
+const showPeople = computed(() => {
+  return filteredPeople.value.length > 0;
+});
+
+// Navigation functions for results
+const navigateToPost = (post) => {
+  if (post && post.id) {
+    router.push(`/business-network/posts/${post.id}`);
+    showSearchDropdown.value = false;
+  }
+};
+
+// Updated navigation function with more robust error handling
+const navigateToProfile = (person) => {
+  if (person) {
+    let profileUrl;
+    
+    // Determine the correct profile URL based on available data
+    if (person.id) {
+      profileUrl = `/business-network/profile/${person.id}`;
+    } else if (person.username) {
+      profileUrl = `/business-network/profile/user/${person.username}`;
+    } else {
+      console.error('Cannot navigate to profile: Missing ID and username', person);
+      return;
+    }
+    
+    console.log('Navigating to profile:', profileUrl, person);
+    router.push(profileUrl);
+    showSearchDropdown.value = false;
+  }
+};
 
 // Levenshtein Distance algorithm to calculate the edit distance between two strings
 const levenshteinDistance = (str1, str2) => {
@@ -388,12 +580,6 @@ const applySpellingSuggestion = () => {
   }
 };
 
-// Limit search results to improve rendering performance
-const limitedSearchResults = computed(() => {
-  // Limiting to first 8 results for better performance
-  return searchResults.value.slice(0, 8);
-});
-
 // Highlight search term matches in text
 const highlightMatches = (text, query) => {
   if (!query || !text) return text;
@@ -483,6 +669,9 @@ const toggleSearchDropdown = () => {
 // Clear search input
 const clearSearch = () => {
   searchQuery.value = "";
+  posts.value = [];
+  people.value = [];
+  activeTab.value = 'all';
   nextTick(() => {
     const searchInput = document.querySelector(".search-input");
     if (searchInput) {
@@ -499,15 +688,16 @@ const setSearchQuery = (query) => {
 // Navigate to all results page
 const viewAllResults = () => {
   if (searchQuery.value) {
-    navigateTo(`/business-network/search-results/${encodeURIComponent(searchQuery.value)}`);
+    // Navigate to all results page
+    // Add the active tab as a query parameter if it's not 'all'
+    let path = `/business-network/search-results/${encodeURIComponent(searchQuery.value)}`;
+    if (activeTab.value !== 'all') {
+      path += `?tab=${activeTab.value}`;
+    }
+    
+    router.push(path);
     showSearchDropdown.value = false;
   }
-};
-
-// This function would need to be implemented based on your navigation logic
-const selectArticle = (article) => {
-  // Navigate to the article or perform action
-  showSearchDropdown.value = false;
 };
 
 // Handle clicks outside of search dropdown to close it
@@ -554,7 +744,8 @@ defineExpose({
   toggleSearchDropdown,
   showSearchDropdown,
   searchQuery,
-  searchResults,
+  posts,
+  people,
 });
 
 // Debounce function to limit API calls
@@ -566,42 +757,102 @@ const debounce = (fn, wait) => {
   };
 };
 
-// Enhanced search function with fuzzy matching capability
+// Enhanced search function with better error handling and logging
 const performSearch = async (query, useFuzzySearch = false) => {
   isLoading.value = true;
   usingFuzzySearch.value = useFuzzySearch;
   
   try {
-    // For fuzzy search, we might need to expand the query with potential corrections
-    let searchEndpoint = `/bn/posts/search/?q=${encodeURIComponent(query)}&page=1`;
+    // Search for posts
+    let postsEndpoint = `/bn/posts/search/?q=${encodeURIComponent(query)}&page=1`;
+    let peopleEndpoint = `/bn/users/search/?q=${encodeURIComponent(query)}`;
     
-    // If using fuzzy search, we could add a parameter to tell the backend
     if (useFuzzySearch) {
-      searchEndpoint += '&fuzzy=true';
+      postsEndpoint += '&fuzzy=true';
+      peopleEndpoint += '&fuzzy=true';
     }
     
-    const res = await get(searchEndpoint);
-    const results = res.data?.results || [];
+    console.log(`Searching posts: ${postsEndpoint}`);
+    console.log(`Searching users: ${peopleEndpoint}`);
     
-    if (results.length === 0 && !useFuzzySearch) {
-      // If no results and not already using fuzzy search, generate spelling suggestion
+    // Make parallel requests for posts and people
+    const [postsRes, peopleRes] = await Promise.all([
+      get(postsEndpoint),
+      get(peopleEndpoint)
+    ]);
+    
+    // Log response data to help debug
+    console.log('Posts search response:', postsRes);
+    console.log('People search response:', peopleRes);
+    
+    const postResults = postsRes.data?.results || [];
+    
+    // Process people results to ensure we have the required fields
+    let peopleResults = [];
+    if (peopleRes.data?.results && Array.isArray(peopleRes.data.results)) {
+      peopleResults = peopleRes.data.results.map(person => {
+        // Add default values for missing fields
+        return {
+          id: person.id,
+          name: person.name || person.username || 'Unknown User',
+          avatar_url: person.avatar_url || person.profile_photo || person.profile_picture || null,
+          followers: person.followers_count || person.followers || 0,
+          title: person.title || person.position || person.bio || '',
+          is_online: !!person.is_online,
+          is_following: !!person.is_following,
+          username: person.username || '',
+          // Add any additional fields your backend provides
+          ...person
+        };
+      });
+    }
+    
+    // If no results and not already using fuzzy search, generate spelling suggestion
+    if ((postResults.length === 0 && peopleResults.length === 0) && !useFuzzySearch) {
       const suggestion = generateSpellingSuggestion(query);
       
       if (suggestion && suggestion !== query) {
         spellingSuggestion.value = suggestion;
         
         // Optionally, automatically perform search with the suggestion
-        const fuzzyRes = await get(`/bn/posts/search/?q=${encodeURIComponent(suggestion)}&page=1&fuzzy=true`);
-        return fuzzyRes.data?.results || [];
+        const [fuzzyPostsRes, fuzzyPeopleRes] = await Promise.all([
+          get(`/bn/posts/search/?q=${encodeURIComponent(suggestion)}&page=1&fuzzy=true`),
+          get(`/bn/users/search/?q=${encodeURIComponent(suggestion)}&fuzzy=true`)
+        ]);
+        
+        const fuzzyPostResults = fuzzyPostsRes.data?.results || [];
+        let fuzzyPeopleResults = [];
+        
+        if (fuzzyPeopleRes.data?.results && Array.isArray(fuzzyPeopleRes.data.results)) {
+          fuzzyPeopleResults = fuzzyPeopleRes.data.results.map(person => ({
+            id: person.id,
+            name: person.name || person.username || 'Unknown User',
+            avatar_url: person.avatar_url || person.profile_photo || person.profile_picture || null,
+            followers: person.followers_count || person.followers || 0,
+            title: person.title || person.position || person.bio || '',
+            is_online: !!person.is_online,
+            is_following: !!person.is_following,
+            username: person.username || '',
+            ...person
+          }));
+        }
+        
+        return {
+          posts: fuzzyPostResults,
+          people: fuzzyPeopleResults
+        };
       }
     } else {
       spellingSuggestion.value = "";
     }
     
-    return results;
+    return {
+      posts: postResults,
+      people: peopleResults
+    };
   } catch (error) {
     console.error('Search error:', error);
-    return [];
+    return { posts: [], people: [] };
   } finally {
     isLoading.value = false;
   }
@@ -612,19 +863,32 @@ const debouncedSearch = debounce(async (query) => {
   // First try exact search
   const results = await performSearch(query, false);
   
+  // Update posts and people arrays
+  posts.value = results.posts || [];
+  people.value = results.people || [];
+  
   // If no results, try fuzzy search with corrections
-  if (results.length === 0) {
+  if (posts.value.length === 0 && people.value.length === 0) {
     const fuzzyResults = await performSearch(query, true);
-    searchResults.value = fuzzyResults;
+    posts.value = fuzzyResults.posts || [];
+    people.value = fuzzyResults.people || [];
+  }
+  
+  // Set appropriate tab if one result type is empty
+  if (posts.value.length === 0 && people.value.length > 0) {
+    activeTab.value = 'people';
+  } else if (people.value.length === 0 && posts.value.length > 0) {
+    activeTab.value = 'posts';
   } else {
-    searchResults.value = results;
+    activeTab.value = 'all';
   }
 }, 300);
 
 watch(searchQuery, (newValue) => {
   // Reset results when query is empty
   if (!newValue) {
-    searchResults.value = [];
+    posts.value = [];
+    people.value = [];
     isLoading.value = false;
     spellingSuggestion.value = "";
     usingFuzzySearch.value = false;
@@ -635,7 +899,8 @@ watch(searchQuery, (newValue) => {
   if (newValue.length >= 2) {
     debouncedSearch(newValue);
   } else {
-    searchResults.value = [];
+    posts.value = [];
+    people.value = [];
     spellingSuggestion.value = "";
   }
 });
