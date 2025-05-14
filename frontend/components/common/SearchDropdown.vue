@@ -26,7 +26,7 @@
         aria-modal="true"
         aria-label="Search dialog"
       >
-        <!-- Enhanced Search Header -->
+        <!-- Enhanced Search Header with Spelling Suggestion -->
         <div class="p-3 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm">
           <h4 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-2 px-1">Search</h4>
           <div class="relative">
@@ -52,6 +52,21 @@
               </button>
             </div>
           </div>
+          
+          <!-- Spelling suggestion banner -->
+          <div v-if="spellingSuggestion && searchQuery" class="mt-2 px-1">
+            <button 
+              @click="applySpellingSuggestion"
+              class="text-xs flex items-center text-left w-full rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 px-2.5 py-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            >
+              <span class="mr-1.5">
+                <AnnotationIcon class="h-3.5 w-3.5" />
+              </span>
+              <span>
+                Did you mean: <span class="font-medium underline">{{ spellingSuggestion }}</span>?
+              </span>
+            </button>
+          </div>
         </div>
 
         <!-- Enhanced Search Results with Improved Rendering and Keyword Highlighting -->
@@ -62,6 +77,7 @@
           <div class="py-2 px-1">
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1.5 px-3">
               Results for "<span class="font-medium text-blue-600 dark:text-blue-400">{{ searchQuery }}</span>"
+              <span v-if="usingFuzzySearch" class="text-xs ml-1 text-gray-400 dark:text-gray-500">(including similar words)</span>
             </p>
           
             <div
@@ -188,6 +204,38 @@ const showSearchDropdown = ref(false);
 const searchQuery = ref("");
 const searchResults = ref([]);
 const isLoading = ref(false);
+const spellingSuggestion = ref("");
+const usingFuzzySearch = ref(false);
+
+// Add the annotation icon for suggestions
+const AnnotationIcon = {
+  name: 'AnnotationIcon',
+  props: {
+    size: {
+      type: String,
+      default: '24'
+    },
+    color: {
+      type: String,
+      default: 'currentColor'
+    }
+  },
+  setup(props) {
+    return () => h('svg', {
+      xmlns: 'http://www.w3.org/2000/svg',
+      width: props.size,
+      height: props.size,
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: props.color,
+      strokeWidth: '2',
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round'
+    }, [
+      h('path', { d: 'M7 8h10M7 12h4m1 8l4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z' })
+    ]);
+  }
+};
 
 // Added search suggestions
 const searchSuggestions = [
@@ -196,7 +244,11 @@ const searchSuggestions = [
   "Leadership", 
   "Technology", 
   "Innovation",
-  "Business"
+  "Business",
+  "Development",
+  "Strategy",
+  "Management",
+  "Analytics"
 ];
 
 // Custom icon for no results state
@@ -231,6 +283,111 @@ const SearchOffIcon = {
   }
 };
 
+// Dictionary of common words for spell checking
+const commonBusinessTerms = [
+  "marketing", "finance", "leadership", "technology", "innovation", 
+  "business", "development", "strategy", "management", "sales",
+  "analytics", "digital", "transformation", "project", "customer",
+  "service", "product", "operations", "human", "resources",
+  "investment", "revenue", "profit", "market", "brand",
+  "advertising", "social", "media", "email", "content",
+  "data", "analysis", "performance", "growth", "sustainability",
+  "corporate", "entrepreneur", "startup", "global", "local",
+  "team", "collaboration", "communication", "leadership", "executive",
+  "director", "manager", "consultant", "advisor", "professional"
+];
+
+// Levenshtein Distance algorithm to calculate the edit distance between two strings
+const levenshteinDistance = (str1, str2) => {
+  const m = str1.length;
+  const n = str2.length;
+  
+  // Create a matrix of size (m+1) x (n+1)
+  const dp = Array(m + 1).fill().map(() => Array(n + 1).fill(0));
+  
+  // Initialize first row and column
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  
+  // Fill the matrix
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = 1 + Math.min(
+          dp[i - 1][j],     // deletion
+          dp[i][j - 1],     // insertion
+          dp[i - 1][j - 1]  // substitution
+        );
+      }
+    }
+  }
+  
+  return dp[m][n];
+};
+
+// Find closest match for a word from dictionary
+const findClosestMatch = (word) => {
+  if (!word || word.length < 3) return null;
+  
+  // Normalize the word
+  const normalizedWord = word.toLowerCase().trim();
+  
+  // Check if the word is already in the dictionary
+  if (commonBusinessTerms.includes(normalizedWord)) {
+    return null; // No correction needed
+  }
+  
+  // Find the closest match
+  let closestMatch = null;
+  let minDistance = Infinity;
+  
+  // Set threshold based on word length
+  const threshold = Math.max(2, Math.floor(normalizedWord.length * 0.4));
+  
+  for (const term of commonBusinessTerms) {
+    // Skip very different length words for efficiency
+    if (Math.abs(term.length - normalizedWord.length) > threshold) continue;
+    
+    const distance = levenshteinDistance(normalizedWord, term);
+    
+    // Update closest match if this is closer
+    if (distance < minDistance && distance <= threshold) {
+      minDistance = distance;
+      closestMatch = term;
+    }
+  }
+  
+  return closestMatch;
+};
+
+// Generate spelling suggestion for the entire query
+const generateSpellingSuggestion = (query) => {
+  if (!query) return null;
+  
+  const words = query.split(/\s+/);
+  let hasCorrection = false;
+  const correctedWords = words.map(word => {
+    const closestMatch = findClosestMatch(word);
+    if (closestMatch && closestMatch !== word.toLowerCase()) {
+      hasCorrection = true;
+      return closestMatch;
+    }
+    return word;
+  });
+  
+  return hasCorrection ? correctedWords.join(' ') : null;
+};
+
+// Apply the spelling suggestion
+const applySpellingSuggestion = () => {
+  if (spellingSuggestion.value) {
+    searchQuery.value = spellingSuggestion.value;
+    spellingSuggestion.value = "";
+  }
+};
+
 // Limit search results to improve rendering performance
 const limitedSearchResults = computed(() => {
   // Limiting to first 8 results for better performance
@@ -241,11 +398,24 @@ const limitedSearchResults = computed(() => {
 const highlightMatches = (text, query) => {
   if (!query || !text) return text;
   
-  // Escape special regex characters to prevent errors
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Get both the original query terms and possible corrections
+  const queryTerms = query.toLowerCase().split(/\s+/);
   
-  // Create a regex pattern that matches whole words or parts
-  const pattern = new RegExp(`(${escapedQuery.split(/\s+/).join('|')})`, 'gi');
+  // Create a combined pattern that includes both original terms and corrections
+  let termPatterns = queryTerms.map(term => {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Find potential corrections for this term
+    const correction = findClosestMatch(term);
+    if (correction && correction !== term) {
+      const escapedCorrection = correction.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return `(${escaped}|${escapedCorrection})`;
+    }
+    return `(${escaped})`;
+  }).join('|');
+  
+  // Create regex pattern from all terms
+  const pattern = new RegExp(`(${termPatterns})`, 'gi');
   
   return text.replace(pattern, '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-0.5 rounded">$1</span>');
 };
@@ -283,10 +453,18 @@ const isTagMatched = (tag, query) => {
   if (!tag || !query) return false;
   
   const normalizedTag = tag.toLowerCase();
-  const normalizedQuery = query.toLowerCase();
+  const words = query.toLowerCase().split(/\s+/);
   
-  // Check if any word in the query matches the tag
-  return normalizedQuery.split(/\s+/).some(word => normalizedTag.includes(word));
+  // Check for direct matches first
+  if (words.some(word => normalizedTag.includes(word))) {
+    return true;
+  }
+  
+  // If no direct match, check for fuzzy matches
+  return words.some(word => {
+    const correction = findClosestMatch(word);
+    return correction && normalizedTag.includes(correction);
+  });
 };
 
 // Toggle search dropdown visibility
@@ -388,17 +566,58 @@ const debounce = (fn, wait) => {
   };
 };
 
-// Debounced search function
-const debouncedSearch = debounce(async (query) => {
+// Enhanced search function with fuzzy matching capability
+const performSearch = async (query, useFuzzySearch = false) => {
   isLoading.value = true;
+  usingFuzzySearch.value = useFuzzySearch;
+  
   try {
-    const res = await get(`/bn/posts/search/?q=${query}&page=1`);
-    searchResults.value = res.data?.results || [];
+    // For fuzzy search, we might need to expand the query with potential corrections
+    let searchEndpoint = `/bn/posts/search/?q=${encodeURIComponent(query)}&page=1`;
+    
+    // If using fuzzy search, we could add a parameter to tell the backend
+    if (useFuzzySearch) {
+      searchEndpoint += '&fuzzy=true';
+    }
+    
+    const res = await get(searchEndpoint);
+    const results = res.data?.results || [];
+    
+    if (results.length === 0 && !useFuzzySearch) {
+      // If no results and not already using fuzzy search, generate spelling suggestion
+      const suggestion = generateSpellingSuggestion(query);
+      
+      if (suggestion && suggestion !== query) {
+        spellingSuggestion.value = suggestion;
+        
+        // Optionally, automatically perform search with the suggestion
+        const fuzzyRes = await get(`/bn/posts/search/?q=${encodeURIComponent(suggestion)}&page=1&fuzzy=true`);
+        return fuzzyRes.data?.results || [];
+      }
+    } else {
+      spellingSuggestion.value = "";
+    }
+    
+    return results;
   } catch (error) {
     console.error('Search error:', error);
-    searchResults.value = [];
+    return [];
   } finally {
     isLoading.value = false;
+  }
+};
+
+// Debounced search function with fuzzy fallback
+const debouncedSearch = debounce(async (query) => {
+  // First try exact search
+  const results = await performSearch(query, false);
+  
+  // If no results, try fuzzy search with corrections
+  if (results.length === 0) {
+    const fuzzyResults = await performSearch(query, true);
+    searchResults.value = fuzzyResults;
+  } else {
+    searchResults.value = results;
   }
 }, 300);
 
@@ -407,6 +626,8 @@ watch(searchQuery, (newValue) => {
   if (!newValue) {
     searchResults.value = [];
     isLoading.value = false;
+    spellingSuggestion.value = "";
+    usingFuzzySearch.value = false;
     return;
   }
   
@@ -415,6 +636,7 @@ watch(searchQuery, (newValue) => {
     debouncedSearch(newValue);
   } else {
     searchResults.value = [];
+    spellingSuggestion.value = "";
   }
 });
 </script>
