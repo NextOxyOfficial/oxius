@@ -738,9 +738,10 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
         return BusinessNetworkMindforceComment.objects.filter(mindforce_problem=mindforce_id).order_by('-created_at')
 
     def create(self, request, *args, **kwargs):
-        # Check if problem is already solved before allowing comment
-        images_data = request.data.pop('images', None)
+        
         data = request.data
+        images_data = data.pop('images', None) if 'images' in data else None
+        
         data['author'] = request.user.id
         mindforce_id = kwargs['mindforce_id']
         mindforce_problem = get_object_or_404(BusinessNetworkMindforce, id=mindforce_id)
@@ -756,25 +757,65 @@ class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView)
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         comment= serializer.save()
-        
-        # Process any media files
+          # Process any media files
         if images_data:
-        # Handle both list of images and single image
+            # Handle both list of images and single image
             if not isinstance(images_data, list):
-                images_data = [images_data]
-                                
-            for image_data in images_data:
+                images_data = [images_data]              
+            successful_images = 0
+            failed_images = 0
+            errors = []
+            
+            for index, image_data in enumerate(images_data):
                 try:
-                    if isinstance(image_data, str) and image_data.startswith('data:image'):
-                        # Process base64 image
-                        image_file = base64ToFile(image_data)
-                        mindforce_comment_media =BusinessNetworkMindforceCommentMedia.objects.create(image=image_file)
-                        comment.media.add(mindforce_comment_medi)
+                    # Handle case where image_data is a dictionary with base64 data
+                    if isinstance(image_data, dict) and 'data' in image_data:
+                        image_data = image_data['data']
+                    elif isinstance(image_data, dict) and any(key for key in image_data if 'base64' in str(key) or 'base64' in str(image_data.get(key, ''))):
+                        # Try to find a key containing base64 data
+                        for key, value in image_data.items():
+                            if isinstance(value, str) and 'base64' in value:
+                                image_data = value
+                                break
+                        else:
+                            # If no base64 data found in values, try keys
+                            for key in image_data.keys():
+                                if 'base64' in key:
+                                    image_data = image_data[key]
+                                    break
+                    
+                    # Process base64 image
+                    image_file = base64ToFile(image_data)
+                    mindforce_comment_media = BusinessNetworkMindforceCommentMedia.objects.create(image=image_file)
+                    comment.media.add(mindforce_comment_media)
+                    successful_images += 1
+                    print(f"Image {index+1} processed successfully")
                 except Exception as e:
                     # Log error but continue processing
-                    print(f"Error processing image: {str(e)}")
+                    error_msg = f"Error processing image {index+1}: {str(e)}"
+                    print(error_msg)
+                    errors.append(error_msg)
+                    failed_images += 1
+              # Report on image processing
+            if successful_images > 0:
+                print(f"Successfully added {successful_images} image(s)")
+            if failed_images > 0:
+                print(f"Failed to add {failed_images} image(s)")
+                for error in errors:
+                    print(f"- {error}")
+                    
+        # Add image processing results to the response
+        response_data = serializer.data
+        if images_data:
+            response_data['image_results'] = {
+                'total_images': len(images_data) if isinstance(images_data, list) else 1,
+                'successful': successful_images,
+                'failed': failed_images,
+                'errors': errors if failed_images > 0 else []
+            }
+        
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
     
 
 

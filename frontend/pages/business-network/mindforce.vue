@@ -4,9 +4,7 @@
     <MindForceHeader :is-creating="isCreating" @create="openCreateModal" />
 
     <!-- Main Content -->
-    <div
-      class="bg-white rounded-xl shadow-md border border-gray-100 transition-all"
-    >
+    <div class="bg-white rounded-xl shadow-md border border-gray-100 transition-all">
       <!-- Tabs & Search Component -->
       <MindForceTabsSearch
         :tabs="tabs"
@@ -56,7 +54,7 @@
               :problem="problem"
               :current-user-id="user?.user?.id"
               @click="openProblemDetail(problem)"
-              @photo-view="(index) => openPhotoViewer(problem, index)"
+              @photo-view="index => openPhotoViewer(problem, index)"
             />
           </div>
           <div
@@ -64,9 +62,7 @@
             class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200"
           >
             <div class="text-center">
-              <p class="text-gray-500 mb-2">
-                No active problems at the moment.
-              </p>
+              <p class="text-gray-500 mb-2">No active problems at the moment.</p>
               <button
                 @click="openCreateModal"
                 class="inline-flex items-center justify-center rounded-md text-sm sm:text-base font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
@@ -115,7 +111,7 @@
               :problem="problem"
               :current-user-id="user?.user?.id"
               @click="openProblemDetail(problem)"
-              @photo-view="(index) => openPhotoViewer(problem, index)"
+              @photo-view="index => openPhotoViewer(problem, index)"
             />
           </div>
           <div
@@ -153,7 +149,7 @@
               :problem="problem"
               :current-user-id="user?.user?.id"
               @click="openProblemDetail(problem)"
-              @photo-view="(index) => openPhotoViewer(problem, index)"
+              @photo-view="index => openPhotoViewer(problem, index)"
             />
           </div>
           <div
@@ -179,9 +175,7 @@
                 <line x1="12" y1="9" x2="12" y2="13"></line>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
-              <p class="text-gray-500 mb-2">
-                You haven't posted any problems yet.
-              </p>
+              <p class="text-gray-500 mb-2">You haven't posted any problems yet.</p>
               <button
                 @click="openCreateModal"
                 class="inline-flex items-center justify-center rounded-md text-md font-medium text-blue-600 underline-offset-4 hover:text-blue-800 hover:underline transition-colors"
@@ -209,17 +203,14 @@
       :current-user-id="user?.user?.id"
       :is-submitting-comment="isSubmittingComment"
       :processing-comment-ids="processingCommentIds"
-      @photo-view="(index) => openPhotoViewer(selectedProblem, index)"
+      @photo-view="index => openPhotoViewer(selectedProblem, index)"
       @mark-solution="markAsSolution"
       @add-comment="addComment"
       @delete="confirmDelete"
       @mark-as-solved="markProblemAsSolved"
     />
 
-    <MindForceDeleteDialog
-      v-model="isDeleteDialogOpen"
-      @confirm="deleteProblem"
-    />
+    <MindForceDeleteDialog v-model="isDeleteDialogOpen" @confirm="deleteProblem" />
 
     <MindForcePhotoViewer
       v-model="isPhotoViewerOpen"
@@ -333,17 +324,15 @@ async function fetchProblems() {
 
 // Computed properties
 const activeProblems = computed(() =>
-  problems.value.filter((problem) => problem.status === "active")
+  problems.value.filter(problem => problem.status === "active")
 );
 
 const solvedProblems = computed(() =>
-  problems.value.filter((problem) => problem.status === "solved")
+  problems.value.filter(problem => problem.status === "solved")
 );
 
 const myProblems = computed(() =>
-  problems.value.filter(
-    (problem) => problem.user_details.id === user.value?.user?.id
-  )
+  problems.value.filter(problem => problem.user_details.id === user.value?.user?.id)
 );
 
 // Methods
@@ -367,7 +356,7 @@ const openCreateModal = () => {
   }, 500);
 };
 
-const openProblemDetail = async (problem) => {
+const openProblemDetail = async problem => {
   if (!problem) return;
 
   selectedProblem.value = problem;
@@ -381,7 +370,7 @@ const openProblemDetail = async (problem) => {
       selectedProblem.value.mindforce_comments = commentsRes.data;
 
       // Also update comments in the problems array
-      const index = problems.value.findIndex((p) => p.id === problem.id);
+      const index = problems.value.findIndex(p => p.id === problem.id);
       if (index !== -1) {
         problems.value[index].mindforce_comments = commentsRes.data;
       }
@@ -422,34 +411,15 @@ const openPhotoViewer = (problem, photoData) => {
   } else if (photoData && typeof photoData === "object") {
     // Comment media - object with mediaUrls was passed
     if (photoData.mediaUrls && photoData.mediaUrls.length) {
-      viewerPhotos.value = photoData.mediaUrls.map((url) => ({ image: url }));
+      viewerPhotos.value = photoData.mediaUrls.map(url => ({ image: url }));
       currentPhotoIndex.value = photoData.startIndex || 0;
       isPhotoViewerOpen.value = true;
     }
   }
 };
 
-async function getProblemComments() {
-  const commentsRes = await get(
-    `/bn/mindforce/${selectedProblem.value.id}/comments/`
-  );
-
-  if (commentsRes.data) {
-    // Update both the selected problem and the problems array
-    selectedProblem.value.comments = commentsRes.data;
-
-    // Find and update the problem in the problems list
-    const index = problems.value.findIndex(
-      (p) => p.id === selectedProblem.value.id
-    );
-    if (index !== -1) {
-      problems.value[index].comments = commentsRes.data;
-    }
-  }
-}
-
 // Modified create problem function
-const handleCreateProblem = async (formData) => {
+const handleCreateProblem = async formData => {
   isSubmittingCreate.value = true;
 
   try {
@@ -551,7 +521,7 @@ const deleteProblem = async () => {
   isDeleteDialogOpen.value = false;
 };
 
-const markAsSolution = async (commentId) => {
+const markAsSolution = async commentId => {
   // Keep track of which comment is being processed
   processingCommentIds.value.push(commentId);
 
@@ -566,30 +536,21 @@ const markAsSolution = async (commentId) => {
       if (selectedProblem.value && selectedProblem.value.mindforce_comments) {
         // Find and update the specific comment
         const commentIndex = selectedProblem.value.mindforce_comments.findIndex(
-          (c) => c.id === commentId
+          c => c.id === commentId
         );
         if (commentIndex !== -1) {
-          selectedProblem.value.mindforce_comments[
-            commentIndex
-          ].is_solved = true;
+          selectedProblem.value.mindforce_comments[commentIndex].is_solved = true;
         }
       }
 
       // Also update in the main problems array
-      const problemIndex = problems.value.findIndex(
-        (p) => p.id === selectedProblem.value.id
-      );
-      if (
-        problemIndex !== -1 &&
-        problems.value[problemIndex].mindforce_comments
-      ) {
-        const commentIndex = problems.value[
-          problemIndex
-        ].mindforce_comments.findIndex((c) => c.id === commentId);
+      const problemIndex = problems.value.findIndex(p => p.id === selectedProblem.value.id);
+      if (problemIndex !== -1 && problems.value[problemIndex].mindforce_comments) {
+        const commentIndex = problems.value[problemIndex].mindforce_comments.findIndex(
+          c => c.id === commentId
+        );
         if (commentIndex !== -1) {
-          problems.value[problemIndex].mindforce_comments[
-            commentIndex
-          ].is_solved = true;
+          problems.value[problemIndex].mindforce_comments[commentIndex].is_solved = true;
         }
       }
     }
@@ -597,13 +558,11 @@ const markAsSolution = async (commentId) => {
     console.error("Error marking solution:", error);
     alert("Failed to mark as solution. Please try again.");
   } finally {
-    processingCommentIds.value = processingCommentIds.value.filter(
-      (id) => id !== commentId
-    );
+    processingCommentIds.value = processingCommentIds.value.filter(id => id !== commentId);
   }
 };
 
-const addComment = async (commentData) => {
+const addComment = async commentData => {
   // Handle both string-only comments (backward compatibility) and object format with media
 
   if (!commentData.content.trim() && commentData.images.length === 0) return;
@@ -621,11 +580,12 @@ const addComment = async (commentData) => {
     if (!selectedProblem.value.mindforce_comments) {
       selectedProblem.value.mindforce_comments = [];
     }
+    console.log("Adding comment:", commentData.images);
 
-    const res = await post(
-      `/bn/mindforce/${selectedProblem.value.id}/comments/`,
-      { content: commentData.content, images: commentData.images }
-    );
+    const res = await post(`/bn/mindforce/${selectedProblem.value.id}/comments/`, {
+      content: commentData.content,
+      images: commentData.images,
+    });
 
     if (res.data) {
       // The modal component will handle displaying the comment via its local state
@@ -662,7 +622,7 @@ const markProblemAsSolved = async () => {
 
     if (res.data && res.data.status === "solved") {
       // Update the problem in the local state
-      const index = problems.value.findIndex((p) => p.id === problemId);
+      const index = problems.value.findIndex(p => p.id === problemId);
       if (index !== -1) {
         problems.value[index].status = "solved";
       }
@@ -671,17 +631,12 @@ const markProblemAsSolved = async () => {
       isDetailModalOpen.value = false;
       await fetchProblems();
     } else {
-      console.error(
-        "Error marking problem as solved: Unexpected response",
-        res.data
-      );
+      console.error("Error marking problem as solved: Unexpected response", res.data);
       alert("Could not mark the problem as solved. Please try again.");
     }
   } catch (error) {
     console.error("Error marking problem as solved:", error);
-    alert(
-      "An error occurred while marking the problem as solved. Please try again."
-    );
+    alert("An error occurred while marking the problem as solved. Please try again.");
   }
 };
 
@@ -694,8 +649,8 @@ onMounted(async () => {
 <style scoped>
 /* Add smooth transition for all elements */
 * {
-  transition-property: background-color, border-color, color, fill, stroke,
-    opacity, box-shadow, transform;
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow,
+    transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
