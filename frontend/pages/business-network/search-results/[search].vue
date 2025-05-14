@@ -396,24 +396,24 @@ const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplic
 const openSearchFilters = ref(false);
 const newSearchQuery = ref("");
 const sortBy = ref("relevance");
-const categoryFilter = ref("");
-const timeFilter = ref("");
+const hashtagFilter = ref("");
+const engagementFilter = ref("");
 
-// Enhanced category options list
-const availableCategories = [
-  "Marketing",
-  "Finance",
-  "Operations",
-  "Leadership",
-  "Technology",
-  "HR",
-  "Sales",
-  "Strategy",
-  "Innovation",
-  "Entrepreneurship",
-  "Management",
-  "Digital",
-  "Networking",
+// Popular hashtags list
+const popularHashtags = [
+  "#Marketing",
+  "#Finance",
+  "#Operations",
+  "#Leadership",
+  "#Technology",
+  "#HR",
+  "#Sales",
+  "#Strategy",
+  "#Innovation",
+  "#Entrepreneurship",
+  "#Management",
+  "#Digital",
+  "#Networking",
 ];
 
 // Batch size and pagination
@@ -446,19 +446,17 @@ async function getPosts(isLoadingMore = false, page = 1) {
     if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
-    }
-
-    // Add filter parameters if present
+    }    // Add filter parameters if present
     if (sortBy.value && sortBy.value !== "relevance") {
       params.sort = sortBy.value;
     }
     
-    if (categoryFilter.value) {
-      params.category = categoryFilter.value;
+    if (hashtagFilter.value) {
+      params.hashtag = hashtagFilter.value;
     }
     
-    if (timeFilter.value) {
-      params.time_period = timeFilter.value;
+    if (engagementFilter.value) {
+      params.engagement = engagementFilter.value;
     }
 
     console.log("Fetching posts with params:", params);
@@ -683,8 +681,8 @@ const applyFilters = () => {
   // Build query parameters for filtered search
   const params = {
     sort: sortBy.value,
-    category: categoryFilter.value,
-    time_period: timeFilter.value,
+    hashtag: hashtagFilter.value,
+    engagement: engagementFilter.value,
   };
 
   // Reload posts with filters
@@ -707,8 +705,8 @@ const applyFilters = () => {
 
 const resetFilters = () => {
   sortBy.value = "relevance";
-  categoryFilter.value = "";
-  timeFilter.value = "";
+  hashtagFilter.value = "";
+  engagementFilter.value = "";
 };
 
 // Handle new search from end of results or no results section
@@ -735,8 +733,8 @@ const searchInputRef = ref(null);
 // const openSearchFilters = ref(false);
 // const newSearchQuery = ref("");
 // const sortBy = ref("relevance");
-// const categoryFilter = ref("");
-// const timeFilter = ref("");
+// const hashtagFilter = ref("");
+// const engagementFilter = ref("");
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
