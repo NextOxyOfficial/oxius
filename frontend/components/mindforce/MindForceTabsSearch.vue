@@ -1,15 +1,19 @@
 <template>
-  <div class="flex flex-col sm:flex-row justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-700 gap-3 sm:gap-6 bg-white dark:bg-slate-800/50">
+  <div
+    class="flex flex-col sm:flex-row justify-between items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-700 gap-3 sm:gap-6 bg-white dark:bg-slate-800/50"
+  >
     <!-- Enhanced tabs with animated indicator -->
-    <div class="relative bg-slate-50 dark:bg-slate-800 rounded-lg inline-flex shadow-sm w-full sm:w-auto overflow-hidden">
-      <div 
-        class="absolute h-full transition-all duration-300 bg-white dark:bg-slate-700 rounded-md shadow-sm tab-indicator" 
-        :style="{ 
-          width: `${100 / tabs.length}%`, 
-          transform: `translateX(${tabs.findIndex(t => t.value === activeTab) * 100}%)` 
+    <div
+      class="relative bg-slate-50 dark:bg-slate-800 rounded-lg inline-flex shadow-sm w-full sm:w-auto overflow-hidden"
+    >
+      <div
+        class="absolute h-full transition-all duration-300 bg-white dark:bg-slate-700 rounded-md shadow-sm tab-indicator"
+        :style="{
+          width: `${100 / tabs.length}%`,
+          transform: `translateX(${tabs.findIndex(t => t.value === activeTab) * 100}%)`,
         }"
       ></div>
-      
+
       <button
         v-for="tab in tabs"
         :key="tab.value"
@@ -28,10 +32,12 @@
     <!-- Enhanced searchbox with premium styling -->
     <div class="w-full sm:max-w-64 md:max-w-80">
       <div class="relative w-full group">
-        <div class="absolute left-3 top-2.5 h-5 w-5 text-slate-400 dark:text-slate-500 transition-all group-hover:text-blue-500">
+        <div
+          class="absolute left-3 top-2.5 h-5 w-5 text-slate-400 dark:text-slate-500 transition-all group-hover:text-blue-500"
+        >
           <Search class="h-4 w-4" />
         </div>
-        
+
         <div
           v-if="isSearching"
           class="absolute right-3 top-2.5 h-5 w-5 flex items-center justify-center"
@@ -57,7 +63,7 @@
             ></path>
           </svg>
         </div>
-        
+
         <input
           type="text"
           placeholder="Search problems..."
@@ -65,9 +71,11 @@
           v-model="searchQueryModel"
           @input="handleSearch"
         />
-        
+
         <!-- Animated glow effect on focus -->
-        <div class="absolute inset-0 rounded-lg -z-10 opacity-0 group-focus-within:opacity-100 bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-blue-400/20 blur-md transition-opacity"></div>
+        <div
+          class="absolute inset-0 rounded-lg -z-10 opacity-0 group-focus-within:opacity-100 bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-blue-400/20 blur-md transition-opacity"
+        ></div>
       </div>
     </div>
   </div>
@@ -80,40 +88,40 @@ import { ref, computed, onMounted } from "vue";
 const props = defineProps({
   tabs: {
     type: Array,
-    required: true
+    required: true,
   },
   activeTab: {
     type: String,
-    required: true
+    required: true,
   },
   searchQuery: {
     type: String,
-    default: ""
+    default: "",
   },
   isSearching: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['update:activeTab', 'update:searchQuery', 'search']);
+const emit = defineEmits(["update:activeTab", "update:searchQuery", "search"]);
 
 const searchQueryModel = computed({
   get: () => props.searchQuery,
-  set: (value) => emit('update:searchQuery', value)
+  set: value => emit("update:searchQuery", value),
 });
 
 const handleSearch = () => {
-  emit('search');
+  emit("search");
 };
 
 // Add subtle animation on mount
 onMounted(() => {
-  const tabsElement = document.querySelector('.tab-indicator');
+  const tabsElement = document.querySelector(".tab-indicator");
   if (tabsElement) {
-    tabsElement.classList.add('animate-pulse-once');
+    tabsElement.classList.add("animate-pulse-once");
     setTimeout(() => {
-      tabsElement.classList.remove('animate-pulse-once');
+      tabsElement.classList.remove("animate-pulse-once");
     }, 1000);
   }
 });
@@ -122,8 +130,13 @@ onMounted(() => {
 <style scoped>
 /* Tab indicator animation */
 @keyframes pulse-once {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .animate-pulse-once {
@@ -133,7 +146,7 @@ onMounted(() => {
 /* Handle responsive tabs */
 @media (max-width: 640px) {
   .tab-indicator {
-    width: calc(100% / v-bind('tabs.length')) !important;
+    width: calc(100% / v-bind("tabs.length")) !important;
   }
 }
 </style>
