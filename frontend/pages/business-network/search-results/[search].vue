@@ -1,108 +1,359 @@
-<template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
-    <!-- Lazyloader component to display while initial posts are loading -->
-    <h1 class="text-lg text-center py-6">
-      Showing Search Results For {{ $route.params.search }}
-    </h1>
+<template>  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
+    <!-- Enhanced Search Results Header -->
+    <div class="relative bg-white rounded-xl shadow-sm mb-6 border border-gray-100">
+      <div class="flex flex-col md:flex-row md:items-center justify-between px-6 py-4">
+        <div class="mb-4 md:mb-0">
+          <h1 class="text-xl font-bold text-gray-800 flex items-center">
+            <span class="bg-blue-100 rounded-full p-1.5 mr-2.5">
+              <Search class="h-4 w-4 text-blue-600" />
+            </span>
+            Search Results
+          </h1>
+          <p class="text-gray-600 text-sm mt-1 flex items-center">
+            <span class="font-medium text-gray-700">{{ $route.params.search }}</span>
+            <span class="mx-2 text-gray-400">•</span>
+            <span v-if="!loading && allPosts.length > 0">{{ allPosts.length }} {{ allPosts.length === 1 ? 'result' : 'results' }}</span>
+            <span v-else-if="!loading && allPosts.length === 0">No results found</span>
+            <span v-else>Searching...</span>
+          </p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button 
+            @click="openSearchFilters = !openSearchFilters" 
+            class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md border border-gray-200 transition-colors text-sm"
+          >
+            <Filter class="h-3.5 w-3.5 text-gray-600" />
+            <span>Filters</span>
+            <ChevronDown v-if="!openSearchFilters" class="h-3.5 w-3.5 text-gray-600" />
+            <ChevronUp v-else class="h-3.5 w-3.5 text-gray-600" />
+          </button>
+          
+          <NuxtLink 
+            :to="`/business-network`"
+            class="flex items-center gap-2 px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:underline transition-colors text-sm"
+          >
+            <ArrowLeft class="h-3.5 w-3.5" />
+            <span>Back to feed</span>
+          </NuxtLink>
+        </div>
+      </div>
+      
+      <!-- Filter Panel -->      <transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 max-h-0"
+        enter-to-class="opacity-100 max-h-96"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 max-h-96"
+        leave-to-class="opacity-0 max-h-0"
+      >
+        <div v-if="openSearchFilters" class="px-6 pb-4 border-t border-gray-100 overflow-hidden filter-scrollbar max-h-96">
+          <div class="pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">            <!-- Sort order filter -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
+              <select 
+                v-model="sortBy" 
+                class="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-10 text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                @change="applyFilters"
+              >
+                <option value="relevance">Most Relevant</option>
+                <option value="recent">Most Recent</option>
+                <option value="popular">Most Popular</option>
+              </select>
+            </div>
+            
+            <!-- Hashtag filter -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Hashtags</label>
+              <select 
+                v-model="hashtagFilter" 
+                class="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-10 text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                @change="applyFilters"
+              >
+                <option value="">All Hashtags</option>
+                <option v-for="tag in popularHashtags" :key="tag" :value="tag">{{ tag }}</option>
+              </select>
+            </div>
+            
+            <!-- Engagement filter (replacing time period) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Engagement</label>
+              <select 
+                v-model="engagementFilter" 
+                class="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-10 text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                @change="applyFilters"
+              >
+                <option value="">Any Engagement</option>
+                <option value="high">High Engagement</option>
+                <option value="medium">Medium Engagement</option>
+                <option value="low">Low Engagement</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-end mt-4">
+            <button 
+              @click="resetFilters" 
+              class="text-sm text-gray-600 hover:text-gray-800 mr-3"
+            >
+              Reset
+            </button>
+            <button 
+              @click="applyFilters" 
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>    <!-- Enhanced skeleton loaders -->
     <template v-if="loading && !loadingMore && allPosts.length === 0">
       <div class="p-4">
-        <div class="flex justify-center items-center mb-6">
-          <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+        <div class="relative mb-8">
+          <!-- Pulse loading animation -->
+          <div class="flex justify-center items-center">
+            <div class="relative">
+              <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
+              <div class="absolute inset-0 -m-2 rounded-full animate-ping opacity-30 bg-blue-400"></div>
+            </div>
+          </div>
+          <p class="text-center text-blue-600 text-sm font-medium mt-4">Searching for relevant posts...</p>
         </div>
-        <!-- Skeleton loaders for posts -->
+        
+        <!-- Enhanced skeleton loaders for posts -->
         <div
           v-for="i in 3"
           :key="i"
-          class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4"
+          class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6 relative"
         >
-          <div class="flex items-center space-x-3 mb-4">
-            <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
-            <div class="flex-1 space-y-2">
-              <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-              <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
+          <!-- Header -->
+          <div class="p-4 border-b border-gray-50">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse relative overflow-hidden">
+                <div class="absolute inset-0 bg-gray-100 animate-pulse-wave"></div>
+              </div>
+              <div class="flex-1 space-y-2">
+                <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/4"></div>
+                <div class="h-2.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/6"></div>
+              </div>
+              <div class="h-7 w-7 rounded-md bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse"></div>
             </div>
           </div>
-          <div class="space-y-2 mb-4">
-            <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-            <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-            <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+          
+          <!-- Content -->
+          <div class="p-4">
+            <!-- Content lines -->
+            <div class="space-y-3 mb-4">
+              <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-3/4"></div>
+              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-full"></div>
+              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-5/6"></div>
+              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-4/6"></div>
+            </div>
+            
+            <!-- Media placeholder -->
+            <div class="h-40 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-pulse mb-4 overflow-hidden relative">
+              <div class="absolute inset-0 bg-gray-100 animate-pulse-slower opacity-50"></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+                  <Image class="w-5 h-5 text-white/50" />
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+            </div>
           </div>
-          <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
-          <div class="flex justify-between">
-            <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-            <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-            <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+          
+          <!-- Tag indicators at bottom -->
+          <div class="px-4 pb-4 flex gap-2">
+            <div class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-16"></div>
+            <div class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
           </div>
         </div>
       </div>
-    </template>
-
-    <!-- Actual posts displayed after loading -->
-    <BusinessNetworkPost
-      v-if="!loading || allPosts.length > 0"
-      :posts="displayedPosts"
-      :id="user?.user?.id"
-      @gift-sent="handleGiftSent"
-    />
-
-    <!-- Load more indicator with skeletons for better UX -->
+    </template>    <!-- Actual posts displayed after loading -->
+    <div class="relative">
+      <!-- Search result count when posts are loaded -->
+      <div v-if="!loading && displayedPosts.length > 0" class="mb-4 text-sm text-gray-500 px-1">
+        Showing {{ displayedPosts.length }} {{ displayedPosts.length === 1 ? 'result' : 'results' }} for "<span class="font-medium text-gray-700">{{ $route.params.search }}</span>"
+      </div>
+      
+      <BusinessNetworkPost
+        v-if="!loading || allPosts.length > 0"
+        :posts="displayedPosts"
+        :id="user?.user?.id"
+        class="result-card"
+        @gift-sent="handleGiftSent"
+      />
+    </div><!-- Enhanced load more indicator with improved skeleton -->
     <div v-if="loadingMore && !loading" class="pb-6">
-      <!-- Skeleton loader for loading more posts -->
-      <div
-        class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4"
-      >
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-            <div class="h-3 bg-gray-200 rounded animate-pulse w-1/5"></div>
-          </div>
-        </div>
-        <div class="space-y-2 mb-4">
-          <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-          <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-          <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
-        </div>
-        <div class="h-40 bg-gray-200 rounded animate-pulse mb-4"></div>
-        <div class="flex justify-between">
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+      <div class="flex justify-center items-center py-4">
+        <div class="relative">
+          <Loader2 class="h-8 w-8 text-blue-600 animate-spin" />
+          <div class="absolute inset-0 -m-1 rounded-full animate-ping opacity-30 bg-blue-400"></div>
         </div>
       </div>
-    </div>
-
-    <!-- End of feed indicator - shows when all posts are loaded -->
+      
+      <!-- Enhanced skeleton loader for loading more posts -->
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6 relative">
+        <!-- Header -->
+        <div class="p-4 border-b border-gray-50">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse relative overflow-hidden">
+              <div class="absolute inset-0 bg-gray-100 animate-pulse-wave"></div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/4"></div>
+              <div class="h-2.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/6"></div>
+            </div>
+            <div class="h-7 w-7 rounded-md bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse"></div>
+          </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-4">
+          <!-- Content lines -->
+          <div class="space-y-3 mb-4">
+            <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-3/4"></div>
+            <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-full"></div>
+            <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-5/6"></div>
+          </div>
+          
+          <!-- Action buttons -->
+          <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+            <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+            <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+            <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+          </div>
+        </div>
+      </div>
+    </div>    <!-- Enhanced end of results indicator -->
     <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center"
     >
-      <div
-        class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
-      >
-        <Check class="h-8 w-8 text-blue-600" />
+      <div class="relative mb-4">
+        <div
+          class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center"
+        >
+          <Check class="h-8 w-8 text-blue-600" />
+        </div>
+        <div class="absolute inset-0 bg-blue-50/50 rounded-full animate-ping-slow opacity-70 w-16 h-16"></div>
       </div>
-      <h3 class="text-lg font-medium text-gray-800 mb-1">
-        You're all caught up!
+      
+      <h3 class="text-lg font-bold text-gray-800 mb-1">
+        End of Search Results
       </h3>
-      <p class="text-gray-500 mb-8 max-w-md">
-        You've seen all posts in the business network feed.
+      <p class="text-gray-500 mb-4 max-w-md">
+        You've seen all posts matching your search for "{{ $route.params.search }}".
       </p>
-      <button
-        @click="scrollToTop"
-        class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
-      >
-        <ChevronUp class="h-4 w-4" />
-        <span>Back to top</span>
-      </button>
+      
+      <div class="flex flex-col sm:flex-row gap-3 mb-8">
+        <button
+          @click="scrollToTop"
+          class="flex items-center justify-center gap-2 px-5 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm"
+        >
+          <ChevronUp class="h-4 w-4" />
+          <span>Back to top</span>
+        </button>
+        
+        <NuxtLink
+          to="/business-network"
+          class="flex items-center justify-center gap-2 px-5 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Home class="h-4 w-4" />
+          <span>Return to feed</span>
+        </NuxtLink>
+      </div>
+      
+      <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 max-w-md">
+        <h4 class="font-medium text-gray-700 mb-2">Looking for something else?</h4>
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Try another search..."
+            v-model="newSearchQuery"
+            class="w-full border border-gray-300 rounded-lg py-2 px-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            @keyup.enter="handleNewSearch"
+          />
+          <button
+            @click="handleNewSearch"
+            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+          >
+            <Search class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- No posts message -->
+    <!-- Enhanced no results message -->
     <div
       v-if="!loading && !loadingMore && allPosts.length === 0"
-      class="flex flex-col items-center justify-center py-12 text-center"
+      class="flex flex-col items-center justify-center py-12 text-center bg-white rounded-xl shadow-sm border border-gray-100 px-4"
     >
-      <p class="text-gray-500 mb-2">{{ $t("no_post_available") }}</p>
+      <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-6 border border-gray-200">
+        <Search class="h-8 w-8 text-gray-400" />
+      </div>
+      
+      <h3 class="text-lg font-bold text-gray-800 mb-2">No results found</h3>
+      <p class="text-gray-500 mb-6 max-w-md">
+        We couldn't find any posts matching "{{ $route.params.search }}". Try adjusting your search terms or filters.
+      </p>
+      
+      <div class="w-full max-w-md">
+        <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
+          <h4 class="font-medium text-gray-700 mb-3">Suggestions:</h4>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start">
+              <div class="min-w-4 mr-2 mt-0.5">•</div>
+              <span>Check your spelling</span>
+            </li>
+            <li class="flex items-start">
+              <div class="min-w-4 mr-2 mt-0.5">•</div>
+              <span>Try more general keywords</span>
+            </li>
+            <li class="flex items-start">
+              <div class="min-w-4 mr-2 mt-0.5">•</div>
+              <span>Use different keywords</span>
+            </li>
+            <li class="flex items-start">
+              <div class="min-w-4 mr-2 mt-0.5">•</div>
+              <span>Reset the search filters</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Try another search..."
+            v-model="newSearchQuery"
+            class="w-full border border-gray-300 rounded-lg py-2.5 px-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            @keyup.enter="handleNewSearch"
+          />
+          <button
+            @click="handleNewSearch"
+            class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+          >
+            <Search class="h-4 w-4" />
+          </button>
+        </div>
+        
+        <div class="mt-6">
+          <NuxtLink
+            to="/business-network"
+            class="flex items-center justify-center gap-2 px-5 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <ArrowLeft class="h-4 w-4" />
+            <span>Return to feed</span>
+          </NuxtLink>
+        </div>
+      </div>
     </div>
 
     <!-- Add the create post component with event listener -->
@@ -120,9 +371,14 @@ import {
   X,
   Clock,
   ArrowRight,
+  ArrowLeft,
   Loader2,
   Check,
   ChevronUp,
+  ChevronDown,
+  Filter,
+  Home,
+  Image,
 } from "lucide-vue-next";
 const route = useRoute();
 
@@ -135,6 +391,30 @@ const { get } = useApi();
 const { user } = useAuth();
 const eventBus = useEventBus();
 const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplicates
+
+// Filter and search state
+const openSearchFilters = ref(false);
+const newSearchQuery = ref("");
+const sortBy = ref("relevance");
+const categoryFilter = ref("");
+const timeFilter = ref("");
+
+// Enhanced category options list
+const availableCategories = [
+  "Marketing",
+  "Finance",
+  "Operations",
+  "Leadership",
+  "Technology",
+  "HR",
+  "Sales",
+  "Strategy",
+  "Innovation",
+  "Entrepreneurship",
+  "Management",
+  "Digital",
+  "Networking",
+];
 
 // Batch size and pagination
 const POSTS_PER_BATCH = 5;
@@ -166,6 +446,19 @@ async function getPosts(isLoadingMore = false, page = 1) {
     if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
+    }
+
+    // Add filter parameters if present
+    if (sortBy.value && sortBy.value !== "relevance") {
+      params.sort = sortBy.value;
+    }
+    
+    if (categoryFilter.value) {
+      params.category = categoryFilter.value;
+    }
+    
+    if (timeFilter.value) {
+      params.time_period = timeFilter.value;
     }
 
     console.log("Fetching posts with params:", params);
@@ -381,6 +674,51 @@ const handleNewPost = (newPost) => {
   }
 };
 
+// Filter methods
+const applyFilters = () => {
+  // Reset pagination state when applying new filters
+  page.value = 1;
+  loadedPostIds.value.clear();
+  
+  // Build query parameters for filtered search
+  const params = {
+    sort: sortBy.value,
+    category: categoryFilter.value,
+    time_period: timeFilter.value,
+  };
+
+  // Reload posts with filters
+  loading.value = true;
+  
+  // Simulate API call with filters
+  setTimeout(() => {
+    getPosts(false, 1);
+    openSearchFilters.value = false;
+    
+    // Show toast notification for applied filters
+    useToast().add({
+      title: "Filters Applied",
+      description: "Search results have been updated",
+      color: "blue",
+      timeout: 2000,
+    });
+  }, 600);
+};
+
+const resetFilters = () => {
+  sortBy.value = "relevance";
+  categoryFilter.value = "";
+  timeFilter.value = "";
+};
+
+// Handle new search from end of results or no results section
+const handleNewSearch = () => {
+  if (newSearchQuery.value && newSearchQuery.value.trim() !== '') {
+    // Navigate to new search results
+    navigateTo(`/business-network/search-results/${encodeURIComponent(newSearchQuery.value.trim())}`);
+  }
+};
+
 // Search functionality
 const isSearchOpen = ref(false);
 const searchQuery = ref("");
@@ -391,17 +729,14 @@ const recentSearches = ref([
   "Leadership Training",
 ]);
 const selectedCategories = ref([]);
-const availableCategories = [
-  "Marketing",
-  "Finance",
-  "Operations",
-  "Leadership",
-  "Technology",
-  "HR",
-  "Sales",
-  "Strategy",
-];
 const searchInputRef = ref(null);
+
+// These are already defined at the top level of the component
+// const openSearchFilters = ref(false);
+// const newSearchQuery = ref("");
+// const sortBy = ref("relevance");
+// const categoryFilter = ref("");
+// const timeFilter = ref("");
 
 // Format time ago
 const formatTimeAgo = (dateString) => {
@@ -516,5 +851,81 @@ const scrollToTop = () => {
 /* Pull-to-refresh indicator animation */
 .ptr-indicator {
   transition: transform 0.2s ease;
+}
+
+/* Enhanced pulse animations */
+@keyframes pulse-wave {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse-slower {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes ping-slow {
+  75%, 100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-wave {
+  animation: pulse-wave 2s ease-in-out infinite;
+}
+
+.animate-pulse-slower {
+  animation: pulse-slower 3s ease-in-out infinite;
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Enhanced scrollbar for filter dropdowns */
+.filter-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.filter-scrollbar::-webkit-scrollbar-thumb {
+  background: #cfcfcf;
+  border-radius: 10px;
+}
+
+.filter-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* Card hover effects */
+.result-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 </style>

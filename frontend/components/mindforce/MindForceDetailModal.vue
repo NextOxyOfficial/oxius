@@ -24,7 +24,7 @@
         >
           <!-- Premium scrollbar styling -->
           <div
-            class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar p-2"
+            class="w-full md:h-[80vh] overflow-hidden overflow-y-auto custom-scrollbar p-2 sm:p-6"
           >
             <!-- Problem Header with enhanced design -->
             <div class="flex justify-between items-start">
@@ -360,7 +360,7 @@
                     </div>
 
                     <p
-                      class="mt-2 sm:mt-3 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
+                      class="mt-2 sm:mt-3 text-start text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
                     >
                       {{ comment.content }}
                     </p>
