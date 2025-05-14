@@ -91,71 +91,130 @@
       <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column - Main Content -->
         <div class="lg:col-span-2">
-          <!-- Images Gallery Card -->
+          <!-- Images Gallery Card - Enhanced Design -->
           <div
-            class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6"
+            class="bg-white rounded-xl shadow-sm overflow-hidden mb-6"
           >
-            <!-- Main Image -->
+            <!-- Main Image with Enhanced Gallery Experience -->
             <div
-              class="relative aspect-video overflow-hidden mb-4 rounded-lg border border-gray-100"
+              class="relative h-[400px] md:h-[500px] overflow-hidden bg-gray-50 dark:bg-gray-900/20"
             >
+              <!-- Image Loading Placeholder -->
+              <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 z-10">
+                <div class="animate-pulse">
+                  <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-300 dark:text-gray-600" />
+                </div>
+              </div>
+              
+              <!-- Main Large Image -->
               <img
                 :src="selectedImage || getMainImage()"
                 :alt="post.title"
-                class="w-full h-full object-contain"
+                class="w-full h-full object-contain transition-opacity duration-300"
+                :class="{ 'opacity-0': imageLoading, 'opacity-100': !imageLoading }"
                 @click="openLightbox = true"
+                @load="imageLoading = false"
+                @error="handleImageError"
               />
 
-              <!-- Sale Status Badge -->
-              <div
-                v-if="post.status === 'sold'"
-                class="absolute top-0 right-0 m-4 z-10"
-              >
-                <span
-                  class="bg-blue-500 text-white text-sm font-bold px-3 py-1.5 rounded shadow-sm"
-                  >SOLD</span
+              <!-- Image Navigation Controls -->
+              <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4">
+                <button 
+                  @click.stop="navigateImage('prev')" 
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+                  aria-label="Previous image"
                 >
+                  <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
+                </button>
+                <button 
+                  @click.stop="navigateImage('next')" 
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+                  aria-label="Next image"
+                >
+                  <UIcon name="i-heroicons-chevron-right" class="h-6 w-6" />
+                </button>
               </div>
-              <div v-if="post.featured" class="absolute top-0 left-0 m-4 z-10">
-                <span
-                  class="bg-amber-500 text-white text-sm font-bold px-3 py-1.5 rounded shadow-sm"
-                  >FEATURED</span
+
+              <!-- Status Badges with Improved Design -->
+              <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                <div
+                  v-if="post.status === 'sold'"
+                  class="badge-container"
                 >
+                  <span class="relative inline-flex items-center gap-1 bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-md">
+                    <span class="flex w-2 h-2 relative mr-0.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                    </span>
+                    SOLD
+                  </span>
+                </div>
+                <div v-if="post.featured" class="badge-container">
+                  <span class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-md flex items-center gap-1">
+                    <UIcon name="i-heroicons-star" class="h-3.5 w-3.5" />
+                    FEATURED
+                  </span>
+                </div>
+              </div>
+
+              <!-- Zoom Control -->
+              <button 
+                @click.stop="openLightbox = true" 
+                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+                aria-label="Zoom image"
+              >
+                <UIcon name="i-heroicons-magnifying-glass-plus" class="h-5 w-5" />
+              </button>
+              
+              <!-- Image Counter -->
+              <div v-if="post.images && post.images.length > 1" class="absolute bottom-4 left-4 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
+                {{ currentImageIndex + 1 }} / {{ post.images.length }}
               </div>
             </div>
 
-            <!-- Thumbnails Gallery -->
+            <!-- Enhanced Thumbnails Gallery with Scroll -->
             <div
               v-if="post.images && post.images.length > 1"
-              class="grid grid-cols-5 gap-2"
+              class="relative bg-gray-50 dark:bg-gray-900/20 py-3 px-4 border-t border-gray-100 dark:border-gray-800"
             >
-              <div
-                v-for="(image, index) in post.images"
-                :key="index"
-                class="aspect-square overflow-hidden rounded-md border cursor-pointer transition-all hover:opacity-90"
-                :class="{
-                  'ring-2 ring-primary border-primary':
-                    selectedImage === getImageSrc(image),
-                }"
-                @click="selectedImage = getImageSrc(image)"
-              >
-                <img
-                  :src="getImageSrc(image)"
-                  :alt="`${post.title} image ${index + 1}`"
-                  class="w-full h-full object-cover"
-                />
+              <!-- Shadow indicators for scroll -->
+              <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-900/20 z-10"></div>
+              <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent dark:from-gray-900/20 z-10"></div>
+              
+              <!-- Thumbnails Container with Horizontal Scroll -->
+              <div class="flex space-x-2 overflow-x-auto thumbnails-container pb-1 px-2">
+                <button
+                  v-for="(image, index) in post.images"
+                  :key="index"
+                  class="flex-shrink-0 cursor-pointer transition-all duration-300 transform rounded-md overflow-hidden border-2"
+                  :class="{
+                    'border-primary scale-105 shadow-md': selectedImage === getImageSrc(image),
+                    'border-transparent hover:border-gray-300 dark:hover:border-gray-600': selectedImage !== getImageSrc(image)
+                  }"
+                  @click="selectImage(image, index)"
+                >
+                  <div class="w-16 h-16 relative">
+                    <img
+                      :src="getImageSrc(image)"
+                      :alt="`${post.title} thumbnail ${index + 1}`"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </button>
               </div>
             </div>
 
-            <!-- No Images -->
+            <!-- No Images Message - Improved -->
             <div
               v-if="!post.images || post.images.length === 0"
-              class="text-center text-gray-500 italic text-sm mt-4"
+              class="text-center py-6 bg-gray-50 dark:bg-gray-900/20"
             >
-              No images available for this listing
+              <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto" />
+              <p class="text-gray-500 dark:text-gray-400 mt-2">No images available for this listing</p>
             </div>
           </div>
-
+          
           <!-- Title, Price, and Details Card -->
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
@@ -619,44 +678,110 @@
       </div>
     </UContainer>
 
-    <!-- Image Lightbox Modal -->
-    <UModal v-model="openLightbox" :ui="{ width: 'max-w-7xl' }">
-      <div class="bg-black py-6 px-4 rounded-xl relative">
+    <!-- Enhanced Image Lightbox Modal -->
+    <UModal v-model="openLightbox" :ui="{ 
+      container: 'flex min-h-screen items-center justify-center p-0 md:p-4',
+      overlay: 'bg-black/90',
+      width: 'max-w-full md:max-w-6xl',
+      base: 'bg-transparent w-full' 
+    }">
+      <div class="relative p-0 md:p-4">
         <!-- Close Button -->
         <button
-          class="absolute top-4 right-4 text-white z-10 bg-gray-800/50 rounded-full p-2 hover:bg-gray-700/50 transition-colors"
+          class="absolute top-4 right-4 text-white/80 z-30 bg-black/50 rounded-full p-2 hover:bg-black hover:text-white transition-all duration-300"
           @click="openLightbox = false"
+          aria-label="Close lightbox"
         >
           <UIcon name="i-heroicons-x-mark" class="size-5" />
         </button>
 
-        <div class="max-h-[80vh] flex items-center justify-center">
+        <!-- Navigation Controls -->
+        <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4 z-20">
+          <button 
+            @click.stop="navigateImage('prev')" 
+            class="rounded-full p-3 bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all hover:scale-105"
+            aria-label="Previous image"
+          >
+            <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
+          </button>
+          <button 
+            @click.stop="navigateImage('next')" 
+            class="rounded-full p-3 bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all hover:scale-105"
+            aria-label="Next image"
+          >
+            <UIcon name="i-heroicons-chevron-right" class="h-6 w-6" />
+          </button>
+        </div>
+
+        <!-- Main Image with Zoom Functionality -->
+        <div 
+          class="lightbox-image-container max-h-[85vh] flex items-center justify-center"
+          @wheel="handleZoom"
+          @mousedown="startPan"
+          @mousemove="pan"
+          @mouseup="endPan"
+          @mouseleave="endPan"
+        >
           <img
+            ref="lightboxImage"
             :src="selectedImage || getMainImage()"
             :alt="post.title"
-            class="max-w-full max-h-[80vh] object-contain"
+            class="max-w-full max-h-[85vh] object-contain transition-transform duration-300 ease-out"
+            :style="{ transform: `scale(${zoomLevel}) translate(${panPosition.x}px, ${panPosition.y}px)` }"
+            @dblclick="toggleZoom"
           />
         </div>
 
-        <!-- Thumbnails for Lightbox -->
+        <!-- Zoom Controls -->
+        <div class="absolute bottom-4 left-4 flex items-center gap-2 z-20">
+          <button 
+            @click="zoomOut" 
+            class="rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-opacity"
+            :disabled="zoomLevel <= 1"
+            :class="{ 'opacity-50': zoomLevel <= 1 }"
+          >
+            <UIcon name="i-heroicons-minus" class="h-4 w-4" />
+          </button>
+          <span class="bg-black/50 px-2 py-1 rounded text-xs text-white">{{ Math.round(zoomLevel * 100) }}%</span>
+          <button 
+            @click="zoomIn" 
+            class="rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-opacity"
+            :disabled="zoomLevel >= 3"
+            :class="{ 'opacity-50': zoomLevel >= 3 }"
+          >
+            <UIcon name="i-heroicons-plus" class="h-4 w-4" />
+          </button>
+          <button 
+            @click="resetZoom" 
+            class="rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-opacity ml-1"
+          >
+            <UIcon name="i-heroicons-arrow-path" class="h-4 w-4" />
+          </button>
+        </div>
+
+        <!-- Enhanced Thumbnails for Lightbox -->
         <div
           v-if="post.images && post.images.length > 1"
-          class="flex justify-center mt-4 gap-2 overflow-x-auto pb-2"
+          class="flex justify-center mt-4 gap-2 overflow-x-auto lightbox-thumbnails pb-2"
         >
           <button
             v-for="(image, index) in post.images"
             :key="index"
-            class="flex-shrink-0 w-16 h-16 border border-gray-300 rounded overflow-hidden"
+            class="flex-shrink-0 transition-all duration-200 rounded overflow-hidden border-2"
             :class="{
-              'ring-2 ring-primary': selectedImage === getImageSrc(image),
+              'border-primary opacity-100 scale-110': selectedImage === getImageSrc(image),
+              'border-transparent opacity-70 hover:opacity-100': selectedImage !== getImageSrc(image)
             }"
-            @click="selectedImage = getImageSrc(image)"
+            @click="selectImage(image, index)"
           >
-            <img
-              :src="getImageSrc(image)"
-              :alt="`${post.title} thumbnail ${index + 1}`"
-              class="w-full h-full object-cover"
-            />
+            <div class="w-14 h-14 relative">
+              <img
+                :src="getImageSrc(image)"
+                :alt="`${post.title} thumbnail ${index + 1}`"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </button>
         </div>
       </div>
@@ -809,6 +934,12 @@ const showReportModal = ref(false);
 const copying = ref(false);
 const sending = ref(false);
 const reporting = ref(false);
+const imageLoading = ref(true);
+const currentImageIndex = ref(0);
+const zoomLevel = ref(1);
+const panPosition = ref({ x: 0, y: 0 });
+let isPanning = false;
+let startPanPosition = { x: 0, y: 0 };
 
 // Form state
 const contactForm = ref({
@@ -865,6 +996,7 @@ async function fetchPostDetails() {
         const mainImage =
           post.value.images.find((img) => img.is_main) || post.value.images[0];
         selectedImage.value = getImageSrc(mainImage);
+        currentImageIndex.value = post.value.images.indexOf(mainImage);
       }
 
       // Increment view count in background
@@ -1109,6 +1241,87 @@ function warrantyLabel(warranty) {
   };
   return labels[warranty] || warranty;
 }
+
+// Navigate images in gallery
+function navigateImage(direction) {
+  if (!post.value.images || post.value.images.length === 0) return;
+
+  if (direction === "prev") {
+    currentImageIndex.value =
+      (currentImageIndex.value - 1 + post.value.images.length) %
+      post.value.images.length;
+  } else if (direction === "next") {
+    currentImageIndex.value =
+      (currentImageIndex.value + 1) % post.value.images.length;
+  }
+
+  selectedImage.value = getImageSrc(post.value.images[currentImageIndex.value]);
+}
+
+// Select image from thumbnails
+function selectImage(image, index) {
+  selectedImage.value = getImageSrc(image);
+  currentImageIndex.value = index;
+}
+
+// Handle image error
+function handleImageError(event) {
+  event.target.src =
+    "https://via.placeholder.com/800/3b82f6/FFFFFF?text=No+Image";
+}
+
+// Zoom functionality
+function zoomIn() {
+  if (zoomLevel.value < 3) {
+    zoomLevel.value += 0.1;
+  }
+}
+
+function zoomOut() {
+  if (zoomLevel.value > 1) {
+    zoomLevel.value -= 0.1;
+  }
+}
+
+function resetZoom() {
+  zoomLevel.value = 1;
+  panPosition.value = { x: 0, y: 0 };
+}
+
+function toggleZoom() {
+  zoomLevel.value = zoomLevel.value === 1 ? 2 : 1;
+  panPosition.value = { x: 0, y: 0 };
+}
+
+function handleZoom(event) {
+  event.preventDefault();
+  const delta = event.deltaY > 0 ? -0.1 : 0.1;
+  const newZoomLevel = zoomLevel.value + delta;
+  if (newZoomLevel >= 1 && newZoomLevel <= 3) {
+    zoomLevel.value = newZoomLevel;
+  }
+}
+
+function startPan(event) {
+  isPanning = true;
+  startPanPosition = { x: event.clientX, y: event.clientY };
+}
+
+function pan(event) {
+  if (isPanning) {
+    const deltaX = event.clientX - startPanPosition.x;
+    const deltaY = event.clientY - startPanPosition.y;
+    panPosition.value = {
+      x: panPosition.value.x + deltaX,
+      y: panPosition.value.y + deltaY,
+    };
+    startPanPosition = { x: event.clientX, y: event.clientY };
+  }
+}
+
+function endPan() {
+  isPanning = false;
+}
 </script>
 
 <style scoped>
@@ -1148,5 +1361,43 @@ function warrantyLabel(warranty) {
 :deep(.prose img) {
   margin: 1rem auto;
   border-radius: 0.25rem;
+}
+
+/* Thumbnails container styles */
+.thumbnails-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tw-bg-gray-300) var(--tw-bg-gray-50);
+}
+
+.thumbnails-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.thumbnails-container::-webkit-scrollbar-thumb {
+  background-color: var(--tw-bg-gray-300);
+  border-radius: 4px;
+}
+
+.thumbnails-container::-webkit-scrollbar-track {
+  background-color: var(--tw-bg-gray-50);
+}
+
+/* Lightbox thumbnails styles */
+.lightbox-thumbnails {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tw-bg-gray-300) var(--tw-bg-gray-50);
+}
+
+.lightbox-thumbnails::-webkit-scrollbar {
+  height: 8px;
+}
+
+.lightbox-thumbnails::-webkit-scrollbar-thumb {
+  background-color: var(--tw-bg-gray-300);
+  border-radius: 4px;
+}
+
+.lightbox-thumbnails::-webkit-scrollbar-track {
+  background-color: var(--tw-bg-gray-50);
 }
 </style>

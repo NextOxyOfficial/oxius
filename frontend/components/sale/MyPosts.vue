@@ -1,83 +1,87 @@
 <template>
   <div class="my-posts-container">
     <!-- Empty state with create button -->
-    <div v-if="!posts.length && !isLoading" class="text-center py-12 bg-white rounded-lg shadow">
-      <div class="mb-6">
+    <div v-if="!posts.length && !isLoading" class="text-center p-10 bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="mb-8">
         <div class="flex justify-center">
-          <div class="p-6 bg-blue-50 rounded-full inline-block">
+          <div class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full inline-block shadow-inner">
             <Icon
               name="heroicons:clipboard-document-list"
-              class="h-12 w-12 text-blue-500"
+              class="h-14 w-14 text-primary"
             />
           </div>
         </div>
-        <h3 class="text-xl font-semibold mt-5">No posts yet</h3>
-        <p class="text-gray-600 mt-2 max-w-sm mx-auto">
+        <h3 class="text-2xl font-semibold mt-6 text-gray-800">No posts yet</h3>
+        <p class="text-gray-600 mt-3 max-w-sm mx-auto">
           Create your first post to start selling items in the marketplace!
         </p>
       </div>
       <button
         @click="$emit('create-post')"
-        class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2.5 rounded-md flex items-center gap-2 mx-auto shadow-sm hover:shadow transition-all"
+        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-8 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
       >
-        <Icon name="heroicons:plus-circle" size="18px" />
+        <Icon name="heroicons:plus-circle" size="20px" />
         Create Post
       </button>
     </div>
 
     <!-- Loading state -->
-    <div v-else-if="isLoading" class="p-6 bg-white rounded-lg shadow">
-      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
-        <div class="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
-        <div class="flex gap-3">
-          <div class="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
-          <div class="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+    <div v-else-if="isLoading" class="p-8 bg-white rounded-xl shadow-sm border border-gray-50">
+      <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
+        <div class="h-7 bg-gray-200 rounded-md w-36 animate-pulse"></div>
+        <div class="flex gap-4">
+          <div class="h-10 w-36 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div class="h-10 w-28 bg-gray-200 rounded-lg animate-pulse"></div>
         </div>
       </div>
-      <div v-for="i in 3" :key="i" class="mb-6 animate-pulse">
-        <div class="flex items-center gap-4">
-          <div class="w-24 h-24 bg-gray-200 rounded-md"></div>
+      <div v-for="i in 3" :key="i" class="mb-8 animate-pulse">
+        <div class="flex items-center gap-6 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-all">
+          <div class="w-28 h-28 bg-gray-200 rounded-lg"></div>
           <div class="flex-1">
-            <div class="h-5 bg-gray-200 rounded mb-3 w-3/4"></div>
-            <div class="h-4 bg-gray-200 rounded mb-2 w-1/2"></div>
-            <div class="h-4 bg-gray-200 rounded mb-2 w-2/3"></div>
-            <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+            <div class="h-6 bg-gray-200 rounded-md mb-4 w-3/4"></div>
+            <div class="h-5 bg-gray-200 rounded-md mb-3 w-1/2"></div>
+            <div class="h-5 bg-gray-200 rounded-md mb-3 w-2/3"></div>
+            <div class="h-4 bg-gray-200 rounded-md w-1/3"></div>
           </div>
-          <div class="flex flex-col gap-3 items-end">
-            <div class="flex gap-2">
-              <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
-              <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+          <div class="flex flex-col gap-4 items-end">
+            <div class="flex gap-3">
+              <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
+              <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
             </div>
-            <div class="w-24 h-8 bg-gray-200 rounded-md"></div>
+            <div class="w-28 h-10 bg-gray-200 rounded-lg"></div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Post listing -->
-    <div v-else class="bg-white rounded-lg shadow">
+    <div v-else class="bg-white rounded-xl shadow-sm border border-gray-50 overflow-hidden">
       <!-- Header with Filters and controls -->
-      <div class="flex flex-wrap justify-between items-center p-4 border-b border-gray-100">
-        <div class="flex items-center gap-3">
-          <h2 class="text-lg font-medium text-gray-800">My Posts</h2>
+      <div class="flex flex-wrap justify-between items-center p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+        <div class="flex items-center gap-4">
+          <h2 class="text-xl font-semibold text-gray-800">My Posts</h2>
+          <div class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
+            <span>{{ posts.length }}</span>
+            <span>{{ posts.length === 1 ? 'post' : 'posts' }}</span>
+          </div>
           <button 
             @click="refreshPosts" 
-            class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
+            class="p-2 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-full transition-all duration-200"
             title="Refresh posts"
           >
             <Icon 
               name="heroicons:arrow-path" 
-              size="16px"
+              size="18px"
               :class="{ 'animate-spin': isRefreshing }"
             />
           </button>
         </div>
         
-        <div class="flex items-center gap-3 mt-2 sm:mt-0">
+        <div class="flex items-center gap-4 mt-3 sm:mt-0">
           <div class="relative">
             <select
               v-model="statusFilter"
-              class="border border-gray-300 rounded-md py-1.5 pl-8 pr-8 text-sm bg-white shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
+              class="border border-gray-200 rounded-lg py-2.5 pl-10 pr-10 text-gray-700 bg-white shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-colors"
             >
               <option value="">All posts</option>
               <option value="pending">Pending review</option>
@@ -87,62 +91,62 @@
             </select>
             <Icon 
               name="heroicons:funnel" 
-              size="14px" 
-              class="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-500"
+              size="16px" 
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             />
             <Icon 
               name="heroicons:chevron-down" 
-              size="14px" 
-              class="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+              size="16px" 
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
             />
           </div>
           
           <button
             @click="$emit('create-post')"
-            class="bg-primary hover:bg-primary/90 text-white text-sm px-4 py-1.5 rounded-md flex items-center gap-1.5 transition-all shadow-sm hover:shadow"
+            class="bg-primary hover:bg-primary/90 text-white font-medium px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-md"
           >
-            <Icon name="heroicons:plus-circle" size="16px" />
+            <Icon name="heroicons:plus-circle" size="18px" />
             New Post
           </button>
         </div>
       </div>
 
       <!-- Post items -->
-      <div class="divide-y divide-gray-100">
+      <div class="divide-y divide-gray-50">
         <div
           v-for="post in filteredPosts"
           :key="post.id"
-          class="p-4 hover:bg-gray-50 transition-colors"
+          class="p-5 hover:bg-gray-50 transition-all duration-200 group"
         >
-          <div class="flex gap-4">
+          <div class="flex gap-5">
             <!-- Post image -->
             <NuxtLink
               :to="`/sale/${post.slug}`"
-              class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-md overflow-hidden shadow-sm border border-gray-200"
+              class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden shadow-sm border border-gray-100 "
             >
               <img
                 v-if="post.main_image"
                 :src="post.main_image"
                 :alt="post.title"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover transform "
               />
               <div
                 v-else
-                class="w-full h-full bg-gray-200 flex items-center justify-center"
+                class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
               >
-                <Icon name="heroicons:photo" class="h-8 w-8 text-gray-400" />
+                <Icon name="heroicons:photo" class="h-10 w-10 text-gray-400" />
               </div>
 
               <!-- Status badge -->
-              <div class="absolute top-1 left-1">
+              <div class="absolute top-2 left-2">
                 <span
                   :class="{
-                    'bg-yellow-500': post.status === 'pending',
-                    'bg-green-500': post.status === 'active',
-                    'bg-blue-500': post.status === 'sold',
-                    'bg-red-500': post.status === 'expired',
+                    'bg-gradient-to-r from-yellow-400 to-amber-500': post.status === 'pending',
+                    'bg-gradient-to-r from-green-500 to-emerald-600': post.status === 'active',
+                    'bg-gradient-to-r from-blue-500 to-indigo-600': post.status === 'sold',
+                    'bg-gradient-to-r from-red-500 to-rose-600': post.status === 'expired',
                   }"
-                  class="text-white text-xs px-2 py-0.5 rounded-sm shadow-sm"
+                  class="text-white text-xs font-medium px-2.5 py-1 rounded shadow-sm"
                 >
                   {{ formatStatus(post.status) }}
                 </span>
@@ -154,33 +158,36 @@
               <div class="flex justify-between items-start">
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
-                    <h3 class="text-base font-medium line-clamp-1 text-gray-800 hover:text-primary transition-colors">
+                    <h3 class="text-lg font-medium line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary">
                       {{ post.title }}
                     </h3>
                   </NuxtLink>
-                  <div class="mt-1 flex items-center text-sm text-gray-500 gap-1">
-                    <Icon
-                      name="heroicons:currency-bangladeshi"
-                      class="h-4 w-4"
-                    />
-                    <span class="font-medium">{{
-                      post.price ? `৳${post.price.toLocaleString()}` : "Negotiable"
-                    }}</span>
-                    <span class="mx-2">•</span>
-                    <span>{{ formatDate(post.created_at) }}</span>
+                  <div class="mt-2 flex items-center text-sm text-gray-600 gap-2">
+                    <div class="flex items-center gap-1">
+                      <Icon
+                        name="heroicons:currency-bangladeshi"
+                        class="h-4.5 w-4.5 text-primary/80"
+                      />
+                      <span class="font-medium">{{
+                        post.price ? `৳${post.price.toLocaleString()}` : "Negotiable"
+                      }}</span>
+                    </div>
+                    <span class="mx-1 text-gray-300">•</span>
+                    <div class="flex items-center gap-1">
+                      <Icon name="heroicons:calendar" class="h-4 w-4 text-gray-500" />
+                      <span>{{ formatDate(post.created_at) }}</span>
+                    </div>
                   </div>
-                  <div class="mt-1 flex items-center text-sm text-gray-500 gap-1">
-                    <Icon name="heroicons:map-pin" class="h-4 w-4" />
-                    <span class="line-clamp-1"
-                      >{{ post.area }}, {{ post.district }}</span
-                    >
+                  <div class="mt-2 flex items-center text-sm text-gray-600 gap-1.5">
+                    <Icon name="heroicons:map-pin" class="h-4 w-4 text-gray-500" />
+                    <span class="line-clamp-1">{{ post.area }}, {{ post.district }}</span>
                   </div>
-                  <div class="mt-2 flex items-center text-xs text-gray-400 gap-3">
-                    <span class="flex items-center gap-1">
+                  <div class="mt-3 flex items-center text-xs text-gray-500 gap-4">
+                    <span class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full group-hover:bg-gray-100 transition-colors">
                       <Icon name="heroicons:eye" class="h-3.5 w-3.5" />
                       {{ post.view_count }} views
                     </span>
-                    <span v-if="post.condition" class="flex items-center gap-1">
+                    <span v-if="post.condition" class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full group-hover:bg-gray-100 transition-colors">
                       <Icon name="heroicons:tag" class="h-3.5 w-3.5" />
                       {{ post.condition }}
                     </span>
@@ -190,22 +197,22 @@
             </div>
 
             <!-- Action buttons -->
-            <div class="flex flex-col gap-3 items-end justify-between">
+            <div class="flex flex-col gap-4 items-end justify-between">
               <!-- Edit/Delete buttons -->
               <div class="flex gap-2">
                 <button
                   @click="$emit('edit-post', post)"
-                  class="p-1.5 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
+                  class="p-2 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
                   title="Edit post"
                 >
-                  <Icon name="heroicons:pencil-square" size="18px" />
+                  <Icon name="heroicons:pencil-square" size="20px" />
                 </button>
                 <button
                   @click="confirmDelete(post.id, post.title)"
-                  class="p-1.5 text-gray-600 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
+                  class="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   title="Delete post"
                 >
-                  <Icon name="heroicons:trash" size="18px" />
+                  <Icon name="heroicons:trash" size="20px" />
                 </button>
               </div>
               
@@ -214,7 +221,7 @@
                 v-if="post.status !== 'sold'"
                 @click="markAsSold(post.id)"
                 :disabled="markingSold === post.id"
-                class="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-all shadow-sm"
+                class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all duration-200"
                 :class="[
                   markingSold === post.id 
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
@@ -223,7 +230,7 @@
               >
                 <Icon 
                   :name="markingSold === post.id ? 'heroicons:clock' : 'heroicons:tag'" 
-                  size="16px" 
+                  size="18px" 
                   class="flex-shrink-0" 
                 />
                 {{ markingSold === post.id ? 'Processing...' : 'Mark as Sold' }}
@@ -232,9 +239,9 @@
               <!-- Sold status indicator -->
               <div 
                 v-else
-                class="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-md shadow-sm"
+                class="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 rounded-lg shadow-sm"
               >
-                <Icon name="heroicons:check-circle" size="16px" class="flex-shrink-0" />
+                <Icon name="heroicons:check-circle" size="18px" class="flex-shrink-0" />
                 Sold
               </div>
             </div>
@@ -243,25 +250,27 @@
       </div>
 
       <!-- Empty filtered state -->
-      <div v-if="posts.length > 0 && filteredPosts.length === 0" class="py-8 text-center">
-        <div class="mb-3">
-          <Icon name="heroicons:face-frown" class="h-12 w-12 text-gray-300 mx-auto" />
+      <div v-if="posts.length > 0 && filteredPosts.length === 0" class="py-12 text-center">
+        <div class="mb-4">
+          <div class="inline-block p-4 bg-gray-50 rounded-full">
+            <Icon name="heroicons:face-frown" class="h-12 w-12 text-gray-400" />
+          </div>
         </div>
-        <h3 class="text-gray-600 font-medium">No matching posts found</h3>
-        <p class="text-gray-500 mt-1">There are no posts with the "{{ statusFilter }}" status.</p>
+        <h3 class="text-gray-700 text-lg font-medium">No matching posts found</h3>
+        <p class="text-gray-500 mt-2">There are no posts with the "{{ statusFilter }}" status.</p>
         <button 
           @click="statusFilter = ''" 
-          class="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-md transition-colors"
+          class="mt-5 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
         >
           Show all posts
         </button>
       </div>
 
       <!-- Load more button -->
-      <div v-if="hasMorePosts" class="p-4 border-t border-gray-100 text-center">
+      <div v-if="hasMorePosts" class="p-6 border-t border-gray-100 bg-gray-50 text-center">
         <button
           @click="loadMorePosts"
-          class="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+          class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-white transition-all duration-200 shadow-sm hover:shadow flex items-center gap-2 mx-auto"
           :disabled="isLoadingMore"
         >
           <span v-if="isLoadingMore" class="flex items-center gap-2 justify-center">
@@ -269,7 +278,7 @@
             Loading more posts...
           </span>
           <span v-else class="flex items-center gap-2 justify-center">
-            <Icon name="heroicons:arrow-down" size="16px" />
+            <Icon name="heroicons:arrow-down" size="18px" />
             Load more posts
           </span>
         </button>
@@ -277,51 +286,47 @@
     </div>
 
     <!-- Delete confirmation modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-60 backdrop-blur-sm transition-all">
       <div
         class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
       >
         <div
-          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-        ></div>
-
-        <div
-          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
         >
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="bg-white px-6 pt-6 pb-5">
             <div class="sm:flex sm:items-start">
               <div
-                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-red-100 sm:mx-0 sm:h-12 sm:w-12"
               >
                 <Icon
                   name="heroicons:exclamation-triangle"
-                  class="h-6 w-6 text-red-600"
+                  class="h-7 w-7 text-red-600"
                 />
               </div>
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">
+              <div class="mt-3 text-center sm:mt-0 sm:ml-5 sm:text-left">
+                <h3 class="text-xl leading-6 font-semibold text-gray-900">
                   Delete Post
                 </h3>
-                <div class="mt-2">
-                  <p class="text-sm text-gray-500">
-                    Are you sure you want to delete "{{ postToDeleteTitle }}"?
+                <div class="mt-3">
+                  <p class="text-gray-600">
+                    Are you sure you want to delete "<span class="font-medium">{{ postToDeleteTitle }}</span>"?
                     This action cannot be undone.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse">
             <button
               type="button"
-              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+              class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none transition-colors sm:ml-3 sm:w-auto"
               @click="deletePost"
             >
               Delete
             </button>
             <button
               type="button"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors sm:mt-0 sm:ml-3 sm:w-auto"
               @click="showDeleteModal = false"
             >
               Cancel
@@ -644,9 +649,8 @@ onMounted(() => {
   }
 }
 
-/* Add a subtle hover effect for post items */
 .my-posts-container {
-  max-width: 3xl;
+  max-width: 4xl;
   margin-left: auto;
   margin-right: auto;
 }
@@ -659,5 +663,16 @@ onMounted(() => {
 }
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* Add premium transition effects */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fix for the stagger animation on hover */
+.group:hover .group-hover\:scale-105 {
+  transform: scale(1.05);
 }
 </style>
