@@ -7,7 +7,7 @@
       <img
         :src="user?.user?.image"
         alt="Your avatar"
-        class="size-9 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-md transition-all duration-300"
+        class="size-9 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300"
       />
       <!-- Subtle glow effect on hover -->
       <div
@@ -22,7 +22,7 @@
           v-model="post.commentText"
           placeholder="Add a comment..."
           rows="1"
-          class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+          class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
           @input="$emit('handle-comment-input', $event, post)"
           @focus="post.showCommentInput = true"
           @keydown="$emit('handle-mention-keydown', $event, post)"
@@ -77,7 +77,7 @@
         <div
           v-if="showDiamondDropup"
           ref="dropupRef"
-          class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
+          class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-sm border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
         >
           <!-- Main gift interface -->
           <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
@@ -148,7 +148,7 @@
               <!-- Buy button -->
               <button
                 @click.stop="showBuyDiamonds = true"
-                class="absolute top-1.5 right-2 px-2.5 py-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs font-medium rounded-full shadow-sm hover:shadow-md transition-all duration-200 flex items-center"
+                class="absolute top-1.5 right-2 px-2.5 py-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs font-medium rounded-full shadow-sm hover:shadow-sm transition-all duration-200 flex items-center"
               >
                 <UIcon name="i-heroicons-plus" class="h-3 w-3 mr-1" />
                 Buy
@@ -309,7 +309,7 @@
                   :class="[
                     'relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200',
                     selectedPackage === pkg.diamonds
-                      ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-md'
+                      ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-sm'
                       : 'border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-800 hover:bg-pink-50/30 dark:hover:bg-pink-900/5',
                   ]"
                 >
@@ -397,7 +397,7 @@
           mentionSuggestions.length > 0 &&
           post === mentionInputPosition?.post
         "
-        class="absolute left-0 bottom-full mb-2 w-64 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-lg shadow-xl border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-56 overflow-y-auto animate-fade-in-up premium-shadow"
+        class="absolute left-0 bottom-full mb-2 w-64 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-56 overflow-y-auto animate-fade-in-up premium-shadow"
       >
         <div class="pt-1 pb-1">
           <!-- Header with subtle styling -->
@@ -471,11 +471,11 @@
         class="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-[9999] sm:max-w-md max-w-[85%] w-full"
       >
         <div
-          class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-xl border border-pink-200 dark:border-pink-900/30 text-center"
+          class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-sm border border-pink-200 dark:border-pink-900/30 text-center"
         >
           <div class="flex flex-col items-center">
             <div
-              class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-lg"
+              class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-sm"
             >
               <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
             </div>

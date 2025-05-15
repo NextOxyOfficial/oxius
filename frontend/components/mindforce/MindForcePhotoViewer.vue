@@ -15,7 +15,7 @@
       <!-- Enhanced close button - larger and more visible -->
       <button
         @click.stop="$emit('update:modelValue', false)"
-        class="absolute top-4 right-4 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg z-50"
+        class="absolute top-4 right-4 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-sm z-50"
         aria-label="Close"
       >
         <X class="h-6 w-6" />
@@ -30,7 +30,7 @@
         <img
           :src="getPhotoUrl(photos[currentPhotoIndex])"
           alt="Photo"
-          class="mx-auto max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl"
+          class="mx-auto max-h-[80vh] max-w-full object-contain rounded-lg shadow-sm"
           @error="handleImageError"
         />
 

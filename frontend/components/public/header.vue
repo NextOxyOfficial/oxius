@@ -13,7 +13,7 @@
       <transition name="fade">
         <div
           v-if="shouldShowWarning && !warningDismissed"
-          class="mx-auto my-2 px-4 relative overflow-hidden rounded-lg border border-amber-300/70 dark:border-amber-600/50 group transition-all duration-300 hover:shadow-lg"
+          class="mx-auto my-2 px-4 relative overflow-hidden rounded-lg border border-amber-300/70 dark:border-amber-600/50 group transition-all duration-300 hover:shadow-sm"
         >
           <!-- Premium glass background -->
           <div
@@ -93,7 +93,7 @@
       <transition name="fade">
         <div
           v-if="isExpired"
-          class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 group transition-all duration-300 shadow-sm hover:shadow-lg"
+          class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 group transition-all duration-300 shadow-sm hover:shadow-sm"
         >
           <!-- Premium glass background with subtle animation -->
           <div
@@ -184,7 +184,7 @@
           width: 'w-screen max-w-[300px]',
           height: 'max-h-screen',
         }"
-        class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-lg"
+        class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-sm"
       >
         <UCard
           :ui="{
@@ -272,7 +272,7 @@
             <div class="flex items-center gap-4">
               <NuxtLink
                 to="/coming-soon"
-                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
+                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/google.png"
@@ -282,7 +282,7 @@
               </NuxtLink>
               <NuxtLink
                 href="/coming-soon"
-                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
+                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/apple.png"
@@ -444,7 +444,7 @@
 
                 <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
-                <div class="border p-4 rounded-lg shadow-md bg-white">
+                <div class="border p-4 rounded-lg shadow-sm bg-white">
                   <NuxtImg
                     class="w-[250px]"
                     :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
@@ -510,7 +510,7 @@
           >
             <!-- Frosted glass container with modern shadow -->
             <div
-              class="backdrop-blur-lg bg-white/95 dark:bg-slate-800/95 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
+              class="backdrop-blur-lg bg-white/95 dark:bg-slate-800/95 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
             >
               <!-- Animated gradient accent -->
               <div
@@ -533,7 +533,7 @@
                 <!-- Free User Version -->
                 <div
                   v-if="!user?.user?.is_pro"
-                  class="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group transition-all duration-300 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800/50"
+                  class="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group transition-all duration-300 hover:shadow-sm hover:border-primary-200 dark:hover:border-primary-800/50"
                 >
                   <!-- Subtle background pattern -->
                   <div
@@ -609,7 +609,7 @@
                         class="w-11 h-6 rounded-full bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 p-0.5 flex items-center cursor-pointer relative overflow-hidden group-hover:from-indigo-400 group-hover:to-purple-500 transition-all duration-300"
                       >
                         <div
-                          class="absolute left-0.5 w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-500 group-hover:translate-x-5"
+                          class="absolute left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transform transition-all duration-500 group-hover:translate-x-5"
                         ></div>
                       </div>
                     </div>
@@ -619,7 +619,7 @@
                 <!-- Pro User Version -->
                 <div
                   v-else
-                  class="relative rounded-xl overflow-hidden border border-indigo-200 dark:border-indigo-800/40 group transition-all duration-300 hover:shadow-md"
+                  class="relative rounded-xl overflow-hidden border border-indigo-200 dark:border-indigo-800/40 group transition-all duration-300 hover:shadow-sm"
                 >
                   <!-- Animated pattern background -->
                   <div
@@ -698,7 +698,7 @@
                         class="w-11 h-6 rounded-full bg-gradient-to-r from-indigo-400 to-blue-500 p-0.5 flex items-center justify-end cursor-pointer shadow-inner"
                       >
                         <div
-                          class="w-5 h-5 rounded-full bg-white shadow-md transform transition-transform"
+                          class="w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform"
                         ></div>
                       </div>
                     </div>
@@ -779,7 +779,7 @@
                     ]"
                     :key="index"
                     :to="link.to"
-                    class="flex flex-col items-center justify-center py-3 px-2 rounded-xl border bg-gradient-to-br transition-all duration-300 group text-center relative hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+                    class="flex flex-col items-center justify-center py-3 px-2 rounded-xl border bg-gradient-to-br transition-all duration-300 group text-center relative hover:shadow-sm hover:-translate-y-0.5 cursor-pointer"
                     :class="[`bg-${link.bg}`, `${link.border}`]"
                     @click="openMenu = false"
                   >

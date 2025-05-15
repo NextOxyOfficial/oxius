@@ -51,7 +51,7 @@
             @click="isCreateWorkspaceModalOpen = false"
           >
             <div
-              class="bg-white rounded-lg max-w-md w-full p-6 shadow-lg"
+              class="bg-white rounded-lg max-w-md w-full p-6 shadow-sm"
               @click.stop
             >
               <h3 class="text-lg font-semibold mb-4">Create Workspace</h3>

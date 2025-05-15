@@ -16,7 +16,7 @@
         class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
       >
         <div
-          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
           :class="{ 'animate-modal-slide-up': isCreatePostOpen }"
           @click.stop
           ref="modalRef"
@@ -157,7 +157,7 @@
                   </p>
                   <button
                     @click.stop="triggerFileInput"
-                    class="mt-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-all duration-200 hover:shadow-md flex items-center gap-1.5 mx-auto"
+                    class="mt-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-all duration-200 hover:shadow-sm flex items-center gap-1.5 mx-auto"
                   >
                     <Upload class="h-3.5 w-3.5" />
                     Select Images
@@ -333,7 +333,7 @@
                               popularHashtags.length > 0) &&
                             showSuggestions
                           "
-                          class="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 shadow-lg z-10 hide-scrollbar"
+                          class="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm z-10 hide-scrollbar"
                         >
                           <!-- Search results section -->
                           <div v-if="hashtagSuggestions.length > 0">
@@ -421,7 +421,7 @@
                   ? 'bg-indigo-600 cursor-not-allowed'
                   : !form.title.trim() || !form.content.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md',
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm',
               ]"
             >
               <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
@@ -462,7 +462,7 @@
     >
       <div
         v-if="showSuccessToast"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 shadow-lg rounded-lg px-4 py-3 flex items-center gap-3 z-[10001] min-w-[280px] max-w-sm animate-bounce-once"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 shadow-sm rounded-lg px-4 py-3 flex items-center gap-3 z-[10001] min-w-[280px] max-w-sm animate-bounce-once"
       >
         <div
           class="p-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm"
@@ -512,7 +512,7 @@
         >
           <div
             v-if="showConfirmClose"
-            class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl"
+            class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-sm"
             @click.stop
           >
             <div class="flex items-start mb-4">

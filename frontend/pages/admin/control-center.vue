@@ -20,7 +20,7 @@
       class="min-h-screen flex items-center justify-center p-4"
     >
       <div
-        class="max-w-md w-full bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+        class="max-w-md w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
       >
         <div class="p-8">
           <div class="text-center mb-6">

@@ -51,7 +51,7 @@
           <!-- Enhanced Banner Upload Button with Animation -->
           <div v-if="isOwner" class="absolute top-4 right-4 z-20">
             <button
-              class="rounded-full overflow-hidden group bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:border-white/30 px-4 py-2 text-sm font-medium inline-flex items-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              class="rounded-full overflow-hidden group bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:border-white/30 px-4 py-2 text-sm font-medium inline-flex items-center transition-all duration-300 shadow-sm hover:shadow-sm transform hover:scale-105"
               @click="showBannerUpload = true"
             >
               <span class="relative z-10 flex items-center">
@@ -80,7 +80,7 @@
             @click.self="showBannerUpload = false"
           >
             <div
-              class="sm:max-w-[500px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full transform transition-all duration-500 border border-white/50"
+              class="sm:max-w-[500px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
               :class="
                 showBannerUpload
                   ? 'scale-100 opacity-100'
@@ -181,7 +181,7 @@
             >
               <!-- Logo with 3D Hover Effect -->
               <div
-                class="relative h-24 w-24 md:h-32 md:w-32 rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-105 hover:rotate-3 hover:-translate-y-1 group/logo"
+                class="relative h-24 w-24 md:h-32 md:w-32 rounded-2xl overflow-hidden shadow-sm transform transition-all duration-500 hover:scale-105 hover:rotate-3 hover:-translate-y-1 group/logo"
               >
                 <!-- Logo Background -->
                 <div
@@ -270,7 +270,7 @@
                 >
                   <span
                     v-if="storeDetails?.store_address"
-                    class="px-3.5 py-1.5 bg-white shadow-md hover:shadow-lg transition-all duration-300 rounded-full text-sm flex items-center transform hover:translate-y-[-2px] border border-slate-100"
+                    class="px-3.5 py-1.5 bg-white shadow-sm hover:shadow-sm transition-all duration-300 rounded-full text-sm flex items-center transform hover:translate-y-[-2px] border border-slate-100"
                   >
                     <MapPin class="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                     {{ storeDetails?.store_address }}
@@ -278,7 +278,7 @@
 
                   <span
                     v-if="storeDetails?.phone"
-                    class="px-3.5 py-1.5 bg-white shadow-md hover:shadow-lg transition-all duration-300 rounded-full text-sm flex items-center transform hover:translate-y-[-2px] border border-slate-100"
+                    class="px-3.5 py-1.5 bg-white shadow-sm hover:shadow-sm transition-all duration-300 rounded-full text-sm flex items-center transform hover:translate-y-[-2px] border border-slate-100"
                   >
                     <Phone class="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                     {{ storeDetails?.phone }}
@@ -289,7 +289,7 @@
               <!-- Action Button with Advanced Hover Effect -->
               <div class="flex gap-3">
                 <button
-                  class="relative overflow-hidden rounded-full bg-gradient-to-r from-slate-800 to-slate-700 shadow-lg hover:shadow-xl hover:scale-105 transform text-white px-5 py-2.5 font-medium group/btn transition-all duration-300"
+                  class="relative overflow-hidden rounded-full bg-gradient-to-r from-slate-800 to-slate-700 shadow-sm hover:shadow-sm hover:scale-105 transform text-white px-5 py-2.5 font-medium group/btn transition-all duration-300"
                 >
                   <span class="relative z-10">Follow</span>
                   <span
@@ -325,7 +325,7 @@
 
             <!-- Enhanced Search Container -->
             <div class="relative z-10">
-              <div class="relative overflow-hidden rounded-full shadow-2xl">
+              <div class="relative overflow-hidden rounded-full shadow-sm">
                 <!-- Glass Backdrop -->
                 <div
                   class="absolute inset-0 bg-white/90 backdrop-blur-md transition-all duration-300"
@@ -409,7 +409,7 @@
                 :class="
                   selectedCategory === null
                     ? 'bg-slate-800 text-white hover:bg-slate-700'
-                    : 'bg-white hover:bg-slate-50 shadow-md hover:shadow-xl text-slate-700'
+                    : 'bg-white hover:bg-slate-50 shadow-sm hover:shadow-sm text-slate-700'
                 "
                 @click="selectedCategory = null"
                 style="animation: fadeInUp 0.5s ease-out forwards"
@@ -440,7 +440,7 @@
                 :class="
                   selectedCategory === category.id
                     ? 'bg-slate-800 text-white hover:bg-slate-700'
-                    : 'bg-white hover:bg-slate-50 shadow-md hover:shadow-xl text-slate-700'
+                    : 'bg-white hover:bg-slate-50 shadow-sm hover:shadow-sm text-slate-700'
                 "
                 @click="selectedCategory = category.id"
                 :style="{
@@ -487,7 +487,7 @@
             v-for="(product, index) in filteredProducts"
             :key="product.id"
             :product="product"
-            class="transform transition-all duration-500 hover:translate-y-[-5px] hover:shadow-xl opacity-0"
+            class="transform transition-all duration-500 hover:translate-y-[-5px] hover:shadow-sm opacity-0"
             :style="{
               animation: 'fadeInUp 0.5s ease-out forwards',
               animationDelay: `${index * 50}ms`,
@@ -555,7 +555,7 @@
           >
             <!-- Card Background with Glass Effect -->
             <div
-              class="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300 border border-white/50 overflow-hidden"
+              class="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm group-hover:shadow-sm transition-all duration-300 border border-white/50 overflow-hidden"
             ></div>
 
             <!-- Card Background Pattern -->
@@ -570,7 +570,7 @@
             <div class="p-7 relative">
               <div class="flex flex-col items-center text-center">
                 <div
-                  class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-800 group-hover:text-white transition-all duration-500 transform group-hover:scale-110 shadow-md group-hover:shadow-xl relative overflow-hidden"
+                  class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-800 group-hover:text-white transition-all duration-500 transform group-hover:scale-110 shadow-sm group-hover:shadow-sm relative overflow-hidden"
                 >
                   <!-- Icon Glow Effect -->
                   <div
@@ -668,7 +668,7 @@
 
             <!-- Enhanced CTA Button -->
             <div
-              class="relative overflow-hidden rounded-full bg-white text-slate-900 hover:text-slate-800 px-6 py-3 h-auto text-base lg:text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 transform group/cta w-full md:w-auto flex items-center justify-center"
+              class="relative overflow-hidden rounded-full bg-white text-slate-900 hover:text-slate-800 px-6 py-3 h-auto text-base lg:text-lg font-medium shadow-sm hover:shadow-sm transition-all duration-500 hover:scale-105 transform group/cta w-full md:w-auto flex items-center justify-center"
             >
               <span class="relative z-10 flex items-center justify-center">
                 Thanks for visiting our store
@@ -694,7 +694,7 @@
           @click.self="showLogoUpload = false"
         >
           <div
-            class="sm:max-w-[425px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full transform transition-all duration-500 border border-white/50"
+            class="sm:max-w-[425px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
             :class="
               showLogoUpload ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
             "

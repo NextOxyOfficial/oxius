@@ -49,7 +49,7 @@
           </div>
           <span
             v-if="unreadCount > 0"
-            class="absolute -top-1 -right-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 shadow-lg border border-white/40 animate-pulse-slow z-10"
+            class="absolute -top-1 -right-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 shadow-sm border border-white/40 animate-pulse-slow z-10"
           >
             {{ unreadCount }}
           </span>

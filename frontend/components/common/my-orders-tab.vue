@@ -358,7 +358,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left shadow-2xl transform transition-all sm:my-24 sm:align-middle sm:max-w-3xl sm:w-full animate-slide-up max-h-[70vh] overflow-auto"
+          class="inline-block align-bottom bg-white rounded-xl text-left shadow-sm transform transition-all sm:my-24 sm:align-middle sm:max-w-3xl sm:w-full animate-slide-up max-h-[70vh] overflow-auto"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
@@ -863,7 +863,7 @@
       }"
     >
       <div
-        class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full"
+        class="bg-white rounded-xl shadow-sm overflow-hidden max-w-lg w-full"
       >
         <div
           class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"

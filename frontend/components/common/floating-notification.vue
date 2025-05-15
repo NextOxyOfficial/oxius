@@ -380,7 +380,7 @@ function formatAmount(amount) {
 /* Add to your existing styles */
 .notifications-panel {
   @apply fixed right-2 sm:right-4 top-16 w-96 max-w-[calc(100vw-1rem)] 
-         bg-white dark:bg-slate-800 rounded-xl shadow-xl 
+         bg-white dark:bg-slate-800 rounded-xl shadow-sm 
          border border-gray-200 dark:border-gray-700
          overflow-hidden z-[9999999999];
   max-height: calc(100vh - 5rem);

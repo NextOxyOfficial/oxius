@@ -78,7 +78,7 @@
             >
               <!-- Card with clean design -->
               <div
-                class="h-full flex flex-col rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all"
+                class="h-full flex flex-col rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-sm transition-all"
               >
                 <!-- Image container -->
                 <div class="relative h-36 overflow-hidden">

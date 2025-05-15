@@ -12,7 +12,7 @@
           class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain cursor-pointer"
           @click="post.post_media.length > 1 && navigateMedia('next')"
         />        <!-- Image counter indicator with interaction hint -->
-        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-xl border border-white/10">
+        <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-sm border border-white/10">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
           </div>
@@ -62,7 +62,7 @@
       <!-- Gallery Heading -->
       <div class="flex items-center px-4 justify-between mb-4 relative">        
         <h3 class="font-medium text-slate-800 dark:text-slate-100 flex items-center space-x-2 relative">
-          <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-md shadow-md">
+          <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-md shadow-sm">
             <UIcon name="i-heroicons-photo" class="w-3.5 h-3.5" />
           </span>
           <span>
@@ -75,7 +75,7 @@
         
         <!-- Media counter -->
         <div class="relative">
-          <div class="px-3 py-1.5 bg-blue-50 dark:bg-slate-800 rounded-lg text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-100/50 dark:border-blue-800/50 shadow-md">
+          <div class="px-3 py-1.5 bg-blue-50 dark:bg-slate-800 rounded-lg text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-100/50 dark:border-blue-800/50 shadow-sm">
             <span class="flex items-center space-x-1.5">
               <UIcon name="i-heroicons-viewfinder-circle" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
               <span>
@@ -91,7 +91,7 @@
       <button
         v-show="canScrollLeft"
         @click="scrollThumbnails('left')"
-        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-700"
+        class="absolute -left-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-gray-200 dark:border-gray-700"
         aria-label="Previous thumbnails"
       >
         <svg
@@ -131,7 +131,7 @@
             :key="media.id"
             class="relative cursor-pointer overflow-hidden h-[72px] sm:h-[76px] rounded-lg"
             :class="{
-              'ring-2 ring-blue-500 dark:ring-blue-500 shadow-lg z-10':
+              'ring-2 ring-blue-500 dark:ring-blue-500 shadow-sm z-10':
                 activeIndex === mediaIndex,
               'ring-1 ring-white/70 dark:ring-slate-700/90':
                 activeIndex !== mediaIndex,
@@ -160,7 +160,7 @@
             <!-- Selection indicator -->
             <div
               v-if="activeIndex === mediaIndex" 
-              class="absolute top-1 left-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shadow-md"
+              class="absolute top-1 left-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shadow-sm"
             >
               <span class="text-white text-[8px]">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-2.5 h-2.5">
@@ -174,7 +174,7 @@
       <button
         v-show="canScrollRight"
         @click="scrollThumbnails('right')"
-        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-700"
+        class="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full p-2 shadow-sm border border-gray-200 dark:border-gray-700"
         aria-label="Next thumbnails"
       >
         <svg

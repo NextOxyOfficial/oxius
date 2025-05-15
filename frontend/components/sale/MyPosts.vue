@@ -18,7 +18,7 @@
       </div>
       <button
         @click="$emit('create-post')"
-        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-8 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
+        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-8 py-3 rounded-lg flex items-center gap-2 mx-auto shadow-sm hover:shadow-sm transition-all duration-200 transform hover:-translate-y-0.5"
       >
         <Icon name="heroicons:plus-circle" size="20px" />
         Create Post
@@ -103,7 +103,7 @@
           
           <button
             @click="$emit('create-post')"
-            class="bg-primary hover:bg-primary/90 text-white font-medium px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-md"
+            class="bg-primary hover:bg-primary/90 text-white font-medium px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-sm"
           >
             <Icon name="heroicons:plus-circle" size="18px" />
             New Post
@@ -291,7 +291,7 @@
         class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
       >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
         >
           <div class="bg-white px-6 pt-6 pb-5">
             <div class="sm:flex sm:items-start">

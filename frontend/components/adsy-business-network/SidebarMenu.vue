@@ -7,7 +7,7 @@
     <button
         v-if="user?.user"
         @click="openCreatePostModal"
-        class="w-full flex items-center px-3 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-md transition-all duration-200 group relative overflow-hidden"
+        class="w-full flex items-center px-3 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-sm transition-all duration-200 group relative overflow-hidden"
       >
         <!-- Background glow effect -->
         <div class="absolute inset-0 bg-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

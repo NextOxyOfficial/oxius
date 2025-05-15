@@ -19,7 +19,7 @@
             <img
               :src="highestGiftComment.author_details?.image"
               :alt="highestGiftComment.author_details?.name"
-              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border-2 border-amber-300 dark:border-amber-500/80 shadow-sm group-hover:shadow-md transition-all duration-300 relative z-10"
+              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border-2 border-amber-300 dark:border-amber-500/80 shadow-sm group-hover:shadow-sm transition-all duration-300 relative z-10"
             />
           </div>
         </NuxtLink>
@@ -106,7 +106,7 @@
             <img
               :src="comment.author_details?.image"
               :alt="comment.author_details?.name"
-              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-md transition-all duration-300"
+              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
             />
           </div>
         </NuxtLink>
@@ -149,7 +149,7 @@
                 <!-- Dropdown menu -->
                 <div
                   v-if="comment.showDropdown"
-                  class="absolute right-8 -top-1 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 z-50 transition-all duration-200 origin-top-right"
+                  class="absolute right-8 -top-1 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-50 transition-all duration-200 origin-top-right"
                   @click.stop
                 >
                   <div class="py-1">
@@ -447,7 +447,7 @@ const toggleDropdown = (comment) => {
 }
 
 .gift-comment:hover {
-  @apply -translate-y-0.5 shadow-md;
+  @apply -translate-y-0.5 shadow-sm;
 }
 
 /* Gift sender info styling */

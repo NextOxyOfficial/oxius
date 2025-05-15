@@ -83,7 +83,7 @@
               <button
                 type="submit"
                 text="Search"
-                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-1.5 px-4 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-md hover:shadow-md text-sm"
+                class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-1.5 px-4 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-sm hover:shadow-sm text-sm"
                 :disabled="isLoading"
               >
                 <!-- Button background animation -->
@@ -115,7 +115,7 @@
           v-if="
             searchServices?.results?.length || classifiedPosts.results?.length
           "
-          class="border bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm w-full max-w-lg mx-auto rounded-xl p-4 space-y-4 my-6 relative z-50 shadow-md transition-all duration-300"
+          class="border bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm w-full max-w-lg mx-auto rounded-xl p-4 space-y-4 my-6 relative z-50 shadow-sm transition-all duration-300"
         >
           <h3
             v-if="searchServices?.results?.length"
@@ -199,7 +199,7 @@
         <div class="text-center mt-4" v-if="services.next">
           <button
             @click="loadMore(services.next)"
-            class="group relative inline-flex text-sm items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+            class="group relative inline-flex text-sm items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
             :disabled="isLoadingMore"
           >
             <!-- Background hover effect -->
@@ -270,7 +270,7 @@
         <!-- Mobile recharge link with premium styling -->
         <NuxtLink
           to="/mobile-recharge"
-          class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-md hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-300 hover:scale-105 group"
+          class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-sm hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-300 hover:scale-105 group"
         >
           <div class="flex items-center gap-3">
             <UIcon
@@ -389,7 +389,7 @@
                   <!-- Post gig button with premium styling -->
                   <UButton
                     to="/post-a-gig"
-                    class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-md hover:shadow-sm transition-all duration-300 transform hover:scale-105 border border-emerald-200 hover:border-emerald-300"
+                    class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105 border border-emerald-200 hover:border-emerald-300"
                     :ui="{
                       size: {
                         sm: 'text-sm',
@@ -439,7 +439,7 @@
                       option: {
                         color: 'text-emerald-600',
                       },
-                      base: 'shadow-md hover:shadow-md transition-shadow duration-300',
+                      base: 'shadow-sm hover:shadow-sm transition-shadow duration-300',
                     }"
                   />
                 </div>
@@ -452,7 +452,7 @@
                 <div
                   v-for="(gig, i) in microGigs"
                   :key="i"
-                  class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
+                  class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
                 >
                   <div
                     class="flex flex-col sm:flex-row sm:items-center w-full px-2 py-2"
@@ -465,7 +465,7 @@
                         <!-- Gig image with premium styling -->
                         <div class="flex-shrink-0">
                           <div
-                            class="size-14 bg-slate-100 dark:bg-slate-700 overflow-hidden shadow-md flex items-center justify-center rounded-full gap-1"
+                            class="size-14 bg-slate-100 dark:bg-slate-700 overflow-hidden shadow-sm flex items-center justify-center rounded-full gap-1"
                           >
                             <NuxtImg
                               v-if="!errorIndex.includes(i)"
@@ -567,7 +567,7 @@
                           size="md"
                           color="emerald"
                           variant="solid"
-                          class="w-24 justify-center shadow-md hover:shadow-md transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
                           :to="`/order/${gig.id}/`"
                         >
                           <UIcon
@@ -592,7 +592,7 @@
                           color="emerald"
                           variant="solid"
                           :to="`/auth/login/`"
-                          class="w-24 justify-center shadow-md hover:shadow-md transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
@@ -610,7 +610,7 @@
                           size="md"
                           color="emerald"
                           variant="solid"
-                          class="w-24 justify-center shadow-md hover:shadow-md transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
                           :to="`/order/${gig.id}/`"
                         >
                           <UIcon
@@ -635,7 +635,7 @@
                           color="emerald"
                           variant="solid"
                           :to="`/auth/login/`"
-                          class="w-24 justify-center shadow-md hover:shadow-md transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
@@ -675,7 +675,7 @@
       :ui="{
         width: 'w-full sm:max-w-4xl',
         container:
-          'bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700',
+          'bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700',
         overlay: 'backdrop-blur-sm',
       }"
     >

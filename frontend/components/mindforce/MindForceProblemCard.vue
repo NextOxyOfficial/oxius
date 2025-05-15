@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-4 transition-all duration-300 cursor-pointer relative overflow-hidden hover:shadow-lg group transform hover:shadow-sm"
+    class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-4 transition-all duration-300 cursor-pointer relative overflow-hidden hover:shadow-sm group transform hover:shadow-sm"
     @click="$emit('click', problem)"
   >
     <!-- Premium subtle background patterns with gradient overlay -->
@@ -23,7 +23,7 @@
     <div class="flex justify-between items-start mb-2 relative">
       <div class="flex items-center">
         <div
-          class="size-12 rounded-full border-2 border-white dark:border-slate-700 shadow-md relative glow-effect"
+          class="size-12 rounded-full border-2 border-white dark:border-slate-700 shadow-sm relative glow-effect"
         >
           <!-- Pro user border with gradient effect -->
           <div
@@ -43,7 +43,7 @@
           <!-- Pro text badge with increased z-index -->
           <div
             v-if="problem?.user_details?.is_pro"
-            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-medium"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-40 text-[9px] font-medium"
             style="border: 1px solid rgba(255, 255, 255, 0.5)"
           >
             PRO

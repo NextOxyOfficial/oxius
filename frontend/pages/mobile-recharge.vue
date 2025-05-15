@@ -94,7 +94,7 @@
           <div
             v-for="(pack, index) in popularPackages"
             :key="index"
-            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow duration-300"
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
@@ -172,7 +172,7 @@
           <div
             v-for="(pack, index) in filteredPackages"
             :key="index"
-            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow duration-300"
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
@@ -240,7 +240,7 @@
       v-if="selectedPackage"
       class="fixed inset-0 top-10 bottom-10 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
     >
-      <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+      <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-sm">
         <div class="flex justify-between items-start mb-4">
           <h3 class="text-xl font-bold text-gray-900">Confirm Recharge</h3>
           <button
@@ -342,7 +342,7 @@
     <!-- Success Toast -->
     <div
       v-if="showToast"
-      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center"
+      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-sm flex items-center"
     >
       <check-circle-icon class="w-5 h-5 mr-2" />
       <span>Recharge successful!</span>

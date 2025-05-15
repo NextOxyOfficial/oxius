@@ -23,7 +23,7 @@
         >
           <div
             v-if="isOpen"
-            class="bg-white dark:bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+            class="bg-white dark:bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-sm flex flex-col"
             @click.stop
           >
             <!-- Modal Header -->

@@ -298,7 +298,7 @@
             <div
               v-for="(ad, index) in postedAds"
               :key="index"
-              class="bg-white rounded-md shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              class="bg-white rounded-md shadow-sm overflow-hidden hover:shadow-sm transition-shadow"
             >
               <div class="flex flex-col md:flex-row">
                 <!-- Ad Image -->
@@ -1051,7 +1051,7 @@
           class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
         >
           <div
-            class="bg-white rounded-md shadow-xl w-full max-w-4xl p-5 max-h-[70vh] overflow-y-auto"
+            class="bg-white rounded-md shadow-sm w-full max-w-4xl p-5 max-h-[70vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-900">
@@ -1742,7 +1742,7 @@
           v-if="showDeleteModal"
           class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
         >
-          <div class="bg-white rounded-md shadow-xl w-full max-w-md p-6">
+          <div class="bg-white rounded-md shadow-sm w-full max-w-md p-6">
             <div class="text-center mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1810,7 +1810,7 @@
           class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
         >
           <div
-            class="bg-white rounded-md shadow-xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto"
+            class="bg-white rounded-md shadow-sm w-full max-w-md p-5 max-h-[90vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-900">Ad Preview</h3>

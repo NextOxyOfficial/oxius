@@ -17,7 +17,7 @@
               <!-- Profile Picture Skeleton -->
               <div class="flex flex-col items-center sm:items-start">
                 <div
-                  class="size-36 rounded-full border-2 border-white shadow-lg bg-gray-200"
+                  class="size-36 rounded-full border-2 border-white shadow-sm bg-gray-200"
                 ></div>
 
                 <!-- User Stats Skeleton (Mobile) -->
@@ -121,7 +121,7 @@
 
         <!-- Skeleton for Tabs Section -->
         <div
-          class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden"
+          class="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 overflow-hidden"
         >
           <!-- Tabs Skeleton -->
           <div class="border-b border-gray-200">
@@ -245,7 +245,7 @@
                   'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all duration-300',
                   isFollowing
                     ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md text-white',
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm text-white',
                 ]"
                 :disabled="followLoading"
                 @click="toggleFollow"
@@ -398,7 +398,7 @@
                       'px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-all duration-300',
                       isFollowing
                         ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md text-white',
+                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm text-white',
                     ]"
                     :disabled="followLoading"
                     @click="toggleFollow"
@@ -678,7 +678,7 @@
 
       <!-- Tabs Section with Premium Styling -->
       <div
-        class="bg-white/95 backdrop-blur-md rounded-xl shadow-md border border-gray-200/50 overflow-hidden animate-fadeIn-delayed"
+        class="bg-white/95 backdrop-blur-md rounded-xl shadow-sm border border-gray-200/50 overflow-hidden animate-fadeIn-delayed"
       >
         <!-- Scrollable Tabs for Mobile -->
         <div class="overflow-x-auto scrollbar-hide">
@@ -856,7 +856,7 @@
                 <div
                   v-for="(media, index) in allMedia"
                   :key="index"
-                  class="aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300"
+                  class="aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-pointer hover:shadow-sm transition-all duration-300"
                 >
                   <img
                     :src="media.thumbnail"

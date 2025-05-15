@@ -21,7 +21,7 @@
         <div class="flex flex-col md:flex-row gap-8 perspective-[1000px]">
           <!-- Free Plan - Lighter Design -->
           <div
-            class="w-full md:w-1/2 bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 border border-slate-100 dark:border-slate-700 group"
+            class="w-full md:w-1/2 bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-1 border border-slate-100 dark:border-slate-700 group"
           >
             <!-- Card Header -->
             <div
@@ -251,7 +251,7 @@
               </ul>
 
               <button
-                class="w-full py-3 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 text-sky-500 dark:text-sky-400 rounded-xl text-sm font-medium hover:shadow-md border border-sky-100 dark:border-sky-800/30 transition-all duration-300 relative overflow-hidden group-hover:border-sky-200 dark:group-hover:border-sky-700/50"
+                class="w-full py-3 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 text-sky-500 dark:text-sky-400 rounded-xl text-sm font-medium hover:shadow-sm border border-sky-100 dark:border-sky-800/30 transition-all duration-300 relative overflow-hidden group-hover:border-sky-200 dark:group-hover:border-sky-700/50"
               >
                 <span
                   class="relative z-10 flex items-center justify-center gap-2"
@@ -278,12 +278,12 @@
 
           <!-- Pro - Lighter Premium Effects -->
           <div
-            class="w-full md:w-1/2 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-sky-200/70 dark:border-sky-700/30 bg-white dark:bg-slate-800 relative group"
+            class="w-full md:w-1/2 rounded-2xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-2 border-2 border-sky-200/70 dark:border-sky-700/30 bg-white dark:bg-slate-800 relative group"
           >
             <!-- Premium Badge -->
             <div class="absolute -top-0.5 -right-0.5 z-10">
               <div
-                class="bg-gradient-to-r from-sky-400 to-blue-400 text-white text-xs font-bold py-1 px-3 rounded-bl-lg rounded-tr-lg shadow-md flex items-center gap-1"
+                class="bg-gradient-to-r from-sky-400 to-blue-400 text-white text-xs font-bold py-1 px-3 rounded-bl-lg rounded-tr-lg shadow-sm flex items-center gap-1"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -551,7 +551,7 @@
 
               <!-- Enhanced CTA Button -->
               <button
-                class="w-full py-3 bg-gradient-to-r from-sky-400 to-blue-400 hover:from-sky-500 hover:to-blue-500 text-white rounded-xl text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-md relative overflow-hidden group-hover:scale-[1.02]"
+                class="w-full py-3 bg-gradient-to-r from-sky-400 to-blue-400 hover:from-sky-500 hover:to-blue-500 text-white rounded-xl text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-sm relative overflow-hidden group-hover:scale-[1.02]"
                 @click="showModal"
               >
                 <span
@@ -711,7 +711,7 @@
                     class="relative px-6 py-2.5 rounded-lg transition-all duration-300 min-w-[120px] overflow-hidden"
                     :class="
                       months === 1
-                        ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-md'
+                        ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-sm'
                         : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
                     "
                   >
@@ -733,7 +733,7 @@
                     class="relative px-6 py-2.5 rounded-lg transition-all duration-300 min-w-[120px] group"
                     :class="
                       months === 12
-                        ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-md'
+                        ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-sm'
                         : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
                     "
                   >
@@ -1050,7 +1050,7 @@
           >
             <!-- Layered background with 3D effect -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-emerald-600 to-green-600 shadow-lg"
+              class="absolute inset-0 bg-gradient-to-br from-emerald-600 to-green-600 shadow-sm"
             ></div>
             <div
               class="absolute inset-[1px] bg-gradient-to-r from-emerald-500 to-green-500 rounded-[10px]"

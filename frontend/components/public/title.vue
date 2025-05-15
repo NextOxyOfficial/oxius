@@ -29,7 +29,7 @@
 
     <UButton
       to="/my-classified-services"
-      class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 border border-dashed border-green-600 max-sm:!text-sm mr-2"
+      class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105 border border-dashed border-green-600 max-sm:!text-sm mr-2"
       :ui="{
         size: {
           sm: 'text-sm',

@@ -4,7 +4,7 @@
     <MindForceHeader :is-creating="isCreating" @create="openCreateModal" />
 
     <!-- Main Content -->
-    <div class="bg-white rounded-xl shadow-md border border-gray-100 transition-all">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 transition-all">
       <!-- Tabs & Search Component -->
       <MindForceTabsSearch
         :tabs="tabs"

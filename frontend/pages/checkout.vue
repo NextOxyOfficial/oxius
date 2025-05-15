@@ -1,7 +1,7 @@
 <template>
   <UContainer>
     <div
-      class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border h-44 flex flex-col gap-3 items-center justify-center my-8"
+      class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm overflow-hidden border h-44 flex flex-col gap-3 items-center justify-center my-8"
       v-if="cart.products.length === 0"
     >
       <p>You have no products in the cart. Start adding some.</p>
@@ -25,7 +25,7 @@
         enter-to-class="opacity-100 translate-y-0"
       >
         <div
-          class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden"
+          class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm overflow-hidden"
         >
           <!-- Header -->
           <div class="relative overflow-hidden">
@@ -498,7 +498,7 @@
                     </div>
 
                     <!-- Order Summary -->
-                    <div class="overflow-hidden rounded-xl border-0 shadow-lg">
+                    <div class="overflow-hidden rounded-xl border-0 shadow-sm">
                       <div
                         class="bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3"
                       >
@@ -533,7 +533,7 @@
                         <!-- Submit Button -->
                         <button
                           type="submit"
-                          class="mt-6 w-full py-3 text-base font-medium text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-xl rounded-lg"
+                          class="mt-6 w-full py-3 text-base font-medium text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-sm rounded-lg"
                         >
                           Complete Purchase
                         </button>
@@ -601,7 +601,7 @@
             >
               <div
                 v-if="showInsufficientFundsModal"
-                class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
               >
                 <div
                   class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"
@@ -715,7 +715,7 @@
             >
               <div
                 v-if="showSuccessModal"
-                class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
               >
                 <div
                   class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-green-400 to-green-600"

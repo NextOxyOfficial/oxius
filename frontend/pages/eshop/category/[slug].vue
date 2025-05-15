@@ -5,7 +5,7 @@
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
       <UContainer>
-        <div class="relative overflow-hidden rounded-xl shadow-md">
+        <div class="relative overflow-hidden rounded-xl shadow-sm">
           <!-- Background pattern for premium look -->
           <div
             class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
@@ -276,7 +276,7 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search products, brands, categories..."
-                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-md placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 @input="debouncedSearch"
               />
               <UIcon

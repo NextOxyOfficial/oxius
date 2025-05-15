@@ -17,7 +17,7 @@
 
       <form
         @submit.prevent="handleAddProduct"
-        class="relative bg-white dark:bg-slate-800 overflow-hidden border border-slate-200/50 dark:border-slate-700/30 shadow-xl dark:shadow-slate-900/30 rounded-2xl"
+        class="relative bg-white dark:bg-slate-800 overflow-hidden border border-slate-200/50 dark:border-slate-700/30 shadow-sm dark:shadow-slate-900/30 rounded-2xl"
       >
         <!-- Form Sections Container -->
         <div class="py-8">
@@ -106,7 +106,7 @@
           <!-- Product Details Section -->
           <div
             class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-lg': currentStep === 1 }"
+            :class="{ 'shadow-sm': currentStep === 1 }"
           >
             <div class="section-header">
               <div class="section-icon-wrapper">
@@ -188,7 +188,7 @@
           <!-- Product Media Section -->
           <div
             class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-lg': currentStep === 2 }"
+            :class="{ 'shadow-sm': currentStep === 2 }"
           >
             <div class="section-header">
               <div class="section-icon-wrapper">
@@ -359,7 +359,7 @@
           <!-- Product Pricing Section -->
           <div
             class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-lg': currentStep === 3 }"
+            :class="{ 'shadow-sm': currentStep === 3 }"
           >
             <div class="section-header">
               <div class="section-icon-wrapper">
@@ -472,7 +472,7 @@
           <!-- Delivery Information Section -->
           <div
             class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-lg': currentStep === 4 }"
+            :class="{ 'shadow-sm': currentStep === 4 }"
           >
             <div class="section-header">
               <div class="section-icon-wrapper">
@@ -1203,8 +1203,8 @@ function resetForm(showConfirm = true) {
 
 /* Premium Buttons */
 .premium-btn-primary {
-  @apply rounded-lg py-2.5 px-5 bg-gradient-to-r from-primary-500 to-primary-600 border-0 shadow-md 
-         hover:shadow-lg hover:from-primary-600 hover:to-primary-700 transition-all duration-300 transform hover:-translate-y-0.5;
+  @apply rounded-lg py-2.5 px-5 bg-gradient-to-r from-primary-500 to-primary-600 border-0 shadow-sm 
+         hover:shadow-sm hover:from-primary-600 hover:to-primary-700 transition-all duration-300 transform hover:-translate-y-0.5;
 }
 
 .premium-btn-outline {

@@ -208,7 +208,7 @@
           </button>
 
           <button
-            class="flex-1 py-2 px-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-md"
+            class="flex-1 py-2 px-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-sm"
             :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
             :disabled="isLoading"
             @click="handleAction(currentId, 'completed')"

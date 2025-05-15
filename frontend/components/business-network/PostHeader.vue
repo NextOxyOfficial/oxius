@@ -13,12 +13,12 @@
           <img
             :src="post?.author_details?.image || '/placeholder.svg'"
             :alt="post?.author_details?.name"
-            class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-md transition-all duration-300 group-hover:shadow-lg transform group-hover:scale-105"
+            class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-sm transition-all duration-300 group-hover:shadow-sm transform group-hover:scale-105"
           />
           <!-- Pro text badge -->
           <div
             v-if="post?.author_details?.is_pro"
-            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-20 text-[9px] font-bold"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-[9px] font-bold"
           >
             PRO
           </div>
@@ -77,7 +77,7 @@
         <!-- Dropdown Menu with glassmorphism effect -->
         <div
           v-if="post?.showDropdown"
-          class="absolute right-0 mt-1 w-56 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-lg shadow-xl border border-gray-100/50 dark:border-slate-700/50 z-20 premium-shadow transform transition-all duration-200 animate-fade-in-down"
+          class="absolute right-0 mt-1 w-56 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 premium-shadow transform transition-all duration-200 animate-fade-in-down"
           @click.stop
         >
           <div class="py-1.5">
@@ -156,7 +156,7 @@
         @click="postToDelete = null"
       >
         <div
-          class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl max-w-sm w-full p-6 shadow-2xl border border-white/20 dark:border-slate-700/30 transform transition-all duration-300 animate-scale-in"
+          class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl max-w-sm w-full p-6 shadow-sm border border-white/20 dark:border-slate-700/30 transform transition-all duration-300 animate-scale-in"
           @click.stop
         >
           <div class="flex items-center justify-between mb-4">
@@ -191,7 +191,7 @@
             </button>
             <button
               @click="handlePostDelete(postToDelete)"
-              class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+              class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-sm hover:shadow-sm transition-all"
             >
               Delete
             </button>

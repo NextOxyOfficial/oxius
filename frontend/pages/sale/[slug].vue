@@ -121,14 +121,14 @@
               <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4">
                 <button 
                   @click.stop="navigateImage('prev')" 
-                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Previous image"
                 >
                   <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
                 </button>
                 <button 
                   @click.stop="navigateImage('next')" 
-                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Next image"
                 >
                   <UIcon name="i-heroicons-chevron-right" class="h-6 w-6" />
@@ -141,7 +141,7 @@
                   v-if="post.status === 'sold'"
                   class="badge-container"
                 >
-                  <span class="relative inline-flex items-center gap-1 bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-md">
+                  <span class="relative inline-flex items-center gap-1 bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm">
                     <span class="flex w-2 h-2 relative mr-0.5">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
@@ -150,7 +150,7 @@
                   </span>
                 </div>
                 <div v-if="post.featured" class="badge-container">
-                  <span class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-md flex items-center gap-1">
+                  <span class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm flex items-center gap-1">
                     <UIcon name="i-heroicons-star" class="h-3.5 w-3.5" />
                     FEATURED
                   </span>
@@ -160,7 +160,7 @@
               <!-- Zoom Control -->
               <button 
                 @click.stop="openLightbox = true" 
-                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                 aria-label="Zoom image"
               >
                 <UIcon name="i-heroicons-magnifying-glass-plus" class="h-5 w-5" />
@@ -188,7 +188,7 @@
                   :key="index"
                   class="flex-shrink-0 cursor-pointer transition-all duration-300 transform rounded-md overflow-hidden border-2"
                   :class="{
-                    'border-primary scale-105 shadow-md': selectedImage === getImageSrc(image),
+                    'border-primary scale-105 shadow-sm': selectedImage === getImageSrc(image),
                     'border-transparent hover:border-gray-300 dark:hover:border-gray-600': selectedImage !== getImageSrc(image)
                   }"
                   @click="selectImage(image, index)"

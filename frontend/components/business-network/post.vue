@@ -172,7 +172,7 @@
       <!-- Empty state with better styling -->
       <div
         v-if="!loading && posts?.length === 0 && !id"
-        class="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-gray-100 dark:border-slate-700/50 shadow-md"
+        class="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-gray-100 dark:border-slate-700/50 shadow-sm"
       >
         <UIcon
           name="i-heroicons-document-text"

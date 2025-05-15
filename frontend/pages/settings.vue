@@ -21,13 +21,13 @@
               v-if="userProfile.image"
               :src="userProfile.image"
               alt="Profile"
-              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm"
             />
             <div
               v-else
               src="/static/frontend/avatar.png"
               alt="Profile"
-              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm"
             >
               <!-- Better profile icon fallback -->
               <UIcon
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Settings Navigation -->
-        <div class="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm mb-8 overflow-hidden">
           <div class="border-b border-gray-100">
             <nav class="flex space-x-2 p-1">
               <button
@@ -225,7 +225,7 @@
               <div class="flex justify-end">
                 <button
                   type="submit"
-                  class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
+                  class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
                   :disabled="passwordLoading"
                 >
                   <UIcon
@@ -580,7 +580,7 @@
       <!-- Sticky Save Button -->
       <div
         v-if="activeTab === 'profile'"
-        class="fixed bottom-0 left-0 right-0 bg-white bg-opacity-95 shadow-lg border-t border-gray-100 backdrop-blur-sm transition-all duration-300 z-50 mb-16 sm:mb-0"
+        class="fixed bottom-0 left-0 right-0 bg-white bg-opacity-95 shadow-sm border-t border-gray-100 backdrop-blur-sm transition-all duration-300 z-50 mb-16 sm:mb-0"
         :class="{ 'translate-y-full': !showStickyButton }"
       >
         <div
@@ -595,7 +595,7 @@
           <button
             type="submit"
             form="profileForm"
-            class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
+            class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus:ring focus:ring-emerald-200 active:translate-y-0 flex items-center gap-2"
             :disabled="isLoading || !formDirty"
           >
             <UIcon
@@ -634,7 +634,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"

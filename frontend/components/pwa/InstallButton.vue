@@ -7,7 +7,7 @@
       @click="installPWA"
     >
       <button
-        class="flex items-center gap-2 bg-primary-500 text-white px-4 py-3 rounded-full shadow-lg hover:bg-primary-600 transition-all"
+        class="flex items-center gap-2 bg-primary-500 text-white px-4 py-3 rounded-full shadow-sm hover:bg-primary-600 transition-all"
         aria-label="Install App"
       >
         <span class="hidden sm:inline">{{ $t("install_app") }}</span>

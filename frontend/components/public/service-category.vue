@@ -7,7 +7,7 @@
         v-for="service in services?.results"
         :key="service.id"
         class="relative rounded-xl border-2 border-dashed border-green-500 transition-all duration-300 cursor-pointer lg:w-[180px]"
-        :class="{ 'border-green-600 shadow-md': hoveredId === service.id }"
+        :class="{ 'border-green-600 shadow-sm': hoveredId === service.id }"
         @mouseenter="hoveredId = service.id"
         @mouseleave="hoveredId = null"
         @click="handleCardClick(service.id, service.business_type)"

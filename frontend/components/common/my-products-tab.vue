@@ -136,7 +136,7 @@
       <div
         v-for="product in filteredProducts"
         :key="product.id"
-        class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+        class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1"
       >
         <div class="relative">
           <img
@@ -236,7 +236,7 @@
             <!-- Edit Button (Fixed) -->
             <NuxtLink
               :to="`/product-details/${product.slug}/edit/`"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 text-indigo-600 hover:shadow-md transition-all duration-300"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 text-indigo-600 hover:shadow-sm transition-all duration-300"
             >
               <!-- Hover effect overlay -->
               <div
@@ -262,7 +262,7 @@
             <!-- Activate/Deactivate Button -->
             <button
               @click="toggleProductStatus(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-slate-600 hover:shadow-md transition-all duration-300"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-slate-600 hover:shadow-sm transition-all duration-300"
             >
               <!-- Hover effect overlay -->
               <div
@@ -295,7 +295,7 @@
             <!-- Delete Button -->
             <button
               @click="confirmDeleteProduct(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 text-red-600 hover:shadow-md transition-all duration-300"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 text-red-600 hover:shadow-sm transition-all duration-300"
             >
               <!-- Hover effect overlay -->
               <div
@@ -337,7 +337,7 @@
     <!-- Delete Product Confirmation Modal -->
     <UModal v-model="showDeleteConfirmModal">
       <div
-        class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-lg w-full"
+        class="bg-white rounded-xl shadow-sm overflow-hidden max-w-lg w-full"
       >
         <div
           class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"

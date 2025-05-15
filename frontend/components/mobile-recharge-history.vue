@@ -44,7 +44,7 @@
       <div
         v-for="(transaction, index) in filteredTransactions"
         :key="index"
-        class="transaction-item border rounded-lg p-4 mb-3 hover:shadow-md transition-shadow bg-white"
+        class="transaction-item border rounded-lg p-4 mb-3 hover:shadow-sm transition-shadow bg-white"
       >
         <div class="flex justify-between items-start">
           <div>

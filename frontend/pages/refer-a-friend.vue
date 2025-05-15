@@ -29,7 +29,7 @@
 
         <!-- Referral Link Box -->
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-md border border-gray-100 dark:border-gray-700 animate-fade-in-up"
+          class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-up"
         >
           <p class="text-center text-gray-600 dark:text-gray-400 mb-3">
             {{ $t("refer_text") }}
@@ -93,7 +93,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Total Referred Users Card -->
           <div
-            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 users-card"
+            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 users-card"
           >
             <div
               class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
@@ -121,7 +121,7 @@
 
           <!-- Total Earnings Card -->
           <div
-            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 earnings-card"
+            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 hover:shadow-sm hover:transform hover:-translate-y-1 earnings-card"
           >
             <div
               class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
@@ -158,7 +158,7 @@
         <!-- Replace both history sections with this single tabbed component -->
         <div class="mt-12">
           <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up"
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up"
             style="animation-delay: 0.2s"
           >
             <div class="tab-navigation overflow-hidden relative">
@@ -566,7 +566,7 @@
           <div class="grid md:grid-cols-3 gap-8">
             <!-- Step 1 -->
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-md border border-gray-100 dark:border-gray-700 text-center step-card"
+              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
             >
               <div
                 class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
@@ -589,7 +589,7 @@
 
             <!-- Step 2 -->
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-md border border-gray-100 dark:border-gray-700 text-center step-card"
+              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
             >
               <div
                 class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
@@ -612,7 +612,7 @@
 
             <!-- Step 3 -->
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-md border border-gray-100 dark:border-gray-700 text-center step-card"
+              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
             >
               <div
                 class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
@@ -639,7 +639,7 @@
         <div class="max-w-6xl mx-auto mb-20">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700 text-center stat-box"
+              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
                 class="text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2"
@@ -652,7 +652,7 @@
             </div>
 
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700 text-center stat-box"
+              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
                 class="text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2"
@@ -665,7 +665,7 @@
             </div>
 
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700 text-center stat-box"
+              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
                 class="text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2"
@@ -678,7 +678,7 @@
             </div>
 
             <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700 text-center stat-box"
+              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
                 class="text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2"
@@ -695,7 +695,7 @@
         <!-- CTA Section -->
         <div class="max-w-4xl mx-auto text-center">
           <div
-            class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 md:p-12 shadow-xl cta-section"
+            class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 md:p-12 shadow-sm cta-section"
           >
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
               Ready to Start Earning?

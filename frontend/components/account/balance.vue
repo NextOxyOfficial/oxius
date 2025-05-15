@@ -50,11 +50,11 @@
       <div class="flex flex-col md:flex-row justify-between gap-4 sm:gap-6">
         <!-- Main balance -->
         <div
-          class="balance-container group bg-white rounded-xl p-4 shadow-md hover:shadow-md transition-all duration-300 border border-emerald-300"
+          class="balance-container group bg-white rounded-xl p-4 shadow-sm hover:shadow-sm transition-all duration-300 border border-emerald-300"
         >
           <div class="flex items-center gap-3">
             <div
-              class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md"
+              class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm"
             >
               <UIcon
                 name="i-material-symbols:account-balance-wallet-outline"
@@ -80,12 +80,12 @@
 
         <!-- Pending tasks -->
         <div
-          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-md hover:shadmd-lg transition-all duration-300 border border-amber-200"
+          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm hover:shadmd-lg transition-all duration-300 border border-amber-200"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-md"
+                class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-sm"
               >
                 <UIcon
                   name="i-ic:outline-watch-later"
@@ -138,7 +138,7 @@
           variant="soft"
           :label="t('deposit_withdraw')"
           to="/deposit-withdraw/"
-          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -150,7 +150,7 @@
           variant="soft"
           :label="t('inbox')"
           to="/inbox/"
-          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -162,7 +162,7 @@
           variant="soft"
           :label="t('my_gigs')"
           :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
-          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-violet-500/10 to-violet-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-violet-500/10 to-violet-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -174,7 +174,7 @@
           variant="soft"
           :label="t('post_gigs')"
           to="/post-a-gig"
-          class="action-button justify-center py-3 rounded-xl shadow-md hover:shadow-md transition-all duration-300 hover:scale-102 bg-gradient-to-r from-slate-500/10 to-slate-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-slate-500/10 to-slate-500/5"
           :ui="{
             base: 'font-medium',
           }"
@@ -213,7 +213,7 @@
               class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg blur opacity-30 group-hover:opacity-70 transition duration-1000 group-hover:duration-200"
             ></div>
             <div
-              class="relative flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-md"
+              class="relative flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm"
             >
               <input
                 type="text"

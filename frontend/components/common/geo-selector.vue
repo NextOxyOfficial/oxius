@@ -4,7 +4,7 @@
       <div
         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       >
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-sm w-full max-w-md">
           <!-- Header -->
           <div class="bg-primary-50 p-5 rounded-t-xl border-b border-gray-100">
             <h2 class="text-xl font-semibold text-gray-800">

@@ -61,7 +61,7 @@
             :style="{ '--delay': `${index * 50}ms` }"
           >
             <div
-              class="bg-white dark:bg-slate-800 h-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-primary-200 dark:hover:border-primary-700/50 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
+              class="bg-white dark:bg-slate-800 h-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-primary-200 dark:hover:border-primary-700/50 shadow-sm hover:shadow-sm transition-all duration-300 flex flex-col"
             >
               <!-- Product Image Area -->
               <div class="aspect-square relative overflow-hidden group">
@@ -187,7 +187,7 @@
 
     <!-- Navigation Buttons -->
     <button
-      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-md hover:shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition <= 0"
       @click="scrollLeft"
     >
@@ -195,7 +195,7 @@
     </button>
 
     <button
-      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-md hover:shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition >= maxScroll"
       @click="scrollRight"
     >

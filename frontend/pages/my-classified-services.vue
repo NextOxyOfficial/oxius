@@ -34,7 +34,7 @@
           <div class="flex justify-center mt-2 mb-2">
             <UButton
               to="/classified-categories/post/"
-              class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-white"
+              class="relative overflow-hidden bg-white hover:bg-gray-50 text-emerald-600 font-medium rounded-lg px-6 py-2.5 shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105 border-2 border-white"
             >
               <!-- Button Shimmer Effect -->
               <div
@@ -66,13 +66,13 @@
         <div
           v-for="(service, i) in paginatedServices"
           :key="i"
-          class="service-card mb-4 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          class="service-card mb-4 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-sm"
         >
           <UCard
             :ui="{
               background: 'bg-white',
               ring: '',
-              shadow: 'shadow-md',
+              shadow: 'shadow-sm',
               rounded: 'rounded-xl',
               body: {
                 padding: 'p-0 sm:p-0 flex-1 w-full',
@@ -380,7 +380,7 @@
           />
           <p>You haven't made any post yet!</p>
           <UButton
-            class="mt-6 relative overflow-hidden bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            class="mt-6 relative overflow-hidden bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-6 py-2.5 shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
             to="/classified-categories/post/"
           >
             <!-- Button Shimmer Effect -->

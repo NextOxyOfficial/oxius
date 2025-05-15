@@ -3,7 +3,7 @@
     <!-- Editor Toolbar - Visible when in edit mode -->
     <div
       v-if="editModeActive"
-      class="sticky top-0 z-50 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-md mb-6 p-3"
+      class="sticky top-0 z-50 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm mb-6 p-3"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -257,7 +257,7 @@
         <button
           type="button"
           @click="addToCart(currentProduct, 1)"
-          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300"
+          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-sm transition-all duration-300"
         >
           <span v-if="!editModeActive">{{
             editorData.benefits_cta || "Yes! I Want This Now"
@@ -478,7 +478,7 @@
         <button
           type="button"
           @click="addToCart(currentProduct, 1)"
-          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-2xl transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
+          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
         >
           <span v-if="!editModeActive">{{
             editorData.cta_button_text || "Order Now & Save"
@@ -1273,7 +1273,7 @@ function removeFaq(index) {
 
 <style scoped>
 .benefit-card {
-  @apply bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md text-center;
+  @apply bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm text-center;
 }
 
 .icon-container {

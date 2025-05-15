@@ -60,7 +60,7 @@
           pauseAutoSlide();
           setTimeout(resumeAutoSlide, 2000);
         "
-        class="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+        class="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-sm transition-all duration-200 hover:scale-105"
         :class="{
           'opacity-50 cursor-not-allowed': currentSlide === 0,
         }"
@@ -78,7 +78,7 @@
           pauseAutoSlide();
           setTimeout(resumeAutoSlide, 2000);
         "
-        class="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+        class="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-sm transition-all duration-200 hover:scale-105"
         :class="{
           'opacity-50 cursor-not-allowed': currentSlide === maxSlides - 1,
         }"
@@ -164,7 +164,7 @@
       <div class="text-center mt-5 mb-2">
         <NuxtLink
           to="/eshop"
-          class="group relative text-sm inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-md hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+          class="group relative text-sm inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
         >
           <!-- Premium shine effect -->
           <span

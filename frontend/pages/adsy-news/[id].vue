@@ -10,7 +10,7 @@
 
     <article
       v-if="article"
-      class="bg-white rounded-xl shadow-lg overflow-hidden"
+      class="bg-white rounded-xl shadow-sm overflow-hidden"
     >
       <div class="relative h-[350px]">
         <img
@@ -187,7 +187,7 @@
             <div
               v-for="relatedArticle in relatedArticles.slice(0, 4)"
               :key="relatedArticle.id"
-              class="bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+              class="bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300"
             >
               <div class="relative h-40 overflow-hidden">
                 <img
@@ -240,7 +240,7 @@
             <div
               v-for="(tip, index) in visibleTips"
               :key="index"
-              class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col"
+              class="bg-white rounded-lg shadow-sm p-4 hover:shadow-sm transition-shadow duration-300 flex flex-col"
             >
               <h3
                 class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"

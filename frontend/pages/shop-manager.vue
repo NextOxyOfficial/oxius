@@ -11,7 +11,7 @@
           "
         >
           <div
-            class="relative mx-auto max-w-3xl overflow-hidden rounded-xl border-0 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl dark:from-slate-900 dark:to-slate-800"
+            class="relative mx-auto max-w-3xl overflow-hidden rounded-xl border-0 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm dark:from-slate-900 dark:to-slate-800"
           >
             <!-- Glass effect overlay -->
             <div
@@ -77,7 +77,7 @@
 
                 <NuxtLink
                   href="/upgrade-to-pro"
-                  class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-purple-700 px-4 py-3 text-white transition-all hover:shadow-lg hover:shadow-blue-500/25"
+                  class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-purple-700 px-4 py-3 text-white transition-all hover:shadow-sm hover:shadow-blue-500/25"
                 >
                   <span>{{ $t("premium_upgrade") }}</span>
                   <span
@@ -101,7 +101,7 @@
         <div v-else>
           <!-- store details -->
           <div
-            class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 w-full mb-3 overflow-hidden transform hover:scale-[1.01]"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-sm transition-all duration-300 w-full mb-3 overflow-hidden transform hover:scale-[1.01]"
           >
             <!-- Compact Header with Shimmer Effect -->
             <div
@@ -328,7 +328,7 @@
             ></div>
           </div>
           <!-- Premium Tabs -->
-          <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-4">
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
             <div class="flex border-b border-gray-100">
               <button
                 v-for="tab in tabs"
@@ -365,7 +365,7 @@
           <div
             class="overflow-hidden transition-all duration-300"
             :class="
-              activeTab === 'add-product' ? '' : 'bg-white shadow-xl rounded-xl'
+              activeTab === 'add-product' ? '' : 'bg-white shadow-sm rounded-xl'
             "
           >
             <CommonMyOrdersTab v-if="activeTab === 'orders'" />
@@ -405,7 +405,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
@@ -578,7 +578,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"
@@ -656,7 +656,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"
@@ -735,7 +735,7 @@
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          class="mb-3 p-4 rounded-lg shadow-lg flex items-start max-w-md transform transition-all duration-300"
+          class="mb-3 p-4 rounded-lg shadow-sm flex items-start max-w-md transform transition-all duration-300"
           :class="[
             toast.type === 'success'
               ? 'bg-green-50 border-l-4 border-green-500 text-green-800'

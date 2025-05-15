@@ -222,7 +222,7 @@
               onClick={onClose}
             /> -->
           <div
-            className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
+            className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-sm transition-all"
           >
             <div className="px-6 py-8">
               <div className="flex flex-col items-center text-center">

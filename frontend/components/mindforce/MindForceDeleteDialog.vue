@@ -16,7 +16,7 @@
         @click="$emit('update:modelValue', false)"
       ></div>
       <div
-        class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6"
+        class="relative bg-white rounded-xl shadow-sm w-full max-w-md mx-4 p-6"
       >
         <div class="flex items-center mb-4 text-red-500">
           <AlertTriangle class="h-6 w-6 mr-2" />
@@ -35,7 +35,7 @@
           </button>
           <button
             @click="$emit('confirm')"
-            class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-10 px-4 py-2 shadow-md hover:shadow-sm"
+            class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-10 px-4 py-2 shadow-sm hover:shadow-sm"
           >
             <AlertTriangle class="h-4 w-4 mr-2" />
             Delete

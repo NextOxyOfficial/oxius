@@ -4,7 +4,7 @@
     <button
       v-if="!(isMobile && isChatOpen)"
       @click="toggleChat"
-      class="fixed bottom-20 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-green-200/50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      class="fixed bottom-20 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-green-200/50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
       :class="{ 'rotate-90 transform': isChatOpen }"
       aria-label="Open chat"
     >
@@ -20,7 +20,7 @@
     <!-- Chat window - ensure it doesn't capture clicks when closed -->
     <div
       v-show="isChatOpen"
-      class="fixed z-50 overflow-hidden rounded-sm sm:rounded-xl bg-white shadow-2xl transition-all duration-300 pointer-events-auto"
+      class="fixed z-50 overflow-hidden rounded-sm sm:rounded-xl bg-white shadow-sm transition-all duration-300 pointer-events-auto"
       :class="[
         isMobile 
           ? 'bottom-0 left-0 right-0 top-0' 
@@ -79,7 +79,7 @@
             <!-- Dropdown menu -->
             <div 
               v-if="showChatOptions" 
-              class="absolute right-0 top-full mt-1 w-40 rounded-md bg-white py-1 shadow-lg"
+              class="absolute right-0 top-full mt-1 w-40 rounded-md bg-white py-1 shadow-sm"
             >
               <button 
                 @click="toggleBlockUser" 
@@ -503,7 +503,7 @@
           <!-- Story viewers list -->
           <div 
             v-if="showStoryViewers" 
-            class="absolute bottom-16 right-4 w-48 rounded-lg bg-white py-1 shadow-lg"
+            class="absolute bottom-16 right-4 w-48 rounded-lg bg-white py-1 shadow-sm"
           >
             <div class="px-3 py-2">
               <p class="mb-1 text-sm font-medium text-gray-500">Viewers</p>
@@ -568,7 +568,7 @@
               </div>
               
               <div 
-                class="max-w-[80%] rounded-lg px-3 py-2 shadow-sm transition-all hover:shadow-md"
+                class="max-w-[80%] rounded-lg px-3 py-2 shadow-sm transition-all hover:shadow-sm"
                 :class="[
                   message.isUser 
                     ? 'ml-auto bg-gradient-to-r from-green-500 to-green-600 text-white' 
@@ -797,7 +797,7 @@
       
       <!-- Add story modal -->
       <div v-if="showAddStoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-xl">
+        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-sm">
           <div class="mb-3 flex items-center justify-between">
             <h3 class="text-md font-medium">Create Story</h3>
             <button @click="showAddStoryModal = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">
@@ -828,7 +828,7 @@
       
       <!-- Delete chat confirmation modal -->
       <div v-if="showDeleteConfirmation" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-xl">
+        <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-sm">
           <div class="mb-3 flex items-center justify-between">
             <h3 class="text-md font-medium">Delete Chat</h3>
             <button @click="showDeleteConfirmation = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">

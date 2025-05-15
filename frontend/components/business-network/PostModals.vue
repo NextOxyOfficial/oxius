@@ -8,7 +8,7 @@
         @click="$emit('close-likes-modal')"
       >
         <div
-          class="bg-white rounded-lg max-w-2xl w-full max-h-[75vh] overflow-hidden shadow-xl"
+          class="bg-white rounded-lg max-w-2xl w-full max-h-[75vh] overflow-hidden shadow-sm"
           @click.stop
         >
           <div class="p-4 sm:p-5 border-b border-gray-200">
@@ -49,7 +49,7 @@
                     <!-- Pro text badge -->
                     <div
                       v-if="user.user_details?.is_pro"
-                      class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-20 text-[8px] font-bold"
+                      class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-[8px] font-bold"
                     >
                       PRO
                     </div>
@@ -74,8 +74,8 @@
                 :class="[
                   'text-sm h-8 rounded-full px-4 flex items-center gap-1.5 font-medium shadow-sm transition-all duration-200',
                   user.isFollowing
-                    ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200 hover:shadow-md hover:border-gray-300'
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-md hover:shadow-blue-500/20',
+                    ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200 hover:shadow-sm hover:border-gray-300'
+                    : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-sm hover:shadow-blue-500/20',
                 ]"
                 @click.stop="$emit('toggle-user-follow', user)"
               >
@@ -99,7 +99,7 @@
         @click="$emit('close-comments-modal')"
       >
         <div
-          class="bg-white rounded-lg max-w-2xl w-full max-h-[75vh] overflow-hidden shadow-xl"
+          class="bg-white rounded-lg max-w-2xl w-full max-h-[75vh] overflow-hidden shadow-sm"
           @click.stop
         >
           <div class="p-4 sm:p-5 border-b border-gray-200">
@@ -134,7 +134,7 @@
                     <img
                       :src="comment.author_details?.image"
                       :alt="comment.author_details?.name"
-                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-md transition-all duration-300"
+                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
                     />
                   </div>
                 </NuxtLink>
@@ -180,7 +180,7 @@
                         <!-- Dropdown menu -->
                         <div
                           v-if="comment.showDropdown"
-                          class="absolute right-0 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
+                          class="absolute right-0 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
                           @click.stop
                         >
                           <div class="py-1">
@@ -360,7 +360,7 @@
                   v-model="activeCommentsPost.commentText"
                   placeholder="Add a comment..."
                   rows="1"
-                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-md transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
                   @input="
                     autoResize();
                     $emit('handle-comment-input', $event, activeCommentsPost);
@@ -377,7 +377,7 @@
                     mentionSuggestions.length > 0 &&
                     activeCommentsPost === mentionInputPosition?.post
                   "
-                  class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-48 overflow-y-auto"
+                  class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-sm border border-gray-200 z-20 max-h-48 overflow-y-auto"
                 >
                   <div class="py-1">
                     <div
@@ -476,7 +476,7 @@
         @click="$emit('cancel-delete-comment')"
       >
         <div
-          class="bg-white rounded-lg max-w-sm w-full p-4 shadow-xl"
+          class="bg-white rounded-lg max-w-sm w-full p-4 shadow-sm"
           @click.stop
         >
           <h3 class="text-lg font-semibold mb-2">Delete Comment</h3>
@@ -816,7 +816,7 @@ const saveEditComment = (post, comment) => {
 }
 
 .gift-comment:hover {
-  @apply -translate-y-0.5 shadow-md;
+  @apply -translate-y-0.5 shadow-sm;
 }
 
 /* Gift sender info styling */

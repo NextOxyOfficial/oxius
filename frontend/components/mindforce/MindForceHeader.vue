@@ -1,7 +1,7 @@
 <template>
   <!-- Enhanced header with gradient background and glass morphism effect -->
   <div
-    class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-4 sm:p-6 mb-4 sm:mb-8 shadow-xl"
+    class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-4 sm:p-6 mb-4 sm:mb-8 shadow-sm"
   >
     <div
       class="flex flex-col md:flex-row justify-between items-start md:items-center z-10 relative gap-4"
@@ -23,7 +23,7 @@
           </div>
           <button
             @click="emit('create')"
-            class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-2 shadow-md hover:shadow-sm transform hover:-translate-y-0.5 group relative overflow-hidden"
+            class="mt-4 sm:mt-0 inline-flex items-center justify-center rounded-md text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-blue-700 hover:bg-blue-50 h-10 px-2 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 group relative overflow-hidden"
             :disabled="isCreating"
           >
             <span class="relative z-10 flex items-center">

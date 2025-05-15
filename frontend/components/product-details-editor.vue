@@ -59,7 +59,7 @@
       <!-- Editor mode -->
       <div v-else class="p-6 bg-slate-100 dark:bg-slate-900">
         <div
-          class="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden"
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden"
         >
           <!-- Hero Section -->
           <div class="p-4 border-b border-slate-200 dark:border-slate-700">

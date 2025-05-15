@@ -6,7 +6,7 @@
     <div class="relative z-10">
       <!-- 1. Main Carousel -->
       <section class="mb-8 pt-2">
-        <div class="relative w-full overflow-hidden rounded-xl shadow-lg">
+        <div class="relative w-full overflow-hidden rounded-xl shadow-sm">
           <!-- Carousel container -->
           <div
             class="relative h-[200px] sm:h-[250px] md:h-[300px] w-full overflow-hidden"
@@ -148,7 +148,7 @@
             <div
               v-for="(card, index) in hotArrivals"
               :key="card.id"
-              class="flex-shrink-0 w-[26%] sm:w-[11%] space-x-2 bg-white rounded-lg overflow-visible shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 snap-start card-hover"
+              class="flex-shrink-0 w-[26%] sm:w-[11%] space-x-2 bg-white rounded-lg overflow-visible shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 snap-start card-hover"
             >
               <NuxtLink :to="`/eshop/category/${card.slug}`" class="block">
                 <div class="relative h-[70px] overflow-hidden rounded-t-lg">
@@ -560,12 +560,12 @@ img {
 }
 
 /* Reduced shadow intensity for better performance */
-.shadow-md {
+.shadow-sm {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.hover\:shadow-lg:hover {
+.hover\:shadow-sm:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }

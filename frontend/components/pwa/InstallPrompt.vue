@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="showInstallPrompt"
-        class="fixed bottom-24 sm:bottom-10 left-0 right-0 mx-auto w-[92%] max-w-md p-5 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[60] animate-bounce-gentle"
+        class="fixed bottom-24 sm:bottom-10 left-0 right-0 mx-auto w-[92%] max-w-md p-5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 z-[60] animate-bounce-gentle"
       >
         <div class="flex items-start gap-4">
           <!-- App Icon with pulse effect -->

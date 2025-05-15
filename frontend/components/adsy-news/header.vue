@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header class="sticky top-0 z-40 bg-white shadow-md">
+    <header class="sticky top-0 z-40 bg-white shadow-sm">
       <div class="max-w-7xl mx-auto">
         <!-- Main Navigation - REVISED LAYOUT -->
         <div
@@ -52,7 +52,7 @@
               <!-- More menu dropdown - unchanged -->
               <div
                 v-if="moreMenuOpen"
-                class="absolute top-full right-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
+                class="absolute top-full right-0 mt-1 bg-white shadow-sm rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
               >
                 <NuxtLink
                   v-for="category in categories"
@@ -140,7 +140,7 @@
               <!-- More menu dropdown - unchanged -->
               <div
                 v-if="moreMenuOpen"
-                class="absolute top-full right-0 mt-1 bg-white shadow-lg rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
+                class="absolute top-full right-0 mt-1 bg-white shadow-sm rounded-md py-2 z-50 w-48 overflow-y-auto border border-gray-200 transform origin-top-right"
               >
                 <NuxtLink
                   v-for="category in categories"
@@ -169,7 +169,7 @@
       @click="isSearchVisible = false"
     >
       <div
-        class="bg-white rounded-lg shadow-xl w-full max-w-lg transform transition-all duration-300 overflow-hidden"
+        class="bg-white rounded-lg shadow-sm w-full max-w-lg transform transition-all duration-300 overflow-hidden"
         @click.stop
       >
         <div class="p-4 border-b border-gray-100">
@@ -266,7 +266,7 @@
     <!-- Breaking News Ticker -->
     <UContainer>
       <div
-        class="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg shadow-md mt-3 mb-6 sm:mb-8"
+        class="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg shadow-sm mt-3 mb-6 sm:mb-8"
       >
         <div class="flex items-center">
           <div class="flex-shrink-0">

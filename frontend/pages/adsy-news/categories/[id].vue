@@ -40,7 +40,7 @@
               class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
             >
               <div
-                class="bg-white rounded-lg shadow-md overflow-hidden h-full hover:shadow-lg transition-shadow duration-300"
+                class="bg-white rounded-lg shadow-sm overflow-hidden h-full hover:shadow-sm transition-shadow duration-300"
               >
                 <div class="relative h-40">
                   <img
@@ -133,7 +133,7 @@
             v-for="article in articlesByCategory"
             :key="article.id"
             :class="[
-              'bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1',
+              'bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1',
               currentLayout === 'list' ? 'flex flex-col md:flex-row' : '',
             ]"
           >
@@ -219,7 +219,7 @@
               v-for="(topic, index) in trendingTopics"
               :key="index"
               href="#"
-              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
+              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
             >
               <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
               {{ topic }}
@@ -238,7 +238,7 @@
             <div
               v-for="(tip, index) in visibleTips"
               :key="index"
-              class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col"
+              class="bg-white rounded-lg shadow-sm p-4 hover:shadow-sm transition-shadow duration-300 flex flex-col"
             >
               <h3
                 class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"

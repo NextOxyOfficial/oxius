@@ -7,7 +7,7 @@
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <NuxtLink
         to="/mobile-recharge"
-        class="mb-6 bg-gray-100 shadow-md border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+        class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
       >
         <div class="flex gap-2">
           <h2 class="text-base text-gray-900 sm:text-xl text-center">Mobile Recharge</h2>
@@ -32,7 +32,7 @@
           </span>
         </p>
       </div>
-      <div class="mb-5 flex justify-center shadow-md bg-gray-100 max-w-fit mx-auto">
+      <div class="mb-5 flex justify-center shadow-sm bg-gray-100 max-w-fit mx-auto">
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
           variant="outline"
@@ -307,7 +307,7 @@
 
                 <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
-                <div class="border p-4 rounded-lg shadow-md bg-white">
+                <div class="border p-4 rounded-lg shadow-sm bg-white">
                   <NuxtImg
                     class="max-w-[250px] max-sm:h-[200px]"
                     :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
@@ -838,7 +838,7 @@
         <div class="w-full max-w-sm">
           <!-- Glass Card Effect -->
           <div
-            class="backdrop-blur-lg rounded-xl bg-slate-100 p-2 shadow-lg border border-white/20"
+            class="backdrop-blur-lg rounded-xl bg-slate-100 p-2 shadow-sm border border-white/20"
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
@@ -924,7 +924,7 @@
         <div class="w-full max-w-sm flex-1">
           <!-- Glass Card Effect -->
           <div
-            class="backdrop-blur-lg bg-slate-100 rounded-xl p-2 shadow-lg border border-white/20 w-full"
+            class="backdrop-blur-lg bg-slate-100 rounded-xl p-2 shadow-sm border border-white/20 w-full"
           >
             <div class="border bg-slate-50 p-4 rounded-xl">
               <!-- Title and Success Icon -->
@@ -1023,7 +1023,7 @@
 
         <!-- Modal panel -->
         <div
-          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
         >
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">

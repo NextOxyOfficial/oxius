@@ -372,7 +372,7 @@
           :ui="{
             background: 'bg-gradient-to-br from-white to-slate-50',
             ring: 'ring-1 ring-slate-200',
-            shadow: 'shadow-sm hover:shadow-md transition-shadow duration-300',
+            shadow: 'shadow-sm hover:shadow-sm transition-shadow duration-300',
           }"
         >
           <!-- Decorative elements -->

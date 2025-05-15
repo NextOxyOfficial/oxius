@@ -18,7 +18,7 @@
       >
         <!-- Modal with enhanced styling -->
         <div
-          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
           :class="{ 'animate-modal-slide-up': modelValue }"
           @click.stop
         >
@@ -53,7 +53,7 @@
                   <!-- Pro badge with increased z-index and white border -->
                   <div
                     v-if="problem.user_details?.is_pro"
-                    class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-30 text-[9px] font-bold"
+                    class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-30 text-[9px] font-bold"
                     style="border: 1px solid rgba(255, 255, 255, 0.5)"
                   >
                     PRO
@@ -115,7 +115,7 @@
                   >
                     <div
                       v-if="isMenuOpen"
-                      class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
+                      class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-slate-800 shadow-sm ring-1 ring-black ring-opacity-5 focus:outline-none dark:ring-slate-700 animate-fade-in-down"
                     >
                       <div class="py-1">
                         <button
@@ -208,7 +208,7 @@
                 <div
                   v-for="(photo, index) in problem.media"
                   :key="photo.id"
-                  class="aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-md transition-all transform hover:scale-[1.02] relative group"
+                  class="aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:shadow-sm transition-all transform hover:scale-[1.02] relative group"
                   @click="$emit('photo-view', index)"
                 >
                   <img
@@ -253,7 +253,7 @@
               <button
                 v-if="isOwner && problem.status !== 'solved'"
                 @click="$emit('mark-as-solved')"
-                class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+                class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-all bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 <CheckCircle class="h-4 w-4 mr-1.5" />
                 Mark as Solved
@@ -311,7 +311,7 @@
                           <!-- Pro text badge with fixed z-index -->
                           <div
                             v-if="isCommentAuthorPro(comment)"
-                            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-lg z-40 text-[9px] font-bold"
+                            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-40 text-[9px] font-bold"
                             style="border: 1px solid rgba(255, 255, 255, 0.5)"
                           >
                             PRO
@@ -380,7 +380,7 @@
                       <div
                         v-for="(media, index) in comment.media"
                         :key="index"
-                        class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all transform hover:scale-105"
+                        class="relative h-24 w-24 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-all transform hover:scale-105"
                         @click="openMediaViewer(comment, index)"
                       >
                         <img
@@ -504,7 +504,7 @@
                       (!newComment.trim() && commentMedia.length === 0) ||
                       isSubmittingComment
                         ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-                        : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
+                        : 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 active:translate-y-0',
                     ]"
                   >
                     <span v-if="isSubmittingComment" class="flex items-center">

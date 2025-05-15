@@ -18,7 +18,7 @@
         class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
       >
         <div
-          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
           :class="{ 'animate-modal-slide-up': modelValue }"
           @click.stop
         >
@@ -112,7 +112,7 @@
                   <div
                     v-for="(photo, index) in formData.images"
                     :key="index"
-                    class="relative aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden group shadow-sm hover:shadow-md transition-all"
+                    class="relative aspect-square rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden group shadow-sm hover:shadow-sm transition-all"
                   >
                     <img
                       :src="photo"
@@ -281,7 +281,7 @@
                 @click="handleSubmit"
                 :disabled="!isFormValid || isSubmitting"
                 :class="[
-                  'inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0',
+                  'inline-flex items-center justify-center rounded-lg text-md font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-5 py-2 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 active:translate-y-0',
                   isFormValid && !isSubmitting
                     ? 'bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400',

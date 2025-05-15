@@ -1,7 +1,7 @@
 <template>
   <UCard
     v-if="currentProduct"
-    class="p-0 overflow-hidden border-none shadow-lg"
+    class="p-0 overflow-hidden border-none shadow-sm"
     :ui="{
       body: {
         padding: 'px-2 py-3 sm:p-6',
@@ -53,7 +53,7 @@
           <!-- Main Image with Glass Effect Border -->
           <div class="flex justify-center mb-3">
             <div
-              class="relative w-full aspect-square bg-slate-50 dark:bg-slate-800/40 rounded-xl overflow-hidden backdrop-blur-sm shadow-md border border-white/20 dark:border-slate-700/50"
+              class="relative w-full aspect-square bg-slate-50 dark:bg-slate-800/40 rounded-xl overflow-hidden backdrop-blur-sm shadow-sm border border-white/20 dark:border-slate-700/50"
             >
               <img
                 v-if="
@@ -77,7 +77,7 @@
               <!-- Discount Badge with Improved Design -->
               <div
                 v-if="currentProduct.discount"
-                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md transform -rotate-6 animate-pulse"
+                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm transform -rotate-6 animate-pulse"
               >
                 -{{ currentProduct.discount }}% OFF!
               </div>
@@ -85,7 +85,7 @@
               <!-- Free Delivery Badge -->
               <div
                 v-if="currentProduct.is_free_delivery"
-                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md"
+                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm"
               >
                 Free Shipping
               </div>
@@ -272,7 +272,7 @@
             <!-- Buy Now Button with Enhanced Design -->
             <button
               type="button"
-              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
+              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-sm hover:shadow-sm transition-all duration-300"
               @click="addToCart(currentProduct, quantity)"
               :disabled="currentProduct.quantity <= 0"
             >

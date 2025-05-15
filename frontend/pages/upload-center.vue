@@ -16,7 +16,7 @@
       </div>
       <div v-if="form && !form.pending" class="animate-fade-in-up">
         <div
-          class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-lg mb-8 flex items-center justify-between"
+          class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm mb-8 flex items-center justify-between"
         >
           <div class="flex items-center">
             <div
@@ -73,7 +73,7 @@
       </div>
       <!-- Instruction Card -->
       <div
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl mb-10 overflow-hidden animate-fade-in transform hover:scale-[1.01] transition-all duration-300"
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm mb-10 overflow-hidden animate-fade-in transform hover:scale-[1.01] transition-all duration-300"
       >
         <div class="p-6">
           <div class="flex items-center mb-4">
@@ -137,7 +137,7 @@
       <!-- Pending Verification Alert -->
       <div v-if="form && form.pending" class="animate-fade-in">
         <div
-          class="bg-amber-50 dark:bg-amber-900/30 rounded-2xl overflow-hidden shadow-lg p-6"
+          class="bg-amber-50 dark:bg-amber-900/30 rounded-2xl overflow-hidden shadow-sm p-6"
         >
           <div class="flex flex-col items-center text-center">
             <div
@@ -180,7 +180,7 @@
           <!-- ID Upload Section -->
           <div v-if="!id_verification">
             <div
-              class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300"
+              class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden hover:shadow-sm transition-all duration-300"
             >
               <div class="bg-gradient-to-r from-primary-600 to-primary-400 p-4">
                 <h3 class="text-white font-semibold flex items-center">
@@ -418,7 +418,7 @@
           <!-- Other Documents -->
           <div v-if="user.user.kyc" class="hidden">
             <div
-              class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 h-full"
+              class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden hover:shadow-sm transition-all duration-300 h-full"
             >
               <div class="bg-gradient-to-r from-green-600 to-green-400 p-4">
                 <h3 class="text-white font-semibold flex items-center">
@@ -521,7 +521,7 @@
 
           <!-- Upload Progress -->
           <div v-if="!id_verification" class="md:col-span-2">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
               <h3
                 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4"
               >
@@ -903,6 +903,6 @@ get_nid();
 }
 
 .submit-button {
-  @apply relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  @apply relative overflow-hidden transition-all duration-300 hover:shadow-sm hover:-translate-y-1;
 }
 </style>

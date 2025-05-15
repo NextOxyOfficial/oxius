@@ -3,7 +3,7 @@
     <!-- Toast Notification -->
     <div v-if="toast.show" class="fixed top-4 right-4 z-50 max-w-md">
       <div
-        :class="`bg-${toast.type}-100 border-l-4 border-${toast.type}-500 text-${toast.type}-700 p-4 rounded shadow-md`"
+        :class="`bg-${toast.type}-100 border-l-4 border-${toast.type}-500 text-${toast.type}-700 p-4 rounded shadow-sm`"
       >
         <div class="flex items-center">
           <div class="py-1">
@@ -75,7 +75,7 @@
       </div>
 
       <!-- Form Container -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <form @submit.prevent="handleCreateStore">
           <!-- Store Name -->
           <div class="mb-6">
@@ -332,7 +332,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
         >
           <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">

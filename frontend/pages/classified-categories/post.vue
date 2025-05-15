@@ -16,7 +16,7 @@
 
         <form
           action="#"
-          class="bg-white rounded-2xl shadow-lg max-w-3xl mx-auto overflow-hidden border border-gray-100"
+          class="bg-white rounded-2xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
           @submit.prevent="handlePostGig"
         >
           <!-- Primary Details Section -->
@@ -186,7 +186,7 @@
                 ></div>
                 <button
                   type="button"
-                  class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-md hover:bg-red-50 hover:scale-110 transition-all"
+                  class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:scale-110 transition-all"
                   @click="deleteUpload(i)"
                   aria-label="Delete image"
                 >
@@ -368,7 +368,7 @@
             <div class="flex justify-center mt-6">
               <UButton
                 :loading="isLoading"
-                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-sm transition-all duration-300"
                 size="lg"
                 color="primary"
                 variant="solid"

@@ -2,7 +2,7 @@
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl my-16 pt-3 flex-1">
     <!-- Enhanced header with premium glass morphism effect -->
     <div
-      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-4 sm:p-6 mb-6 shadow-xl"
+      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-4 sm:p-6 mb-6 shadow-sm"
     >
       <div
         class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-10 relative"
@@ -31,7 +31,7 @@
           <button
             v-if="unreadCount > 0"
             @click="markAllAsRead"
-            class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-4 py-2 shadow-md hover:shadow-sm transform hover:scale-105 group relative overflow-hidden"
+            class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-4 py-2 shadow-sm hover:shadow-sm transform hover:scale-105 group relative overflow-hidden"
           >
             <span class="relative z-10 flex items-center">
               <Check
@@ -109,7 +109,7 @@
         <div
           v-for="notification in filteredNotifications"
           :key="notification.id"
-          class="bg-white rounded-lg border overflow-hidden transition-all duration-300 hover:shadow-md transform hover:translate-y-[-2px]"
+          class="bg-white rounded-lg border overflow-hidden transition-all duration-300 hover:shadow-sm transform hover:translate-y-[-2px]"
           :class="[
             !notification.read
               ? 'border-blue-200 glow-subtle'
@@ -136,7 +136,7 @@
                 />
                 <!-- Icon badge based on notification type with enhanced styling -->
                 <div
-                  class="absolute -bottom-1 -right-1 rounded-full p-1.5 shadow-md"
+                  class="absolute -bottom-1 -right-1 rounded-full p-1.5 shadow-sm"
                   :class="getNotificationTypeClass(notification.type)"
                 >
                   <component
@@ -205,7 +205,7 @@
       <div v-if="hasMoreNotifications" class="flex justify-center pt-4 pb-8">
         <button
           @click="loadMoreNotifications"
-          class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-6 py-2 shadow-sm hover:shadow-md transform hover:translate-y-[-2px]"
+          class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-6 py-2 shadow-sm hover:shadow-sm transform hover:translate-y-[-2px]"
           :disabled="loadingMore"
         >
           <Loader2 v-if="loadingMore" class="h-4 w-4 mr-2 animate-spin" />

@@ -9,7 +9,7 @@
           <!-- Product Image -->
           <div class="relative order-2 md:order-1">
             <div
-              class="aspect-square rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm p-6 shadow-2xl relative"
+              class="aspect-square rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm p-6 shadow-sm relative"
             >
               <img
                 v-if="
@@ -23,7 +23,7 @@
               <!-- Sale badge -->
               <div
                 v-if="currentProduct.sale_price && currentProduct.regular_price"
-                class="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse"
+                class="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm animate-pulse"
               >
                 SAVE
                 {{
@@ -147,7 +147,7 @@
             <!-- Primary CTA Button -->
             <button
               @click="addToCart(currentProduct, 1)"
-              class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 focus:ring-4 focus:ring-primary-500/50 flex items-center justify-center gap-3 group"
+              class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-lg font-bold rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 focus:ring-4 focus:ring-primary-500/50 flex items-center justify-center gap-3 group"
             >
               <UIcon name="i-heroicons-shopping-cart" class="w-6 h-6" />
               Buy Now
@@ -237,7 +237,7 @@
       <div class="text-center mt-12">
         <button
           @click="addToCart(currentProduct, 1)"
-          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300"
+          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-sm transition-all duration-300"
         >
           {{ currentProduct.benefits_cta }}
         </button>
@@ -365,7 +365,7 @@
 
         <!-- Reviews Summary -->
         <div
-          class="mb-10 bg-white dark:bg-slate-800/80 rounded-xl shadow-md p-6 max-w-4xl mx-auto"
+          class="mb-10 bg-white dark:bg-slate-800/80 rounded-xl shadow-sm p-6 max-w-4xl mx-auto"
         >
           <div class="flex flex-col md:flex-row gap-6 md:items-center">
             <div
@@ -421,7 +421,7 @@
             <div
               v-for="(review, index) in displayedReviews"
               :key="index"
-              class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 transition-transform hover:translate-y-[-5px]"
+              class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 transition-transform hover:translate-y-[-5px]"
             >
               <div class="flex text-amber-400 mb-3">
                 <UIcon
@@ -663,7 +663,7 @@
 
         <button
           @click="addToCart(currentProduct, 1)"
-          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-2xl transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
+          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
         >
           {{ currentProduct.cta_button_text }}
           <span class="block text-sm font-normal mt-1">{{
@@ -1062,7 +1062,7 @@ function handleScroll() {
 }
 
 .benefit-card {
-  @apply bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md text-center;
+  @apply bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm text-center;
 }
 
 .icon-container {

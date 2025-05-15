@@ -120,7 +120,7 @@
       <div
         v-for="product in products"
         :key="product.id"
-        class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+        class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1"
       >
         <div class="relative">
           <img

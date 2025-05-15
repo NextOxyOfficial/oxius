@@ -6,7 +6,7 @@
       class="fixed inset-0 flex items-center justify-center z-50 bg-black/60"
     >
       <div
-        class="bg-white rounded-lg shadow-xl max-w-md w-full p-8 transform transition-all"
+        class="bg-white rounded-lg shadow-sm max-w-md w-full p-8 transform transition-all"
       >
         <div class="text-center">
           <div class="mb-5 flex justify-center">
@@ -501,7 +501,7 @@
               <button
                 v-if="formData.images[n - 1]"
                 type="button"
-                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                 @click.stop="removeImage(n - 1)"
               >
                 <Icon name="heroicons:x-mark" size="18px" />
