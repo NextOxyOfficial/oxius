@@ -673,14 +673,7 @@
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
               >
-                <!-- Featured Badge -->
-                <div v-if="post.featured" class="absolute top-2 left-2 z-10">
-                  <span
-                    class="bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded shadow-sm"
-                    >FEATURED</span
-                  >
-                </div>
-
+                
                 <!-- Image -->
                 <div class="relative aspect-square overflow-hidden">
                   <img
@@ -869,14 +862,6 @@
               :to="`/sale/${listing.slug}`"
               class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
             >
-              <!-- Featured Badge -->
-              <div v-if="listing.featured" class="absolute top-2 left-2 z-10">
-                <span
-                  class="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm"
-                  >FEATURED</span
-                >
-              </div>
-
               <!-- Image with conditional badges -->
               <div class="relative aspect-[4/3] overflow-hidden">
                 <img
