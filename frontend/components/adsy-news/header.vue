@@ -4,7 +4,7 @@
       <div class="max-w-7xl mx-auto">
         <!-- Main Navigation - REVISED LAYOUT -->
         <div
-          class="flex items-center justify-between pl-1 pr-3 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
+          class="flex items-center justify-between pl-2 pr-3 py-3 sm:py-4 lg:py-5 sm:px-6 lg:px-8"
         >
           <!-- Logo - Now in the same row with increased size -->
           <NuxtLink to="/adsy-news" class="flex-shrink-0 mr-3">
