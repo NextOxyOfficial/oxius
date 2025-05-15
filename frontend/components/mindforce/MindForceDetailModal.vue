@@ -42,7 +42,10 @@
                     class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-50"
                   ></div>
                   <img
-                    :src="problem.user_details?.image || '/placeholder.svg'"
+                    :src="
+                      problem.user_details?.image ||
+                      '/static/frontend/avatar.png'
+                    "
                     :alt="problem.user_details?.name"
                     class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
                     style="object-fit: cover; aspect-ratio: 1/1"
@@ -57,26 +60,30 @@
                   </div>
                 </div>
                 <div class="ml-3">
-                  <h1 class="text-base font-medium flex items-center gap-1.5">
-                    {{ problem?.user_details?.name }}
-                    <div class="relative inline-flex tooltip-container">
-                      <UIcon
-                        v-if="problem?.user_details?.kyc"
-                        name="i-mdi-check-decagram"
-                        class="w-4 h-4 text-blue-600 animate-pulse-subtle"
-                      />
-                    </div>
-                    <span
-                      v-if="problem?.user_details?.is_topcontributor"
-                      class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
-                    >
-                      <div class="flex items-center gap-1">
-                        <Trophy class="size-3" />
-                        <span class="text-2xs">Top Contributor</span>
+                  <NuxtLink
+                    :to="`/business-network/profile/${problem?.user_details.id}`"
+                  >
+                    <h1 class="text-base font-medium flex items-center gap-1.5">
+                      {{ problem?.user_details?.name }}
+                      <div class="relative inline-flex tooltip-container">
+                        <UIcon
+                          v-if="problem?.user_details?.kyc"
+                          name="i-mdi-check-decagram"
+                          class="w-4 h-4 text-blue-600 animate-pulse-subtle"
+                        />
                       </div>
-                    </span>
-                    <!-- Verified badge for mobile -->
-                  </h1>
+                      <span
+                        v-if="problem?.user_details?.is_topcontributor"
+                        class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm"
+                      >
+                        <div class="flex items-center gap-1">
+                          <Trophy class="size-3" />
+                          <span class="text-2xs">Top Contributor</span>
+                        </div>
+                      </span>
+                      <!-- Verified badge for mobile -->
+                    </h1>
+                  </NuxtLink>
                   <div class="flex items-center text-sm text-slate-500">
                     <Clock class="h-3 w-3 mr-1" />
                     <span>{{ formatTimeAgo(problem.created_at) }}</span>
@@ -179,12 +186,12 @@
 
             <!-- Problem Title & Content with improved typography -->
             <h1
-              class="text-base mt-4 font-medium text-slate-900 dark:text-white"
+              class="text-base mt-4 font-medium text-slate-900 dark:text-white text-left"
             >
               {{ problem.title }}
             </h1>
             <div
-              class="mt-3 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none"
+              class="mt-3 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none text-left"
             >
               {{ problem.description }}
             </div>

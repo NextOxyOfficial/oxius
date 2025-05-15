@@ -22,9 +22,7 @@
           ref="modalRef"
         >
           <!-- Modal Header -->
-          <div
-            class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar relative"
-          >
+          <div class="w-full overflow-hidden relative mt-2 px-2">
             <h2
               class="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2"
             >
