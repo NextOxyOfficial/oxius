@@ -17,7 +17,7 @@
       >
         <!-- Modal contents with premium styling -->
         <div
-          class="relative max-w-lg w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          class="relative max-w-lg w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
           @click.stop
         >
           <!-- Header with gradient background -->

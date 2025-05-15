@@ -695,7 +695,7 @@
         <!-- CTA Section -->
         <div class="max-w-4xl mx-auto text-center">
           <div
-            class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 md:p-12 shadow-sm cta-section"
+            class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-8 md:p-12 shadow-sm cta-section"
           >
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
               Ready to Start Earning?

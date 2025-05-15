@@ -15,7 +15,7 @@
         class="flex items-center sm:items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 mt-0 sm:mt-20"
       >
         <div
-          class="relative max-w-xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
+          class="relative max-w-xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
           :class="{ 'animate-modal-slide-up': isOpen }"
           @click.stop
         >

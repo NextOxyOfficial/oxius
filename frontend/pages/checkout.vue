@@ -1,7 +1,7 @@
 <template>
   <UContainer>
     <div
-      class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm overflow-hidden border h-44 flex flex-col gap-3 items-center justify-center my-8"
+      class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm overflow-hidden border h-44 flex flex-col gap-3 items-center justify-center my-8"
       v-if="cart.products.length === 0"
     >
       <p>You have no products in the cart. Start adding some.</p>
@@ -25,7 +25,7 @@
         enter-to-class="opacity-100 translate-y-0"
       >
         <div
-          class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm overflow-hidden"
+          class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm overflow-hidden"
         >
           <!-- Header -->
           <div class="relative overflow-hidden">

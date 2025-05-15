@@ -63,7 +63,7 @@
           @click.self="showBannerUpload = false"
         >
           <div 
-            class="sm:max-w-[500px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
+            class="sm:max-w-[500px] bg-white/95 backdrop-blur-xl rounded-xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
             :class="showBannerUpload ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
           >
             <div class="p-6">
@@ -118,18 +118,18 @@
       <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/3 md:translate-y-1/4 w-[92%] max-w-4xl z-10">
         <div class="relative transform transition-all duration-500 hover:translate-y-[-5px] group">
           <!-- Card Backdrop with Glass Effect -->
-          <div class="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-2xl shadow-[0_10px_60px_-15px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden"></div>
+          <div class="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-xl shadow-[0_10px_60px_-15px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden"></div>
           
           <!-- Card Light Effect -->
-          <div class="absolute inset-0 rounded-2xl overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-tr from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+          <div class="absolute inset-0 rounded-xl overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-tr from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
             <div class="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-50 group-hover:opacity-70 transition-all duration-500 animate-grid-shift"></div>
           </div>
           
           <!-- Card Content -->
           <div class="p-5 md:p-7 flex flex-col md:flex-row gap-5 items-center relative">
             <!-- Logo with 3D Hover Effect -->
-            <div class="relative h-24 w-24 md:h-32 md:w-32 rounded-2xl overflow-hidden shadow-sm transform transition-all duration-500 hover:scale-105 hover:rotate-3 hover:-translate-y-1 group/logo">
+            <div class="relative h-24 w-24 md:h-32 md:w-32 rounded-xl overflow-hidden shadow-sm transform transition-all duration-500 hover:scale-105 hover:rotate-3 hover:-translate-y-1 group/logo">
               <!-- Logo Background -->
               <div class="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900 group-hover/logo:from-slate-600 group-hover/logo:to-slate-800 transition-colors duration-500"></div>
               
@@ -367,10 +367,10 @@
             }"
           >
             <!-- Card Background with Glass Effect -->
-            <div class="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm group-hover:shadow-sm transition-all duration-300 border border-white/50 overflow-hidden"></div>
+            <div class="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl shadow-sm group-hover:shadow-sm transition-all duration-300 border border-white/50 overflow-hidden"></div>
             
             <!-- Card Background Pattern -->
-            <div class="absolute inset-0 bg-gradient-to-br from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
             <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-50 group-hover:opacity-70 transition-all duration-500"></div>
             
             <!-- Card Content -->
@@ -397,7 +397,7 @@
         <!-- Enhanced Call to Action -->
         <div
           ref="ctaRef"
-          class="relative mt-24 mb-10 max-w-5xl mx-auto overflow-hidden rounded-2xl transition-all duration-700 transform"
+          class="relative mt-24 mb-10 max-w-5xl mx-auto overflow-hidden rounded-xl transition-all duration-700 transform"
           :class="visibleSections.cta ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'"
         >
           <!-- CTA Background -->
@@ -464,12 +464,12 @@
       >
         <!-- Modal Container with Glass Effect -->
         <div
-          class="sm:max-w-[600px] max-h-[75vh] overflow-y-auto bg-white/90 backdrop-blur-xl border border-white/50 shadow-sm rounded-2xl w-full relative transform transition-all duration-500"
+          class="sm:max-w-[600px] max-h-[75vh] overflow-y-auto bg-white/90 backdrop-blur-xl border border-white/50 shadow-sm rounded-xl w-full relative transform transition-all duration-500"
           :class="reviewsOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
         >
           <!-- Modal Background -->
-          <div class="absolute inset-0 bg-gradient-to-br from-slate-50/90 to-white/90 opacity-90 rounded-2xl"></div>
-          <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)] rounded-2xl"></div>
+          <div class="absolute inset-0 bg-gradient-to-br from-slate-50/90 to-white/90 opacity-90 rounded-xl"></div>
+          <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)] rounded-xl"></div>
 
           <!-- Modal Content -->
           <div class="relative z-10 p-7">
@@ -547,7 +547,7 @@
         @click.self="showLogoUpload = false"
       >
         <div 
-          class="sm:max-w-[425px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
+          class="sm:max-w-[425px] bg-white/95 backdrop-blur-xl rounded-xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
           :class="showLogoUpload ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
         >
           <div class="p-7">

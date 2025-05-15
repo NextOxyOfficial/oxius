@@ -7,7 +7,7 @@
       <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       <NuxtLink
         to="/mobile-recharge"
-        class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-2xl"
+        class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-xl"
       >
         <div class="flex gap-2">
           <h2 class="text-base text-gray-900 sm:text-xl text-center">Mobile Recharge</h2>

@@ -21,7 +21,7 @@
         <div class="flex flex-col md:flex-row gap-8 perspective-[1000px]">
           <!-- Free Plan - Lighter Design -->
           <div
-            class="w-full md:w-1/2 bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-1 border border-slate-100 dark:border-slate-700 group"
+            class="w-full md:w-1/2 bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-1 border border-slate-100 dark:border-slate-700 group"
           >
             <!-- Card Header -->
             <div
@@ -278,7 +278,7 @@
 
           <!-- Pro - Lighter Premium Effects -->
           <div
-            class="w-full md:w-1/2 rounded-2xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-2 border-2 border-sky-200/70 dark:border-sky-700/30 bg-white dark:bg-slate-800 relative group"
+            class="w-full md:w-1/2 rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-2 border-2 border-sky-200/70 dark:border-sky-700/30 bg-white dark:bg-slate-800 relative group"
           >
             <!-- Premium Badge -->
             <div class="absolute -top-0.5 -right-0.5 z-10">
@@ -301,7 +301,7 @@
 
             <!-- Glow Effect -->
             <div
-              class="absolute -inset-0.5 bg-gradient-to-r from-sky-300 to-blue-300 dark:from-sky-500 dark:to-blue-500 rounded-2xl blur-lg opacity-0 group-hover:opacity-10 transition-all duration-700 animate-pulse"
+              class="absolute -inset-0.5 bg-gradient-to-r from-sky-300 to-blue-300 dark:from-sky-500 dark:to-blue-500 rounded-xl blur-lg opacity-0 group-hover:opacity-10 transition-all duration-700 animate-pulse"
             ></div>
 
             <!-- Card Header -->

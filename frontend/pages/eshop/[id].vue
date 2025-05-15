@@ -80,7 +80,7 @@
             @click.self="showBannerUpload = false"
           >
             <div
-              class="sm:max-w-[500px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
+              class="sm:max-w-[500px] bg-white/95 backdrop-blur-xl rounded-xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
               :class="
                 showBannerUpload
                   ? 'scale-100 opacity-100'
@@ -162,13 +162,13 @@
           >
             <!-- Card Backdrop with Glass Effect -->
             <div
-              class="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-2xl shadow-[0_10px_60px_-15px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden"
+              class="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-xl shadow-[0_10px_60px_-15px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden"
             ></div>
 
             <!-- Card Light Effect -->
-            <div class="absolute inset-0 rounded-2xl overflow-hidden">
+            <div class="absolute inset-0 rounded-xl overflow-hidden">
               <div
-                class="absolute inset-0 bg-gradient-to-tr from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
+                class="absolute inset-0 bg-gradient-to-tr from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"
               ></div>
               <div
                 class="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-50 group-hover:opacity-70 transition-all duration-500 animate-grid-shift"
@@ -181,7 +181,7 @@
             >
               <!-- Logo with 3D Hover Effect -->
               <div
-                class="relative h-24 w-24 md:h-32 md:w-32 rounded-2xl overflow-hidden shadow-sm transform transition-all duration-500 hover:scale-105 hover:rotate-3 hover:-translate-y-1 group/logo"
+                class="relative h-24 w-24 md:h-32 md:w-32 rounded-xl overflow-hidden shadow-sm transform transition-all duration-500 hover:scale-105 hover:rotate-3 hover:-translate-y-1 group/logo"
               >
                 <!-- Logo Background -->
                 <div
@@ -555,12 +555,12 @@
           >
             <!-- Card Background with Glass Effect -->
             <div
-              class="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm group-hover:shadow-sm transition-all duration-300 border border-white/50 overflow-hidden"
+              class="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl shadow-sm group-hover:shadow-sm transition-all duration-300 border border-white/50 overflow-hidden"
             ></div>
 
             <!-- Card Background Pattern -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
+              class="absolute inset-0 bg-gradient-to-br from-slate-50/80 via-white/90 to-slate-50/80 opacity-80 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"
             ></div>
             <div
               class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-50 group-hover:opacity-70 transition-all duration-500"
@@ -599,7 +599,7 @@
         <!-- Enhanced Call to Action -->
         <div
           ref="ctaRef"
-          class="relative mt-24 mb-10 max-w-5xl mx-auto overflow-hidden rounded-2xl transition-all duration-700 transform"
+          class="relative mt-24 mb-10 max-w-5xl mx-auto overflow-hidden rounded-xl transition-all duration-700 transform"
           :class="
             visibleSections.cta
               ? 'opacity-100 translate-y-0'
@@ -694,7 +694,7 @@
           @click.self="showLogoUpload = false"
         >
           <div
-            class="sm:max-w-[425px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
+            class="sm:max-w-[425px] bg-white/95 backdrop-blur-xl rounded-xl shadow-sm w-full transform transition-all duration-500 border border-white/50"
             :class="
               showLogoUpload ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
             "

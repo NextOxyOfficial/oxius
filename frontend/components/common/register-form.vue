@@ -118,7 +118,7 @@
         </button>
       </div>
     </form> -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-8">
+    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-8">
       <transition name="fade" mode="out-in">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <div class="space-y-2">

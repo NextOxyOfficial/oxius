@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-8">
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-8">
       <transition name="fade" mode="out-in">
         <!-- Login Form -->
         <form @submit.prevent="handleLogin" class="space-y-6">

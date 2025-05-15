@@ -3,7 +3,7 @@
     class="sm:min-h-[50vh] flex items-center justify-center bg-gray-50 px-2 sm:px-4 text-sm py-10"
   >
     <div class="max-w-md w-full">
-      <div class="bg-white rounded-2xl shadow-sm p-3 sm:p-8">
+      <div class="bg-white rounded-xl shadow-sm p-3 sm:p-8">
         <transition name="fade" mode="out-in">
           <div>
             <form

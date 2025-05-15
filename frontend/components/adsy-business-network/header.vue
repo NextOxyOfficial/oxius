@@ -185,7 +185,7 @@
             >
               <!-- Frosted glass container with modern shadow -->
               <div
-                class="backdrop-blur-lg bg-white/95 dark:bg-slate-800/95 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
+                class="backdrop-blur-lg bg-white/95 dark:bg-slate-800/95 rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
               >
                 <!-- Animated gradient accent -->
                 <div

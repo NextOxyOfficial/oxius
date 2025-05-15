@@ -16,7 +16,7 @@
 
         <form
           action="#"
-          class="bg-white rounded-2xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
+          class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
         >
           <!-- Primary Details Section -->
           <div

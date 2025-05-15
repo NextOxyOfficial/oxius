@@ -17,7 +17,7 @@
 
       <form
         @submit.prevent="handleAddProduct"
-        class="relative bg-white dark:bg-slate-800 overflow-hidden border border-slate-200/50 dark:border-slate-700/30 shadow-sm dark:shadow-slate-900/30 rounded-2xl"
+        class="relative bg-white dark:bg-slate-800 overflow-hidden border border-slate-200/50 dark:border-slate-700/30 shadow-sm dark:shadow-slate-900/30 rounded-xl"
       >
         <!-- Form Sections Container -->
         <div class="py-8">
