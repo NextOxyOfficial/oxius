@@ -229,7 +229,7 @@
     </PublicSection>
 
     <!-- Ads scroll section with premium styling -->
-    <div class="my-8 sm:my-16">
+    <div class="my-4 sm:my-10">
       <AdsScroll
         :ads="classifiedLatestPosts"
         :sectionTitle="t('recent_post')"
