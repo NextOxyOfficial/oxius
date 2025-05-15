@@ -1502,7 +1502,13 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
-    permission_classes = [IsAuthenticated]
+   
+    
+    def get_permissions(self):
+        if self.request.method == 'PUT' and self.request.method == 'PATCH':
+            return [IsAuthenticated()]
+        
+        return [AllowAny()]
     
     def update(self, request, *args, **kwargs):
         try:

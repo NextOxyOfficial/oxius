@@ -2,14 +2,8 @@
   <div class="bg-gray-100 min-h-screen">
     <!-- Top Navigation Bar with Search and Post Button -->
     <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <CommonGeoSelector />
       <UContainer class="py-3">
-        <CommonGeoSelector />        
-        <div class="flex items-center mb-3">
-          <p class="text-base md:text-lg font-semibold">
-            Select Location
-          </p>
-        </div>
-
         <div class="location-breadcrumb relative my-3 overflow-hidden">
           <!-- Subtle background effect -->
           <div
@@ -102,12 +96,14 @@
                     md: 'sm:py-2.5',
                   },
                 }"
-              />              <UButton
+              />
+
+              <UButton
                 size="md"
                 :loading="isLoading"
                 color="primary"
                 variant="solid"
-                label="Search"
+                :label="t('search')"
                 @click="filterSearch"
                 class="sm:h-10 max-sm:!text-base w-24 justify-center"
                 :ui="{
@@ -202,44 +198,8 @@
             />
           </UFormGroup>
         </div>
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex-1 max-w-3xl">
-            <div class="relative">
-              <UInputGroup class="w-full">                <UInput
-                  v-model="searchQuery"
-                  placeholder="What are you looking for?"
-                  class="!rounded-l-md"
-                >
-                  <template #leading>
-                    <UIcon
-                      name="i-heroicons-magnifying-glass"
-                      class="text-gray-400"
-                    />
-                  </template>
-                </UInput>
-                <UButton
-                  color="primary"
-                  @click="applyFilters"
-                  class="!rounded-r-md"
-                >
-                  Search
-                </UButton>
-              </UInputGroup>
-            </div>
-          </div>
-          <UButton
-            color="primary"
-            variant="outline"
-            to="/sale/post"
-            class="whitespace-nowrap flex items-center gap-1"
-          >
-            <UIcon name="i-heroicons-plus-circle" />
-            Post Ad
-          </UButton>
-        </div>
       </UContainer>
     </div>
-
     <UContainer class="py-6">
       <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sidebar with filters -->
@@ -479,21 +439,34 @@
                   @update:modelValue="applyFilters"
                 />
               </div>
-              <div class="flex items-center border-l border-gray-200 pl-4">
-                <UButtonGroup size="sm">
-                  <UButton
-                    :color="viewMode === 'grid' ? 'primary' : 'gray'"
-                    :variant="viewMode === 'grid' ? 'soft' : 'ghost'"
-                    @click="viewMode = 'grid'"
-                    icon="i-heroicons-squares-2x2"
-                  />
-                  <UButton
-                    :color="viewMode === 'list' ? 'primary' : 'gray'"
-                    :variant="viewMode === 'list' ? 'soft' : 'ghost'"
-                    @click="viewMode = 'list'"
-                    icon="i-heroicons-bars-3"
-                  />
-                </UButtonGroup>
+              <div
+                class="flex items-center border-l border-gray-200 pl-4 gap-2"
+              >
+                <div class="flex items-center">
+                  <UButtonGroup size="sm">
+                    <UButton
+                      :color="viewMode === 'grid' ? 'primary' : 'gray'"
+                      :variant="viewMode === 'grid' ? 'soft' : 'ghost'"
+                      @click="viewMode = 'grid'"
+                      icon="i-heroicons-squares-2x2"
+                    />
+                    <UButton
+                      :color="viewMode === 'list' ? 'primary' : 'gray'"
+                      :variant="viewMode === 'list' ? 'soft' : 'ghost'"
+                      @click="viewMode = 'list'"
+                      icon="i-heroicons-bars-3"
+                    />
+                  </UButtonGroup>
+                </div>
+                <UButton
+                  color="primary"
+                  variant="outline"
+                  to="/sale/post"
+                  class="whitespace-nowrap flex items-center gap-1"
+                >
+                  <UIcon name="i-heroicons-plus-circle" />
+                  Post Ad
+                </UButton>
               </div>
             </div>
           </div>
@@ -631,15 +604,16 @@
                     @click="changeActiveCategoryTab(null)"
                   >
                     All
-                  </UButton>                  <UButton
-                    v-for="(cat, index) in topCategories"
-                    :key="cat ? cat.id : index"
-                    :color="activeCategoryTab === (cat ? cat.id : null) ? 'primary' : 'gray'"
-                    :variant="activeCategoryTab === (cat ? cat.id : null) ? 'soft' : 'ghost'"
+                  </UButton>
+                  <UButton
+                    v-for="(cat, i) in topCategories"
+                    :key="`cat-${cat?.id}+${i}`"
+                    :color="activeCategoryTab === cat.id ? 'primary' : 'gray'"
+                    :variant="activeCategoryTab === cat.id ? 'soft' : 'ghost'"
                     class="px-4 whitespace-nowrap"
-                    @click="cat && changeActiveCategoryTab(cat.id)"
+                    @click="changeActiveCategoryTab(cat.id)"
                   >
-                    {{ cat ? cat.name : 'Unknown' }}
+                    {{ cat.name }}
                   </UButton>
                 </UButtonGroup>
               </div>
@@ -654,7 +628,7 @@
               <p class="mt-2 text-gray-500 text-sm">Loading listings...</p>
             </div>
 
-            <div v-else-if="!categoryPosts.length" class="py-8 text-center">
+            <div v-else-if="!categoryPosts?.length" class="py-8 text-center">
               <p class="text-gray-500">No listings found in this category</p>
             </div>
 
@@ -663,23 +637,23 @@
               class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             >
               <NuxtLink
-                v-for="post in categoryPosts"
-                :key="post.id"
+                v-for="(post, i) in categoryPosts"
+                :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
               >
-                
-                <!-- Image -->                <div class="relative aspect-square overflow-hidden">
+                <!-- Image -->
+                <div class="relative aspect-square overflow-hidden">
                   <img
                     :src="getListingImage(post)"
-                    :alt="post?.title || 'No Title'"
+                    :alt="post?.title || `Image`"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div
                     class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-2"
                   >
                     <div class="text-white text-sm font-medium line-clamp-1">
-                      {{ post?.title || 'No Title' }}
+                      {{ post?.title || `Post title` }}
                     </div>
                   </div>
                 </div>
@@ -771,39 +745,42 @@
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
               <div class="flex gap-4">
                 <NuxtLink
-                  v-for="listing in listings.slice(0, 8)"
-                  :key="`recent-${listing.id}`"
+                  v-for="(listing, i) in listings"
+                  :key="`listing-${i}+${i}`"
                   :to="`/sale/${listing.slug}`"
                   class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-md transition-shadow group"
-                >                  <div class="relative h-36 overflow-hidden">
+                >
+                  <div class="relative h-36 overflow-hidden">
                     <img
                       :src="getListingImage(listing)"
-                      :alt="listing?.title || 'No Title'"
+                      :alt="listing?.title || `Image`"
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div class="absolute top-2 right-2">
                       <span
                         class="bg-white/90 text-amber-700 text-xs px-2 py-0.5 rounded-full shadow-sm font-medium"
                       >
-                        {{ getCategoryName(listing?.category) }}
+                        {{ getCategoryName(listing.category) }}
                       </span>
                     </div>
-                  </div>                  <div class="p-3">
+                  </div>
+
+                  <div class="p-3">
                     <h3
                       class="font-medium text-gray-800 line-clamp-1 group-hover:text-amber-700"
                     >
-                      {{ listing?.title || 'No Title' }}
+                      {{ listing?.title || `Title` }}
                     </h3>
 
                     <div class="flex items-center justify-between mt-1.5">
                       <p class="text-amber-700 font-medium text-sm">
-                        <span v-if="listing?.price"
-                          >৳{{ formatPrice(listing?.price) }}</span
+                        <span v-if="listing.price"
+                          >৳{{ formatPrice(listing.price) }}</span
                         >
                         <span v-else>Negotiable</span>
                       </p>
                       <p class="text-xs text-gray-500">
-                        {{ formatDate(listing?.created_at) }}
+                        {{ formatDate(listing.created_at) }}
                       </p>
                     </div>
                   </div>
@@ -826,7 +803,7 @@
 
           <!-- Empty State -->
           <div
-            v-else-if="listings.length === 0"
+            v-else-if="listings?.length === 0"
             class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm"
           >
             <UIcon
@@ -848,15 +825,16 @@
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
           >
             <NuxtLink
-              v-for="listing in listings"
-              :key="listing.id"
+              v-for="(listing, i) in listings"
+              :key="`listing-${i}`"
               :to="`/sale/${listing.slug}`"
               class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
             >
               <!-- Image with conditional badges -->
-              <div class="relative aspect-[4/3] overflow-hidden">                <img
+              <div class="relative aspect-[4/3] overflow-hidden">
+                <img
                   :src="getListingImage(listing)"
-                  :alt="listing?.title || 'No Title'"
+                  :alt="listing?.title || `Image`"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div class="absolute top-2 right-2">
@@ -875,11 +853,12 @@
                 <div class="absolute bottom-2 left-2 z-10">
                   <span
                     class="bg-white text-primary text-sm font-medium px-2 py-1 rounded shadow-sm"
-                  >                    <span v-if="listing?.negotiable && !listing?.price"
+                  >
+                    <span v-if="listing.negotiable && !listing.price"
                       >Negotiable</span
                     >
-                    <span v-else-if="listing?.price"
-                      >৳{{ formatPrice(listing?.price) }}</span
+                    <span v-else-if="listing.price"
+                      >৳{{ formatPrice(listing.price) }}</span
                     >
                     <span v-else>Contact for Price</span>
                   </span>
@@ -887,11 +866,14 @@
               </div>
 
               <!-- Content -->
-              <div class="p-4">                <h3
+              <div class="p-4">
+                <h3
                   class="font-medium text-gray-800 text-lg mb-1 line-clamp-2 group-hover:text-primary transition-colors"
                 >
-                  {{ listing?.title || 'No Title' }}
-                </h3>                <div
+                  {{ listing?.title || `Title` }}
+                </h3>
+
+                <div
                   class="flex items-center mt-1.5 mb-2 text-gray-500 text-sm"
                 >
                   <UIcon
@@ -899,29 +881,31 @@
                     class="h-4 w-4 mr-1 text-gray-400"
                   />
                   <span class="line-clamp-1"
-                    >{{ listing?.area || 'Unknown Area' }}, {{ listing?.district || 'Unknown District' }}</span
+                    >{{ listing.area }}, {{ listing.district }}</span
                   >
                 </div>
 
                 <!-- Tags -->
-                <div class="flex flex-wrap gap-1.5 mt-2">                  <span
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  <span
                     class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full"
                   >
-                    {{ getCategoryName(listing?.category) }}
+                    {{ getCategoryName(listing.category) }}
                   </span>
                   <span
-                    v-if="listing?.condition"
+                    v-if="listing.condition"
                     class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
                   >
-                    {{ getConditionLabel(listing?.condition) }}
+                    {{ getConditionLabel(listing.condition) }}
                   </span>
                 </div>
 
                 <!-- Date -->
                 <div
                   class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"
-                >                  <div class="text-xs text-gray-500">
-                    {{ formatDate(listing?.created_at) }}
+                >
+                  <div class="text-xs text-gray-500">
+                    {{ formatDate(listing.created_at) }}
                   </div>
                 </div>
               </div>
@@ -932,18 +916,20 @@
           <div v-else class="space-y-4">
             <NuxtLink
               v-for="listing in listings"
-              :key="listing.id"
+              :key="`listing-${listing?.id}+${i}`"
               :to="`/sale/${listing.slug}`"
               class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group block"
             >
               <div class="flex flex-col sm:flex-row">
-                <!-- Image Container -->                <div class="sm:w-48 md:w-56 lg:w-64 relative">                  <img
+                <!-- Image Container -->
+                <div class="sm:w-48 md:w-56 lg:w-64 relative">
+                  <img
                     :src="getListingImage(listing)"
-                    :alt="listing?.title || 'No Title'"
+                    :alt="listing?.title || `Image`"
                     class="w-full h-40 sm:h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div
-                    v-if="listing?.featured"
+                    v-if="listing.featured"
                     class="absolute top-2 left-2 z-10"
                   >
                     <span
@@ -953,7 +939,7 @@
                   </div>
                   <div class="absolute top-2 right-2">
                     <span
-                      v-if="listing?.status === 'sold'"
+                      v-if="listing.status === 'sold'"
                       class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm"
                     >
                       SOLD
@@ -966,10 +952,11 @@
                   <div
                     class="flex flex-col md:flex-row md:justify-between gap-2"
                   >
-                    <div>                      <h3
+                    <div>
+                      <h3
                         class="font-medium text-gray-800 text-lg mb-1 group-hover:text-primary transition-colors"
                       >
-                        {{ listing?.title || 'No Title' }}
+                        {{ listing?.title || `Title` }}
                       </h3>
 
                       <div
@@ -979,90 +966,99 @@
                           name="i-heroicons-map-pin"
                           class="h-4 w-4 mr-1 text-gray-400"
                         />
-                        <span>{{ listing?.area || 'Unknown' }}, {{ listing?.district || 'Unknown' }}</span>
+                        <span>{{ listing.area }}, {{ listing.district }}</span>
                       </div>
 
-                      <!-- Tags -->                      <div class="flex flex-wrap gap-1.5 mt-1">
+                      <!-- Tags -->
+                      <div class="flex flex-wrap gap-1.5 mt-1">
                         <span
                           class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full"
                         >
-                          {{ getCategoryName(listing?.category) }}
+                          {{ getCategoryName(listing.category) }}
                         </span>
                         <span
-                          v-if="listing?.condition"
+                          v-if="listing.condition"
                           class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
                         >
-                          {{ getConditionLabel(listing?.condition) }}
+                          {{ getConditionLabel(listing.condition) }}
                         </span>
                       </div>
-                    </div>                    <!-- Price Box -->
+                    </div>
+
+                    <!-- Price Box -->
                     <div
                       class="mt-2 md:mt-0 bg-gray-50 px-4 py-2 rounded-md text-right flex-shrink-0"
                     >
                       <div class="text-lg font-bold text-primary">
-                        <span v-if="listing?.negotiable && !listing?.price"
+                        <span v-if="listing.negotiable && !listing.price"
                           >Negotiable</span
                         >
-                        <span v-else-if="listing?.price"
-                          >৳{{ formatPrice(listing?.price) }}</span
+                        <span v-else-if="listing.price"
+                          >৳{{ formatPrice(listing.price) }}</span
                         >
                         <span v-else>Contact for Price</span>
                       </div>
                       <div
-                        v-if="listing?.negotiable && listing?.price"
+                        v-if="listing.negotiable && listing.price"
                         class="text-xs text-gray-500"
                       >
                         Negotiable
                       </div>
                     </div>
-                  </div>                  <!-- Details based on category -->
+                  </div>
+
+                  <!-- Details based on category -->
                   <div
-                    v-if="listing?.category === 1"
+                    v-if="listing.category === 1"
                     class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
                   >
-                    <div v-if="listing?.property_type">
+                    <div v-if="listing.property_type">
                       <span class="font-medium">Type:</span>
-                      {{ listing?.property_type }}
+                      {{ listing.property_type }}
                     </div>
-                    <div v-if="listing?.bedrooms">
+                    <div v-if="listing.bedrooms">
                       <span class="font-medium">Bedrooms:</span>
-                      {{ listing?.bedrooms }}
+                      {{ listing.bedrooms }}
                     </div>
-                    <div v-if="listing?.size">
-                      <span class="font-medium">Size:</span> {{ listing?.size }}
-                      {{ listing?.unit || "sqft" }}
-                    </div>
-                  </div>                  <div
-                    v-else-if="listing?.category === 2"
-                    class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
-                  >
-                    <div v-if="listing?.make">
-                      <span class="font-medium">Make:</span> {{ listing?.make }}
-                    </div>
-                    <div v-if="listing?.model">
-                      <span class="font-medium">Model:</span>
-                      {{ listing?.model }}
-                    </div>
-                    <div v-if="listing?.year">
-                      <span class="font-medium">Year:</span> {{ listing?.year }}
+                    <div v-if="listing.size">
+                      <span class="font-medium">Size:</span> {{ listing.size }}
+                      {{ listing.unit || "sqft" }}
                     </div>
                   </div>
 
                   <div
-                    v-else-if="listing?.category === 3"
+                    v-else-if="listing.category === 2"
                     class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
                   >
-                    <div v-if="listing?.brand">
-                      <span class="font-medium">Brand:</span>
-                      {{ listing?.brand }}
+                    <div v-if="listing.make">
+                      <span class="font-medium">Make:</span> {{ listing.make }}
                     </div>
-                    <div v-if="listing?.model">
+                    <div v-if="listing.model">
                       <span class="font-medium">Model:</span>
-                      {{ listing?.model }}
+                      {{ listing.model }}
                     </div>
-                  </div>                  <!-- Date -->
+                    <div v-if="listing.year">
+                      <span class="font-medium">Year:</span> {{ listing.year }}
+                    </div>
+                  </div>
+
+                  <div
+                    v-else-if="listing.category === 3"
+                    class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
+                  >
+                    <div v-if="listing.brand">
+                      <span class="font-medium">Brand:</span>
+                      {{ listing.brand }}
+                    </div>
+                    <div v-if="listing.model">
+                      <span class="font-medium">Model:</span>
+                      {{ listing.model }}
+                    </div>
+                  </div>
+
+                  <!-- Date -->
                   <div class="mt-auto pt-3 text-xs text-gray-500">
-                    {{ formatDate(listing?.created_at) }}
+                    {{ formatDate(listing.created_at) }}
                   </div>
                 </div>
               </div>
@@ -1231,16 +1227,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
-import { useRoute, useRouter } from "vue-router";
+
 import { useApi } from "~/composables/useApi";
-import { useNotifications } from "~/composables/useNotifications";
+
 const location = useCookie("location");
 const { t } = useI18n();
 
-const route = useRoute();
-const router = useRouter();
 const { get } = useApi();
-const { showNotification } = useNotifications();
+
 const form = ref({
   country: "Bangladesh",
   state: location.value?.state || "",
@@ -1250,37 +1244,9 @@ const form = ref({
   category: "",
 });
 
-// Add missing variables for template
-const isLoading = ref(false);
-const searchLocationOption = ref(false);
-
-// Mock data for regions, cities, and upazilas if needed by template
-const regions = ref([
-  { name_eng: "Dhaka" },
-  { name_eng: "Chittagong" },
-  { name_eng: "Rajshahi" },
-  { name_eng: "Khulna" },
-  { name_eng: "Barisal" },
-  { name_eng: "Sylhet" },
-  { name_eng: "Rangpur" },
-  { name_eng: "Mymensingh" }
-]);
-const cities = ref([]);
-const upazilas = ref([]);
-
-// Function for the search button
-function filterSearch() {
-  isLoading.value = true;
-  // Add null check to prevent errors
-  searchQuery.value = form.value?.title || "";
-  applyFilters();
-  
-  setTimeout(() => {
-    isLoading.value = false;
-  }, 500);
-}
-
 // State variables
+const activeCategoryTab = ref(null);
+const isLoading = ref(false);
 const loading = ref(true);
 const listings = ref([]); // Renamed from posts to match template usage
 const viewMode = ref("grid");
@@ -1467,53 +1433,45 @@ const districtOptions = computed(() => {
 });
 
 const areaOptions = computed(() => {
-  if (selectedDistrict.value) {
-    return areasByDistrict[selectedDistrict.value] || [];
-  }
-  return [];
+  return selectedDistrict.value
+    ? areasByDistrict[selectedDistrict.value] || []
+    : [];
 });
 
 // Fetch categories from the API
 async function fetchCategories() {
   try {
-    // Use the proper API endpoint
-    const response = await get("/sale/categories");
+    // Use a more generic path that's likely to work
+    const response = await get("/api/sale/categories");
 
     if (response && Array.isArray(response.data)) {
       categories.value = response.data.map((category) => ({
         id: category.id,
         name: category.name,
-        icon: category.icon,
-        slug: slugify(category.name),
-        count: 0
+        slug: category.slug || category.name.toLowerCase().replace(/\s+/g, "-"),
+        count: category.post_count || 0,
       }));
 
-      // Count posts by category (since we need to display this in the UI)
-      const postsResponse = await get("/sale/posts");
-      if (postsResponse && postsResponse.data && Array.isArray(postsResponse.data.results)) {
-        const posts = postsResponse.data.results;
-        
-        // Create count map of posts by category
-        posts.forEach(post => {
-          if (post.category) {
-            if (!categoryCountsMap.value[post.category]) {
-              categoryCountsMap.value[post.category] = 0;
-            }
-            categoryCountsMap.value[post.category]++;
-          }
-        });
-        
-        // Update count in the categories array
-        categories.value.forEach(category => {
-          category.count = categoryCountsMap.value[category.id] || 0;
-        });
-      }
-      
-      console.log("Categories loaded:", categories.value);
+      // Update category counts map
+      categories.value.forEach((category) => {
+        categoryCountsMap.value[category.id] = category.count || 0;
+      });
+    } else if (response && response.data && typeof response.data === "object") {
+      // Handle non-array response format
+      const categoriesData = Object.values(response.data).filter(
+        (item) => item && typeof item === "object"
+      );
+      categories.value = categoriesData.map((category, index) => ({
+        id: category.id || index + 1,
+        name: category.name || `Category ${index + 1}`,
+        slug: category.slug || `category-${index + 1}`,
+        count: category.post_count || 0,
+      }));
     } else {
-      console.warn("Invalid category data format received, using defaults");
       categories.value = generateDefaultCategories();
     }
+
+    console.log("Categories loaded:", categories.value);
   } catch (error) {
     console.error("Error fetching categories:", error);
     categories.value = generateDefaultCategories();
@@ -1539,7 +1497,7 @@ function generateDefaultCategories() {
   return defaultCategories;
 }
 
-// Load posts based on current filters
+// Load posts based on current filters - modify the API path and add fallback data
 async function loadPosts(page = 1) {
   loading.value = true;
   currentPage.value = page;
@@ -1554,8 +1512,8 @@ async function loadPosts(page = 1) {
     if (selectedCategory.value)
       params.append("category", selectedCategory.value.toString());
     if (selectedSubcategory.value)
-      params.append("child_category", selectedSubcategory.value.toString());
-    if (searchQuery.value) params.append("title", searchQuery.value);
+      params.append("subcategory", selectedSubcategory.value.toString());
+    if (searchQuery.value) params.append("search", searchQuery.value);
     if (priceRange.value.min)
       params.append("min_price", priceRange.value.min.toString());
     if (priceRange.value.max)
@@ -1574,12 +1532,23 @@ async function loadPosts(page = 1) {
       oldest: "created_at",
       price_low: "price",
       price_high: "-price",
-      most_viewed: "-view_count",
+      most_viewed: "-views",
     };
-    params.append("ordering", sortMapping[sortOption.value] || "-created_at");
+    params.append("sort", sortMapping[sortOption.value] || "-created_at");
 
-    // Use the correct API endpoint
-    const response = await get(`/sale/posts?${params.toString()}`);
+    // Try different API paths to increase chances of success
+    let response;
+    try {
+      response = await get(`/api/sale/listings?${params.toString()}`);
+    } catch (firstError) {
+      console.log("First API path failed, trying alternative");
+      try {
+        response = await get(`/api/listings?${params.toString()}`);
+      } catch (secondError) {
+        console.log("Second API path failed, trying last alternative");
+        response = await get(`/listings?${params.toString()}`);
+      }
+    }
 
     if (response && response.data) {
       if (response.data.results) {
@@ -1589,11 +1558,7 @@ async function loadPosts(page = 1) {
       } else if (Array.isArray(response.data)) {
         // Array response
         listings.value = mapListingsData(response.data);
-        totalListings.value = response.data.length;
-      } else {
-        // Empty or invalid response
-        listings.value = [];
-        totalListings.value = 0;
+        totalListings.value = response.data?.length;
       }
     } else {
       listings.value = [];
@@ -1601,19 +1566,9 @@ async function loadPosts(page = 1) {
     }
   } catch (error) {
     console.error("Error loading listings:", error);
-    // Log more detailed error information
-    if (error.response) {
-      console.error("Error response data:", error.response.data);
-      console.error("Error response status:", error.response.status);
-    } else if (error.request) {
-      console.error("Error request:", error.request);
-    } else {
-      console.error("Error message:", error.message);
-    }
-    
     // Use fallback data to ensure UI has something to display
     listings.value = generateMockListings(10);
-    totalListings.value = listings.value.length;
+    totalListings.value = listings.value?.length;
   } finally {
     loading.value = false;
   }
@@ -1631,7 +1586,7 @@ function generateMockListings(count = 10, recent = false) {
 
   for (let i = 1; i <= count; i++) {
     const categoryId =
-      categories[Math.floor(Math.random() * categories.length)];
+      categories[Math.floor(Math.random() * categories?.length)];
     const createdDate = recent
       ? new Date(
           Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000
@@ -1642,20 +1597,20 @@ function generateMockListings(count = 10, recent = false) {
 
     mockListings.push({
       id: i,
-      title: `Sample Listing ${i} - ${getCategoryName(categoryId)}`,
+      title: `Sample Listing ${i} - ${getCategoryName(categoryId)}` || "",
       slug: `sample-listing-${i}`,
       price: Math.floor(Math.random() * 900000) + 100000,
       negotiable: Math.random() > 0.5,
       description: "This is a sample listing description.",
       category: categoryId,
-      condition: conditions[Math.floor(Math.random() * conditions.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
+      condition: conditions[Math.floor(Math.random() * conditions?.length)],
+      status: statuses[Math.floor(Math.random() * statuses?.length)],
       featured: Math.random() > 0.8,
       created_at: createdDate.toISOString(),
       main_image: `https://picsum.photos/600/400?random=${i}`,
       images: [`https://picsum.photos/600/400?random=${i}`],
-      district: districts[Math.floor(Math.random() * districts.length)],
-      area: areas[Math.floor(Math.random() * areas.length)],
+      district: districts[Math.floor(Math.random() * districts?.length)],
+      area: areas[Math.floor(Math.random() * areas?.length)],
       bedrooms:
         categoryId === 1 ? Math.floor(Math.random() * 5) + 1 : undefined,
       size:
@@ -1682,19 +1637,16 @@ function generateMockListings(count = 10, recent = false) {
   return mockListings;
 }
 
-// Map listing data to a consistent format based on API response
+// Map listing data to a consistent format
 function mapListingsData(data) {
   return data.map((item) => ({
     id: item.id,
-    title: item.title,
+    title: item?.title || "",
     slug: item.slug || `listing-${item.id}`,
     price: item.price,
     negotiable: item.negotiable,
     description: item.description,
-    category: item.category,
-    category_name: item.category_name,
-    child_category: item.child_category,
-    child_category_name: item.child_category_name,
+    category: item.category_id || item.category,
     condition: item.condition,
     status: item.status,
     featured: item.featured,
@@ -1709,7 +1661,7 @@ function mapListingsData(data) {
     district: item.district,
     area: item.area,
 
-    // Category-specific fields - these might be in the API response depending on the category
+    // Category-specific fields
     property_type: item.property_type,
     bedrooms: item.bedrooms,
     size: item.size,
@@ -1718,26 +1670,14 @@ function mapListingsData(data) {
     model: item.model,
     year: item.year,
     brand: item.brand,
-    
-    // User information
-    user_name: item.user_name,
-    view_count: item.view_count || 0
   }));
 }
 
 // Helper functions
 function getCategoryName(categoryId) {
-  if (categoryId === undefined || categoryId === null || categoryId === "") return "";
-  try {
-    const parsedId = parseInt(categoryId);
-    if (isNaN(parsedId)) return "";
-    
-    const category = categories.value.find((c) => c.id === parsedId);
-    return category ? category.name : "";
-  } catch (error) {
-    console.error("Error getting category name:", error);
-    return "";
-  }
+  if (!categoryId) return "";
+  const category = categories.value.find((c) => c.id === parseInt(categoryId));
+  return category ? category.name : "";
 }
 
 function getCategoryIcon(categoryId) {
@@ -1757,8 +1697,6 @@ function getCategoryCount(categoryId) {
 }
 
 function getConditionLabel(condition) {
-  if (!condition) return "";
-  
   const conditions = {
     new: "Brand New",
     "like-new": "Like New",
@@ -1775,15 +1713,11 @@ function getSubcategoryName(subcategoryId) {
 }
 
 function getListingImage(listing) {
-  if (!listing) {
-    return "https://via.placeholder.com/300x200?text=No+Image";
-  }
-  
   if (listing.main_image) {
     return listing.main_image;
   }
 
-  if (listing.images && listing.images.length > 0) {
+  if (listing.images && listing.images?.length > 0) {
     return listing.images[0];
   }
 
@@ -1791,35 +1725,25 @@ function getListingImage(listing) {
 }
 
 function formatPrice(price) {
-  if (price === undefined || price === null || price === "") return "";
   return new Intl.NumberFormat("en-IN").format(price);
 }
 
 function formatDate(dateStr) {
-  if (dateStr === undefined || dateStr === null || dateStr === "") return "";
+  if (!dateStr) return "";
 
-  try {
-    const date = new Date(dateStr);
-    
-    // Check for invalid date
-    if (isNaN(date.getTime())) return "";
-    
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
 
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return "";
-  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 // Subcategory handling
@@ -1911,7 +1835,7 @@ function handleDistrictChange() {
 const categoryItemsPerPage = 12; // 4 rows of 3 items (mobile shows fewer columns)
 const categoryCurrentPage = ref(1);
 const categoryPageCount = computed(() => {
-  return Math.ceil(categoryPosts.value.length / categoryItemsPerPage);
+  return Math.ceil(categoryPosts.value?.length / categoryItemsPerPage);
 });
 const paginatedCategoryPosts = computed(() => {
   const start = (categoryCurrentPage.value - 1) * categoryItemsPerPage;
@@ -1920,64 +1844,52 @@ const paginatedCategoryPosts = computed(() => {
 });
 
 // Watch category tab changes to reset pagination
-watch([activeCategoryTab], (newValue) => {
-  try {
-    categoryCurrentPage.value = 1;
-    if (newValue === undefined || newValue === null) {
-      console.log("Category tab reset to null or undefined");
-    }
-  } catch (error) {
-    console.error("Error in activeCategoryTab watcher:", error);
-  }
+watch([activeCategoryTab], () => {
+  categoryCurrentPage.value = 1;
 });
 
 // Category tabs section variables
 const topCategories = computed(() => {
   // Get top 4-5 categories with most listings
-  if (!categories.value || !Array.isArray(categories.value)) {
-    return [];
-  }
-  // Filter out any undefined or null category objects before slicing
-  return categories.value
-    .filter(category => category && typeof category === 'object')
-    .slice(0, 5);
+  return categories.value.slice(0, 5);
 });
-const activeCategoryTab = ref(null);
+
 const categoryPosts = ref([]);
 const categoryTabLoading = ref(false);
 
 // Function to change active category tab
 function changeActiveCategoryTab(categoryId) {
-  try {
-    activeCategoryTab.value = categoryId;
-    loadCategoryPosts();
-    categoryCurrentPage.value = 1;
-  } catch (error) {
-    console.error("Error changing category tab:", error);
-    // Provide fallback behavior
-    activeCategoryTab.value = null;
-  }
+  activeCategoryTab.value = categoryId;
+  loadCategoryPosts();
+  categoryCurrentPage.value = 1;
 }
 
-// Load posts for the selected category tab
+// Load posts for the selected category tab with improved API paths and fallback
 async function loadCategoryPosts() {
   categoryTabLoading.value = true;
-  
+
   try {
-    // Default to empty array in case of errors
-    categoryPosts.value = [];
-    
     const params = new URLSearchParams();
     params.append("page", "1");
     params.append("page_size", "8");
-    params.append("ordering", "-created_at");
+    params.append("sort", "-created_at");
 
     if (activeCategoryTab.value) {
       params.append("category", activeCategoryTab.value.toString());
     }
 
-    // Use the correct API endpoint
-    const response = await get(`/sale/posts?${params.toString()}`);
+    let response;
+    try {
+      response = await get(`/api/sale/listings?${params.toString()}`);
+    } catch (firstError) {
+      console.log("First category API path failed, trying alternative");
+      try {
+        response = await get(`/api/listings?${params.toString()}`);
+      } catch (secondError) {
+        console.log("Second category API path failed, trying last alternative");
+        response = await get(`/listings?${params.toString()}`);
+      }
+    }
 
     if (response && response.data) {
       if (response.data.results) {
@@ -2014,7 +1926,7 @@ function changeRecentListingsCategory(categoryId) {
   loadRecentListings();
 }
 
-// Load recent listings
+// Load recent listings with improved API paths and fallback
 async function loadRecentListings() {
   recentListingsLoading.value = true;
 
@@ -2022,14 +1934,26 @@ async function loadRecentListings() {
     const params = new URLSearchParams();
     params.append("page", "1");
     params.append("page_size", "10");
-    params.append("ordering", "-created_at"); // Always sort by newest
+    params.append("sort", "-created_at"); // Always sort by newest
 
     if (recentListingsCategory.value) {
       params.append("category", recentListingsCategory.value.toString());
     }
 
-    // Use the correct API endpoint
-    const response = await get(`/sale/posts?${params.toString()}`);
+    let response;
+    try {
+      response = await get(`/api/sale/listings?${params.toString()}`);
+    } catch (firstError) {
+      console.log("First recent listings API path failed, trying alternative");
+      try {
+        response = await get(`/api/listings?${params.toString()}`);
+      } catch (secondError) {
+        console.log(
+          "Second recent listings API path failed, trying last alternative"
+        );
+        response = await get(`/listings?${params.toString()}`);
+      }
+    }
 
     if (response && response.data) {
       if (response.data.results) {
@@ -2053,45 +1977,23 @@ async function loadRecentListings() {
 // Modified onMounted to also load recent listings
 onMounted(() => {
   console.log("Component mounted - starting data loading");
-  
-  // Initialize empty values to prevent "Cannot read property" errors
-  listings.value = [];
-  categoryPosts.value = [];
-  recentListings.value = [];
-  categories.value = [];
-  
   // Load categories first
   fetchCategories().then(() => {
     console.log("Categories loaded, now loading other data");
     // Then load all list types in parallel
-    Promise.all([
-      loadPosts().catch(err => {
-        console.error("Error loading posts:", err);
-        return null;
-      }), 
-      loadCategoryPosts().catch(err => {
-        console.error("Error loading category posts:", err);
-        return null;
-      }), 
-      loadRecentListings().catch(err => {
-        console.error("Error loading recent listings:", err);
-        return null;
-      })
-    ]).catch((error) => {
-      console.error("Error during initial data loading:", error);
-    });
-  }).catch(err => {
-    console.error("Error fetching categories:", err);
-    // Use fallback categories
-    categories.value = generateDefaultCategories();
+    Promise.all([loadPosts(), loadCategoryPosts(), loadRecentListings()]).catch(
+      (error) => {
+        console.error("Error during initial data loading:", error);
+      }
+    );
   });
 });
 
 // Add recent listings to the categories watcher
 watch(categories, () => {
-  if (categories.value.length > 0) {
-    if (categoryPosts.value.length === 0) loadCategoryPosts();
-    if (recentListings.value.length === 0) loadRecentListings();
+  if (categories.value?.length > 0) {
+    if (categoryPosts.value?.length === 0) loadCategoryPosts();
+    if (recentListings.value?.length === 0) loadRecentListings();
   }
 });
 </script>
@@ -2101,20 +2003,14 @@ watch(categories, () => {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
-  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-height: 1.5em; /* Fallback for browsers that don't support line-clamp */
 }
 
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-height: 3em; /* Fallback for browsers that don't support line-clamp */
 }
 </style>
