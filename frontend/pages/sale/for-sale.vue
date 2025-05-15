@@ -735,23 +735,33 @@
               </UButton>
             </div>
           </div>
-          
+
           <!-- Sponsored Banner -->
           <div class="mb-6 rounded-lg shadow-sm overflow-hidden">
             <div class="relative">
-              <img src="https://picsum.photos/1200/200?ad=sponsored" alt="Sponsored Banner" class="w-full h-32 sm:h-40 object-cover" />
-              <div class="absolute top-0 left-0 bg-amber-500 text-white text-xs px-2 py-0.5">
+              <img
+                src="https://picsum.photos/1200/200?ad=sponsored"
+                alt="Sponsored Banner"
+                class="w-full h-32 sm:h-40 object-cover"
+              />
+              <div
+                class="absolute top-0 left-0 bg-amber-500 text-white text-xs px-2 py-0.5"
+              >
                 Sponsored
               </div>
-              <div class="absolute inset-0 flex items-center justify-center bg-black/20">
-                <div class="bg-white/90 px-4 py-3 rounded-lg shadow text-center">
-                  <h3 class="text-lg font-bold text-gray-800">Premium Listing Promotion</h3>
-                  <p class="text-gray-600">Get 50% off on featured listings this week!</p>
-                  <UButton
-                    color="primary"
-                    size="sm"
-                    class="mt-2"
-                  >
+              <div
+                class="absolute inset-0 flex items-center justify-center bg-black/20"
+              >
+                <div
+                  class="bg-white/90 px-4 py-3 rounded-lg shadow text-center"
+                >
+                  <h3 class="text-lg font-bold text-gray-800">
+                    Premium Listing Promotion
+                  </h3>
+                  <p class="text-gray-600">
+                    Get 50% off on featured listings this week!
+                  </p>
+                  <UButton color="primary" size="sm" class="mt-2">
                     Learn More
                   </UButton>
                 </div>
@@ -1125,36 +1135,66 @@
             <div class="bg-blue-50/60 p-6 rounded-lg border border-blue-100">
               <div class="flex items-start">
                 <div class="bg-blue-100 p-2 rounded-lg mr-4">
-                  <UIcon name="i-heroicons-light-bulb" class="h-7 w-7 text-blue-600"/>
+                  <UIcon
+                    name="i-heroicons-light-bulb"
+                    class="h-7 w-7 text-blue-600"
+                  />
                 </div>
                 <div>
-                  <h3 class="text-lg font-medium text-blue-800 mb-2">Buyer Tips</h3>
+                  <h3 class="text-lg font-medium text-blue-800 mb-2">
+                    Buyer Tips
+                  </h3>
                   <ul class="space-y-2 text-sm text-gray-700">
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
-                      <span>Always inspect items in person before purchasing</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Always inspect items in person before purchasing</span
+                      >
                     </li>
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
-                      <span>Meet in a public place for safety when possible</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Meet in a public place for safety when possible</span
+                      >
                     </li>
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
-                      <span>Verify product authenticity with proper documentation</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Verify product authenticity with proper
+                        documentation</span
+                      >
                     </li>
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
-                      <span>Compare prices across multiple listings before deciding</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Compare prices across multiple listings before
+                        deciding</span
+                      >
                     </li>
                   </ul>
-                  <UButton 
-                    color="blue" 
-                    variant="link" 
+                  <UButton
+                    color="blue"
+                    variant="link"
                     class="mt-3 text-sm font-medium"
                     to="/help/buying-guide"
                   >
                     Read full buying guide
-                    <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4" />
+                    <UIcon
+                      name="i-heroicons-arrow-right"
+                      class="ml-1 w-4 h-4"
+                    />
                   </UButton>
                 </div>
               </div>
@@ -1164,36 +1204,63 @@
             <div class="bg-green-50/60 p-6 rounded-lg border border-green-100">
               <div class="flex items-start">
                 <div class="bg-green-100 p-2 rounded-lg mr-4">
-                  <UIcon name="i-heroicons-shield-check" class="h-7 w-7 text-green-600"/>
+                  <UIcon
+                    name="i-heroicons-shield-check"
+                    class="h-7 w-7 text-green-600"
+                  />
                 </div>
                 <div>
-                  <h3 class="text-lg font-medium text-green-800 mb-2">Safety Guide</h3>
+                  <h3 class="text-lg font-medium text-green-800 mb-2">
+                    Safety Guide
+                  </h3>
                   <ul class="space-y-2 text-sm text-gray-700">
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                      />
                       <span>Avoid sharing personal financial information</span>
                     </li>
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                      <span>Be cautious of deals that seem too good to be true</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Be cautious of deals that seem too good to be
+                        true</span
+                      >
                     </li>
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                      <span>Use secure payment methods, avoid wire transfers</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Use secure payment methods, avoid wire transfers</span
+                      >
                     </li>
                     <li class="flex items-start">
-                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                      <span>Report suspicious activity to our support team</span>
+                      <UIcon
+                        name="i-heroicons-check-circle"
+                        class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        >Report suspicious activity to our support team</span
+                      >
                     </li>
                   </ul>
-                  <UButton 
-                    color="green" 
-                    variant="link" 
+                  <UButton
+                    color="green"
+                    variant="link"
                     class="mt-3 text-sm font-medium"
                     to="/help/safety"
                   >
                     Learn more about safety
-                    <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4" />
+                    <UIcon
+                      name="i-heroicons-arrow-right"
+                      class="ml-1 w-4 h-4"
+                    />
                   </UButton>
                 </div>
               </div>
@@ -1736,29 +1803,29 @@ function getSubcategories(categoryId) {
   // Sample subcategories - would be replaced with API data
   const subcategoryMap = {
     1: [
-      { id: '1-1', name: 'Apartments', count: 23 },
-      { id: '1-2', name: 'Houses', count: 15 },
-      { id: '1-3', name: 'Land', count: 7 }
+      { id: "1-1", name: "Apartments", count: 23 },
+      { id: "1-2", name: "Houses", count: 15 },
+      { id: "1-3", name: "Land", count: 7 },
     ],
     2: [
-      { id: '2-1', name: 'Cars', count: 18 },
-      { id: '2-2', name: 'Motorcycles', count: 9 },
-      { id: '2-3', name: 'Commercial', count: 5 }
+      { id: "2-1", name: "Cars", count: 18 },
+      { id: "2-2", name: "Motorcycles", count: 9 },
+      { id: "2-3", name: "Commercial", count: 5 },
     ],
     3: [
-      { id: '3-1', name: 'Phones', count: 14 },
-      { id: '3-2', name: 'Computers', count: 8 },
-      { id: '3-3', name: 'TVs', count: 5 }
-    ]
+      { id: "3-1", name: "Phones", count: 14 },
+      { id: "3-2", name: "Computers", count: 8 },
+      { id: "3-3", name: "TVs", count: 5 },
+    ],
   };
-  
+
   return subcategoryMap[categoryId] || [];
 }
 
 function toggleSubcategories(categoryId) {
   expandedCategories.value = {
     ...expandedCategories.value,
-    [categoryId]: !expandedCategories.value[categoryId]
+    [categoryId]: !expandedCategories.value[categoryId],
   };
 }
 
