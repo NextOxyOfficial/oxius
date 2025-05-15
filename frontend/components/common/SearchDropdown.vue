@@ -27,8 +27,14 @@
         aria-label="Search dialog"
       >
         <!-- Enhanced Search Header with Spelling Suggestion -->
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm">
-          <h4 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-2 px-1">Search</h4>
+        <div
+          class="p-3 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm"
+        >
+          <h4
+            class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-2 px-1"
+          >
+            Search
+          </h4>
           <div class="relative">
             <input
               type="text"
@@ -37,10 +43,12 @@
               class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-all duration-300 shadow-sm search-input"
               ref="searchInput"
             />
-            <div class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">
+            <div
+              class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400"
+            >
               <SearchIcon class="h-4.5 w-4.5" />
             </div>
-            
+
             <div class="absolute right-3 top-2.5 flex items-center gap-2">
               <span v-if="isLoading" class="loading-spinner"></span>
               <button
@@ -52,10 +60,10 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Spelling suggestion banner -->
           <div v-if="spellingSuggestion && searchQuery" class="mt-2 px-1">
-            <button 
+            <button
               @click="applySpellingSuggestion"
               class="text-xs flex items-center text-left w-full rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 px-2.5 py-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
@@ -63,47 +71,65 @@
                 <AnnotationIcon class="h-3.5 w-3.5" />
               </span>
               <span>
-                Did you mean: <span class="font-medium underline">{{ spellingSuggestion }}</span>?
+                Did you mean:
+                <span class="font-medium underline">{{
+                  spellingSuggestion
+                }}</span
+                >?
               </span>
             </button>
           </div>
         </div>
 
         <!-- Search Tabs for Content Types -->
-        <div v-if="searchQuery && (posts.length > 0 || people.length > 0)" 
-             class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <button 
+        <div
+          v-if="searchQuery && (posts.length > 0 || people.length > 0)"
+          class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+        >
+          <button
             class="flex-1 py-2 text-xs font-medium transition-colors"
-            :class="activeTab === 'all' ? 
-              'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 
-              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+            :class="
+              activeTab === 'all'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            "
             @click="activeTab = 'all'"
           >
             All
           </button>
-          
-          <button 
+
+          <button
             class="flex-1 py-2 text-xs font-medium transition-colors"
-            :class="activeTab === 'posts' ? 
-              'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 
-              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+            :class="
+              activeTab === 'posts'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            "
             @click="activeTab = 'posts'"
           >
             Posts
-            <span v-if="posts.length" class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+            <span
+              v-if="posts.length"
+              class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full"
+            >
               {{ posts.length }}
             </span>
           </button>
-          
-          <button 
+
+          <button
             class="flex-1 py-2 text-xs font-medium transition-colors"
-            :class="activeTab === 'people' ? 
-              'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 
-              'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+            :class="
+              activeTab === 'people'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            "
             @click="activeTab = 'people'"
           >
             People
-            <span v-if="people.length" class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+            <span
+              v-if="people.length"
+              class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full"
+            >
               {{ people.length }}
             </span>
           </button>
@@ -111,123 +137,193 @@
 
         <!-- Enhanced Search Results with Improved Rendering and Keyword Highlighting -->
         <div
-          v-if="searchQuery && (filteredResults.length > 0)"
+          v-if="searchQuery && filteredResults.length > 0"
           class="max-h-80 overflow-y-auto search-results-container"
         >
           <div class="py-2 px-1">
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1.5 px-3">
-              Results for "<span class="font-medium text-blue-600 dark:text-blue-400">{{ searchQuery }}</span>"
-              <span v-if="usingFuzzySearch" class="text-xs ml-1 text-gray-400 dark:text-gray-500">(including similar words)</span>
+              Results for "<span
+                class="font-medium text-blue-600 dark:text-blue-400"
+                >{{ searchQuery }}</span
+              >"
+              <span
+                v-if="usingFuzzySearch"
+                class="text-xs ml-1 text-gray-400 dark:text-gray-500"
+                >(including similar words)</span
+              >
             </p>
-            
+
             <!-- Posts section -->
             <template v-if="showPosts">
-              <div v-if="filteredPosts.length > 0 && activeTab === 'all'" class="px-3 pt-1 pb-2">
-                <h4 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">Posts ({{ filteredPosts.length }})</h4>
+              <div
+                v-if="filteredPosts.length > 0 && activeTab === 'all'"
+                class="px-3 pt-1 pb-2"
+              >
+                <h4
+                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium"
+                >
+                  Posts ({{ filteredPosts.length }})
+                </h4>
               </div>
-            
+
               <div
                 v-for="(result, index) in limitedFilteredPosts"
                 :key="'post-' + result.id"
                 class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
                 @click="navigateToPost(result)"
-                :class="{'border-b border-gray-100 dark:border-gray-800': index < limitedFilteredPosts.length - 1}"
+                :class="{
+                  'border-b border-gray-100 dark:border-gray-800':
+                    index < limitedFilteredPosts.length - 1,
+                }"
               >
                 <!-- Post content -->
                 <div class="flex items-start justify-between">
                   <div class="flex-1 min-w-0">
                     <!-- Highlighted title with keyword matches -->
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                      <span v-html="highlightMatches(result.title, searchQuery)"></span>
+                    <p
+                      class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+                    >
+                      <span
+                        v-html="highlightMatches(result.title, searchQuery)"
+                      ></span>
                     </p>
-                    
+
                     <!-- Content preview with highlighted matches (if available) -->
-                    <p v-if="result.post_text" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                      <span v-html="getContentPreview(result.post_text, searchQuery)"></span>
+                    <p
+                      v-if="result.post_text"
+                      class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
+                    >
+                      <span
+                        v-html="
+                          getContentPreview(result.post_text, searchQuery)
+                        "
+                      ></span>
                     </p>
-                    
+
                     <div class="flex flex-wrap gap-1 mt-1.5">
                       <span
                         v-for="tag in result.post_tags"
                         :key="tag.id"
                         class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                        :class="isTagMatched(tag.tag, searchQuery) ? 
-                          'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' : 
-                          'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'"
+                        :class="
+                          isTagMatched(tag.tag, searchQuery)
+                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
+                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'
+                        "
                       >
-                        #<span v-html="highlightMatches(tag.tag, searchQuery)"></span>
+                        #<span
+                          v-html="highlightMatches(tag.tag, searchQuery)"
+                        ></span>
                       </span>
                     </div>
                   </div>
-                  
+
                   <div class="flex-shrink-0 ml-3">
-                    <div class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors">
-                      <ArrowRight class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                    <div
+                      class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors"
+                    >
+                      <ArrowRight
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </template>
-            
+
             <!-- People section -->
             <template v-if="showPeople">
-              <div v-if="filteredPeople.length > 0 && activeTab === 'all'" class="px-3 pt-3 pb-2">
-                <h4 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">People ({{ filteredPeople.length }})</h4>
+              <div
+                v-if="filteredPeople.length > 0 && activeTab === 'all'"
+                class="px-3 pt-3 pb-2"
+              >
+                <h4
+                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium"
+                >
+                  People ({{ filteredPeople.length }})
+                </h4>
               </div>
-            
+
               <div
                 v-for="(person, index) in limitedFilteredPeople"
                 :key="'person-' + (person.id || index)"
                 class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
                 @click="navigateToProfile(person)"
-                :class="{'border-b border-gray-100 dark:border-gray-800': index < limitedFilteredPeople.length - 1}"
+                :class="{
+                  'border-b border-gray-100 dark:border-gray-800':
+                    index < limitedFilteredPeople.length - 1,
+                }"
               >
                 <!-- Person card with avatar and details -->
                 <div class="flex items-center">
                   <!-- Avatar with fallback -->
                   <div class="flex-shrink-0 relative">
-                    <img 
-                      :src="person.avatar_url || '/img/default-avatar.png'" 
-                      :alt="person.name || 'User'" 
+                    <img
+                      :src="person.avatar_url"
+                      :alt="person.name || 'User'"
                       class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                      @error="$event.target.src = '/img/default-avatar.png'"
                     />
-                    <div v-if="person.is_online" class="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-400 rounded-full border-2 border-white dark:border-gray-800"></div>
                   </div>
-                  
+
                   <!-- User info with more detailed display -->
                   <div class="ml-3 flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      <span v-html="highlightMatches(person.name || person.username || 'Unknown User', searchQuery)"></span>
+                    <p
+                      class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                    >
+                      <span
+                        v-html="
+                          highlightMatches(
+                            person.name || 'Unknown User',
+                            searchQuery
+                          )
+                        "
+                      ></span>
                     </p>
-                    <div class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div
+                      class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400"
+                    >
                       <span v-if="person.followers !== undefined">
-                        {{ person.followers }} {{ person.followers === 1 ? 'follower' : 'followers' }}
+                        {{ person.followers }}
+                        {{ person.followers === 1 ? "follower" : "followers" }}
                       </span>
                       <span v-if="person.title" class="flex items-center">
                         <span class="mx-1.5">•</span>
-                        <span class="truncate" v-html="highlightMatches(person.title, searchQuery)"></span>
-                      </span>
-                      <span v-if="person.username && !person.title" class="flex items-center">
-                        <span class="mx-1.5">•</span>
-                        <span class="text-gray-400 dark:text-gray-500">@{{ person.username }}</span>
+                        <span
+                          class="truncate"
+                          v-html="highlightMatches(person.title, searchQuery)"
+                        ></span>
                       </span>
                     </div>
                   </div>
-                  
+
                   <!-- Action button -->
-                  <div class="flex-shrink-0">
-                    <div class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors">
-                      <UserPlus v-if="!person.is_following" class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-                      <User v-else class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                  <div
+                    class="flex-shrink-0"
+                    v-if="person?.id !== user?.user?.id && user"
+                    :ref="(el) => registerObserver(el, person.id)"
+                  >
+                    <div
+                      class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors"
+                      @click="toggleFollow(person.id)"
+                    >
+                      <UserPlus
+                        v-if="!followingStatus[person.id]"
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                      />
+                      <User
+                        v-else
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </template>
           </div>
-          
-          <div class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+
+          <div
+            class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50"
+          >
             <button
               @click="viewAllResults"
               class="inline-flex items-center justify-center gap-1.5 py-2 px-4 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full"
@@ -243,14 +339,24 @@
           v-if="searchQuery && !isLoading && filteredResults.length === 0"
           class="p-6 text-center"
         >
-          <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-3 flex items-center justify-center">
+          <div
+            class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-3 flex items-center justify-center"
+          >
             <SearchOffIcon class="h-6 w-6 text-gray-400 dark:text-gray-500" />
           </div>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No results found</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">We couldn't find anything for "{{ searchQuery }}"</p>
-          <div class="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            No results found
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            We couldn't find anything for "{{ searchQuery }}"
+          </p>
+          <div
+            class="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
+          >
             <p class="font-medium mb-1">Suggestions:</p>
-            <ul class="text-gray-500 dark:text-gray-400 text-left space-y-1 pl-4 list-disc">
+            <ul
+              class="text-gray-500 dark:text-gray-400 text-left space-y-1 pl-4 list-disc"
+            >
               <li>Try different keywords</li>
               <li>Check for typos</li>
               <li>Use more general terms</li>
@@ -259,21 +365,26 @@
         </div>
 
         <!-- Enhanced Empty State -->
-        <div 
-          v-if="!searchQuery" 
-          class="p-6 text-center"
-        >
-          <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 mx-auto mb-3 flex items-center justify-center">
+        <div v-if="!searchQuery" class="p-6 text-center">
+          <div
+            class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 mx-auto mb-3 flex items-center justify-center"
+          >
             <SearchIcon class="h-7 w-7 text-blue-500 dark:text-blue-400" />
           </div>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search the platform</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Find posts, topics, and more</p>
-          
-          <div class="mt-4 space-y-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 border border-gray-100 dark:border-gray-700">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Search the platform
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Find posts, topics, and more
+          </p>
+
+          <div
+            class="mt-4 space-y-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 border border-gray-100 dark:border-gray-700"
+          >
             <p class="font-medium">Try searching for:</p>
             <div class="flex flex-wrap gap-1.5 justify-center mt-2">
-              <button 
-                v-for="(suggestion, i) in searchSuggestions" 
+              <button
+                v-for="(suggestion, i) in searchSuggestions"
                 :key="i"
                 @click="setSearchQuery(suggestion)"
                 class="px-2.5 py-1.5 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-gray-700 dark:text-gray-300"
@@ -282,9 +393,14 @@
               </button>
             </div>
           </div>
-          
-          <div class="mt-4 text-xs text-gray-400 dark:text-gray-500 flex justify-center items-center gap-1.5">
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-gray-500 dark:text-gray-400 font-mono">ESC</kbd> 
+
+          <div
+            class="mt-4 text-xs text-gray-400 dark:text-gray-500 flex justify-center items-center gap-1.5"
+          >
+            <kbd
+              class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-gray-500 dark:text-gray-400 font-mono"
+              >ESC</kbd
+            >
             to close
           </div>
         </div>
@@ -303,120 +419,182 @@
 </template>
 
 <script setup>
-import { SearchIcon, XIcon, ArrowRightIcon as ArrowRight, UserIcon as User, UserPlusIcon as UserPlus } from "lucide-vue-next";
-const { get } = useApi();
+import {
+  SearchIcon,
+  XIcon,
+  ArrowRightIcon as ArrowRight,
+  UserIcon as User,
+  UserPlusIcon as UserPlus,
+} from "lucide-vue-next";
+const { get, post, del } = useApi();
+const { user } = useAuth();
+const toast = useToast();
 const router = useRouter();
 const showSearchDropdown = ref(false);
+const isFollowing = ref(false);
+const followLoading = ref(false);
 const searchQuery = ref("");
 const isLoading = ref(false);
 const spellingSuggestion = ref("");
 const usingFuzzySearch = ref(false);
-
+const followingStatus = ref({});
 // Separate arrays for posts and people
 const posts = ref([]);
 const people = ref([]);
-const activeTab = ref('all'); // 'all', 'posts', or 'people'
+const activeTab = ref("all"); // 'all', 'posts', or 'people'
 
 // Add the annotation icon for suggestions
 const AnnotationIcon = {
-  name: 'AnnotationIcon',
+  name: "AnnotationIcon",
   props: {
     size: {
       type: String,
-      default: '24'
+      default: "24",
     },
     color: {
       type: String,
-      default: 'currentColor'
-    }
+      default: "currentColor",
+    },
   },
   setup(props) {
-    return () => h('svg', {
-      xmlns: 'http://www.w3.org/2000/svg',
-      width: props.size,
-      height: props.size,
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: props.color,
-      strokeWidth: '2',
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round'
-    }, [
-      h('path', { d: 'M7 8h10M7 12h4m1 8l4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z' })
-    ]);
-  }
+    return () =>
+      h(
+        "svg",
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          width: props.size,
+          height: props.size,
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: props.color,
+          strokeWidth: "2",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+        },
+        [
+          h("path", {
+            d: "M7 8h10M7 12h4m1 8l4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
+          }),
+        ]
+      );
+  },
 };
 
 // Added search suggestions
 const searchSuggestions = [
-  "Marketing", 
-  "Finance", 
-  "Leadership", 
-  "Technology", 
+  "Marketing",
+  "Finance",
+  "Leadership",
+  "Technology",
   "Innovation",
   "Business",
   "Development",
   "Strategy",
   "Management",
-  "Analytics"
+  "Analytics",
 ];
 
 // Custom icon for no results state
 const SearchOffIcon = {
-  name: 'SearchOffIcon',
+  name: "SearchOffIcon",
   props: {
     size: {
       type: String,
-      default: '24'
+      default: "24",
     },
     color: {
       type: String,
-      default: 'currentColor'
-    }
+      default: "currentColor",
+    },
   },
   setup(props) {
-    return () => h('svg', {
-      xmlns: 'http://www.w3.org/2000/svg',
-      width: props.size,
-      height: props.size,
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: props.color,
-      strokeWidth: '2',
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round'
-    }, [
-      h('path', { d: 'M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0' }),
-      h('path', { d: 'M21 21l-6 -6' }),
-      h('path', { d: 'M3 3l18 18' })
-    ]);
-  }
+    return () =>
+      h(
+        "svg",
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          width: props.size,
+          height: props.size,
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: props.color,
+          strokeWidth: "2",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+        },
+        [
+          h("path", { d: "M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" }),
+          h("path", { d: "M21 21l-6 -6" }),
+          h("path", { d: "M3 3l18 18" }),
+        ]
+      );
+  },
 };
 
 // Dictionary of common words for spell checking
 const commonBusinessTerms = [
-  "marketing", "finance", "leadership", "technology", "innovation", 
-  "business", "development", "strategy", "management", "sales",
-  "analytics", "digital", "transformation", "project", "customer",
-  "service", "product", "operations", "human", "resources",
-  "investment", "revenue", "profit", "market", "brand",
-  "advertising", "social", "media", "email", "content",
-  "data", "analysis", "performance", "growth", "sustainability",
-  "corporate", "entrepreneur", "startup", "global", "local",
-  "team", "collaboration", "communication", "leadership", "executive",
-  "director", "manager", "consultant", "advisor", "professional"
+  "marketing",
+  "finance",
+  "leadership",
+  "technology",
+  "innovation",
+  "business",
+  "development",
+  "strategy",
+  "management",
+  "sales",
+  "analytics",
+  "digital",
+  "transformation",
+  "project",
+  "customer",
+  "service",
+  "product",
+  "operations",
+  "human",
+  "resources",
+  "investment",
+  "revenue",
+  "profit",
+  "market",
+  "brand",
+  "advertising",
+  "social",
+  "media",
+  "email",
+  "content",
+  "data",
+  "analysis",
+  "performance",
+  "growth",
+  "sustainability",
+  "corporate",
+  "entrepreneur",
+  "startup",
+  "global",
+  "local",
+  "team",
+  "collaboration",
+  "communication",
+  "leadership",
+  "executive",
+  "director",
+  "manager",
+  "consultant",
+  "advisor",
+  "professional",
 ];
 
 // Computed properties for filtered results based on active tab
 const filteredPosts = computed(() => {
-  if (activeTab.value === 'all' || activeTab.value === 'posts') {
+  if (activeTab.value === "all" || activeTab.value === "posts") {
     return posts.value;
   }
   return [];
 });
 
 const filteredPeople = computed(() => {
-  if (activeTab.value === 'all' || activeTab.value === 'people') {
+  if (activeTab.value === "all" || activeTab.value === "people") {
     return people.value;
   }
   return [];
@@ -425,7 +603,7 @@ const filteredPeople = computed(() => {
 // Updated limits: 4 posts and 6 people
 const limitedFilteredPosts = computed(() => {
   // In "all" mode, limit to 4 posts
-  if (activeTab.value === 'all') {
+  if (activeTab.value === "all") {
     return filteredPosts.value.slice(0, 4);
   }
   // In "posts" mode, show up to 8 posts
@@ -434,7 +612,7 @@ const limitedFilteredPosts = computed(() => {
 
 const limitedFilteredPeople = computed(() => {
   // In "all" mode, limit to 6 people
-  if (activeTab.value === 'all') {
+  if (activeTab.value === "all") {
     return filteredPeople.value.slice(0, 6);
   }
   // In "people" mode, show up to 8 people
@@ -442,9 +620,9 @@ const limitedFilteredPeople = computed(() => {
 });
 
 const filteredResults = computed(() => {
-  if (activeTab.value === 'all') {
+  if (activeTab.value === "all") {
     return [...filteredPosts.value, ...filteredPeople.value];
-  } else if (activeTab.value === 'posts') {
+  } else if (activeTab.value === "posts") {
     return filteredPosts.value;
   } else {
     return filteredPeople.value;
@@ -472,18 +650,16 @@ const navigateToPost = (post) => {
 const navigateToProfile = (person) => {
   if (person) {
     let profileUrl;
-    
+
     // Determine the correct profile URL based on available data
     if (person.id) {
       profileUrl = `/business-network/profile/${person.id}`;
-    } else if (person.username) {
-      profileUrl = `/business-network/profile/user/${person.username}`;
     } else {
-      console.error('Cannot navigate to profile: Missing ID and username', person);
+      console.error("Cannot navigate to profile: Missing ID", person);
       return;
     }
-    
-    console.log('Navigating to profile:', profileUrl, person);
+
+    console.log("Navigating to profile:", profileUrl, person);
     router.push(profileUrl);
     showSearchDropdown.value = false;
   }
@@ -493,74 +669,170 @@ const navigateToProfile = (person) => {
 const levenshteinDistance = (str1, str2) => {
   const m = str1.length;
   const n = str2.length;
-  
+
   // Create a matrix of size (m+1) x (n+1)
-  const dp = Array(m + 1).fill().map(() => Array(n + 1).fill(0));
-  
+  const dp = Array(m + 1)
+    .fill()
+    .map(() => Array(n + 1).fill(0));
+
   // Initialize first row and column
   for (let i = 0; i <= m; i++) dp[i][0] = i;
   for (let j = 0; j <= n; j++) dp[0][j] = j;
-  
+
   // Fill the matrix
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
       if (str1[i - 1] === str2[j - 1]) {
         dp[i][j] = dp[i - 1][j - 1];
       } else {
-        dp[i][j] = 1 + Math.min(
-          dp[i - 1][j],     // deletion
-          dp[i][j - 1],     // insertion
-          dp[i - 1][j - 1]  // substitution
-        );
+        dp[i][j] =
+          1 +
+          Math.min(
+            dp[i - 1][j], // deletion
+            dp[i][j - 1], // insertion
+            dp[i - 1][j - 1] // substitution
+          );
       }
     }
   }
-  
+
   return dp[m][n];
 };
 
+// Observer reference
+let observer;
+
+// Register a new element to observe
+function registerObserver(el, personId) {
+  if (!el) return;
+  if (!observer) return; // initialized onMounted
+
+  observer.observe(el);
+  el.dataset.personId = personId; // attach ID for lookup inside callback
+}
+
+// API call to check following status
+async function checkFollowing(personId) {
+  if (!user.value) return;
+  try {
+    const { data } = await get(
+      `/bn/check-follow-status/${user.value?.user?.id}/${personId}/`
+    );
+    console.log(data, "check-follow-status");
+    followingStatus.value[personId] = data.is_following;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Setup observer once
+onMounted(() => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const personId = entry.target.dataset.personId;
+          if (personId) {
+            checkFollowing(personId);
+            observer.unobserve(entry.target);
+          }
+        }
+      });
+    },
+    {
+      threshold: 0.1, // how much of the element is visible (10% here)
+    }
+  );
+});
+
+const toggleFollow = async (personId) => {
+  if (followLoading.value) return;
+  followLoading.value = true;
+  isFollowing.value = !isFollowing.value;
+
+  if (!followingStatus.value[personId]) {
+    try {
+      const { data } = await post(`/bn/users/${personId}/follow/`);
+
+      if (data) {
+        // Update followers count accordingly
+
+        toast.add({
+          title: "Followed",
+          description: "You have successfully followed this user.",
+          icon: "i-heroicons-check-circle",
+          color: "green",
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      followingStatus.value[personId] = !followingStatus.value[personId]; // Revert state on error
+    } finally {
+      followLoading.value = false;
+    }
+  } else {
+    try {
+      const res = await del(`/bn/users/${personId}/unfollow/`);
+      if (res.data === undefined) {
+        // Update followers count accordingly
+
+        toast.add({
+          title: "Unfollowed",
+          description: "You have successfully unfollowed this user.",
+          icon: "i-heroicons-information-circle",
+          color: "gray",
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      followingStatus.value[personId] = !followingStatus.value[personId]; // Revert state on error
+    } finally {
+      followLoading.value = false;
+    }
+  }
+};
 // Find closest match for a word from dictionary
 const findClosestMatch = (word) => {
   if (!word || word.length < 3) return null;
-  
+
   // Normalize the word
   const normalizedWord = word.toLowerCase().trim();
-  
+
   // Check if the word is already in the dictionary
   if (commonBusinessTerms.includes(normalizedWord)) {
     return null; // No correction needed
   }
-  
+
   // Find the closest match
   let closestMatch = null;
   let minDistance = Infinity;
-  
+
   // Set threshold based on word length
   const threshold = Math.max(2, Math.floor(normalizedWord.length * 0.4));
-  
+
   for (const term of commonBusinessTerms) {
     // Skip very different length words for efficiency
     if (Math.abs(term.length - normalizedWord.length) > threshold) continue;
-    
+
     const distance = levenshteinDistance(normalizedWord, term);
-    
+
     // Update closest match if this is closer
     if (distance < minDistance && distance <= threshold) {
       minDistance = distance;
       closestMatch = term;
     }
   }
-  
+
   return closestMatch;
 };
 
 // Generate spelling suggestion for the entire query
 const generateSpellingSuggestion = (query) => {
   if (!query) return null;
-  
+
   const words = query.split(/\s+/);
   let hasCorrection = false;
-  const correctedWords = words.map(word => {
+  const correctedWords = words.map((word) => {
     const closestMatch = findClosestMatch(word);
     if (closestMatch && closestMatch !== word.toLowerCase()) {
       hasCorrection = true;
@@ -568,8 +840,8 @@ const generateSpellingSuggestion = (query) => {
     }
     return word;
   });
-  
-  return hasCorrection ? correctedWords.join(' ') : null;
+
+  return hasCorrection ? correctedWords.join(" ") : null;
 };
 
 // Apply the spelling suggestion
@@ -583,71 +855,79 @@ const applySpellingSuggestion = () => {
 // Highlight search term matches in text
 const highlightMatches = (text, query) => {
   if (!query || !text) return text;
-  
+
   // Get both the original query terms and possible corrections
   const queryTerms = query.toLowerCase().split(/\s+/);
-  
+
   // Create a combined pattern that includes both original terms and corrections
-  let termPatterns = queryTerms.map(term => {
-    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
-    // Find potential corrections for this term
-    const correction = findClosestMatch(term);
-    if (correction && correction !== term) {
-      const escapedCorrection = correction.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      return `(${escaped}|${escapedCorrection})`;
-    }
-    return `(${escaped})`;
-  }).join('|');
-  
+  let termPatterns = queryTerms
+    .map((term) => {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      // Find potential corrections for this term
+      const correction = findClosestMatch(term);
+      if (correction && correction !== term) {
+        const escapedCorrection = correction.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        );
+        return `(${escaped}|${escapedCorrection})`;
+      }
+      return `(${escaped})`;
+    })
+    .join("|");
+
   // Create regex pattern from all terms
-  const pattern = new RegExp(`(${termPatterns})`, 'gi');
-  
-  return text.replace(pattern, '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-0.5 rounded">$1</span>');
+  const pattern = new RegExp(`(${termPatterns})`, "gi");
+
+  return text.replace(
+    pattern,
+    '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-0.5 rounded">$1</span>'
+  );
 };
 
 // Get a content preview with highlighted keywords
 const getContentPreview = (content, query) => {
-  if (!content) return '';
-  if (!query) return content.substring(0, 100) + '...';
-  
+  if (!content) return "";
+  if (!query) return content.substring(0, 100) + "...";
+
   // Extract a relevant portion of the content containing the search term
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`(${escapedQuery.split(/\s+/).join('|')})`, 'i');
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`(${escapedQuery.split(/\s+/).join("|")})`, "i");
   const matchIndex = content.search(pattern);
-  
+
   if (matchIndex >= 0) {
     // Get text around the match
     const start = Math.max(0, matchIndex - 40);
     const end = Math.min(content.length, matchIndex + 60);
     let preview = content.substring(start, end);
-    
+
     // Add ellipsis if we're not starting from the beginning
-    if (start > 0) preview = '...' + preview;
+    if (start > 0) preview = "..." + preview;
     // Add ellipsis if we're not ending at the end
-    if (end < content.length) preview = preview + '...';
-    
+    if (end < content.length) preview = preview + "...";
+
     return highlightMatches(preview, query);
   }
-  
+
   // If no match found, just show the beginning
-  return content.substring(0, 100) + '...';
+  return content.substring(0, 100) + "...";
 };
 
 // Check if a tag matches the search query
 const isTagMatched = (tag, query) => {
   if (!tag || !query) return false;
-  
+
   const normalizedTag = tag.toLowerCase();
   const words = query.toLowerCase().split(/\s+/);
-  
+
   // Check for direct matches first
-  if (words.some(word => normalizedTag.includes(word))) {
+  if (words.some((word) => normalizedTag.includes(word))) {
     return true;
   }
-  
+
   // If no direct match, check for fuzzy matches
-  return words.some(word => {
+  return words.some((word) => {
     const correction = findClosestMatch(word);
     return correction && normalizedTag.includes(correction);
   });
@@ -671,7 +951,7 @@ const clearSearch = () => {
   searchQuery.value = "";
   posts.value = [];
   people.value = [];
-  activeTab.value = 'all';
+  activeTab.value = "all";
   nextTick(() => {
     const searchInput = document.querySelector(".search-input");
     if (searchInput) {
@@ -690,11 +970,13 @@ const viewAllResults = () => {
   if (searchQuery.value) {
     // Navigate to all results page
     // Add the active tab as a query parameter if it's not 'all'
-    let path = `/business-network/search-results/${encodeURIComponent(searchQuery.value)}`;
-    if (activeTab.value !== 'all') {
+    let path = `/business-network/search-results/${encodeURIComponent(
+      searchQuery.value
+    )}`;
+    if (activeTab.value !== "all") {
       path += `?tab=${activeTab.value}`;
     }
-    
+
     router.push(path);
     showSearchDropdown.value = false;
   }
@@ -751,7 +1033,7 @@ defineExpose({
 // Debounce function to limit API calls
 const debounce = (fn, wait) => {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => fn.apply(this, args), wait);
   };
@@ -761,97 +1043,112 @@ const debounce = (fn, wait) => {
 const performSearch = async (query, useFuzzySearch = false) => {
   isLoading.value = true;
   usingFuzzySearch.value = useFuzzySearch;
-  
+
   try {
     // Search for posts
-    let postsEndpoint = `/bn/posts/search/?q=${encodeURIComponent(query)}&page=1`;
-    let peopleEndpoint = `/bn/users/search/?q=${encodeURIComponent(query)}`;
-    
+    let postsEndpoint = `/bn/posts/search/?q=${encodeURIComponent(
+      query
+    )}&page=1`;
+    let peopleEndpoint = `/bn/user-search/?q=${encodeURIComponent(query)}`;
+
     if (useFuzzySearch) {
-      postsEndpoint += '&fuzzy=true';
-      peopleEndpoint += '&fuzzy=true';
+      postsEndpoint += "&fuzzy=true";
+      peopleEndpoint += "&fuzzy=true";
     }
-    
+
     console.log(`Searching posts: ${postsEndpoint}`);
     console.log(`Searching users: ${peopleEndpoint}`);
-    
+
     // Make parallel requests for posts and people
     const [postsRes, peopleRes] = await Promise.all([
       get(postsEndpoint),
-      get(peopleEndpoint)
+      get(peopleEndpoint),
     ]);
-    
+
     // Log response data to help debug
-    console.log('Posts search response:', postsRes);
-    console.log('People search response:', peopleRes);
-    
+    console.log("Posts search response:", postsRes);
+    console.log("People search response:", peopleRes);
+
     const postResults = postsRes.data?.results || [];
-    
+
     // Process people results to ensure we have the required fields
     let peopleResults = [];
     if (peopleRes.data?.results && Array.isArray(peopleRes.data.results)) {
-      peopleResults = peopleRes.data.results.map(person => {
+      peopleResults = peopleRes.data.results.map((person) => {
         // Add default values for missing fields
         return {
           id: person.id,
-          name: person.name || person.username || 'Unknown User',
-          avatar_url: person.avatar_url || person.profile_photo || person.profile_picture || null,
-          followers: person.followers_count || person.followers || 0,
-          title: person.title || person.position || person.bio || '',
-          is_online: !!person.is_online,
+          name: person.name || "Unknown User",
+          avatar_url: person.image || null,
+          followers: person.follower_count || person.followers || 0,
+          title: person.profession || person.position || person.bio || "",
+
           is_following: !!person.is_following,
-          username: person.username || '',
+
           // Add any additional fields your backend provides
-          ...person
+          ...person,
         };
       });
     }
-    
+
     // If no results and not already using fuzzy search, generate spelling suggestion
-    if ((postResults.length === 0 && peopleResults.length === 0) && !useFuzzySearch) {
+    if (
+      postResults.length === 0 &&
+      peopleResults.length === 0 &&
+      !useFuzzySearch
+    ) {
       const suggestion = generateSpellingSuggestion(query);
-      
+
       if (suggestion && suggestion !== query) {
         spellingSuggestion.value = suggestion;
-        
+
         // Optionally, automatically perform search with the suggestion
         const [fuzzyPostsRes, fuzzyPeopleRes] = await Promise.all([
-          get(`/bn/posts/search/?q=${encodeURIComponent(suggestion)}&page=1&fuzzy=true`),
-          get(`/bn/users/search/?q=${encodeURIComponent(suggestion)}&fuzzy=true`)
+          get(
+            `/bn/posts/search/?q=${encodeURIComponent(
+              suggestion
+            )}&page=1&fuzzy=true`
+          ),
+          get(
+            `/bn/users/search/?q=${encodeURIComponent(suggestion)}&fuzzy=true`
+          ),
         ]);
-        
+
         const fuzzyPostResults = fuzzyPostsRes.data?.results || [];
         let fuzzyPeopleResults = [];
-        
-        if (fuzzyPeopleRes.data?.results && Array.isArray(fuzzyPeopleRes.data.results)) {
-          fuzzyPeopleResults = fuzzyPeopleRes.data.results.map(person => ({
+
+        if (
+          fuzzyPeopleRes.data?.results &&
+          Array.isArray(fuzzyPeopleRes.data.results)
+        ) {
+          fuzzyPeopleResults = fuzzyPeopleRes.data.results.map((person) => ({
             id: person.id,
-            name: person.name || person.username || 'Unknown User',
-            avatar_url: person.avatar_url || person.profile_photo || person.profile_picture || null,
+            name: person.name || "Unknown User",
+            avatar_url: person.image || null,
             followers: person.followers_count || person.followers || 0,
-            title: person.title || person.position || person.bio || '',
-            is_online: !!person.is_online,
+            title: person.title || person.position || person.bio || "",
+
             is_following: !!person.is_following,
-            username: person.username || '',
-            ...person
+
+            ...person,
           }));
         }
-        
+
         return {
           posts: fuzzyPostResults,
-          people: fuzzyPeopleResults
+          people: fuzzyPeopleResults,
         };
       }
     } else {
       spellingSuggestion.value = "";
     }
-    
+
     return {
       posts: postResults,
-      people: peopleResults
+      people: peopleResults,
     };
   } catch (error) {
-    console.error('Search error:', error);
+    console.error("Search error:", error);
     return { posts: [], people: [] };
   } finally {
     isLoading.value = false;
@@ -862,25 +1159,25 @@ const performSearch = async (query, useFuzzySearch = false) => {
 const debouncedSearch = debounce(async (query) => {
   // First try exact search
   const results = await performSearch(query, false);
-  
+
   // Update posts and people arrays
   posts.value = results.posts || [];
   people.value = results.people || [];
-  
+
   // If no results, try fuzzy search with corrections
   if (posts.value.length === 0 && people.value.length === 0) {
     const fuzzyResults = await performSearch(query, true);
     posts.value = fuzzyResults.posts || [];
     people.value = fuzzyResults.people || [];
   }
-  
+
   // Set appropriate tab if one result type is empty
   if (posts.value.length === 0 && people.value.length > 0) {
-    activeTab.value = 'people';
+    activeTab.value = "people";
   } else if (people.value.length === 0 && posts.value.length > 0) {
-    activeTab.value = 'posts';
+    activeTab.value = "posts";
   } else {
-    activeTab.value = 'all';
+    activeTab.value = "all";
   }
 }, 300);
 
@@ -894,7 +1191,7 @@ watch(searchQuery, (newValue) => {
     usingFuzzySearch.value = false;
     return;
   }
-  
+
   // Only search if query is at least 2 characters
   if (newValue.length >= 2) {
     debouncedSearch(newValue);
@@ -914,10 +1211,8 @@ watch(searchQuery, (newValue) => {
 
 /* Professional shadow for dropdown */
 .shadow-professional {
-  box-shadow: 
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 /* Loading spinner animation */
@@ -932,7 +1227,9 @@ watch(searchQuery, (newValue) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Improved search input focus styles */
@@ -980,15 +1277,20 @@ watch(searchQuery, (newValue) => {
 }
 
 @keyframes highlight-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* Improve line clamp for multi-line text */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
 }

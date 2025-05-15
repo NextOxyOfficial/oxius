@@ -32,6 +32,25 @@ def base64ToFile(base64_data):
     file.name = filename
     return file
 
+#user search generics view
+
+
+class UserSearchView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    pagination_class= StandardResultsSetPagination
+    # permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        query = self.request.query_params.get('q', '')
+        return User.objects.filter(Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query))
+   
+    
+# @api_view(['GET'])
+# def user_search(request):
+#     query = request.GET.get('q', '')
+#     users = User.objects.filter(Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query))
+#     serializer = UserSerializer(users, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
 # Post Views
 class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     queryset = BusinessNetworkPost.objects.all().order_by('-created_at')
