@@ -27,7 +27,7 @@
           <div class="flex justify-center">
             <button
               @click="closeSuccessModal"
-              class="bg-primary text-white px-8 py-3 rounded-md hover:bg-primary/90 transition font-medium"
+              class="bg-primary text-white px-8 py-1.5 rounded-md hover:bg-primary/90 transition font-medium"
             >
               Got it
             </button>
@@ -95,7 +95,7 @@
               <select
                 id="category"
                 v-model="formData.category"
-                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-1.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
                 required
                 @change="handleCategoryChange"
               >
@@ -127,16 +127,25 @@
             <label
               for="childCategory"
               class="block text-sm font-medium text-gray-700 mb-2"
-              >Sub Category <span v-if="childCategories.length" class="text-red-500">*</span></label
+              >Sub Category
+              <span v-if="childCategories.length" class="text-red-500"
+                >*</span
+              ></label
             >
             <div class="relative">
               <select
                 id="childCategory"
                 v-model="formData.childCategory"
-                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-3 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-1.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
                 :required="childCategories.length > 0"
               >
-                <option value="" disabled>{{ childCategories.length ? 'Select a sub category' : 'No sub categories available' }}</option>
+                <option value="" disabled>
+                  {{
+                    childCategories.length
+                      ? "Select a sub category"
+                      : "No sub categories available"
+                  }}
+                </option>
                 <option
                   v-for="childCategory in childCategories"
                   :key="childCategory.id"
@@ -171,7 +180,7 @@
                 type="text"
                 id="title"
                 v-model="formData.title"
-                class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
                 placeholder="Enter a descriptive title"
                 required
                 maxlength="100"
@@ -204,7 +213,7 @@
               <textarea
                 id="description"
                 v-model="formData.description"
-                class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                class="w-full border border-gray-300 rounded-md px-4 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
                 rows="5"
                 placeholder="Describe what you're selling in detail"
                 required
@@ -228,7 +237,7 @@
                 v-for="condition in conditions"
                 :key="condition.value"
                 :class="[
-                  'flex items-center px-5 py-3 border rounded-md cursor-pointer transition-colors',
+                  'flex items-center px-5 py-1.5 border rounded-md cursor-pointer transition-colors',
                   formData.condition === condition.value
                     ? 'border-primary bg-primary/10 text-primary font-medium shadow-sm'
                     : 'border-gray-300 hover:bg-gray-50',
@@ -270,7 +279,7 @@
                 <input
                   type="number"
                   v-model="formData.price"
-                  class="w-full border border-gray-300 rounded-l-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                  class="w-full border border-gray-300 rounded-l-md pl-10 pr-3 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Enter your price"
                   min="0"
                   :disabled="formData.negotiable"
@@ -278,7 +287,7 @@
                 />
               </div>
               <label
-                class="flex items-center border border-l-0 border-gray-300 rounded-r-md px-4 py-3 bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                class="flex items-center border border-l-0 border-gray-300 rounded-r-md px-4 py-1.5 bg-gray-50 hover:bg-gray-100 cursor-pointer"
               >
                 <input
                   type="checkbox"
@@ -302,7 +311,7 @@
               <div>
                 <select
                   v-model="formData.division"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                  class="w-full border border-gray-300 rounded-md px-4 py-0.5 focus:ring-primary focus:border-primary shadow-sm"
                   required
                 >
                   <option value="" disabled>Select Division</option>
@@ -322,7 +331,7 @@
               <div>
                 <select
                   v-model="formData.district"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                  class="w-full border border-gray-300 rounded-md px-4 py-0.5 focus:ring-primary focus:border-primary shadow-sm"
                   required
                   :disabled="!formData.division"
                 >
@@ -343,7 +352,7 @@
               <div>
                 <select
                   v-model="formData.area"
-                  class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                  class="w-full border border-gray-300 rounded-md px-4 py-0.5 focus:ring-primary focus:border-primary shadow-sm"
                   required
                   :disabled="!formData.district"
                 >
@@ -373,7 +382,7 @@
             <textarea
               id="detailedAddress"
               v-model="formData.detailedAddress"
-              class="w-full border border-gray-300 rounded-md px-4 py-3 focus:ring-primary focus:border-primary shadow-sm"
+              class="w-full border border-gray-300 rounded-md px-4 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
               rows="3"
               placeholder="Provide specific location details"
               required
@@ -399,7 +408,7 @@
                 <input
                   type="tel"
                   v-model="formData.phone"
-                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Phone Number"
                   required
                   pattern="[0-9]{11}"
@@ -421,7 +430,7 @@
                 <input
                   type="email"
                   v-model="formData.email"
-                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-3 focus:ring-primary focus:border-primary shadow-sm"
+                  class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
                   placeholder="Email (optional)"
                 />
               </div>
@@ -648,7 +657,7 @@ const formData = reactive({
   phone: "",
   email: "",
   images: [],
-  termsAccepted: false
+  termsAccepted: false,
 });
 
 // Child categories based on selected parent category
@@ -682,12 +691,12 @@ const conditions = ref([]);
 // Load all available conditions from backend
 const loadConditions = async () => {
   try {
-    const response = await get('/sale/conditions/');
+    const response = await get("/sale/conditions/");
     if (response && Array.isArray(response.data)) {
-      conditions.value = response.data.map(condition => ({
+      conditions.value = response.data.map((condition) => ({
         label: condition.name,
         value: condition.value,
-        description: condition.description
+        description: condition.description,
       }));
     } else {
       // Fallback to hardcoded conditions if API fails
@@ -696,7 +705,7 @@ const loadConditions = async () => {
         { label: "Like New", value: "like-new" },
         { label: "Good", value: "good" },
         { label: "Fair", value: "fair" },
-        { label: "For Parts", value: "for-parts" }
+        { label: "For Parts", value: "for-parts" },
       ];
     }
   } catch (error) {
@@ -707,12 +716,12 @@ const loadConditions = async () => {
       { label: "Like New", value: "like-new" },
       { label: "Good", value: "good" },
       { label: "Fair", value: "fair" },
-      { label: "For Parts", value: "for-parts" }
+      { label: "For Parts", value: "for-parts" },
     ];
   }
 };
 
-// Location data 
+// Location data
 const regions = ref([]);
 const cities = ref([]);
 const upazilas = ref([]);
@@ -720,7 +729,9 @@ const upazilas = ref([]);
 // Load regions (divisions)
 const loadRegions = async () => {
   try {
-    const regions_response = await get(`/geo/regions/?country_name_eng=Bangladesh`);
+    const regions_response = await get(
+      `/geo/regions/?country_name_eng=Bangladesh`
+    );
     regions.value = regions_response.data;
   } catch (error) {
     console.error("Error loading regions:", error);
@@ -880,10 +891,12 @@ const getCategoryName = (categoryId) => {
 // Handle parent category change - load child categories
 const handleCategoryChange = async () => {
   formData.childCategory = ""; // Reset child category
-  
+
   if (formData.category) {
     try {
-      const response = await get(`/sale/child-categories/?parent_id=${formData.category}`);
+      const response = await get(
+        `/sale/child-categories/?parent_id=${formData.category}`
+      );
       childCategories.value = response.data || [];
     } catch (error) {
       console.error("Error loading child categories:", error);
@@ -897,22 +910,29 @@ const handleCategoryChange = async () => {
 // Validate current step
 const validateStep = () => {
   // Reset errors for this step
-  Object.keys(errors).forEach(key => errors[key] = '');
-  
+  Object.keys(errors).forEach((key) => (errors[key] = ""));
+
   if (currentStep.value === 0) {
     // Validate basic details
     if (!formData.category) errors.category = "Please select a category";
-    
+
     // Validate child category if options are available
     if (childCategories.value.length > 0 && !formData.childCategory) {
       errors.childCategory = "Please select a sub category";
     }
-    
+
     if (!formData.title) errors.title = "Please enter a title";
-    if (!formData.description) errors.description = "Please enter a description";
+    if (!formData.description)
+      errors.description = "Please enter a description";
     if (!formData.condition) errors.condition = "Please select condition";
 
-    if (!errors.category && !errors.childCategory && !errors.title && !errors.description && !errors.condition) {
+    if (
+      !errors.category &&
+      !errors.childCategory &&
+      !errors.title &&
+      !errors.description &&
+      !errors.condition
+    ) {
       goToNextStep();
     }
   } else if (currentStep.value === 1) {
@@ -920,15 +940,16 @@ const validateStep = () => {
     if (!formData.negotiable && !formData.price) {
       errors.price = "Please enter a price or mark as negotiable";
     }
-    
+
     if (!formData.division) errors.division = "Please select division";
     if (!formData.district) errors.district = "Please select district";
     if (!formData.area) errors.area = "Please select area";
-    if (!formData.detailedAddress) errors.detailedAddress = "Please enter detailed address";
+    if (!formData.detailedAddress)
+      errors.detailedAddress = "Please enter detailed address";
     if (!formData.phone) errors.phone = "Please enter phone number";
 
     if (
-      (!errors.price) &&
+      !errors.price &&
       !errors.division &&
       !errors.district &&
       !errors.area &&
@@ -939,7 +960,7 @@ const validateStep = () => {
     }
   } else if (currentStep.value === 2) {
     // Check if at least one image is uploaded
-    if (!formData.images.some(img => img)) {
+    if (!formData.images.some((img) => img)) {
       errors.images = "Please upload at least one image";
       return;
     }
@@ -960,13 +981,15 @@ const validateStep = () => {
 const submitForm = async () => {
   // Check if already submitting to prevent duplicate submissions
   if (isSubmitting.value) {
-    console.log("Form submission already in progress, preventing duplicate submission");
+    console.log(
+      "Form submission already in progress, preventing duplicate submission"
+    );
     return;
   }
 
   try {
     console.log("Starting form submission process...");
-    
+
     // Prepare form data as a regular object (not FormData)
     const formDataObj = {
       category: formData.category,
@@ -980,29 +1003,29 @@ const submitForm = async () => {
       phone: formData.phone,
       negotiable: formData.negotiable,
     };
-    
+
     // Debug condition value
     console.log("Condition value being sent:", formData.condition);
     console.log("Available conditions:", conditions.value);
-    
+
     // Add optional fields only if they have values
     if (formData.childCategory) {
       formDataObj.child_category = formData.childCategory;
     }
-    
+
     if (formData.email) {
       formDataObj.email = formData.email;
     }
-    
+
     if (!formData.negotiable && formData.price) {
       formDataObj.price = formData.price;
     }
-    
+
     // Convert base64 image strings to array of image data
     // This depends on how your backend API expects images
     // For now, we'll include them as base64 strings
-    if (formData.images && formData.images.filter(img => img).length > 0) {
-      formDataObj.images = formData.images.filter(img => img);
+    if (formData.images && formData.images.filter((img) => img).length > 0) {
+      formDataObj.images = formData.images.filter((img) => img);
     }
 
     console.log("Submitting form data:", formDataObj);
@@ -1013,7 +1036,7 @@ const submitForm = async () => {
     } else {
       result = await createSalePost(formDataObj);
       showSuccessModal.value = true;
-      
+
       // Auto-close modal after 3 seconds
       setTimeout(() => {
         closeSuccessModal();
@@ -1030,7 +1053,7 @@ const submitForm = async () => {
       title: "Error",
       description: "Failed to submit your listing. Please try again.",
       color: "red",
-      timeout: 5000
+      timeout: 5000,
     });
   }
 };
@@ -1039,14 +1062,15 @@ const submitForm = async () => {
 const closeSuccessModal = () => {
   showSuccessModal.value = false;
   resetForm();
-  
+
   // Show success notification
   const { showNotification } = useNotifications();
   showNotification({
     title: "Success!",
-    message: "Your listing has been submitted successfully and is under review.",
+    message:
+      "Your listing has been submitted successfully and is under review.",
     type: "success",
-    timeout: 5000
+    timeout: 5000,
   });
 };
 
@@ -1112,7 +1136,9 @@ const populateFormWithEditData = async () => {
   // Load child categories
   if (post.category) {
     try {
-      const response = await get(`/sale/child-categories/?parent_id=${post.category}`);
+      const response = await get(
+        `/sale/child-categories/?parent_id=${post.category}`
+      );
       childCategories.value = response.data || [];
     } catch (error) {
       console.error("Error loading child categories:", error);
@@ -1141,7 +1167,8 @@ const populateFormWithEditData = async () => {
   // Set existing images if available
   if (post.images && Array.isArray(post.images)) {
     post.images.forEach((image, index) => {
-      if (index < 8) { // Maximum 8 images
+      if (index < 8) {
+        // Maximum 8 images
         const imageUrl = image.image || image;
         imagePreviewUrls.value[index] = imageUrl;
         // For editing, we just need to display the existing images
