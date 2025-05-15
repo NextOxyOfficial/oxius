@@ -85,7 +85,7 @@
 
           <!-- Text with animations (preserved) -->
           <h3
-            class="text-md font-medium text-center"
+            class="text-sm font-medium text-center"
             :class="[
               getTextAnimation(service.id),
               {

@@ -96,7 +96,7 @@
                     class="absolute top-2 right-2 z-20 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full shadow-sm"
                   >
                     <span
-                      class="text-emerald-600 dark:text-emerald-400 font-medium text-xs flex items-center"
+                      class="text-emerald-600 dark:text-emerald-400 font-medium text-sm flex items-center"
                     >
                       <span class="text-sm mr-0.5">৳</span
                       >{{ formatPrice(ad.price) }}
@@ -125,7 +125,7 @@
                       name="i-heroicons-map-pin"
                       class="w-3.5 h-3.5 mr-1 flex-shrink-0"
                     />
-                    <span class="truncate text-xs"
+                    <span class="truncate text-sm"
                       >{{ ad.upazila }}, {{ ad.city }}</span
                     >
                   </div>
