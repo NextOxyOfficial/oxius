@@ -485,7 +485,7 @@
                         <!-- Gig details with premium styling -->
                         <div class="flex-1">
                           <h3
-                            class="leading-tight font-semibold mb-2 capitalize group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300"
+                            class="leading-tight font-medium mb-2 capitalize group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300"
                           >
                             {{ gig.title }}
                           </h3>
