@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto sm:px-4 lg:px-4 py-8">
       <!-- Product Summary Card -->
       <div v-if="isLoading" class="flex justify-center py-12">
         <UIcon

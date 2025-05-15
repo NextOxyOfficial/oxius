@@ -336,54 +336,6 @@
               </UButton>
             </div>
 
-            <!-- Location Selection -->
-            <div class="mb-6">
-              <h3
-                class="text-base font-medium text-gray-700 mb-3 flex items-center gap-1"
-              >
-                <UIcon name="i-heroicons-map-pin" class="w-4 h-4" />
-                Location
-              </h3>
-
-              <!-- Division Selection -->
-              <div class="mb-3">
-                <label class="block text-sm text-gray-500 mb-1">Division</label>
-                <USelectMenu
-                  v-model="selectedDivision"
-                  :options="divisions"
-                  placeholder="All Divisions"
-                  class="w-full"
-                  @update:modelValue="handleDivisionChange"
-                />
-              </div>
-
-              <!-- District Selection -->
-              <div class="mb-3">
-                <label class="block text-sm text-gray-500 mb-1">District</label>
-                <USelectMenu
-                  v-model="selectedDistrict"
-                  :options="districtOptions"
-                  placeholder="All Districts"
-                  class="w-full"
-                  @update:modelValue="handleDistrictChange"
-                  :disabled="!selectedDivision"
-                />
-              </div>
-
-              <!-- Area Selection -->
-              <div>
-                <label class="block text-sm text-gray-500 mb-1">Area</label>
-                <USelectMenu
-                  v-model="selectedArea"
-                  :options="areaOptions"
-                  placeholder="All Areas"
-                  class="w-full"
-                  @update:modelValue="applyFilters"
-                  :disabled="!selectedDistrict"
-                />
-              </div>
-            </div>
-
             <!-- Sponsored Ads -->
             <div class="mb-6">
               <h3
