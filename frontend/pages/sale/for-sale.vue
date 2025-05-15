@@ -583,33 +583,11 @@
           <!-- Category Tabs Listings Section -->
           <div
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-5 mb-6"
-          >            <div
-              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4"
-            >
+          >            
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
               <h2 class="text-lg font-medium text-gray-800">
                 {{ categoryBrowserHeading }}
               </h2>
-              <div class="overflow-x-auto w-full sm:w-auto pb-1">
-                <UButtonGroup size="sm">
-                  <UButton
-                    color="primary"
-                    :variant="!activeCategoryTab ? 'soft' : 'ghost'"
-                    class="px-4 whitespace-nowrap"
-                    @click="changeActiveCategoryTab(null)"
-                  >
-                    All
-                  </UButton>                  <UButton
-                    v-for="(cat, i) in topCategories"
-                    :key="`cat-${cat?.id}+${i}`"
-                    :color="activeCategoryTab === cat.id ? 'primary' : 'gray'"
-                    :variant="activeCategoryTab === cat.id ? 'soft' : 'ghost'"
-                    class="px-4 whitespace-nowrap"
-                    @click="changeActiveCategoryTab(cat.id)"
-                  >
-                    {{ cat.name }} <span class="text-xs ml-1 opacity-75">({{ getCategoryCount(cat.id) }})</span>
-                  </UButton>
-                </UButtonGroup>
-              </div>
             </div>
 
             <!-- Category Posts Grid -->
@@ -727,12 +705,38 @@
           <div
             class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-5 mb-6"
           >
-            <h2
-              class="text-lg font-medium text-amber-700 flex items-center mb-4"
-            >
-              <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
-              Recent Listings
-            </h2>
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+              <h2
+                class="text-lg font-medium text-amber-700 flex items-center"
+              >
+                <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
+                Recent Listings
+              </h2>
+              
+              <!-- Tabs moved here -->
+              <div class="overflow-x-auto w-full sm:w-auto pb-1">
+                <UButtonGroup size="sm">
+                  <UButton
+                    color="primary"
+                    :variant="!activeCategoryTab ? 'soft' : 'ghost'"
+                    class="px-4 whitespace-nowrap"
+                    @click="changeActiveCategoryTab(null)"
+                  >
+                    All
+                  </UButton>
+                  <UButton
+                    v-for="(cat, i) in topCategories"
+                    :key="`cat-${cat?.id}+${i}`"
+                    :color="activeCategoryTab === cat.id ? 'primary' : 'gray'"
+                    :variant="activeCategoryTab === cat.id ? 'soft' : 'ghost'"
+                    class="px-4 whitespace-nowrap"
+                    @click="changeActiveCategoryTab(cat.id)"
+                  >
+                    {{ cat.name }} <span class="text-xs ml-1 opacity-75">({{ getCategoryCount(cat.id) }})</span>
+                  </UButton>
+                </UButtonGroup>
+              </div>
+            </div>
 
             <!-- Recent Listings Horizontal Scroll -->
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
