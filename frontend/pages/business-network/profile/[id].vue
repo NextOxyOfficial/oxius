@@ -804,6 +804,7 @@
               <!-- NEW: Static End of feed indicator - Always shows at the bottom of the page -->
               <div
                 class="end-of-feed-indicator bg-white rounded-xl border border-gray-200/50 overflow-hidden mt-8 mb-4"
+                v-if="!isLoadingPosts && !posts?.results?.length === 0"
               >
                 <div
                   class="flex flex-col items-center justify-center py-8 text-center"

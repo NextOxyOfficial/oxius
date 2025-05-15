@@ -171,7 +171,7 @@
 
       <!-- Empty state with better styling -->
       <div
-        v-if="!loading && posts?.length === 0"
+        v-if="!loading && posts?.length === 0 && !id"
         class="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-gray-100 dark:border-slate-700/50 shadow-md"
       >
         <UIcon
@@ -179,7 +179,7 @@
           class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3"
         />
         <p class="text-gray-500 dark:text-gray-400 mb-2 font-medium">
-          {{ $t("no_post_available") }}
+          No Post Available
         </p>
         <p class="text-gray-400 dark:text-gray-500 text-sm">
           Check back later for new updates
