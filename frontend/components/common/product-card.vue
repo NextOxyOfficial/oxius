@@ -98,7 +98,7 @@
 
           <!-- Price Section with Premium Styling -->
           <div
-            class="flex items-center justify-between mt-auto border-t border-slate-100/70 dark:border-slate-700/30 mr-0.5 sm:mr-3"
+            class="flex justify-between mt-auto border-t border-slate-100/70 dark:border-slate-700/30 mr-0.5 sm:mr-3"
           >
             <!-- Price Section with Improved Logic - regular_price is used if sale_price is missing/0/null -->
             <div class="flex flex-col h-10">
