@@ -74,19 +74,61 @@
                 
                 <!-- Individual categories -->
                 <li v-for="category in categories" :key="category.id">
-                  <button 
-                    @click="selectCategory(category.id)"
-                    class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between"
-                    :class="selectedCategory === category.id ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 hover:bg-gray-100'"
-                  >
-                    <span class="flex items-center gap-2">
-                      <UIcon :name="getCategoryIcon(category.id)" class="w-5 h-5" />
-                      {{ category.name }}
-                    </span>
-                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
-                      {{ getCategoryCount(category.id) }}
-                    </span>
-                  </button>
+                  <div>
+                    <button 
+                      class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between"
+                      :class="selectedCategory === category.id ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 hover:bg-gray-100'"
+                    >
+                      <div 
+                        class="flex items-center gap-2 flex-1" 
+                        @click="selectCategory(category.id)"
+                      >
+                        <UIcon :name="getCategoryIcon(category.id)" class="w-5 h-5" />
+                        {{ category.name }}
+                      </div>
+                      <!-- Count badge -->
+                      <div class="flex items-center">
+                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full mr-2">
+                          {{ getCategoryCount(category.id) }}
+                        </span>
+                        <!-- Expand/collapse button for subcategories -->
+                        <button 
+                          v-if="hasSubcategories(category.id)"
+                          type="button"
+                          class="p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                          @click.stop="toggleSubcategories(category.id)"
+                        >
+                          <UIcon 
+                            :name="expandedCategories[category.id] ? 'i-heroicons-minus-small' : 'i-heroicons-plus-small'" 
+                            class="w-5 h-5"
+                          />
+                        </button>
+                      </div>
+                    </button>
+                    
+                    <!-- Subcategories -->
+                    <transition
+                      enter-active-class="transition ease-out duration-200"
+                      enter-from-class="transform opacity-0 -translate-y-1"
+                      enter-to-class="transform opacity-100 translate-y-0"
+                      leave-active-class="transition ease-in duration-150"
+                      leave-from-class="transform opacity-100 translate-y-0"
+                      leave-to-class="transform opacity-0 -translate-y-1"
+                    >
+                      <ul v-if="expandedCategories[category.id] && hasSubcategories(category.id)" class="ml-6 mt-0.5 space-y-0.5">
+                        <li v-for="subcategory in getSubcategories(category.id)" :key="subcategory.id">
+                          <button
+                            @click="selectSubcategory(subcategory.id)"
+                            class="w-full text-left py-1 px-2 rounded-md flex items-center justify-between text-sm"
+                            :class="selectedSubcategory === subcategory.id ? 'bg-primary/5 text-primary' : 'text-gray-600 hover:bg-gray-50'"
+                          >
+                            <span>{{ subcategory.name }}</span>
+                            <span class="text-xs text-gray-400">{{ subcategory.count || 0 }}</span>
+                          </button>
+                        </li>
+                      </ul>
+                    </transition>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -351,28 +393,6 @@
           <div class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-5 mb-6">
             <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
               <h2 class="text-lg font-medium text-gray-800">Browse By Category</h2>
-              <div class="overflow-x-auto w-full sm:w-auto pb-1">
-                <UButtonGroup size="sm">
-                  <UButton
-                    color="primary"
-                    :variant="!activeCategoryTab ? 'soft' : 'ghost'"
-                    class="px-4 whitespace-nowrap"
-                    @click="changeActiveCategoryTab(null)"
-                  >
-                    All
-                  </UButton>
-                  <UButton
-                    v-for="cat in topCategories"
-                    :key="cat.id"
-                    :color="activeCategoryTab === cat.id ? 'primary' : 'gray'"
-                    :variant="activeCategoryTab === cat.id ? 'soft' : 'ghost'"
-                    class="px-4 whitespace-nowrap"
-                    @click="changeActiveCategoryTab(cat.id)"
-                  >
-                    {{ cat.name }}
-                  </UButton>
-                </UButtonGroup>
-              </div>
             </div>
             
             <!-- Category Posts Grid -->
@@ -387,7 +407,7 @@
             
             <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               <NuxtLink 
-                v-for="post in categoryPosts"
+                v-for="post in paginatedCategoryPosts"
                 :key="post.id"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
@@ -423,29 +443,85 @@
               </NuxtLink>
             </div>
             
-            <!-- View More Button -->
-            <div class="text-center mt-4">
+            <!-- Category Pagination -->
+            <div class="text-center mt-6">
+              <UPagination
+                v-if="!categoryTabLoading && categoryPageCount > 1"
+                v-model="categoryCurrentPage"
+                :page-count="categoryPageCount"
+                :ui="{
+                  wrapper: 'flex items-center justify-center gap-1',
+                  rounded: 'rounded-md'
+                }"
+              />
               <UButton
                 color="primary"
                 variant="outline"
                 size="sm"
-                :to="activeCategoryTab ? `/sale?category=${activeCategoryTab}` : '/sale'"
-                class="px-6"
+                :to="selectedCategory ? `/sale?category=${selectedCategory}` : '/sale'"
+                class="px-6 mt-3"
               >
                 View More
                 <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4" />
               </UButton>
             </div>
           </div>
+          
+          <!-- Sponsored Banner -->
+          <div class="mb-6 rounded-lg shadow-sm overflow-hidden">
+            <div class="relative">
+              <img src="https://picsum.photos/1200/200?ad=sponsored" alt="Sponsored Banner" class="w-full h-32 sm:h-40 object-cover" />
+              <div class="absolute top-0 left-0 bg-amber-500 text-white text-xs px-2 py-0.5">
+                Sponsored
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center bg-black/20">
+                <div class="bg-white/90 px-4 py-3 rounded-lg shadow text-center">
+                  <h3 class="text-lg font-bold text-gray-800">Premium Listing Promotion</h3>
+                  <p class="text-gray-600">Get 50% off on featured listings this week!</p>
+                  <UButton
+                    color="primary"
+                    size="sm"
+                    class="mt-2"
+                  >
+                    Learn More
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- Recent Listings Section -->
           <div class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-5 mb-6">
-            <h2 class="text-lg font-medium text-amber-700 flex items-center mb-4">
-              <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
-              Recent Listings
-            </h2>
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+              <h2 class="text-lg font-medium text-amber-700 flex items-center">
+                <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
+                Recent Listings
+              </h2>
+              
+              <div class="overflow-x-auto w-full sm:w-auto pb-1">
+                <UButtonGroup size="sm">
+                  <UButton
+                    color="amber"
+                    :variant="!recentListingsCategory ? 'soft' : 'ghost'"
+                    class="px-4 whitespace-nowrap"
+                    @click="changeRecentListingsCategory(null)"
+                  >
+                    All
+                  </UButton>
+                  <UButton
+                    v-for="cat in topCategories"
+                    :key="`recent-${cat.id}`"
+                    :color="recentListingsCategory === cat.id ? 'amber' : 'gray'"
+                    :variant="recentListingsCategory === cat.id ? 'soft' : 'ghost'"
+                    class="px-4 whitespace-nowrap"
+                    @click="changeRecentListingsCategory(cat.id)"
+                  >
+                    {{ cat.name }}
+                  </UButton>
+                </UButtonGroup>
+              </div>
+            </div>
             
-            <!-- Recent Listings Horizontal Scroll -->
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
               <div class="flex gap-4">
                 <NuxtLink 
@@ -691,6 +767,87 @@
               @update:model-value="onPageChange"
             />
           </div>
+
+          <!-- Buyer Tips & Safety Guide -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            <!-- Buyer Tips -->
+            <div class="bg-blue-50/60 p-6 rounded-lg border border-blue-100">
+              <div class="flex items-start">
+                <div class="bg-blue-100 p-2 rounded-lg mr-4">
+                  <UIcon name="i-heroicons-light-bulb" class="h-7 w-7 text-blue-600"/>
+                </div>
+                <div>
+                  <h3 class="text-lg font-medium text-blue-800 mb-2">Buyer Tips</h3>
+                  <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+                      <span>Always inspect items in person before purchasing</span>
+                    </li>
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+                      <span>Meet in a public place for safety when possible</span>
+                    </li>
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+                      <span>Verify product authenticity with proper documentation</span>
+                    </li>
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+                      <span>Compare prices across multiple listings before deciding</span>
+                    </li>
+                  </ul>
+                  <UButton 
+                    color="blue" 
+                    variant="link" 
+                    class="mt-3 text-sm font-medium"
+                    to="/help/buying-guide"
+                  >
+                    Read full buying guide
+                    <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4" />
+                  </UButton>
+                </div>
+              </div>
+            </div>
+
+            <!-- Safety Guide -->
+            <div class="bg-green-50/60 p-6 rounded-lg border border-green-100">
+              <div class="flex items-start">
+                <div class="bg-green-100 p-2 rounded-lg mr-4">
+                  <UIcon name="i-heroicons-shield-check" class="h-7 w-7 text-green-600"/>
+                </div>
+                <div>
+                  <h3 class="text-lg font-medium text-green-800 mb-2">Safety Guide</h3>
+                  <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Avoid sharing personal financial information</span>
+                    </li>
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Be cautious of deals that seem too good to be true</span>
+                    </li>
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Use secure payment methods, avoid wire transfers</span>
+                    </li>
+                    <li class="flex items-start">
+                      <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Report suspicious activity to our support team</span>
+                    </li>
+                  </ul>
+                  <UButton 
+                    color="green" 
+                    variant="link" 
+                    class="mt-3 text-sm font-medium"
+                    to="/help/safety"
+                  >
+                    Learn more about safety
+                    <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4" />
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </UContainer>
@@ -726,6 +883,7 @@ const sortOption = ref('newest'); // Added to match template usage
 const currentPage = ref(1);
 const perPage = ref(20);
 const categoryCountsMap = ref({});
+const expandedCategories = ref({});
 
 // Define priceRange object
 const priceRange = ref({
@@ -1091,6 +1249,47 @@ function formatDate(dateStr) {
   });
 }
 
+// Subcategory handling
+function hasSubcategories(categoryId) {
+  // This would be replaced with actual subcategory check from API data
+  return categoryId === 1 || categoryId === 2 || categoryId === 3;
+}
+
+function getSubcategories(categoryId) {
+  // Sample subcategories - would be replaced with API data
+  const subcategoryMap = {
+    1: [
+      { id: '1-1', name: 'Apartments', count: 23 },
+      { id: '1-2', name: 'Houses', count: 15 },
+      { id: '1-3', name: 'Land', count: 7 }
+    ],
+    2: [
+      { id: '2-1', name: 'Cars', count: 18 },
+      { id: '2-2', name: 'Motorcycles', count: 9 },
+      { id: '2-3', name: 'Commercial', count: 5 }
+    ],
+    3: [
+      { id: '3-1', name: 'Phones', count: 14 },
+      { id: '3-2', name: 'Computers', count: 8 },
+      { id: '3-3', name: 'TVs', count: 5 }
+    ]
+  };
+  
+  return subcategoryMap[categoryId] || [];
+}
+
+function toggleSubcategories(categoryId) {
+  expandedCategories.value = {
+    ...expandedCategories.value,
+    [categoryId]: !expandedCategories.value[categoryId]
+  };
+}
+
+function selectSubcategory(subcategoryId) {
+  selectedSubcategory.value = subcategoryId;
+  loadPosts(1);
+}
+
 // Action handlers
 function selectCategory(catId) {
   selectedCategory.value = catId;
@@ -1142,6 +1341,23 @@ function handleDistrictChange() {
   applyFilters();
 }
 
+// Category browsing pagination
+const categoryItemsPerPage = 12; // 4 rows of 3 items (mobile shows fewer columns)
+const categoryCurrentPage = ref(1);
+const categoryPageCount = computed(() => {
+  return Math.ceil(categoryPosts.value.length / categoryItemsPerPage);
+});
+const paginatedCategoryPosts = computed(() => {
+  const start = (categoryCurrentPage.value - 1) * categoryItemsPerPage;
+  const end = start + categoryItemsPerPage;
+  return categoryPosts.value.slice(start, end);
+});
+
+// Watch category tab changes to reset pagination
+watch([activeCategoryTab], () => {
+  categoryCurrentPage.value = 1;
+});
+
 // Category tabs section variables
 const topCategories = computed(() => {
   // Get top 4-5 categories with most listings
@@ -1153,13 +1369,9 @@ const categoryTabLoading = ref(false);
 
 // Function to change active category tab
 function changeActiveCategoryTab(categoryId) {
-  if (activeCategoryTab.value === categoryId) {
-    // Toggle off if already active
-    activeCategoryTab.value = null;
-  } else {
-    activeCategoryTab.value = categoryId;
-  }
+  activeCategoryTab.value = categoryId;
   loadCategoryPosts();
+  categoryCurrentPage.value = 1;
 }
 
 // Load posts for the selected category tab with improved API paths and fallback
