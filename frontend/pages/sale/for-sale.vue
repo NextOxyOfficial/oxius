@@ -238,32 +238,75 @@
                       {{ totalListings }}
                     </span>
                   </button>
-                </li>
-
-                <!-- Individual categories -->
-                <li v-for="category in categories" :key="category.id">
-                  <button
-                    @click="selectCategory(category.id)"
-                    class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between"
-                    :class="
-                      selectedCategory === category.id
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    "
-                  >
-                    <span class="flex items-center gap-2">
-                      <UIcon
-                        :name="getCategoryIcon(category.id)"
-                        class="w-5 h-5"
-                      />
-                      {{ category.name }}
-                    </span>
-                    <span
-                      class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full"
+                </li>                <!-- Individual categories -->
+                <li v-for="category in categories" :key="category.id" class="mb-0.5">
+                  <div>
+                    <button
+                      @click="selectCategory(category.id)"
+                      class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between"
+                      :class="
+                        selectedCategory === category.id
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      "
                     >
-                      {{ getCategoryCount(category.id) }}
-                    </span>
-                  </button>
+                      <span class="flex items-center gap-2">
+                        <UIcon
+                          :name="getCategoryIcon(category.id)"
+                          class="w-5 h-5"
+                        />
+                        {{ category.name }}
+                      </span>
+                      <div class="flex items-center">
+                        <span
+                          class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full mr-1"
+                        >
+                          {{ getCategoryCount(category.id) }}
+                        </span>
+                        <UButton 
+                          v-if="hasSubcategories(category.id)"
+                          variant="ghost" 
+                          color="gray" 
+                          size="xs" 
+                          class="p-0 h-6 w-6" 
+                          :icon="expandedCategories[category.id] ? 'i-heroicons-minus-small' : 'i-heroicons-plus-small'"
+                          @click.stop="toggleSubcategories(category.id)"
+                        />
+                      </div>
+                    </button>
+
+                    <!-- Subcategories -->
+                    <transition
+                      enter-active-class="transition-all duration-200 ease-out"
+                      leave-active-class="transition-all duration-150 ease-in"
+                      enter-from-class="opacity-0 max-h-0"
+                      enter-to-class="opacity-100 max-h-40"
+                      leave-from-class="opacity-100 max-h-40"
+                      leave-to-class="opacity-0 max-h-0"
+                    >
+                      <ul
+                        v-if="expandedCategories[category.id] && hasSubcategories(category.id)"
+                        class="ml-5 mt-1 space-y-1 overflow-hidden border-l-2 border-gray-100 pl-2"
+                      >
+                        <li v-for="subcategory in getSubcategories(category.id)" :key="subcategory.id">
+                          <button
+                            @click.stop="selectSubcategory(subcategory.id)"
+                            class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between text-sm"
+                            :class="
+                              selectedSubcategory === subcategory.id
+                                ? 'bg-primary/10 text-primary font-medium'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            "
+                          >
+                            <span>{{ subcategory.name }}</span>
+                            <span class="text-xs text-gray-500">
+                              {{ subcategory.count }}
+                            </span>
+                          </button>
+                        </li>
+                      </ul>
+                    </transition>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -588,12 +631,11 @@
           <!-- Category Tabs Listings Section -->
           <div
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-5 mb-6"
-          >
-            <div
+          >            <div
               class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4"
             >
               <h2 class="text-lg font-medium text-gray-800">
-                Browse By Category
+                {{ categoryBrowserHeading }}
               </h2>
               <div class="overflow-x-auto w-full sm:w-auto pb-1">
                 <UButtonGroup size="sm">
@@ -604,8 +646,7 @@
                     @click="changeActiveCategoryTab(null)"
                   >
                     All
-                  </UButton>
-                  <UButton
+                  </UButton>                  <UButton
                     v-for="(cat, i) in topCategories"
                     :key="`cat-${cat?.id}+${i}`"
                     :color="activeCategoryTab === cat.id ? 'primary' : 'gray'"
@@ -613,7 +654,7 @@
                     class="px-4 whitespace-nowrap"
                     @click="changeActiveCategoryTab(cat.id)"
                   >
-                    {{ cat.name }}
+                    {{ cat.name }} <span class="text-xs ml-1 opacity-75">({{ getCategoryCount(cat.id) }})</span>
                   </UButton>
                 </UButtonGroup>
               </div>
@@ -1708,8 +1749,20 @@ function getConditionLabel(condition) {
 }
 
 function getSubcategoryName(subcategoryId) {
-  // This would ideally be populated from your API
-  return subcategoryId;
+  // Find the subcategory name based on the ID
+  if (!subcategoryId) return "";
+  
+  // Convert subcategoryId to string to ensure consistent comparison
+  const subIdStr = String(subcategoryId);
+  
+  // Loop through all categories and their subcategories to find the matching one
+  for (const categoryId in getSubcategories()) {
+    const subCategory = getSubcategories(parseInt(categoryId))
+      .find(sub => String(sub.id) === subIdStr);
+    if (subCategory) return subCategory.name;
+  }
+  
+  return subcategoryId; // Fallback to ID if name not found
 }
 
 function getListingImage(listing) {
@@ -1854,12 +1907,32 @@ const topCategories = computed(() => {
   return categories.value.slice(0, 5);
 });
 
+// Dynamic heading for category browser section
+const categoryBrowserHeading = computed(() => {
+  if (selectedSubcategory.value) {
+    return getSubcategoryName(selectedSubcategory.value);
+  } else if (selectedCategory.value) {
+    return getCategoryName(selectedCategory.value);
+  } else if (activeCategoryTab.value) {
+    return getCategoryName(activeCategoryTab.value);
+  } else {
+    return "All category listings";
+  }
+});
+
 const categoryPosts = ref([]);
 const categoryTabLoading = ref(false);
 
 // Function to change active category tab
 function changeActiveCategoryTab(categoryId) {
   activeCategoryTab.value = categoryId;
+  
+  // If we're changing category tabs, reset any subcategory selection
+  // but preserve the main selectedCategory value for filtering
+  if (selectedSubcategory.value) {
+    selectedSubcategory.value = null;
+  }
+  
   loadCategoryPosts();
   categoryCurrentPage.value = 1;
 }
