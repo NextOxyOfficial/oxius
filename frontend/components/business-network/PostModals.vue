@@ -273,9 +273,7 @@
                       <!-- Gift comment with enhanced styling -->
                       <div v-if="comment?.is_gift_comment" class="gift-comment">
                         <!-- "Sent X diamonds" label -->
-                        <div
-                          class="gift-sender-info flex items-center gap-1"
-                        >
+                        <div class="gift-sender-info flex items-center gap-1">
                           <UIcon
                             name="material-symbols:diamond-outline"
                             class="w-4 h-4 text-pink-500"
@@ -284,9 +282,7 @@
                             class="text-sm font-medium text-pink-600 dark:text-pink-400"
                           >
                             Sent {{ comment?.diamond_amount }} diamonds to
-                            {{
-                              post?.author_details?.name || post?.author?.name
-                            }}
+                            {{ activeCommentsPost.author_details.name }}
                           </span>
                         </div>
 

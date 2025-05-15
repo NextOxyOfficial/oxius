@@ -13,7 +13,8 @@
               'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)',
           }"
         >
-          <div class="sm:px-4 pb-5 pt-0">            <!-- Post Header -->
+          <div class="sm:px-4 pb-5 pt-0">
+            <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post?.post_details ? post.post_details : post"
               :user="user"
@@ -32,7 +33,8 @@
               "
               :post="post.post_details ? post.post_details : post"
               @open-media="openMedia"
-            />            <!-- Post Actions -->
+            />
+            <!-- Post Actions -->
             <BusinessNetworkPostActions
               :post="post.post_details ? post.post_details : post"
               :user="user"
@@ -42,7 +44,7 @@
               @share-post="sharePost"
               @toggle-save="toggleSave"
             />
-            
+
             <!-- Tags with clean styling -->
             <div
               v-if="
@@ -63,10 +65,12 @@
                 #{{ tag.tag }}
               </NuxtLink>
             </div>
-            
+
             <!-- Post Title with enhanced styling -->
             <NuxtLink
-              :to="`/business-network/posts/${post?.post ? post.post : post.id}`"
+              :to="`/business-network/posts/${
+                post?.post ? post.post : post.id
+              }`"
               class="block text-sm sm:text-base font-semibold mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-800 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
@@ -79,7 +83,9 @@
                   'text-sm text-gray-700 dark:text-gray-200 leading-relaxed',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
-                v-html="post?.post_details ? post.post_details.content : post.content"
+                v-html="
+                  post?.post_details ? post.post_details.content : post.content
+                "
               ></p>
               <button
                 v-if="
@@ -90,7 +96,9 @@
                 class="text-sm text-blue-600 dark:text-blue-400 font-medium mt-1.5 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center"
                 @click="toggleDescription(post)"
               >
-                <span>{{ post.showFullDescription ? $t("read_less") : $t("read_more") }}</span>
+                <span>{{
+                  post.showFullDescription ? $t("read_less") : $t("read_more")
+                }}</span>
                 <UIcon
                   :name="
                     post.showFullDescription
@@ -173,7 +181,9 @@
         <p class="text-gray-500 dark:text-gray-400 mb-2 font-medium">
           {{ $t("no_post_available") }}
         </p>
-        <p class="text-gray-400 dark:text-gray-500 text-sm">Check back later for new updates</p>
+        <p class="text-gray-400 dark:text-gray-500 text-sm">
+          Check back later for new updates
+        </p>
       </div>
     </div>
 
@@ -333,7 +343,10 @@ const fetchProducts = async () => {
   isLoadingProducts.value = true;
   try {
     const { data } = await get("/all-products/");
-    if (data && (Array.isArray(data) || (data.results && Array.isArray(data.results)))) {
+    if (
+      data &&
+      (Array.isArray(data) || (data.results && Array.isArray(data.results)))
+    ) {
       allProducts.value = Array.isArray(data) ? data : data.results;
       shuffledProducts.value = getRandomProducts();
     } else {
@@ -357,7 +370,7 @@ onMounted(() => {
 // Watch for changes in the posts prop
 watch(
   () => props.posts,
-  newPosts => {
+  (newPosts) => {
     if (newPosts && newPosts.length > 0) {
       processPosts(); // Process posts when they change
     }
@@ -366,12 +379,12 @@ watch(
 );
 
 // Toggle post description expand/collapse
-const toggleDescription = post => {
+const toggleDescription = (post) => {
   post.showFullDescription = !post.showFullDescription;
 };
 
 // Handle post interactions
-const toggleFollow = async post => {
+const toggleFollow = async (post) => {
   const authorId = post.author_details?.id;
   if (!authorId) return;
 
@@ -397,16 +410,16 @@ const toggleFollow = async post => {
   }
 };
 
-const toggleDropdown = clickedPost => {
+const toggleDropdown = (clickedPost) => {
   // Close other dropdowns
-  props.posts.forEach(p => {
+  props.posts.forEach((p) => {
     if (p.id !== clickedPost.id) p.showDropdown = false;
   });
   // Toggle this dropdown
   clickedPost.showDropdown = !clickedPost.showDropdown;
 };
 
-const toggleSave = async postToSave => {
+const toggleSave = async (postToSave) => {
   if (!user.value?.user) {
     toast.add({
       title: "You must be logged in to save posts",
@@ -435,7 +448,7 @@ const toggleSave = async postToSave => {
   }
 };
 
-const copyLink = postToCopy => {
+const copyLink = (postToCopy) => {
   const postUrl = `${window.location.origin}/business-network/posts/${postToCopy.id}`;
   navigator.clipboard.writeText(postUrl);
   toast.add({
@@ -444,7 +457,7 @@ const copyLink = postToCopy => {
 };
 
 // Like functionality
-const toggleLike = async postToLike => {
+const toggleLike = async (postToLike) => {
   if (!user.value?.user) {
     toast.add({
       title: "Please log in to like posts",
@@ -457,7 +470,9 @@ const toggleLike = async postToLike => {
 
   try {
     const currentUserId = user.value?.user?.id;
-    const isLiked = postToLike.post_likes?.some(like => like.user === currentUserId);
+    const isLiked = postToLike.post_likes?.some(
+      (like) => like.user === currentUserId
+    );
 
     if (isLiked) {
       // Use the unlike endpoint when already liked
@@ -465,7 +480,9 @@ const toggleLike = async postToLike => {
       await del(endpoint);
 
       // Remove user from likes
-      postToLike.post_likes = postToLike.post_likes.filter(like => like.user !== currentUserId);
+      postToLike.post_likes = postToLike.post_likes.filter(
+        (like) => like.user !== currentUserId
+      );
 
       // Update like count for UI if needed
       if (postToLike.likes_count !== undefined) {
@@ -499,7 +516,7 @@ const toggleLike = async postToLike => {
 };
 
 // Comment functionality
-const addComment = async postToComment => {
+const addComment = async (postToComment) => {
   if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
     return;
   }
@@ -567,7 +584,8 @@ const handleMentionKeydown = (event, targetPost) => {
   // Handle arrow keys for mention selection
   if (event.key === "ArrowDown") {
     event.preventDefault();
-    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+    activeMentionIndex.value =
+      (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
   } else if (event.key === "ArrowUp") {
     event.preventDefault();
     activeMentionIndex.value =
@@ -586,7 +604,7 @@ const handleMentionKeydown = (event, targetPost) => {
 };
 
 // Search for users to mention
-const searchMentions = async query => {
+const searchMentions = async (query) => {
   if (!query) {
     mentionSuggestions.value = [];
     return;
@@ -618,11 +636,11 @@ const selectMention = (user, targetPost) => {
 };
 
 // Modal handling
-const openLikesModal = postToView => {
+const openLikesModal = (postToView) => {
   activeLikesPost.value = postToView;
 };
 
-const openCommentsModal = postToView => {
+const openCommentsModal = (postToView) => {
   activeCommentsPost.value = postToView;
 
   // Set timeout to scroll to end of comments once modal is visible
@@ -633,7 +651,7 @@ const openCommentsModal = postToView => {
   }, 100);
 };
 
-const toggleUserFollow = async userToFollow => {
+const toggleUserFollow = async (userToFollow) => {
   try {
     const userId = userToFollow.user;
 
@@ -653,7 +671,9 @@ const toggleUserFollow = async userToFollow => {
 const openMedia = (postWithMedia, media) => {
   activeMedia.value = media;
   activePost.value = postWithMedia;
-  activeMediaIndex.value = postWithMedia.post_media.findIndex(m => m.id === media.id);
+  activeMediaIndex.value = postWithMedia.post_media.findIndex(
+    (m) => m.id === media.id
+  );
 };
 
 const closeMedia = () => {
@@ -663,7 +683,7 @@ const closeMedia = () => {
   mediaCommentText.value = "";
 };
 
-const navigateMedia = direction => {
+const navigateMedia = (direction) => {
   if (!activePost.value || !activePost.value.post_media) return;
 
   const totalMedia = activePost.value.post_media.length;
@@ -671,7 +691,8 @@ const navigateMedia = direction => {
   if (direction === "next") {
     activeMediaIndex.value = (activeMediaIndex.value + 1) % totalMedia;
   } else {
-    activeMediaIndex.value = (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
+    activeMediaIndex.value =
+      (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
   }
 
   activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
@@ -683,14 +704,14 @@ const toggleMediaLike = async () => {
   try {
     const endpoint = `/bn/media/${activeMedia.value.id}/like/`;
     const isLiked = activeMedia.value.media_likes?.some(
-      like => like.user === user.value?.user?.id
+      (like) => like.user === user.value?.user?.id
     );
 
     if (isLiked) {
       await del(endpoint);
       // Remove user from likes
       activeMedia.value.media_likes = activeMedia.value.media_likes.filter(
-        like => like.user !== user.value?.user?.id
+        (like) => like.user !== user.value?.user?.id
       );
     } else {
       const { data } = await post(endpoint);
@@ -710,7 +731,7 @@ const openMediaLikesModal = () => {
 
   activeMediaLikes.value = activeMedia.value;
   // Set liked users for the modal
-  mediaLikedUsers.value = activeMedia.value.media_likes.map(like => ({
+  mediaLikedUsers.value = activeMedia.value.media_likes.map((like) => ({
     id: like.user_details.id,
     image: like.user_details.image,
     fullName: like.user_details.name,
@@ -746,11 +767,11 @@ const addMediaComment = async () => {
   }
 };
 
-const editMediaComment = async comment => {
+const editMediaComment = async (comment) => {
   mediaCommentToDelete = comment;
 };
 
-const deleteMediaComment = async comment => {
+const deleteMediaComment = async (comment) => {
   mediaCommentToDelete = comment;
 
   try {
@@ -758,9 +779,8 @@ const deleteMediaComment = async comment => {
 
     // Remove the comment from the list
     if (activeMedia.value && activeMedia.value.media_comments) {
-      activeMedia.value.media_comments = activeMedia.value.media_comments.filter(
-        c => c.id !== comment.id
-      );
+      activeMedia.value.media_comments =
+        activeMedia.value.media_comments.filter((c) => c.id !== comment.id);
     }
 
     mediaCommentToDelete = null;
@@ -780,8 +800,6 @@ const editComment = async (post, comment) => {
     comment.editText = comment.content;
   }
   comment.isEditing = true;
-
- 
 };
 
 const deleteComment = (post, comment) => {
@@ -798,9 +816,14 @@ const confirmDeleteComment = async () => {
     await del(`/bn/comments/${commentToDelete.value.id}/`);
 
     // Remove the comment from the list
-    if (postWithCommentToDelete.value && postWithCommentToDelete.value.post_comments) {
+    if (
+      postWithCommentToDelete.value &&
+      postWithCommentToDelete.value.post_comments
+    ) {
       postWithCommentToDelete.value.post_comments =
-        postWithCommentToDelete.value.post_comments.filter(c => c.id !== commentToDelete.value.id);
+        postWithCommentToDelete.value.post_comments.filter(
+          (c) => c.id !== commentToDelete.value.id
+        );
     }
 
     toast.add({
@@ -818,7 +841,7 @@ const confirmDeleteComment = async () => {
   }
 };
 
-const cancelEditComment = comment => {
+const cancelEditComment = (comment) => {
   comment.isEditing = false;
   comment.editText = ""; // Reset edit text
 };
@@ -855,7 +878,7 @@ const saveEditComment = async (post, comment) => {
 };
 
 // Post sharing function
-const sharePost = postToShare => {
+const sharePost = (postToShare) => {
   const postUrl = `${window.location.origin}/business-network/posts/${postToShare.id}`;
 
   if (navigator.share) {
@@ -865,7 +888,7 @@ const sharePost = postToShare => {
         text: "Check out this post on Business Network",
         url: postUrl,
       })
-      .catch(error => console.log("Error sharing", error));
+      .catch((error) => console.log("Error sharing", error));
   } else {
     navigator.clipboard.writeText(postUrl);
     toast.add({
@@ -933,7 +956,8 @@ const sharePost = postToShare => {
   backdrop-filter: blur(8px);
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .dark .glass-effect {
