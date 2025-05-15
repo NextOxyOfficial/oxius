@@ -35,7 +35,7 @@
             class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-10"
           ></div>
           <img
-            :src="problem?.user_details?.image || '/placeholder.svg'"
+            :src="problem?.user_details?.image || '/static/frontend/avatar.png'"
             :alt="problem?.user_details?.name"
             class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
             style="object-fit: cover; aspect-ratio: 1/1"
@@ -85,7 +85,6 @@
           </div>
         </div>
       </div>
-      
     </div>
 
     <h3
@@ -101,34 +100,34 @@
     </h3>
 
     <div class="flex items-center mt-1 gap-1">
+      <span
+        v-if="problem?.payment_option === 'paid'"
+        class="inline-flex items-center rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm"
+      >
+        {{ problem?.payment_amount > 0 ? `I can pay ` : "Paid Help" }}
         <span
-          v-if="problem?.payment_option === 'paid'"
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm"
+          v-if="problem?.payment_amount > 0"
+          class="inline-flex items-center"
         >
-          {{ problem?.payment_amount > 0 ? `I can pay ` : "Paid Help" }}
-          <span
-            v-if="problem?.payment_amount > 0"
-            class="inline-flex items-center"
-          >
-            <UIcon
-              name="i-mdi-currency-bdt"
-              class="text-emerald-600 dark:text-emerald-400"
-            />
-            {{ problem?.payment_amount }}
-          </span>
+          <UIcon
+            name="i-mdi-currency-bdt"
+            class="text-emerald-600 dark:text-emerald-400"
+          />
+          {{ problem?.payment_amount }}
         </span>
-        <span
-          v-else
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
-        >
-          Free help needed
-        </span>
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium transition-all bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 shadow-sm"
-        >
-          {{ problem?.category_details?.name }}
-        </span>
-      </div>
+      </span>
+      <span
+        v-else
+        class="inline-flex items-center rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-sm font-medium transition-all border-0 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
+      >
+        Free help needed
+      </span>
+      <span
+        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium transition-all bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 shadow-sm"
+      >
+        {{ problem?.category_details?.name }}
+      </span>
+    </div>
     <!-- Description preview with truncation -->
     <!-- <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
       {{ problem?.description }}
