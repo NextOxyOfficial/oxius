@@ -255,7 +255,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
         
     @action(detail=True, methods=['post'])
-    def mark_as_sold(self, request, pk=None):
+    def mark_as_sold(self, request, slug=None):
         """Mark a sale post as sold."""
         post = self.get_object()
         if post.user != request.user:
