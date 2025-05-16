@@ -393,6 +393,52 @@
                       Discounts up to 30%
                     </p>
                   </div>
+                </div>              </div>
+            </div>
+            
+            <!-- Long Height Banner -->
+            <div class="mb-6">
+              <h3
+                class="text-xs uppercase text-gray-500 font-medium mb-2 flex items-center gap-1"
+              >
+                <UIcon
+                  name="i-heroicons-megaphone"
+                  class="w-4 h-4 text-blue-500"
+                />
+                Featured Deal
+              </h3>
+              
+              <div
+                class="bg-white rounded-lg border border-blue-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <div class="relative">
+                  <img
+                    src="https://picsum.photos/300/600?ad=special"
+                    alt="Special Featured Deal"
+                    class="w-full h-96 object-cover group-hover:scale-102 transition-transform duration-500"
+                  />
+                  <div class="absolute top-2 left-2">
+                    <span
+                      class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded font-medium"
+                      >Limited Time</span
+                    >
+                  </div>
+                  <div
+                    class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4"
+                  >
+                    <h4 class="font-medium text-white text-base">Summer Sale</h4>
+                    <p class="text-blue-200 text-sm font-medium mt-1">
+                      Up to 50% off on selected items
+                    </p>
+                    <UButton 
+                      size="xs" 
+                      color="white" 
+                      class="mt-2"
+                      variant="solid"
+                    >
+                      Shop Now
+                    </UButton>
+                  </div>
                 </div>
               </div>
             </div>
@@ -627,11 +673,12 @@
                       {{ formatDate(post.created_at) }}
                     </p>
                   </div>
-                </div>
-              </NuxtLink>            </div>
+                </div>              
+              </NuxtLink>
+            </div>
             
             <!-- Pagination Controls -->
-            <div v-if="categoryPageCount > 1" class="flex justify-center mt-4 mb-2">
+            <div v-if="categoryPageCount > 1" class="flex justify-center mt-6">
               <UPagination
                 v-model="categoryCurrentPage"
                 :page-count="categoryPageCount"
@@ -639,26 +686,8 @@
                   wrapper: 'flex items-center gap-1',
                   rounded: 'rounded-md',
                 }"
-                size="sm"
+                size="md"
               />
-            </div>
-
-            <!-- View More Button -->
-            <div class="text-center mt-4">
-              <UButton
-                color="primary"
-                variant="outline"
-                size="sm"
-                :to="
-                  activeCategoryTab
-                    ? `/sale?category=${activeCategoryTab}`
-                    : '/sale'
-                "
-                class="px-6"
-              >
-                View More
-                <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4" />
-              </UButton>
             </div>
           </div>
 
@@ -1637,8 +1666,9 @@ function changeActiveCategoryTab(categoryId) {
     selectedSubcategory.value = null;
   }
   
-  loadCategoryPosts();
+  // Reset to page 1 before loading new category posts
   categoryCurrentPage.value = 1;
+  loadCategoryPosts();
 }
 
 // Load posts for the selected category tab with improved API paths and fallback
@@ -1648,7 +1678,7 @@ async function loadCategoryPosts() {
   try {
     const params = new URLSearchParams();
     params.append("page", "1");
-    params.append("page_size", "8");
+    params.append("page_size", "24"); // Increased to load more items for pagination (2 pages worth)
     params.append("sort", "-created_at");
 
     if (activeCategoryTab.value) {
