@@ -1,6 +1,6 @@
 <template>
   <div class="transaction-history h-max">
-    <h1 class="text-lg sm:text-2xl font-bold text-center mb-2">
+    <h1 class="text-lg sm:text-xl font-bold text-center mb-2">
       {{ $t("recharge_history") }}
     </h1>
     <p class="text-center text-gray-600 mb-6">

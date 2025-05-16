@@ -37,7 +37,7 @@
               </div>
             </div>
             <div class="flex-1">
-              <h2 class="text-2xl font-semibold text-slate-900 mb-3">
+              <h2 class="text-xl font-semibold text-slate-900 mb-3">
                 {{ $t("general_support") }}
               </h2>
               <p class="text-slate-600 mb-4">
@@ -85,7 +85,7 @@
               </div>
             </div>
             <div class="flex-1">
-              <h2 class="text-2xl font-semibold text-slate-900 mb-3">
+              <h2 class="text-xl font-semibold text-slate-900 mb-3">
                 {{ $t("partnership") }}
               </h2>
               <p class="text-slate-600 mb-4">
@@ -123,7 +123,7 @@
       <!-- <div class="mt-16 mb-20">
         <div class="bg-slate-50 rounded-xl p-8 md:p-12">
           <div class="text-center max-w-3xl mx-auto">
-            <h2 class="text-2xl font-semibold text-slate-900 mb-4">
+            <h2 class="text-xl font-semibold text-slate-900 mb-4">
               Need Additional Support?
             </h2>
             <p class="text-slate-600 mb-8">

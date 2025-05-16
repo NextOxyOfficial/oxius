@@ -4,7 +4,7 @@
       <h1 class="text-center text-4xl my-8">About Us</h1>
       <UDivider label="" class="mb-8" />
       <div>
-        <p class="text-2xl font-bold">Introduction</p>
+        <p class="text-xl font-bold">Introduction</p>
         <p>
           BDpage is a dynamic classified service provider dedicated to
           connecting individuals and businesses through a user-friendly
@@ -16,7 +16,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Our Vision</p>
+        <p class="text-xl font-bold">Our Vision</p>
         <p>
           At BDpage, we envision a marketplace where users can engage freely and
           safely. We believe in empowering individuals to take control of their
@@ -28,7 +28,7 @@
       </div>
       <p class="text-3xl font-bold">What We Offer</p>
       <div>
-        <p class="text-2xl font-bold">User-Friendly Platform</p>
+        <p class="text-xl font-bold">User-Friendly Platform</p>
         <p>
           Our platform is designed with the user in mind. With intuitive
           navigation and easy-to-use features, posting and browsing ads is
@@ -38,7 +38,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Diverse Categories</p>
+        <p class="text-xl font-bold">Diverse Categories</p>
         <p>
           BDpage caters to a wide array of categories, from electronics and home
           goods to services and job postings. This diversity allows users to
@@ -47,7 +47,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Community Focus</p>
+        <p class="text-xl font-bold">Community Focus</p>
         <p>
           We believe that a strong community is the backbone of any successful
           classified service. BDpage fosters trust among users through our
@@ -56,7 +56,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Commitment to Safety</p>
+        <p class="text-xl font-bold">Commitment to Safety</p>
         <p>
           Safety is a top priority at BDpage. We strive to create a secure
           environment for all users by implementing strict content guidelines
@@ -66,7 +66,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Customer Support</p>
+        <p class="text-xl font-bold">Customer Support</p>
         <p>
           Our commitment to user satisfaction extends to our customer support
           team. We provide responsive assistance to address any questions or
@@ -76,7 +76,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Future Goals</p>
+        <p class="text-xl font-bold">Future Goals</p>
         <p>
           As BDpage continues to grow, we aim to enhance our services further by
           incorporating advanced features and technologies. Our future goals
@@ -86,7 +86,7 @@
         </p>
       </div>
       <div>
-        <p class="text-2xl font-bold">Conclusion</p>
+        <p class="text-xl font-bold">Conclusion</p>
         <p>
           BDpage is more than just a classified service provider; it’s a
           community-driven platform that connects people and fosters meaningful

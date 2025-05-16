@@ -112,7 +112,7 @@
                   >
                     {{ service.user?.first_name }} {{ service.user?.last_name }}
                   </h3>
-                  <h3 class="text-xl md:text-2xl" v-else>No Name Provided</h3>
+                  <h3 class="text-xl md:text-xl" v-else>No Name Provided</h3>
 
                   <UIcon
                     v-if="service.user?.kyc"

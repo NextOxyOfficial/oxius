@@ -980,7 +980,7 @@
               </div>
             </div>
 
-            <h2 class="text-white font-bold text-2xl mb-1">
+            <h2 class="text-white font-bold text-xl mb-1">
               Payment Successful!
             </h2>
             <div class="flex items-center gap-1">
@@ -1163,7 +1163,7 @@
               </div>
             </div>
 
-            <h2 class="text-white font-bold text-2xl mb-1">Payment Failed</h2>
+            <h2 class="text-white font-bold text-xl mb-1">Payment Failed</h2>
             <p class="text-red-50 text-sm">We couldn't process your payment</p>
           </div>
         </div>

@@ -20,7 +20,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Orders</p>
-            <p class="text-2xl font-bold text-gray-900">
+            <p class="text-xl font-bold text-gray-900">
               {{ orders.length }}
             </p>
           </div>
@@ -54,7 +54,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-            <p class="text-2xl font-bold text-gray-900">
+            <p class="text-xl font-bold text-gray-900">
               {{ pendingOrders.length }}
             </p>
           </div>
@@ -85,7 +85,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Processing Orders</p>
-            <p class="text-2xl font-bold text-gray-900">
+            <p class="text-xl font-bold text-gray-900">
               {{ processingOrders.length }}
             </p>
           </div>
@@ -119,7 +119,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Delivered Orders</p>
-            <p class="text-2xl font-bold text-gray-900">
+            <p class="text-xl font-bold text-gray-900">
               {{ deliveredOrders.length }}
             </p>
           </div>

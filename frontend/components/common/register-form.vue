@@ -4,7 +4,7 @@
       @submit.prevent="handleSubmit"
       class="bg-white rounded-xl md:px-8 pt-6 pb-6 md:pb-8 mb-4 px-2 sm:px-8"
     >
-      <h1 class="font-bold text-center mb-4 text-2xl">REGISTER</h1>
+      <h1 class="font-bold text-center mb-4 text-xl">REGISTER</h1>
       <UDivider label="" />
       <div class="my-4">
         <label class="block text-gray-700 text-md font-medium mb-2" for="email">
@@ -122,7 +122,7 @@
       <transition name="fade" mode="out-in">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <div class="space-y-2">
-            <h2 class="text-2xl font-semibold text-gray-900">Create account</h2>
+            <h2 class="text-xl font-semibold text-gray-900">Create account</h2>
             <p class="text-gray-600">Enter your details to register</p>
           </div>
 

@@ -17,7 +17,7 @@
             আমি
             <span class="text-lg font-bold text-green-950">
               AdsyAI Bot
-              <UIcon class="text-2xl" name="i-carbon:bot" />
+              <UIcon class="text-xl" name="i-carbon:bot" />
             </span>
             আমি কি আপনার জন্য বিভিন্ন ওয়েবসাইট থেকে তথ্য খুঁজে বের করবো?
           </span>
@@ -94,7 +94,7 @@
             আমি
             <span class="text-lg font-bold text-green-950">
               AdsyAI Bot
-              <UIcon class="text-2xl" name="i-carbon-bot" />
+              <UIcon class="text-xl" name="i-carbon-bot" />
             </span>
             আপনার জন্য ইন্টারনেটে বিভিন্ন ওয়েবসাইট এ তথ্য খুঁজছি, একটু অপেক্ষা
             করুন
@@ -120,7 +120,7 @@
             আমি
             <span class="text-lg font-bold text-green-950">
               AdsyAI Bot
-              <UIcon class="text-2xl" name="i-carbon:bot" />
+              <UIcon class="text-xl" name="i-carbon:bot" />
             </span>
             ঠিক আছে, আপনি যখন চাইবেন তখন আমি তথ্য খুঁজে দেখাবো।
           </span>
@@ -143,7 +143,7 @@
         আমি
         <span class="text-lg font-bold text-green-950">
           AdsyAI Bot
-          <UIcon class="text-2xl" name="i-carbon:bot" />
+          <UIcon class="text-xl" name="i-carbon:bot" />
         </span>
         দুঃখিত, আপনার জন্য ইন্টারনেট থেকে কোনো তথ্য খুঁজে পাইনি।
       </div>
@@ -151,7 +151,7 @@
         আমি
         <span class="text-lg font-bold text-green-950">
           AdsyAI Bot
-          <UIcon class="text-2xl" name="i-carbon:bot" />
+          <UIcon class="text-xl" name="i-carbon:bot" />
         </span>
         আপনার জন্য ইন্টারনেট থেকে নিচের এই তথ্য গুলো খুঁজে বের করতে সক্ষম
         হয়েছি:

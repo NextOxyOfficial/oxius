@@ -26,7 +26,7 @@
           </div>
           <div class="flex gap-3 justify-between items-start">
             <h3
-              class="text-xl ml-1 md:text-2xl font-bold text-primary-700 dark:text-primary-300 text-left"
+              class="text-xl ml-1 md:text-xl font-bold text-primary-700 dark:text-primary-300 text-left"
             >
               {{ currentProduct.name }}
             </h3>

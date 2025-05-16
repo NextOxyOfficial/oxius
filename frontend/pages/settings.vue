@@ -106,7 +106,7 @@
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-lock-closed" class="text-xl" />
               </div>
-              <h2 class="text-2xl font-semibold text-gray-800">
+              <h2 class="text-xl font-semibold text-gray-800">
                 পাসওয়ার্ড পরিবর্তন
               </h2>
             </div>
@@ -246,7 +246,7 @@
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-user" class="text-xl" />
               </div>
-              <h2 class="text-2xl font-semibold text-gray-800">
+              <h2 class="text-xl font-semibold text-gray-800">
                 Profile Information
               </h2>
             </div>

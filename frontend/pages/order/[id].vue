@@ -25,7 +25,7 @@
                 <div class="w-8">
                   <UIcon name="i-unjs:giget" class="text-3xl mt-1.5" />
                 </div>
-                <span class="text-2xl flex-1">
+                <span class="text-xl flex-1">
                   {{ gig.title }}
                 </span>
               </div>

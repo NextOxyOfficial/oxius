@@ -1,6 +1,6 @@
 <template>
 	<UContainer>
-		<p class="text-2xl font-bold mx-auto text-center py-6">
+		<p class="text-xl font-bold mx-auto text-center py-6">
 			Privacy Policy for Adsy Club
 		</p>
 		<div class="flex flex-col gap-4">

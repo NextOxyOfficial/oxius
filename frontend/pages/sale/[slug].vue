@@ -222,9 +222,9 @@
             <div
               class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6"
             >
-              <h1 class="text-2xl font-bold text-gray-800">{{ post.title }}</h1>
+              <h1 class="text-xl font-bold text-gray-800">{{ post.title }}</h1>
               <div class="flex flex-col items-end">
-                <div class="text-2xl font-bold text-primary">
+                <div class="text-xl font-bold text-primary">
                   <span v-if="post.negotiable && !post.price">Negotiable</span>
                   <span v-else-if="post.price"
                     >৳{{ formatPrice(post.price) }}</span

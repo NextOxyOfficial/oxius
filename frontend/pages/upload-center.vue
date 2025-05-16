@@ -6,7 +6,7 @@
       <!-- Animated Header -->
       <div class="text-center mb-12">
         <h1
-          class="animate-fade-in-up text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
+          class="animate-fade-in-up text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
         >
           {{ $t("upload_center") }}
         </h1>
@@ -82,7 +82,7 @@
             >
               <UIcon
                 name="i-heroicons-information-circle"
-                class="text-2xl text-primary-500"
+                class="text-xl text-primary-500"
               />
             </div>
             <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
@@ -146,7 +146,7 @@
               <UIcon name="i-heroicons-clock" class="text-3xl text-amber-500" />
             </div>
             <h3
-              class="text-2xl font-semibold text-amber-800 dark:text-amber-300 mb-2"
+              class="text-xl font-semibold text-amber-800 dark:text-amber-300 mb-2"
             >
               Verification in Progress
             </h3>
@@ -240,7 +240,7 @@
                         >
                           <UIcon
                             name="i-heroicons-arrow-up-tray"
-                            class="text-2xl text-primary-500"
+                            class="text-xl text-primary-500"
                           />
                         </div>
                         <span
@@ -314,7 +314,7 @@
                         >
                           <UIcon
                             name="i-heroicons-arrow-up-tray"
-                            class="text-2xl text-primary-500"
+                            class="text-xl text-primary-500"
                           />
                         </div>
                         <span
@@ -388,7 +388,7 @@
                         >
                           <UIcon
                             name="i-heroicons-arrow-up-tray"
-                            class="text-2xl text-primary-500"
+                            class="text-xl text-primary-500"
                           />
                         </div>
                         <span
@@ -483,7 +483,7 @@
                         >
                           <UIcon
                             name="i-heroicons-plus"
-                            class="text-2xl text-green-500"
+                            class="text-xl text-green-500"
                           />
                         </div>
                         <span

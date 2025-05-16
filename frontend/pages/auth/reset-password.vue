@@ -12,7 +12,7 @@
               v-if="!showOtp && resetPasswordToken === ''"
             >
               <div class="space-y-2">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold text-gray-900">
                   Reset password
                 </h2>
                 <p class="text-gray-600">
@@ -93,7 +93,7 @@
               class="space-y-6"
             >
               <div class="space-y-2">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold text-gray-900">
                   Enter verification code
                 </h2>
                 <p class="text-gray-600">
@@ -132,7 +132,7 @@
               class="space-y-6"
             >
               <div class="space-y-2">
-                <h2 class="text-2xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold text-gray-900">
                   Enter New Password
                 </h2>
               </div>

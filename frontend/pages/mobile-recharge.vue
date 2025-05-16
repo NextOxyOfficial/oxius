@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">
+        <h1 class="text-xl font-bold text-gray-900 sm:text-xl">
           {{ $t("mobile_recharge") }}
         </h1>
         <p class="mt-2 text-base sm:text-xl text-gray-500">

@@ -124,7 +124,7 @@
 
 						<UIcon
 							name="i-material-symbols:lab-profile-outline-sharp"
-							class="text-green-700 text-2xl cursor-pointer"
+							class="text-green-700 text-xl cursor-pointer"
 							@click="viewDetails(row.id, 'view')"
 						/>
 					</div>

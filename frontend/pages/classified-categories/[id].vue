@@ -546,7 +546,7 @@
       </UCard>
       <h3 class="mt-3 mb-2 sm:my-6 text-lg font-bold text-green-950">
         AdsyAI Bot
-        <UIcon class="text-2xl" name="i-carbon:bot" />
+        <UIcon class="text-xl" name="i-carbon:bot" />
       </h3>
       <UCard
         v-if="form.city"

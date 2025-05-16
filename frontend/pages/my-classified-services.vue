@@ -25,7 +25,7 @@
 
         <div class="relative z-10 px-4">
           <h2
-            class="text-center text-2xl md:text-4xl font-bold text-white mb-4"
+            class="text-center text-xl md:text-4xl font-bold text-white mb-4"
           >
             My Classified Posts
           </h2>

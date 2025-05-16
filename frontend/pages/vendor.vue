@@ -134,7 +134,7 @@
               <div class="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900 group-hover/logo:from-slate-600 group-hover/logo:to-slate-800 transition-colors duration-500"></div>
               
               <!-- Logo Text Fallback -->
-              <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl">
+              <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-xl">
                 <span v-if="!logoImage" class="text-3xl tracking-tight">TP</span>
               </div>
               
@@ -339,7 +339,7 @@
         <div class="flex justify-center my-20">
           <div class="text-center max-w-lg relative group">
             <div class="absolute inset-0 bg-gradient-to-b from-white/0 via-white/80 to-white/0 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
-            <h2 class="text-2xl font-semibold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 relative inline-block">
+            <h2 class="text-xl font-semibold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 relative inline-block">
               Your Products
               <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-slate-400 to-transparent transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
             </h2>
@@ -432,7 +432,7 @@
           <!-- CTA Content -->
           <div class="relative p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="text-center md:text-left transform transition-all duration-500 md:hover:translate-x-2">
-              <h2 class="text-2xl md:text-3xl font-bold text-white mb-3 tracking-tight">
+              <h2 class="text-xl md:text-3xl font-bold text-white mb-3 tracking-tight">
                 Ready to explore our products?
               </h2>
               <p class="text-slate-300">

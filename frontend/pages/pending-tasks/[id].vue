@@ -2,7 +2,7 @@
   <PublicSection>
     <UContainer>
       <AccountBalance v-if="user" :user="user" :isUser="true" />
-      <p class="text-center text-2xl md:text-3xl font-semibold">
+      <p class="text-center text-xl md:text-3xl font-semibold">
         Pending Tasks List
       </p>
 

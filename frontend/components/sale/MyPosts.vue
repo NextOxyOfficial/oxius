@@ -11,7 +11,7 @@
             />
           </div>
         </div>
-        <h3 class="text-2xl font-semibold mt-6 text-gray-800">No posts yet</h3>
+        <h3 class="text-xl font-semibold mt-6 text-gray-800">No posts yet</h3>
         <p class="text-gray-600 mt-3 max-w-sm mx-auto">
           Create your first post to start selling items in the marketplace!
         </p>

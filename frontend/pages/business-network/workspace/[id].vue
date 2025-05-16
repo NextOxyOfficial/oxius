@@ -1,6 +1,6 @@
 <template>
     <div class="workspace-container">
-      <h1 class="text-2xl font-bold mb-4">Workspace: {{ workspaceName }}</h1>
+      <h1 class="text-xl font-bold mb-4">Workspace: {{ workspaceName }}</h1>
   
       <!-- Tabs -->
       <div class="tabs mb-6">

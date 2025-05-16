@@ -100,7 +100,7 @@
             >
               <UIcon
                 name="i-heroicons-users"
-                class="text-2xl text-primary-600 dark:text-primary-400"
+                class="text-xl text-primary-600 dark:text-primary-400"
               />
             </div>
             <div class="flex-1">
@@ -128,7 +128,7 @@
             >
               <UIcon
                 name="i-heroicons-banknotes"
-                class="text-2xl text-green-600 dark:text-green-400"
+                class="text-xl text-green-600 dark:text-green-400"
               />
             </div>
             <div class="flex-1">
@@ -572,7 +572,7 @@
                 class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
               >
                 <span
-                  class="text-2xl font-bold text-primary-600 dark:text-primary-400"
+                  class="text-xl font-bold text-primary-600 dark:text-primary-400"
                   >1</span
                 >
               </div>
@@ -595,7 +595,7 @@
                 class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
               >
                 <span
-                  class="text-2xl font-bold text-primary-600 dark:text-primary-400"
+                  class="text-xl font-bold text-primary-600 dark:text-primary-400"
                   >2</span
                 >
               </div>
@@ -618,7 +618,7 @@
                 class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
               >
                 <span
-                  class="text-2xl font-bold text-primary-600 dark:text-primary-400"
+                  class="text-xl font-bold text-primary-600 dark:text-primary-400"
                   >3</span
                 >
               </div>
@@ -697,7 +697,7 @@
           <div
             class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-8 md:p-12 shadow-sm cta-section"
           >
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-4">
               Ready to Start Earning?
             </h2>
             <p class="text-white/90 mb-8 max-w-2xl mx-auto">

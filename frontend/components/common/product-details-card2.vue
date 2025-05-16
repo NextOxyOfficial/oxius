@@ -210,7 +210,7 @@
 
     <!-- Key Benefits Section -->
     <section class="py-2 w-full">
-      <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">
+      <h2 class="text-xl md:text-3xl font-bold text-center mb-12">
         {{ currentProduct.benefits_title }}
         <span class="text-primary-600 dark:text-primary-400">{{
           currentProduct.name
@@ -249,7 +249,7 @@
       class="pt-10 pb-2 bg-slate-50 dark:bg-slate-800/30 rounded-xl w-full"
     >
       <div class="w-full px-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
           Shipping Information
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-6">
@@ -355,7 +355,7 @@
     <!-- Customer Reviews Section -->
     <section class="pb-2 pt-10 w-full customer-reviews-section">
       <div class="w-full px-3">
-        <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
           Customer Reviews
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
@@ -610,7 +610,7 @@
     <!-- FAQ Section -->
     <section class="py-2 w-full">
       <div class="w-full px-3 max-w-4xl mx-auto">
-        <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
           {{ currentProduct.faqs_title }}
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
@@ -644,7 +644,7 @@
               <div class="text-white/60 line-through text-lg">
                 Regular Price:
               </div>
-              <div class="text-2xl font-bold">
+              <div class="text-xl font-bold">
                 ৳{{
                   currentProduct.regular_price ||
                   (currentProduct.sale_price || 0) * 1.5

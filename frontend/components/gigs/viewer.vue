@@ -19,7 +19,7 @@
             <div class="w-8">
               <UIcon name="i-unjs:giget" class="text-3xl mt-1.5" />
             </div>
-            <span class="text-2xl flex-1">
+            <span class="text-xl flex-1">
               {{ gig.title }}
             </span>
           </div>
@@ -41,13 +41,13 @@
     </template>
 
     <div class="space-y-2 px-6 pb-8">
-      <p class="text-2xl font-medium">Instruction</p>
+      <p class="text-xl font-medium">Instruction</p>
 
       <p class="text-base text-justify">
         {{ gig.instructions }}
       </p>
       <!-- <UDivider label="" class="pt-4" /> -->
-      <p class="text-2xl font-medium !mt-8">Reference Photo/Video</p>
+      <p class="text-xl font-medium !mt-8">Reference Photo/Video</p>
       <div class="!mb-6 flex gap-1 cursor-pointer">
         <div class="" v-for="m in gig.medias" :key="m.id">
           <a
@@ -80,7 +80,7 @@
       />
       <UDivider label="" class="pt-4" />
       <div>
-        <p class="text-2xl font-medium !mb-2 !mt-8">Upload Proof</p>
+        <p class="text-xl font-medium !mb-2 !mt-8">Upload Proof</p>
         <div class="flex flex-wrap gap-5">
           <div class="relative max-w-[200px] max-h-[200px]" v-for="(img, i) in medias" :key="i">
             <img :src="img" :alt="`Uploaded file ${i}`" />

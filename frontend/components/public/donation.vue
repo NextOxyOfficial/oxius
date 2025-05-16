@@ -18,7 +18,7 @@
         <div class="flex-1">
           <div class="flex items-center gap-3 mb-2">
             <div class="relative">
-              <UIcon name="i-heroicons-heart" class="text-red-500 text-2xl" />
+              <UIcon name="i-heroicons-heart" class="text-red-500 text-xl" />
               <span class="absolute -top-1 -right-1 flex h-3 w-3">
                 <span
                   class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
@@ -76,7 +76,7 @@
         >
           <div class="sparkles absolute inset-0 opacity-20"></div>
           <div class="z-10 relative">
-            <h2 class="text-2xl font-extrabold mb-1 gradient-text">
+            <h2 class="text-xl font-extrabold mb-1 gradient-text">
               <span class="animate-letter" style="--delay: 0s">M</span>
               <span class="animate-letter" style="--delay: 0.05s">a</span>
               <span class="animate-letter" style="--delay: 0.1s">k</span>

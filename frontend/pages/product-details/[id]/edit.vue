@@ -85,7 +85,7 @@
             <div class="w-full md:w-3/4">
               <div class="flex justify-between items-start">
                 <div>
-                  <h2 class="text-2xl font-bold text-gray-800">
+                  <h2 class="text-xl font-bold text-gray-800">
                     {{ currentProduct.name }}
                   </h2>
                   <p class="text-gray-600 mt-1">

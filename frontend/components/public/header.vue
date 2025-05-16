@@ -442,7 +442,7 @@
                   class="absolute top-1 right-1 rounded-full"
                 />
 
-                <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
+                <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
                 <div class="border p-4 rounded-lg shadow-sm bg-white">
                   <NuxtImg

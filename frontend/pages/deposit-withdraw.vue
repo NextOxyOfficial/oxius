@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-2xl md:text-4xl my-4">
+    <h1 class="text-center text-xl md:text-4xl my-4">
       {{ $t("deposit_withdraw") }}
     </h1>
     <UContainer>
@@ -305,7 +305,7 @@
                   class="absolute top-1 right-1 rounded-full"
                 />
 
-                <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
+                <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
                 <div class="border p-4 rounded-lg shadow-sm bg-white">
                   <NuxtImg
@@ -340,7 +340,7 @@
                     class="absolute top-1 right-1 rounded-full"
                   />
 
-                  <h3 class="text-2xl font-semibold text-green-700">AdsyPay</h3>
+                  <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
                   <h3 class="text-base font-semibold capitalize">
                     Point camera on the payee's QR code
                   </h3>
@@ -929,7 +929,7 @@
             <div class="border bg-slate-50 p-4 rounded-xl">
               <!-- Title and Success Icon -->
               <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg sm:text-2xl font-semibold text-green-700">
+                <h2 class="text-lg sm:text-xl font-semibold text-green-700">
                   Transfer Successful
                 </h2>
                 <UIcon name="i-rivet-icons-check-circle-breakout" class="size-7 text-green-700" />

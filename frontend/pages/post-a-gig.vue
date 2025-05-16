@@ -263,7 +263,7 @@
                 >
                   <UIcon
                     name="i-heroicons-arrow-up-tray"
-                    class="text-2xl text-emerald-500"
+                    class="text-xl text-emerald-500"
                   />
                   <span>Add Media</span>
                 </div>
@@ -443,7 +443,7 @@
               />
             </div>
 
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
               KYC Verification Required
             </h2>
             <p class="text-gray-600 mb-6 max-w-md leading-relaxed">

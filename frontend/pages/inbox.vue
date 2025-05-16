@@ -31,14 +31,14 @@
                 >
                   <UIcon
                     name="i-heroicons-inbox"
-                    class="text-primary-600 text-2xl inbox-icon-anim"
+                    class="text-primary-600 text-xl inbox-icon-anim"
                   />
                 </div>
               </div>
 
               <!-- Clean typography -->
               <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+                <h1 class="text-xl sm:text-3xl font-bold text-gray-800">
                   {{ $t("message_center") }}
                 </h1>
                 <p class="text-gray-500 text-sm mt-1">

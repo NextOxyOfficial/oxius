@@ -40,7 +40,7 @@
               {{ calculateReadTime(article.content) }} min read
             </span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-semibold mb-4 leading-tight">
+          <h1 class="text-xl sm:text-3xl font-semibold mb-4 leading-tight">
             {{ article.title }}
           </h1>
         </div>
@@ -108,7 +108,7 @@
 
         <!-- Comments Section -->
         <div class="border-t border-gray-200 pt-8">
-          <h2 class="text-2xl font-semibold mb-6 text-gray-700">
+          <h2 class="text-xl font-semibold mb-6 text-gray-700">
             Comments ({{
               article.post_comments ? article.post_comments.length : 0
             }})
@@ -180,7 +180,7 @@
           v-if="relatedArticles.length > 0"
           class="mt-12 border-t border-gray-200 pt-8"
         >
-          <h2 class="text-2xl font-semibold mb-6 text-gray-700">
+          <h2 class="text-xl font-semibold mb-6 text-gray-700">
             Related Articles
           </h2>
           <div class="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
@@ -231,7 +231,7 @@
 
         <!-- Tips and Suggestions Section -->
         <div class="mt-12 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-2xl font-semibold text-gray-700 mb-6">
+          <h2 class="text-xl font-semibold text-gray-700 mb-6">
             Tips and Suggestions
           </h2>
           <div

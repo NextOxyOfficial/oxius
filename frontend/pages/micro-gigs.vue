@@ -1,7 +1,7 @@
 <template>
   <PublicSection id="micro-gigs">
     <UContainer>
-      <h2 class="text-2xl md:text-4xl mb-6 md:mb-6 text-center">
+      <h2 class="text-xl md:text-4xl mb-6 md:mb-6 text-center">
         {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
       </h2>
       <AccountBalance v-if="user" :user="user" :isUser="true" />

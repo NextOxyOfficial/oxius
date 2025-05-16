@@ -295,7 +295,7 @@
                 <!-- Price -->
                 <div class="flex items-center gap-3 mb-4">
                   <span
-                    class="text-2xl font-semibold text-slate-800 dark:text-white"
+                    class="text-xl font-semibold text-slate-800 dark:text-white"
                   >
                     ৳{{ selectedProduct.price }}
                   </span>
