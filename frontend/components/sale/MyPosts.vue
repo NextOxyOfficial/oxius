@@ -59,7 +59,6 @@
       <!-- Header with Filters and controls -->
       <div class="flex flex-wrap justify-between items-center p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
         <div class="flex items-center gap-4">
-          <h2 class="text-xl font-semibold text-gray-800">My Posts</h2>
           <div class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
             <span>{{ posts.length }}</span>
             <span>{{ posts.length === 1 ? 'post' : 'posts' }}</span>
@@ -81,7 +80,7 @@
           <div class="relative">
             <select
               v-model="statusFilter"
-              class="border border-gray-200 rounded-lg py-2.5 pl-10 pr-10 text-gray-700 bg-white shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-colors"
+              class="border border-gray-200 rounded-lg py-2 text-sm font-medium pl-10 pr-10 text-gray-700 bg-white shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-colors"
             >
               <option value="">All posts</option>
               <option value="pending">Pending review</option>
@@ -103,7 +102,7 @@
           
           <button
             @click="$emit('create-post')"
-            class="bg-primary hover:bg-primary/90 text-white font-medium px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-sm"
+            class="bg-primary hover:bg-primary/90 text-white font-medium  text-sm px-3 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-sm"
           >
             <Icon name="heroicons:plus-circle" size="18px" />
             New Post
