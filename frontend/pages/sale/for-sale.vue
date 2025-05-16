@@ -437,22 +437,6 @@
               <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
-                <div class="flex items-center">
-                  <UButtonGroup size="sm">
-                    <UButton
-                      :color="viewMode === 'grid' ? 'primary' : 'gray'"
-                      :variant="viewMode === 'grid' ? 'soft' : 'ghost'"
-                      @click="viewMode = 'grid'"
-                      icon="i-heroicons-squares-2x2"
-                    />
-                    <UButton
-                      :color="viewMode === 'list' ? 'primary' : 'gray'"
-                      :variant="viewMode === 'list' ? 'soft' : 'ghost'"
-                      @click="viewMode = 'list'"
-                      icon="i-heroicons-bars-3"
-                    />
-                  </UButtonGroup>
-                </div>
                 <UButton
                   color="primary"
                   variant="outline"
@@ -601,14 +585,12 @@
 
             <div v-else-if="!categoryPosts?.length" class="py-8 text-center">
               <p class="text-gray-500">No listings found in this category</p>
-            </div>
-
-            <div
+            </div>            <div
               v-else
               class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             >
               <NuxtLink
-                v-for="(post, i) in categoryPosts"
+                v-for="(post, i) in paginatedCategoryPosts"
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
@@ -646,7 +628,19 @@
                     </p>
                   </div>
                 </div>
-              </NuxtLink>
+              </NuxtLink>            </div>
+            
+            <!-- Pagination Controls -->
+            <div v-if="categoryPageCount > 1" class="flex justify-center mt-4 mb-2">
+              <UPagination
+                v-model="categoryCurrentPage"
+                :page-count="categoryPageCount"
+                :ui="{
+                  wrapper: 'flex items-center gap-1',
+                  rounded: 'rounded-md',
+                }"
+                size="sm"
+              />
             </div>
 
             <!-- View More Button -->
@@ -814,252 +808,6 @@
               We couldn't find any listings matching your criteria. Try
               adjusting your filters or search terms.
             </p>
-          </div>
-
-          <!-- Grid View -->
-          <div
-            v-else-if="viewMode === 'grid'"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            <NuxtLink
-              v-for="(listing, i) in listings"
-              :key="`listing-${i}`"
-              :to="`/sale/${listing.slug}`"
-              class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
-            >
-              <!-- Image with conditional badges -->
-              <div class="relative aspect-[4/3] overflow-hidden">
-                <img
-                  :src="getListingImage(listing)"
-                  :alt="listing?.title || `Image`"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div class="absolute top-2 right-2">
-                  <span
-                    v-if="listing.status === 'sold'"
-                    class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm"
-                  >
-                    SOLD
-                  </span>
-                </div>
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60"
-                ></div>
-
-                <!-- Price Badge -->
-                <div class="absolute bottom-2 left-2 z-10">
-                  <span
-                    class="bg-white text-primary text-sm font-medium px-2 py-1 rounded shadow-sm"
-                  >
-                    <span v-if="listing.negotiable && !listing.price"
-                      >Negotiable</span
-                    >
-                    <span v-else-if="listing.price"
-                      >৳{{ formatPrice(listing.price) }}</span
-                    >
-                    <span v-else>Contact for Price</span>
-                  </span>
-                </div>
-              </div>
-
-              <!-- Content -->
-              <div class="p-4">
-                <h3
-                  class="font-medium text-gray-800 text-lg mb-1 line-clamp-2 group-hover:text-primary transition-colors"
-                >
-                  {{ listing?.title || `Title` }}
-                </h3>
-
-                <div
-                  class="flex items-center mt-1.5 mb-2 text-gray-500 text-sm"
-                >
-                  <UIcon
-                    name="i-heroicons-map-pin"
-                    class="h-4 w-4 mr-1 text-gray-400"
-                  />
-                  <span class="line-clamp-1"
-                    >{{ listing.area }}, {{ listing.district }}</span
-                  >
-                </div>
-
-                <!-- Tags -->
-                <div class="flex flex-wrap gap-1.5 mt-2">
-                  <span
-                    class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full"
-                  >
-                    {{ getCategoryName(listing.category) }}
-                  </span>
-                  <span
-                    v-if="listing.condition"
-                    class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
-                  >
-                    {{ getConditionLabel(listing.condition) }}
-                  </span>
-                </div>
-
-                <!-- Date -->
-                <div
-                  class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"
-                >
-                  <div class="text-xs text-gray-500">
-                    {{ formatDate(listing.created_at) }}
-                  </div>
-                </div>
-              </div>
-            </NuxtLink>
-          </div>
-
-          <!-- List View -->
-          <div v-else class="space-y-4">
-            <NuxtLink
-              v-for="listing in listings"
-              :key="`listing-${listing?.id}+${i}`"
-              :to="`/sale/${listing.slug}`"
-              class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group block"
-            >
-              <div class="flex flex-col sm:flex-row">
-                <!-- Image Container -->
-                <div class="sm:w-48 md:w-56 lg:w-64 relative">
-                  <img
-                    :src="getListingImage(listing)"
-                    :alt="listing?.title || `Image`"
-                    class="w-full h-40 sm:h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div
-                    v-if="listing.featured"
-                    class="absolute top-2 left-2 z-10"
-                  >
-                    <span
-                      class="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm"
-                      >FEATURED</span
-                    >
-                  </div>
-                  <div class="absolute top-2 right-2">
-                    <span
-                      v-if="listing.status === 'sold'"
-                      class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm"
-                    >
-                      SOLD
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Content -->
-                <div class="flex-1 p-4 flex flex-col">
-                  <div
-                    class="flex flex-col md:flex-row md:justify-between gap-2"
-                  >
-                    <div>
-                      <h3
-                        class="font-medium text-gray-800 text-lg mb-1 group-hover:text-primary transition-colors"
-                      >
-                        {{ listing?.title || `Title` }}
-                      </h3>
-
-                      <div
-                        class="flex items-center mt-1 mb-2 text-gray-500 text-sm"
-                      >
-                        <UIcon
-                          name="i-heroicons-map-pin"
-                          class="h-4 w-4 mr-1 text-gray-400"
-                        />
-                        <span>{{ listing.area }}, {{ listing.district }}</span>
-                      </div>
-
-                      <!-- Tags -->
-                      <div class="flex flex-wrap gap-1.5 mt-1">
-                        <span
-                          class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full"
-                        >
-                          {{ getCategoryName(listing.category) }}
-                        </span>
-                        <span
-                          v-if="listing.condition"
-                          class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
-                        >
-                          {{ getConditionLabel(listing.condition) }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Price Box -->
-                    <div
-                      class="mt-2 md:mt-0 bg-gray-50 px-4 py-2 rounded-md text-right flex-shrink-0"
-                    >
-                      <div class="text-lg font-bold text-primary">
-                        <span v-if="listing.negotiable && !listing.price"
-                          >Negotiable</span
-                        >
-                        <span v-else-if="listing.price"
-                          >৳{{ formatPrice(listing.price) }}</span
-                        >
-                        <span v-else>Contact for Price</span>
-                      </div>
-                      <div
-                        v-if="listing.negotiable && listing.price"
-                        class="text-xs text-gray-500"
-                      >
-                        Negotiable
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Details based on category -->
-                  <div
-                    v-if="listing.category === 1"
-                    class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
-                  >
-                    <div v-if="listing.property_type">
-                      <span class="font-medium">Type:</span>
-                      {{ listing.property_type }}
-                    </div>
-                    <div v-if="listing.bedrooms">
-                      <span class="font-medium">Bedrooms:</span>
-                      {{ listing.bedrooms }}
-                    </div>
-                    <div v-if="listing.size">
-                      <span class="font-medium">Size:</span> {{ listing.size }}
-                      {{ listing.unit || "sqft" }}
-                    </div>
-                  </div>
-
-                  <div
-                    v-else-if="listing.category === 2"
-                    class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
-                  >
-                    <div v-if="listing.make">
-                      <span class="font-medium">Make:</span> {{ listing.make }}
-                    </div>
-                    <div v-if="listing.model">
-                      <span class="font-medium">Model:</span>
-                      {{ listing.model }}
-                    </div>
-                    <div v-if="listing.year">
-                      <span class="font-medium">Year:</span> {{ listing.year }}
-                    </div>
-                  </div>
-
-                  <div
-                    v-else-if="listing.category === 3"
-                    class="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-600"
-                  >
-                    <div v-if="listing.brand">
-                      <span class="font-medium">Brand:</span>
-                      {{ listing.brand }}
-                    </div>
-                    <div v-if="listing.model">
-                      <span class="font-medium">Model:</span>
-                      {{ listing.model }}
-                    </div>
-                  </div>
-
-                  <!-- Date -->
-                  <div class="mt-auto pt-3 text-xs text-gray-500">
-                    {{ formatDate(listing.created_at) }}
-                  </div>
-                </div>
-              </div>
-            </NuxtLink>
           </div>
 
           <!-- Pagination -->
@@ -1840,8 +1588,8 @@ function handleDistrictChange() {
   applyFilters();
 }
 
-// Category browsing pagination
-const categoryItemsPerPage = 12; // 4 rows of 3 items (mobile shows fewer columns)
+// Category browsing pagination - 3 rows of 4 items on large screens (12 items)
+const categoryItemsPerPage = 12;
 const categoryCurrentPage = ref(1);
 const categoryPageCount = computed(() => {
   return Math.ceil(categoryPosts.value?.length / categoryItemsPerPage);
