@@ -4,7 +4,7 @@
       @submit.prevent="handleSubmit"
       class="bg-white rounded-xl md:px-8 pt-6 pb-6 md:pb-8 mb-4 px-2 sm:px-8"
     >
-      <h1 class="font-bold text-center mb-4 text-xl">REGISTER</h1>
+      <h1 class="font-semibold text-center mb-4 text-xl">REGISTER</h1>
       <UDivider label="" />
       <div class="my-4">
         <label class="block text-gray-700 text-md font-medium mb-2" for="email">

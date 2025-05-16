@@ -544,7 +544,7 @@
           পার্শবর্তী জেলা সিলেক্ট করুন
         </p>
       </UCard>
-      <h3 class="mt-3 mb-2 sm:my-6 text-lg font-bold text-green-950">
+      <h3 class="mt-3 mb-2 sm:my-6 text-lg font-semibold text-green-950">
         AdsyAI Bot
         <UIcon class="text-xl" name="i-carbon:bot" />
       </h3>

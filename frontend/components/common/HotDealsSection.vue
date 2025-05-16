@@ -34,7 +34,7 @@
             >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
-            <h2 class="text-xl font-bold text-white drop-shadow-sm">
+            <h2 class="text-xl font-semibold text-white drop-shadow-sm">
               Special Deals
             </h2>
           </div>
@@ -65,7 +65,7 @@
                 loading="eager"
               />
               <div
-                class="absolute top-0 left-0 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br z-20"
+                class="absolute top-0 left-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-br z-20"
                 :class="budgetFindsCard.badgeClass"
               >
                 {{ budgetFindsCard.badge }}
@@ -104,7 +104,7 @@
                   />
 
                   <div
-                    class="absolute top-0 left-0 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br z-20"
+                    class="absolute top-0 left-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-br z-20"
                     :class="deal.badge_color"
                   >
                     {{ deal.badge }}

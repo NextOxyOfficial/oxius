@@ -7,7 +7,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Products</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ products.length }}
             </p>
           </div>
@@ -26,7 +26,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Active Products</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ activeProducts.length }}
             </p>
           </div>
@@ -45,7 +45,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Inactive Products</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ inactiveProducts.length }}
             </p>
           </div>
@@ -64,7 +64,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Out of Stock</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ outOfStockProducts.length }}
             </p>
           </div>
@@ -162,7 +162,7 @@
             class="text-sm text-gray-500 mb-2 line-clamp-2"
           ></div>
           <div class="flex justify-between items-center">
-            <div class="text-lg font-bold text-indigo-600">
+            <div class="text-lg font-semibold text-indigo-600">
               ৳{{ product.price }}
             </div>
             <div class="text-sm text-gray-500 flex items-center">

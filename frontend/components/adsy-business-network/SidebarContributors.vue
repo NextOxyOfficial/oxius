@@ -41,7 +41,7 @@
           <!-- Pro badge -->
           <div
             v-if="contributor.is_pro"
-            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full w-3 h-3 flex items-center justify-center text-[6px] font-bold shadow-sm"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full w-3 h-3 flex items-center justify-center text-[6px] font-semibold shadow-sm"
           >
             P
           </div>

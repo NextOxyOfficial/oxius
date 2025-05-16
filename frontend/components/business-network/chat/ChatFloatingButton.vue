@@ -12,7 +12,7 @@
       <XIcon v-else class="h-5 w-5 text-white" />
       
       <!-- Notification badge -->
-      <div v-if="unreadCount > 0 && !isChatOpen" class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+      <div v-if="unreadCount > 0 && !isChatOpen" class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-semibold text-white">
         {{ unreadCount }}
       </div>
     </button>

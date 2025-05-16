@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-xl font-bold text-gray-900 sm:text-xl">
+        <h1 class="text-xl font-semibold text-gray-900 sm:text-xl">
           {{ $t("mobile_recharge") }}
         </h1>
         <p class="mt-2 text-base sm:text-xl text-gray-500">
@@ -106,7 +106,7 @@
                     {{ pack.type }}
                   </span>
                   <div class="flex justify-between px-0.5 mt-1">
-                    <h3 class="mt-1 text-base font-bold text-gray-900">
+                    <h3 class="mt-1 text-base font-semibold text-gray-900">
                       {{ pack.price }}
                     </h3>
                     <NuxtImg
@@ -184,7 +184,7 @@
                     {{ pack.type }}
                   </span>
                   <div class="flex justify-between px-0.5 mt-1">
-                    <h3 class="mt-1 text-base font-bold text-gray-900">
+                    <h3 class="mt-1 text-base font-semibold text-gray-900">
                       {{ pack.price }}
                     </h3>
                     <NuxtImg
@@ -242,7 +242,7 @@
     >
       <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-sm">
         <div class="flex justify-between items-start mb-4">
-          <h3 class="text-xl font-bold text-gray-900">Confirm Recharge</h3>
+          <h3 class="text-xl font-semibold text-gray-900">Confirm Recharge</h3>
           <button
             @click="selectedPackage = null"
             class="text-gray-400 hover:text-gray-500"

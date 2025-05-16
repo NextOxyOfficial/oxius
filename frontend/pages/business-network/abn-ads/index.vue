@@ -41,7 +41,7 @@
               >
                 <span class="text-gray-600 mr-1">Balance:</span>
                 <span
-                  class="font-bold"
+                  class="font-semibold"
                   :class="
                     user?.user?.balance < 200
                       ? 'text-red-500'
@@ -167,19 +167,19 @@
 
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div class="bg-blue-50 rounded-md p-2 text-center">
-                  <div class="text-lg font-bold text-blue-600">
+                  <div class="text-lg font-semibold text-blue-600">
                     {{ totalViews }}
                   </div>
                   <div class="text-sm text-gray-600">Total Views</div>
                 </div>
                 <!-- <div class="bg-green-50 rounded-md p-2 text-center">
-                  <div class="text-lg font-bold text-green-600">
+                  <div class="text-lg font-semibold text-green-600">
                     {{ totalClicks }}
                   </div>
                   <div class="text-sm text-gray-600">Total Clicks</div>
                 </div> -->
                 <div class="bg-amber-50 rounded-md p-2 text-center">
-                  <div class="text-lg font-bold text-amber-600">
+                  <div class="text-lg font-semibold text-amber-600">
                     {{ postedAds.length }}
                   </div>
                   <div class="text-sm text-gray-600">Active Ads</div>
@@ -239,7 +239,7 @@
               >
                 <span class="text-gray-600 mr-1">Balance:</span>
                 <span
-                  class="font-bold"
+                  class="font-semibold"
                   :class="isLowBalance ? 'text-red-500' : 'text-emerald-500'"
                 >
                   ৳{{ accountBalance }}

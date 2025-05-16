@@ -28,7 +28,7 @@
           >
             <!-- Modal Header -->
             <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gradient-to-r from-amber-500 to-yellow-500 text-white">
-              <h2 class="text-xl font-bold flex items-center">
+              <h2 class="text-xl font-semibold flex items-center">
                 <Trophy class="h-5 w-5 mr-2" />
                 All Contributors
               </h2>
@@ -110,7 +110,7 @@
                           class="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
                           :class="getRankBadgeClass(index)"
                         >
-                          <span class="font-bold text-sm">{{ index + 1 }}</span>
+                          <span class="font-semibold text-sm">{{ index + 1 }}</span>
                         </div>
                         
                         <!-- Profile Image -->

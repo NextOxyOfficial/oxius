@@ -66,7 +66,7 @@
               <div class="relative p-8 md:w-3/5">
                 <div class="mb-6">
                   <h3
-                    class="mb-3 text-xl font-bold tracking-tight text-slate-700"
+                    class="mb-3 text-xl font-semibold tracking-tight text-slate-700"
                   >
                     {{ $t("premium_access_required") }}
                   </h3>

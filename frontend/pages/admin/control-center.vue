@@ -28,7 +28,7 @@
               name="i-heroicons-shield-check"
               class="w-12 h-12 mx-auto text-emerald-500 dark:text-emerald-400"
             />
-            <h2 class="mt-4 text-xl font-bold text-slate-900 dark:text-white">
+            <h2 class="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
               Admin Control Center
             </h2>
             <p class="mt-2 text-slate-600 dark:text-slate-400">
@@ -319,7 +319,7 @@
                       Total Users
                     </p>
                     <p
-                      class="text-xl font-bold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-slate-900 dark:text-white"
                     >
                       {{ dashboardStats.totalUsers }}
                     </p>
@@ -341,7 +341,7 @@
                       Total Orders
                     </p>
                     <p
-                      class="text-xl font-bold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-slate-900 dark:text-white"
                     >
                       {{ dashboardStats.totalOrders }}
                     </p>
@@ -363,7 +363,7 @@
                       Revenue
                     </p>
                     <p
-                      class="text-xl font-bold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-slate-900 dark:text-white"
                     >
                       ${{ dashboardStats.totalRevenue.toFixed(2) }}
                     </p>
@@ -385,7 +385,7 @@
                       Products
                     </p>
                     <p
-                      class="text-xl font-bold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-slate-900 dark:text-white"
                     >
                       {{ dashboardStats.totalProducts }}
                     </p>

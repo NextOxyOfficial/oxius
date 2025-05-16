@@ -7,7 +7,7 @@
         <!-- Section Header -->
         <div class="text-center mb-12">
           <h2
-            class="text-3xl font-bold text-slate-700 dark:text-white md:text-4xl"
+            class="text-3xl font-semibold text-slate-700 dark:text-white md:text-4xl"
           >
             Choose Your <span class="text-sky-500 dark:text-sky-400">Plan</span>
           </h2>
@@ -28,7 +28,7 @@
               class="p-6 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 border-b border-slate-100 dark:border-slate-700"
             >
               <h3
-                class="text-xl font-bold text-slate-700 dark:text-white flex items-center"
+                class="text-xl font-semibold text-slate-700 dark:text-white flex items-center"
               >
                 <span class="bg-sky-50 dark:bg-sky-900/30 p-2 rounded-lg mr-3">
                   <svg
@@ -48,7 +48,7 @@
               </h3>
 
               <div class="mt-4 flex items-baseline">
-                <span class="text-4xl font-bold text-slate-700 dark:text-white"
+                <span class="text-4xl font-semibold text-slate-700 dark:text-white"
                   >৳ 0</span
                 >
                 <span class="ml-2 text-sm text-slate-500 dark:text-slate-400"
@@ -283,7 +283,7 @@
             <!-- Premium Badge -->
             <div class="absolute -top-0.5 -right-0.5 z-10">
               <div
-                class="bg-gradient-to-r from-sky-400 to-blue-400 text-white text-xs font-bold py-1 px-3 rounded-bl-lg rounded-tr-lg shadow-sm flex items-center gap-1"
+                class="bg-gradient-to-r from-sky-400 to-blue-400 text-white text-xs font-semibold py-1 px-3 rounded-bl-lg rounded-tr-lg shadow-sm flex items-center gap-1"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +308,7 @@
             <div
               class="p-6 bg-gradient-to-r from-sky-400 to-blue-400 dark:from-sky-500 dark:to-blue-500 relative"
             >
-              <h3 class="text-xl font-bold text-white flex items-center">
+              <h3 class="text-xl font-semibold text-white flex items-center">
                 <span class="bg-white/20 p-2 rounded-lg mr-3 backdrop-blur-sm">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -328,13 +328,13 @@
               <div class="flex items-center gap-3">
                 <div class="mt-4 flex items-baseline">
                   <span
-                    class="text-4xl font-bold text-white line-through decoration-slate-900"
+                    class="text-4xl font-semibold text-white line-through decoration-slate-900"
                     >৳ 399</span
                   >
                   <span class="ml-2 text-sm text-sky-100">/Month</span>
                 </div>
                 <div class="mt-4 flex items-baseline">
-                  <span class="text-4xl font-bold text-white">৳ 149</span>
+                  <span class="text-4xl font-semibold text-white">৳ 149</span>
                   <span class="ml-2 text-sm text-sky-100">/Month</span>
                 </div>
               </div>
@@ -739,7 +739,7 @@
                   >
                     <!-- Badge showing savings -->
                     <span
-                      class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm transform transition-all duration-300 scale-90"
+                      class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-semibold shadow-sm transform transition-all duration-300 scale-90"
                       :class="
                         months === 12 ? 'opacity-100' : 'opacity-0 scale-75'
                       "
@@ -980,7 +980,7 @@
               </div>
             </div>
 
-            <h2 class="text-white font-bold text-xl mb-1">
+            <h2 class="text-white font-semibold text-xl mb-1">
               Payment Successful!
             </h2>
             <div class="flex items-center gap-1">
@@ -1163,7 +1163,7 @@
               </div>
             </div>
 
-            <h2 class="text-white font-bold text-xl mb-1">Payment Failed</h2>
+            <h2 class="text-white font-semibold text-xl mb-1">Payment Failed</h2>
             <p class="text-red-50 text-sm">We couldn't process your payment</p>
           </div>
         </div>

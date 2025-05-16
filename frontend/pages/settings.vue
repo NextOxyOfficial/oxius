@@ -5,7 +5,7 @@
         <!-- Header Section -->
         <div class="text-center mb-10">
           <h1
-            class="text-4xl font-bold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent mb-3"
+            class="text-4xl font-semibold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent mb-3"
           >
             {{ $t("settings") }}
           </h1>
@@ -35,7 +35,7 @@
                 name="i-heroicons-user"
                 class="w-10 h-10"
               />
-              <span v-else class="text-xl font-bold">
+              <span v-else class="text-xl font-semibold">
                 {{
                   userProfile.first_name ? userProfile.first_name.charAt(0) : ""
                 }}

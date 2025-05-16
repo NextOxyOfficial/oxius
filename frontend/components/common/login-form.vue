@@ -75,7 +75,7 @@
       class="bg-white md:px-8 py-6 md:pb-8 mb-4 px-2 sm:px-8"
       @submit.prevent="handleLogin"
     >
-      <h1 class="font-bold text-center md:p-5 text-xl">LOGIN</h1>
+      <h1 class="font-semibold text-center md:p-5 text-xl">LOGIN</h1>
       <div class="mb-6">
         <label class="block text-gray-700 text-md font-medium mb-2" for="email">
           Email

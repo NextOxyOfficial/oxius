@@ -3,7 +3,7 @@
     <div class="relative bg-white rounded-xl shadow-sm mb-6 border border-gray-100">
       <div class="flex flex-col md:flex-row md:items-center justify-between px-6 py-4">
         <div class="mb-4 md:mb-0">
-          <h1 class="text-xl font-bold text-gray-800 flex items-center">
+          <h1 class="text-xl font-semibold text-gray-800 flex items-center">
             <span class="bg-blue-100 rounded-full p-1.5 mr-2.5">
               <Search class="h-4 w-4 text-blue-600" />
             </span>
@@ -175,7 +175,7 @@
         <div class="absolute inset-0 bg-blue-50/50 rounded-full animate-ping-slow opacity-70 w-16 h-16"></div>
       </div>
       
-      <h3 class="text-lg font-bold text-gray-800 mb-1">
+      <h3 class="text-lg font-semibold text-gray-800 mb-1">
         End of Search Results
       </h3>
       <p class="text-gray-500 mb-4 max-w-md">
@@ -229,7 +229,7 @@
         <Search class="h-8 w-8 text-gray-400" />
       </div>
       
-      <h3 class="text-lg font-bold text-gray-800 mb-2">No results found</h3>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">No results found</h3>
       <p class="text-gray-500 mb-6 max-w-md">
         We couldn't find any posts matching "{{ $route.params.search }}". Try adjusting your search terms or filters.
       </p>

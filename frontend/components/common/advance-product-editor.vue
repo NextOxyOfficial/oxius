@@ -31,7 +31,7 @@
         Click text to edit
       </div>
 
-      <h2 class="text-xl md:text-3xl font-bold text-center mb-12">
+      <h2 class="text-xl md:text-3xl font-semibold text-center mb-12">
         <span v-if="!editModeActive">
           {{ editorData.benefits_title || `Why Choose?` }}
         </span>
@@ -257,7 +257,7 @@
         <button
           type="button"
           @click="addToCart(currentProduct, 1)"
-          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-sm transition-all duration-300"
+          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-sm transition-all duration-300"
         >
           <span v-if="!editModeActive">{{
             editorData.benefits_cta || "Yes! I Want This Now"
@@ -289,7 +289,7 @@
       </div>
 
       <div class="w-full px-1 max-w-4xl mx-auto">
-        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
           <span v-if="!editModeActive">{{
             editorData.faqs_title || "Frequently Asked Questions"
           }}</span>
@@ -408,7 +408,7 @@
       </div>
 
       <div class="px-6 py-8 text-center w-full">
-        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-6">
           <span v-if="!editModeActive">{{
             editorData.cta_title || "Ready to Experience the Difference?"
           }}</span>
@@ -458,17 +458,17 @@
               <div class="text-white/60 line-through text-lg">
                 Regular Price:
               </div>
-              <div class="text-xl font-bold">
+              <div class="text-xl font-semibold">
                 ৳{{
                   currentProduct.regular_price ||
                   (currentProduct.sale_price || 0) * 1.5
                 }}
               </div>
             </div>
-            <div class="text-4xl font-bold">→</div>
+            <div class="text-4xl font-semibold">→</div>
             <div class="text-center">
               <div class="text-white/90 text-lg">Special Offer:</div>
-              <div class="text-4xl font-bold">
+              <div class="text-4xl font-semibold">
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </div>
             </div>
@@ -478,7 +478,7 @@
         <button
           type="button"
           @click="addToCart(currentProduct, 1)"
-          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
+          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-semibold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
         >
           <span v-if="!editModeActive">{{
             editorData.cta_button_text || "Order Now & Save"

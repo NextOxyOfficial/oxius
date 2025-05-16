@@ -592,7 +592,7 @@
                         >
                           {{ $t("upgrade_pro") }}
                           <span
-                            class="ml-1.5 inline-flex items-center justify-center w-4 h-4 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full text-[8px] text-white font-bold transform group-hover:scale-110 transition-transform"
+                            class="ml-1.5 inline-flex items-center justify-center w-4 h-4 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full text-[8px] text-white font-semibold transform group-hover:scale-110 transition-transform"
                           >
                             +
                           </span>
@@ -793,7 +793,7 @@
                       class="absolute -top-1.5 -right-1.5 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-sm transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 z-10"
                     >
                       <div
-                        class="bg-gradient-to-r from-slate-400 to-slate-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                        class="bg-gradient-to-r from-slate-400 to-slate-500 text-white text-[8px] font-semibold px-1.5 py-0.5 rounded-full"
                       >
                         {{ link.badge.text }}
                       </div>
@@ -809,7 +809,7 @@
                       class="absolute -top-1.5 -right-1.5 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-sm transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 z-10"
                     >
                       <div
-                        class="bg-gradient-to-r from-indigo-500 to-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center"
+                        class="bg-gradient-to-r from-indigo-500 to-blue-600 text-white text-[8px] font-semibold px-1.5 py-0.5 rounded-full flex items-center"
                       >
                         <UIcon
                           name="i-heroicons-sparkles"

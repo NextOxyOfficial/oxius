@@ -140,7 +140,7 @@
                         {{ formatDate(gig.created_at) }}
                       </p>
                       <p
-                        class="font-bold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
+                        class="font-semibold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
                       >
                         <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
                           gig.price
@@ -192,7 +192,7 @@
                   class="hidden sm:flex gap-16 items-center justify-end md:justify-between max-sm:mt-2"
                 >
                   <p
-                    class="font-bold text-base text-green-900 sm:inline-flex items-center hidden"
+                    class="font-semibold text-base text-green-900 sm:inline-flex items-center hidden"
                   >
                     <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
                       gig.price

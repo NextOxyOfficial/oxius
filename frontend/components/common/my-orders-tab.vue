@@ -20,7 +20,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Orders</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ orders.length }}
             </p>
           </div>
@@ -54,7 +54,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ pendingOrders.length }}
             </p>
           </div>
@@ -85,7 +85,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Processing Orders</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ processingOrders.length }}
             </p>
           </div>
@@ -119,7 +119,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Delivered Orders</p>
-            <p class="text-xl font-bold text-gray-900">
+            <p class="text-xl font-semibold text-gray-900">
               {{ deliveredOrders.length }}
             </p>
           </div>
@@ -805,7 +805,7 @@
                 class="flex justify-between items-center pt-2 border-t border-gray-200 mt-2"
               >
                 <span class="text-gray-800 font-medium">Total</span>
-                <span class="text-lg font-bold text-indigo-600"
+                <span class="text-lg font-semibold text-indigo-600"
                   >৳{{ calculateTotal() }}</span
                 >
               </div>

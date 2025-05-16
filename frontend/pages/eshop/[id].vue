@@ -190,7 +190,7 @@
 
                 <!-- Logo Text Fallback -->
                 <div
-                  class="absolute inset-0 flex items-center justify-center text-white font-bold text-xl"
+                  class="absolute inset-0 flex items-center justify-center text-white font-semibold text-xl"
                 >
                   <span
                     v-if="!storeDetails?.store_logo"
@@ -236,7 +236,7 @@
               <!-- Store Info with Animated Underline -->
               <div class="flex-1 text-center md:text-left">
                 <h1
-                  class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight relative inline-block"
+                  class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight relative inline-block"
                 >
                   {{ storeDetails?.store_name || "Store Name" }}
                   <span
@@ -657,7 +657,7 @@
               class="text-center md:text-left transform transition-all duration-500 md:hover:translate-x-2"
             >
               <h2
-                class="text-xl md:text-3xl font-bold text-white mb-3 tracking-tight"
+                class="text-xl md:text-3xl font-semibold text-white mb-3 tracking-tight"
               >
                 Ready to explore our products?
               </h2>

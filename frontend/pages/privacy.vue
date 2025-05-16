@@ -1,6 +1,6 @@
 <template>
 	<UContainer>
-		<p class="text-xl font-bold mx-auto text-center py-6">
+		<p class="text-xl font-semibold mx-auto text-center py-6">
 			Privacy Policy for Adsy Club
 		</p>
 		<div class="flex flex-col gap-4">
@@ -16,19 +16,19 @@
 				<p class="text-lg font-semibold">Information We Collect</p>
 				<p>We may collect the following types of information:</p>
 				<p>
-					<span class="font-bold">Personal Information:</span> When you
+					<span class="font-semibold">Personal Information:</span> When you
 					register, post ads, or contact us, you may provide us with personal
 					information such as your name, email address, phone number, and
 					location.
 				</p>
 				<p>
-					<span class="font-bold">Non-Personal Information: </span> We may
+					<span class="font-semibold">Non-Personal Information: </span> We may
 					collect non-personal information that does not directly identify you.
 					This may include your IP address, browser type, operating system, and
 					usage patterns.
 				</p>
 				<p>
-					<span class="font-bold">Cookies and Tracking Technologies: </span> We
+					<span class="font-semibold">Cookies and Tracking Technologies: </span> We
 					use cookies and similar tracking technologies to enhance your
 					experience on our Site. You can control cookie preferences through
 					your browser settings.
@@ -56,17 +56,17 @@
 					However, we may share your information in the following circumstances:
 				</p>
 				<p>
-					<span class="font-bold">With Service Providers:</span> We may share
+					<span class="font-semibold">With Service Providers:</span> We may share
 					your information with third-party service providers who assist us in
 					operating our Site and delivering services to you.
 				</p>
 				<p>
-					<span class="font-bold">Legal Requirements:</span> We may disclose
+					<span class="font-semibold">Legal Requirements:</span> We may disclose
 					your information if required to do so by law or in response to valid
 					requests by public authorities.
 				</p>
 				<p>
-					<span class="font-bold">Business Transfers:</span> In the event of a
+					<span class="font-semibold">Business Transfers:</span> In the event of a
 					merger, acquisition, or sale of all or a portion of our assets, your
 					information may be transferred as part of that transaction.
 				</p>

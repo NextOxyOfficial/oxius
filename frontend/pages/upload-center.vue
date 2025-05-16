@@ -6,7 +6,7 @@
       <!-- Animated Header -->
       <div class="text-center mb-12">
         <h1
-          class="animate-fade-in-up text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
+          class="animate-fade-in-up text-xl md:text-3xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
         >
           {{ $t("upload_center") }}
         </h1>

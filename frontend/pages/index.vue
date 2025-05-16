@@ -256,7 +256,7 @@
     >
       <UContainer>
         <h2
-          class="text-xl md:text-4xl mb-4 md:mb-8 text-center font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+          class="text-xl md:text-4xl mb-4 md:mb-8 text-center font-semibold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
           id="microgigs"
         >
           {{ $t("micro_gigs") }}
@@ -537,7 +537,7 @@
                               </p>
                             </div>
                             <p
-                              class="font-bold text-base text-emerald-700 dark:text-emerald-400 inline-flex items-center max-sm:ml-auto sm:hidden px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
+                              class="font-semibold text-base text-emerald-700 dark:text-emerald-400 inline-flex items-center max-sm:ml-auto sm:hidden px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
                             >
                               <UIcon
                                 name="i-mdi:currency-bdt"
@@ -553,7 +553,7 @@
                         class="hidden sm:flex gap-2 items-center justify-end md:justify-between max-sm:mt-3 flex-shrink-0"
                       >
                         <p
-                          class="font-bold text-lg text-emerald-700 dark:text-emerald-400 sm:inline-flex items-center hidden px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
+                          class="font-semibold text-lg text-emerald-700 dark:text-emerald-400 sm:inline-flex items-center hidden px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30"
                         >
                           <UIcon
                             name="i-mdi:currency-bdt"

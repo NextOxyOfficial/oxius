@@ -51,7 +51,7 @@
                 <span class="font-medium">
                   {{ donor.name.slice(0, 7) }}***
                 </span>
-                <span class="text-primary-600 font-bold">
+                <span class="text-primary-600 font-semibold">
                   {{ donor.amount }} {{ $t("currency") }}
                 </span>
               </div>

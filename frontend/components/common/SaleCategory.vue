@@ -208,7 +208,7 @@
       <div class="selected-category-items mt-4" v-if="selectedCategory">
         <div class="flex justify-between items-center mb-3">
           <div>
-            <h3 class="text-lg font-bold">{{ getSelectedCategoryName() }}</h3>
+            <h3 class="text-lg font-semibold">{{ getSelectedCategoryName() }}</h3>
           </div>
           <NuxtLink
             :to="`/sale/for-sale?category=${selectedCategory}`"
@@ -252,7 +252,7 @@
               <!-- Price overlay in top right -->
               <div class="absolute top-0 right-0 m-2 z-10">
                 <div
-                  class="px-2 py-1 bg-primary text-white text-sm font-bold rounded shadow-sm"
+                  class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded shadow-sm"
                 >
                   ৳{{ post.price?.toLocaleString() || "Negotiable" }}
                 </div>

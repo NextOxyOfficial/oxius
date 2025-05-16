@@ -23,7 +23,7 @@
               <!-- Sale badge -->
               <div
                 v-if="currentProduct.sale_price && currentProduct.regular_price"
-                class="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm animate-pulse"
+                class="absolute top-4 right-4 bg-red-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full shadow-sm animate-pulse"
               >
                 SAVE
                 {{
@@ -43,7 +43,7 @@
             >
               {{ currentProduct.category_details?.name || "Premium Product" }}
             </span>
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-semibold mb-4">
               {{ currentProduct.name }}
             </h1>
             <div class="flex items-center mb-4">
@@ -68,7 +68,7 @@
 
             <!-- Price Section -->
             <div class="flex items-baseline mb-8">
-              <span class="text-4xl font-bold text-white">
+              <span class="text-4xl font-semibold text-white">
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </span>
               <span
@@ -147,7 +147,7 @@
             <!-- Primary CTA Button -->
             <button
               @click="addToCart(currentProduct, 1)"
-              class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-lg font-bold rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 focus:ring-4 focus:ring-primary-500/50 flex items-center justify-center gap-3 group"
+              class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-lg font-semibold rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 focus:ring-4 focus:ring-primary-500/50 flex items-center justify-center gap-3 group"
             >
               <UIcon name="i-heroicons-shopping-cart" class="w-6 h-6" />
               Buy Now
@@ -210,7 +210,7 @@
 
     <!-- Key Benefits Section -->
     <section class="py-2 w-full">
-      <h2 class="text-xl md:text-3xl font-bold text-center mb-12">
+      <h2 class="text-xl md:text-3xl font-semibold text-center mb-12">
         {{ currentProduct.benefits_title }}
         <span class="text-primary-600 dark:text-primary-400">{{
           currentProduct.name
@@ -237,7 +237,7 @@
       <div class="text-center mt-12">
         <button
           @click="addToCart(currentProduct, 1)"
-          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl shadow-sm transition-all duration-300"
+          class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-sm transition-all duration-300"
         >
           {{ currentProduct.benefits_cta }}
         </button>
@@ -249,7 +249,7 @@
       class="pt-10 pb-2 bg-slate-50 dark:bg-slate-800/30 rounded-xl w-full"
     >
       <div class="w-full px-6">
-        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
           Shipping Information
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-6">
@@ -355,7 +355,7 @@
     <!-- Customer Reviews Section -->
     <section class="pb-2 pt-10 w-full customer-reviews-section">
       <div class="w-full px-3">
-        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
           Customer Reviews
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
@@ -372,7 +372,7 @@
               class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
             >
               <div
-                class="text-5xl font-bold text-slate-800 dark:text-white mb-2"
+                class="text-5xl font-semibold text-slate-800 dark:text-white mb-2"
               >
                 {{ averageRating }}
               </div>
@@ -610,7 +610,7 @@
     <!-- FAQ Section -->
     <section class="py-2 w-full">
       <div class="w-full px-3 max-w-4xl mx-auto">
-        <h2 class="text-xl md:text-3xl font-bold text-center mb-4">
+        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
           {{ currentProduct.faqs_title }}
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
@@ -628,7 +628,7 @@
       class="py-2 bg-gradient-to-br from-primary-600 to-primary-800 text-white rounded-xl my-6 w-full"
     >
       <div class="px-6 py-8 text-center w-full">
-        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-6">
           {{ currentProduct.cta_title }}
         </h2>
         <p class="text-white/80 mb-8 text-lg max-w-3xl mx-auto">
@@ -644,17 +644,17 @@
               <div class="text-white/60 line-through text-lg">
                 Regular Price:
               </div>
-              <div class="text-xl font-bold">
+              <div class="text-xl font-semibold">
                 ৳{{
                   currentProduct.regular_price ||
                   (currentProduct.sale_price || 0) * 1.5
                 }}
               </div>
             </div>
-            <div class="text-4xl font-bold">→</div>
+            <div class="text-4xl font-semibold">→</div>
             <div class="text-center">
               <div class="text-white/90 text-lg">Special Offer:</div>
-              <div class="text-4xl font-bold">
+              <div class="text-4xl font-semibold">
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </div>
             </div>
@@ -663,7 +663,7 @@
 
         <button
           @click="addToCart(currentProduct, 1)"
-          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-bold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
+          class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-semibold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
         >
           {{ currentProduct.cta_button_text }}
           <span class="block text-sm font-normal mt-1">{{

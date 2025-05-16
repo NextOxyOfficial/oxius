@@ -38,7 +38,7 @@
 
               <!-- Clean typography -->
               <div>
-                <h1 class="text-xl sm:text-3xl font-bold text-gray-800">
+                <h1 class="text-xl sm:text-3xl font-semibold text-gray-800">
                   {{ $t("message_center") }}
                 </h1>
                 <p class="text-gray-500 text-sm mt-1">

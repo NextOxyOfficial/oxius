@@ -4,7 +4,7 @@
       <div class="flex items-center justify-center min-h-[35vh]">
         <div class="text-center space-y-8 p-8">
           <!-- Heading -->
-          <h1 class="text-4xl md:text-5xl font-bold tracking-wide">
+          <h1 class="text-4xl md:text-5xl font-semibold tracking-wide">
             Coming Soon
           </h1>
 

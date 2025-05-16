@@ -1,7 +1,7 @@
 <template>
 	<UContainer>
 		<div class="flex flex-col gap-4">
-			<p class="text-xl font-bold mx-auto text-center py-6">
+			<p class="text-xl font-semibold mx-auto text-center py-6">
 				Terms and Conditions
 			</p>
 			<p class="text-lg font-semibold">Introduction</p>

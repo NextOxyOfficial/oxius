@@ -30,7 +30,7 @@
           class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gradient-to-br from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 shadow-sm flex items-center justify-center animate-pulse z-10"
         >
           <span
-            class="text-3xl font-bold text-primary-600 dark:text-primary-500 animate-text-glow"
+            class="text-3xl font-semibold text-primary-600 dark:text-primary-500 animate-text-glow"
             >{{ logoText }}</span
           >
         </div>

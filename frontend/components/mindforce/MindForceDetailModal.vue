@@ -53,7 +53,7 @@
                   <!-- Pro badge with increased z-index and white border -->
                   <div
                     v-if="problem.user_details?.is_pro"
-                    class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-30 text-[9px] font-bold"
+                    class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-30 text-[9px] font-semibold"
                     style="border: 1px solid rgba(255, 255, 255, 0.5)"
                   >
                     PRO
@@ -311,7 +311,7 @@
                           <!-- Pro text badge with fixed z-index -->
                           <div
                             v-if="isCommentAuthorPro(comment)"
-                            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-40 text-[9px] font-bold"
+                            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-40 text-[9px] font-semibold"
                             style="border: 1px solid rgba(255, 255, 255, 0.5)"
                           >
                             PRO

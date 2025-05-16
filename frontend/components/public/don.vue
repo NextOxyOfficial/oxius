@@ -37,7 +37,7 @@
             name="i-heroicons-heart"
             class="text-red-500 text-4xl mb-3 mx-auto"
           />
-          <h3 class="text-xl font-bold mb-2">
+          <h3 class="text-xl font-semibold mb-2">
             {{ $t("donate_to_support") }}
           </h3>
           <p class="text-gray-600">{{ $t("donation_help_text") }}</p>
@@ -81,7 +81,7 @@
             name="i-heroicons-heart"
             class="text-red-500 text-4xl mb-3 mx-auto"
           />
-          <h3 class="text-xl font-bold mb-2">
+          <h3 class="text-xl font-semibold mb-2">
             {{ $t("our_generous_donors") }}
           </h3>
           <p class="text-gray-600 mb-4">
@@ -133,7 +133,7 @@
                   >
                     <div class="flex items-center gap-3">
                       <div
-                        class="w-6 h-6 flex items-center justify-center rounded-full bg-primary-100 text-primary-700 text-xs font-bold"
+                        class="w-6 h-6 flex items-center justify-center rounded-full bg-primary-100 text-primary-700 text-xs font-semibold"
                       >
                         {{ index + 1 }}
                       </div>

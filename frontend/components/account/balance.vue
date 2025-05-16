@@ -66,7 +66,7 @@
                 {{ $t("balance") }}
               </p>
               <h3
-                class="text-xl font-bold text-emerald-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                class="text-xl font-semibold text-emerald-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
               >
                 <UIcon
                   name="i-mdi:currency-bdt"
@@ -97,7 +97,7 @@
                   {{ $t("pending_task") }}
                 </p>
                 <h3
-                  class="text-xl font-bold text-amber-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
+                  class="text-xl font-semibold text-amber-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
                 >
                   <UIcon
                     name="i-mdi:currency-bdt"
@@ -199,7 +199,7 @@
       <div class="flex flex-col gap-4">
         <div class="text-center w-full flex flex-col items-center gap-3">
           <h3
-            class="text-xl font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2"
+            class="text-xl font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2"
           >
             <UIcon
               name="i-heroicons-user-group"
@@ -250,7 +250,7 @@
             <p class="text-sm text-slate-500 dark:text-slate-400">
               {{ $t("refer_user") }}
             </p>
-            <p class="text-xl font-bold text-emerald-700 dark:text-emerald-400">
+            <p class="text-xl font-semibold text-emerald-700 dark:text-emerald-400">
               {{ user.user.refer_count }}
             </p>
           </div>
@@ -262,7 +262,7 @@
               {{ $t("earnings") }}
             </p>
             <p
-              class="text-xl font-bold text-emerald-700 dark:text-emerald-400 flex items-center"
+              class="text-xl font-semibold text-emerald-700 dark:text-emerald-400 flex items-center"
             >
               <UIcon name="i-mdi:currency-bdt" class="text-lg" />
               {{ user.user.commission_earned }}

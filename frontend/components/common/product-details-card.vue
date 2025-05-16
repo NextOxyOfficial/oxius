@@ -26,7 +26,7 @@
           </div>
           <div class="flex gap-3 justify-between items-start">
             <h3
-              class="text-xl ml-1 md:text-xl font-bold text-primary-700 dark:text-primary-300 text-left"
+              class="text-xl ml-1 md:text-xl font-semibold text-primary-700 dark:text-primary-300 text-left"
             >
               {{ currentProduct.name }}
             </h3>
@@ -77,7 +77,7 @@
               <!-- Discount Badge with Improved Design -->
               <div
                 v-if="currentProduct.discount"
-                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm transform -rotate-6 animate-pulse"
+                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-sm transform -rotate-6 animate-pulse"
               >
                 -{{ currentProduct.discount }}% OFF!
               </div>
@@ -85,7 +85,7 @@
               <!-- Free Delivery Badge -->
               <div
                 v-if="currentProduct.is_free_delivery"
-                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm"
+                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-sm"
               >
                 Free Shipping
               </div>
@@ -180,7 +180,7 @@
           <div class="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl mb-4">
             <div class="flex items-end gap-3">
               <span
-                class="text-3xl font-bold text-primary-600 dark:text-primary-400"
+                class="text-3xl font-semibold text-primary-600 dark:text-primary-400"
               >
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </span>
@@ -290,7 +290,7 @@
                 />
 
                 <!-- Button text with animated dot -->
-                <span class="text-base font-bold">
+                <span class="text-base font-semibold">
                   Buy Now
                   <span
                     class="inline-block w-1.5 h-1.5 bg-white rounded-full ml-0.5 animate-pulse"

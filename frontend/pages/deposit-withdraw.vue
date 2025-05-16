@@ -24,7 +24,7 @@
       </NuxtLink>
       <UDivider label="" class="mb-4" />
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <p class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-bold">
+        <p class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-semibold">
           <span class="inline-flex items-center"
             >{{ $t("available_balance") }}:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />

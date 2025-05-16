@@ -45,7 +45,7 @@
               class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3"
             >
               <div class="flex items-center justify-between mb-1">
-                <span class="text-white text-xs font-bold"
+                <span class="text-white text-xs font-semibold"
                   >৳
                   {{
                     product.sale_price &&

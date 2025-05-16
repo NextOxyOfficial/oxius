@@ -4,7 +4,7 @@
       <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-emerald-600" />
       <div class="py-4 text-start relative">
         <h1
-          class="text-xl md:text-xl ml-2 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
+          class="text-xl md:text-xl ml-2 font-semibold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
         >
           {{ $t("eshop_manager") }}
         </h1>

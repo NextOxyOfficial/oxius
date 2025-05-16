@@ -9,7 +9,7 @@
       <div class="text-white w-full animate-fade-in-up">
         <div class="flex flex-col justify-between items-start w-full">
           <div>
-            <h1 class="text-xl sm:text-3xl font-bold flex items-center">
+            <h1 class="text-xl sm:text-3xl font-semibold flex items-center">
               MindForce
               <div
                 class="shimmer-badge ml-3 h-5 px-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xs"

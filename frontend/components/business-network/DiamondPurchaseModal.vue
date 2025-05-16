@@ -60,7 +60,7 @@
                     Available Diamonds
                   </div>
                   <div class="flex items-center">
-                    <span class="text-base font-bold mr-1">
+                    <span class="text-base font-semibold mr-1">
                       <UIcon
                         name="material-symbols:diamond-outline"
                         class="size-4 text-pink-500"
@@ -77,8 +77,8 @@
                   <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
                     Account funds
                   </div>
-                  <div class="text-base font-bold">
-                    <span class="text-lg font-bold">৳</span>
+                  <div class="text-base font-semibold">
+                    <span class="text-lg font-semibold">৳</span>
                     {{ user.user.balance }}
                   </div>
                 </div>
@@ -161,7 +161,7 @@
                       class="h-6 w-6 text-pink-500 mb-0.5"
                     />
                     <div
-                      class="text-base font-bold text-gray-800 dark:text-gray-100"
+                      class="text-base font-semibold text-gray-800 dark:text-gray-100"
                     >
                       {{ pkg.diamonds }}
                     </div>

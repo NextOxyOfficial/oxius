@@ -135,7 +135,7 @@
                 </div>
                 <div class="flex items-center justify-center">
                   <span
-                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400"
+                    class="text-3xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400"
                     >{{ user.user.diamond_balance }}</span
                   >
                   <UIcon
@@ -280,11 +280,11 @@
                 </div>
                 <div class="flex items-center">
                   <span
-                    class="text-md font-bold text-gray-800 dark:text-gray-200"
+                    class="text-md font-semibold text-gray-800 dark:text-gray-200"
                     >{{ user.user.balance }}</span
                   >
                   <span
-                    class="text-md font-bold text-gray-700 dark:text-gray-300 ml-1"
+                    class="text-md font-semibold text-gray-700 dark:text-gray-300 ml-1"
                     >৳</span
                   >
                   <button
@@ -314,7 +314,7 @@
                   ]"
                 >
                   <div class="flex items-center">
-                    <span class="text-pink-500 font-bold text-xl">
+                    <span class="text-pink-500 font-semibold text-xl">
                       {{ pkg.diamonds }}
                     </span>
                     <UIcon
@@ -479,7 +479,7 @@
             >
               <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
             </div>
-            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-1">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
               Gift Sent Successfully!
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-300">

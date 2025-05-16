@@ -18,7 +18,7 @@
           <!-- Pro text badge -->
           <div
             v-if="post?.author_details?.is_pro"
-            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-[9px] font-bold"
+            class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-[9px] font-semibold"
           >
             PRO
           </div>

@@ -29,7 +29,7 @@
                   {{ gig.title }}
                 </span>
               </div>
-              <p class="text-lg font-bold text-green-900 inline-flex items-center pl-5">
+              <p class="text-lg font-semibold text-green-900 inline-flex items-center pl-5">
                 Earn:
                 <span class="inline-flex items-center"
                   ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ gig.price }}</span

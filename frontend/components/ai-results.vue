@@ -15,7 +15,7 @@
         <div class="text-lg font-medium text-gray-700 flex items-center mb-4">
           <span>
             আমি
-            <span class="text-lg font-bold text-green-950">
+            <span class="text-lg font-semibold text-green-950">
               AdsyAI Bot
               <UIcon class="text-xl" name="i-carbon:bot" />
             </span>
@@ -34,7 +34,7 @@
             :ui="{
               rounded: 'rounded-xl',
               padding: { sm: 'px-5 py-2.5', default: 'px-5 py-3' },
-              font: { weight: 'font-bold' },
+              font: { weight: 'font-semibold' },
               size: { sm: 'text-sm', default: 'text-base' },
             }"
           >
@@ -57,7 +57,7 @@
             :ui="{
               rounded: 'rounded-xl',
               padding: { sm: 'px-5 py-2.5', default: 'px-5 py-3' },
-              font: { weight: 'font-bold' },
+              font: { weight: 'font-semibold' },
               size: { sm: 'text-sm', default: 'text-base' },
             }"
           >
@@ -92,7 +92,7 @@
         <div class="text-lg font-medium text-gray-700 flex items-center">
           <span>
             আমি
-            <span class="text-lg font-bold text-green-950">
+            <span class="text-lg font-semibold text-green-950">
               AdsyAI Bot
               <UIcon class="text-xl" name="i-carbon-bot" />
             </span>
@@ -118,7 +118,7 @@
         <div class="text-lg font-medium text-gray-700">
           <span>
             আমি
-            <span class="text-lg font-bold text-green-950">
+            <span class="text-lg font-semibold text-green-950">
               AdsyAI Bot
               <UIcon class="text-xl" name="i-carbon:bot" />
             </span>
@@ -141,7 +141,7 @@
     <section v-else-if="result">
       <div v-if="result.length === 0">
         আমি
-        <span class="text-lg font-bold text-green-950">
+        <span class="text-lg font-semibold text-green-950">
           AdsyAI Bot
           <UIcon class="text-xl" name="i-carbon:bot" />
         </span>
@@ -149,7 +149,7 @@
       </div>
       <div class="mb-3" v-else>
         আমি
-        <span class="text-lg font-bold text-green-950">
+        <span class="text-lg font-semibold text-green-950">
           AdsyAI Bot
           <UIcon class="text-xl" name="i-carbon:bot" />
         </span>

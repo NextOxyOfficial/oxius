@@ -157,7 +157,7 @@
                 >
                   <span
                     class="font-medium"
-                    :class="{ 'font-bold': !notification.read }"
+                    :class="{ 'font-semibold': !notification.read }"
                     >{{ notification.actor?.name }}</span
                   >
                   <span> {{ getNotificationText(notification) }}</span>

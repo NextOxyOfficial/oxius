@@ -246,7 +246,7 @@
                 <!-- Discount Badge -->
                 <div
                   v-if="selectedProduct.discount"
-                  class="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-md"
+                  class="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-md"
                 >
                   -{{ selectedProduct.discount }}% OFF
                 </div>

@@ -42,7 +42,7 @@
                 enter-to-class="opacity-100 translate-y-0"
               >
                 <div>
-                  <h1 class="text-3xl font-bold text-white">Checkout</h1>
+                  <h1 class="text-3xl font-semibold text-white">Checkout</h1>
                   <p class="text-purple-100 mt-2">
                     Complete your purchase to experience premium quality
                   </p>
@@ -525,7 +525,7 @@
                           class="flex justify-between py-3 border-t border-gray-200 mt-2 pt-2"
                         >
                           <span class="text-gray-800 font-medium">Total</span>
-                          <span class="text-xl font-bold text-indigo-600"
+                          <span class="text-xl font-semibold text-indigo-600"
                             >৳{{ total }}</span
                           >
                         </div>

@@ -744,7 +744,7 @@
                 <div
                   class="bg-white/90 px-4 py-3 rounded-lg shadow text-center"
                 >
-                  <h3 class="text-lg font-bold text-gray-800">
+                  <h3 class="text-lg font-semibold text-gray-800">
                     Premium Listing Promotion
                   </h3>
                   <p class="text-gray-600">

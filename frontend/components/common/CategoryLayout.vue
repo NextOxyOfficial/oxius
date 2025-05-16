@@ -109,7 +109,7 @@
             <div
               class="w-1 h-6 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full mr-2"
             ></div>
-            <h2 class="text-lg font-bold text-gray-800">New & Hot Arrivals</h2>
+            <h2 class="text-lg font-semibold text-gray-800">New & Hot Arrivals</h2>
             <div
               class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-full"
             >
@@ -163,7 +163,7 @@
                     loading="lazy"
                   />
                   <div
-                    class="absolute top-0 right-0 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl z-20"
+                    class="absolute top-0 right-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-bl z-20"
                     :class="card.badge_color"
                   >
                     {{ card.badge }}

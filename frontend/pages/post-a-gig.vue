@@ -5,7 +5,7 @@
         <!-- Enhanced Header -->
         <div class="text-center mb-10">
           <h1
-            class="text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
+            class="text-4xl font-semibold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
           >
             {{ $t("post_gigs") }}
           </h1>

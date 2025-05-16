@@ -200,7 +200,7 @@
           <!-- Mobile Profile Header (Mobile Only) -->
           <div class="flex sm:hidden items-center justify-between mb-4">
             <div>
-              <h1 class="text-xl font-bold flex items-center gap-1.5">
+              <h1 class="text-xl font-semibold flex items-center gap-1.5">
                 {{ user?.name }}
                 <div class="relative inline-flex tooltip-container">
                   <UIcon
@@ -351,7 +351,7 @@
               >
                 <div>
                   <div class="flex items-center flex-wrap gap-1.5">
-                    <h1 class="text-xl font-bold">{{ user?.name }}</h1>
+                    <h1 class="text-xl font-semibold">{{ user?.name }}</h1>
                     <!-- Verified badge -->
                     <div class="relative inline-flex tooltip-container">
                       <UIcon
