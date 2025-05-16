@@ -301,7 +301,7 @@
           <UIcon
             v-else
             :name="link.icon"
-            class="text-xl"
+            class="text-2xl"
             :class="isActive ? `text-green-600` : `text-green-400`"
           />
         </template>
