@@ -125,12 +125,11 @@
             ref="categoriesWrapper"
           >
             <!-- Show category loading placeholders when categories are loading -->
-            <template v-if="isLoadingCategories">
-              <div
+            <template v-if="isLoadingCategories">              <div
                 v-for="index in 6"
                 :key="`placeholder-${index}`"
                 class="category-item flex-shrink-0"
-                :class="[isMobile ? 'w-1/5' : 'w-1/6']"
+                :class="[isMobile ? 'w-1/4' : 'w-1/6']"
               >
                 <div
                   class="category-card transition-all duration-200 cursor-pointer h-full mx-1"
@@ -152,12 +151,11 @@
             </template>
 
             <!-- Show loaded categories -->
-            <template v-else>
-              <div
+            <template v-else>              <div
                 v-for="category in categories"
                 :key="category.id"
                 class="category-item flex-shrink-0"
-                :class="[isMobile ? 'w-1/5' : 'w-1/6']"
+                :class="[isMobile ? 'w-1/4' : 'w-1/6']"
                 @click="selectCategory(category)"
               >
                 <div
@@ -521,23 +519,21 @@ const getSelectedCategoryName = () => {
 // Slide the categories left
 const slideLeft = () => {
   if (scrollPosition.value <= 0) return;
-
-  // On mobile, we show 5 categories at once out of 6
+  // On mobile, we show 4 categories at once out of 6
   const containerWidth = sliderContainer.value.clientWidth;
-  const itemWidth = containerWidth / 5; // Show 5 items on mobile
+  const itemWidth = containerWidth / 4; // Show 4 items on mobile
   scrollPosition.value = Math.max(0, scrollPosition.value - itemWidth);
 };
 
 // Slide the categories right
 const slideRight = () => {
   if (!categoriesWrapper.value || !sliderContainer.value) return;
-
   const containerWidth = sliderContainer.value.clientWidth;
   const maxScroll = categoriesWrapper.value.scrollWidth - containerWidth;
 
   if (scrollPosition.value >= maxScroll) return;
 
-  const itemWidth = containerWidth / 5; // Show 5 items on mobile
+  const itemWidth = containerWidth / 4; // Show 4 items on mobile
   scrollPosition.value = Math.min(maxScroll, scrollPosition.value + itemWidth);
 };
 
@@ -578,7 +574,9 @@ const fetchCategories = async () => {
     const response = await get("/sale/categories/");
     console.log("API Response for categories:", response.data);
     if (response.data && Array.isArray(response.data)) {
-      categories.value = response.data;
+      // This will place the most recently added categories at the end
+      const sortedCategories = [...response.data].sort((a, b) => a.id - b.id);
+      categories.value = sortedCategories;
 
       // Set initial category if available
       if (categories.value.length > 0) {
@@ -828,9 +826,9 @@ const formatDate = (dateString) => {
 }
 
 @media (max-width: 767px) {
-  /* Mobile: show 5 categories at once */
+  /* Mobile: show 4 categories at once */
   .category-item {
-    width: 20%; /* 1/5 */
+    width: 25%; /* 1/4 */
   }
 
   /* Show navigation buttons on mobile */
