@@ -215,10 +215,9 @@
                   <Icon name="heroicons:trash" size="20px" />
                 </button>
               </div>
-              
-              <!-- Mark as Sold button with states -->
+                <!-- Mark as Sold button with states -->
               <button
-                v-if="post.status !== 'sold'"
+                v-if="post.status !== 'sold' && post.status !== 'pending'"
                 @click="markAsSold(post.id)"
                 :disabled="markingSold === post.id"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all duration-200"
@@ -235,6 +234,15 @@
                 />
                 {{ markingSold === post.id ? 'Processing...' : 'Mark as Sold' }}
               </button>
+              
+              <!-- Pending notice -->
+              <div 
+                v-else-if="post.status === 'pending'"
+                class="flex items-center gap-2 px-4 py-2 text-sm bg-amber-50 text-amber-600 rounded-lg opacity-75"
+              >
+                <Icon name="heroicons:clock" size="18px" class="flex-shrink-0" />
+                Awaiting Approval
+              </div>
               
               <!-- Sold status indicator -->
               <div 
@@ -341,7 +349,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 
-const { get, post, del } = useApi();
+const { get, post, del, patch } = useApi();
 const { user } = useAuth();
 const { showNotification } = useNotifications();
 
@@ -416,7 +424,8 @@ const fetchPosts = async (page = 1) => {
   }
 
   try {
-    const response = await get(`/sale/posts/`, {}, {
+    // Use my_posts action to get only the current user's posts
+    const response = await get(`/sale/posts/my_posts/`, {}, {
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
@@ -464,7 +473,8 @@ const refreshPosts = async () => {
   currentPage.value = 1;
   
   try {
-    const response = await get(`/sale/posts/`, {}, {
+    // Use my_posts action to get only the current user's posts
+    const response = await get(`/sale/posts/my_posts/`, {}, {
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
@@ -523,12 +533,14 @@ const markAsSold = async (postId) => {
   markingSold.value = postId;
   
   try {
-    const response = await post(`/sale/posts/${postId}/mark_as_sold/`, {}, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-      }
-    });
+    // Find the post object by ID to get its slug
+    const postToUpdate = posts.value.find(p => p.id === postId);
+    if (!postToUpdate || !postToUpdate.slug) {
+      throw new Error("Could not find post with that ID or post has no slug");
+    }
+    
+    // Use the custom action endpoint specifically designed for marking posts as sold
+    const response = await post(`/sale/posts/${postToUpdate.slug}/mark_as_sold/`, {});
 
     if (response && response.data) {
       // Update post in the local state
@@ -544,15 +556,17 @@ const markAsSold = async (postId) => {
         title: "Success!",
         message: "Your post has been marked as sold.",
         type: "success",
-      });
-    }
+      });    }
   } catch (error) {
     console.error("Error marking post as sold:", error);
     
     // Show appropriate error message based on the error
     let errorMessage = "Failed to mark post as sold. Please try again later.";
     
-    if (error.response) {
+    // Check for client-side errors first
+    if (error.message && error.message.includes("Could not find post")) {
+      errorMessage = "Could not identify the post. Please refresh and try again.";
+    } else if (error.response) {
       // The request was made and the server responded with a non-2xx status
       if (error.response.status === 403) {
         errorMessage = "You don't have permission to mark this post as sold.";
@@ -589,7 +603,14 @@ const deletePost = async () => {
   if (!postToDeleteId.value) return;
 
   try {
-    await del(`/sale/posts/${postToDeleteId.value}/`);
+    // Find the post by ID to get its slug
+    const postToDelete = posts.value.find(p => p.id === postToDeleteId.value);
+    if (!postToDelete || !postToDelete.slug) {
+      throw new Error("Could not find post with that ID or post has no slug");
+    }
+    
+    // Use the slug instead of ID for the API call
+    await del(`/sale/posts/${postToDelete.slug}/`);
 
     // Remove post from local state
     posts.value = posts.value.filter((p) => p.id !== postToDeleteId.value);
