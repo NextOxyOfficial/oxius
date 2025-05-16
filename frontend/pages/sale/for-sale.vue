@@ -373,7 +373,7 @@
 
               <!-- Premium Ad Card -->
               <div
-                class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-3 group cursor-pointer hover:shadow-md transition-shadow"
+                class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-3 group cursor-pointer hover:shadow-sm transition-shadow"
               >
                 <div class="relative">
                   <img
@@ -398,7 +398,7 @@
 
               <!-- Regular Ad Card -->
               <div
-                class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-md transition-shadow"
+                class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow"
               >
                 <div class="flex">
                   <div class="w-1/3">
@@ -432,7 +432,7 @@
               </h3>
               
               <div
-                class="bg-white rounded-lg border border-blue-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-md transition-shadow"
+                class="bg-white rounded-lg border border-blue-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow"
               >
                 <div class="relative">
                   <img
@@ -802,7 +802,7 @@
                   v-for="(listing, i) in listings"
                   :key="`listing-${i}+${i}`"
                   :to="`/sale/${listing.slug}`"
-                  class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-md transition-shadow group"
+                  class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-sm transition-shadow group"
                 >
                   <div class="relative h-36 overflow-hidden">
                     <img
