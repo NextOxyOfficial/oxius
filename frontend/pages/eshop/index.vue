@@ -352,7 +352,7 @@
 
       <!-- Elegant Filter Container -->
       <div
-        class="bg-white/70 dark:bg-gray-800/40 backdrop-blur-[2px] rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-700/50 shadow-sm max-sm:hidden"
+        class="bg-white/70 dark:bg-gray-800/40 backdrop-blur-[2px] rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-700/50 shadow-sm"
       >
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <!-- Categories Column -->
