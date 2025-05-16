@@ -199,8 +199,13 @@
           </UFormGroup>
         </div>
       </UContainer>
-    </div>
-    <UContainer class="py-6">
+    </div>    <UContainer class="py-6">      <!-- Overlay for mobile -->
+      <div 
+        v-if="isMobileFilterOpen" 
+        class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
+        @click="toggleMobileSidebar"
+      ></div>
+      
       <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sidebar with filters -->
         <div
@@ -211,8 +216,26 @@
               : 'mobile-sidebar-closed',
             'lg:block',
           ]"
-        >
-          <div class="p-5 max-sm:pt-20 border-b border-gray-100 bg-white z-10">
+        >          <div class="p-5 max-sm:pt-4 border-b border-gray-100 bg-white z-10">            
+          <!-- Mobile Close Button -->
+            <div class="flex items-center justify-between mb-4 lg:hidden">
+              <h2 class="text-lg font-medium text-primary-700">
+                <span class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-funnel" class="h-5 w-5" />
+                  Browse Filters
+                </span>
+              </h2>
+              <UButton
+                icon="i-heroicons-x-mark"
+                size="sm"
+                color="primary"
+                variant="soft"
+                class="ml-auto"
+                @click="toggleMobileSidebar"
+                aria-label="Close Filters"
+              />
+            </div>
+            
             <!-- Categories Section -->
             <div class="mb-6">
               <h2 class="text-lg font-medium text-gray-800 mb-3">Categories</h2>
@@ -452,8 +475,19 @@
           <!-- Sorting & View Options -->
           <div
             class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
-          >
-            <div>
+          >            <div class="flex items-center gap-3">
+              <!-- Mobile Filter Button -->
+              <UButton
+                icon="i-heroicons-bars-3"
+                size="sm"
+                color="primary"
+                variant="soft"
+                class="lg:hidden flex items-center gap-1.5"
+                @click="toggleMobileSidebar"
+                aria-label="Open Filters Menu"
+              >
+                <span class="text-xs font-medium">Menu</span>
+              </UButton>
               <p class="text-gray-500 text-sm">
                 <span class="font-medium text-gray-700">{{
                   totalListings
@@ -1025,6 +1059,12 @@ const loading = ref(true);
 const listings = ref([]); // Renamed from posts to match template usage
 const viewMode = ref("grid");
 const isMobileFilterOpen = ref(false);
+
+// Function to toggle mobile sidebar visibility
+function toggleMobileSidebar() {
+  isMobileFilterOpen.value = !isMobileFilterOpen.value;
+}
+
 const searchQuery = ref("");
 const totalListings = ref(0); // Added to match template usage
 const categories = ref([]);
@@ -1810,6 +1850,7 @@ watch(categories, () => {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1817,7 +1858,31 @@ watch(categories, () => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Mobile sidebar styles */
+@media (max-width: 1023px) {
+  .filter-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 85%;
+    max-width: 320px;
+    z-index: 50;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .mobile-sidebar-closed {
+    transform: translateX(-100%);
+  }
+  
+  .mobile-sidebar-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  }
 }
 </style>
