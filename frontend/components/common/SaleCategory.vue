@@ -182,7 +182,7 @@
                           size="22px"
                         />
                       </div>
-                      <span class="category-name font-medium text-sm">{{
+                      <span class="category-name font-medium text-base">{{
                         category.name
                       }}</span>
                     </div>
