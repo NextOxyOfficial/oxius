@@ -79,7 +79,7 @@
               >
               </button>
             </div>
-          </div>          
+          </div>
           <!-- Right side - Premium content area -->
           <div class="w-full md:w-2/5 max-sm:py-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80">
             <div class="relative text-center">
