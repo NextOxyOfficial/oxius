@@ -245,7 +245,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <UFormGroup
                 label="State"
-                required
+                
                 :error="
                   !form.state && checkSubmit && 'You must select a state!'
                 "
@@ -269,7 +269,7 @@
 
               <UFormGroup
                 label="City"
-                required
+                
                 :error="!form.city && checkSubmit && 'You must select a city'"
                 class="mb-5"
               >
@@ -292,7 +292,6 @@
 
               <UFormGroup
                 label="Area/Upazila"
-                required
                 :error="
                   !form.upazila &&
                   checkSubmit &&
@@ -452,8 +451,6 @@ function updateContent(p) {
 }
 const submitValues = ref({});
 
-import { useRoute } from "vue-router";
-
 const router = useRoute();
 
 async function fetchServices() {
@@ -499,10 +496,10 @@ function validateForm() {
   submitValues.value = negotiable
     ? { ...rest, negotiable }
     : { ...rest, price };
-
+const { state, city, upazila,...filetered } = submitValues.value;
   // Validate each field in submitValues
-  for (const key in submitValues.value) {
-    const value = submitValues.value[key];
+  for (const key in filetered) {
+    const value = filetered[key];
     if (
       (typeof value === "string" && !value.trim()) || // Check empty strings
       (typeof value === "boolean" && !value) //|| // Check false booleans

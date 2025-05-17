@@ -20,10 +20,18 @@
           </div>
 
           <div class="p-5">
-            <!-- Simple Progress Indicator -->
+            <!-- All Bangladesh Option -->
+            <div class="mb-4 pb-4 border-b border-gray-100">
+              <UCheckbox
+                v-model="allOverBangladesh"
+                name="all-bangladesh"
+                :label="t('all_over_bangladesh') || 'Show content from all over Bangladesh'"
+                color="primary"
+              />
+            </div>
 
             <!-- Form Fields -->
-            <div class="space-y-4">
+            <div class="space-y-4" v-if="!allOverBangladesh">
               <UFormGroup :label="t('division')" required>
                 <USelectMenu
                   v-model="form.state"
@@ -104,7 +112,7 @@
               variant="solid"
               :label="t('set_location')"
               @click="validateAndAddLocation"
-              :disabled="isSubmitDisabled"
+              :disabled="isSubmitDisabled && !allOverBangladesh"
               :loading="isLoading"
               block
             />
@@ -122,6 +130,7 @@ const isOpen = ref(false);
 const location = useCookie("location");
 const showErrors = ref(false);
 const isLoading = ref(false);
+const allOverBangladesh = ref(false);
 
 if (!location.value) {
   isOpen.value = true;
@@ -154,7 +163,7 @@ const getCurrentStepClass = (index) => {
 
 // Computed property to check if all fields are filled
 const isSubmitDisabled = computed(() => {
-  return !form.value.state || !form.value.city || !form.value.upazila;
+  return !allOverBangladesh.value && (!form.value.state || !form.value.city || !form.value.upazila);
 });
 
 // geo filter
@@ -198,12 +207,25 @@ watch(
 function validateAndAddLocation() {
   showErrors.value = true;
 
-  if (!isSubmitDisabled.value) {
+  // If all over Bangladesh is selected, or if all required fields are filled
+  if (allOverBangladesh.value || !isSubmitDisabled.value) {
     isLoading.value = true;
 
     // Short delay for better UX
     setTimeout(() => {
-      location.value = form.value;
+      if (allOverBangladesh.value) {
+        // Set location with national scope flag
+        location.value = {
+          country: form.value.country,
+          allOverBangladesh: true,
+          state: "",
+          city: "",
+          upazila: ""
+        };
+      } else {
+        // Set location with specific location data
+        location.value = form.value;
+      }
       isOpen.value = false;
       isLoading.value = false;
       window.location.reload();

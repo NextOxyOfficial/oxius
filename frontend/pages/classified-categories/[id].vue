@@ -50,54 +50,82 @@
         <div
           class="relative z-10 flex items-center justify-between p-3 ps-12 rounded-lg border border-primary-100"
         >
-          <!-- Location path with icons -->
-          <div class="flex items-center flex-wrap location-path">
-            <div
+          <!-- Location path with icons -->          <div class="flex items-center flex-wrap location-path">
+            <!-- Show country if allOverBangladesh is true or only country is set -->
+            <div 
+              v-if="location?.allOverBangladesh || (location?.country && !location?.state)" 
               class="location-segment flex items-center"
-              data-location="state"
+              data-location="country"
             >
               <UIcon
-                name="i-heroicons-map"
+                name="i-heroicons-globe-asia-australia"
                 class="text-primary-600 mr-1.5 animate-pulse-slow"
               />
               <span class="font-medium text-gray-800">{{
-                location?.state
+                location?.country || "Bangladesh"
               }}</span>
-              <UIcon
-                name="i-heroicons-chevron-right"
-                class="mx-1.5 text-gray-400"
-              />
+              <span 
+                v-if="location?.allOverBangladesh"
+                class="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full"
+              >
+                All over {{location?.country || "Bangladesh"}}
+              </span>
             </div>
 
-            <div
-              class="location-segment flex items-center"
-              data-location="city"
-            >
-              <UIcon
-                name="i-heroicons-building-office-2"
-                class="text-primary-600 mr-1.5 location-icon"
-              />
-              <span class="font-medium text-gray-800">{{
-                location?.city
-              }}</span>
-              <UIcon
-                name="i-heroicons-chevron-right"
-                class="mx-1.5 text-gray-400"
-              />
-            </div>
+            <!-- Show state, city, upazila only if not allOverBangladesh -->
+            <template v-if="!location?.allOverBangladesh">
+              <div
+                v-if="location?.state"
+                class="location-segment flex items-center"
+                data-location="state"
+              >
+                <UIcon
+                  name="i-heroicons-map"
+                  class="text-primary-600 mr-1.5 animate-pulse-slow"
+                />
+                <span class="font-medium text-gray-800">{{
+                  location?.state
+                }}</span>
+                <UIcon
+                  v-if="location?.city"
+                  name="i-heroicons-chevron-right"
+                  class="mx-1.5 text-gray-400"
+                />
+              </div>
 
-            <div
-              class="location-segment flex items-center"
-              data-location="upazila"
-            >
-              <UIcon
-                name="i-heroicons-home-modern"
-                class="text-primary-600 mr-1.5 location-icon"
-              />
-              <span class="font-medium text-gray-800">{{
-                location?.upazila
-              }}</span>
-            </div>
+              <div
+                v-if="location?.city"
+                class="location-segment flex items-center"
+                data-location="city"
+              >
+                <UIcon
+                  name="i-heroicons-building-office-2"
+                  class="text-primary-600 mr-1.5 location-icon"
+                />
+                <span class="font-medium text-gray-800">{{
+                  location?.city
+                }}</span>
+                <UIcon
+                  v-if="location?.upazila"
+                  name="i-heroicons-chevron-right"
+                  class="mx-1.5 text-gray-400"
+                />
+              </div>
+
+              <div
+                v-if="location?.upazila"
+                class="location-segment flex items-center"
+                data-location="upazila"
+              >
+                <UIcon
+                  name="i-heroicons-home-modern"
+                  class="text-primary-600 mr-1.5 location-icon"
+                />
+                <span class="font-medium text-gray-800">{{
+                  location?.upazila
+                }}</span>
+              </div>
+            </template>
           </div>
           <UTooltip text="Change Location" class="me-auto">
             <UButton
@@ -547,9 +575,8 @@
       <h3 class="mt-3 mb-2 sm:my-6 text-lg font-semibold text-green-950">
         AdsyAI Bot
         <UIcon class="text-xl" name="i-carbon:bot" />
-      </h3>
-      <UCard
-        v-if="form.city"
+      </h3>      <UCard
+        v-if="form.city || location?.allOverBangladesh"
         class="text-center border border-green-900/30 border-dashed"
         :ui="{
           background: 'bg-slate-50 dark:bg-gray-900',
@@ -558,9 +585,9 @@
       >
         <AiResults
           :country="form.country"
-          :state="form.state"
-          :city="form.city"
-          :upazila="form.upazila"
+          :state="location?.allOverBangladesh ? 'All Bangladesh' : form.state"
+          :city="location?.allOverBangladesh ? 'All Cities' : form.city"
+          :upazila="location?.allOverBangladesh ? 'All Areas' : form.upazila"
           :business_type="categoryDetails?.business_type"
         />
       </UCard>
@@ -678,13 +705,25 @@ async function fetchServices() {
 fetchServices();
 
 async function filterSearch() {
+  // Preserve allOverBangladesh flag if it exists in the current location
   const { title, category, ...rest } = form.value;
-  location.value = rest;
+  const locationData = {
+    ...rest,
+    allOverBangladesh: location.value?.allOverBangladesh || false
+  };
+  location.value = locationData;
   search.value = [];
   isLoading.value = true;
-  const res = await get(
-    `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}&upazila=${form.value.upazila}`
-  );
+  
+  // Build the API request URL
+  let apiUrl = `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}`;
+  
+  // Only add state, city, and upazila params if not showing all over Bangladesh
+  if (!location.value?.allOverBangladesh) {
+    apiUrl += `&state=${form.value.state}&city=${form.value.city}&upazila=${form.value.upazila}`;
+  }
+  
+  const res = await get(apiUrl);
 
   setTimeout(() => {
     if (res.data.length > 0) {
@@ -705,6 +744,22 @@ async function fetchNearbyAds() {
   if (!location.value) return;
 
   isNearByLoading.value = true;
+  
+  // If showing all over Bangladesh, get a sample of ads from across the country
+  if (location.value.allOverBangladesh) {
+    const countrySearchRes = await get(
+      `/classified-posts/filter/?category=${router.params.id}&country=${form.value.country}`
+    );
+    
+    nearby_services.value = countrySearchRes.data.filter(
+      (service) =>
+        service.service_status.toLowerCase() === "approved" &&
+        service.active_service
+    );
+    
+    isNearByLoading.value = false;
+    return;
+  }
 
   // First try: search in the same city, any upazila
   const citySearchRes = await get(

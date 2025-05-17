@@ -21,52 +21,91 @@
             class="relative z-10 flex items-center justify-between p-3 ps-12 rounded-lg border border-primary-100"
           >
             <!-- Location path with icons -->
-            <div class="flex items-center flex-wrap location-path">
-              <div
-                class="location-segment flex items-center"
-                data-location="state"
+            <div class="location-breadcrumb relative my-3 overflow-hidden">
+              <!-- Subtle background effect --> <div
+                class="relative z-10 flex items-center justify-between p-3 rounded-lg border border-primary-100"
               >
-                <UIcon
-                  name="i-heroicons-map"
-                  class="text-primary-600 mr-1.5 animate-pulse-slow"
-                />
-                <span class="font-medium text-gray-800">{{
-                  location?.state
-                }}</span>
-                <UIcon
-                  name="i-heroicons-chevron-right"
-                  class="mx-1.5 text-gray-400"
-                />
-              </div>
+                <!-- Location path with icons -->
+                <div class="flex items-center flex-wrap location-path">
+                  <!-- Show country if allOverBangladesh is true or only country is set -->
+                  <div
+                    v-if="
+                      location?.allOverBangladesh ||
+                      (location?.country && !location?.state)
+                    "
+                    class="location-segment flex items-center"
+                    data-location="country"
+                  >
+                    <UIcon
+                      name="i-heroicons-globe-asia-australia"
+                      class="text-primary-600 mr-1.5 animate-pulse-slow"
+                    />
+                    <span class="font-medium text-gray-800">{{
+                      location?.country || "Bangladesh"
+                    }}</span>
+                    <span
+                      v-if="location?.allOverBangladesh"
+                      class="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full"
+                    >
+                      All over {{ location?.country || "Bangladesh" }}
+                    </span>
+                  </div>
 
-              <div
-                class="location-segment flex items-center"
-                data-location="city"
-              >
-                <UIcon
-                  name="i-heroicons-building-office-2"
-                  class="text-primary-600 mr-1.5 location-icon"
-                />
-                <span class="font-medium text-gray-800">{{
-                  location?.city
-                }}</span>
-                <UIcon
-                  name="i-heroicons-chevron-right"
-                  class="mx-1.5 text-gray-400"
-                />
-              </div>
+                  <!-- Show state, city, upazila only if not allOverBangladesh -->
+                  <template v-if="!location?.allOverBangladesh">
+                    <div
+                      v-if="location?.state"
+                      class="location-segment flex items-center"
+                      data-location="state"
+                    >
+                      <UIcon
+                        name="i-heroicons-map"
+                        class="text-primary-600 mr-1.5 animate-pulse-slow"
+                      />
+                      <span class="font-medium text-gray-800">{{
+                        location?.state
+                      }}</span>
+                      <UIcon
+                        v-if="location?.city"
+                        name="i-heroicons-chevron-right"
+                        class="mx-1.5 text-gray-400"
+                      />
+                    </div>
 
-              <div
-                class="location-segment flex items-center"
-                data-location="upazila"
-              >
-                <UIcon
-                  name="i-heroicons-home-modern"
-                  class="text-primary-600 mr-1.5 location-icon"
-                />
-                <span class="font-medium text-gray-800">{{
-                  location?.upazila
-                }}</span>
+                    <div
+                      v-if="location?.city"
+                      class="location-segment flex items-center"
+                      data-location="city"
+                    >
+                      <UIcon
+                        name="i-heroicons-building-office-2"
+                        class="text-primary-600 mr-1.5 location-icon"
+                      />
+                      <span class="font-medium text-gray-800">{{
+                        location?.city
+                      }}</span>
+                      <UIcon
+                        v-if="location?.upazila"
+                        name="i-heroicons-chevron-right"
+                        class="mx-1.5 text-gray-400"
+                      />
+                    </div>
+
+                    <div
+                      v-if="location?.upazila"
+                      class="location-segment flex items-center"
+                      data-location="upazila"
+                    >
+                      <UIcon
+                        name="i-heroicons-home-modern"
+                        class="text-primary-600 mr-1.5 location-icon"
+                      />
+                      <span class="font-medium text-gray-800">{{
+                        location?.upazila
+                      }}</span>
+                    </div>
+                  </template>
+                </div>
               </div>
             </div>
             <UTooltip text="Change Location" class="me-auto">
