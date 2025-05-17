@@ -18,7 +18,7 @@
           </div>
 
           <div
-            class="relative z-10 flex items-center justify-between p-3 ps-12 rounded-lg border border-primary-100"
+            class="relative z-10 flex items-center justify-between px-3 pl-12 rounded-lg border border-primary-100"
           >
             <!-- Location path with icons -->
             <div class="location-breadcrumb relative my-3 overflow-hidden">
