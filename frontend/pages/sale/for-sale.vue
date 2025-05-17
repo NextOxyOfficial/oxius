@@ -199,13 +199,15 @@
           </UFormGroup>
         </div>
       </UContainer>
-    </div>    <UContainer class="py-6">      <!-- Overlay for mobile -->
-      <div 
-        v-if="isMobileFilterOpen" 
+    </div>
+    <UContainer class="py-6">
+      <!-- Overlay for mobile -->
+      <div
+        v-if="isMobileFilterOpen"
         class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
         @click="toggleMobileSidebar"
       ></div>
-      
+
       <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sidebar with filters -->
         <div
@@ -216,8 +218,9 @@
               : 'mobile-sidebar-closed',
             'lg:block',
           ]"
-        >          <div class="p-5 max-sm:pt-4 border-b border-gray-100 bg-white z-10">            
-          <!-- Mobile Close Button -->
+        >
+          <div class="p-5 max-sm:pt-4 border-b border-gray-100 bg-white z-10">
+            <!-- Mobile Close Button -->
             <div class="flex items-center justify-between mb-4 lg:hidden">
               <h2 class="text-lg font-medium text-primary-700">
                 <span class="flex items-center gap-2">
@@ -235,7 +238,7 @@
                 aria-label="Close Filters"
               />
             </div>
-            
+
             <!-- Categories Section -->
             <div class="mb-6">
               <h2 class="text-lg font-medium text-gray-800 mb-3">Categories</h2>
@@ -261,8 +264,13 @@
                       {{ totalListings }}
                     </span>
                   </button>
-                </li>                <!-- Individual categories -->
-                <li v-for="category in categories" :key="category.id" class="mb-0.5">
+                </li>
+                <!-- Individual categories -->
+                <li
+                  v-for="category in categories"
+                  :key="category.id"
+                  class="mb-0.5"
+                >
                   <div>
                     <button
                       @click="selectCategory(category.id)"
@@ -286,13 +294,17 @@
                         >
                           {{ getCategoryCount(category.id) }}
                         </span>
-                        <UButton 
+                        <UButton
                           v-if="hasSubcategories(category.id)"
-                          variant="ghost" 
-                          color="gray" 
-                          size="xs" 
-                          class="p-0 h-6 w-6" 
-                          :icon="expandedCategories[category.id] ? 'i-heroicons-minus-small' : 'i-heroicons-plus-small'"
+                          variant="ghost"
+                          color="gray"
+                          size="xs"
+                          class="p-0 h-6 w-6"
+                          :icon="
+                            expandedCategories[category.id]
+                              ? 'i-heroicons-minus-small'
+                              : 'i-heroicons-plus-small'
+                          "
                           @click.stop="toggleSubcategories(category.id)"
                         />
                       </div>
@@ -308,10 +320,16 @@
                       leave-to-class="opacity-0 max-h-0"
                     >
                       <ul
-                        v-if="expandedCategories[category.id] && hasSubcategories(category.id)"
+                        v-if="
+                          expandedCategories[category.id] &&
+                          hasSubcategories(category.id)
+                        "
                         class="ml-5 mt-1 space-y-1 overflow-hidden border-l-2 border-gray-100 pl-2"
                       >
-                        <li v-for="subcategory in getSubcategories(category.id)" :key="subcategory.id">
+                        <li
+                          v-for="subcategory in getSubcategories(category.id)"
+                          :key="subcategory.id"
+                        >
                           <button
                             @click.stop="selectSubcategory(subcategory.id)"
                             class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between text-sm"
@@ -416,9 +434,10 @@
                       Discounts up to 30%
                     </p>
                   </div>
-                </div>              </div>
+                </div>
+              </div>
             </div>
-            
+
             <!-- Long Height Banner -->
             <div class="mb-6">
               <h3
@@ -430,7 +449,7 @@
                 />
                 Featured Deal
               </h3>
-              
+
               <div
                 class="bg-white rounded-lg border border-blue-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow"
               >
@@ -449,13 +468,15 @@
                   <div
                     class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4"
                   >
-                    <h4 class="font-medium text-white text-base">Summer Sale</h4>
+                    <h4 class="font-medium text-white text-base">
+                      Summer Sale
+                    </h4>
                     <p class="text-blue-200 text-sm font-medium mt-1">
                       Up to 50% off on selected items
                     </p>
-                    <UButton 
-                      size="xs" 
-                      color="white" 
+                    <UButton
+                      size="xs"
+                      color="white"
                       class="mt-2"
                       variant="solid"
                     >
@@ -475,7 +496,8 @@
           <!-- Sorting & View Options -->
           <div
             class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
-          >            <div class="flex items-center gap-3">
+          >
+            <div class="flex items-center gap-3">
               <!-- Mobile Filter Button -->
               <UButton
                 icon="i-heroicons-bars-3"
@@ -647,8 +669,10 @@
           <!-- Category Tabs Listings Section -->
           <div
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-5 mb-6"
-          >            
-            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+          >
+            <div
+              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4"
+            >
               <h2 class="text-lg font-medium text-gray-800">
                 {{ categoryBrowserHeading }}
               </h2>
@@ -665,7 +689,8 @@
 
             <div v-else-if="!categoryPosts?.length" class="py-8 text-center">
               <p class="text-gray-500">No listings found in this category</p>
-            </div>            <div
+            </div>
+            <div
               v-else
               class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             >
@@ -707,10 +732,10 @@
                       {{ formatDate(post.created_at) }}
                     </p>
                   </div>
-                </div>              
+                </div>
               </NuxtLink>
             </div>
-            
+
             <!-- Pagination Controls -->
             <div v-if="categoryPageCount > 1" class="flex justify-center mt-6">
               <UPagination
@@ -762,14 +787,14 @@
           <div
             class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-5 mb-6"
           >
-            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
-              <h2
-                class="text-lg font-medium text-amber-700 flex items-center"
-              >
+            <div
+              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4"
+            >
+              <h2 class="text-lg font-medium text-amber-700 flex items-center">
                 <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
                 Recent Listings
               </h2>
-              
+
               <!-- Tabs moved here -->
               <div class="overflow-x-auto w-full sm:w-auto pb-1">
                 <UButtonGroup size="sm">
@@ -789,7 +814,10 @@
                     class="px-4 whitespace-nowrap"
                     @click="changeActiveCategoryTab(cat.id)"
                   >
-                    {{ cat.name }} <span class="text-xs ml-1 opacity-75">({{ getCategoryCount(cat.id) }})</span>
+                    {{ cat.name }}
+                    <span class="text-xs ml-1 opacity-75"
+                      >({{ getCategoryCount(cat.id) }})</span
+                    >
                   </UButton>
                 </UButtonGroup>
               </div>
@@ -1524,17 +1552,18 @@ function getConditionLabel(condition) {
 function getSubcategoryName(subcategoryId) {
   // Find the subcategory name based on the ID
   if (!subcategoryId) return "";
-  
+
   // Convert subcategoryId to string to ensure consistent comparison
   const subIdStr = String(subcategoryId);
-  
+
   // Loop through all categories and their subcategories to find the matching one
   for (const categoryId in getSubcategories()) {
-    const subCategory = getSubcategories(parseInt(categoryId))
-      .find(sub => String(sub.id) === subIdStr);
+    const subCategory = getSubcategories(parseInt(categoryId)).find(
+      (sub) => String(sub.id) === subIdStr
+    );
     if (subCategory) return subCategory.name;
   }
-  
+
   return subcategoryId; // Fallback to ID if name not found
 }
 
@@ -1699,13 +1728,13 @@ const categoryTabLoading = ref(false);
 // Function to change active category tab
 function changeActiveCategoryTab(categoryId) {
   activeCategoryTab.value = categoryId;
-  
+
   // If we're changing category tabs, reset any subcategory selection
   // but preserve the main selectedCategory value for filtering
   if (selectedSubcategory.value) {
     selectedSubcategory.value = null;
   }
-  
+
   // Reset to page 1 before loading new category posts
   categoryCurrentPage.value = 1;
   loadCategoryPosts();
@@ -1727,14 +1756,14 @@ async function loadCategoryPosts() {
 
     let response;
     try {
-      response = await get(`/api/sale/listings?${params.toString()}`);
+      response = await get(`/sale/posts/`);
     } catch (firstError) {
       console.log("First category API path failed, trying alternative");
       try {
-        response = await get(`/api/listings?${params.toString()}`);
+        response = await get(`/sale/posts/`);
       } catch (secondError) {
         console.log("Second category API path failed, trying last alternative");
-        response = await get(`/listings?${params.toString()}`);
+        response = await get(`/sale/posts/`);
       }
     }
 
@@ -1789,16 +1818,16 @@ async function loadRecentListings() {
 
     let response;
     try {
-      response = await get(`/api/sale/listings?${params.toString()}`);
+      response = await get(`/sale/posts/`);
     } catch (firstError) {
       console.log("First recent listings API path failed, trying alternative");
       try {
-        response = await get(`/api/listings?${params.toString()}`);
+        response = await get(`/sale/posts/`);
       } catch (secondError) {
         console.log(
           "Second recent listings API path failed, trying last alternative"
         );
-        response = await get(`/listings?${params.toString()}`);
+        response = await get(`/sale/posts/`);
       }
     }
 
@@ -1875,11 +1904,11 @@ watch(categories, () => {
     z-index: 50;
     transition: transform 0.3s ease-in-out;
   }
-  
+
   .mobile-sidebar-closed {
     transform: translateX(-100%);
   }
-  
+
   .mobile-sidebar-open {
     transform: translateX(0);
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
