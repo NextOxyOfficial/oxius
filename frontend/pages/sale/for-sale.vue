@@ -387,10 +387,10 @@
 
           <!-- Category Tabs Listings Section -->
           <div
-            class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-5 mb-6"
+            class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-1 mb-6"
           >
             <div
-              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4"
+              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2"
             >
               <h2 class="text-lg font-medium text-gray-800">
                 {{ categoryBrowserHeading }}
@@ -411,7 +411,7 @@
             </div>
             <div
               v-else
-              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
             >
               <NuxtLink
                 v-for="(post, i) in listings"
@@ -525,10 +525,10 @@
 
           <!-- Recent Listings Section -->
           <div
-            class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-5 mb-6"
+            class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-3 mb-6"
           >
             <div
-              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4"
+              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2"
             >
               <h2 class="text-lg font-medium text-amber-700 flex items-center">
                 <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />

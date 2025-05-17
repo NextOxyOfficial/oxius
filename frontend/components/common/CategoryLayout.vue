@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full max-w-7xl sm:px-4 mx-auto bg-gradient-to-br from-slate-50 via-white to-slate-50"
+    class="w-full max-w-7xl sm:px-2 mx-auto bg-gradient-to-br from-slate-50 via-white to-slate-50"
   >
     <!-- Content Container -->
     <div class="relative z-10">
