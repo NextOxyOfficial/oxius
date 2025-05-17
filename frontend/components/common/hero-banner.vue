@@ -177,7 +177,7 @@
         </div>
       </div>
     </div>    <!-- Mobile service buttons -->
-    <div class="md:hidden text-center px-0.5 py-5 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-sm shadow-sm my-5 relative overflow-hidden">
+    <div class="md:hidden text-center px-0.5 py-5 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden">
       <div class="absolute inset-0 opacity-10 bg-pattern"></div>
       <h2 class="text-base font-bold leading-tight text-gray-800 mb-4 text-center relative">
         <span class="relative z-10">Our Services</span>
@@ -234,7 +234,7 @@
           <div class="mobile-icon-circle bg-red-50">
             <HeartPulse class="mobile-icon text-red-500" />
           </div>
-          <span class="text-sm leading-tight text-gray-700">Shastho</span>
+          <span class="text-sm leading-tight text-gray-700">Shastho Sheba</span>
           <span class="absolute top-1 right-1 bg-red-500 text-white text-[8px] px-0.5 rounded-sm">Comming Soon</span>
         </div>
 
