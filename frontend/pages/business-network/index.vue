@@ -45,7 +45,9 @@
     <!-- Load more indicator with skeletons for better UX -->
     <div v-if="loadingMore && !loading" class="pb-6">
       <!-- Skeleton loader for loading more posts -->
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+      <div
+        class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4"
+      >
         <div class="flex items-center space-x-3 mb-4">
           <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
           <div class="flex-1 space-y-2">
@@ -72,10 +74,14 @@
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center"
     >
-      <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+      <div
+        class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
+      >
         <Check class="h-8 w-8 text-blue-600" />
       </div>
-      <h3 class="text-lg font-medium text-gray-800 mb-1">You're all caught up!</h3>
+      <h3 class="text-lg font-medium text-gray-800 mb-1">
+        You're all caught up!
+      </h3>
       <p class="text-gray-500 mb-8 max-w-md">
         You've seen all posts in the business network feed.
       </p>
@@ -106,11 +112,16 @@
         class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4"
         @click="isSearchOpen = false"
       >
-        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden" @click.stop>
+        <div
+          class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden"
+          @click.stop
+        >
           <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">
             <div class="flex items-center gap-3">
               <div class="relative flex-1">
-                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <div
+                  class="absolute inset-y-0 left-3 flex items-center pointer-events-none"
+                >
                   <Search class="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -121,14 +132,19 @@
                   v-model="searchQuery"
                 />
               </div>
-              <button class="p-2 rounded-full hover:bg-gray-100" @click="isSearchOpen = false">
+              <button
+                class="p-2 rounded-full hover:bg-gray-100"
+                @click="isSearchOpen = false"
+              >
                 <X class="h-5 w-5" />
               </button>
             </div>
           </div>
 
           <div class="p-3 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Filter by Category</h3>
+            <h3 class="text-sm font-medium text-gray-500 mb-2">
+              Filter by Category
+            </h3>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="category in availableCategories"
@@ -179,7 +195,9 @@
             </div>
 
             <div v-if="searchQuery.length === 0" class="p-4">
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Recent Searches</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">
+                Recent Searches
+              </h3>
               <ul class="space-y-3">
                 <li v-for="(term, index) in recentSearches" :key="index">
                   <button
@@ -206,7 +224,15 @@ definePageMeta({
   layout: "adsy-business-network",
 });
 
-import { Search, X, Clock, ArrowRight, Loader2, Check, ChevronUp } from "lucide-vue-next";
+import {
+  Search,
+  X,
+  Clock,
+  ArrowRight,
+  Loader2,
+  Check,
+  ChevronUp,
+} from "lucide-vue-next";
 
 // State
 const allPosts = ref([]); // All loaded posts
@@ -255,14 +281,14 @@ async function getPosts(isLoadingMore = false, page = 1) {
     const [response] = await Promise.all([
       get(`/bn/posts/?page=${page}`, { params }),
       // Add a minimum delay for UX, shorter for subsequent loads
-      new Promise(resolve => setTimeout(resolve, isLoadingMore ? 300 : 800)),
+      new Promise((resolve) => setTimeout(resolve, isLoadingMore ? 300 : 800)),
     ]);
 
     if (response.data && response.data.results) {
       const newPosts = response.data.results;
 
       // Process posts to ensure they have necessary UI properties
-      const processedPosts = newPosts.map(post => ({
+      const processedPosts = newPosts.map((post) => ({
         ...post,
         showFullDescription: false,
         showDropdown: false,
@@ -272,7 +298,7 @@ async function getPosts(isLoadingMore = false, page = 1) {
       }));
 
       // Filter out duplicate posts based on their IDs
-      const uniquePosts = processedPosts.filter(post => {
+      const uniquePosts = processedPosts.filter((post) => {
         if (loadedPostIds.value.has(post.id)) {
           console.log(`Filtered out duplicate post ID: ${post.id}`);
           return false;
@@ -281,10 +307,14 @@ async function getPosts(isLoadingMore = false, page = 1) {
         return true;
       });
 
-      console.log(`Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`);
+      console.log(
+        `Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`
+      );
 
       // On initial load or load more, append to the end
-      allPosts.value = isLoadingMore ? [...allPosts.value, ...uniquePosts] : uniquePosts;
+      allPosts.value = isLoadingMore
+        ? [...allPosts.value, ...uniquePosts]
+        : uniquePosts;
 
       // Update pagination cursor if we got any unique posts
       if (uniquePosts.length > 0) {
@@ -392,7 +422,10 @@ function loadMorePosts() {
 // Setup scroll detection for infinite scroll
 function setupInfiniteScroll() {
   const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+    if (
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - 500
+    ) {
       if (!loadingMore.value && hasMore.value) {
         loadMorePosts();
       }
@@ -425,37 +458,80 @@ onMounted(() => {
     loadRecentPosts();
   });
 
+  // Also listen for post-created events from the global event bus
+  const globalEventBus = useEventBus();
+  globalEventBus.on("post-created", (newPostData) => {
+    console.log(
+      "Caught post-created event from global event bus:",
+      newPostData
+    );
+    handleNewPost(newPostData);
+  });
+
   // Clean up event listeners when component is unmounted
   onUnmounted(() => {
     eventBus.off("start-loading-posts");
     eventBus.off("load-recent-posts");
+    globalEventBus.off("post-created");
   });
 });
 
 // Add this function to handle the new post
-const handleNewPost = newPost => {
-  // Process the new post to ensure it has necessary UI properties
-  const processedNewPost = {
-    ...newPost,
-    showFullDescription: false,
-    showDropdown: false,
-    commentText: "",
-    isCommentLoading: false,
-    isLikeLoading: false,
-  };
+const handleNewPost = async (newPost) => {
+  console.log("handleNewPost called with data:", newPost);
 
-  // Track the new post ID to prevent future duplicates
-  if (newPost.id) {
-    loadedPostIds.value.add(newPost.id);
-  }
+  if (newPost) {
+    // Process the new post to ensure it has necessary UI properties
+    const processedNewPost = {
+      ...newPost,
+      showFullDescription: false,
+      showDropdown: false,
+      commentText: "",
+      isCommentLoading: false,
+      isLikeLoading: false,
+    };
+    console.log("Processed post data:", processedNewPost);
 
-  // Add the new post to the beginning of the posts array for immediate display
-  allPosts.value = [processedNewPost, ...allPosts.value];
-  updateDisplayedPosts();
+    // Track the new post ID to prevent future duplicates
+    if (newPost.id) {
+      console.log("Adding post ID to tracked IDs:", newPost.id);
+      loadedPostIds.value.add(newPost.id);
+    }
 
-  // Update newest timestamp
-  if (processedNewPost.created_at) {
-    newestCreatedAt.value = processedNewPost.created_at;
+    // Add the new post to the beginning of the posts array for immediate display
+    console.log(
+      "Adding post to allPosts array, current length:",
+      allPosts.value.length
+    );
+    allPosts.value = [processedNewPost, ...allPosts.value];
+    console.log("New allPosts length:", allPosts.value.length);
+
+    // Update the displayed posts
+    console.log("Updating displayed posts");
+    updateDisplayedPosts();
+    console.log(
+      "displayedPosts length after update:",
+      displayedPosts.value.length
+    );
+
+    // Update newest timestamp if applicable
+    if (processedNewPost.created_at) {
+      console.log("Updating newest timestamp to:", processedNewPost.created_at);
+      newestCreatedAt.value = processedNewPost.created_at;
+    }
+
+    // Display success notification
+    console.log("Showing success notification");
+    useToast().add({
+      title: "Post Created!",
+      description: "Your post has been successfully published",
+      color: "green",
+      timeout: 3000,
+    });
+  } else {
+    console.log("No post data provided, reloading all posts");
+    // If no post data is provided, reload all posts
+    await loadData();
   }
 };
 
@@ -480,12 +556,12 @@ function loadRecentPosts() {
 
     // Call API with specific parameters for recent posts
     get("/bn/posts/", { params })
-      .then(response => {
+      .then((response) => {
         if (response.data && response.data.results) {
           const newPosts = response.data.results;
 
           // Process posts
-          const processedPosts = newPosts.map(post => ({
+          const processedPosts = newPosts.map((post) => ({
             ...post,
             showFullDescription: false,
             showDropdown: false,
@@ -495,7 +571,7 @@ function loadRecentPosts() {
           }));
 
           // Track post IDs to prevent duplicates
-          processedPosts.forEach(post => {
+          processedPosts.forEach((post) => {
             loadedPostIds.value.add(post.id);
           });
 
@@ -518,7 +594,7 @@ function loadRecentPosts() {
           updateDisplayedPosts();
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Failed to load recent posts:", error);
         useToast().add({
           title: "Error",
@@ -556,23 +632,29 @@ const availableCategories = [
 const searchInputRef = ref(null);
 
 // Format time ago
-const formatTimeAgo = dateString => {
+const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return `${Math.abs(diffInSeconds)} ${diffInSeconds === 1 ? "second" : "seconds"} ago`;
+    return `${Math.abs(diffInSeconds)} ${
+      diffInSeconds === 1 ? "second" : "seconds"
+    } ago`;
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${Math.abs(diffInMinutes)} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+    return `${Math.abs(diffInMinutes)} ${
+      diffInMinutes === 1 ? "minute" : "minutes"
+    } ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${Math.abs(diffInHours)} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+    return `${Math.abs(diffInHours)} ${
+      diffInHours === 1 ? "hour" : "hours"
+    } ago`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
@@ -581,10 +663,12 @@ const formatTimeAgo = dateString => {
   }
 
   const diffInMonths = Math.floor(diffInDays / 30);
-  return `${Math.abs(diffInMonths)} ${diffInMonths === 1 ? "month" : "months"} ago`;
+  return `${Math.abs(diffInMonths)} ${
+    diffInMonths === 1 ? "month" : "months"
+  } ago`;
 };
 
-const handleSearch = term => {
+const handleSearch = (term) => {
   searchQuery.value = term;
   // Add to recent searches if not already there
   if (!recentSearches.value.includes(term) && term.trim() !== "") {
@@ -614,7 +698,7 @@ const searchResults = computed(() => {
     // If categories are selected, add them to the results
     if (selectedCategories.value.length > 0) {
       mockResults = mockResults.map(
-        result => `${result} in ${selectedCategories.value.join(", ")}`
+        (result) => `${result} in ${selectedCategories.value.join(", ")}`
       );
     }
 
@@ -626,7 +710,7 @@ const searchResults = computed(() => {
 // Initialize
 onMounted(() => {
   // Focus search input when overlay opens
-  watch(isSearchOpen, newVal => {
+  watch(isSearchOpen, (newVal) => {
     if (newVal) {
       nextTick(() => {
         searchInputRef.value?.focus();

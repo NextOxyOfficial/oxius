@@ -983,12 +983,14 @@ const selectHashtagSuggestion = (tag) => {
 async function handleCreatePost() {
   formError.value = "";
   isSubmitting.value = true;
+  console.log("Starting post creation/update process");
 
   try {
     let response;
 
     if (isEditMode.value) {
       // Update existing post
+      console.log("Updating existing post:", props.editPost.id);
       response = await patch(`/bn/posts/${props.editPost.id}/`, {
         ...form.value,
         images: images.value,
@@ -996,23 +998,35 @@ async function handleCreatePost() {
       });
 
       // Emit a different event for updates
+      console.log("Emitting post-updated event with data:", response.data);
       emit("post-updated", response.data);
 
       // Use event bus for better cross-component communication
       const eventBus = useEventBus();
       eventBus.emit("post-updated", response.data);
     } else {
-      // Create new post (existing logic)
+      // Create new post
+      console.log("Creating new post with data:", {
+        title: form.value.title,
+        content: form.value.content.substring(0, 50) + "...",
+        imagesCount: images.value.length,
+        tagsCount: createPostCategories.value.length,
+      });
+
       response = await post("/bn/posts/", {
         ...form.value,
         images: images.value,
         tags: createPostCategories.value,
       });
 
+      console.log("Post created successfully, response:", response.data);
+
       // Emit the event with the complete post data for immediate display
+      console.log("Emitting post-created event");
       emit("post-created", response.data);
 
       // Use event bus for better cross-component communication
+      console.log("Broadcasting via eventBus");
       const eventBus = useEventBus();
       eventBus.emit("post-created", response.data);
     }
