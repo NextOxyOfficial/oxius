@@ -97,25 +97,29 @@
                     <Globe class="icon text-blue-600" />
                   </div>
                   <span>Business Network</span>
-                </NuxtLink>                  <!-- News -->
+                </NuxtLink>                  
+                <!-- News -->
                 <NuxtLink to="/adsy-news" class="service-btn bg-white hover:bg-amber-50 text-gray-700">
                   <div class="icon-circle bg-amber-50">
                     <Newspaper class="icon text-amber-600" />
                   </div>
                   <span>News</span>
-                </NuxtLink>                  <!-- Earn Money -->
+                </NuxtLink>                  
+                <!-- Earn Money -->
                 <NuxtLink to="/earn-money" class="service-btn bg-white hover:bg-emerald-50 text-gray-700">
                   <div class="icon-circle bg-emerald-50">
                     <BadgeDollarSign class="icon text-emerald-600" />
                   </div>
                   <span>Earn Money</span>
-                </NuxtLink>                <!-- Eshop -->
+                </NuxtLink>                
+                <!-- Eshop -->
                 <NuxtLink to="/eshop" class="service-btn bg-white hover:bg-purple-50 text-gray-700">
                   <div class="icon-circle bg-purple-50">
                     <ShoppingCart class="icon text-purple-600" />
                   </div>
                   <span>Eshop</span>
-                </NuxtLink>                <!-- Sale Listings -->
+                </NuxtLink>                
+                <!-- Sale Listings -->
                 <NuxtLink to="/sale-listings" class="service-btn bg-white hover:bg-indigo-50 text-gray-700">
                   <div class="icon-circle bg-indigo-50">
                     <ListFilter class="icon text-indigo-600" />
@@ -137,7 +141,8 @@
                     <Cog class="icon text-rose-600" />
                   </div>
                   <span>Amar Seba</span>
-                </NuxtLink>                <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
+                </NuxtLink>                
+                <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
                 <div class="service-btn bg-white/70 text-gray-400 relative opacity-80 cursor-not-allowed">
                   <div class="icon-circle bg-gray-100">
                     <HeartPulse class="icon text-gray-400" />
@@ -157,13 +162,15 @@
                     <span>Bill Pay</span>
                   </div>
                   <span class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming Soon</span>
-                </div><!-- Mobile Recharge -->
+                </div>
+                <!-- Mobile Recharge -->
                 <NuxtLink to="/mobile-recharge" class="service-btn bg-white hover:bg-orange-50 text-gray-700">
                   <div class="icon-circle bg-orange-50">
                     <Smartphone class="icon text-orange-600" />
                   </div>
                   <span>Mobile Recharge</span>
-                </NuxtLink>                <!-- Transactions -->
+                </NuxtLink>                
+                <!-- Transactions -->
                 <NuxtLink to="/transactions" class="service-btn bg-white hover:bg-lime-50 text-gray-700">
                   <div class="icon-circle bg-lime-50">
                     <CreditCard class="icon text-lime-600" />
@@ -183,9 +190,11 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Mobile service buttons -->
+    </div>    
+    <!-- Mobile service buttons -->
     <div class="md:hidden text-center px-0.5 py-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden">
-      <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10">        <!-- Business Network -->        <NuxtLink to="/business-network" class="mobile-btn bg-white">
+      <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10">        
+        <!-- Business Network -->        <NuxtLink to="/business-network" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-blue-50">
             <Globe class="mobile-icon text-blue-600" />
           </div>
