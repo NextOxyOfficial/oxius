@@ -78,10 +78,10 @@
               </button>
             </div>
           </div>          <!-- Right side - Premium content area -->
-          <div class="w-full md:w-2/5 p-4 sm:p-8 flex flex-col justify-center bg-white">
+          <div class="w-full md:w-2/5 p-4 flex flex-col justify-center rounded-xl bg-slate-50/80">
             <div class="relative text-center">
               <h1
-                class="text-lg sm:text-lg font-medium leading-tight text-gray-800 mb-6 relative inline-block"
+                class="text-lg sm:text-lg font-medium leading-tight text-gray-800 relative inline-block"
               >
                 <span class="relative z-10">{{ $t("bangladesh_first_title") }}</span>
                 <span class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"></span>
@@ -134,22 +134,22 @@
                     <Cog class="icon text-rose-600" />
                   </div>
                   <span>Amar Seba</span>
-                </NuxtLink>                <!-- Shastho Sheba (Coming Soon) -->
+                </NuxtLink>                <!-- Shastho Sheba (Coming Comming Soon) -->
                 <div class="service-btn bg-white text-gray-700 relative">
                   <div class="icon-circle bg-red-50">
                     <HeartPulse class="icon text-red-500" />
                   </div>
                   <span>Shastho Sheba</span>
-                  <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming soon</span>
+                  <span class="absolute top-1 -right-1 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming soon</span>
                 </div>
 
-                <!-- Bill Pay (Coming Soon) -->
+                <!-- Bill Pay (Coming Comming Soon) -->
                 <div class="service-btn bg-white text-gray-700 relative">
                   <div class="icon-circle bg-gray-50">
                     <Receipt class="icon text-gray-500" />
                   </div>
                   <span>Bill Pay</span>
-                  <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming soon</span>
+                  <span class="absolute top-1 -right-1 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming soon</span>
                 </div>                <!-- Mobile Recharge -->
                 <NuxtLink to="/mobile-recharge" class="service-btn bg-white hover:bg-orange-50 text-gray-700">
                   <div class="icon-circle bg-orange-50">
@@ -187,32 +187,32 @@
           <div class="mobile-icon-circle bg-blue-50">
             <Globe class="mobile-icon text-blue-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Network</span>
+          <span class="text-sm leading-tight text-gray-700">Business Network</span>
         </NuxtLink>
           <!-- News -->        <NuxtLink to="/adsy-news" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-amber-50">
             <Newspaper class="mobile-icon text-amber-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">News</span>
+          <span class="text-sm leading-tight text-gray-700">Adsy News</span>
         </NuxtLink>
           <!-- Earn Money -->
         <NuxtLink to="/earn-money" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-emerald-50">
             <BadgeDollarSign class="mobile-icon text-emerald-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Earn</span>
+          <span class="text-sm leading-tight text-gray-700">Earn Money</span>
         </NuxtLink>        <!-- Eshop -->
         <NuxtLink to="/eshop" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-purple-50">
             <ShoppingCart class="mobile-icon text-purple-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Eshop</span>
+          <span class="text-sm leading-tight text-gray-700">eShop</span>
         </NuxtLink>        <!-- Sale Listings -->
         <NuxtLink to="/sale-listings" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-indigo-50">
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Sale</span>
+          <span class="text-sm leading-tight text-gray-700">Sale Listings</span>
         </NuxtLink>
 
         <!-- Mindforce -->
@@ -220,7 +220,7 @@
           <div class="mobile-icon-circle bg-cyan-50">
             <Brain class="mobile-icon text-cyan-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Mindforce</span>
+          <span class="text-sm leading-tight text-gray-700">Mindforce</span>
         </NuxtLink>
 
         <!-- Amar Seba -->
@@ -228,23 +228,23 @@
           <div class="mobile-icon-circle bg-rose-50">
             <Cog class="mobile-icon text-rose-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Amar Seba</span>
-        </NuxtLink>        <!-- Shastho Sheba (Coming Soon) -->
+          <span class="text-sm leading-tight text-gray-700">Amar Seba</span>
+        </NuxtLink>        <!-- Shastho Sheba (Coming Comming Soon) -->
         <div class="mobile-btn bg-white relative">
           <div class="mobile-icon-circle bg-red-50">
             <HeartPulse class="mobile-icon text-red-500" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Shastho</span>
-          <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[6px] px-0.5 rounded-sm">Soon</span>
+          <span class="text-sm leading-tight text-gray-700">Shastho</span>
+          <span class="absolute top-1 right-1 bg-red-500 text-white text-[8px] px-0.5 rounded-sm">Comming Soon</span>
         </div>
 
-        <!-- Bill Pay (Coming Soon) -->
+        <!-- Bill Pay (Coming Comming Soon) -->
         <div class="mobile-btn bg-white relative">
           <div class="mobile-icon-circle bg-gray-50">
             <Receipt class="mobile-icon text-gray-500" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Bill Pay</span>
-          <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[6px] px-0.5 rounded-sm">Soon</span>
+          <span class="text-sm leading-tight text-gray-700">Bill Pay</span>
+          <span class="absolute top-1 right-1 bg-red-500 text-white text-[8px] px-0.5 rounded-sm">Comming Soon</span>
         </div>
 
         <!-- Mobile Recharge -->
@@ -252,13 +252,13 @@
           <div class="mobile-icon-circle bg-orange-50">
             <Smartphone class="mobile-icon text-orange-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Recharge</span>
+          <span class="text-sm leading-tight text-gray-700">Mobile Recharge</span>
         </NuxtLink>        <!-- Transactions -->
         <NuxtLink to="/transactions" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-lime-50">
             <CreditCard class="mobile-icon text-lime-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Transactions</span>
+          <span class="text-sm leading-tight text-gray-700">Transactions</span>
         </NuxtLink>
 
         <!-- Membership -->
@@ -266,7 +266,7 @@
           <div class="mobile-icon-circle bg-pink-50">
             <User class="mobile-icon text-pink-600" />
           </div>
-          <span class="text-[10px] leading-tight text-gray-700">Member</span>
+          <span class="text-sm leading-tight text-gray-700">Membership</span>
         </NuxtLink>
       </div>
     </div>
