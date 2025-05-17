@@ -15,7 +15,7 @@
 
       <!-- Modal with premium styling -->
       <div
-        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
       >
         <div
           class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
