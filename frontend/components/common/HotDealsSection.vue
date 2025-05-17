@@ -72,7 +72,7 @@
               </div>
             </div>
             <div class="p-2 text-center">
-              <h3 class="text-sm text-gray-800">{{ budgetFindsCard.title }}</h3>
+              <h3 class="text-sm text-gray-700">{{ budgetFindsCard.title }}</h3>
             </div>
           </NuxtLink>
         </div> -->
@@ -111,7 +111,7 @@
                   </div>
                 </div>
                 <div class="p-2 text-center">
-                  <h3 class="font-medium text-sm text-gray-800">
+                  <h3 class="font-medium text-sm text-gray-700">
                     {{ deal.name }}
                   </h3>
                 </div>

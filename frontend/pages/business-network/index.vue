@@ -79,7 +79,7 @@
       >
         <Check class="h-8 w-8 text-blue-600" />
       </div>
-      <h3 class="text-lg font-medium text-gray-800 mb-1">
+      <h3 class="text-lg font-medium text-gray-700 mb-1">
         You're all caught up!
       </h3>
       <p class="text-gray-500 mb-8 max-w-md">
@@ -153,7 +153,7 @@
                 :class="
                   selectedCategories.includes(category)
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 "
                 @click="toggleCategory(category)"
               >
@@ -173,7 +173,7 @@
                     <div class="bg-gray-100 rounded-full p-2">
                       <Search class="h-4 w-4 text-gray-500" />
                     </div>
-                    <span class="text-gray-800">{{ result }}</span>
+                    <span class="text-gray-700">{{ result }}</span>
                   </button>
                 </li>
                 <li>
@@ -207,7 +207,7 @@
                     <div class="bg-gray-100 rounded-full p-2">
                       <Clock class="h-4 w-4 text-gray-500" />
                     </div>
-                    <span class="text-gray-800">{{ term }}</span>
+                    <span class="text-gray-700">{{ term }}</span>
                   </button>
                 </li>
               </ul>

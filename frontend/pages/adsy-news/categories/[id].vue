@@ -167,7 +167,7 @@
                 </h3>
               </NuxtLink>
               <div
-                class="text-gray-600 text-sm mb-3 line-clamp-3"
+                class="text-gray-500 text-sm mb-3 line-clamp-3"
                 v-html="article.content.substring(0, 150) + '...'"
               ></div>
               <div class="flex justify-between items-center">
@@ -202,7 +202,7 @@
         <div v-if="filteredArticles.length > 12" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
-            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
             :disabled="isLoading"
           >
             <span v-if="isLoading">Loading...</span>
@@ -219,7 +219,7 @@
               v-for="(topic, index) in trendingTopics"
               :key="index"
               href="#"
-              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
+              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-700 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
             >
               <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
               {{ topic }}
@@ -256,7 +256,7 @@
           >
             <button
               @click="loadMoreTips"
-              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+              class="px-6 py-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
             >
               Load More
             </button>

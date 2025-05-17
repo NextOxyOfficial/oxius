@@ -16,8 +16,8 @@
             />
           </div>
         </div>
-        <h3 class="text-xl font-semibold mt-6 text-gray-800">No posts yet</h3>
-        <p class="text-gray-600 mt-3 max-w-sm mx-auto">
+        <h3 class="text-xl font-semibold mt-6 text-gray-700">No posts yet</h3>
+        <p class="text-gray-500 mt-3 max-w-sm mx-auto">
           Create your first post to start selling items in the marketplace!
         </p>
       </div>
@@ -77,7 +77,7 @@
       >
         <div class="flex items-center gap-4">
           <div
-            class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600"
+            class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-500"
           >
             <span>{{ posts.length }}</span>
             <span>{{ posts.length === 1 ? "post" : "posts" }}</span>
@@ -181,13 +181,13 @@
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
                     <h3
-                      class="text-lg font-medium line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
+                      class="text-lg font-medium line-clamp-1 text-gray-700 hover:text-primary transition-colors group-hover:text-primary"
                     >
                       {{ post.title }}
                     </h3>
                   </NuxtLink>
                   <div
-                    class="mt-2 flex items-center text-sm text-gray-600 gap-2"
+                    class="mt-2 flex items-center text-sm text-gray-500 gap-2"
                   >
                     <div class="flex items-center gap-1">
                       <Icon
@@ -210,7 +210,7 @@
                     </div>
                   </div>
                   <div
-                    class="mt-2 flex items-center text-sm text-gray-600 gap-1.5"
+                    class="mt-2 flex items-center text-sm text-gray-500 gap-1.5"
                   >
                     <Icon
                       name="heroicons:map-pin"
@@ -247,14 +247,14 @@
               <div class="flex gap-2">
                 <button
                   @click="$emit('edit-post', post)"
-                  class="p-2 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
+                  class="p-2 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
                   title="Edit post"
                 >
                   <Icon name="heroicons:pencil-square" size="20px" />
                 </button>
                 <button
                   @click="confirmDelete(post.id, post.title)"
-                  class="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  class="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   title="Delete post"
                 >
                   <Icon name="heroicons:trash" size="20px" />
@@ -388,11 +388,11 @@
                   />
                 </div>
                 <div class="mt-3 text-center sm:mt-0 sm:ml-5 sm:text-left">
-                  <h3 class="text-xl leading-6 font-semibold text-gray-900">
+                  <h3 class="text-xl leading-6 font-semibold text-gray-700">
                     Delete Post
                   </h3>
                   <div class="mt-3">
-                    <p class="text-gray-600">
+                    <p class="text-gray-500">
                       Are you sure you want to delete "<span
                         class="font-medium"
                         >{{ postToDeleteTitle }}</span

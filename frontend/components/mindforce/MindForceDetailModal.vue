@@ -101,7 +101,7 @@
                     class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
                   >
                     <MoreHorizontal
-                      class="h-4 w-4 text-slate-600 dark:text-slate-300"
+                      class="h-4 w-4 text-gray-500 dark:text-slate-300"
                     />
                   </button>
 
@@ -147,7 +147,7 @@
             <!-- Problem Category & Payment - Enhanced styling -->
             <div class="flex flex-wrap gap-2 mt-4">
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 shadow-sm"
               >
                 {{ problem.category_details?.name }}
               </span>
@@ -186,7 +186,7 @@
 
             <!-- Problem Title & Content with improved typography -->
             <h1
-              class="text-base mt-4 font-medium text-slate-900 dark:text-white text-left"
+              class="text-base mt-4 font-medium text-gray-700 dark:text-white text-left"
             >
               {{ problem.title }}
             </h1>
@@ -231,7 +231,7 @@
             >
               <div class="flex items-center space-x-4">
                 <span
-                  class="text-sm text-slate-600 dark:text-slate-400 flex items-center group"
+                  class="text-sm text-gray-500 dark:text-slate-400 flex items-center group"
                 >
                   <MessageSquare
                     class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors"
@@ -242,7 +242,7 @@
                 </span>
 
                 <span
-                  class="text-sm text-slate-600 dark:text-slate-400 flex items-center"
+                  class="text-sm text-gray-500 dark:text-slate-400 flex items-center"
                 >
                   <Eye class="h-4 w-4 mr-1.5" />
                   {{ problem?.views || 0 }}
@@ -320,7 +320,7 @@
                         <div class="ml-3">
                           <div class="flex items-center">
                             <p
-                              class="font-medium text-slate-800 dark:text-slate-200"
+                              class="font-medium text-gray-700 dark:text-slate-200"
                             >
                               {{ comment?.author_details?.name }}
                               <span

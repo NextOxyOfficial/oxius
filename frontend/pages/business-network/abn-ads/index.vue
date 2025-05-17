@@ -39,7 +39,7 @@
               <div
                 class="hidden md:flex items-center px-3 py-1.5 bg-gray-100 text-sm rounded-md"
               >
-                <span class="text-gray-600 mr-1">Balance:</span>
+                <span class="text-gray-500 mr-1">Balance:</span>
                 <span
                   class="font-semibold"
                   :class="
@@ -100,7 +100,7 @@
             <!-- Date Filter - Moved here from top navigation -->
             <div class="bg-white rounded-md shadow-sm p-4 mb-2">
               <h2
-                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -146,7 +146,7 @@
             <!-- Performance Report -->
             <div class="bg-white rounded-md shadow-sm p-4 mb-5">
               <h2
-                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -170,19 +170,19 @@
                   <div class="text-lg font-semibold text-blue-600">
                     {{ totalViews }}
                   </div>
-                  <div class="text-sm text-gray-600">Total Views</div>
+                  <div class="text-sm text-gray-500">Total Views</div>
                 </div>
                 <!-- <div class="bg-green-50 rounded-md p-2 text-center">
                   <div class="text-lg font-semibold text-green-600">
                     {{ totalClicks }}
                   </div>
-                  <div class="text-sm text-gray-600">Total Clicks</div>
+                  <div class="text-sm text-gray-500">Total Clicks</div>
                 </div> -->
                 <div class="bg-amber-50 rounded-md p-2 text-center">
                   <div class="text-lg font-semibold text-amber-600">
                     {{ postedAds.length }}
                   </div>
-                  <div class="text-sm text-gray-600">Active Ads</div>
+                  <div class="text-sm text-gray-500">Active Ads</div>
                 </div>
               </div>
             </div>
@@ -237,7 +237,7 @@
               <div
                 class="md:hidden flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm rounded-md w-fit mx-auto"
               >
-                <span class="text-gray-600 mr-1">Balance:</span>
+                <span class="text-gray-500 mr-1">Balance:</span>
                 <span
                   class="font-semibold"
                   :class="isLowBalance ? 'text-red-500' : 'text-emerald-500'"
@@ -350,24 +350,24 @@
                         <div class="flex flex-wrap gap-1">
                           <span
                             v-if="ad.male"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                            class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                           >
                             {{ ad.male ? "Male" : "" }}
                           </span>
                           <span
                             v-if="ad.female"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                            class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                           >
                             {{ ad.female ? "Female" : "" }}
                           </span>
                           <span
                             v-if="ad.other"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                            class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                           >
                             {{ ad.other ? "Other" : "" }}
                           </span>
                           <span
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                            class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                           >
                             Age: {{ ad.min_age }}-{{ ad.max_age }}
                           </span>
@@ -382,7 +382,7 @@
 
                   <!-- Ad Metrics -->
                   <div
-                    class="flex flex-wrap items-center gap-4 mb-2 text-sm text-gray-600"
+                    class="flex flex-wrap items-center gap-4 mb-2 text-sm text-gray-500"
                   >
                     <div class="flex items-center">
                       <svg
@@ -464,7 +464,7 @@
                     class="flex justify-between items-center pt-2 border-t border-gray-100"
                   >
                     <div class="flex items-center">
-                      <span class="text-sm text-gray-600 mr-2">Contact:</span>
+                      <span class="text-sm text-gray-500 mr-2">Contact:</span>
                       <div
                         v-if="ad.ad_type && ad.ad_type !== 'none'"
                         class="flex items-center"
@@ -543,7 +543,7 @@
                         <template v-else-if="ad.ad_type === 'call_on_phone'">
                           <a
                             :href="`tel:${ad.ad_type_details}`"
-                            class="text-sm text-gray-600 flex items-center hover:underline"
+                            class="text-sm text-gray-500 flex items-center hover:underline"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -631,7 +631,7 @@
                       </button>
                       <button
                         @click="toggleAdStatus(index)"
-                        class="p-1 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-md"
+                        class="p-1 text-gray-500 hover:bg-gray-100 border border-gray-200 rounded-md"
                         :title="
                           ad.status === 'active' ? 'Pause Ad' : 'Activate Ad'
                         "
@@ -772,7 +772,7 @@
             <!-- Tutorial Videos Section -->
             <div class="bg-white rounded-md shadow-sm p-4">
               <h2
-                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -808,7 +808,7 @@
                     ></iframe>
                   </div>
                   <div class="p-2">
-                    <h3 class="text-sm font-medium text-gray-800">
+                    <h3 class="text-sm font-medium text-gray-700">
                       {{ video.title }}
                     </h3>
                     <p class="text-sm text-gray-500">{{ video.duration }}</p>
@@ -840,7 +840,7 @@
             <!-- Tips Section -->
             <div class="bg-white rounded-md shadow-sm p-4">
               <h2
-                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -865,10 +865,10 @@
                   :key="idx"
                   class="border-l-[3px] border-emerald-100 pl-2 py-1"
                 >
-                  <h3 class="text-sm font-medium text-gray-800">
+                  <h3 class="text-sm font-medium text-gray-700">
                     {{ tip.title }}
                   </h3>
-                  <p class="text-sm text-gray-600">{{ tip.description }}</p>
+                  <p class="text-sm text-gray-500">{{ tip.description }}</p>
                 </div>
               </div>
             </div>
@@ -876,7 +876,7 @@
             <!-- Useful Steps Section -->
             <div class="bg-white rounded-md shadow-sm p-4">
               <h2
-                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1054,7 +1054,7 @@
             class="bg-white rounded-md shadow-sm w-full max-w-4xl p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-sm font-medium text-gray-900">
+              <h3 class="text-sm font-medium text-gray-700">
                 {{ editingAdIndex !== null ? "Edit Ad" : "Create New Ad" }}
               </h3>
               <button
@@ -1164,10 +1164,10 @@
                     </label>
                     <div class="mt-2 px-2">
                       <div class="flex justify-between mb-1">
-                        <span class="text-sm text-gray-600"
+                        <span class="text-sm text-gray-500"
                           >{{ adForm.min_age }} years</span
                         >
-                        <span class="text-sm text-gray-600"
+                        <span class="text-sm text-gray-500"
                           >{{ adForm.max_age }} years</span
                         >
                       </div>
@@ -1558,12 +1558,12 @@
                         <div class="flex flex-wrap gap-2">
                           <span
                             v-if="adForm.gender"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                            class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                           >
                             {{ adForm.gender === "male" ? "Male" : "Female" }}
                           </span>
                           <span
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                            class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                           >
                             Age: {{ adForm.min_age }}-{{ adForm.max_age }}
                           </span>
@@ -1644,7 +1644,7 @@
                         </div>
                         <div
                           v-else-if="adForm.ad_type === 'phone'"
-                          class="flex items-center text-sm text-gray-600"
+                          class="flex items-center text-sm text-gray-500"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1707,7 +1707,7 @@
                       <div
                         class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"
                       >
-                        <span class="text-sm text-gray-600"
+                        <span class="text-sm text-gray-500"
                           >Budget: ৳{{ adForm.budget || "0" }}</span
                         >
                         <span class="text-sm text-emerald-500">
@@ -1721,7 +1721,7 @@
                     <h5 class="text-sm font-medium text-gray-700 mb-2">
                       Tips for Better Performance
                     </h5>
-                    <ul class="text-sm text-gray-600 space-y-1 pl-4 list-disc">
+                    <ul class="text-sm text-gray-500 space-y-1 pl-4 list-disc">
                       <li>
                         Use high-quality images that clearly show your
                         product/service
@@ -1758,7 +1758,7 @@
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 />
               </svg>
-              <h3 class="text-base font-medium text-gray-900">Delete Ad</h3>
+              <h3 class="text-base font-medium text-gray-700">Delete Ad</h3>
               <p class="text-sm text-gray-500 mt-1">
                 Are you sure you want to delete this ad? This action cannot be
                 undone.
@@ -1813,7 +1813,7 @@
             class="bg-white rounded-md shadow-sm w-full max-w-md p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-sm font-medium text-gray-900">Ad Preview</h3>
+              <h3 class="text-sm font-medium text-gray-700">Ad Preview</h3>
               <button
                 @click="showPreviewModal = false"
                 class="text-gray-500 hover:text-gray-500 rounded-md"
@@ -1937,12 +1937,12 @@
                   <div class="flex flex-wrap gap-2">
                     <span
                       v-if="previewAdData.gender"
-                      class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                      class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                     >
                       {{ previewAdData.gender === "male" ? "Male" : "Female" }}
                     </span>
                     <span
-                      class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
+                      class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md text-sm"
                     >
                       Age: {{ previewAdData.min_age }}-{{
                         previewAdData.max_age
@@ -2027,7 +2027,7 @@
                     v-else-if="previewAdData.ad_type === 'phone'"
                     class="flex items-center"
                   >
-                    <span class="text-sm text-gray-600 mr-2">{{
+                    <span class="text-sm text-gray-500 mr-2">{{
                       previewAdData.contactInfo
                     }}</span>
                     <a
@@ -2491,7 +2491,7 @@ const getStatusClass = (status) => {
     case "pending":
       return "bg-amber-100 text-amber-600";
     default:
-      return "bg-gray-100 text-gray-600";
+      return "bg-gray-100 text-gray-500";
   }
 };
 

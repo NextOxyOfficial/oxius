@@ -90,7 +90,7 @@
               getTextAnimation(service.id),
               {
                 'text-green-700': hoveredId === service.id,
-                'text-slate-600': hoveredId !== service.id,
+                'text-gray-500': hoveredId !== service.id,
               },
             ]"
           >

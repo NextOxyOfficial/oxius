@@ -120,7 +120,7 @@
                       class="w-12 h-12 mb-4 text-slate-400 group-hover:text-slate-500 transition-colors duration-300 group-hover:scale-110 transform transition-transform"
                     />
                     <p
-                      class="mb-2 text-sm text-slate-500 group-hover:text-slate-600 transition-colors duration-300"
+                      class="mb-2 text-sm text-slate-500 group-hover:text-gray-500 transition-colors duration-300"
                     >
                       <span class="font-semibold">Click to upload</span> or drag
                       and drop
@@ -245,7 +245,7 @@
                 </h1>
 
                 <p
-                  class="text-slate-600 mt-1.5 font-medium"
+                  class="text-gray-500 mt-1.5 font-medium"
                   :class="isSeeMore ? '' : 'line-clamp-2'"
                 >
                   {{
@@ -344,7 +344,7 @@
                     class="p-2.5 transition-all duration-300"
                     :class="
                       searchFocused
-                        ? 'text-slate-800 scale-110'
+                        ? 'text-gray-700 scale-110'
                         : 'text-slate-400 scale-100'
                     "
                   >
@@ -464,7 +464,7 @@
                   :class="
                     selectedCategory === category.id
                       ? 'bg-slate-700 text-white group-hover/cat:bg-slate-600'
-                      : 'bg-slate-100 text-slate-600 group-hover/cat:bg-slate-200 group-hover/cat:text-slate-700'
+                      : 'bg-slate-100 text-gray-500 group-hover/cat:bg-slate-200 group-hover/cat:text-slate-700'
                   "
                 >
                   {{ getProductCountByCategory(category.id) }}
@@ -510,7 +510,7 @@
               />
             </div>
             <h3
-              class="font-semibold text-slate-800 text-xl mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600"
+              class="font-semibold text-gray-700 text-xl mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600"
             >
               No Products Found
             </h3>
@@ -588,7 +588,7 @@
                   {{ item.title }}
                 </h3>
 
-                <p class="text-slate-600 whitespace-pre-line leading-relaxed">
+                <p class="text-gray-500 whitespace-pre-line leading-relaxed">
                   {{ item.content }}
                 </p>
               </div>
@@ -668,7 +668,7 @@
 
             <!-- Enhanced CTA Button -->
             <div
-              class="relative overflow-hidden rounded-full bg-white text-slate-900 hover:text-slate-800 px-6 py-3 h-auto text-base lg:text-lg font-medium shadow-sm hover:shadow-sm transition-all duration-500 hover:scale-105 transform group/cta w-full md:w-auto flex items-center justify-center"
+              class="relative overflow-hidden rounded-full bg-white text-gray-700 hover:text-gray-700 px-6 py-3 h-auto text-base lg:text-lg font-medium shadow-sm hover:shadow-sm transition-all duration-500 hover:scale-105 transform group/cta w-full md:w-auto flex items-center justify-center"
             >
               <span class="relative z-10 flex items-center justify-center">
                 Thanks for visiting our store
@@ -733,7 +733,7 @@
                     class="w-12 h-12 mb-4 text-slate-400 group-hover:text-slate-500 transition-colors duration-300 group-hover:scale-110 transform transition-transform"
                   />
                   <p
-                    class="mb-2 text-sm text-slate-500 group-hover:text-slate-600 transition-colors duration-300"
+                    class="mb-2 text-sm text-slate-500 group-hover:text-gray-500 transition-colors duration-300"
                   >
                     <span class="font-semibold">Click to upload</span> or drag
                     and drop

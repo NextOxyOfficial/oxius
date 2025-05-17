@@ -307,7 +307,7 @@
           </span>
         </h2>
 
-        <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
+        <p class="text-center text-gray-500 dark:text-slate-300 mb-12">
           <span v-if="!editModeActive">{{
             editorData.faqs_subtitle ||
             "Everything you need to know about our product"
@@ -564,7 +564,7 @@
             </template>
 
             <div class="p-4">
-              <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">
+              <p class="text-sm text-gray-500 dark:text-slate-300 mb-4">
                 Select which trust badges to display on your product page:
               </p>
               <div class="space-y-3">

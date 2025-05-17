@@ -8,7 +8,7 @@
             class="absolute inset-0 rounded-full border-4 border-t-emerald-500 border-slate-200 dark:border-slate-700 animate-spin"
           ></div>
         </div>
-        <p class="mt-4 text-slate-600 dark:text-slate-400">
+        <p class="mt-4 text-gray-500 dark:text-slate-400">
           Verifying credentials...
         </p>
       </div>
@@ -28,10 +28,10 @@
               name="i-heroicons-shield-check"
               class="w-12 h-12 mx-auto text-emerald-500 dark:text-emerald-400"
             />
-            <h2 class="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
+            <h2 class="mt-4 text-xl font-semibold text-gray-700 dark:text-white">
               Admin Control Center
             </h2>
-            <p class="mt-2 text-slate-600 dark:text-slate-400">
+            <p class="mt-2 text-gray-500 dark:text-slate-400">
               Please sign in with admin credentials
             </p>
           </div>
@@ -131,12 +131,12 @@
               name="i-heroicons-rectangle-stack"
               class="w-7 h-7 text-emerald-500"
             />
-            <span class="text-lg font-semibold text-slate-900 dark:text-white"
+            <span class="text-lg font-semibold text-gray-700 dark:text-white"
               >Admin Center</span
             >
           </div>
           <button
-            class="lg:hidden text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-300"
+            class="lg:hidden text-slate-500 hover:text-gray-500 dark:text-slate-400 dark:hover:text-slate-300"
             @click="sidebarOpen = !sidebarOpen"
           >
             <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
@@ -153,7 +153,7 @@
               class="mr-3"
             />
             <div>
-              <div class="font-medium text-slate-900 dark:text-white">
+              <div class="font-medium text-gray-700 dark:text-white">
                 {{ user?.user?.first_name || user?.user?.username || "Admin" }}
               </div>
               <div class="text-xs text-slate-500 dark:text-slate-400">
@@ -256,13 +256,13 @@
             <div class="flex items-center">
               <!-- Mobile menu button -->
               <button
-                class="lg:hidden text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-300 mr-3"
+                class="lg:hidden text-slate-500 hover:text-gray-500 dark:text-slate-400 dark:hover:text-slate-300 mr-3"
                 @click="sidebarOpen = !sidebarOpen"
               >
                 <UIcon name="i-heroicons-bars-3" class="w-6 h-6" />
               </button>
 
-              <h1 class="text-lg font-medium text-slate-900 dark:text-white">
+              <h1 class="text-lg font-medium text-gray-700 dark:text-white">
                 {{ currentMenuTitle }}
               </h1>
             </div>
@@ -319,7 +319,7 @@
                       Total Users
                     </p>
                     <p
-                      class="text-xl font-semibold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-gray-700 dark:text-white"
                     >
                       {{ dashboardStats.totalUsers }}
                     </p>
@@ -341,7 +341,7 @@
                       Total Orders
                     </p>
                     <p
-                      class="text-xl font-semibold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-gray-700 dark:text-white"
                     >
                       {{ dashboardStats.totalOrders }}
                     </p>
@@ -363,7 +363,7 @@
                       Revenue
                     </p>
                     <p
-                      class="text-xl font-semibold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-gray-700 dark:text-white"
                     >
                       ${{ dashboardStats.totalRevenue.toFixed(2) }}
                     </p>
@@ -385,7 +385,7 @@
                       Products
                     </p>
                     <p
-                      class="text-xl font-semibold text-slate-900 dark:text-white"
+                      class="text-xl font-semibold text-gray-700 dark:text-white"
                     >
                       {{ dashboardStats.totalProducts }}
                     </p>
@@ -401,7 +401,7 @@
               <div
                 class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center"
               >
-                <h2 class="font-medium text-slate-900 dark:text-white">
+                <h2 class="font-medium text-gray-700 dark:text-white">
                   Recent Activity
                 </h2>
                 <UButton color="gray" variant="ghost" size="sm"
@@ -457,7 +457,7 @@
                           />
                           <div>
                             <div
-                              class="text-sm font-medium text-slate-900 dark:text-white"
+                              class="text-sm font-medium text-gray-700 dark:text-white"
                             >
                               {{ activity.user.name }}
                             </div>
@@ -503,7 +503,7 @@
               <div
                 class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center flex-wrap gap-4"
               >
-                <h2 class="font-medium text-slate-900 dark:text-white">
+                <h2 class="font-medium text-gray-700 dark:text-white">
                   User Management
                 </h2>
 
@@ -521,7 +521,7 @@
               </div>
 
               <div class="p-6">
-                <p class="text-slate-600 dark:text-slate-400">
+                <p class="text-gray-500 dark:text-slate-400">
                   User management content will be displayed here.
                 </p>
               </div>
@@ -536,12 +536,12 @@
               <div
                 class="px-6 py-4 border-b border-slate-200 dark:border-slate-700"
               >
-                <h2 class="font-medium text-slate-900 dark:text-white">
+                <h2 class="font-medium text-gray-700 dark:text-white">
                   Orders Management
                 </h2>
               </div>
               <div class="p-6">
-                <p class="text-slate-600 dark:text-slate-400">
+                <p class="text-gray-500 dark:text-slate-400">
                   Orders management content will be displayed here.
                 </p>
               </div>
@@ -556,12 +556,12 @@
               <div
                 class="px-6 py-4 border-b border-slate-200 dark:border-slate-700"
               >
-                <h2 class="font-medium text-slate-900 dark:text-white">
+                <h2 class="font-medium text-gray-700 dark:text-white">
                   Products Management
                 </h2>
               </div>
               <div class="p-6">
-                <p class="text-slate-600 dark:text-slate-400">
+                <p class="text-gray-500 dark:text-slate-400">
                   Products management content will be displayed here.
                 </p>
               </div>
@@ -576,12 +576,12 @@
               <div
                 class="px-6 py-4 border-b border-slate-200 dark:border-slate-700"
               >
-                <h2 class="font-medium text-slate-900 dark:text-white">
+                <h2 class="font-medium text-gray-700 dark:text-white">
                   System Settings
                 </h2>
               </div>
               <div class="p-6">
-                <p class="text-slate-600 dark:text-slate-400">
+                <p class="text-gray-500 dark:text-slate-400">
                   System settings content will be displayed here.
                 </p>
               </div>
@@ -593,7 +593,7 @@
             v-else
             class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
           >
-            <p class="text-slate-600 dark:text-slate-400">
+            <p class="text-gray-500 dark:text-slate-400">
               Select an option from the sidebar to view content.
             </p>
           </div>

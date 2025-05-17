@@ -40,7 +40,7 @@
                       name="i-heroicons-globe-asia-australia"
                       class="text-primary-600 mr-1.5 animate-pulse-slow"
                     />
-                    <span class="font-medium text-gray-800">{{
+                    <span class="font-medium text-gray-700">{{
                       location?.country || "Bangladesh"
                     }}</span>
                     <span
@@ -62,7 +62,7 @@
                         name="i-heroicons-map"
                         class="text-primary-600 mr-1.5 animate-pulse-slow"
                       />
-                      <span class="font-medium text-gray-800">{{
+                      <span class="font-medium text-gray-700">{{
                         location?.state
                       }}</span>
                       <UIcon
@@ -81,7 +81,7 @@
                         name="i-heroicons-building-office-2"
                         class="text-primary-600 mr-1.5 location-icon"
                       />
-                      <span class="font-medium text-gray-800">{{
+                      <span class="font-medium text-gray-700">{{
                         location?.city
                       }}</span>
                       <UIcon
@@ -100,7 +100,7 @@
                         name="i-heroicons-home-modern"
                         class="text-primary-600 mr-1.5 location-icon"
                       />
-                      <span class="font-medium text-gray-800">{{
+                      <span class="font-medium text-gray-700">{{
                         location?.upazila
                       }}</span>
                     </div>
@@ -392,7 +392,7 @@
             <div
               class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2"
             >
-              <h2 class="text-lg font-medium text-gray-800">
+              <h2 class="text-lg font-medium text-gray-700">
                 {{ categoryBrowserHeading }}
               </h2>
             </div>
@@ -589,7 +589,7 @@
 
                   <div class="p-3">
                     <h3
-                      class="font-medium text-gray-800 line-clamp-1 group-hover:text-amber-700"
+                      class="font-medium text-gray-700 line-clamp-1 group-hover:text-amber-700"
                     >
                       {{ listing?.title || `Title` }}
                     </h3>

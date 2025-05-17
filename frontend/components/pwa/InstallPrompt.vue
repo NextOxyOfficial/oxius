@@ -18,10 +18,10 @@
 
           <!-- Content -->
           <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 dark:text-white text-lg">
+            <h3 class="font-semibold text-gray-700 dark:text-white text-lg">
               {{ $t("add_to_home_screen") }}
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {{ $t("install_app_message") }}
             </p>
             
@@ -74,7 +74,7 @@
         </template>
 
         <div class="space-y-4 py-4">
-          <p class="text-sm text-gray-600 dark:text-gray-400">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
             {{ $t("ios_install_instructions") }}
           </p>
           

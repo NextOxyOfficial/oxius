@@ -56,7 +56,7 @@
 
               <div class="relative flex justify-between items-center">
                 <div>
-                  <div class="text-xs text-gray-600 dark:text-gray-500 mb-1">
+                  <div class="text-xs text-gray-500 dark:text-gray-500 mb-1">
                     Available Diamonds
                   </div>
                   <div class="flex items-center">
@@ -74,7 +74,7 @@
                   </div>
                 </div>
                 <div>
-                  <div class="text-xs text-gray-600 dark:text-gray-500 mb-1">
+                  <div class="text-xs text-gray-500 dark:text-gray-500 mb-1">
                     Account funds
                   </div>
                   <div class="text-base font-semibold">
@@ -95,7 +95,7 @@
                 :class="
                   activeTab === 'purchase'
                     ? 'text-pink-600 dark:text-pink-400'
-                    : 'text-gray-600 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
+                    : 'text-gray-500 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
                 "
               >
                 <div class="flex items-center gap-1">
@@ -113,7 +113,7 @@
                 :class="
                   activeTab === 'history'
                     ? 'text-pink-600 dark:text-pink-400'
-                    : 'text-gray-600 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
+                    : 'text-gray-500 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
                 "
               >
                 <div class="flex items-center gap-1">
@@ -161,7 +161,7 @@
                       class="h-6 w-6 text-pink-500 mb-0.5"
                     />
                     <div
-                      class="text-base font-semibold text-gray-800 dark:text-gray-200"
+                      class="text-base font-semibold text-gray-700 dark:text-gray-200"
                     >
                       {{ pkg.diamonds }}
                     </div>
@@ -329,7 +329,7 @@
               <div v-else>
                 <div class="mb-3 flex items-center justify-between">
                   <h3
-                    class="text-sm font-medium text-gray-800 dark:text-gray-300"
+                    class="text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Recent Transactions
                   </h3>
@@ -368,7 +368,7 @@
                         </div>
                         <div>
                           <div
-                            class="text-sm font-medium text-gray-900 dark:text-gray-200"
+                            class="text-sm font-medium text-gray-700 dark:text-gray-200"
                           >
                             {{ item.amount }} Diamonds
                           </div>
@@ -381,7 +381,7 @@
                       </div>
                       <div class="text-right">
                         <div
-                          class="text-sm font-medium text-gray-900 dark:text-gray-200"
+                          class="text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
                           <span class="text-base">৳</span>{{ item.cost }}
                         </div>

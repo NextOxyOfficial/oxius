@@ -30,7 +30,7 @@
             <div>
               <span
                 v-if="user.user.kyc"
-                class="flex items-center font-medium text-gray-800 dark:text-gray-300"
+                class="flex items-center font-medium text-gray-700 dark:text-gray-300"
               >
                 {{ user.user.name }}
                 <UIcon
@@ -85,13 +85,13 @@
                 class="text-xl text-primary-500"
               />
             </div>
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">
               Verification Instructions
             </h2>
           </div>
 
           <ul
-            class="space-y-3 text-sm md:text-base text-gray-600 dark:text-gray-400 pl-4"
+            class="space-y-3 text-sm md:text-base text-gray-500 dark:text-gray-400 pl-4"
           >
             <li class="flex items-start">
               <UIcon
@@ -428,7 +428,7 @@
               </div>
 
               <div class="p-6 flex flex-col">
-                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
                   Upload any additional documents that may help verify your
                   identity or support your account.
                 </p>
@@ -523,7 +523,7 @@
           <div v-if="!id_verification" class="md:col-span-2">
             <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
               <h3
-                class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
+                class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4"
               >
                 Verification Progress
               </h3>
@@ -547,7 +547,7 @@
                           : 'bg-gray-300 dark:bg-gray-600'
                       "
                     ></span>
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400"
                       >ID Front</span
                     >
                   </div>
@@ -560,7 +560,7 @@
                           : 'bg-gray-300 dark:bg-gray-600'
                       "
                     ></span>
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400"
                       >ID Back</span
                     >
                   </div>
@@ -573,7 +573,7 @@
                           : 'bg-gray-300 dark:bg-gray-600'
                       "
                     ></span>
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400"
                       >Selfie</span
                     >
                   </div>

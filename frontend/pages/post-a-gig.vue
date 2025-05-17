@@ -9,7 +9,7 @@
           >
             {{ $t("post_gigs") }}
           </h1>
-          <p class="text-lg text-gray-600 max-w-lg mx-auto">
+          <p class="text-lg text-gray-500 max-w-lg mx-auto">
             Create a new micro-gig and reach potential customers
           </p>
         </div>
@@ -23,7 +23,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-document-text"
@@ -78,7 +78,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-currency-dollar"
@@ -160,7 +160,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-clipboard-document-list"
@@ -213,7 +213,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-photo" class="text-emerald-600" />
               Media Gallery
@@ -288,7 +288,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-cursor-arrow-rays"
@@ -443,10 +443,10 @@
               />
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">
               KYC Verification Required
             </h2>
-            <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
+            <p class="text-gray-500 mb-6 max-w-md leading-relaxed">
               Please Upload your ID to get permission to post a service ad.
             </p>
 

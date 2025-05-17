@@ -40,7 +40,7 @@
           <h3 class="text-xl font-semibold mb-2">
             {{ $t("donate_to_support") }}
           </h3>
-          <p class="text-gray-600">{{ $t("donation_help_text") }}</p>
+          <p class="text-gray-500">{{ $t("donation_help_text") }}</p>
         </div>
 
         <div class="space-y-4">
@@ -84,7 +84,7 @@
           <h3 class="text-xl font-semibold mb-2">
             {{ $t("our_generous_donors") }}
           </h3>
-          <p class="text-gray-600 mb-4">
+          <p class="text-gray-500 mb-4">
             {{ $t("donor_thank_you_message") }}
           </p>
         </div>
@@ -108,7 +108,7 @@
                         size="sm"
                       />
                       <div>
-                        <p class="font-medium text-gray-900">
+                        <p class="font-medium text-gray-700">
                           {{ donor.name }}
                         </p>
                         <p class="text-xs text-gray-500">{{ donor.date }}</p>
@@ -142,7 +142,7 @@
                         :alt="donor.name"
                         size="sm"
                       />
-                      <p class="font-medium text-gray-900">
+                      <p class="font-medium text-gray-700">
                         {{ donor.name }}
                       </p>
                     </div>
@@ -164,7 +164,7 @@
                         size="sm"
                       />
                       <div>
-                        <p class="font-medium text-gray-900">
+                        <p class="font-medium text-gray-700">
                           {{ donor.name }}
                         </p>
                         <p class="text-xs text-gray-500">

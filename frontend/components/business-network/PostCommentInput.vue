@@ -95,7 +95,7 @@
                   />
                 </div>
                 <h3
-                  class="text-base font-semibold text-gray-800 dark:text-gray-300"
+                  class="text-base font-semibold text-gray-700 dark:text-gray-300"
                 >
                   Send Gift to
                   {{
@@ -250,7 +250,7 @@
                   />
                 </div>
                 <h3
-                  class="text-base font-semibold text-gray-800 dark:text-gray-300"
+                  class="text-base font-semibold text-gray-700 dark:text-gray-300"
                 >
                   Buy Diamonds
                 </h3>
@@ -280,7 +280,7 @@
                 </div>
                 <div class="flex items-center">
                   <span
-                    class="text-md font-semibold text-gray-800 dark:text-gray-300"
+                    class="text-md font-semibold text-gray-700 dark:text-gray-300"
                     >{{ user.user.balance }}</span
                   >
                   <span
@@ -322,7 +322,7 @@
                       class="h-4 w-4 ml-1 text-pink-400"
                     />
                   </div>
-                  <span class="text-xs text-gray-600 dark:text-gray-400 mt-1"
+                  <span class="text-xs text-gray-500 dark:text-gray-400 mt-1"
                     >{{ pkg.price }} BDT</span
                   >
 
@@ -438,7 +438,7 @@
               <!-- User name with subtle styling -->
               <div class="flex flex-col">
                 <span
-                  class="text-sm font-medium text-gray-800 dark:text-gray-300"
+                  class="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   {{ user?.follower_details?.name }}
                 </span>
@@ -479,10 +479,10 @@
             >
               <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
             </div>
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-white mb-1">
               Gift Sent Successfully!
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
               You sent {{ lastGiftAmount }} diamonds to
               {{ post?.author_details?.name || post?.author?.name || "User" }}
             </p>

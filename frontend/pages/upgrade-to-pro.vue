@@ -83,7 +83,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                  <span class="text-gray-500 dark:text-slate-300 line-through"
                     >Access to eShop manager</span
                   >
                 </li>
@@ -106,7 +106,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                  <span class="text-gray-500 dark:text-slate-300 line-through"
                     >Sell Products on AdsyClub</span
                   >
                 </li>
@@ -129,7 +129,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                  <span class="text-gray-500 dark:text-slate-300 line-through"
                     >Receive Unlimited Order</span
                   >
                 </li>
@@ -152,7 +152,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 line-through"
+                  <span class="text-gray-500 dark:text-slate-300 line-through"
                     >Add up to 100 Products</span
                   >
                 </li>
@@ -175,7 +175,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300"
+                  <span class="text-gray-500 dark:text-slate-300"
                     >Post up 5 ads</span
                   >
                 </li>
@@ -198,7 +198,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300"
+                  <span class="text-gray-500 dark:text-slate-300"
                     >Earn money by completing task</span
                   >
                 </li>
@@ -221,7 +221,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300"
+                  <span class="text-gray-500 dark:text-slate-300"
                     >Fast deposit and withdraw</span
                   >
                 </li>
@@ -244,7 +244,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300"
+                  <span class="text-gray-500 dark:text-slate-300"
                     >Regular support via Email</span
                   >
                 </li>
@@ -381,7 +381,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Access to Eshop manager</span
                   >
                 </li>
@@ -404,7 +404,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Sell Products on AdsyClub</span
                   >
                 </li>
@@ -427,7 +427,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Receive Unlimited Order
                   </span>
                 </li>
@@ -450,7 +450,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Add up to 100 Products</span
                   >
                 </li>
@@ -473,7 +473,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Post Unlimited Ads</span
                   >
                 </li>
@@ -496,7 +496,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Earn money by completing task</span
                   >
                 </li>
@@ -519,7 +519,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Fast deposit and withdraw</span
                   >
                 </li>
@@ -542,7 +542,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-slate-600 dark:text-slate-300 font-medium"
+                  <span class="text-gray-500 dark:text-slate-300 font-medium"
                     >Priority technical support 24/7 via
                     Email/WhatsApp/Telegram</span
                   >
@@ -685,7 +685,7 @@
                 class="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-sky-500 animate-spin"
               ></div>
             </div>
-            <p class="mt-4 text-slate-600 dark:text-slate-400">
+            <p class="mt-4 text-gray-500 dark:text-slate-400">
               Loading plan details...
             </p>
           </div>
@@ -712,7 +712,7 @@
                     :class="
                       months === 1
                         ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-sm'
-                        : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
+                        : 'bg-transparent text-gray-500 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
                     "
                   >
                     <!-- Button text with animation -->
@@ -734,7 +734,7 @@
                     :class="
                       months === 12
                         ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white font-medium shadow-sm'
-                        : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
+                        : 'bg-transparent text-gray-500 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/30'
                     "
                   >
                     <!-- Badge showing savings -->
@@ -770,14 +770,14 @@
 
                 <!-- Plan content -->
                 <div class="flex justify-between items-center mb-3">
-                  <span class="text-slate-600 dark:text-slate-300">Plan:</span>
+                  <span class="text-gray-500 dark:text-slate-300">Plan:</span>
                   <span
                     class="font-semibold bg-gradient-to-r from-sky-600 to-blue-600 dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent"
                     >Pro</span
                   >
                 </div>
                 <div class="flex justify-between items-center mb-3">
-                  <span class="text-slate-600 dark:text-slate-300">Price:</span>
+                  <span class="text-gray-500 dark:text-slate-300">Price:</span>
                   <span class="font-semibold" v-if="months === 1">
                     <span class="font-semibold text-lg">৳</span>
                     {{ months * price }} / Month
@@ -788,7 +788,7 @@
                   </span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-600 dark:text-slate-300"
+                  <span class="text-gray-500 dark:text-slate-300"
                     >Duration:</span
                   >
                   <span class="font-semibold">{{ months * 30 }} Days</span>
@@ -1005,7 +1005,7 @@
               >
                 <div class="flex justify-between items-center mb-3">
                   <span class="text-slate-500 dark:text-slate-400">Plan:</span>
-                  <span class="font-semibold text-slate-800 dark:text-white"
+                  <span class="font-semibold text-gray-700 dark:text-white"
                     >Pro</span
                   >
                 </div>
@@ -1013,7 +1013,7 @@
                   <span class="text-slate-500 dark:text-slate-400"
                     >Amount:</span
                   >
-                  <span class="font-semibold text-slate-800 dark:text-white"
+                  <span class="font-semibold text-gray-700 dark:text-white"
                     >৳{{
                       months === 1 ? price : months * price - yearly_discount
                     }}</span
@@ -1023,7 +1023,7 @@
                   <span class="text-slate-500 dark:text-slate-400"
                     >Active until:</span
                   >
-                  <span class="font-semibold text-slate-800 dark:text-white">{{
+                  <span class="font-semibold text-gray-700 dark:text-white">{{
                     new Date(
                       Date.now() + months * 30 * 24 * 60 * 60 * 1000
                     ).toLocaleDateString()
@@ -1037,7 +1037,7 @@
                   >Transaction ID:</span
                 >
                 <code
-                  class="bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 font-mono"
+                  class="bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded text-gray-500 dark:text-slate-300 font-mono"
                   >{{ transactionId }}</code
                 >
               </div>
@@ -1197,7 +1197,7 @@
                 Suggested solutions:
               </p>
               <div
-                class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+                class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400"
               >
                 <UIcon
                   name="i-heroicons-arrow-right"
@@ -1206,7 +1206,7 @@
                 <span>Try a different payment method</span>
               </div>
               <div
-                class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+                class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400"
               >
                 <UIcon
                   name="i-heroicons-arrow-right"
@@ -1215,7 +1215,7 @@
                 <span>Check your account balance</span>
               </div>
               <div
-                class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+                class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400"
               >
                 <UIcon
                   name="i-heroicons-arrow-right"

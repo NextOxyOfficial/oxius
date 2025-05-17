@@ -3,13 +3,13 @@
     <div class="relative bg-white rounded-xl shadow-sm mb-6 border border-gray-100">
       <div class="flex flex-col md:flex-row md:items-center justify-between px-6 py-4">
         <div class="mb-4 md:mb-0">
-          <h1 class="text-xl font-semibold text-gray-800 flex items-center">
+          <h1 class="text-xl font-semibold text-gray-700 flex items-center">
             <span class="bg-blue-100 rounded-full p-1.5 mr-2.5">
               <Search class="h-4 w-4 text-blue-600" />
             </span>
             Search Results
           </h1>
-          <p class="text-gray-600 text-sm mt-1 flex items-center">
+          <p class="text-gray-500 text-sm mt-1 flex items-center">
             <span class="font-medium text-gray-700">{{ $route.params.search }}</span>
             <span class="mx-2 text-gray-500">•</span>
             <span v-if="!loading && allPosts.length > 0">{{ allPosts.length }} {{ allPosts.length === 1 ? 'result' : 'results' }}</span>
@@ -175,7 +175,7 @@
         <div class="absolute inset-0 bg-blue-50/50 rounded-full animate-ping-slow opacity-70 w-16 h-16"></div>
       </div>
       
-      <h3 class="text-lg font-semibold text-gray-800 mb-1">
+      <h3 class="text-lg font-semibold text-gray-700 mb-1">
         End of Search Results
       </h3>
       <p class="text-gray-500 mb-4 max-w-md">
@@ -229,7 +229,7 @@
         <Search class="h-8 w-8 text-gray-500" />
       </div>
       
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">No results found</h3>
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">No results found</h3>
       <p class="text-gray-500 mb-6 max-w-md">
         We couldn't find any posts matching "{{ $route.params.search }}". Try adjusting your search terms or filters.
       </p>
@@ -237,7 +237,7 @@
       <div class="w-full max-w-md">
         <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
           <h4 class="font-medium text-gray-700 mb-3">Suggestions:</h4>
-          <ul class="text-sm text-gray-600 space-y-2">
+          <ul class="text-sm text-gray-500 space-y-2">
             <li class="flex items-start">
               <div class="min-w-4 mr-2 mt-0.5">•</div>
               <span>Check your spelling</span>

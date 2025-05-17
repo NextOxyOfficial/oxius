@@ -32,7 +32,7 @@
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-800',
+                  : 'text-gray-700',
               ]"
               :to="`/adsy-news/categories/${category.slug}/`"
             >
@@ -41,7 +41,7 @@
             <div class="relative mt-1" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
               >
                 More
                 <UIcon
@@ -61,7 +61,7 @@
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
                     activeCategory === category.id
                       ? 'text-primary'
-                      : 'text-gray-800',
+                      : 'text-gray-700',
                   ]"
                   :to="`/adsy-news/categories/${category.slug}/`"
                 >
@@ -76,7 +76,7 @@
             <!-- Search icon -->
             <button
               @click="toggleSearch"
-              class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+              class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
               aria-label="Search"
             >
               <SearchIcon class="h-5 w-5" />
@@ -117,7 +117,7 @@
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-800',
+                  : 'text-gray-700',
               ]"
               :to="`/adsy-news/categories/${category.slug}/`"
             >
@@ -129,7 +129,7 @@
             >
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
               >
                 More
                 <UIcon
@@ -149,7 +149,7 @@
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
                     activeCategory === category.id
                       ? 'text-primary'
-                      : 'text-gray-800',
+                      : 'text-gray-700',
                   ]"
                   :to="`/adsy-news/categories/${category.slug}/`"
                 >
@@ -181,14 +181,14 @@
               type="text"
               placeholder="Search news articles..."
               v-model="searchQuery"
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-800"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-700"
               @input="handleSearchInput"
               ref="searchInputRef"
             />
             <button
               v-if="searchQuery"
               @click="clearSearch"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-600"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-500"
             >
               <XIcon class="h-4 w-4" />
             </button>
@@ -205,7 +205,7 @@
             class="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
             @click="navigateToArticle(result)"
           >
-            <p class="font-medium text-gray-800 line-clamp-2 mb-1">
+            <p class="font-medium text-gray-700 line-clamp-2 mb-1">
               {{ result.title }}
             </p>
             <div class="flex items-center text-xs text-gray-500">

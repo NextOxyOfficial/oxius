@@ -234,11 +234,11 @@
 
           <!-- Short Description - Updated to use short_description -->
           <div class="mb-6">
-            <h4 class="font-medium text-slate-800 dark:text-white mb-2">
+            <h4 class="font-medium text-gray-700 dark:text-white mb-2">
               Summary
             </h4>
             <div
-              class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/20 p-3 rounded-lg border border-slate-100 dark:border-slate-700/40"
+              class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/20 p-3 rounded-lg border border-slate-100 dark:border-slate-700/40"
             >
               {{ currentProduct.short_description || "No summary available." }}
             </div>
@@ -310,7 +310,7 @@
               <span>Shipping Information</span>
             </div>
 
-            <ul class="space-y-2.5 text-slate-600 dark:text-slate-300">
+            <ul class="space-y-2.5 text-gray-500 dark:text-slate-300">
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
@@ -371,7 +371,7 @@
         <!-- Full Description Section -->
         <div class="mb-8">
           <h3
-            class="text-lg font-semibold mb-4 text-slate-800 dark:text-white flex items-center"
+            class="text-lg font-semibold mb-4 text-gray-700 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-document-text"

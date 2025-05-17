@@ -61,7 +61,7 @@
                 name="i-heroicons-globe-asia-australia"
                 class="text-primary-600 mr-1.5 animate-pulse-slow"
               />
-              <span class="font-medium text-gray-800">{{
+              <span class="font-medium text-gray-700">{{
                 location?.country || "Bangladesh"
               }}</span>
               <span 
@@ -83,7 +83,7 @@
                   name="i-heroicons-map"
                   class="text-primary-600 mr-1.5 animate-pulse-slow"
                 />
-                <span class="font-medium text-gray-800">{{
+                <span class="font-medium text-gray-700">{{
                   location?.state
                 }}</span>
                 <UIcon
@@ -102,7 +102,7 @@
                   name="i-heroicons-building-office-2"
                   class="text-primary-600 mr-1.5 location-icon"
                 />
-                <span class="font-medium text-gray-800">{{
+                <span class="font-medium text-gray-700">{{
                   location?.city
                 }}</span>
                 <UIcon
@@ -121,7 +121,7 @@
                   name="i-heroicons-home-modern"
                   class="text-primary-600 mr-1.5 location-icon"
                 />
-                <span class="font-medium text-gray-800">{{
+                <span class="font-medium text-gray-700">{{
                   location?.upazila
                 }}</span>
               </div>
@@ -321,7 +321,7 @@
                     </h3>
 
                     <div
-                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-500"
                     >
                       <div class="flex gap-2 col-span-2 flex-wrap">
                         <p
@@ -424,7 +424,7 @@
 
           <!-- Message -->
 
-          <p class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay">
+          <p class="text-gray-500 max-w-md mx-auto mb-6 fade-in-up-delay">
             আপনার লোকেশনে এই ক্যাটাগরিতে এখনো কোনো পোস্ট পড়েনি, পার্শবর্তী
             এলাকা সিলেক্ট করুন
           </p>
@@ -505,7 +505,7 @@
                     </h3>
 
                     <div
-                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-500"
                     >
                       <div class="flex gap-2 col-span-2 flex-wrap">
                         <p

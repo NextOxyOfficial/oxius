@@ -20,7 +20,7 @@
           <div class="flex items-start justify-between">
             <div>
               <div
-                class="text-base font-semibold leading-6 text-gray-900 dark:text-white mb-4 flex gap-3"
+                class="text-base font-semibold leading-6 text-gray-700 dark:text-white mb-4 flex gap-3"
               >
                 <div class="w-8">
                   <UIcon name="i-unjs:giget" class="text-2xl mt-1.5" />
@@ -233,9 +233,9 @@
                   <UIcon name="i-line-md-alert-circle" class="h-8 w-8 text-red-600" />
                 </div>
 
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">KYC Unverified</h2>
+                <h2 className="text-xl font-semibold text-gray-700 mb-2">KYC Unverified</h2>
 
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-500 mb-6">
                   Please Upload your ID to get permission to post a service ad.
                 </p>
 

@@ -22,7 +22,7 @@
           'relative px-3 sm:px-5 py-2 font-medium transition-all text-sm z-10 flex-1 text-center',
           activeTab === tab.value
             ? 'text-blue-600 dark:text-blue-400'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300',
+            : 'text-slate-500 dark:text-slate-400 hover:text-gray-500 dark:hover:text-slate-300',
         ]"
       >
         {{ tab.label }}

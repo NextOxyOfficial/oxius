@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Products</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ products.length }}
             </p>
           </div>
@@ -30,7 +30,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Active Products</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ activeProducts.length }}
             </p>
           </div>
@@ -52,7 +52,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Inactive Products</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ inactiveProducts.length }}
             </p>
           </div>
@@ -65,7 +65,7 @@
             />
           </div>
         </div>
-        <p class="mt-2 text-sm font-medium text-gray-600">
+        <p class="mt-2 text-sm font-medium text-gray-500">
           ৳{{ inactiveProductsValue.toFixed(2) }}
         </p>
       </div>
@@ -74,7 +74,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Out of Stock</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ outOfStockProducts.length }}
             </p>
           </div>
@@ -97,7 +97,7 @@
             name="i-heroicons-shopping-cart"
             class="h-5 w-5 text-indigo-600"
           />
-          <h2 class="text-xl font-semibold text-gray-800">My Products</h2>
+          <h2 class="text-xl font-semibold text-gray-700">My Products</h2>
         </div>
         <div class="mt-3 md:mt-0 flex items-center space-x-4">
           <div class="relative">
@@ -161,7 +161,7 @@
             </span>
             <span
               v-else-if="!product.is_active"
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
             >
               <UIcon name="i-heroicons-pause-circle" class="h-3 w-3 mr-1" />
               Inactive
@@ -262,7 +262,7 @@
             <!-- Activate/Deactivate Button -->
             <button
               @click="toggleProductStatus(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-slate-600 hover:shadow-sm transition-all duration-300"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-gray-500 hover:shadow-sm transition-all duration-300"
             >
               <!-- Hover effect overlay -->
               <div
@@ -346,7 +346,7 @@
           class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
         >
           <h3
-            class="text-xl font-semibold text-gray-900 flex items-center"
+            class="text-xl font-semibold text-gray-700 flex items-center"
             id="modal-title"
           >
             <UIcon

@@ -71,7 +71,7 @@
               :to="`/business-network/posts/${
                 post?.post ? post.post : post.id
               }`"
-              class="block text-sm sm:text-base font-semibold mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-800 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
+              class="block text-sm sm:text-base font-semibold mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-700 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
@@ -176,7 +176,7 @@
       >
         <UIcon
           name="i-heroicons-document-text"
-          class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-3"
+          class="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3"
         />
         <p class="text-gray-500 dark:text-gray-500 mb-2 font-medium">
           No Post Available

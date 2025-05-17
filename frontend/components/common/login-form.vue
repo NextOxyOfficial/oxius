@@ -5,8 +5,8 @@
         <!-- Login Form -->
         <form @submit.prevent="handleLogin" class="space-y-6">
           <div class="space-y-2">
-            <h2 class="text-xl font-semibold text-gray-900">Welcome back</h2>
-            <p class="text-gray-600">
+            <h2 class="text-xl font-semibold text-gray-700">Welcome back</h2>
+            <p class="text-gray-500">
               Enter your credentials to access your account
             </p>
           </div>

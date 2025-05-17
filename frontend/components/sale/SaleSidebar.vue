@@ -29,7 +29,7 @@
 
       <!-- Categories Section -->
       <div class="mb-6">
-        <h2 class="text-lg font-medium text-gray-800 mb-3">Categories</h2>
+        <h2 class="text-lg font-medium text-gray-700 mb-3">Categories</h2>
         <ul class="space-y-1">
           <!-- All Categories option -->
           <li>
@@ -46,7 +46,7 @@
                 <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5" />
                 All Categories
               </span>
-              <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+              <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">
                 {{ totalListings }}
               </span>
             </button>
@@ -68,7 +68,7 @@
                   {{ category.name }}
                 </span>
                 <div class="flex items-center">
-                  <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full mr-1">
+                  <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full mr-1">
                     {{ getCategoryCount(category.id) }}
                   </span>
                   <UButton
@@ -107,7 +107,7 @@
                       :class="
                         selectedSubcategory === subcategory.id
                           ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-gray-600 hover:bg-gray-100'
+                          : 'text-gray-500 hover:bg-gray-100'
                       "
                     >
                       <span>{{ subcategory.name }}</span>
@@ -129,7 +129,7 @@
           <UIcon name="i-heroicons-tag" class="w-4 h-4" />
           Looking to List a Sale?
         </h3>
-        <p class="text-sm text-gray-600 mb-3">
+        <p class="text-sm text-gray-500 mb-3">
           List your items easily and reach thousands of potential buyers
           in your area.
         </p>
@@ -164,7 +164,7 @@
             </div>
           </div>
           <div class="p-3">
-            <h4 class="font-medium text-gray-800">Luxury Apartments</h4>
+            <h4 class="font-medium text-gray-700">Luxury Apartments</h4>
             <p class="text-primary text-sm font-medium">
               Starting at ৳8,500,000
             </p>
@@ -182,7 +182,7 @@
               />
             </div>
             <div class="w-2/3 p-3">
-              <h4 class="font-medium text-gray-800 text-sm">
+              <h4 class="font-medium text-gray-700 text-sm">
                 Latest Electronics
               </h4>
               <p class="text-primary text-xs font-medium">

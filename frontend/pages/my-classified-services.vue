@@ -138,7 +138,7 @@
             >
               <div class="">
                 <span
-                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-800"
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-gray-700"
                 >
                   <span v-if="!service.negotiable">
                     <UIcon name="i-mdi:currency-bdt" class="mr-1" />
@@ -183,7 +183,7 @@
                   <!-- Price Badge -->
                   <!-- <div class="mb-3">
                     <span
-                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-gray-700"
                     >
                       <span v-if="!service.negotiable">
                         <UIcon name="i-mdi:currency-bdt" class="mr-1" />
@@ -416,7 +416,7 @@
         </div>
 
         <div class="p-6">
-          <p class="text-gray-600 mb-6 text-center">
+          <p class="text-gray-500 mb-6 text-center">
             This action will mark your post as completed and it will no longer
             be active. This action cannot be undone.
           </p>

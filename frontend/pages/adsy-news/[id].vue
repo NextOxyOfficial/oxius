@@ -258,7 +258,7 @@
           >
             <button
               @click="loadMoreTips"
-              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+              class="px-6 py-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
             >
               Load More
             </button>

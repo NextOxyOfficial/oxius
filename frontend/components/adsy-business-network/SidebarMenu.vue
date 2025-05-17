@@ -24,7 +24,7 @@
       </button>
     <div class="relative z-10 mt-4">
       <h3
-        class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center"
+        class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center"
       >
         <div
           class="p-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md mr-2"
@@ -95,7 +95,7 @@
             :class="[
               item.path === route.path
                 ? getMenuItemColor(item.label, 'text')
-                : 'text-gray-700 group-hover:text-gray-900',
+                : 'text-gray-700 group-hover:text-gray-700',
             ]"
           >
             {{ item.label }}
@@ -254,9 +254,9 @@ const getMenuItemColor = (label, type) => {
     },
     Settings: {
       bg: "bg-gradient-to-r from-gray-500 to-gray-600",
-      icon: "text-gray-500 group-hover:text-gray-600",
+      icon: "text-gray-500 group-hover:text-gray-500",
       text: "text-gray-700",
-      badge: "bg-gray-100 text-gray-600",
+      badge: "bg-gray-100 text-gray-500",
       indicator: "bg-gray-500",
     },
     Login: {

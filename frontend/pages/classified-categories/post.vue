@@ -9,7 +9,7 @@
           >
             {{ $t("post_classified") }}
           </h1>
-          <p class="text-lg text-gray-600 max-w-lg mx-auto">
+          <p class="text-lg text-gray-500 max-w-lg mx-auto">
             {{ $t("post_classified_text") }}
           </p>
         </div>
@@ -24,7 +24,7 @@
             class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-document-text"
@@ -103,7 +103,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-currency-dollar"
@@ -153,7 +153,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-photo" class="text-emerald-600" />
               {{ $t("media_gallary") }}
@@ -236,7 +236,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
               {{ $t("location") }}
@@ -340,7 +340,7 @@
           <div class="p-2 md:p-7 bg-gray-50">
             <UCheckbox name="terms_privacy" v-model="form.accepted_privacy">
               <template #label>
-                <span class="text-gray-600 text-sm">
+                <span class="text-gray-500 text-sm">
                   I agree to the
                   <NuxtLink
                     to="/terms"
@@ -394,10 +394,10 @@
               />
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">
               KYC Verification Required
             </h2>
-            <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
+            <p class="text-gray-500 mb-6 max-w-md leading-relaxed">
               To ensure trust and safety in our marketplace, we require identity
               verification before posting ads.
             </p>

@@ -188,7 +188,7 @@
                         :class="
                           images.length > 9
                             ? 'bg-amber-100 text-amber-700'
-                            : 'bg-gray-100 text-gray-600'
+                            : 'bg-gray-100 text-gray-500'
                         "
                       >
                         {{ images.length }}/12
@@ -524,10 +524,10 @@
                 />
               </div>
               <div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-gray-700 dark:text-white">
                   Discard changes?
                 </h3>
-                <p class="text-gray-600 dark:text-gray-400 mt-1.5">
+                <p class="text-gray-500 dark:text-gray-400 mt-1.5">
                   You have unsaved changes. Are you sure you want to discard
                   your post?
                 </p>

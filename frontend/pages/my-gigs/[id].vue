@@ -172,7 +172,7 @@
 
         <!-- Title and Description -->
         <div class="text-center mb-8">
-          <h3 class="text-xl font-semibold text-gray-800 mb-2">Stop this gig?</h3>
+          <h3 class="text-xl font-semibold text-gray-700 mb-2">Stop this gig?</h3>
           <p class="text-gray-500 max-w-sm">
             This action will permanently stop the current gig and cannot be
             undone.

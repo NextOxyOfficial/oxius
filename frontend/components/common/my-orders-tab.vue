@@ -20,7 +20,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Orders</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ orders.length }}
             </p>
           </div>
@@ -54,7 +54,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ pendingOrders.length }}
             </p>
           </div>
@@ -85,7 +85,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Processing Orders</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ processingOrders.length }}
             </p>
           </div>
@@ -119,7 +119,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Delivered Orders</p>
-            <p class="text-xl font-semibold text-gray-900">
+            <p class="text-xl font-semibold text-gray-700">
               {{ deliveredOrders.length }}
             </p>
           </div>
@@ -142,7 +142,7 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex items-center space-x-2">
           <ShoppingBag class="h-5 w-5 text-indigo-600" />
-          <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
+          <h2 class="text-xl font-semibold text-gray-700">My Orders</h2>
         </div>
         <div class="mt-3 md:mt-0 flex items-center space-x-4">
           <div class="relative">
@@ -237,12 +237,12 @@
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">
+              <div class="text-sm text-gray-700">
                 {{ formatDate(order.created_at) }}
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">
+              <div class="text-sm text-gray-700">
                 {{ order.name }}
               </div>
               <div class="text-sm text-gray-500">
@@ -250,7 +250,7 @@
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">
+              <div class="text-sm font-medium text-gray-700">
                 ৳{{ +order.total + +order.delivery_fee }}
               </div>
             </td>
@@ -265,7 +265,7 @@
                 </button>
                 <button
                   @click="printOrder(order)"
-                  class="text-gray-600 hover:text-gray-900 transition-colors duration-150 flex items-center"
+                  class="text-gray-500 hover:text-gray-700 transition-colors duration-150 flex items-center"
                 >
                   <Printer class="h-4 w-4 mr-1" />
                   Print
@@ -367,7 +367,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-900 flex items-center"
+              class="text-xl font-semibold text-gray-700 flex items-center"
               id="modal-title"
             >
               <ShoppingBag class="h-5 w-5 mr-2 text-indigo-600" />
@@ -611,7 +611,7 @@
                             />
                           </div>
                           <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">
+                            <div class="text-sm font-medium text-gray-700">
                               {{ item.product_details?.name }}
                             </div>
                           </div>
@@ -620,7 +620,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div
                           v-if="!editOrderItems"
-                          class="text-sm text-gray-900"
+                          class="text-sm text-gray-700"
                         >
                           ৳{{ item.price }}
                         </div>
@@ -636,7 +636,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div
                           v-if="!editOrderItems"
-                          class="text-sm text-gray-900"
+                          class="text-sm text-gray-700"
                         >
                           {{ item.quantity }}
                         </div>
@@ -646,7 +646,7 @@
                             class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                             :disabled="item.quantity <= 1"
                           >
-                            <Minus class="h-3 w-3 text-gray-600" />
+                            <Minus class="h-3 w-3 text-gray-500" />
                           </button>
                           <input
                             type="number"
@@ -658,12 +658,12 @@
                             @click="incrementQuantity(index)"
                             class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                           >
-                            <Plus class="h-3 w-3 text-gray-600" />
+                            <Plus class="h-3 w-3 text-gray-500" />
                           </button>
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">
+                        <div class="text-sm font-medium text-gray-700">
                           ৳{{ item.price * item.quantity }}
                         </div>
                       </td>
@@ -708,7 +708,7 @@
                       alt=""
                     />
                     <div class="flex-1">
-                      <h5 class="font-medium text-gray-900">{{ item.name }}</h5>
+                      <h5 class="font-medium text-gray-700">{{ item.name }}</h5>
                       <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <span class="text-gray-500">Price:</span>
@@ -735,7 +735,7 @@
                               class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                               :disabled="item.quantity <= 1"
                             >
-                              <Minus class="h-3 w-3 text-gray-600" />
+                              <Minus class="h-3 w-3 text-gray-500" />
                             </button>
                             <input
                               type="number"
@@ -747,7 +747,7 @@
                               @click="incrementQuantity(index)"
                               class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                             >
-                              <Plus class="h-3 w-3 text-gray-600" />
+                              <Plus class="h-3 w-3 text-gray-500" />
                             </button>
                           </div>
                         </div>
@@ -781,11 +781,11 @@
 
             <div class="mt-6 bg-gray-50 rounded-lg p-4">
               <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-600">Subtotal</span>
+                <span class="text-gray-500">Subtotal</span>
                 <span class="font-medium">৳{{ calculateSubtotal() }}</span>
               </div>
               <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-600">Delivery Fee</span>
+                <span class="text-gray-500">Delivery Fee</span>
 
                 <div v-if="!editOrderItems">
                   <span class="font-medium"
@@ -804,7 +804,7 @@
               <div
                 class="flex justify-between items-center pt-2 border-t border-gray-200 mt-2"
               >
-                <span class="text-gray-800 font-medium">Total</span>
+                <span class="text-gray-700 font-medium">Total</span>
                 <span class="text-lg font-semibold text-indigo-600"
                   >৳{{ calculateTotal() }}</span
                 >
@@ -871,7 +871,7 @@
         <div
           class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
         >
-          <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+          <h3 class="text-xl font-semibold text-gray-700 flex items-center">
             <UIcon
               name="i-heroicons-shopping-cart"
               class="h-5 w-5 mr-2 text-indigo-600"
@@ -925,7 +925,7 @@
                 </div>
               </div>
               <div class="flex-1">
-                <h5 class="font-medium text-gray-900">
+                <h5 class="font-medium text-gray-700">
                   {{ selectedProductToAdd.name }}
                 </h5>
                 <p class="text-sm text-gray-500 mt-1 line-clamp-2">
@@ -1364,7 +1364,7 @@ const getStatusClass = (status) => {
     case "cancelled":
       return "bg-red-100 text-red-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-700";
   }
 };
 

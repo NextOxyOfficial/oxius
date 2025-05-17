@@ -9,7 +9,7 @@
           >
             {{ $t("settings") }}
           </h1>
-          <p class="text-gray-600 max-w-xl mx-auto">
+          <p class="text-gray-500 max-w-xl mx-auto">
             Manage your account settings and preferences
           </p>
         </div>
@@ -57,7 +57,7 @@
           </div>
           <div class="text-left ml-2">
             <h2
-              class="text-lg font-semibold text-gray-800 flex items-center gap-1"
+              class="text-lg font-semibold text-gray-700 flex items-center gap-1"
             >
               {{ userProfile.first_name }} {{ userProfile.last_name }}
             </h2>
@@ -75,7 +75,7 @@
                   'flex-1 py-3 px-4 rounded-lg font-medium transition-all',
                   activeTab === 'profile'
                     ? 'text-white bg-emerald-600 hover:bg-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-50',
+                    : 'text-gray-500 hover:bg-gray-50',
                 ]"
               >
                 <div class="flex items-center justify-center gap-2">
@@ -89,7 +89,7 @@
                   'flex-1 py-3 px-4 rounded-lg font-medium transition-all',
                   activeTab === 'password'
                     ? 'text-white bg-emerald-600 hover:bg-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-50',
+                    : 'text-gray-500 hover:bg-gray-50',
                 ]"
               >
                 <div class="flex items-center justify-center gap-2">
@@ -106,7 +106,7 @@
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-lock-closed" class="text-xl" />
               </div>
-              <h2 class="text-xl font-semibold text-gray-800">
+              <h2 class="text-xl font-semibold text-gray-700">
                 পাসওয়ার্ড পরিবর্তন
               </h2>
             </div>
@@ -176,7 +176,7 @@
 
                 <div class="mt-4 pt-4 border-t border-emerald-200">
                   <div class="password-strength" v-if="new_password">
-                    <div class="text-xs text-gray-600 mb-1">
+                    <div class="text-xs text-gray-500 mb-1">
                       Password strength
                     </div>
                     <div class="flex gap-1">
@@ -246,7 +246,7 @@
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-user" class="text-xl" />
               </div>
-              <h2 class="text-xl font-semibold text-gray-800">
+              <h2 class="text-xl font-semibold text-gray-700">
                 Profile Information
               </h2>
             </div>
@@ -643,7 +643,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-900 flex items-center"
+              class="text-xl font-semibold text-gray-700 flex items-center"
               id="modal-title"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />

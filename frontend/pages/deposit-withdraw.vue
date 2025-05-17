@@ -10,7 +10,7 @@
         class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-xl"
       >
         <div class="flex gap-2">
-          <h2 class="text-base text-gray-900 sm:text-xl text-center">Mobile Recharge</h2>
+          <h2 class="text-base text-gray-700 sm:text-xl text-center">Mobile Recharge</h2>
           <div class="flex justify-center gap-2">
             <NuxtImg
               v-for="operator in operators"
@@ -562,7 +562,7 @@
                 </svg>
               </span>
               <span
-                class="ml-2 text-sm text-gray-900 capitalize"
+                class="ml-2 text-sm text-gray-700 capitalize"
                 v-if="row.transaction_type === 'order_payment'"
                 >{{
                   row.transaction_type === "order_payment"
@@ -571,7 +571,7 @@
                 }}</span
               >
               <span
-                class="ml-2 text-sm text-gray-900 capitalize"
+                class="ml-2 text-sm text-gray-700 capitalize"
                 v-if="row.transaction_type === 'order_received'"
                 >{{
                   row.transaction_type === "order_received"
@@ -580,7 +580,7 @@
                 }}</span
               >
               <span
-                class="ml-2 text-sm text-gray-900 capitalize"
+                class="ml-2 text-sm text-gray-700 capitalize"
                 v-if="row.transaction_type == 'transfer'"
                 >{{ row.transaction_type }}</span
               >
@@ -842,13 +842,13 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
+              <h2 class="text-lg font-semibold text-gray-700 mb-4">Confirm Transfer</h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between items-center">
                   <p class="text-gray-500 text-xs">Transfer amount</p>
-                  <p class="text-gray-900 text-lg font-semibold">
+                  <p class="text-gray-700 text-lg font-semibold">
                     <UIcon name="i-mdi:currency-bdt" class="" />
                     {{ transfer?.payable_amount }}
                   </p>
@@ -858,7 +858,7 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
+                    <p class="text-sm text-gray-700 font-medium" v-if="transfer?.to_user">
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -866,7 +866,7 @@
                   <!-- Email Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Email:</label>
-                    <p class="text-sm text-gray-800 font-medium">
+                    <p class="text-sm text-gray-700 font-medium">
                       {{ transfer?.contact }}
                     </p>
                   </div>
@@ -874,7 +874,7 @@
                   <!-- Name Field -->
                   <!-- <div class="space-y-1">
                   <label class="text-xs text-gray-500">Name:</label>
-                  <p class="text-sm text-gray-800 font-medium">John Smith</p>
+                  <p class="text-sm text-gray-700 font-medium">John Smith</p>
                 </div> -->
 
                   <!-- Time Field -->
@@ -892,7 +892,7 @@
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-500">Final amount</p>
-                <p class="text-gray-900 font-semibold">
+                <p class="text-gray-700 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
@@ -939,7 +939,7 @@
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between items-center">
                   <p class="text-gray-500 text-xs">Transferred amount</p>
-                  <p class="text-gray-900 text-lg font-semibold">
+                  <p class="text-gray-700 text-lg font-semibold">
                     <UIcon name="i-mdi:currency-bdt" class="" />
                     {{ transfer?.payable_amount }}
                   </p>
@@ -949,7 +949,7 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p class="text-sm sm:text-lg text-gray-800 font-medium">
+                    <p class="text-sm sm:text-lg text-gray-700 font-medium">
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -957,7 +957,7 @@
                   <!-- Email Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Email:</label>
-                    <p class="text-sm text-gray-800 font-medium">
+                    <p class="text-sm text-gray-700 font-medium">
                       {{ transfer?.contact }}
                     </p>
                   </div>
@@ -976,7 +976,7 @@
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-500">Final amount</p>
-                <p class="text-gray-900 font-semibold sm:text-lg">
+                <p class="text-gray-700 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
@@ -986,7 +986,7 @@
               <div class="flex gap-3">
                 <button
                   @click="reset"
-                  class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
                   View History
                 </button>
@@ -1028,21 +1028,21 @@
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">
               <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                <h3 class="text-lg leading-6 font-medium text-gray-700" id="modal-title">
                   Transaction Details
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
                     <div class="py-3 grid grid-cols-3 gap-4">
                       <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
-                      <dd class="text-sm text-gray-900 mt-0 col-span-2 font-mono">
+                      <dd class="text-sm text-gray-700 mt-0 col-span-2 font-mono">
                         {{ selectedTransaction?.id }}
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Type</dt>
                       <dd
-                        class="text-sm text-gray-900 mt-0 col-span-2 flex items-center uppercase"
+                        class="text-sm text-gray-700 mt-0 col-span-2 flex items-center uppercase"
                       >
                         <span
                           v-if="selectedTransaction?.type === 'deposit'"
@@ -1108,7 +1108,7 @@
                       <dt class="text-sm font-medium text-gray-500">Recipient</dt>
                       <dd
                         v-if="selectedTransaction?.to_user_details"
-                        class="text-sm text-gray-900 mt-0 col-span-2 font-mono"
+                        class="text-sm text-gray-700 mt-0 col-span-2 font-mono"
                       >
                         <p>
                           {{ selectedTransaction?.to_user_details?.phone }}
@@ -1120,14 +1120,14 @@
                       <dt class="text-sm font-medium text-gray-500">Name</dt>
                       <dd
                         v-if="selectedTransaction?.to_user_details"
-                        class="text-sm text-gray-900 mt-0 col-span-2"
+                        class="text-sm text-gray-700 mt-0 col-span-2"
                       >
                         {{ selectedTransaction?.to_user_details.name }}
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Date & Time</dt>
-                      <dd class="text-sm text-gray-900 mt-0 col-span-2">
+                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
                     </div>
@@ -1138,7 +1138,7 @@
                         :class="{
                           'text-green-600': selectedTransaction?.transaction_type === 'deposit',
                           'text-red-600': selectedTransaction?.transaction_type === 'withdraw',
-                          'text-gray-900': selectedTransaction?.transaction_type === 'transfer',
+                          'text-gray-700': selectedTransaction?.transaction_type === 'transfer',
                         }"
                       >
                         {{
@@ -1153,7 +1153,7 @@
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Status</dt>
-                      <dd class="text-sm text-gray-900 mt-0 col-span-2">
+                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
                         <span
                           v-if="selectedTransaction"
                           class="px-2 inline-flex text-sm leading-5 font-medium rounded-full capitalize"

@@ -95,10 +95,10 @@
         <div class="bg-blue-100 p-5 rounded-full mb-5 pulse-animation">
           <Bell class="h-12 w-12 text-blue-500" />
         </div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2">
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">
           No notifications yet
         </h3>
-        <p class="text-gray-600 text-sm max-w-sm text-center">
+        <p class="text-gray-500 text-sm max-w-sm text-center">
           When someone interacts with your content or mentions you, you'll see
           it here
         </p>
@@ -152,7 +152,7 @@
               <!-- Notification content -->
               <div>
                 <p
-                  class="text-sm text-gray-900"
+                  class="text-sm text-gray-700"
                   :class="{ 'font-semibold': !notification.read }"
                 >
                   <span
@@ -164,8 +164,8 @@
                 </p>
                 <p
                   v-if="notification.content"
-                  class="mt-1 text-sm text-gray-600 line-clamp-1"
-                  :class="{ 'text-gray-800': !notification.read }"
+                  class="mt-1 text-sm text-gray-500 line-clamp-1"
+                  :class="{ 'text-gray-700': !notification.read }"
                 >
                   {{ notification.content }}
                 </p>

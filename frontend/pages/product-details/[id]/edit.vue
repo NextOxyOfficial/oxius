@@ -85,10 +85,10 @@
             <div class="w-full md:w-3/4">
               <div class="flex justify-between items-start">
                 <div>
-                  <h2 class="text-xl font-semibold text-gray-800">
+                  <h2 class="text-xl font-semibold text-gray-700">
                     {{ currentProduct.name }}
                   </h2>
-                  <p class="text-gray-600 mt-1">
+                  <p class="text-gray-500 mt-1">
                     {{
                       currentProduct.short_description ||
                       "No description available"
@@ -176,7 +176,7 @@
               name="i-heroicons-adjustments-horizontal"
               class="h-5 w-5 text-indigo-500 mr-2"
             />
-            <h3 class="text-lg font-medium text-gray-900">
+            <h3 class="text-lg font-medium text-gray-700">
               Edit Product Details
             </h3>
           </div>

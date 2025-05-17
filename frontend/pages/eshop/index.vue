@@ -103,7 +103,7 @@
               class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white/95 dark:bg-gray-900/95 backdrop-blur-md mt-[60px] sm:mt-0"
             >
               <h2
-                class="text-lg font-semibold text-gray-800 dark:text-gray-300 flex items-center"
+                class="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-circle-stack"
@@ -113,7 +113,7 @@
               </h2>
               <button
                 @click="toggleSidebar"
-                class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-500"
+                class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-500"
               >
                 <UIcon name="i-heroicons-x-mark" class="size-5" />
               </button>
@@ -124,7 +124,7 @@
             <!-- Featured Categories Section -->
             <div class="mb-4">
               <p
-                class="text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-500 mb-3 ml-1"
+                class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500 mb-3 ml-1"
               >
                 BROWSE CATEGORIES
               </p>
@@ -148,7 +148,7 @@
                         :class="
                           selectedCategory === category.id
                             ? 'text-emerald-500'
-                            : 'text-gray-600 dark:text-gray-500'
+                            : 'text-gray-500 dark:text-gray-500'
                         "
                       />
                     </div>
@@ -236,7 +236,7 @@
               class="mt-5 rounded-xl bg-white dark:bg-gray-800/70 border border-gray-100 dark:border-gray-700/50 shadow-sm p-4"
             >
               <h3
-                class="font-medium text-gray-800 dark:text-gray-300 flex items-center"
+                class="font-medium text-gray-700 dark:text-gray-300 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-chat-bubble-left-right"
@@ -244,7 +244,7 @@
                 />
                 Customer Support
               </h3>
-              <p class="text-sm mt-2 text-gray-600 dark:text-gray-400">
+              <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">
                 Our team is here to help you with any questions about your
                 orders or products.
               </p>
@@ -455,7 +455,7 @@
           v-if="hasActiveFilters"
           class="flex flex-wrap items-center gap-2 mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/30"
         >
-          <span class="text-sm text-gray-600 dark:text-gray-500 font-medium"
+          <span class="text-sm text-gray-500 dark:text-gray-500 font-medium"
             >Active filters:</span
           >
 
@@ -513,7 +513,7 @@
               class="w-full h-full rounded-full border-4 border-t-emerald-500 animate-spin absolute top-0 left-0"
             ></div>
           </div>
-          <p class="text-center text-gray-600 mt-6 font-medium">
+          <p class="text-center text-gray-500 mt-6 font-medium">
             Loading premium collection...
           </p>
         </div>
@@ -529,13 +529,13 @@
         >
           <UIcon
             name="i-heroicons-shopping-bag"
-            class="size-12 text-gray-400 dark:text-gray-600"
+            class="size-12 text-gray-400 dark:text-gray-500"
           />
         </div>
-        <h3 class="mt-6 text-xl font-medium text-gray-900 dark:text-gray-200">
+        <h3 class="mt-6 text-xl font-medium text-gray-700 dark:text-gray-200">
           No products found
         </h3>
-        <p class="mt-2 text-gray-600 dark:text-gray-500 max-w-md mx-auto">
+        <p class="mt-2 text-gray-500 dark:text-gray-500 max-w-md mx-auto">
           We couldn't find products matching your criteria. Try adjusting your
           filters.
         </p>

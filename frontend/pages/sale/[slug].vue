@@ -34,7 +34,7 @@
                 name="i-heroicons-chevron-right"
                 class="size-3 mx-1 text-gray-500"
               />
-              <span class="text-sm text-gray-600 font-medium">{{
+              <span class="text-sm text-gray-500 font-medium">{{
                 post.title || "Loading..."
               }}</span>
             </div>
@@ -56,7 +56,7 @@
               class="w-full h-full rounded-full border-4 border-t-primary-500 animate-spin absolute top-0 left-0"
             ></div>
           </div>
-          <p class="text-center text-gray-600 mt-6 font-medium">
+          <p class="text-center text-gray-500 mt-6 font-medium">
             Loading post details...
           </p>
         </div>
@@ -102,7 +102,7 @@
               <!-- Image Loading Placeholder -->
               <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 z-10">
                 <div class="animate-pulse">
-                  <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400 dark:text-gray-600" />
+                  <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400 dark:text-gray-500" />
                 </div>
               </div>
               
@@ -121,14 +121,14 @@
               <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4">
                 <button 
                   @click.stop="navigateImage('prev')" 
-                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Previous image"
                 >
                   <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
                 </button>
                 <button 
                   @click.stop="navigateImage('next')" 
-                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Next image"
                 >
                   <UIcon name="i-heroicons-chevron-right" class="h-6 w-6" />
@@ -160,7 +160,7 @@
               <!-- Zoom Control -->
               <button 
                 @click.stop="openLightbox = true" 
-                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                 aria-label="Zoom image"
               >
                 <UIcon name="i-heroicons-magnifying-glass-plus" class="h-5 w-5" />
@@ -210,7 +210,7 @@
               v-if="!post.images || post.images.length === 0"
               class="text-center py-6 bg-gray-50 dark:bg-gray-900/20"
             >
-              <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto" />
+              <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto" />
               <p class="text-gray-500 dark:text-gray-500 mt-2">No images available for this listing</p>
             </div>
           </div>
@@ -222,7 +222,7 @@
             <div
               class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6"
             >
-              <h1 class="text-xl font-semibold text-gray-800">{{ post.title }}</h1>
+              <h1 class="text-xl font-semibold text-gray-700">{{ post.title }}</h1>
               <div class="flex flex-col items-end">
                 <div class="text-xl font-semibold text-primary">
                   <span v-if="post.negotiable && !post.price">Negotiable</span>
@@ -250,7 +250,7 @@
                 />
                 <div>
                   <span class="text-gray-500 text-sm">Category</span>
-                  <p class="text-gray-800 font-medium">
+                  <p class="text-gray-700 font-medium">
                     {{ getCategoryName(post.category) }}
                   </p>
                 </div>
@@ -264,7 +264,7 @@
                 />
                 <div>
                   <span class="text-gray-500 text-sm">Condition</span>
-                  <p class="text-gray-800 font-medium">
+                  <p class="text-gray-700 font-medium">
                     {{ getConditionLabel(post.condition) }}
                   </p>
                 </div>
@@ -278,7 +278,7 @@
                 />
                 <div>
                   <span class="text-gray-500 text-sm">Location</span>
-                  <p class="text-gray-800">
+                  <p class="text-gray-700">
                     {{ post.area }}, {{ post.district }}
                   </p>
                 </div>
@@ -292,7 +292,7 @@
                 />
                 <div>
                   <span class="text-gray-500 text-sm">Posted</span>
-                  <p class="text-gray-800">
+                  <p class="text-gray-700">
                     {{ formatDateFull(post.created_at) }}
                   </p>
                 </div>
@@ -307,7 +307,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Property Type</span>
-                    <p class="text-gray-800 font-medium">
+                    <p class="text-gray-700 font-medium">
                       {{ propertyTypeLabel(post.property_type) }}
                     </p>
                   </div>
@@ -320,7 +320,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Size</span>
-                    <p class="text-gray-800 font-medium">
+                    <p class="text-gray-700 font-medium">
                       {{ post.size }} {{ post.unit || "sqft" }}
                     </p>
                   </div>
@@ -333,7 +333,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Bedrooms</span>
-                    <p class="text-gray-800 font-medium">{{ post.bedrooms }}</p>
+                    <p class="text-gray-700 font-medium">{{ post.bedrooms }}</p>
                   </div>
                 </div>
 
@@ -344,7 +344,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Bathrooms</span>
-                    <p class="text-gray-800 font-medium">
+                    <p class="text-gray-700 font-medium">
                       {{ post.bathrooms }}
                     </p>
                   </div>
@@ -360,7 +360,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Make</span>
-                    <p class="text-gray-800 font-medium">{{ post.make }}</p>
+                    <p class="text-gray-700 font-medium">{{ post.make }}</p>
                   </div>
                 </div>
 
@@ -371,7 +371,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Model</span>
-                    <p class="text-gray-800 font-medium">{{ post.model }}</p>
+                    <p class="text-gray-700 font-medium">{{ post.model }}</p>
                   </div>
                 </div>
 
@@ -382,7 +382,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Year</span>
-                    <p class="text-gray-800 font-medium">{{ post.year }}</p>
+                    <p class="text-gray-700 font-medium">{{ post.year }}</p>
                   </div>
                 </div>
 
@@ -393,7 +393,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Mileage</span>
-                    <p class="text-gray-800 font-medium">
+                    <p class="text-gray-700 font-medium">
                       {{ post.mileage }} {{ post.mileage_unit || "km" }}
                     </p>
                   </div>
@@ -409,7 +409,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Brand</span>
-                    <p class="text-gray-800 font-medium">{{ post.brand }}</p>
+                    <p class="text-gray-700 font-medium">{{ post.brand }}</p>
                   </div>
                 </div>
 
@@ -420,7 +420,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Model</span>
-                    <p class="text-gray-800 font-medium">{{ post.model }}</p>
+                    <p class="text-gray-700 font-medium">{{ post.model }}</p>
                   </div>
                 </div>
 
@@ -431,7 +431,7 @@
                   />
                   <div>
                     <span class="text-gray-500 text-sm">Warranty</span>
-                    <p class="text-gray-800 font-medium">
+                    <p class="text-gray-700 font-medium">
                       {{ warrantyLabel(post.warranty) }}
                     </p>
                   </div>
@@ -457,11 +457,11 @@
 
             <!-- Description Section -->
             <div class="border-t border-gray-100 pt-6">
-              <h3 class="text-lg font-medium text-gray-800 mb-4">
+              <h3 class="text-lg font-medium text-gray-700 mb-4">
                 Description
               </h3>
               <div
-                class="prose max-w-none text-gray-600"
+                class="prose max-w-none text-gray-500"
                 v-html="post.description"
               ></div>
             </div>
@@ -472,7 +472,7 @@
             v-if="post.latitude && post.longitude"
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
           >
-            <h3 class="text-lg font-medium text-gray-800 mb-4">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">
               <UIcon name="i-heroicons-map" class="size-5 mr-2 inline-block" />
               Location
             </h3>
@@ -512,7 +512,7 @@
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
           >
-            <h3 class="text-lg font-medium text-gray-800 mb-4">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">
               Seller Information
             </h3>
             <div class="flex items-center mb-4">
@@ -599,7 +599,7 @@
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
           >
-            <h3 class="text-lg font-medium text-gray-800 mb-4">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">
               Similar Listings
             </h3>
 
@@ -792,7 +792,7 @@
       <UCard>
         <template #header>
           <div class="flex justify-between items-center">
-            <h3 class="text-lg font-medium text-gray-800">Message Seller</h3>
+            <h3 class="text-lg font-medium text-gray-700">Message Seller</h3>
             <UButton
               color="gray"
               variant="ghost"
@@ -851,7 +851,7 @@
       <UCard>
         <template #header>
           <div class="flex justify-between items-center">
-            <h3 class="text-lg font-medium text-gray-800">Report Listing</h3>
+            <h3 class="text-lg font-medium text-gray-700">Report Listing</h3>
             <UButton
               color="gray"
               variant="ghost"

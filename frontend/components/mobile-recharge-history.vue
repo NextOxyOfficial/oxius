@@ -3,7 +3,7 @@
     <h1 class="text-lg sm:text-xl font-semibold text-center mb-2">
       {{ $t("recharge_history") }}
     </h1>
-    <p class="text-center text-gray-600 mb-6">
+    <p class="text-center text-gray-500 mb-6">
       {{ $t("mobile_recharge_transactions") }}
     </p>
 
@@ -69,7 +69,7 @@
                     transaction?.operator_details?.name || "Unknown Operator"
                   }}
                 </h3>
-                <p class="text-sm text-gray-600">
+                <p class="text-sm text-gray-500">
                   {{ formatDate(transaction?.created_at) }}
                 </p>
               </div>
@@ -293,7 +293,7 @@ watch(searchQuery, () => {
 
 // Helper functions with null checks
 const getPackageClass = (packageType) => {
-  if (!packageType) return "bg-gray-100 text-gray-800";
+  if (!packageType) return "bg-gray-100 text-gray-700";
 
   switch (packageType.toLowerCase()) {
     case "data":
@@ -305,12 +305,12 @@ const getPackageClass = (packageType) => {
     case "balance":
       return "bg-blue-100 text-blue-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-700";
   }
 };
 
 const getOperatorClass = (operator) => {
-  if (!operator) return "bg-gray-100 text-gray-800";
+  if (!operator) return "bg-gray-100 text-gray-700";
 
   switch (operator) {
     case "Grameenphone":
@@ -324,7 +324,7 @@ const getOperatorClass = (operator) => {
     case "Teletalk":
       return "bg-blue-100 text-blue-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-700";
   }
 };
 

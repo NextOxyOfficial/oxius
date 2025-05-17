@@ -43,7 +43,7 @@
                 class="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"
               ></div>
               <h2
-                class="text-xl font-semibold mb-1 text-slate-800 dark:text-white relative z-10 flex items-center"
+                class="text-xl font-semibold mb-1 text-gray-700 dark:text-white relative z-10 flex items-center"
               >
                 <div
                   class="h-6 w-6 rounded-full bg-blue-500 mr-2.5 flex items-center justify-center"

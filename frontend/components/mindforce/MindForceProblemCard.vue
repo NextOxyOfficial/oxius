@@ -88,7 +88,7 @@
     </div>
 
     <h3
-      class="text-base sm:text-base font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+      class="text-base sm:text-base font-medium text-gray-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
       :class="{
         'group-hover:text-emerald-600 dark:group-hover:text-emerald-400':
           problem.status === 'solved',
@@ -129,14 +129,14 @@
       </span>
     </div>
     <!-- Description preview with truncation -->
-    <!-- <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+    <!-- <p class="mt-1.5 text-sm text-gray-500 dark:text-slate-400 line-clamp-2">
       {{ problem?.description }}
     </p> -->
 
     <div class="mt-4 flex items-center justify-between relative">
       <div class="flex items-center space-x-4">
         <span
-          class="text-sm text-slate-600 dark:text-slate-400 flex items-center group"
+          class="text-sm text-gray-500 dark:text-slate-400 flex items-center group"
         >
           <div
             class="p-1 rounded-full bg-slate-100 dark:bg-slate-700 mr-1.5 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors"

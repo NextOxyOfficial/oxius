@@ -8,7 +8,7 @@
         >
           <UIcon :name="icon" class="w-5 h-5" />
         </div>
-        <h2 class="text-xl font-semibold text-slate-800 dark:text-white">
+        <h2 class="text-xl font-semibold text-gray-700 dark:text-white">
           {{ title }}
         </h2>
         <UBadge color="emerald" variant="subtle" class="ml-2">
@@ -91,7 +91,7 @@
                   class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
                 >
                   <button
-                    class="px-2 py-1 bg-white/90 dark:bg-slate-800/90 text-xs font-medium text-slate-800 dark:text-white rounded-md shadow-sm transform transition-all hover:scale-105"
+                    class="px-2 py-1 bg-white/90 dark:bg-slate-800/90 text-xs font-medium text-gray-700 dark:text-white rounded-md shadow-sm transform transition-all hover:scale-105"
                     @click="$emit('view-product', product)"
                   >
                     Quick View
@@ -103,7 +103,7 @@
               <div class="p-3 flex flex-col flex-grow">
                 <!-- Title -->
                 <h3
-                  class="font-medium text-slate-800 dark:text-white text-sm mb-1 line-clamp-2 flex-grow"
+                  class="font-medium text-gray-700 dark:text-white text-sm mb-1 line-clamp-2 flex-grow"
                 >
                   {{ product.name }}
                 </h3>
@@ -135,7 +135,7 @@
                 <!-- Price -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-baseline gap-1.5">
-                    <span class="font-semibold text-slate-800 dark:text-white"
+                    <span class="font-semibold text-gray-700 dark:text-white"
                       >৳{{ product.price }}</span
                     >
                     <span
@@ -165,7 +165,7 @@
 
     <!-- Navigation Buttons -->
     <button
-      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition <= 0"
       @click="scrollLeft"
     >
@@ -173,7 +173,7 @@
     </button>
 
     <button
-      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition >= maxScroll"
       @click="scrollRight"
     >

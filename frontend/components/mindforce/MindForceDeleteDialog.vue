@@ -22,7 +22,7 @@
           <AlertTriangle class="h-6 w-6 mr-2" />
           <h3 class="text-lg font-semibold">Are you sure?</h3>
         </div>
-        <p class="mt-2 text-gray-600">
+        <p class="mt-2 text-gray-500">
           This action cannot be undone. This will permanently delete your
           problem and all associated advices.
         </p>

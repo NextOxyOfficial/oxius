@@ -15,14 +15,14 @@
         <!-- Centered Header -->
         <div class="text-center mb-12 animate-fade-in">
           <h1
-            class="text-2xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-2"
+            class="text-2xl md:text-2xl font-semibold text-gray-700 dark:text-white mb-2"
           >
             {{ $t("refer_friend") }}
           </h1>
           <div
             class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3 animate-width"
           ></div>
-          <p class="text-xl text-gray-600 dark:text-gray-400">
+          <p class="text-xl text-gray-500 dark:text-gray-400">
             {{ $t("refer") }}
           </p>
         </div>
@@ -31,7 +31,7 @@
         <div
           class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-up"
         >
-          <p class="text-center text-gray-600 dark:text-gray-500 mb-3">
+          <p class="text-center text-gray-500 dark:text-gray-500 mb-3">
             {{ $t("refer_text") }}
           </p>
 
@@ -110,7 +110,7 @@
                 Total Referred Users
               </h3>
               <div
-                class="text-2xl font-semibold text-gray-900 dark:text-white flex items-center"
+                class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
               >
                 <span class="counter-animate" data-value="87">
                   {{ user.user.refer_count }}
@@ -138,7 +138,7 @@
                 Total Earnings
               </h3>
               <div
-                class="text-2xl font-semibold text-gray-900 dark:text-white flex items-center"
+                class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
               >
                 <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
                 <span class="counter-animate" data-value="2450">
@@ -269,7 +269,7 @@
                               {{ earning.userName.charAt(0) }}
                             </div>
                             <div
-                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-200"
+                              class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200"
                             >
                               {{ earning.userName }}
                             </div>
@@ -379,7 +379,7 @@
                               class="user-avatar"
                             />
                             <div
-                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-200"
+                              class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200"
                             >
                               <div>
                                 {{ user.first_name }} {{ user.last_name }}
@@ -502,7 +502,7 @@
             Invite Friends & Earn Together
           </div>
           <h1
-            class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-900 dark:text-white tracking-tight animate-fade-in"
+            class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-700 dark:text-white tracking-tight animate-fade-in"
           >
             Get
             <span class="text-primary-600 dark:text-primary-400"
@@ -511,7 +511,7 @@
             on Every Referral
           </h1>
           <p
-            class="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
+            class="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
           >
             Share your unique link with friends, and earn rewards when they
             complete tasks or make purchases. The more friends you refer, the
@@ -548,7 +548,7 @@
         <div id="how-it-works" class="max-w-6xl mx-auto mb-20 scroll-mt-20">
           <div class="text-center mb-12">
             <h2
-              class="text-2xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-4"
+              class="text-2xl md:text-2xl font-semibold text-gray-700 dark:text-white mb-4"
             >
               How It Works
             </h2>
@@ -556,7 +556,7 @@
               class="h-1 w-20 bg-primary-500 mx-auto mb-6 rounded-full animate-expand"
             ></div>
             <p
-              class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+              class="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto"
             >
               Our referral program is simple, transparent, and rewarding. Just
               follow these easy steps:
@@ -577,11 +577,11 @@
                 >
               </div>
               <h3
-                class="text-xl font-semibold mb-3 text-gray-900 dark:text-white"
+                class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
               >
                 Create Account
               </h3>
-              <p class="text-gray-600 dark:text-gray-500">
+              <p class="text-gray-500 dark:text-gray-500">
                 Sign up for a free account and get your unique referral link
                 instantly.
               </p>
@@ -600,11 +600,11 @@
                 >
               </div>
               <h3
-                class="text-xl font-semibold mb-3 text-gray-900 dark:text-white"
+                class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
               >
                 Share Your Link
               </h3>
-              <p class="text-gray-600 dark:text-gray-500">
+              <p class="text-gray-500 dark:text-gray-500">
                 Share your referral link with friends via email, social media,
                 or messaging apps.
               </p>
@@ -623,11 +623,11 @@
                 >
               </div>
               <h3
-                class="text-xl font-semibold mb-3 text-gray-900 dark:text-white"
+                class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
               >
                 Earn Commissions
               </h3>
-              <p class="text-gray-600 dark:text-gray-500">
+              <p class="text-gray-500 dark:text-gray-500">
                 Earn 5% commission when your friends complete tasks or make
                 purchases.
               </p>
@@ -646,7 +646,7 @@
               >
                 5%
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
+              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
                 Commission Rate
               </p>
             </div>
@@ -659,7 +659,7 @@
               >
                 500+
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
+              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
                 Active Referrers
               </p>
             </div>
@@ -672,7 +672,7 @@
               >
                 ৳ 10,000
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
+              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
                 Top Earner
               </p>
             </div>
@@ -685,7 +685,7 @@
               >
                 24hr
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
+              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
                 Quick Payouts
               </p>
             </div>

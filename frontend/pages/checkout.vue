@@ -95,7 +95,7 @@
                 >
                   <div>
                     <h2
-                      class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center"
+                      class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-3 mb-4 flex items-center"
                     >
                       <ShoppingBag class="mr-2 h-5 w-5 text-indigo-500" />
                       Your Products
@@ -130,7 +130,7 @@
                             ></div>
                           </div>
                           <div class="flex-1">
-                            <h3 class="font-medium text-gray-900">
+                            <h3 class="font-medium text-gray-700">
                               {{ product.name }}
                             </h3>
                             <div
@@ -157,7 +157,7 @@
                                   <Minus class="h-3 w-3" />
                                 </button>
                                 <span
-                                  class="px-3 py-1 bg-white text-gray-800 min-w-[40px] text-center"
+                                  class="px-3 py-1 bg-white text-gray-700 min-w-[40px] text-center"
                                   >{{ product.count }}</span
                                 >
                                 <button
@@ -185,7 +185,7 @@
                 >
                   <div>
                     <h2
-                      class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-3 flex items-center"
+                      class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-3 flex items-center"
                     >
                       <MapPin class="mr-2 h-5 w-5 text-indigo-500" />
                       Customer Information
@@ -326,7 +326,7 @@
                         class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
                       >
                         <h2
-                          class="text-lg font-semibold text-gray-900 flex items-center"
+                          class="text-lg font-semibold text-gray-700 flex items-center"
                         >
                           <Truck class="mr-2 h-5 w-5 text-indigo-500" />
                           Delivery Options
@@ -356,7 +356,7 @@
                             <div class="ml-3 flex flex-col">
                               <label
                                 for="inside-dhaka"
-                                class="font-medium text-gray-800"
+                                class="font-medium text-gray-700"
                                 >Inside Dhaka</label
                               >
                               <span class="text-gray-500 text-sm"
@@ -393,7 +393,7 @@
                             <div class="ml-3 flex flex-col">
                               <label
                                 for="outside-dhaka"
-                                class="font-medium text-gray-800"
+                                class="font-medium text-gray-700"
                                 >Outside Dhaka</label
                               >
                               <span class="text-gray-500 text-sm"
@@ -418,7 +418,7 @@
                         class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
                       >
                         <h2
-                          class="text-lg font-semibold text-gray-900 flex items-center"
+                          class="text-lg font-semibold text-gray-700 flex items-center"
                         >
                           <CreditCard class="mr-2 h-5 w-5 text-indigo-500" />
                           Payment Method
@@ -450,7 +450,7 @@
                             <div class="ml-3 flex flex-col">
                               <label
                                 for="account-funds"
-                                class="font-medium text-gray-800"
+                                class="font-medium text-gray-700"
                                 >Account Funds</label
                               >
                               <div class="flex items-center mt-1">
@@ -485,7 +485,7 @@
                               />
                             </div>
                             <div class="ml-3 flex flex-col">
-                              <label for="cod" class="font-medium text-gray-800"
+                              <label for="cod" class="font-medium text-gray-700"
                                 >Cash on Delivery</label
                               >
                               <span class="text-gray-500 text-sm"
@@ -511,11 +511,11 @@
                       </div>
                       <div class="p-6 bg-gradient-to-b from-white to-slate-50">
                         <div class="space-y-2 mb-4">
-                          <div class="flex justify-between py-2 text-gray-600">
+                          <div class="flex justify-between py-2 text-gray-500">
                             <span>Products ({{ totalItems }})</span>
                             <span class="font-medium">৳{{ subtotal }}</span>
                           </div>
-                          <div class="flex justify-between py-2 text-gray-600">
+                          <div class="flex justify-between py-2 text-gray-500">
                             <span>Delivery Fee</span>
                             <span class="font-medium">৳{{ deliveryFee }}</span>
                           </div>
@@ -524,7 +524,7 @@
                         <div
                           class="flex justify-between py-3 border-t border-gray-200 mt-2 pt-2"
                         >
-                          <span class="text-gray-800 font-medium">Total</span>
+                          <span class="text-gray-700 font-medium">Total</span>
                           <span class="text-xl font-semibold text-indigo-600"
                             >৳{{ total }}</span
                           >
@@ -629,7 +629,7 @@
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <h3
-                        class="text-xl leading-6 font-semibold text-gray-900"
+                        class="text-xl leading-6 font-semibold text-gray-700"
                         id="modal-title"
                       >
                         Insufficient Funds
@@ -743,7 +743,7 @@
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <h3
-                        class="text-xl leading-6 font-semibold text-gray-900"
+                        class="text-xl leading-6 font-semibold text-gray-700"
                         id="modal-title"
                       >
                         Order Successful!
@@ -759,11 +759,11 @@
                           class="mt-4 p-3 bg-green-50 rounded-lg border border-green-100"
                         >
                           <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Order Total:</span>
+                            <span class="text-gray-500">Order Total:</span>
                             <span class="font-medium">৳{{ total }}</span>
                           </div>
                           <div class="flex justify-between text-sm">
-                            <span class="text-gray-600"
+                            <span class="text-gray-500"
                               >Estimated Delivery:</span
                             >
                             <span class="font-medium">{{

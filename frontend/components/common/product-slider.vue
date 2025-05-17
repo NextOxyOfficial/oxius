@@ -15,7 +15,7 @@
             class="w-5 h-5 relative z-10 text-green-500"
           />
         </div>
-        <h2 class="font-semibold text-lg md:text-xl text-slate-800 dark:text-white">
+        <h2 class="font-semibold text-lg md:text-xl text-gray-700 dark:text-white">
           <span class="relative inline-block">
             {{ $t("eshop") }}
             <span
@@ -68,7 +68,7 @@
       >
         <UIcon
           name="i-heroicons-chevron-left"
-          class="w-5 h-5 text-slate-600 dark:text-slate-300"
+          class="w-5 h-5 text-gray-500 dark:text-slate-300"
         />
       </button>
 
@@ -86,7 +86,7 @@
       >
         <UIcon
           name="i-heroicons-chevron-right"
-          class="w-5 h-5 text-slate-600 dark:text-slate-300"
+          class="w-5 h-5 text-gray-500 dark:text-slate-300"
         />
       </button>
 
@@ -193,7 +193,7 @@
         ></div>
         <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-slate-400" />
       </div>
-      <h3 class="text-lg font-medium text-slate-800 dark:text-white mb-2">
+      <h3 class="text-lg font-medium text-gray-700 dark:text-white mb-2">
         No products available
       </h3>
       <UButton

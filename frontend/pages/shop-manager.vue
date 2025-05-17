@@ -174,11 +174,11 @@
                   <input
                     v-if="isEditing"
                     v-model="editedUser.store_name"
-                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
+                    class="text-sm font-semibold text-gray-700 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
                   />
                   <p
                     v-else
-                    class="text-sm font-semibold text-gray-800 truncate"
+                    class="text-sm font-semibold text-gray-700 truncate"
                   >
                     {{ storeDetails.store_name || "Not set" }}
                   </p>
@@ -264,11 +264,11 @@
                   <input
                     v-if="isEditing"
                     v-model="editedUser.store_address"
-                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
+                    class="text-sm font-semibold text-gray-700 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
                   />
                   <p
                     v-else
-                    class="text-sm font-semibold text-gray-800 truncate"
+                    class="text-sm font-semibold text-gray-700 truncate"
                   >
                     {{ storeDetails?.store_address || "Not set" }}
                   </p>
@@ -295,9 +295,9 @@
                     v-if="isEditing"
                     v-model="editedUser.store_description"
                     rows="2"
-                    class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
+                    class="text-sm text-gray-700 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
                   ></textarea>
-                  <p v-else class="text-sm text-gray-800 line-clamp-2">
+                  <p v-else class="text-sm text-gray-700 line-clamp-2">
                     {{
                       storeDetails?.store_description ||
                       "No description available"
@@ -315,7 +315,7 @@
                 <div
                   class="h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"
                 ></div>
-                <span class="text-xs text-gray-600">Store Active</span>
+                <span class="text-xs text-gray-500">Store Active</span>
               </div>
               <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-500">
                 Last updated: {{ formatDate(new Date()) }}
@@ -414,7 +414,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-900 flex items-center"
+              class="text-xl font-semibold text-gray-700 flex items-center"
               id="modal-title"
             >
               <Edit2 class="h-5 w-5 mr-2 text-indigo-600" />
@@ -587,7 +587,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-900 flex items-center"
+              class="text-xl font-semibold text-gray-700 flex items-center"
               id="modal-title"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
@@ -665,7 +665,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-900 flex items-center"
+              class="text-xl font-semibold text-gray-700 flex items-center"
               id="modal-title"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
@@ -769,7 +769,7 @@
           </div>
           <button
             @click="removeToast(toast.id)"
-            class="ml-4 text-gray-500 hover:text-gray-600"
+            class="ml-4 text-gray-500 hover:text-gray-500"
           >
             <X class="h-4 w-4" />
           </button>

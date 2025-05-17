@@ -14,10 +14,10 @@
               <Icon name="heroicons:clock" class="h-12 w-12 text-yellow-500" />
             </div>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3">
+          <h3 class="text-xl font-semibold text-gray-700 mb-3">
             Post Submitted Successfully!
           </h3>
-          <p class="text-gray-600 mb-5">
+          <p class="text-gray-500 mb-5">
             Your listing has been submitted and is now
             <span
               class="font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded"
@@ -80,7 +80,7 @@
       <form @submit.prevent="validateStep">
         <!-- Step 1: Basic Details -->
         <div v-if="currentStep === 0" class="fade-transition px-6 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-800 mb-6">
+          <h3 class="text-xl font-semibold text-gray-700 mb-6">
             Basic Details
           </h3>
 
@@ -260,7 +260,7 @@
 
         <!-- Step 2: Price and Location -->
         <div v-if="currentStep === 1" class="fade-transition px-6 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-800 mb-6">
+          <h3 class="text-xl font-semibold text-gray-700 mb-6">
             Pricing & Location
           </h3>
 
@@ -440,11 +440,11 @@
 
         <!-- Step 3: Images Upload -->
         <div v-if="currentStep === 2" class="fade-transition px-6 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-800 mb-6">
+          <h3 class="text-xl font-semibold text-gray-700 mb-6">
             Upload Photos
           </h3>
 
-          <p class="text-sm text-gray-600 mb-6">
+          <p class="text-sm text-gray-500 mb-6">
             Upload clear photos to get more responses. You can upload up to 8
             images.
             <span class="font-medium text-primary"

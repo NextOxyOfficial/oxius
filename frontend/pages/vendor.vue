@@ -86,7 +86,7 @@
                 <div class="absolute inset-0 bg-gradient-to-br from-slate-100/50 via-white/20 to-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div class="flex flex-col items-center justify-center pt-5 pb-6 relative z-10">
                   <Camera class="w-12 h-12 mb-4 text-slate-400 group-hover:text-slate-500 transition-colors duration-300 group-hover:scale-110 transform transition-transform" />
-                  <p class="mb-2 text-sm text-slate-500 group-hover:text-slate-600 transition-colors duration-300">
+                  <p class="mb-2 text-sm text-slate-500 group-hover:text-gray-500 transition-colors duration-300">
                     <span class="font-semibold">Click to upload</span> or drag and drop
                   </p>
                   <p class="text-xs text-slate-400 group-hover:text-slate-500 transition-colors duration-300">
@@ -170,7 +170,7 @@
                 <span class="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-slate-400 to-transparent transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
               </h1>
               
-              <p class="text-slate-600 mt-1.5 font-medium">
+              <p class="text-gray-500 mt-1.5 font-medium">
                 Premium technology solutions since 2010
               </p>
               
@@ -257,7 +257,7 @@
                 <div class="relative flex items-center p-1.5">
                   <div 
                     class="p-2.5 transition-all duration-300"
-                    :class="searchFocused ? 'text-slate-800 scale-110' : 'text-slate-400 scale-100'"
+                    :class="searchFocused ? 'text-gray-700 scale-110' : 'text-slate-400 scale-100'"
                   >
                     <Search class="h-5 w-5" />
                   </div>
@@ -324,7 +324,7 @@
                 
                 <!-- Category Content -->
                 <span class="relative z-10 font-medium">{{ category.name }}</span>
-                <span class="ml-2 px-2.5 py-0.5 text-xs bg-slate-100 group-hover/cat:bg-slate-200 rounded-full transition-colors duration-300 text-slate-600 group-hover/cat:text-slate-700 relative z-10">
+                <span class="ml-2 px-2.5 py-0.5 text-xs bg-slate-100 group-hover/cat:bg-slate-200 rounded-full transition-colors duration-300 text-gray-500 group-hover/cat:text-slate-700 relative z-10">
                   {{ category.count }}
                 </span>
                 
@@ -386,7 +386,7 @@
                   {{ item.title }}
                 </h3>
                 
-                <p class="text-slate-600 whitespace-pre-line leading-relaxed">
+                <p class="text-gray-500 whitespace-pre-line leading-relaxed">
                   {{ item.content }}
                 </p>
               </div>
@@ -441,7 +441,7 @@
             </div>
             
             <!-- Enhanced CTA Button -->
-            <button class="relative overflow-hidden rounded-full bg-white text-slate-900 hover:text-slate-800 px-6 py-3 h-auto text-base lg:text-lg font-medium shadow-sm hover:shadow-sm transition-all duration-500 hover:scale-105 transform group/cta w-full md:w-auto">
+            <button class="relative overflow-hidden rounded-full bg-white text-gray-700 hover:text-gray-700 px-6 py-3 h-auto text-base lg:text-lg font-medium shadow-sm hover:shadow-sm transition-all duration-500 hover:scale-105 transform group/cta w-full md:w-auto">
               <span class="relative z-10 flex items-center justify-center">
                 Browse All Products
                 <ChevronRight class="ml-2 h-5 w-5 inline-block group-hover/cta:translate-x-1.5 transition-transform duration-300" />
@@ -504,7 +504,7 @@
                   
                   <div class="flex-1">
                     <div class="flex items-center justify-between">
-                      <h4 class="font-medium text-slate-800">{{ review.user }}</h4>
+                      <h4 class="font-medium text-gray-700">{{ review.user }}</h4>
                       <span class="text-sm text-slate-500">{{ review.date }}</span>
                     </div>
                     
@@ -571,7 +571,7 @@
               <div class="absolute inset-0 bg-gradient-to-br from-slate-100/50 via-white/20 to-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div class="flex flex-col items-center justify-center pt-5 pb-6 relative z-10">
                 <ImageIcon class="w-12 h-12 mb-4 text-slate-400 group-hover:text-slate-500 transition-colors duration-300 group-hover:scale-110 transform transition-transform" />
-                <p class="mb-2 text-sm text-slate-500 group-hover:text-slate-600 transition-colors duration-300">
+                <p class="mb-2 text-sm text-slate-500 group-hover:text-gray-500 transition-colors duration-300">
                   <span class="font-semibold">Click to upload</span> or drag and drop
                 </p>
                 <p class="text-xs text-slate-400 group-hover:text-slate-500 transition-colors duration-300">

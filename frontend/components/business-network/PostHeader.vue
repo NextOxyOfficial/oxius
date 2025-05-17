@@ -35,7 +35,7 @@
       <div class="flex-1">
         <NuxtLink
           :to="`/business-network/profile/${post.author}`"
-          class="font-semibold text-gray-900 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+          class="font-semibold text-gray-700 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
         >          <p class="truncate max-w-[220px]">
             {{ capitalizeNames(post?.author_details?.name) }}
           </p>
@@ -49,7 +49,7 @@
         </NuxtLink>
 
         <p
-          class="text-sm font-medium bg-transparent py-0.5 text-slate-600 dark:text-slate-400 truncate max-w-[220px]"
+          class="text-sm font-medium bg-transparent py-0.5 text-gray-500 dark:text-slate-400 truncate max-w-[220px]"
         >
           {{ post?.author_details?.profession || "" }}
         </p>
@@ -71,7 +71,7 @@
           class="h-8 w-8 pr-3 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
           @click.stop="$emit('toggle-dropdown', post)"
         >
-          <MoreHorizontal class="h-4 w-4 text-gray-600 dark:text-gray-400" />
+          <MoreHorizontal class="h-4 w-4 text-gray-500 dark:text-gray-400" />
         </button>
 
         <!-- Dropdown Menu with glassmorphism effect -->
@@ -82,7 +82,7 @@
         >
           <div class="py-1.5">
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('toggle-save', post)"
               v-if="user?.user"
             >
@@ -110,7 +110,7 @@
             </button>
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click="openPostDeleteModal(post)"
               v-if="post.author_details?.id === user?.user?.id"
             >
@@ -122,7 +122,7 @@
             </button>
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('copy-link', post)"
             >
               <Link2
@@ -137,7 +137,7 @@
             />
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               v-if="user"
             >
               <Flag class="h-4 w-4 mr-2.5 text-amber-600 dark:text-amber-400" />
@@ -161,7 +161,7 @@
         >
           <div class="flex items-center justify-between mb-4">
             <h3
-              class="text-lg font-semibold text-gray-900 dark:text-white flex items-center"
+              class="text-lg font-semibold text-gray-700 dark:text-white flex items-center"
             >
               <UIcon
                 name="i-heroicons-exclamation-triangle"
@@ -177,7 +177,7 @@
             </button>
           </div>
 
-          <p class="text-gray-600 dark:text-gray-400 mb-5">
+          <p class="text-gray-500 dark:text-gray-400 mb-5">
             Are you sure you want to delete this post? This action cannot be
             undone.
           </p>

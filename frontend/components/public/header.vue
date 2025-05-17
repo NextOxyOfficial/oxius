@@ -205,7 +205,7 @@
               color="gray"
               variant="ghost"
               icon="i-heroicons-x-mark-20-solid"
-              class="text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:hover:text-gray-300 transition-transform transform hover:scale-110"
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-transform transform hover:scale-110"
               @click="isOpen = false"
             />
           </div>
@@ -215,7 +215,7 @@
           <!-- Navigation Links -->
           <div class="px-4 py-6">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-2 px-4"
+              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 px-4"
             >
               {{ $t("menu") }}
             </h3>
@@ -249,7 +249,7 @@
               ]"
               :ui="{
                 inactive:
-                  'after:hidden before:hidden text-gray-600 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 transition-colors',
+                  'after:hidden before:hidden text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors',
                 active:
                   'after:hidden before:hidden text-emerald-600 dark:text-emerald-400 font-semibold',
                 padding: 'py-3 px-4',
@@ -265,7 +265,7 @@
           <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
+              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4"
             >
               {{ $t("download_our_app") }}
             </h3>
@@ -296,7 +296,7 @@
           <!-- Social Media Share Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
+              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4"
             >
               {{ $t("follow_us") }}
             </h3>
@@ -551,7 +551,7 @@
                           class="w-4 h-4 text-slate-500 dark:text-slate-400"
                         />
                         <span
-                          class="text-xs font-medium text-slate-600 dark:text-slate-300"
+                          class="text-xs font-medium text-gray-500 dark:text-slate-300"
                           >{{ $t("current_plan") }}</span
                         >
                       </div>
@@ -588,7 +588,7 @@
                       <!-- Upgrade Text with micro-interactions -->
                       <div class="flex-1">
                         <h4
-                          class="font-medium text-slate-800 dark:text-white text-sm flex items-center"
+                          class="font-medium text-gray-700 dark:text-white text-sm flex items-center"
                         >
                           {{ $t("upgrade_pro") }}
                           <span
@@ -598,7 +598,7 @@
                           </span>
                         </h4>
                         <p
-                          class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-[180px]"
+                          class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 max-w-[180px]"
                         >
                           {{ $t("upgrade_pro_text") }}
                         </p>
@@ -683,11 +683,11 @@
 
                       <!-- Pro Status Text -->
                       <div class="flex-1">
-                        <h4 class="font-medium text-slate-800 dark:text-white">
+                        <h4 class="font-medium text-gray-700 dark:text-white">
                           {{ $t("pro_member") }}
                         </h4>
                         <p
-                          class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 flex items-center"
+                          class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 flex items-center"
                         >
                           Valid until {{ formatDate(user?.user?.pro_validity) }}
                         </p>

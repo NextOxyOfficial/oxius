@@ -7,14 +7,14 @@
         <div class="bg-white rounded-xl shadow-sm w-full max-w-md">
           <!-- Header -->
           <div class="bg-primary-50 p-5 rounded-t-xl border-b border-gray-100">
-            <h2 class="text-xl font-semibold text-gray-800">
+            <h2 class="text-xl font-semibold text-gray-700">
               <UIcon
                 name="i-heroicons-map-pin"
                 class="inline-block mr-2 text-primary-500"
               />
               {{ $t("select_location") }}
             </h2>
-            <p class="text-sm text-gray-600 mt-1">
+            <p class="text-sm text-gray-500 mt-1">
               {{ $t("relevant_content") }}
             </p>
           </div>

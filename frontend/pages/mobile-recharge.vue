@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-xl font-semibold text-gray-900 sm:text-xl">
+        <h1 class="text-xl font-semibold text-gray-700 sm:text-xl">
           {{ $t("mobile_recharge") }}
         </h1>
         <p class="mt-2 text-base sm:text-xl text-gray-500">
@@ -78,7 +78,7 @@
       <!-- Popular Packages -->
       <div class="mb-10 mt-3">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+          <h2 class="text-xl font-semibold text-gray-700 mb-4">
             {{ $t("popular_packages") }}
           </h2>
           <UButton
@@ -106,7 +106,7 @@
                     {{ pack.type }}
                   </span>
                   <div class="flex justify-between px-0.5 mt-1">
-                    <h3 class="mt-1 text-base font-semibold text-gray-900">
+                    <h3 class="mt-1 text-base font-semibold text-gray-700">
                       {{ pack.price }}
                     </h3>
                     <NuxtImg
@@ -125,21 +125,21 @@
               </div>
 
               <div class="mt-2 space-y-1">
-                <div class="flex items-center text-sm text-gray-600">
+                <div class="flex items-center text-sm text-gray-500">
                   <UIcon
                     name="i-material-symbols-light-wifi-sharp"
                     class="w-3.5 h-3.5 mr-1.5 text-gray-500"
                   />
                   <span>{{ pack.data }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-600">
+                <div class="flex items-center text-sm text-gray-500">
                   <UIcon
                     name="i-uit-calender"
                     class="w-3.5 h-3.5 mr-1.5 text-gray-500"
                   />
                   <span>{{ pack.validity }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-600">
+                <div class="flex items-center text-sm text-gray-500">
                   <UIcon
                     name="i-material-symbols-call-outline-rounded"
                     class="w-3.5 h-3.5 mr-1.5 text-gray-500"
@@ -163,7 +163,7 @@
 
       <!-- All Packages -->
       <div>
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">
           {{ $t("all_packages") }}
         </h2>
         <div
@@ -184,7 +184,7 @@
                     {{ pack.type }}
                   </span>
                   <div class="flex justify-between px-0.5 mt-1">
-                    <h3 class="mt-1 text-base font-semibold text-gray-900">
+                    <h3 class="mt-1 text-base font-semibold text-gray-700">
                       {{ pack.price }}
                     </h3>
                     <NuxtImg
@@ -198,21 +198,21 @@
               </div>
 
               <div class="mt-2 space-y-1">
-                <div class="flex items-center text-sm text-gray-600">
+                <div class="flex items-center text-sm text-gray-500">
                   <UIcon
                     name="i-material-symbols-light-wifi-sharp"
                     class="w-3.5 h-3.5 mr-1.5 text-gray-500"
                   />
                   <span>{{ pack.data }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-600">
+                <div class="flex items-center text-sm text-gray-500">
                   <UIcon
                     name="i-uit-calender"
                     class="w-3.5 h-3.5 mr-1.5 text-gray-500"
                   />
                   <span>{{ pack.validity }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-600">
+                <div class="flex items-center text-sm text-gray-500">
                   <UIcon
                     name="i-material-symbols-call-outline-rounded"
                     class="w-3.5 h-3.5 mr-1.5 text-gray-500"
@@ -242,7 +242,7 @@
     >
       <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-sm">
         <div class="flex justify-between items-start mb-4">
-          <h3 class="text-xl font-semibold text-gray-900">Confirm Recharge</h3>
+          <h3 class="text-xl font-semibold text-gray-700">Confirm Recharge</h3>
           <button
             @click="selectedPackage = null"
             class="text-gray-500 hover:text-gray-500"
@@ -253,19 +253,19 @@
 
         <div class="mb-6 p-4 bg-gray-50 rounded-lg">
           <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Package</span>
+            <span class="text-gray-500">Package</span>
             <span class="font-medium">{{ selectedPackage.type }}</span>
           </div>
           <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Amount</span>
+            <span class="text-gray-500">Amount</span>
             <span class="font-medium">{{ selectedPackage.price }}</span>
           </div>
           <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Data</span>
+            <span class="text-gray-500">Data</span>
             <span class="font-medium">{{ selectedPackage.data }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600">Validity</span>
+            <span class="text-gray-500">Validity</span>
             <span class="font-medium">{{ selectedPackage.validity }}</span>
           </div>
         </div>
@@ -410,7 +410,7 @@ function getTagClass(type) {
     case "combo":
       return "bg-amber-100 text-amber-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-100 text-gray-700";
   }
 }
 

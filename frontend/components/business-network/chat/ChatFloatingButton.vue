@@ -135,7 +135,7 @@
             >
               <ArrowLeftIcon class="h-4 w-4" />
             </button>
-            <h4 class="text-md font-medium text-gray-800">Settings</h4>
+            <h4 class="text-md font-medium text-gray-700">Settings</h4>
           </div>
         </div>
         
@@ -168,7 +168,7 @@
           <!-- Stories section -->
         <div class="p-2">
           <div class="flex items-center justify-between pb-2">
-            <h4 class="text-sm font-medium text-gray-600">Stories</h4>
+            <h4 class="text-sm font-medium text-gray-500">Stories</h4>
             <button @click="openAllStories" class="text-sm text-green-600">View all</button>
           </div>
           <div 
@@ -258,7 +258,7 @@
   
           <!-- Friends List -->
           <div class="px-2 py-1">
-            <h4 class="mb-2 text-sm font-medium text-gray-600">Friends</h4>
+            <h4 class="mb-2 text-sm font-medium text-gray-500">Friends</h4>
             
             <div v-if="filteredFriends.length === 0" class="flex items-center justify-center py-4 text-sm text-gray-500">
               <p>No friends found</p>
@@ -338,7 +338,7 @@
             >
               <ArrowLeftIcon class="h-4 w-4" />
             </button>
-            <h4 class="text-md font-medium text-gray-800">All Stories</h4>
+            <h4 class="text-md font-medium text-gray-700">All Stories</h4>
           </div>
           <button 
             @click="showAddStoryModal = true"
@@ -542,7 +542,7 @@
             <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
               <MessageSquareIcon class="h-8 w-8 text-green-300" />
             </div>
-            <p class="mb-1 mt-3 text-sm font-medium text-gray-600">No messages yet</p>
+            <p class="mb-1 mt-3 text-sm font-medium text-gray-500">No messages yet</p>
             <p class="text-sm text-gray-500">Start a conversation with {{ activeChat.name }}</p>
           </div>
           
@@ -573,8 +573,8 @@
                   message.isUser 
                     ? 'ml-auto bg-gradient-to-r from-green-500 to-green-600 text-white' 
                     : activeChatType === 'ai'
-                      ? 'bg-gradient-to-r from-purple-50 to-pink-50 text-gray-800'
-                      : 'bg-white text-gray-800'
+                      ? 'bg-gradient-to-r from-purple-50 to-pink-50 text-gray-700'
+                      : 'bg-white text-gray-700'
                 ]"
               >
                 <p v-if="message.text" class="text-md">{{ message.text }}</p>
@@ -704,7 +704,7 @@
           <!-- Media picker -->
           <div v-if="showMediaPicker" class="mb-2 rounded-md border bg-gray-50 p-3 shadow-sm">
             <div class="flex flex-col items-center justify-center">
-              <p class="mb-2 text-sm text-gray-600">Upload media from your device</p>
+              <p class="mb-2 text-sm text-gray-500">Upload media from your device</p>
               <div class="flex space-x-3">
                 <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
                   <ImageIcon class="h-5 w-5 mb-1" />
@@ -719,7 +719,7 @@
               </div>
             </div>
             <div v-if="uploadedMedia.length > 0" class="mt-3">
-              <p class="mb-1 text-sm text-gray-600">Selected media ({{ uploadedMedia.length }})</p>
+              <p class="mb-1 text-sm text-gray-500">Selected media ({{ uploadedMedia.length }})</p>
               <div class="flex flex-wrap gap-2">
                 <div v-for="(media, index) in uploadedMedia" :key="index" class="relative h-16 w-16 overflow-hidden rounded-md">
                   <img v-if="media.type.includes('image')" :src="media.url" class="h-full w-full object-cover" />
@@ -807,7 +807,7 @@
           
           <div class="mb-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
             <ImageIcon class="mb-2 h-10 w-10 text-gray-500" />
-            <p class="mb-1 text-sm text-gray-600">Upload a photo or video</p>
+            <p class="mb-1 text-sm text-gray-500">Upload a photo or video</p>
             <p class="text-sm text-gray-500">Your story will be visible for 24 hours</p>
             <label class="mt-3 rounded-full bg-green-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-green-600 cursor-pointer">
               Select from gallery
@@ -816,7 +816,7 @@
           </div>
           
           <div class="flex justify-end">
-            <button @click="showAddStoryModal = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
+            <button @click="showAddStoryModal = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100">
               Cancel
             </button>
             <button class="rounded-md bg-green-500 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-600">
@@ -836,10 +836,10 @@
             </button>
           </div>
           
-          <p class="mb-4 text-sm text-gray-600">Are you sure you want to delete this chat? This action cannot be undone.</p>
+          <p class="mb-4 text-sm text-gray-500">Are you sure you want to delete this chat? This action cannot be undone.</p>
           
           <div class="flex justify-end">
-            <button @click="showDeleteConfirmation = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
+            <button @click="showDeleteConfirmation = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100">
               Cancel
             </button>
             <button @click="confirmDeleteChat" class="rounded-md bg-red-500 px-3 py-1.5 text-sm text-white transition-colors hover:bg-red-600">

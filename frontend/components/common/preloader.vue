@@ -48,7 +48,7 @@
 
       <!-- Loading text with dots -->
       <div v-if="text" class="flex items-center gap-2 animate-fade-in">
-        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
+        <p class="text-sm font-medium text-gray-500 dark:text-slate-300">
           {{ text }}
         </p>
         <div class="flex items-center">

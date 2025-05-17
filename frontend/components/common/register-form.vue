@@ -122,8 +122,8 @@
       <transition name="fade" mode="out-in">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <div class="space-y-2">
-            <h2 class="text-xl font-semibold text-gray-900">Create account</h2>
-            <p class="text-gray-600">Enter your details to register</p>
+            <h2 class="text-xl font-semibold text-gray-700">Create account</h2>
+            <p class="text-gray-500">Enter your details to register</p>
           </div>
 
           <div class="space-y-4">

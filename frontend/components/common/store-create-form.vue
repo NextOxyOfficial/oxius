@@ -69,7 +69,7 @@
         >
           Create Your Store
         </h1>
-        <p class="text-gray-600 dark:text-gray-400">
+        <p class="text-gray-500 dark:text-gray-400">
           Set up your online store and start selling your products
         </p>
       </div>
@@ -234,7 +234,7 @@
                 Your store URL will be:
               </p>
               <div class="flex items-center break-words">
-                <span class="text-sm text-gray-600 dark:text-gray-400"
+                <span class="text-sm text-gray-500 dark:text-gray-400"
                   >https://adsyclub.com/eshop/</span
                 >
                 <span
@@ -356,7 +356,7 @@
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3
-                  class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+                  class="text-lg leading-6 font-medium text-gray-700 dark:text-white"
                   id="modal-title"
                 >
                   Store Created Successfully!

@@ -6,7 +6,7 @@
       aria-label="Search"
     >
       <SearchIcon
-        class="h-[18px] w-[18px] text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+        class="h-[18px] w-[18px] text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
       />
     </button>
 
@@ -40,7 +40,7 @@
               type="text"
               placeholder="Type to search..."
               v-model="searchQuery"
-              class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
+              class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
               ref="searchInput"
             />
             <div
@@ -91,7 +91,7 @@
             :class="
               activeTab === 'all'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             "
             @click="activeTab = 'all'"
           >
@@ -103,7 +103,7 @@
             :class="
               activeTab === 'posts'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             "
             @click="activeTab = 'posts'"
           >
@@ -121,7 +121,7 @@
             :class="
               activeTab === 'people'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             "
             @click="activeTab = 'people'"
           >
@@ -181,7 +181,7 @@
                   <div class="flex-1 min-w-0">
                     <!-- Highlighted title with keyword matches -->
                     <p
-                      class="text-sm font-medium text-gray-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+                      class="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
                     >
                       <span
                         v-html="highlightMatches(result.title, searchQuery)"
@@ -208,7 +208,7 @@
                         :class="
                           isTagMatched(tag.tag, searchQuery)
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
-                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-500'
+                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-500'
                         "
                       >
                         #<span
@@ -268,7 +268,7 @@
                   <!-- User info with more detailed display -->
                   <div class="ml-3 flex-1 min-w-0">
                     <p
-                      class="text-sm font-medium text-gray-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                      class="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                     >
                       <span
                         v-html="
@@ -351,7 +351,7 @@
             We couldn't find anything for "{{ searchQuery }}"
           </p>
           <div
-            class="text-xs text-gray-600 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
+            class="text-xs text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
           >
             <p class="font-medium mb-1">Suggestions:</p>
             <ul

@@ -12,10 +12,10 @@
               v-if="!showOtp && resetPasswordToken === ''"
             >
               <div class="space-y-2">
-                <h2 class="text-xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold text-gray-700">
                   Reset password
                 </h2>
-                <p class="text-gray-600">
+                <p class="text-gray-500">
                   Choose how you want to reset your password
                 </p>
               </div>
@@ -28,8 +28,8 @@
                     :class="[
                       'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 hidden',
                       form.method === 'email'
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-500 hover:text-gray-900',
+                        ? 'bg-white shadow-sm text-gray-700'
+                        : 'text-gray-500 hover:text-gray-700',
                     ]"
                   >
                     Email
@@ -40,8 +40,8 @@
                     :class="[
                       'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200',
                       form.method === 'phone'
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-500 hover:text-gray-900',
+                        ? 'bg-white shadow-sm text-gray-700'
+                        : 'text-gray-500 hover:text-gray-700',
                     ]"
                   >
                     Phone
@@ -93,10 +93,10 @@
               class="space-y-6"
             >
               <div class="space-y-2">
-                <h2 class="text-xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold text-gray-700">
                   Enter verification code
                 </h2>
-                <p class="text-gray-600">
+                <p class="text-gray-500">
                   We sent a code to your {{ form.method }}
                 </p>
               </div>
@@ -132,7 +132,7 @@
               class="space-y-6"
             >
               <div class="space-y-2">
-                <h2 class="text-xl font-semibold text-gray-900">
+                <h2 class="text-xl font-semibold text-gray-700">
                   Enter New Password
                 </h2>
               </div>

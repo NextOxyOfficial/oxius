@@ -28,7 +28,7 @@
                 ></span>
               </span>
             </div>
-            <h3 class="text-lg font-semibold text-gray-800">
+            <h3 class="text-lg font-semibold text-gray-700">
               সাম্প্রতি যারা ডোনেট করেছেন
             </h3>
           </div>
@@ -164,7 +164,7 @@
           <!-- Recent Donors Section -->
           <div class="mt-8 pt-6 border-t border-gray-200">
             <h4
-              class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2"
+              class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-users" class="text-primary-500" />
               Recent Supporters

@@ -232,7 +232,7 @@
                 </span>
                 <!-- Verified badge for mobile -->
               </h1>
-              <p class="text-sm font-medium text-slate-600 mb-0.5">
+              <p class="text-sm font-medium text-gray-500 mb-0.5">
                 {{ user?.profession }}
               </p>
             </div>
@@ -244,7 +244,7 @@
                 :class="[
                   'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all duration-300',
                   isFollowing
-                    ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
+                    ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-700'
                     : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm text-white',
                 ]"
                 :disabled="followLoading"
@@ -385,7 +385,7 @@
                       </div>
                     </span>
                   </div>
-                  <p class="text-sm font-medium text-slate-600 mb-0.5">
+                  <p class="text-sm font-medium text-gray-500 mb-0.5">
                     {{ user?.profession }}
                   </p>
                 </div>
@@ -397,7 +397,7 @@
                     :class="[
                       'px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-all duration-300',
                       isFollowing
-                        ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
+                        ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-700'
                         : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm text-white',
                     ]"
                     :disabled="followLoading"
@@ -479,7 +479,7 @@
               >
                 <p
                   v-if="user?.about"
-                  class="text-sm font-medium text-gray-600 mb-3 leading-relaxed"
+                  class="text-sm font-medium text-gray-500 mb-3 leading-relaxed"
                 >
                   {{ user?.about }}
                 </p>
@@ -503,7 +503,7 @@
                     <MapPin class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors"
+                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-700 transition-colors"
                   >
                     {{
                       [user?.city || "", user?.state || ""]
@@ -524,7 +524,7 @@
                     <Briefcase class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors"
+                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-700 transition-colors"
                   >
                     {{ user?.company }}
                   </span>
@@ -538,7 +538,7 @@
                     <Calendar class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-600 text-sm group-hover:text-gray-900 transition-colors"
+                    class="text-gray-500 text-sm group-hover:text-gray-700 transition-colors"
                   >
                     Joined {{ formatTimeAgo(user?.date_joined) }}
                   </span>
@@ -558,7 +558,7 @@
                     <Mail class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors"
+                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-700 transition-colors"
                   >
                     {{ user?.email }}
                   </span>
@@ -578,7 +578,7 @@
                     <Phone class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-900 transition-colors"
+                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-700 transition-colors"
                   >
                     {{ user?.phone }}
                   </span>
@@ -693,7 +693,7 @@
               :class="[
                 activeTab === tab.value
                   ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
+                  : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300',
               ]"
               @click="switchTab(tab.value)"
             >
@@ -793,7 +793,7 @@
                 >
                   <ChevronUp class="h-8 w-8 text-gray-500" />
                 </div>
-                <h3 class="text-lg font-medium text-gray-800 mb-1">
+                <h3 class="text-lg font-medium text-gray-700 mb-1">
                   No posts yet
                 </h3>
                 <p class="text-gray-500 mb-4 max-w-md">
@@ -814,7 +814,7 @@
                   >
                     <Check class="h-8 w-8 text-blue-600" />
                   </div>
-                  <h3 class="text-lg font-medium text-gray-800 mb-1">
+                  <h3 class="text-lg font-medium text-gray-700 mb-1">
                     You're all caught up!
                   </h3>
                   <p class="text-gray-500 mb-8 max-w-md">
@@ -907,7 +907,7 @@
 
               <div v-if="!isLoadingSaved" class="animate-fadeIn">
                 <div v-if="savedPosts?.length === 0" class="text-center py-10">
-                  <h3 class="text-base font-medium text-gray-900 mb-2">
+                  <h3 class="text-base font-medium text-gray-700 mb-2">
                     No saved posts yet
                   </h3>
                   <p class="text-gray-500 text-sm">

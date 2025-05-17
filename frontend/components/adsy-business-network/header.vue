@@ -66,7 +66,7 @@
               <!-- AdsyClub Button -->
               <NuxtLink
                 to="/"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
                 aria-label="Go to AdsyClub"
               >
                 <div
@@ -85,7 +85,7 @@
               <!-- AdsyNews Button -->
               <NuxtLink
                 to="/adsy-news"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
                 aria-label="Go to AdsyNews"
               >
                 <div
@@ -226,7 +226,7 @@
                             class="w-4 h-4 text-slate-500 dark:text-slate-400"
                           />
                           <span
-                            class="text-xs font-medium text-slate-600 dark:text-slate-300"
+                            class="text-xs font-medium text-gray-500 dark:text-slate-300"
                             >{{ $t("current_plan") }}</span
                           >
                         </div>
@@ -263,7 +263,7 @@
                         <!-- Upgrade Text with micro-interactions -->
                         <div class="flex-1">
                           <h4
-                            class="font-medium text-slate-800 dark:text-white text-sm flex items-center"
+                            class="font-medium text-gray-700 dark:text-white text-sm flex items-center"
                           >
                             {{ $t("upgrade_pro") }}
                             <span
@@ -273,7 +273,7 @@
                             </span>
                           </h4>
                           <p
-                            class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-[180px]"
+                            class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 max-w-[180px]"
                           >
                             {{ $t("upgrade_pro_text") }}
                           </p>
@@ -359,12 +359,12 @@
                         <!-- Pro Status Text -->
                         <div class="flex-1">
                           <h4
-                            class="font-medium text-slate-800 dark:text-white"
+                            class="font-medium text-gray-700 dark:text-white"
                           >
                             {{ $t("pro_member") }}
                           </h4>
                           <p
-                            class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 flex items-center"
+                            class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 flex items-center"
                           >
                             Valid until
                             {{ formatDate(user?.user?.pro_validity) }}

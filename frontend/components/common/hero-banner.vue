@@ -84,7 +84,7 @@
           <div class="w-full md:w-2/5 max-sm:py-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80">
             <div class="relative text-center">
               <h1
-                class="text-lg sm:text-base font-medium leading-tight text-gray-800 relative inline-block"
+                class="text-lg sm:text-base font-medium leading-tight text-gray-700 relative inline-block"
               >
                 <span class="relative z-10">{{ $t("bangladesh_first_title") }}</span>
                 <span class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"></span>

@@ -144,7 +144,7 @@
 				<template #header>
 					<div class="flex items-center justify-between">
 						<h3
-							class="text-base font-semibold leading-6 text-gray-900 dark:text-white"
+							class="text-base font-semibold leading-6 text-gray-700 dark:text-white"
 						>
 							Rejection Reason
 						</h3>
