@@ -359,7 +359,7 @@
             </div>
 
             <!-- Category Posts Grid -->
-            <div v-if="categoryTabLoading" class="py-8 text-center">
+            <div v-if="loading" class="py-8 text-center">
               <UIcon
                 name="i-heroicons-arrow-path"
                 class="animate-spin h-6 w-6 mx-auto text-blue-500"
@@ -367,7 +367,7 @@
               <p class="mt-2 text-gray-500 text-sm">Loading listings...</p>
             </div>
 
-            <div v-else-if="!categoryPosts?.length" class="py-8 text-center">
+            <div v-else-if="!listings?.length" class="py-8 text-center">
               <p class="text-gray-500">No listings found in this category</p>
             </div>
             <div
@@ -375,7 +375,7 @@
               class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             >
               <NuxtLink
-                v-for="(post, i) in categoryPosts"
+                v-for="(post, i) in listings"
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
@@ -415,7 +415,67 @@
                 </div>
               </NuxtLink>
             </div>
-            <!-- Pagination Controls Removed -->
+            <!-- Pagination Controls without Upagination component -->
+            <div class="flex justify-center mt-6" v-if="totalPages > 1">
+              <ul class="inline-flex items-center space-x-1">
+                <!-- Previous Button -->
+                <li>
+                  <button
+                    @click="goToPage(currentPage - 1)"
+                    :disabled="currentPage === 1"
+                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    ‹
+                  </button>
+                </li>
+
+                <!-- Visible Page Numbers -->
+                <li v-for="page in visiblePages" :key="page">
+                  <button
+                    @click="goToPage(page)"
+                    :class="[
+                      'px-3 py-1 rounded-md border',
+                      currentPage === page
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-100',
+                    ]"
+                  >
+                    {{ page }}
+                  </button>
+                </li>
+
+                <!-- Dots -->
+                <li v-if="shouldShowDots">
+                  <span class="px-2">...</span>
+                </li>
+
+                <!-- Last Page -->
+                <li v-if="totalPages > 5">
+                  <button
+                    @click="goToPage(totalPages)"
+                    :class="[
+                      'px-3 py-1 rounded-md border',
+                      currentPage === totalPages
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-100',
+                    ]"
+                  >
+                    {{ totalPages }}
+                  </button>
+                </li>
+
+                <!-- Next Button -->
+                <li>
+                  <button
+                    @click="goToPage(currentPage + 1)"
+                    :disabled="currentPage === totalPages"
+                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    ›
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <!-- Sponsored Banner -->
@@ -468,7 +528,7 @@
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
               <div class="flex gap-4">
                 <NuxtLink
-                  v-for="(listing, i) in listings"
+                  v-for="(listing, i) in categoryPosts"
                   :key="`listing-${i}+${i}`"
                   :to="`/sale/${listing.slug}`"
                   class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-sm transition-shadow group"
@@ -514,7 +574,7 @@
 
           <!-- Loading State -->
           <div
-            v-if="loading"
+            v-if="categoryTabLoading"
             class="py-12 text-center bg-white rounded-lg shadow-sm"
           >
             <UIcon
@@ -526,7 +586,7 @@
 
           <!-- Empty State -->
           <div
-            v-else-if="listings?.length === 0"
+            v-else-if="categoryPosts?.length === 0"
             class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm"
           >
             <UIcon
@@ -702,6 +762,9 @@ const API_ENDPOINTS = {
   AREAS: "/geo/areas/",
   POSTS: "/sale/posts/",
 };
+
+const currentPage = ref(1);
+const totalPages = ref(0);
 
 const location = useCookie("location");
 const { t } = useI18n();
@@ -938,6 +1001,7 @@ async function loadPosts(page = 1) {
     if (selectedDistrict.value)
       params.append("district", selectedDistrict.value);
     if (selectedArea.value) params.append("area", selectedArea.value);
+    if (page) params.append("page", page.toString());
 
     // Sort
     const sortMapping = {
@@ -967,6 +1031,9 @@ async function loadPosts(page = 1) {
       if (response.data.results) {
         // Paginated response
         listings.value = mapListingsData(response.data.results);
+        totalPages.value = Math.ceil(
+          +response.data.count / +response.data.results.length
+        );
         totalListings.value = response.data.count || 0;
       } else if (Array.isArray(response.data)) {
         // Array response
@@ -1428,6 +1495,41 @@ watch(
     }
   }
 );
+
+const visiblePages = computed(() => {
+  const pages = [];
+
+  if (totalPages.value <= 6) {
+    // Show all if few pages
+    for (let i = 1; i <= totalPages.value; i++) pages.push(i);
+  } else {
+    const maxVisible = 5;
+
+    let start = currentPage.value;
+    if (currentPage.value <= 3) start = 1;
+    else if (currentPage.value > totalPages.value - 5)
+      start = totalPages.value - 5;
+
+    for (let i = start; i < start + maxVisible && i < totalPages; i++) {
+      pages.push(i);
+    }
+  }
+
+  return pages;
+});
+
+const shouldShowDots = computed(() => {
+  return (
+    totalPages.value > 6 && visiblePages.value.at(-1) < totalPages.value - 1
+  );
+});
+
+async function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    loadPosts(currentPage.value);
+  }
+}
 </script>
 
 <style>

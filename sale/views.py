@@ -10,6 +10,8 @@ from django.core.files.base import ContentFile
 import hashlib
 from django.utils import timezone
 import datetime
+from .paginations import StandardResultsSetPagination
+
 
 from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner, SaleCondition
 from .serializers import (
@@ -62,6 +64,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
     """ViewSet for handling sale posts"""
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field='slug'
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
