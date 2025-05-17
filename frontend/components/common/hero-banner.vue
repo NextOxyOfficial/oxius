@@ -21,7 +21,7 @@
               </div>
             </div>
             <!-- Aspect ratio container - reduced by ~10% -->
-            <div class="rounded-xl overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%]">
+            <div class="rounded-xl mt-8 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%]">
               <div
                 v-for="({ id, image }, index) in sliderImages"
                 :key="id"
