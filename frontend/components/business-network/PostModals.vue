@@ -8,7 +8,7 @@
         @click="$emit('close-likes-modal')"
       >
         <div
-          class="bg-white rounded-lg max-w-2xl w-full max-h-[75vh] overflow-hidden shadow-sm"
+          class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-sm"
           @click.stop
         >
           <div class="p-4 sm:p-5 border-b border-gray-200">
@@ -99,7 +99,7 @@
         @click="$emit('close-comments-modal')"
       >
         <div
-          class="bg-white rounded-lg max-w-2xl w-full max-h-[75vh] overflow-hidden shadow-sm"
+          class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-sm"
           @click.stop
         >
           <div class="p-4 sm:p-5 border-b border-gray-200">
@@ -510,7 +510,7 @@
         @click="$emit('close-photo-viewer')"
       >
         <div
-          class="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+          class="max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col"
           @click.stop
         >
           <!-- Header with close and download buttons -->
@@ -542,7 +542,7 @@
             <img
               :src="activePhotoViewer.currentPhoto"
               :alt="activePhotoViewer.title || 'Photo'"
-              class="max-h-[70vh] max-w-full object-contain"
+              class="max-h-[80vh] max-w-full object-contain"
             />
 
             <!-- Navigation buttons if multiple photos -->

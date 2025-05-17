@@ -113,7 +113,7 @@
         @click="isSearchOpen = false"
       >
         <div
-          class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden"
+          class="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden"
           @click.stop
         >
           <div class="p-4 border-b border-gray-200 sticky top-0 bg-white">

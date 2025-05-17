@@ -6,7 +6,7 @@
       @click="$emit('close-media')"
     >
       <div
-        class="relative max-w-3xl w-full max-h-[75vh] bg-white rounded-lg overflow-hidden flex flex-col"
+        class="relative max-w-3xl w-full max-h-[80vh] bg-white rounded-lg overflow-hidden flex flex-col"
         @click.stop
       >
         <button

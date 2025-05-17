@@ -1051,7 +1051,7 @@
           class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
         >
           <div
-            class="bg-white rounded-md shadow-sm w-full max-w-4xl p-5 max-h-[70vh] overflow-y-auto"
+            class="bg-white rounded-md shadow-sm w-full max-w-4xl p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-900">
@@ -1810,7 +1810,7 @@
           class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
         >
           <div
-            class="bg-white rounded-md shadow-sm w-full max-w-md p-5 max-h-[90vh] overflow-y-auto"
+            class="bg-white rounded-md shadow-sm w-full max-w-md p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-900">Ad Preview</h3>

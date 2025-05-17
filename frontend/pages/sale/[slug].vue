@@ -715,7 +715,7 @@
 
         <!-- Main Image with Zoom Functionality -->
         <div 
-          class="lightbox-image-container max-h-[85vh] flex items-center justify-center"
+          class="lightbox-image-container max-h-[80vh] flex items-center justify-center"
           @wheel="handleZoom"
           @mousedown="startPan"
           @mousemove="pan"
@@ -726,7 +726,7 @@
             ref="lightboxImage"
             :src="selectedImage || getMainImage()"
             :alt="post.title"
-            class="max-w-full max-h-[85vh] object-contain transition-transform duration-300 ease-out"
+            class="max-w-full max-h-[80vh] object-contain transition-transform duration-300 ease-out"
             :style="{ transform: `scale(${zoomLevel}) translate(${panPosition.x}px, ${panPosition.y}px)` }"
             @dblclick="toggleZoom"
           />

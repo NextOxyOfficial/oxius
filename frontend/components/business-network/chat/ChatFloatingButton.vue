@@ -854,8 +854,8 @@
         <button @click="showFullMedia = false" class="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white">
           <XIcon class="h-6 w-6" />
         </button>
-        <img v-if="fullMediaItem && fullMediaItem.type === 'image'" :src="fullMediaItem.url" class="max-h-[90vh] max-w-[90vw] object-contain" />
-        <video v-else-if="fullMediaItem && fullMediaItem.type === 'video'" :src="fullMediaItem.url" controls class="max-h-[90vh] max-w-[90vw]"></video>
+        <img v-if="fullMediaItem && fullMediaItem.type === 'image'" :src="fullMediaItem.url" class="max-h-[80vh] max-w-[90vw] object-contain" />
+        <video v-else-if="fullMediaItem && fullMediaItem.type === 'video'" :src="fullMediaItem.url" controls class="max-h-[80vh] max-w-[90vw]"></video>
       </div>
     </div>
   </div>
