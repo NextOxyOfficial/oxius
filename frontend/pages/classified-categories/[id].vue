@@ -2,7 +2,7 @@
   <PublicSection>
     <UContainer>
       <h2
-        class="text-center text-3xl sm:text-4xl my-3 sm:my-6 max-sm:hidden"
+        class="text-center text-2xl sm:text-2xl my-3 sm:my-6 max-sm:hidden"
         v-if="categoryDetails?.title"
       >
         {{ categoryDetails?.title }}

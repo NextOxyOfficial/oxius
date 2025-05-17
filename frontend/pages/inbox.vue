@@ -38,7 +38,7 @@
 
               <!-- Clean typography -->
               <div>
-                <h1 class="text-xl sm:text-3xl font-semibold text-gray-800">
+                <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
                   {{ $t("message_center") }}
                 </h1>
                 <p class="text-gray-500 text-sm mt-1">
@@ -216,7 +216,7 @@
             <div class="empty-paper"></div>
             <div class="empty-paper"></div>
             <div class="empty-inbox-icon">
-              <UIcon name="i-heroicons-inbox" class="text-5xl text-white" />
+              <UIcon name="i-heroicons-inbox" class="text-2xl text-white" />
             </div>
           </div>
           <h3 class="empty-title">{{ $t("inbox_empty") }}</h3>

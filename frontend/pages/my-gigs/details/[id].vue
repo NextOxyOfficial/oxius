@@ -5,7 +5,7 @@
 			:user="user"
 			:isUser="true"
 		/>
-		<h1 class="text-center text-4xl my-8">
+		<h1 class="text-center text-2xl my-8">
 			{{ submittedTasks[0]?.gig.title }}
 		</h1>
 		<UContainer>

@@ -35,7 +35,7 @@
         <div class="mb-6 text-center">
           <UIcon
             name="i-heroicons-heart"
-            class="text-red-500 text-4xl mb-3 mx-auto"
+            class="text-red-500 text-2xl mb-3 mx-auto"
           />
           <h3 class="text-xl font-semibold mb-2">
             {{ $t("donate_to_support") }}
@@ -79,7 +79,7 @@
         <div class="mb-6 text-center">
           <UIcon
             name="i-heroicons-heart"
-            class="text-red-500 text-4xl mb-3 mx-auto"
+            class="text-red-500 text-2xl mb-3 mx-auto"
           />
           <h3 class="text-xl font-semibold mb-2">
             {{ $t("our_generous_donors") }}

@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-xl md:text-4xl my-4">
+    <h1 class="text-center text-xl md:text-2xl my-4">
       {{ $t("deposit_withdraw") }}
     </h1>
     <UContainer>
@@ -424,7 +424,7 @@
       </div>
 
       <h3
-        class="text-center text-lg md:text-3xl font-semibold mt-8"
+        class="text-center text-lg md:text-2xl font-semibold mt-8"
         v-if="statements?.length || receivedTransactions?.length"
       >
         {{ $t("transaction_history") }}

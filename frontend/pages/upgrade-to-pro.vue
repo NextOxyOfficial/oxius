@@ -7,7 +7,7 @@
         <!-- Section Header -->
         <div class="text-center mb-12">
           <h2
-            class="text-3xl font-semibold text-slate-700 dark:text-white md:text-4xl"
+            class="text-2xl font-semibold text-slate-700 dark:text-white md:text-2xl"
           >
             Choose Your <span class="text-sky-500 dark:text-sky-400">Plan</span>
           </h2>
@@ -48,7 +48,7 @@
               </h3>
 
               <div class="mt-4 flex items-baseline">
-                <span class="text-4xl font-semibold text-slate-700 dark:text-white"
+                <span class="text-2xl font-semibold text-slate-700 dark:text-white"
                   >৳ 0</span
                 >
                 <span class="ml-2 text-sm text-slate-500 dark:text-slate-400"
@@ -328,13 +328,13 @@
               <div class="flex items-center gap-3">
                 <div class="mt-4 flex items-baseline">
                   <span
-                    class="text-4xl font-semibold text-white line-through decoration-slate-900"
+                    class="text-2xl font-semibold text-white line-through decoration-slate-900"
                     >৳ 399</span
                   >
                   <span class="ml-2 text-sm text-sky-100">/Month</span>
                 </div>
                 <div class="mt-4 flex items-baseline">
-                  <span class="text-4xl font-semibold text-white">৳ 149</span>
+                  <span class="text-2xl font-semibold text-white">৳ 149</span>
                   <span class="ml-2 text-sm text-sky-100">/Month</span>
                 </div>
               </div>

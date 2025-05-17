@@ -65,7 +65,7 @@
       <!-- Page Header -->
       <div class="mb-8 text-center">
         <h1
-          class="text-3xl font-semibold text-indigo-600 dark:text-indigo-400 mb-2"
+          class="text-2xl font-semibold text-indigo-600 dark:text-indigo-400 mb-2"
         >
           Create Your Store
         </h1>

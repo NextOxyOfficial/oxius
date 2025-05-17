@@ -1,7 +1,7 @@
 <template>
   <UContainer>
     <div class="flex flex-col gap-4 py-12">
-      <h1 class="text-center text-4xl font-semibold my-8 text-primary-800 relative">
+      <h1 class="text-center text-2xl font-semibold my-8 text-primary-800 relative">
         <span class="relative z-10">Frequently Asked Questions</span>
         <span
           class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-2 bg-primary-300 w-40 rounded-full opacity-70"

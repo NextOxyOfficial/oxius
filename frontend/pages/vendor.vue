@@ -135,7 +135,7 @@
               
               <!-- Logo Text Fallback -->
               <div class="absolute inset-0 flex items-center justify-center text-white font-semibold text-xl">
-                <span v-if="!logoImage" class="text-3xl tracking-tight">TP</span>
+                <span v-if="!logoImage" class="text-2xl tracking-tight">TP</span>
               </div>
               
               <!-- Logo Image -->
@@ -165,7 +165,7 @@
             
             <!-- Vendor Info with Animated Underline -->
             <div class="flex-1 text-center md:text-left">
-              <h1 class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight relative inline-block">
+              <h1 class="text-2xl md:text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight relative inline-block">
                 TechVendor Pro
                 <span class="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-slate-400 to-transparent transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
               </h1>
@@ -432,7 +432,7 @@
           <!-- CTA Content -->
           <div class="relative p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="text-center md:text-left transform transition-all duration-500 md:hover:translate-x-2">
-              <h2 class="text-xl md:text-3xl font-semibold text-white mb-3 tracking-tight">
+              <h2 class="text-xl md:text-2xl font-semibold text-white mb-3 tracking-tight">
                 Ready to explore our products?
               </h2>
               <p class="text-slate-300">

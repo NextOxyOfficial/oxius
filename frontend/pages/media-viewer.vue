@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-4xl my-8">Image / Video</h1>
+    <h1 class="text-center text-2xl my-8">Image / Video</h1>
     <UContainer>
       <UCard>
         <NuxtImg

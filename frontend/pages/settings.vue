@@ -5,7 +5,7 @@
         <!-- Header Section -->
         <div class="text-center mb-10">
           <h1
-            class="text-4xl font-semibold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent mb-3"
+            class="text-2xl font-semibold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent mb-3"
           >
             {{ $t("settings") }}
           </h1>

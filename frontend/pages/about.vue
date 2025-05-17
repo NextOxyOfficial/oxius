@@ -1,7 +1,7 @@
 <template>
   <UContainer>
     <div class="flex flex-col gap-4 py-12">
-      <h1 class="text-center text-4xl my-8">About Us</h1>
+      <h1 class="text-center text-2xl my-8">About Us</h1>
       <UDivider label="" class="mb-8" />
       <div>
         <p class="text-xl font-semibold">Introduction</p>
@@ -26,7 +26,7 @@
           experience for everyone involved.
         </p>
       </div>
-      <p class="text-3xl font-semibold">What We Offer</p>
+      <p class="text-2xl font-semibold">What We Offer</p>
       <div>
         <p class="text-xl font-semibold">User-Friendly Platform</p>
         <p>

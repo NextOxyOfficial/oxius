@@ -180,7 +180,7 @@
           <div class="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl mb-4">
             <div class="flex items-end gap-3">
               <span
-                class="text-3xl font-semibold text-primary-600 dark:text-primary-400"
+                class="text-2xl font-semibold text-primary-600 dark:text-primary-400"
               >
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </span>

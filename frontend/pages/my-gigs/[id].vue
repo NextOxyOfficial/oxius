@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <h1 class="text-center text-4xl my-8">My Gigs</h1>
+    <h1 class="text-center text-2xl my-8">My Gigs</h1>
     <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
     <UContainer v-if="gigs && gigs.length">
       <UCard

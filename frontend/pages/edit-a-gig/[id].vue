@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
     <UContainer>
-      <h1 class="text-center text-4xl my-8">Post A Gig</h1>
+      <h1 class="text-center text-2xl my-8">Post A Gig</h1>
       <UDivider label="" class="mb-8" />
       <form
         action="#"

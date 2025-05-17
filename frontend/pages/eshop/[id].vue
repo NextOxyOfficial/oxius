@@ -194,7 +194,7 @@
                 >
                   <span
                     v-if="!storeDetails?.store_logo"
-                    class="text-3xl tracking-tight"
+                    class="text-2xl tracking-tight"
                     >{{
                       getInitials(storeDetails?.store_name || "Store")
                     }}</span
@@ -236,7 +236,7 @@
               <!-- Store Info with Animated Underline -->
               <div class="flex-1 text-center md:text-left">
                 <h1
-                  class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight relative inline-block"
+                  class="text-2xl md:text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight relative inline-block"
                 >
                   {{ storeDetails?.store_name || "Store Name" }}
                   <span
@@ -657,7 +657,7 @@
               class="text-center md:text-left transform transition-all duration-500 md:hover:translate-x-2"
             >
               <h2
-                class="text-xl md:text-3xl font-semibold text-white mb-3 tracking-tight"
+                class="text-xl md:text-2xl font-semibold text-white mb-3 tracking-tight"
               >
                 Ready to explore our products?
               </h2>

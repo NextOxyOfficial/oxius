@@ -17,7 +17,7 @@
             class="text-base font-semibold leading-6 text-gray-900 dark:text-white mb-4 flex gap-3"
           >
             <div class="w-8">
-              <UIcon name="i-unjs:giget" class="text-3xl mt-1.5" />
+              <UIcon name="i-unjs:giget" class="text-2xl mt-1.5" />
             </div>
             <span class="text-xl flex-1">
               {{ gig.title }}

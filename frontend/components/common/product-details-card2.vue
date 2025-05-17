@@ -43,7 +43,7 @@
             >
               {{ currentProduct.category_details?.name || "Premium Product" }}
             </span>
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-semibold mb-4">
+            <h1 class="text-2xl md:text-2xl lg:text-2xl font-semibold mb-4">
               {{ currentProduct.name }}
             </h1>
             <div class="flex items-center mb-4">
@@ -68,7 +68,7 @@
 
             <!-- Price Section -->
             <div class="flex items-baseline mb-8">
-              <span class="text-4xl font-semibold text-white">
+              <span class="text-2xl font-semibold text-white">
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </span>
               <span
@@ -210,7 +210,7 @@
 
     <!-- Key Benefits Section -->
     <section class="py-2 w-full">
-      <h2 class="text-xl md:text-3xl font-semibold text-center mb-12">
+      <h2 class="text-xl md:text-2xl font-semibold text-center mb-12">
         {{ currentProduct.benefits_title }}
         <span class="text-primary-600 dark:text-primary-400">{{
           currentProduct.name
@@ -249,7 +249,7 @@
       class="pt-10 pb-2 bg-slate-50 dark:bg-slate-800/30 rounded-xl w-full"
     >
       <div class="w-full px-6">
-        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
+        <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           Shipping Information
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-6">
@@ -355,7 +355,7 @@
     <!-- Customer Reviews Section -->
     <section class="pb-2 pt-10 w-full customer-reviews-section">
       <div class="w-full px-3">
-        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
+        <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           Customer Reviews
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
@@ -372,7 +372,7 @@
               class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
             >
               <div
-                class="text-5xl font-semibold text-slate-800 dark:text-white mb-2"
+                class="text-2xl font-semibold text-slate-800 dark:text-white mb-2"
               >
                 {{ averageRating }}
               </div>
@@ -610,7 +610,7 @@
     <!-- FAQ Section -->
     <section class="py-2 w-full">
       <div class="w-full px-3 max-w-4xl mx-auto">
-        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
+        <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           {{ currentProduct.faqs_title }}
         </h2>
         <p class="text-center text-slate-600 dark:text-slate-300 mb-12">
@@ -628,7 +628,7 @@
       class="py-2 bg-gradient-to-br from-primary-600 to-primary-800 text-white rounded-xl my-6 w-full"
     >
       <div class="px-6 py-8 text-center w-full">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-6">
+        <h2 class="text-2xl md:text-2xl font-semibold mb-6">
           {{ currentProduct.cta_title }}
         </h2>
         <p class="text-white/80 mb-8 text-lg max-w-3xl mx-auto">
@@ -651,10 +651,10 @@
                 }}
               </div>
             </div>
-            <div class="text-4xl font-semibold">→</div>
+            <div class="text-2xl font-semibold">→</div>
             <div class="text-center">
               <div class="text-white/90 text-lg">Special Offer:</div>
-              <div class="text-4xl font-semibold">
+              <div class="text-2xl font-semibold">
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </div>
             </div>

@@ -482,7 +482,7 @@
               >
                 <Icon
                   name="heroicons:photo"
-                  class="text-gray-400 text-3xl mb-2 group-hover:text-primary transition-colors"
+                  class="text-gray-400 text-2xl mb-2 group-hover:text-primary transition-colors"
                 />
                 <div
                   class="text-sm text-gray-500 group-hover:text-primary transition-colors"

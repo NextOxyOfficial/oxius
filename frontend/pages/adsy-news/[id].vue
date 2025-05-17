@@ -40,7 +40,7 @@
               {{ calculateReadTime(article.content) }} min read
             </span>
           </div>
-          <h1 class="text-xl sm:text-3xl font-semibold mb-4 leading-tight">
+          <h1 class="text-xl sm:text-2xl font-semibold mb-4 leading-tight">
             {{ article.title }}
           </h1>
         </div>

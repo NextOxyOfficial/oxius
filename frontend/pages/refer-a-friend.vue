@@ -15,7 +15,7 @@
         <!-- Centered Header -->
         <div class="text-center mb-12 animate-fade-in">
           <h1
-            class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white mb-2"
+            class="text-2xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-2"
           >
             {{ $t("refer_friend") }}
           </h1>
@@ -110,7 +110,7 @@
                 Total Referred Users
               </h3>
               <div
-                class="text-3xl font-semibold text-gray-900 dark:text-white flex items-center"
+                class="text-2xl font-semibold text-gray-900 dark:text-white flex items-center"
               >
                 <span class="counter-animate" data-value="87">
                   {{ user.user.refer_count }}
@@ -138,7 +138,7 @@
                 Total Earnings
               </h3>
               <div
-                class="text-3xl font-semibold text-gray-900 dark:text-white flex items-center"
+                class="text-2xl font-semibold text-gray-900 dark:text-white flex items-center"
               >
                 <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
                 <span class="counter-animate" data-value="2450">
@@ -297,7 +297,7 @@
                             >
                               <UIcon
                                 name="i-heroicons-banknotes"
-                                class="text-3xl text-gray-400 dark:text-gray-500"
+                                class="text-2xl text-gray-400 dark:text-gray-500"
                               />
                             </div>
                             <p>No earnings history to display yet.</p>
@@ -425,7 +425,7 @@
                             >
                               <UIcon
                                 name="i-heroicons-users"
-                                class="text-3xl text-gray-400 dark:text-gray-500"
+                                class="text-2xl text-gray-400 dark:text-gray-500"
                               />
                             </div>
                             <p>You haven't referred any users yet.</p>
@@ -502,7 +502,7 @@
             Invite Friends & Earn Together
           </div>
           <h1
-            class="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 text-gray-900 dark:text-white tracking-tight animate-fade-in"
+            class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-900 dark:text-white tracking-tight animate-fade-in"
           >
             Get
             <span class="text-primary-600 dark:text-primary-400"
@@ -548,7 +548,7 @@
         <div id="how-it-works" class="max-w-6xl mx-auto mb-20 scroll-mt-20">
           <div class="text-center mb-12">
             <h2
-              class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white mb-4"
+              class="text-2xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-4"
             >
               How It Works
             </h2>
@@ -642,7 +642,7 @@
               class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
-                class="text-3xl md:text-4xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
               >
                 5%
               </div>
@@ -655,7 +655,7 @@
               class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
-                class="text-3xl md:text-4xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
               >
                 500+
               </div>
@@ -668,7 +668,7 @@
               class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
-                class="text-3xl md:text-4xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
               >
                 ৳ 10,000
               </div>
@@ -681,7 +681,7 @@
               class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
             >
               <div
-                class="text-3xl md:text-4xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
               >
                 24hr
               </div>
@@ -697,7 +697,7 @@
           <div
             class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-8 md:p-12 shadow-sm cta-section"
           >
-            <h2 class="text-xl md:text-3xl font-semibold text-white mb-4">
+            <h2 class="text-xl md:text-2xl font-semibold text-white mb-4">
               Ready to Start Earning?
             </h2>
             <p class="text-white/90 mb-8 max-w-2xl mx-auto">

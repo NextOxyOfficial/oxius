@@ -31,7 +31,7 @@
         Click text to edit
       </div>
 
-      <h2 class="text-xl md:text-3xl font-semibold text-center mb-12">
+      <h2 class="text-xl md:text-2xl font-semibold text-center mb-12">
         <span v-if="!editModeActive">
           {{ editorData.benefits_title || `Why Choose?` }}
         </span>
@@ -289,7 +289,7 @@
       </div>
 
       <div class="w-full px-1 max-w-4xl mx-auto">
-        <h2 class="text-xl md:text-3xl font-semibold text-center mb-4">
+        <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           <span v-if="!editModeActive">{{
             editorData.faqs_title || "Frequently Asked Questions"
           }}</span>
@@ -408,7 +408,7 @@
       </div>
 
       <div class="px-6 py-8 text-center w-full">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-6">
+        <h2 class="text-2xl md:text-2xl font-semibold mb-6">
           <span v-if="!editModeActive">{{
             editorData.cta_title || "Ready to Experience the Difference?"
           }}</span>
@@ -465,10 +465,10 @@
                 }}
               </div>
             </div>
-            <div class="text-4xl font-semibold">→</div>
+            <div class="text-2xl font-semibold">→</div>
             <div class="text-center">
               <div class="text-white/90 text-lg">Special Offer:</div>
-              <div class="text-4xl font-semibold">
+              <div class="text-2xl font-semibold">
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </div>
             </div>

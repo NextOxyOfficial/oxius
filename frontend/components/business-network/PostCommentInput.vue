@@ -135,7 +135,7 @@
                 </div>
                 <div class="flex items-center justify-center">
                   <span
-                    class="text-3xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400"
+                    class="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400"
                     >{{ user.user.diamond_balance }}</span
                   >
                   <UIcon

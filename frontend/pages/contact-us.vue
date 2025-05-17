@@ -4,7 +4,7 @@
     <div class="bg-slate-900 py-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
-          <h1 class="text-4xl md:text-5xl font-semibold text-white mb-4">
+          <h1 class="text-2xl md:text-5xl font-semibold text-white mb-4">
             {{ $t("customer_support") }}
           </h1>
           <a

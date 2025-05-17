@@ -6,7 +6,7 @@
       <!-- Animated Header -->
       <div class="text-center mb-12">
         <h1
-          class="animate-fade-in-up text-xl md:text-3xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
+          class="animate-fade-in-up text-xl md:text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400 mb-4"
         >
           {{ $t("upload_center") }}
         </h1>
@@ -143,7 +143,7 @@
             <div
               class="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center mb-4 animate-pulse"
             >
-              <UIcon name="i-heroicons-clock" class="text-3xl text-amber-500" />
+              <UIcon name="i-heroicons-clock" class="text-2xl text-amber-500" />
             </div>
             <h3
               class="text-xl font-semibold text-amber-800 dark:text-amber-300 mb-2"

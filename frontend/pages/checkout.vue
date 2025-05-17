@@ -42,7 +42,7 @@
                 enter-to-class="opacity-100 translate-y-0"
               >
                 <div>
-                  <h1 class="text-3xl font-semibold text-white">Checkout</h1>
+                  <h1 class="text-2xl font-semibold text-white">Checkout</h1>
                   <p class="text-purple-100 mt-2">
                     Complete your purchase to experience premium quality
                   </p>

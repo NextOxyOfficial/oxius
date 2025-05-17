@@ -246,7 +246,7 @@
           <div class="relative">
             <UIcon
               :name="link.icon"
-              class="text-3xl"
+              class="text-2xl"
               :class="isActive ? `text-green-600` : `text-green-400`"
             />
             <!-- Notification badge for business network icon -->
@@ -295,7 +295,7 @@
           <UIcon
             v-if="link.to === '/'"
             :name="link.icon"
-            class="text-3xl"
+            class="text-2xl"
             :class="isActive ? `text-green-600` : `text-green-400`"
           />
           <UIcon

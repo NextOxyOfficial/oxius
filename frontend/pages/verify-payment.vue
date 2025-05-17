@@ -6,14 +6,14 @@
           <div v-if="!showError" class="text-center">
             <UIcon
               name="i-material-symbols:check-circle-outline-rounded"
-              class="text-3xl md:text-6xl text-green-500"
+              class="text-2xl md:text-6xl text-green-500"
             />
             <p class="font-semibold">Payment Successful!</p>
           </div>
           <div class="text-center" v-else>
             <UIcon
               name="i-gridicons:cross"
-              class="text-3xl md:text-6xl text-red-500"
+              class="text-2xl md:text-6xl text-red-500"
             />
             <p class="font-semibold">Payment Unsuccessful!</p>
           </div>
