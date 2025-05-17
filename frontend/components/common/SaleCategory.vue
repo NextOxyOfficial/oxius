@@ -174,7 +174,7 @@
                           v-if="category.icon"
                           :src="getImageUrl(category.icon)"
                           :alt="category.name"
-                          class="size-9 object-contain"
+                          class="size-8 object-contain"
                         />
                         <Icon
                           v-else
