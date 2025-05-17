@@ -291,7 +291,6 @@
                 <button
                   class="relative overflow-hidden rounded-full bg-gradient-to-r from-slate-800 to-slate-700 shadow-sm hover:shadow-sm hover:scale-105 transform text-white px-5 py-2.5 font-medium group/btn transition-all duration-300"
                 >
-                  <span class="relative z-10">Follow</span>
                   <span
                     class="absolute inset-0 bg-gradient-to-r from-slate-700 to-slate-600 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"
                   ></span>
