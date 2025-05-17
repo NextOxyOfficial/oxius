@@ -17,7 +17,7 @@
             My Posts
           </button>
           <button
-            class="post-sale-btn bg-primary hover:bg-primary/90 text-white rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
+            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
             @click="openPostSaleModal"
           >
             <Icon name="heroicons:plus-circle" size="16px" />
@@ -182,7 +182,7 @@
                           size="22px"
                         />
                       </div>
-                      <span class="category-name font-medium text-base">{{
+                      <span class="category-name font-medium text-sm">{{
                         category.name
                       }}</span>
                     </div>
@@ -212,7 +212,8 @@
           </div>
           <NuxtLink
             :to="`/sale/for-sale?category=${selectedCategory}`"
-            class="view-all-btn bg-primary hover:bg-primary/90 text-white rounded-md px-3 py-1 text-sm flex items-center gap-1"
+            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
+
           >
             View All <Icon name="heroicons:arrow-right" size="14px" />
           </NuxtLink>
