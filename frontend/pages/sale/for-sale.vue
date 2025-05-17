@@ -146,58 +146,6 @@
             }"
           />
         </UButtonGroup>
-        <div
-          class="flex flex-col md:flex-row justify-between md:items-end gap-1.5 sm:gap-4"
-        >
-          <UFormGroup class="md:w-1/4" v-if="searchLocationOption">
-            <USelectMenu
-              v-model="form.state"
-              color="white"
-              size="md"
-              :options="regions"
-              placeholder="State"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="name_eng"
-              value-attribute="name_eng"
-            />
-          </UFormGroup>
-          <UFormGroup class="md:w-1/4" v-if="searchLocationOption">
-            <USelectMenu
-              v-model="form.city"
-              color="white"
-              size="md"
-              :options="cities"
-              placeholder="City"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="name_eng"
-              value-attribute="name_eng"
-            />
-          </UFormGroup>
-          <UFormGroup class="md:w-1/4" v-if="searchLocationOption">
-            <USelectMenu
-              v-model="form.upazila"
-              color="white"
-              size="md"
-              :options="upazilas"
-              placeholder="Thana"
-              :ui="{
-                size: {
-                  md: 'text-base',
-                },
-              }"
-              option-attribute="name_eng"
-              value-attribute="name_eng"
-            />
-          </UFormGroup>
-        </div>
       </UContainer>
     </div>
     <UContainer class="py-6">
