@@ -426,7 +426,7 @@
               class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             >
               <NuxtLink
-                v-for="(post, i) in paginatedCategoryPosts"
+                v-for="(post, i) in categoryPosts"
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
@@ -465,53 +465,12 @@
                   </div>
                 </div>
               </NuxtLink>
-            </div>
-
-            <!-- Pagination Controls -->
-            <div v-if="categoryPageCount > 1" class="flex justify-center mt-6">
-              <UPagination
-                v-model="categoryCurrentPage"
-                :page-count="categoryPageCount"
-                :ui="{
-                  wrapper: 'flex items-center gap-1',
-                  rounded: 'rounded-md',
-                }"
-                size="md"
-              />
-            </div>
+            </div>            <!-- Pagination Controls Removed -->
           </div>
 
-          <!-- Sponsored Banner -->
-          <div class="mb-6 rounded-lg shadow-sm overflow-hidden">
-            <div class="relative">
-              <img
-                src="https://picsum.photos/1200/200?ad=sponsored"
-                alt="Sponsored Banner"
-                class="w-full h-32 sm:h-40 object-cover"
-              />
-              <div
-                class="absolute top-0 left-0 bg-amber-500 text-white text-xs px-2 py-0.5"
-              >
-                Sponsored
-              </div>
-              <div
-                class="absolute inset-0 flex items-center justify-center bg-black/20"
-              >
-                <div
-                  class="bg-white/90 px-4 py-3 rounded-lg shadow text-center"
-                >
-                  <h3 class="text-lg font-semibold text-gray-800">
-                    Premium Listing Promotion
-                  </h3>
-                  <p class="text-gray-600">
-                    Get 50% off on featured listings this week!
-                  </p>
-                  <UButton color="primary" size="sm" class="mt-2">
-                    Learn More
-                  </UButton>
-                </div>
-              </div>
-            </div>
+          <!-- Sponsored Banner -->          <!-- Sponsored Banner - Will be replaced with dynamic data from API -->
+          <div v-if="false" class="mb-6 rounded-lg shadow-sm overflow-hidden">
+            <!-- Banner content will be loaded from API -->
           </div>
 
           <!-- Recent Listings Section -->
@@ -630,24 +589,7 @@
               We couldn't find any listings matching your criteria. Try
               adjusting your filters or search terms.
             </p>
-          </div>
-
-          <!-- Pagination -->
-          <div
-            v-if="!loading && totalPages > 1"
-            class="mt-6 flex justify-center"
-          >
-            <UPagination
-              v-model="currentPage"
-              :page-count="totalPages"
-              :total="totalListings"
-              :ui="{
-                wrapper: 'flex items-center gap-1',
-                rounded: 'rounded-md',
-              }"
-              @update:model-value="onPageChange"
-            />
-          </div>
+          </div>          <!-- Pagination Removed -->
 
           <!-- Buyer Tips & Safety Guide -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -798,6 +740,17 @@ import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 import { useApi } from "~/composables/useApi";
 import SaleSidebar from "~/components/sale/SaleSidebar.vue";
 
+// API endpoints
+const API_ENDPOINTS = {
+  CATEGORIES: '/api/sale/categories',
+  SUBCATEGORIES: '/api/sale/subcategories',
+  LISTINGS: '/api/sale/listings',
+  DIVISIONS: '/api/geo/divisions',
+  DISTRICTS: '/api/geo/districts',
+  AREAS: '/api/geo/areas',
+  POSTS: '/sale/posts'
+};
+
 const location = useCookie("location");
 const { t } = useI18n();
 
@@ -825,6 +778,22 @@ function toggleMobileSidebar() {
   isMobileFilterOpen.value = !isMobileFilterOpen.value;
 }
 
+// Function to clear location and reload page
+function clearLocation() {
+  location.value = null;
+  window.location.reload();
+}
+
+// Function to handle search form submission
+function filterSearch() {
+  isLoading.value = true;
+  searchQuery.value = form.value.title || '';
+  
+  // Apply the search query filter
+  loadPosts(1);
+  isLoading.value = false;
+}
+
 const searchQuery = ref("");
 const totalListings = ref(0); // Added to match template usage
 const categories = ref([]);
@@ -835,8 +804,7 @@ const selectedDistrict = ref(""); // Added for location selection
 const selectedArea = ref(""); // Added for location selection
 const selectedCondition = ref(""); // Added to match template usage
 const sortOption = ref("newest"); // Added to match template usage
-const currentPage = ref(1);
-const perPage = ref(20);
+// Pagination variables removed
 const categoryCountsMap = ref({});
 const expandedCategories = ref({});
 
@@ -884,121 +852,53 @@ const hasActiveFilters = computed(() => {
   );
 });
 
-// Computed property for total pages
-const totalPages = computed(() => {
-  return Math.ceil(totalListings.value / perPage.value);
-});
+// Pagination computed properties removed
 
-// Location variables
-const divisions = ref([
-  "Dhaka",
-  "Chittagong",
-  "Khulna",
-  "Rajshahi",
-  "Barisal",
-  "Sylhet",
-  "Rangpur",
-  "Mymensingh",
-]);
+// Location variables - to be loaded from API
+const divisions = ref([]);
+const districtsByDivision = ref({});
+const areasByDistrict = ref({});
+const regions = ref([]); // Added to match template reference
+const searchLocationOption = ref(true); // Show location selector by default
 
-// Districts by division
-const districtsByDivision = {
-  Dhaka: [
-    "Dhaka",
-    "Gazipur",
-    "Narayanganj",
-    "Tangail",
-    "Narsingdi",
-    "Munshiganj",
-    "Manikganj",
-  ],
-  Chittagong: [
-    "Chittagong",
-    "Cox's Bazar",
-    "Comilla",
-    "Chandpur",
-    "Noakhali",
-    "Feni",
-  ],
-  Khulna: [
-    "Khulna Sadar",
-    "Sonadanga",
-    "Khalishpur",
-    "Daulatpur",
-    "Rupsha",
-    "Khan Jahan Ali",
-  ],
-  Rajshahi: ["Rajshahi Sadar", "Boalia", "Motihar", "Shah Makhdum", "Paba"],
-  Gazipur: [
-    "Gazipur Sadar",
-    "Tongi",
-    "Sreepur",
-    "Kaliganj",
-    "Kaliakair",
-    "Kapasia",
-  ],
-  Narayanganj: [
-    "Narayanganj Sadar",
-    "Rupganj",
-    "Araihazar",
-    "Sonargaon",
-    "Bandar",
-  ],
-};
+// Location data for search filters
+const cities = ref([]);
+const upazilas = ref([]);
 
-// Areas by district
-const areasByDistrict = {
-  Dhaka: [
-    "Uttara",
-    "Mirpur",
-    "Dhanmondi",
-    "Gulshan",
-    "Mohammadpur",
-    "Bashundhara",
-    "Banani",
-    "Motijheel",
-    "Khilgaon",
-    "Rampura",
-  ],
-  Chittagong: [
-    "Agrabad",
-    "Pahartali",
-    "Nasirabad",
-    "Halishahar",
-    "GEC",
-    "Chawkbazar",
-    "Patenga",
-    "Khulshi",
-  ],
-  Khulna: [
-    "Khulna Sadar",
-    "Sonadanga",
-    "Khalishpur",
-    "Daulatpur",
-    "Rupsha",
-    "Khan Jahan Ali",
-  ],
-  Rajshahi: ["Rajshahi Sadar", "Boalia", "Motihar", "Shah Makhdum", "Paba"],
-  Gazipur: [
-    "Gazipur Sadar",
-    "Tongi",
-    "Sreepur",
-    "Kaliganj",
-    "Kaliakair",
-    "Kapasia",
-  ],
-  Narayanganj: [
-    "Narayanganj Sadar",
-    "Rupganj",
-    "Araihazar",
-    "Sonargaon",
-    "Bandar",
-  ],
-};
-function clearLocation() {
-  location.value = null;
-  window.location.reload();
+// Function to load location data from API
+async function loadLocationData() {
+  try {
+    // Load regions (divisions)
+    const divisionsResponse = await get(API_ENDPOINTS.DIVISIONS);
+    if (divisionsResponse?.data && Array.isArray(divisionsResponse.data)) {
+      divisions.value = divisionsResponse.data;
+      regions.value = divisionsResponse.data; // Populate regions with divisions data for backward compatibility
+    }
+
+    // If we have a selected division, load its districts
+    if (selectedDivision.value) {
+      const districtsResponse = await get(`${API_ENDPOINTS.DISTRICTS}?division=${selectedDivision.value}`);
+      if (districtsResponse?.data && Array.isArray(districtsResponse.data)) {
+        districtsByDivision.value[selectedDivision.value] = districtsResponse.data;
+        cities.value = districtsResponse.data; // Set cities for current UI
+      }
+    }
+
+    // If we have a selected district, load its areas
+    if (selectedDistrict.value) {
+      const areasResponse = await get(`${API_ENDPOINTS.AREAS}?district=${selectedDistrict.value}`);
+      if (areasResponse?.data && Array.isArray(areasResponse.data)) {
+        areasByDistrict.value[selectedDistrict.value] = areasResponse.data;
+        upazilas.value = areasResponse.data; // Set upazilas for current UI
+      }
+    }
+  } catch (error) {
+    console.error('Error loading location data:', error);
+  }
 }
+
+
+
 // Computed properties for location options
 const districtOptions = computed(() => {
   return selectedDivision.value
@@ -1016,7 +916,7 @@ const areaOptions = computed(() => {
 async function fetchCategories() {
   try {
     // Use a more generic path that's likely to work
-    const response = await get("/api/sale/categories");
+    const response = await get(API_ENDPOINTS.CATEGORIES);
 
     if (response && Array.isArray(response.data)) {
       categories.value = response.data.map((category) => ({
@@ -1040,47 +940,28 @@ async function fetchCategories() {
         name: category.name || `Category ${index + 1}`,
         slug: category.slug || `category-${index + 1}`,
         count: category.post_count || 0,
-      }));
-    } else {
-      categories.value = generateDefaultCategories();
+      }));    } else {
+      categories.value = [];
     }
 
     console.log("Categories loaded:", categories.value);
   } catch (error) {
     console.error("Error fetching categories:", error);
-    categories.value = generateDefaultCategories();
+    categories.value = [];
   }
 }
 
-// Generate default categories with counts to ensure we have data
-function generateDefaultCategories() {
-  console.log("Using default categories");
-  const defaultCategories = [
-    { id: 1, name: "Properties", icon: "home", count: 45 },
-    { id: 2, name: "Vehicles", icon: "car", count: 32 },
-    { id: 3, name: "Electronics", icon: "device-mobile", count: 27 },
-    { id: 4, name: "Sports", icon: "basketball", count: 18 },
-    { id: 5, name: "B2B", icon: "building-office", count: 12 },
-    { id: 6, name: "Others", icon: "inbox", count: 24 },
-  ];
-
-  defaultCategories.forEach((category) => {
-    categoryCountsMap.value[category.id] = category.count || 0;
-  });
-
-  return defaultCategories;
+// Function to handle empty or failed category responses
+function handleEmptyCategories() {
+  console.log("No categories available");
+  return [];
 }
 
 // Load posts based on current filters - modify the API path and add fallback data
-async function loadPosts(page = 1) {
-  loading.value = true;
-  currentPage.value = page;
+async function loadPosts(page = 1) {  loading.value = true;
 
-  try {
-    // Build query parameters
+  try {    // Build query parameters
     const params = new URLSearchParams();
-    params.append("page", page.toString());
-    params.append("page_size", perPage.value.toString());
 
     // Add filters
     if (selectedCategory.value)
@@ -1113,14 +994,14 @@ async function loadPosts(page = 1) {
     // Try different API paths to increase chances of success
     let response;
     try {
-      response = await get(`/api/sale/listings?${params.toString()}`);
+      response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
     } catch (firstError) {
       console.log("First API path failed, trying alternative");
       try {
-        response = await get(`/api/listings?${params.toString()}`);
+        response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
       } catch (secondError) {
         console.log("Second API path failed, trying last alternative");
-        response = await get(`/listings?${params.toString()}`);
+        response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
       }
     }
 
@@ -1137,78 +1018,19 @@ async function loadPosts(page = 1) {
     } else {
       listings.value = [];
       totalListings.value = 0;
-    }
-  } catch (error) {
+    }  } catch (error) {
     console.error("Error loading listings:", error);
-    // Use fallback data to ensure UI has something to display
-    listings.value = generateMockListings(10);
-    totalListings.value = listings.value?.length;
+    listings.value = [];
+    totalListings.value = 0;
   } finally {
     loading.value = false;
   }
 }
 
-// Generate mock listings for fallback
-function generateMockListings(count = 10, recent = false) {
-  console.log("Generating mock listings");
-  const mockListings = [];
-  const categories = [1, 2, 3, 4, 5, 6];
-  const statuses = ["active", "sold"];
-  const conditions = ["new", "like-new", "good", "fair", "poor"];
-  const districts = ["Dhaka", "Chittagong", "Rajshahi", "Khulna"];
-  const areas = ["Uttara", "Gulshan", "Mirpur", "Dhanmondi", "Banani"];
-
-  for (let i = 1; i <= count; i++) {
-    const categoryId =
-      categories[Math.floor(Math.random() * categories?.length)];
-    const createdDate = recent
-      ? new Date(
-          Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000
-        ) // Last 7 days for recent listings
-      : new Date(
-          Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
-        );
-
-    mockListings.push({
-      id: i,
-      title: `Sample Listing ${i} - ${getCategoryName(categoryId)}` || "",
-      slug: `sample-listing-${i}`,
-      price: Math.floor(Math.random() * 900000) + 100000,
-      negotiable: Math.random() > 0.5,
-      description: "This is a sample listing description.",
-      category: categoryId,
-      condition: conditions[Math.floor(Math.random() * conditions?.length)],
-      status: statuses[Math.floor(Math.random() * statuses?.length)],
-      featured: Math.random() > 0.8,
-      created_at: createdDate.toISOString(),
-      main_image: `https://picsum.photos/600/400?random=${i}`,
-      images: [`https://picsum.photos/600/400?random=${i}`],
-      district: districts[Math.floor(Math.random() * districts?.length)],
-      area: areas[Math.floor(Math.random() * areas?.length)],
-      bedrooms:
-        categoryId === 1 ? Math.floor(Math.random() * 5) + 1 : undefined,
-      size:
-        categoryId === 1 ? Math.floor(Math.random() * 2000) + 500 : undefined,
-      make:
-        categoryId === 2
-          ? ["Toyota", "Honda", "BMW", "Mercedes"][
-              Math.floor(Math.random() * 4)
-            ]
-          : undefined,
-      model:
-        categoryId === 2
-          ? `Model ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`
-          : undefined,
-      year:
-        categoryId === 2 ? 2010 + Math.floor(Math.random() * 13) : undefined,
-      brand:
-        categoryId === 3
-          ? ["Apple", "Samsung", "Sony", "LG"][Math.floor(Math.random() * 4)]
-          : undefined,
-    });
-  }
-
-  return mockListings;
+// Function to handle empty or failed listings responses
+function handleEmptyListings() {
+  console.log("No listings available");
+  return [];
 }
 
 // Map listing data to a consistent format
@@ -1254,16 +1076,12 @@ function getCategoryName(categoryId) {
   return category ? category.name : "";
 }
 
+// Get category icon from category data or use default
 function getCategoryIcon(categoryId) {
-  const iconMapping = {
-    1: "i-heroicons-home",
-    2: "i-heroicons-truck",
-    3: "i-heroicons-device-phone-mobile",
-    4: "i-heroicons-trophy",
-    5: "i-heroicons-building-office-2",
-    6: "i-heroicons-square-3-stack-3d",
-  };
-  return iconMapping[categoryId] || "i-heroicons-squares-2x2";
+  const category = categories.value.find(c => c.id === parseInt(categoryId));
+  return category && category.icon 
+    ? `i-heroicons-${category.icon}` 
+    : "i-heroicons-squares-2x2";
 }
 
 function getCategoryCount(categoryId) {
@@ -1339,27 +1157,18 @@ function hasSubcategories(categoryId) {
   return categoryId === 1 || categoryId === 2 || categoryId === 3;
 }
 
-function getSubcategories(categoryId) {
-  // Sample subcategories - would be replaced with API data
-  const subcategoryMap = {
-    1: [
-      { id: "1-1", name: "Apartments", count: 23 },
-      { id: "1-2", name: "Houses", count: 15 },
-      { id: "1-3", name: "Land", count: 7 },
-    ],
-    2: [
-      { id: "2-1", name: "Cars", count: 18 },
-      { id: "2-2", name: "Motorcycles", count: 9 },
-      { id: "2-3", name: "Commercial", count: 5 },
-    ],
-    3: [
-      { id: "3-1", name: "Phones", count: 14 },
-      { id: "3-2", name: "Computers", count: 8 },
-      { id: "3-3", name: "TVs", count: 5 },
-    ],
-  };
-
-  return subcategoryMap[categoryId] || [];
+async function getSubcategories(categoryId) {
+  // This should be replaced with an API call
+  try {
+    const response = await get(`${API_ENDPOINTS.SUBCATEGORIES}/${categoryId}`);
+    if (response && response.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+  } catch (error) {
+    console.error(`Error fetching subcategories for category ${categoryId}:`, error);
+  }
+  
+  return [];
 }
 
 function toggleSubcategories(categoryId) {
@@ -1488,31 +1297,30 @@ async function loadCategoryPosts() {
 
     let response;
     try {
-      response = await get(`/sale/posts/`);
+      response = await get(API_ENDPOINTS.POSTS);
     } catch (firstError) {
       console.log("First category API path failed, trying alternative");
       try {
-        response = await get(`/sale/posts/`);
+        response = await get(API_ENDPOINTS.POSTS);
       } catch (secondError) {
         console.log("Second category API path failed, trying last alternative");
-        response = await get(`/sale/posts/`);
+        response = await get(API_ENDPOINTS.POSTS);
       }
     }
 
     if (response && response.data) {
       if (response.data.results) {
-        categoryPosts.value = mapListingsData(response.data.results);
-      } else if (Array.isArray(response.data)) {
+        categoryPosts.value = mapListingsData(response.data.results);    } else if (Array.isArray(response.data)) {
         categoryPosts.value = mapListingsData(response.data);
       } else {
-        categoryPosts.value = generateMockListings(8);
+        categoryPosts.value = [];
       }
     } else {
-      categoryPosts.value = generateMockListings(8);
+      categoryPosts.value = [];
     }
   } catch (error) {
     console.error("Error loading category posts:", error);
-    categoryPosts.value = generateMockListings(8);
+    categoryPosts.value = [];
   } finally {
     categoryTabLoading.value = false;
   }
@@ -1550,33 +1358,32 @@ async function loadRecentListings() {
 
     let response;
     try {
-      response = await get(`/sale/posts/`);
+      response = await get(API_ENDPOINTS.POSTS);
     } catch (firstError) {
       console.log("First recent listings API path failed, trying alternative");
       try {
-        response = await get(`/sale/posts/`);
+        response = await get(API_ENDPOINTS.POSTS);
       } catch (secondError) {
         console.log(
           "Second recent listings API path failed, trying last alternative"
         );
-        response = await get(`/sale/posts/`);
+        response = await get(API_ENDPOINTS.POSTS);
       }
     }
 
     if (response && response.data) {
       if (response.data.results) {
-        recentListings.value = mapListingsData(response.data.results);
-      } else if (Array.isArray(response.data)) {
+        recentListings.value = mapListingsData(response.data.results);    } else if (Array.isArray(response.data)) {
         recentListings.value = mapListingsData(response.data);
       } else {
-        recentListings.value = generateMockListings(10, true);
+        recentListings.value = [];
       }
     } else {
-      recentListings.value = generateMockListings(10, true);
+      recentListings.value = [];
     }
   } catch (error) {
     console.error("Error loading recent listings:", error);
-    recentListings.value = generateMockListings(10, true);
+    recentListings.value = [];
   } finally {
     recentListingsLoading.value = false;
   }
@@ -1589,7 +1396,7 @@ onMounted(() => {
   fetchCategories().then(() => {
     console.log("Categories loaded, now loading other data");
     // Then load all list types in parallel
-    Promise.all([loadPosts(), loadCategoryPosts(), loadRecentListings()]).catch(
+    Promise.all([loadPosts(), loadCategoryPosts(), loadRecentListings(), loadLocationData()]).catch(
       (error) => {
         console.error("Error during initial data loading:", error);
       }
@@ -1602,6 +1409,46 @@ watch(categories, () => {
   if (categories.value?.length > 0) {
     if (categoryPosts.value?.length === 0) loadCategoryPosts();
     if (recentListings.value?.length === 0) loadRecentListings();
+  }
+});
+
+// Watch for changes in form.state (division) to load corresponding districts/cities
+watch(() => form.value.state, async (newDivision) => {
+  if (newDivision) {
+    selectedDivision.value = newDivision;
+    
+    // Load districts for this division if not already loaded
+    try {
+      const districtsResponse = await get(`${API_ENDPOINTS.DISTRICTS}?division=${newDivision}`);
+      if (districtsResponse?.data && Array.isArray(districtsResponse.data)) {
+        districtsByDivision.value[newDivision] = districtsResponse.data;
+        cities.value = districtsResponse.data;
+      }
+    } catch (error) {
+      console.error(`Error loading districts for ${newDivision}:`, error);
+    }
+  } else {
+    cities.value = [];
+  }
+});
+
+// Watch for changes in form.city (district) to load corresponding areas/upazilas
+watch(() => form.value.city, async (newDistrict) => {
+  if (newDistrict) {
+    selectedDistrict.value = newDistrict;
+    
+    // Load areas for this district if not already loaded
+    try {
+      const areasResponse = await get(`${API_ENDPOINTS.AREAS}?district=${newDistrict}`);
+      if (areasResponse?.data && Array.isArray(areasResponse.data)) {
+        areasByDistrict.value[newDistrict] = areasResponse.data;
+        upazilas.value = areasResponse.data;
+      }
+    } catch (error) {
+      console.error(`Error loading areas for ${newDistrict}:`, error);
+    }
+  } else {
+    upazilas.value = [];
   }
 });
 </script>
