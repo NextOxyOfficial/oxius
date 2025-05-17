@@ -1,4 +1,5 @@
-<template>  <div id="home">
+<template>  
+<div id="home">
     <div class="max-w-7xl w-full mx-auto">
       <div
         class="rounded-xl overflow-hidden shadow-sm"
@@ -106,7 +107,7 @@
                   <span>News</span>
                 </NuxtLink>                  
                 <!-- Earn Money -->
-                <NuxtLink to="/earn-money" class="service-btn bg-white hover:bg-emerald-50 text-gray-700">
+                <NuxtLink to="/#micro-gigs" class="service-btn bg-white hover:bg-emerald-50 text-gray-700">
                   <div class="icon-circle bg-emerald-50">
                     <BadgeDollarSign class="icon text-emerald-600" />
                   </div>
@@ -120,7 +121,7 @@
                   <span>Eshop</span>
                 </NuxtLink>                
                 <!-- Sale Listings -->
-                <NuxtLink to="/sale-listings" class="service-btn bg-white hover:bg-indigo-50 text-gray-700">
+                <NuxtLink to="/#sale-category" class="service-btn bg-white hover:bg-indigo-50 text-gray-700">
                   <div class="icon-circle bg-indigo-50">
                     <ListFilter class="icon text-indigo-600" />
                   </div>
@@ -128,7 +129,7 @@
                 </NuxtLink>
 
                 <!-- MindForce -->
-                <NuxtLink to="/mindForce" class="service-btn bg-white hover:bg-cyan-50 text-gray-700">
+                <NuxtLink to="/business-network/mindforce" class="service-btn bg-white hover:bg-cyan-50 text-gray-700">
                   <div class="icon-circle bg-cyan-50">
                     <Brain class="icon text-cyan-600" />
                   </div>
@@ -136,7 +137,7 @@
                 </NuxtLink>
 
                 <!-- Amar Seba -->
-                <NuxtLink to="/amar-seba" class="service-btn bg-white hover:bg-rose-50 text-gray-700">
+                <NuxtLink to="/#classified-services" class="service-btn bg-white hover:bg-rose-50 text-gray-700">
                   <div class="icon-circle bg-rose-50">
                     <Cog class="icon text-rose-600" />
                   </div>
@@ -171,7 +172,7 @@
                   <span>Mobile Recharge</span>
                 </NuxtLink>                
                 <!-- Transactions -->
-                <NuxtLink to="/transactions" class="service-btn bg-white hover:bg-lime-50 text-gray-700">
+                <NuxtLink to="/deposit-withdraw" class="service-btn bg-white hover:bg-lime-50 text-gray-700">
                   <div class="icon-circle bg-lime-50">
                     <CreditCard class="icon text-lime-600" />
                   </div>
@@ -179,7 +180,7 @@
                 </NuxtLink>
 
                 <!-- Membership -->
-                <NuxtLink to="/membership" class="service-btn bg-white hover:bg-pink-50 text-gray-700">
+                <NuxtLink to="/upgrade-to-pro" class="service-btn bg-white hover:bg-pink-50 text-gray-700">
                   <div class="icon-circle bg-pink-50">
                     <User class="icon text-pink-600" />
                   </div>
@@ -194,7 +195,8 @@
     <!-- Mobile service buttons -->
     <div class="md:hidden text-center px-0.5 py-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden">
       <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10">        
-        <!-- Business Network -->        <NuxtLink to="/business-network" class="mobile-btn bg-white">
+        <!-- Business Network -->        
+         <NuxtLink to="/business-network" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-blue-50">
             <Globe class="mobile-icon text-blue-600" />
           </div>
