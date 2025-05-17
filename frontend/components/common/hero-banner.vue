@@ -214,7 +214,7 @@
           </div>
         </NuxtLink>          
         <!-- Earn Money -->
-        <NuxtLink to="/earn-money" class="mobile-btn bg-white">
+        <NuxtLink to="/#micro-gigs" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-emerald-50">
             <BadgeDollarSign class="mobile-icon text-emerald-600" />
           </div>
@@ -232,7 +232,7 @@
           </div>
         </NuxtLink>        
         <!-- Sale Listings -->
-        <NuxtLink to="/sale-listings" class="mobile-btn bg-white">
+        <NuxtLink to="/#sale-category" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-indigo-50">
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
@@ -241,7 +241,7 @@
           </div>
         </NuxtLink>        
         <!-- MindForce -->
-        <NuxtLink to="/mindForce" class="mobile-btn bg-white">
+        <NuxtLink to="/business-network/mindforce" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-cyan-50">
             <Brain class="mobile-icon text-cyan-600" />
           </div>
@@ -251,7 +251,7 @@
         </NuxtLink>
 
         <!-- Amar Seba -->
-        <NuxtLink to="/amar-seba" class="mobile-btn bg-white">
+        <NuxtLink to="/#classified-services" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-rose-50">
             <Cog class="mobile-icon text-rose-600" />
           </div>
@@ -290,7 +290,7 @@
           </div>
         </NuxtLink>       
         <!-- Transactions -->
-        <NuxtLink to="/transactions" class="mobile-btn bg-white">
+        <NuxtLink to="/deposit-withdraw" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-lime-50">
             <CreditCard class="mobile-icon text-lime-600" />
           </div>
@@ -300,7 +300,7 @@
         </NuxtLink>
 
         <!-- Membership -->
-        <NuxtLink to="/membership" class="mobile-btn bg-white">
+        <NuxtLink to="/upgrade-to-pro" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-pink-50">
             <User class="mobile-icon text-pink-600" />
           </div>
