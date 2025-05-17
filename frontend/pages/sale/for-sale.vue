@@ -200,7 +200,8 @@
         </div>
       </UContainer>
     </div>
-    <UContainer class="py-6">      <!-- Overlay for mobile -->
+    <UContainer class="py-6">
+      <!-- Overlay for mobile -->
       <div
         v-if="isMobileFilterOpen"
         class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
@@ -465,10 +466,12 @@
                   </div>
                 </div>
               </NuxtLink>
-            </div>            <!-- Pagination Controls Removed -->
+            </div>
+            <!-- Pagination Controls Removed -->
           </div>
 
-          <!-- Sponsored Banner -->          <!-- Sponsored Banner - Will be replaced with dynamic data from API -->
+          <!-- Sponsored Banner -->
+          <!-- Sponsored Banner - Will be replaced with dynamic data from API -->
           <div v-if="false" class="mb-6 rounded-lg shadow-sm overflow-hidden">
             <!-- Banner content will be loaded from API -->
           </div>
@@ -589,7 +592,8 @@
               We couldn't find any listings matching your criteria. Try
               adjusting your filters or search terms.
             </p>
-          </div>          <!-- Pagination Removed -->
+          </div>
+          <!-- Pagination Removed -->
 
           <!-- Buyer Tips & Safety Guide -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -742,13 +746,13 @@ import SaleSidebar from "~/components/sale/SaleSidebar.vue";
 
 // API endpoints
 const API_ENDPOINTS = {
-  CATEGORIES: '/api/sale/categories',
-  SUBCATEGORIES: '/api/sale/subcategories',
-  LISTINGS: '/api/sale/listings',
-  DIVISIONS: '/api/geo/divisions',
-  DISTRICTS: '/api/geo/districts',
-  AREAS: '/api/geo/areas',
-  POSTS: '/sale/posts'
+  CATEGORIES: "/sale/categories/",
+  SUBCATEGORIES: "/sale/subcategories/",
+  LISTINGS: "/sale/posts/",
+  DIVISIONS: "/geo/divisions",
+  DISTRICTS: "/geo/districts",
+  AREAS: "/geo/areas/",
+  POSTS: "/sale/posts/",
 };
 
 const location = useCookie("location");
@@ -787,8 +791,8 @@ function clearLocation() {
 // Function to handle search form submission
 function filterSearch() {
   isLoading.value = true;
-  searchQuery.value = form.value.title || '';
-  
+  searchQuery.value = form.value.title || "";
+
   // Apply the search query filter
   loadPosts(1);
   isLoading.value = false;
@@ -877,27 +881,30 @@ async function loadLocationData() {
 
     // If we have a selected division, load its districts
     if (selectedDivision.value) {
-      const districtsResponse = await get(`${API_ENDPOINTS.DISTRICTS}?division=${selectedDivision.value}`);
+      const districtsResponse = await get(
+        `${API_ENDPOINTS.DISTRICTS}?division=${selectedDivision.value}`
+      );
       if (districtsResponse?.data && Array.isArray(districtsResponse.data)) {
-        districtsByDivision.value[selectedDivision.value] = districtsResponse.data;
+        districtsByDivision.value[selectedDivision.value] =
+          districtsResponse.data;
         cities.value = districtsResponse.data; // Set cities for current UI
       }
     }
 
     // If we have a selected district, load its areas
     if (selectedDistrict.value) {
-      const areasResponse = await get(`${API_ENDPOINTS.AREAS}?district=${selectedDistrict.value}`);
+      const areasResponse = await get(
+        `${API_ENDPOINTS.AREAS}?district=${selectedDistrict.value}`
+      );
       if (areasResponse?.data && Array.isArray(areasResponse.data)) {
         areasByDistrict.value[selectedDistrict.value] = areasResponse.data;
         upazilas.value = areasResponse.data; // Set upazilas for current UI
       }
     }
   } catch (error) {
-    console.error('Error loading location data:', error);
+    console.error("Error loading location data:", error);
   }
 }
-
-
 
 // Computed properties for location options
 const districtOptions = computed(() => {
@@ -940,7 +947,8 @@ async function fetchCategories() {
         name: category.name || `Category ${index + 1}`,
         slug: category.slug || `category-${index + 1}`,
         count: category.post_count || 0,
-      }));    } else {
+      }));
+    } else {
       categories.value = [];
     }
 
@@ -958,9 +966,11 @@ function handleEmptyCategories() {
 }
 
 // Load posts based on current filters - modify the API path and add fallback data
-async function loadPosts(page = 1) {  loading.value = true;
+async function loadPosts(page = 1) {
+  loading.value = true;
 
-  try {    // Build query parameters
+  try {
+    // Build query parameters
     const params = new URLSearchParams();
 
     // Add filters
@@ -1018,7 +1028,8 @@ async function loadPosts(page = 1) {  loading.value = true;
     } else {
       listings.value = [];
       totalListings.value = 0;
-    }  } catch (error) {
+    }
+  } catch (error) {
     console.error("Error loading listings:", error);
     listings.value = [];
     totalListings.value = 0;
@@ -1078,9 +1089,9 @@ function getCategoryName(categoryId) {
 
 // Get category icon from category data or use default
 function getCategoryIcon(categoryId) {
-  const category = categories.value.find(c => c.id === parseInt(categoryId));
-  return category && category.icon 
-    ? `i-heroicons-${category.icon}` 
+  const category = categories.value.find((c) => c.id === parseInt(categoryId));
+  return category && category.icon
+    ? `i-heroicons-${category.icon}`
     : "i-heroicons-squares-2x2";
 }
 
@@ -1165,9 +1176,12 @@ async function getSubcategories(categoryId) {
       return response.data;
     }
   } catch (error) {
-    console.error(`Error fetching subcategories for category ${categoryId}:`, error);
+    console.error(
+      `Error fetching subcategories for category ${categoryId}:`,
+      error
+    );
   }
-  
+
   return [];
 }
 
@@ -1310,7 +1324,8 @@ async function loadCategoryPosts() {
 
     if (response && response.data) {
       if (response.data.results) {
-        categoryPosts.value = mapListingsData(response.data.results);    } else if (Array.isArray(response.data)) {
+        categoryPosts.value = mapListingsData(response.data.results);
+      } else if (Array.isArray(response.data)) {
         categoryPosts.value = mapListingsData(response.data);
       } else {
         categoryPosts.value = [];
@@ -1373,7 +1388,8 @@ async function loadRecentListings() {
 
     if (response && response.data) {
       if (response.data.results) {
-        recentListings.value = mapListingsData(response.data.results);    } else if (Array.isArray(response.data)) {
+        recentListings.value = mapListingsData(response.data.results);
+      } else if (Array.isArray(response.data)) {
         recentListings.value = mapListingsData(response.data);
       } else {
         recentListings.value = [];
@@ -1396,11 +1412,14 @@ onMounted(() => {
   fetchCategories().then(() => {
     console.log("Categories loaded, now loading other data");
     // Then load all list types in parallel
-    Promise.all([loadPosts(), loadCategoryPosts(), loadRecentListings(), loadLocationData()]).catch(
-      (error) => {
-        console.error("Error during initial data loading:", error);
-      }
-    );
+    Promise.all([
+      loadPosts(),
+      loadCategoryPosts(),
+      loadRecentListings(),
+      loadLocationData(),
+    ]).catch((error) => {
+      console.error("Error during initial data loading:", error);
+    });
   });
 });
 
@@ -1413,44 +1432,54 @@ watch(categories, () => {
 });
 
 // Watch for changes in form.state (division) to load corresponding districts/cities
-watch(() => form.value.state, async (newDivision) => {
-  if (newDivision) {
-    selectedDivision.value = newDivision;
-    
-    // Load districts for this division if not already loaded
-    try {
-      const districtsResponse = await get(`${API_ENDPOINTS.DISTRICTS}?division=${newDivision}`);
-      if (districtsResponse?.data && Array.isArray(districtsResponse.data)) {
-        districtsByDivision.value[newDivision] = districtsResponse.data;
-        cities.value = districtsResponse.data;
+watch(
+  () => form.value.state,
+  async (newDivision) => {
+    if (newDivision) {
+      selectedDivision.value = newDivision;
+
+      // Load districts for this division if not already loaded
+      try {
+        const districtsResponse = await get(
+          `${API_ENDPOINTS.DISTRICTS}?division=${newDivision}`
+        );
+        if (districtsResponse?.data && Array.isArray(districtsResponse.data)) {
+          districtsByDivision.value[newDivision] = districtsResponse.data;
+          cities.value = districtsResponse.data;
+        }
+      } catch (error) {
+        console.error(`Error loading districts for ${newDivision}:`, error);
       }
-    } catch (error) {
-      console.error(`Error loading districts for ${newDivision}:`, error);
+    } else {
+      cities.value = [];
     }
-  } else {
-    cities.value = [];
   }
-});
+);
 
 // Watch for changes in form.city (district) to load corresponding areas/upazilas
-watch(() => form.value.city, async (newDistrict) => {
-  if (newDistrict) {
-    selectedDistrict.value = newDistrict;
-    
-    // Load areas for this district if not already loaded
-    try {
-      const areasResponse = await get(`${API_ENDPOINTS.AREAS}?district=${newDistrict}`);
-      if (areasResponse?.data && Array.isArray(areasResponse.data)) {
-        areasByDistrict.value[newDistrict] = areasResponse.data;
-        upazilas.value = areasResponse.data;
+watch(
+  () => form.value.city,
+  async (newDistrict) => {
+    if (newDistrict) {
+      selectedDistrict.value = newDistrict;
+
+      // Load areas for this district if not already loaded
+      try {
+        const areasResponse = await get(
+          `${API_ENDPOINTS.AREAS}?district=${newDistrict}`
+        );
+        if (areasResponse?.data && Array.isArray(areasResponse.data)) {
+          areasByDistrict.value[newDistrict] = areasResponse.data;
+          upazilas.value = areasResponse.data;
+        }
+      } catch (error) {
+        console.error(`Error loading areas for ${newDistrict}:`, error);
       }
-    } catch (error) {
-      console.error(`Error loading areas for ${newDistrict}:`, error);
+    } else {
+      upazilas.value = [];
     }
-  } else {
-    upazilas.value = [];
   }
-});
+);
 </script>
 
 <style>
