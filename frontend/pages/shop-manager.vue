@@ -333,11 +333,13 @@
               <button
                 v-for="tab in tabs"
                 :key="tab.id"
-                @click="activeTab = tab.id"
+                @click="tab.disabled ? showProductLimitModal = true : activeTab = tab.id"
                 class="relative flex-1 flex items-center justify-center py-5 px-4 text-sm font-medium transition-all duration-200 overflow-hidden"
                 :class="[
                   activeTab === tab.id
                     ? 'text-indigo-600 bg-gray-200'
+                    : tab.disabled
+                    ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50',
                 ]"
               >
@@ -348,10 +350,17 @@
                       'h-5 w-5 transition-transform duration-300',
                       activeTab === tab.id
                         ? 'text-indigo-600 scale-110'
+                        : tab.disabled
+                        ? 'text-gray-400'
                         : 'text-gray-500',
                     ]"
                   />
                   <span>{{ tab.name }}</span>
+                  <UIcon
+                    v-if="tab.disabled"
+                    name="i-heroicons-lock-closed"
+                    class="h-3.5 w-3.5 text-gray-400 ml-1"
+                  />
                 </div>
                 <div
                   v-if="activeTab === tab.id"
@@ -372,12 +381,45 @@
 
             <CommonMyProductsTab v-if="activeTab === 'products'" />
           </div>
-          <!-- Add New Product Tab (Empty as requested) -->
+          <!-- Add New Product Tab -->
           <div
             v-if="activeTab === 'add-product'"
             class="text-center text-gray-500"
           >
-            <CommonAddProductTab />
+            <CommonAddProductTab v-if="products.length < PRODUCT_LIMIT" />
+            <div
+              v-else
+              class="bg-white rounded-lg shadow-sm p-8 flex flex-col items-center"
+            >
+              <div class="bg-red-50 p-3 rounded-full mb-4">
+                <UIcon name="i-heroicons-exclamation-triangle" class="h-8 w-8 text-red-400" />
+              </div>
+              <h3 class="text-lg font-medium text-gray-700 mb-2">
+                Product Limit Reached
+              </h3>
+              <p class="text-gray-500 max-w-md mx-auto mb-6">
+                You have reached the maximum limit of {{ PRODUCT_LIMIT }} products
+                for your shop. Please contact support to increase your limit.
+              </p>
+              <div class="flex space-x-4">
+                <UButton
+                  color="primary"
+                  variant="outline"
+                  to="/contact-us"
+                  icon="i-heroicons-chat-bubble-left-right"
+                >
+                  Contact Support
+                </UButton>
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  @click="activeTab = 'products'"
+                  icon="i-heroicons-arrow-left"
+                >
+                  Back to My Products
+                </UButton>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -776,6 +818,72 @@
         </div>
       </transition-group>
     </div>
+
+    <!-- Product Limit Modal -->
+    <UModal v-model="showProductLimitModal">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-md">
+        <!-- Premium gradient header -->
+        <div class="bg-gradient-to-r from-red-500 via-orange-400 to-amber-500 p-6 text-white relative overflow-hidden">
+          <!-- Decorative elements -->
+          <div class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"></div>
+          <div class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"></div>
+          
+          <div class="flex items-center justify-center mb-2 relative z-10">
+            <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+              <UIcon name="i-heroicons-shield-exclamation" class="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <h3 class="text-xl font-semibold text-center text-white mb-1 relative z-10">
+            Product Limit Reached
+          </h3>
+          <p class="text-sm text-center text-white/90 relative z-10">
+            Your store has reached the maximum limit
+          </p>
+        </div>
+        
+        <div class="p-6">
+          <div class="flex items-center mb-6 bg-amber-50 rounded-lg p-4">
+            <UIcon name="i-heroicons-information-circle" class="h-5 w-5 text-amber-600 mr-3 flex-shrink-0" />
+            <p class="text-sm text-amber-800">
+              Your shop currently has <span class="font-semibold text-amber-900">{{ products.length }}</span> products, 
+              which is the maximum allowed limit of <span class="font-semibold text-amber-900">{{ PRODUCT_LIMIT }}</span>.
+            </p>
+          </div>
+          
+          <p class="text-gray-600 text-center mb-6">
+            To increase your product capacity and grow your business, please contact our support team for a personalized store upgrade.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row gap-4 w-full">
+            <UButton
+              color="primary"
+              icon="i-heroicons-chat-bubble-left-right"
+              to="/contact-us"
+              class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700"
+            >
+              Contact Support
+            </UButton>
+            <UButton
+              color="gray"
+              variant="outline"
+              @click="showProductLimitModal = false"
+              class="flex-1"
+            >
+              Close
+            </UButton>
+          </div>
+          
+          <div class="mt-6 border-t border-gray-100 pt-4">
+            <div class="flex justify-center">
+              <NuxtLink to="/upgrade-to-pro" class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center transition-colors">
+                <UIcon name="i-heroicons-arrow-up-circle" class="h-3.5 w-3.5 mr-1" />
+                Learn about our premium shop features
+              </NuxtLink>
+            </div>
+          </div>
+        </div>
+      </div>
+    </UModal>
   </div>
 </template>
 
@@ -808,8 +916,11 @@ import {
 // Tab state
 const activeTab = ref("orders");
 
+// Product limit configuration
+const PRODUCT_LIMIT = 10;
+
 // Tabs configuration
-const tabs = [
+const tabs = computed(() => [
   {
     id: "orders",
     name: "My Orders",
@@ -824,31 +935,26 @@ const tabs = [
     id: "add-product",
     name: "Add New Product",
     icon: PlusCircle,
+    disabled: products.value.length >= PRODUCT_LIMIT
   },
-];
+]);
 
 // UI state
 const showEditProductModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const showCancelOrderModal = ref(false);
 const isProcessing = ref(false);
+const showProductLimitModal = ref(false);
 
-// Selected items
-const selectedOrder = ref(null);
-const selectedProduct = ref(null);
-const editingProduct = reactive({
-  id: "",
-  name: "",
-  description: "",
-  price: 0,
-  stock: 0,
-  status: "active",
-  image: "",
+// Watch for active tab changes to handle product limit
+watch(activeTab, (newTab) => {
+  // Check if trying to access the add-product tab and product limit is reached
+  if (newTab === 'add-product' && products.value.length >= PRODUCT_LIMIT) {
+    activeTab.value = 'products'; // Redirect to products tab
+    showProductLimitModal.value = true; // Show limit reached modal
+  }
 });
 
-// Toast notifications
-const toasts = ref([]);
-let toastId = 0;
 // Component state
 const mounted = ref(false);
 
@@ -929,17 +1035,33 @@ async function getProducts() {
     if (res && res.data) {
       products.value = res.data;
       console.log(`Loaded ${products.value.length} products`);
+      
+      // Check product limit and show notification if close to limit
+      if (products.value.length >= PRODUCT_LIMIT) {
+        showToast(
+          "info",
+          "Product Limit Reached",
+          `You've reached the maximum limit of ${PRODUCT_LIMIT} products for your shop, Delete an existing product to add another or contact support.`
+        );
+      } else if (products.value.length >= PRODUCT_LIMIT - 2) {
+        // Show warning when approaching limit (within 2 products)
+        showToast(
+          "warning",
+          "Approaching Product Limit",
+          `You can add ${PRODUCT_LIMIT - products.value.length} more product(s) before reaching your shop's limit.`
+        );
+      }
     } else {
       console.warn("No product data received");
       products.value = [];
     }
   } catch (error) {
     console.error("Error fetching products:", error);
-    toast.add({
-      title: "Error loading products",
-      description: "Could not load your products. Please try again later.",
-      color: "red",
-    });
+    showToast(
+      "error",
+      "Error loading products",
+      "Could not load your products. Please try again later."
+    );
     products.value = [];
   }
 }
@@ -954,6 +1076,9 @@ const activeProducts = computed(() => {
 });
 
 // Toast methods
+const toasts = ref([]);
+let toastId = 0;
+
 const showToast = (type, title, message) => {
   const id = toastId++;
   toasts.value.push({ id, type, title, message });
@@ -1069,16 +1194,19 @@ onMounted(async () => {
   }
 });
 </script>
+
 <style scoped>
 /* Only essential styles */
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
 }
+
 .toast-enter-from {
   transform: translateX(100%);
   opacity: 0;
 }
+
 .toast-leave-to {
   transform: translateX(100%);
   opacity: 0;
