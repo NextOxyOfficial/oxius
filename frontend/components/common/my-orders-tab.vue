@@ -459,12 +459,6 @@
                       <p class="text-gray-500">Name</p>
                       <p class="font-medium">{{ selectedOrder?.name }}</p>
                     </div>
-                    <!-- <div>
-                      <p class="text-gray-500">Email</p>
-                      <p class="font-medium">
-                        {{ selectedOrder?.email }}
-                      </p>
-                    </div> -->
                     <div>
                       <p class="text-gray-500">Phone</p>
                       <p class="font-medium">{{ selectedOrder?.phone }}</p>
@@ -1031,50 +1025,28 @@ const { formatDate } = useUtils();
 import {
   ShoppingBag,
   ShoppingCart,
-  PlusCircle,
   Search,
   ChevronLeft,
   ChevronRight,
   Eye,
-  EyeOff,
   Edit2,
   Trash2,
   X,
   Save,
-  Package,
   PackageX,
   User,
   FileText,
   RefreshCw,
-  AlertTriangle,
-  CircleCheck,
-  CirclePause,
-  CircleX,
-  XCircle,
   Loader2,
-  CheckCircle,
-  AlertCircle,
-  Info,
-  Clock,
-  Loader,
   Printer,
   Plus,
-  Minus,
-  Crown as CrownIcon,
-  Sparkles as SparklesIcon,
+  Minus
 } from "lucide-vue-next";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
-// Tab state
-const activeTab = ref("orders");
-
 // UI state
 const showOrderDetailsModal = ref(false);
-const showEditProductModal = ref(false);
-const showDeleteConfirmModal = ref(false);
-const showCancelOrderModal = ref(false);
-const showAddItemModal = ref(false);
 const isProcessing = ref(false);
 const editCustomerInfo = ref(false);
 const editOrderItems = ref(false);
@@ -1088,74 +1060,35 @@ const newItemQuantity = ref(1);
 // Filters and search
 const orderFilter = ref("all");
 const orderSearch = ref("");
-const productFilter = ref("all");
-const productSearch = ref("");
 
 // Pagination for orders
 const itemsPerPage = 5;
 const currentPage = ref(1);
-const currentProductPage = ref(1);
 
 // Selected items
 const selectedOrder = ref(null);
-const selectedProduct = ref(null);
-const editingProduct = reactive({
-  id: "",
-  name: "",
-  description: "",
-  price: 0,
-  stock: 0,
-  status: "active",
-  image: "",
-});
 const editingOrderStatus = ref("");
 const editingCustomer = reactive({
   name: "",
   email: "",
   phone: "",
-  address: "",
+  address: ""
 });
 
+// Component state
+const showAddItemModal = ref(false);
+const isAddingItem = ref(false);
 const orderItemAddition = ref({});
 
-// Toast notifications
-const toasts = ref([]);
-let toastId = 0;
-// Component state
-const mounted = ref(false);
-
-// Sparkles configuration
-const sparkles = [
-  { class: "left-12 top-6", size: 16, delay: 0 },
-  { class: "bottom-12 right-16", size: 12, delay: 0.5 },
-  { class: "bottom-24 left-24", size: 20, delay: 1 },
-];
-
-// Lifecycle hooks
-onMounted(() => {
-  mounted.value = true;
-
-  // Randomize sparkle animations
-  const interval = setInterval(() => {
-    sparkles.forEach((sparkle, index) => {
-      sparkle.delay = Math.random() * 2;
-    });
-  }, 3000);
-
-  // Clean up interval on component unmount
-  return () => clearInterval(interval);
-});
-
-// Dummy data - Orders with timestamps
+// Data
 const orders = ref([]);
 const isOrdersLoading = ref(false);
-const isAddingItem = ref(false);
+const products = ref([]);
 
 async function getOrders() {
   isOrdersLoading.value = true;
   try {
     const res = await get("/seller-orders/");
-    // Process the data to ensure IDs are strings
     orders.value = res.data.map((order) => ({
       ...order,
       id: Array.isArray(order.id) ? order.id[0] : order.id,
@@ -1168,13 +1101,27 @@ async function getOrders() {
   }
 }
 
+async function getProducts() {
+  try {
+    const res = await get("/my-products/");
+    if (res && res.data) {
+      products.value = res.data;
+    } else {
+      products.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    products.value = [];
+  }
+}
+
 // Helper function to format currency amounts
 function formatAmount(amount) {
   if (amount === undefined || amount === null) return "0.00";
   return parseFloat(amount).toFixed(2);
 }
 
-// Updated computed properties to handle API field structure
+// Computed properties
 const pendingOrders = computed(() => {
   return orders.value.filter((order) => order.order_status === "pending");
 });
@@ -1215,48 +1162,6 @@ const deliveredOrdersAmount = computed(() => {
   }, 0);
 });
 
-// Add polling for real-time updates (optional)
-let orderUpdateInterval;
-await getOrders();
-onMounted(() => {
-  // Initial fetch
-
-  // Set up polling interval (every 2 minutes)
-  orderUpdateInterval = setInterval(() => {
-    getOrders();
-  }, 120000);
-});
-
-onBeforeUnmount(() => {
-  // Clear interval when component is destroyed
-  if (orderUpdateInterval) clearInterval(orderUpdateInterval);
-});
-
-// Dummy data - Products
-const products = ref([]);
-
-async function getProducts() {
-  try {
-    const res = await get("/my-products/");
-    if (res && res.data) {
-      products.value = res.data;
-      console.log(`Loaded ${products.value.length} products`);
-    } else {
-      console.warn("No product data received");
-      products.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    toast.add({
-      title: "Error loading products",
-      description: "Could not load your products. Please try again later.",
-      color: "red",
-    });
-    products.value = []; // Ensure it's at least an empty array
-  }
-}
-
-// Computed properties
 const filteredOrders = computed(() => {
   let result = orders.value;
 
@@ -1270,9 +1175,9 @@ const filteredOrders = computed(() => {
     const search = orderSearch.value.toLowerCase();
     result = result.filter(
       (order) =>
-        order.id.toLowerCase().includes(search) ||
-        order.customer.toLowerCase().includes(search) ||
-        order.email.toLowerCase().includes(search)
+        order.id?.toLowerCase().includes(search) ||
+        order.customer?.toLowerCase().includes(search) ||
+        order.email?.toLowerCase().includes(search)
     );
   }
 
@@ -1350,6 +1255,11 @@ const displayedPages = computed(() => {
   return pages;
 });
 
+const maxAvailableQuantity = computed(() => {
+  if (!selectedProductToAdd.value) return 0;
+  return selectedProductToAdd.value.quantity || 0;
+});
+
 // Methods
 const getStatusClass = (status) => {
   switch (status) {
@@ -1382,14 +1292,13 @@ const viewOrderDetails = (order) => {
 
   // Initialize editing order details modalitems and delivery fee
   editingOrderItems.value = JSON.parse(JSON.stringify(order.items));
-  editingDeliveryFee.value = Number(order.delivery_fee) || 0; // Convert to number and handle null/undefined
+  editingDeliveryFee.value = Number(order.delivery_fee) || 0;
 
   showOrderDetailsModal.value = true;
 };
 
 const saveCustomerChanges = async () => {
   if (isProcessing.value) return;
-
   isProcessing.value = true;
 
   try {
@@ -1409,8 +1318,6 @@ const saveCustomerChanges = async () => {
           "Customer information has been successfully updated."
         );
       }
-    } else {
-      return;
     }
     editCustomerInfo.value = false;
   } catch (error) {
@@ -1426,13 +1333,11 @@ const saveCustomerChanges = async () => {
 
 const calculateSubtotal = () => {
   if (editOrderItems.value) {
-    // When editing, use editingOrderItems
     return editingOrderItems.value.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
   } else {
-    // Before editing, use selectedOrder items
     return (
       selectedOrder.value?.items?.reduce(
         (total, item) => total + item.price * item.quantity,
@@ -1464,20 +1369,6 @@ const removeOrderItem = (index) => {
   editingOrderItems.value.splice(index, 1);
 };
 
-const maxAvailableQuantity = computed(() => {
-  if (!selectedProductToAdd.value) return 0;
-  return selectedProductToAdd.value.quantity || 0;
-});
-
-watch(orderItemAddition, (newValue) => {
-  if (newValue) {
-    selectedProductToAdd.value = products.value.find(
-      (p) => p.name === newValue
-    );
-    newItemQuantity.value = 1;
-  }
-});
-
 const incrementNewItemQuantity = () => {
   if (newItemQuantity.value < maxAvailableQuantity.value) {
     newItemQuantity.value++;
@@ -1492,55 +1383,37 @@ const decrementNewItemQuantity = () => {
 
 const addItemToOrder = async () => {
   if (isAddingItem.value || !selectedProductToAdd.value) return;
-
   isAddingItem.value = true;
 
   try {
-    // Create a new item with complete details
     const newItem = {
       product: selectedProductToAdd.value.id,
       quantity: newItemQuantity.value,
-      price:
-        selectedProductToAdd.value.sale_price ||
-        selectedProductToAdd.value.regular_price,
-      // Store product details to ensure they're available in the UI
+      price: selectedProductToAdd.value.sale_price || selectedProductToAdd.value.regular_price,
       product_details: {
         name: selectedProductToAdd.value.name,
-        image:
-          selectedProductToAdd.value.image_details &&
-          selectedProductToAdd.value.image_details.length > 0
-            ? [selectedProductToAdd.value.image_details[0].image]
-            : [],
+        image: selectedProductToAdd.value.image_details && selectedProductToAdd.value.image_details.length > 0
+          ? [selectedProductToAdd.value.image_details[0].image] : [],
       },
     };
 
-    console.log("Adding new item with details:", newItem);
-
-    // Check if product already exists in order
     const existingItemIndex = editingOrderItems.value.findIndex(
       (item) => item.product === newItem.product
     );
 
     if (existingItemIndex !== -1) {
-      // Update existing item
       editingOrderItems.value[existingItemIndex].quantity += newItem.quantity;
-      console.log("Updated existing item quantity");
     } else {
-      // Add new item
       editingOrderItems.value.push(newItem);
-      console.log("Added new item to order");
     }
 
-    // Reset form
     orderItemAddition.value = null;
     selectedProductToAdd.value = null;
     newItemQuantity.value = 1;
     showAddItemModal.value = false;
 
-    // Show success message
     showToast("success", "Item Added", "Product has been added to the order");
   } catch (error) {
-    console.error("Error adding item:", error);
     showToast("error", "Error", "Failed to add item to order");
   } finally {
     isAddingItem.value = false;
@@ -1548,54 +1421,54 @@ const addItemToOrder = async () => {
 };
 
 const saveOrderItemChanges = async () => {
-  const res = await patch(`/orders/${selectedOrder.value.id}/`, {
-    delivery_fee: editingDeliveryFee.value,
-    total: calculateTotal(),
-  });
-  console.log(res);
-  console.log(editingOrderItems.value, "new order items");
-  const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
-    items: editingOrderItems.value,
-  });
-  console.log(res2, "res2");
-  if (res.data) {
-    // Show success toast
-    showToast(
-      "success",
-      "Order Items Updated",
-      "Order items have been successfully updated."
-    );
-    await getOrders();
-  } else {
-    // Show error toast
+  try {
+    const res = await patch(`/orders/${selectedOrder.value.id}/`, {
+      delivery_fee: editingDeliveryFee.value,
+      total: calculateTotal(),
+    });
+
+    const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
+      items: editingOrderItems.value,
+    });
+
+    if (res.data) {
+      showToast(
+        "success",
+        "Order Items Updated",
+        "Order items have been successfully updated."
+      );
+      await getOrders();
+    } else {
+      showToast(
+        "error",
+        "Update Failed",
+        "There was an error updating the order items."
+      );
+    }
+    showOrderDetailsModal.value = false;
+  } catch (error) {
     showToast(
       "error",
       "Update Failed",
       "There was an error updating the order items."
     );
   }
-  showOrderDetailsModal.value = false;
 };
 
 const updateOrderStatus = async (id) => {
-  console.log(editingOrderItems.value);
   try {
     const res = await patch(`/orders/${id}/`, {
       order_status: editingOrderStatus.value,
     });
     if (res.data) {
-      // Show success toast
       showToast(
         "success",
         "Order Status Updated",
         `Order #${id} status has been updated to ${editingOrderStatus.value}.`
       );
-
-      // Close modal
       showOrderDetailsModal.value = false;
     }
   } catch (error) {
-    console.error("Error updating order status:", error);
     showToast(
       "error",
       "Update Failed",
@@ -1635,7 +1508,7 @@ const printOrder = async (order) => {
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Date: ${order.date}`, 14, 55);
-    doc.text(`Status: ${order.status.toUpperCase()}`, 14, 60);
+    doc.text(`Status: ${order.status?.toUpperCase()}`, 14, 60);
 
     // Customer details
     doc.setFontSize(12);
@@ -1644,7 +1517,7 @@ const printOrder = async (order) => {
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Name: ${order.customer}`, 14, 77);
+    doc.text(`Name: ${order.customer || order.name}`, 14, 77);
     doc.text(`Email: ${order.email}`, 14, 82);
     doc.text(`Phone: ${order.phone}`, 14, 87);
     doc.text(`Address: ${order.address}`, 14, 92);
@@ -1656,10 +1529,10 @@ const printOrder = async (order) => {
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Method: ${order.paymentMethod}`, 120, 77);
-    doc.text(`Status: ${order.paymentStatus}`, 120, 82);
+    doc.text(`Method: ${order.payment_method || 'Cash on Delivery'}`, 120, 77);
+    doc.text(`Status: ${order.payment_status || 'Pending'}`, 120, 82);
 
-    // Order items - List format
+    // Order items
     doc.setFontSize(12);
     doc.setTextColor(66, 66, 66);
     doc.text("Products", 14, 105);
@@ -1670,11 +1543,11 @@ const printOrder = async (order) => {
     doc.setDrawColor(220, 220, 220);
     doc.line(14, yPos - 3, 196, yPos - 3);
 
-    order.items.forEach((item, index) => {
+    (order.items || []).forEach((item, index) => {
       // Draw item details
       doc.setFontSize(10);
       doc.setTextColor(80, 80, 80);
-      doc.text(`${index + 1}. ${item.name}`, 14, yPos);
+      doc.text(`${index + 1}. ${item.product_details?.name || 'Product'}`, 14, yPos);
 
       doc.setTextColor(100, 100, 100);
       doc.text(`${item.quantity} × ৳${item.price}`, 14, yPos + 5);
@@ -1684,7 +1557,7 @@ const printOrder = async (order) => {
       doc.text(`৳${item.price * item.quantity}`, 180, yPos, { align: "right" });
 
       // Draw separator line
-      if (index < order.items.length - 1) {
+      if (index < (order.items || []).length - 1) {
         doc.setDrawColor(240, 240, 240);
         doc.line(14, yPos + 8, 196, yPos + 8);
       }
@@ -1701,11 +1574,11 @@ const printOrder = async (order) => {
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Subtotal:`, 140, yPos);
-    doc.text(`৳${order.subtotal}`, 180, yPos, { align: "right" });
+    doc.text(`৳${calculateSubtotal()}`, 180, yPos, { align: "right" });
 
     yPos += 5;
     doc.text(`Delivery Fee:`, 140, yPos);
-    doc.text(`৳${order.deliveryFee}`, 180, yPos, { align: "right" });
+    doc.text(`৳${order.delivery_fee || 0}`, 180, yPos, { align: "right" });
 
     yPos += 3;
     doc.line(140, yPos + 2, 180, yPos + 2);
@@ -1723,130 +1596,8 @@ const printOrder = async (order) => {
 
     // Save the PDF
     doc.save(`order-${order.id}.pdf`);
-
-    // Show success toast
-    showToast(
-      "success",
-      "PDF Generated",
-      `Order #${order.id} has been downloaded as a PDF.`
-    );
   } catch (error) {
     console.error("PDF Generation Error:", error);
-    showToast(
-      "error",
-      "PDF Generation Failed",
-      "There was an error generating the PDF."
-    );
-  }
-};
-
-const cancelOrder = () => {
-  showCancelOrderModal.value = true;
-};
-
-const confirmCancelOrder = async () => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    if (selectedOrder.value) {
-      // Update order status to cancelled
-      selectedOrder.value.status = "cancelled";
-
-      // If payment was made with account funds, update payment status
-      if (
-        selectedOrder.value.paymentMethod === "Account Funds" ||
-        selectedOrder.value.paymentMethod === "Credit Card" ||
-        selectedOrder.value.paymentMethod === "PayPal"
-      ) {
-        selectedOrder.value.paymentStatus = "Refunded";
-      }
-
-      // Update the order in the orders array
-      const index = orders.value.findIndex(
-        (o) => o.id === selectedOrder.value.id
-      );
-      if (index !== -1) {
-        orders.value[index] = { ...selectedOrder.value };
-      }
-
-      // Show success toast with refund info if applicable
-      if (
-        selectedOrder.value.paymentMethod === "Account Funds" ||
-        selectedOrder.value.paymentMethod === "Credit Card" ||
-        selectedOrder.value.paymentMethod === "PayPal"
-      ) {
-        showToast(
-          "success",
-          "Order Cancelled",
-          `Order #${selectedOrder.value.id} has been cancelled and ৳${selectedOrder.value.total} has been refunded.`
-        );
-      } else {
-        showToast(
-          "success",
-          "Order Cancelled",
-          `Order #${selectedOrder.value.id} has been cancelled.`
-        );
-      }
-    }
-
-    // Close modals
-    showCancelOrderModal.value = false;
-    showOrderDetailsModal.value = false;
-  } catch (error) {
-    showToast(
-      "error",
-      "Cancellation Failed",
-      "There was an error cancelling the order."
-    );
-  } finally {
-    isProcessing.value = false;
-  }
-};
-
-const editProduct = (product) => {
-  selectedProduct.value = product;
-  // Clone the product to avoid direct mutation
-  Object.assign(editingProduct, product);
-  showEditProductModal.value = true;
-};
-
-const saveProductChanges = async () => {
-  if (isProcessing.value) return;
-
-  isProcessing.value = true;
-
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Update the product in the products array
-    const index = products.value.findIndex((p) => p.id === editingProduct.id);
-    if (index !== -1) {
-      products.value[index] = { ...editingProduct };
-
-      // Show success toast
-      showToast(
-        "success",
-        "Product Updated",
-        `${editingProduct.name} has been successfully updated.`
-      );
-    }
-
-    // Close the modal
-    showEditProductModal.value = false;
-  } catch (error) {
-    showToast(
-      "error",
-      "Update Failed",
-      "There was an error updating the product."
-    );
-  } finally {
-    isProcessing.value = false;
   }
 };
 
@@ -1871,121 +1622,40 @@ const prevPage = () => {
 
 // Toast methods
 const showToast = (type, title, message) => {
-  const id = toastId++;
-  toasts.value.push({ id, type, title, message });
-
-  // Auto-remove toast after 5 seconds
-  setTimeout(() => {
-    removeToast(id);
-  }, 5000);
-};
-
-const removeToast = (id) => {
-  const index = toasts.value.findIndex((toast) => toast.id === id);
-  if (index !== -1) {
-    toasts.value.splice(index, 1);
-  }
-};
-
-// Lifecycle hooks
-onMounted(() => {
-  // Reset pagination when tab changes
-  watch(activeTab, () => {
-    currentPage.value = 1;
-    currentProductPage.value = 1;
-  });
-
-  // Reset pagination when filters change
-  watch([orderFilter, orderSearch], () => {
-    currentPage.value = 1;
-  });
-
-  watch([productFilter, productSearch], () => {
-    currentProductPage.value = 1;
-  });
-});
-
-const isEditing = ref(false);
-const editedUser = reactive({
-  store_name: user.value.user.store_name || "",
-  store_username: user.value.user.store_username || "",
-  store_address: user.value.user.store_address || "",
-  store_description: user.value.user.store_description || "",
-});
-
-// Copy to clipboard functionality
-const copied = ref(false);
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    copied.value = true;
-    setTimeout(() => {
-      copied.value = false;
-    }, 2000);
-  });
-}
-
-// Emit events for parent component
-const emit = defineEmits(["update"]);
-
-// Watch for editing state changes
-watch(isEditing, (newValue, oldValue) => {
-  if (oldValue === true && newValue === false) {
-    // User clicked Save (switched from editing to viewing)
-    emit("update", editedUser);
-  }
-});
-
-const storeDetails = ref({
-  store_name: "",
-  store_username: "",
-  store_address: "",
-  store_description: "",
-  store_logo: "",
-  store_banner: "",
-});
-const toast = useToast();
-const isLoading = ref(false);
-
-async function getStoreDetails() {
-  isLoading.value = true;
-  try {
-    // Check if user and store_username exist
-    if (!user.value?.user?.store_username) {
-      console.warn("No store username available");
-      return;
-    }
-
-    const { data } = await get(`/store/${user.value.user.store_username}/`);
-    if (data) {
-      // Ensure we only update if we get valid data
-      storeDetails.value = data;
-      console.log("Store details loaded successfully");
-
-      // Also update the edited user object for consistency
-      editedUser.store_name = data.store_name || "";
-      editedUser.store_address = data.store_address || "";
-      editedUser.store_description = data.store_description || "";
-    }
-  } catch (error) {
-    console.error("Error fetching store details:", error);
+  // Use Nuxt UI toast if available
+  const toast = useToast?.();
+  if (toast) {
     toast.add({
-      title: "Error loading store",
-      description: "Could not load store details. Please try again later.",
-      color: "red",
+      title,
+      description: message,
+      color: type === 'success' ? 'green' : 'red'
     });
-  } finally {
-    isLoading.value = false;
+  } else {
+    console.log(`Toast: ${type} - ${title} - ${message}`);
   }
-}
+};
 
-// Safe initialization - use Promise.allSettled to handle potential failures
-onMounted(async () => {
-  try {
-    await Promise.allSettled([getStoreDetails(), getProducts(), getOrders()]);
-    console.log("All data loading attempts completed");
-  } catch (error) {
-    console.error("Error during initialization:", error);
+// Watch for changes
+watch(selectedProductToAdd, (product) => {
+  if (product) {
+    newItemQuantity.value = 1;
   }
+});
+
+// Initialize data on mount
+let orderUpdateInterval;
+onMounted(async () => {
+  await getOrders();
+  await getProducts();
+  
+  // Set up polling interval (every 2 minutes)
+  orderUpdateInterval = setInterval(() => {
+    getOrders();
+  }, 120000);
+});
+
+onBeforeUnmount(() => {
+  // Clear interval when component is destroyed
+  if (orderUpdateInterval) clearInterval(orderUpdateInterval);
 });
 </script>
