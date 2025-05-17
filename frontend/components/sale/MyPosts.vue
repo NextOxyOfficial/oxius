@@ -1,10 +1,15 @@
 <template>
   <div class="my-posts-container">
     <!-- Empty state with create button -->
-    <div v-if="!posts.length && !isLoading" class="text-center p-10 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div
+      v-if="!posts.length && !isLoading"
+      class="text-center p-10 bg-white rounded-xl shadow-sm border border-gray-100"
+    >
       <div class="mb-8">
         <div class="flex justify-center">
-          <div class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full inline-block shadow-inner">
+          <div
+            class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full inline-block shadow-inner"
+          >
             <Icon
               name="heroicons:clipboard-document-list"
               class="h-14 w-14 text-primary"
@@ -26,8 +31,13 @@
     </div>
 
     <!-- Loading state -->
-    <div v-else-if="isLoading" class="p-8 bg-white rounded-xl shadow-sm border border-gray-50">
-      <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
+    <div
+      v-else-if="isLoading"
+      class="p-8 bg-white rounded-xl shadow-sm border border-gray-50"
+    >
+      <div
+        class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100"
+      >
         <div class="h-7 bg-gray-200 rounded-md w-36 animate-pulse"></div>
         <div class="flex gap-4">
           <div class="h-10 w-36 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -35,7 +45,9 @@
         </div>
       </div>
       <div v-for="i in 3" :key="i" class="mb-8 animate-pulse">
-        <div class="flex items-center gap-6 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-all">
+        <div
+          class="flex items-center gap-6 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-all"
+        >
           <div class="w-28 h-28 bg-gray-200 rounded-lg"></div>
           <div class="flex-1">
             <div class="h-6 bg-gray-200 rounded-md mb-4 w-3/4"></div>
@@ -55,27 +67,34 @@
     </div>
 
     <!-- Post listing -->
-    <div v-else class="bg-white rounded-xl shadow-sm border border-gray-50 overflow-hidden">
+    <div
+      v-else
+      class="bg-white rounded-xl shadow-sm border border-gray-50 overflow-hidden"
+    >
       <!-- Header with Filters and controls -->
-      <div class="flex flex-wrap justify-between items-center p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+      <div
+        class="flex flex-wrap justify-between items-center p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100"
+      >
         <div class="flex items-center gap-4">
-          <div class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
+          <div
+            class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600"
+          >
             <span>{{ posts.length }}</span>
-            <span>{{ posts.length === 1 ? 'post' : 'posts' }}</span>
+            <span>{{ posts.length === 1 ? "post" : "posts" }}</span>
           </div>
-          <button 
-            @click="refreshPosts" 
+          <button
+            @click="refreshPosts"
             class="p-2 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-full transition-all duration-200"
             title="Refresh posts"
           >
-            <Icon 
-              name="heroicons:arrow-path" 
+            <Icon
+              name="heroicons:arrow-path"
               size="18px"
               :class="{ 'animate-spin': isRefreshing }"
             />
           </button>
         </div>
-        
+
         <div class="flex items-center gap-4 mt-3 sm:mt-0">
           <div class="relative">
             <select
@@ -88,21 +107,21 @@
               <option value="sold">Sold</option>
               <option value="expired">Expired</option>
             </select>
-            <Icon 
-              name="heroicons:funnel" 
-              size="16px" 
+            <Icon
+              name="heroicons:funnel"
+              size="16px"
               class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             />
-            <Icon 
-              name="heroicons:chevron-down" 
-              size="16px" 
+            <Icon
+              name="heroicons:chevron-down"
+              size="16px"
               class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
             />
           </div>
-          
+
           <button
             @click="$emit('create-post')"
-            class="bg-primary hover:bg-primary/90 text-white font-medium  text-sm px-3 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-sm"
+            class="bg-primary hover:bg-primary/90 text-white font-medium text-sm px-3 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 shadow hover:shadow-sm"
           >
             <Icon name="heroicons:plus-circle" size="18px" />
             New Post
@@ -121,13 +140,13 @@
             <!-- Post image -->
             <NuxtLink
               :to="`/sale/${post.slug}`"
-              class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden shadow-sm border border-gray-100 "
+              class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-xl overflow-hidden shadow-sm border border-gray-100"
             >
               <img
                 v-if="post.main_image"
                 :src="post.main_image"
                 :alt="post.title"
-                class="w-full h-full object-cover transform "
+                class="w-full h-full object-cover transform"
               />
               <div
                 v-else
@@ -140,10 +159,14 @@
               <div class="absolute top-2 left-2">
                 <span
                   :class="{
-                    'bg-gradient-to-r from-yellow-400 to-amber-500': post.status === 'pending',
-                    'bg-gradient-to-r from-green-500 to-emerald-600': post.status === 'active',
-                    'bg-gradient-to-r from-blue-500 to-indigo-600': post.status === 'sold',
-                    'bg-gradient-to-r from-red-500 to-rose-600': post.status === 'expired',
+                    'bg-gradient-to-r from-yellow-400 to-amber-500':
+                      post.status === 'pending',
+                    'bg-gradient-to-r from-green-500 to-emerald-600':
+                      post.status === 'active',
+                    'bg-gradient-to-r from-blue-500 to-indigo-600':
+                      post.status === 'sold',
+                    'bg-gradient-to-r from-red-500 to-rose-600':
+                      post.status === 'expired',
                   }"
                   class="text-white text-xs font-medium px-2.5 py-1 rounded shadow-sm"
                 >
@@ -157,36 +180,59 @@
               <div class="flex justify-between items-start">
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
-                    <h3 class="text-lg font-medium line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary">
+                    <h3
+                      class="text-lg font-medium line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
+                    >
                       {{ post.title }}
                     </h3>
                   </NuxtLink>
-                  <div class="mt-2 flex items-center text-sm text-gray-600 gap-2">
+                  <div
+                    class="mt-2 flex items-center text-sm text-gray-600 gap-2"
+                  >
                     <div class="flex items-center gap-1">
                       <Icon
                         name="heroicons:currency-bangladeshi"
                         class="h-4.5 w-4.5 text-primary/80"
                       />
                       <span class="font-medium">{{
-                        post.price ? `৳${post.price.toLocaleString()}` : "Negotiable"
+                        post.price
+                          ? `৳${post.price.toLocaleString()}`
+                          : "Negotiable"
                       }}</span>
                     </div>
                     <span class="mx-1 text-gray-300">•</span>
                     <div class="flex items-center gap-1">
-                      <Icon name="heroicons:calendar" class="h-4 w-4 text-gray-500" />
+                      <Icon
+                        name="heroicons:calendar"
+                        class="h-4 w-4 text-gray-500"
+                      />
                       <span>{{ formatDate(post.created_at) }}</span>
                     </div>
                   </div>
-                  <div class="mt-2 flex items-center text-sm text-gray-600 gap-1.5">
-                    <Icon name="heroicons:map-pin" class="h-4 w-4 text-gray-500" />
-                    <span class="line-clamp-1">{{ post.area }}, {{ post.district }}</span>
+                  <div
+                    class="mt-2 flex items-center text-sm text-gray-600 gap-1.5"
+                  >
+                    <Icon
+                      name="heroicons:map-pin"
+                      class="h-4 w-4 text-gray-500"
+                    />
+                    <span class="line-clamp-1"
+                      >{{ post.area }}, {{ post.district }}</span
+                    >
                   </div>
-                  <div class="mt-3 flex items-center text-xs text-gray-500 gap-4">
-                    <span class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full group-hover:bg-gray-100 transition-colors">
+                  <div
+                    class="mt-3 flex items-center text-xs text-gray-500 gap-4"
+                  >
+                    <span
+                      class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full group-hover:bg-gray-100 transition-colors"
+                    >
                       <Icon name="heroicons:eye" class="h-3.5 w-3.5" />
                       {{ post.view_count }} views
                     </span>
-                    <span v-if="post.condition" class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full group-hover:bg-gray-100 transition-colors">
+                    <span
+                      v-if="post.condition"
+                      class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full group-hover:bg-gray-100 transition-colors"
+                    >
                       <Icon name="heroicons:tag" class="h-3.5 w-3.5" />
                       {{ post.condition }}
                     </span>
@@ -214,41 +260,53 @@
                   <Icon name="heroicons:trash" size="20px" />
                 </button>
               </div>
-                <!-- Mark as Sold button with states -->
+              <!-- Mark as Sold button with states -->
               <button
                 v-if="post.status !== 'sold' && post.status !== 'pending'"
                 @click="markAsSold(post.id)"
                 :disabled="markingSold === post.id"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all duration-200"
                 :class="[
-                  markingSold === post.id 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow'
+                  markingSold === post.id
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow',
                 ]"
               >
-                <Icon 
-                  :name="markingSold === post.id ? 'heroicons:clock' : 'heroicons:tag'" 
-                  size="18px" 
-                  class="flex-shrink-0" 
+                <Icon
+                  :name="
+                    markingSold === post.id
+                      ? 'heroicons:clock'
+                      : 'heroicons:tag'
+                  "
+                  size="18px"
+                  class="flex-shrink-0"
                 />
-                {{ markingSold === post.id ? 'Processing...' : 'Mark as Sold' }}
+                {{ markingSold === post.id ? "Processing..." : "Mark as Sold" }}
               </button>
-              
+
               <!-- Pending notice -->
-              <div 
+              <div
                 v-else-if="post.status === 'pending'"
                 class="flex items-center gap-2 px-4 py-2 text-sm bg-amber-50 text-amber-600 rounded-lg opacity-75"
               >
-                <Icon name="heroicons:clock" size="18px" class="flex-shrink-0" />
+                <Icon
+                  name="heroicons:clock"
+                  size="18px"
+                  class="flex-shrink-0"
+                />
                 Awaiting Approval
               </div>
-              
+
               <!-- Sold status indicator -->
-              <div 
+              <div
                 v-else
                 class="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 rounded-lg shadow-sm"
               >
-                <Icon name="heroicons:check-circle" size="18px" class="flex-shrink-0" />
+                <Icon
+                  name="heroicons:check-circle"
+                  size="18px"
+                  class="flex-shrink-0"
+                />
                 Sold
               </div>
             </div>
@@ -257,16 +315,23 @@
       </div>
 
       <!-- Empty filtered state -->
-      <div v-if="posts.length > 0 && filteredPosts.length === 0" class="py-12 text-center">
+      <div
+        v-if="posts.length > 0 && filteredPosts.length === 0"
+        class="py-12 text-center"
+      >
         <div class="mb-4">
           <div class="inline-block p-4 bg-gray-50 rounded-full">
             <Icon name="heroicons:face-frown" class="h-12 w-12 text-gray-400" />
           </div>
         </div>
-        <h3 class="text-gray-700 text-lg font-medium">No matching posts found</h3>
-        <p class="text-gray-500 mt-2">There are no posts with the "{{ statusFilter }}" status.</p>
-        <button 
-          @click="statusFilter = ''" 
+        <h3 class="text-gray-700 text-lg font-medium">
+          No matching posts found
+        </h3>
+        <p class="text-gray-500 mt-2">
+          There are no posts with the "{{ statusFilter }}" status.
+        </p>
+        <button
+          @click="statusFilter = ''"
           class="mt-5 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
         >
           Show all posts
@@ -274,14 +339,22 @@
       </div>
 
       <!-- Load more button -->
-      <div v-if="hasMorePosts" class="p-6 border-t border-gray-100 bg-gray-50 text-center">
+      <div
+        v-if="hasMorePosts"
+        class="p-6 border-t border-gray-100 bg-gray-50 text-center"
+      >
         <button
           @click="loadMorePosts"
           class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-white transition-all duration-200 shadow-sm hover:shadow flex items-center gap-2 mx-auto"
           :disabled="isLoadingMore"
         >
-          <span v-if="isLoadingMore" class="flex items-center gap-2 justify-center">
-            <span class="inline-block h-4 w-4 border-2 border-t-2 border-gray-300 border-t-primary rounded-full animate-spin"></span>
+          <span
+            v-if="isLoadingMore"
+            class="flex items-center gap-2 justify-center"
+          >
+            <span
+              class="inline-block h-4 w-4 border-2 border-t-2 border-gray-300 border-t-primary rounded-full animate-spin"
+            ></span>
             Loading more posts...
           </span>
           <span v-else class="flex items-center gap-2 justify-center">
@@ -293,55 +366,62 @@
     </div>
 
     <!-- Delete confirmation modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-60 backdrop-blur-sm transition-all">
+    <Teleport to="body">
       <div
-        class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
+        v-if="showDeleteModal"
+        class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-60 backdrop-blur-sm transition-all"
       >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
         >
-          <div class="bg-white px-6 pt-6 pb-5">
-            <div class="sm:flex sm:items-start">
-              <div
-                class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-red-100 sm:mx-0 sm:h-12 sm:w-12"
-              >
-                <Icon
-                  name="heroicons:exclamation-triangle"
-                  class="h-7 w-7 text-red-600"
-                />
-              </div>
-              <div class="mt-3 text-center sm:mt-0 sm:ml-5 sm:text-left">
-                <h3 class="text-xl leading-6 font-semibold text-gray-900">
-                  Delete Post
-                </h3>
-                <div class="mt-3">
-                  <p class="text-gray-600">
-                    Are you sure you want to delete "<span class="font-medium">{{ postToDeleteTitle }}</span>"?
-                    This action cannot be undone.
-                  </p>
+          <div
+            class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          >
+            <div class="bg-white px-6 pt-6 pb-5">
+              <div class="sm:flex sm:items-start">
+                <div
+                  class="mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full bg-red-100 sm:mx-0 sm:h-12 sm:w-12"
+                >
+                  <Icon
+                    name="heroicons:exclamation-triangle"
+                    class="h-7 w-7 text-red-600"
+                  />
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-5 sm:text-left">
+                  <h3 class="text-xl leading-6 font-semibold text-gray-900">
+                    Delete Post
+                  </h3>
+                  <div class="mt-3">
+                    <p class="text-gray-600">
+                      Are you sure you want to delete "<span
+                        class="font-medium"
+                        >{{ postToDeleteTitle }}</span
+                      >"? This action cannot be undone.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none transition-colors sm:ml-3 sm:w-auto"
-              @click="deletePost"
-            >
-              Delete
-            </button>
-            <button
-              type="button"
-              class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors sm:mt-0 sm:ml-3 sm:w-auto"
-              @click="showDeleteModal = false"
-            >
-              Cancel
-            </button>
+            <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse">
+              <button
+                type="button"
+                class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none transition-colors sm:ml-3 sm:w-auto"
+                @click="deletePost"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors sm:mt-0 sm:ml-3 sm:w-auto"
+                @click="showDeleteModal = false"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -424,12 +504,16 @@ const fetchPosts = async (page = 1) => {
 
   try {
     // Use my_posts action to get only the current user's posts
-    const response = await get(`/sale/posts/my_posts/`, {}, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
+    const response = await get(
+      `/sale/posts/my_posts/`,
+      {},
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       }
-    });
+    );
 
     if (response.data) {
       if ("results" in response.data) {
@@ -470,15 +554,19 @@ const fetchPosts = async (page = 1) => {
 const refreshPosts = async () => {
   isRefreshing.value = true;
   currentPage.value = 1;
-  
+
   try {
     // Use my_posts action to get only the current user's posts
-    const response = await get(`/sale/posts/my_posts/`, {}, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
+    const response = await get(
+      `/sale/posts/my_posts/`,
+      {},
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       }
-    });
+    );
 
     if (response.data) {
       if ("results" in response.data) {
@@ -496,7 +584,7 @@ const refreshPosts = async () => {
         posts.value = response.data;
         hasMorePosts.value = false;
       }
-      
+
       // Show success message only if we actually got some posts
       if (posts.value.length > 0) {
         showNotification({
@@ -530,16 +618,19 @@ const loadMorePosts = () => {
 const markAsSold = async (postId) => {
   // Set loading state for this specific post
   markingSold.value = postId;
-  
+
   try {
     // Find the post object by ID to get its slug
-    const postToUpdate = posts.value.find(p => p.id === postId);
+    const postToUpdate = posts.value.find((p) => p.id === postId);
     if (!postToUpdate || !postToUpdate.slug) {
       throw new Error("Could not find post with that ID or post has no slug");
     }
-    
+
     // Use the custom action endpoint specifically designed for marking posts as sold
-    const response = await post(`/sale/posts/${postToUpdate.slug}/mark_as_sold/`, {});
+    const response = await post(
+      `/sale/posts/${postToUpdate.slug}/mark_as_sold/`,
+      {}
+    );
 
     if (response && response.data) {
       // Update post in the local state
@@ -547,7 +638,7 @@ const markAsSold = async (postId) => {
       if (postIndex !== -1) {
         posts.value[postIndex] = {
           ...posts.value[postIndex],
-          status: "sold"
+          status: "sold",
         };
       }
 
@@ -555,16 +646,18 @@ const markAsSold = async (postId) => {
         title: "Success!",
         message: "Your post has been marked as sold.",
         type: "success",
-      });    }
+      });
+    }
   } catch (error) {
     console.error("Error marking post as sold:", error);
-    
+
     // Show appropriate error message based on the error
     let errorMessage = "Failed to mark post as sold. Please try again later.";
-    
+
     // Check for client-side errors first
     if (error.message && error.message.includes("Could not find post")) {
-      errorMessage = "Could not identify the post. Please refresh and try again.";
+      errorMessage =
+        "Could not identify the post. Please refresh and try again.";
     } else if (error.response) {
       // The request was made and the server responded with a non-2xx status
       if (error.response.status === 403) {
@@ -578,7 +671,7 @@ const markAsSold = async (postId) => {
       // The request was made but no response was received
       errorMessage = "Network error. Please check your internet connection.";
     }
-    
+
     showNotification({
       title: "Error",
       message: errorMessage,
@@ -603,11 +696,11 @@ const deletePost = async () => {
 
   try {
     // Find the post by ID to get its slug
-    const postToDelete = posts.value.find(p => p.id === postToDeleteId.value);
+    const postToDelete = posts.value.find((p) => p.id === postToDeleteId.value);
     if (!postToDelete || !postToDelete.slug) {
       throw new Error("Could not find post with that ID or post has no slug");
     }
-    
+
     // Use the slug instead of ID for the API call
     await del(`/sale/posts/${postToDelete.slug}/`);
 
