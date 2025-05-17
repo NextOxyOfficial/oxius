@@ -149,7 +149,7 @@
         <!-- Search bar -->
         <div class="p-2">
           <div class="flex items-center rounded-md bg-gray-50 px-2 py-1.5 transition-all focus-within:ring-1 focus-within:ring-green-300">
-            <SearchIcon class="h-3.5 w-3.5 text-gray-400" />
+            <SearchIcon class="h-3.5 w-3.5 text-gray-500" />
             <input 
               v-model="searchQuery"
               type="text" 
@@ -628,14 +628,14 @@
                 </div>
               </div>
               <div 
-                class="mt-0.5 flex items-center text-[9px] text-gray-400"
+                class="mt-0.5 flex items-center text-[9px] text-gray-500"
                 :class="{ 'justify-end': message.isUser }"
               >
                 <span>{{ message.time }}</span>
                 <span v-if="message.isUser && message.read" class="ml-1 text-green-500">
                   <CheckCheckIcon class="h-3 w-3" />
                 </span>
-                <span v-else-if="message.isUser" class="ml-1 text-gray-400">
+                <span v-else-if="message.isUser" class="ml-1 text-gray-500">
                   <CheckIcon class="h-3 w-3" />
                 </span>
               </div>
@@ -806,7 +806,7 @@
           </div>
           
           <div class="mb-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
-            <ImageIcon class="mb-2 h-10 w-10 text-gray-400" />
+            <ImageIcon class="mb-2 h-10 w-10 text-gray-500" />
             <p class="mb-1 text-sm text-gray-600">Upload a photo or video</p>
             <p class="text-sm text-gray-500">Your story will be visible for 24 hours</p>
             <label class="mt-3 rounded-full bg-green-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-green-600 cursor-pointer">

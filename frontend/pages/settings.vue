@@ -142,7 +142,7 @@
                       <div
                         class="absolute inset-y-0 right-0 flex items-center pr-3"
                       >
-                        <UIcon name="i-heroicons-key" class="text-gray-400" />
+                        <UIcon name="i-heroicons-key" class="text-gray-500" />
                       </div>
                     </div>
                   </div>
@@ -167,7 +167,7 @@
                       >
                         <UIcon
                           name="i-heroicons-shield-check"
-                          class="text-gray-400"
+                          class="text-gray-500"
                         />
                       </div>
                     </div>
@@ -651,7 +651,7 @@
             </h3>
             <button
               @click="showDeleteConfirmModal = false"
-              class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>

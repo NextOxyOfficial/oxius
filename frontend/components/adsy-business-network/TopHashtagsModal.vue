@@ -52,7 +52,7 @@
               ></div>
               <Hash class="h-8 w-8 text-blue-600 absolute top-4 left-4" />
             </div>
-            <p class="mt-4 text-gray-600 dark:text-gray-400">
+            <p class="mt-4 text-gray-600 dark:text-gray-500">
               Loading trending hashtags...
             </p>
           </div>
@@ -122,12 +122,12 @@
                       <div class="flex flex-col flex-1 min-w-0">
                         <div class="flex items-center justify-between">
                           <h3
-                            class="text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
+                            class="text-base font-semibold text-gray-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
                           >
                             #{{ tag.tag }}
                           </h3>
                           <span
-                            class="text-xs text-gray-500 dark:text-gray-400"
+                            class="text-xs text-gray-500 dark:text-gray-500"
                           >
                             {{ tag.count }}
                             {{ tag.count === 1 ? "post" : "posts" }}
@@ -150,7 +150,7 @@
 
                       <!-- Arrow -->
                       <ChevronRight
-                        class="h-4 w-4 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300"
+                        class="h-4 w-4 text-gray-500 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300"
                       />
                     </div>
                   </li>
@@ -266,7 +266,7 @@ const getRankBadgeClass = (index) => {
   if (index === 0)
     return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"; // 1st place
   if (index === 1)
-    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"; // 2nd place
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400"; // 2nd place
   if (index === 2)
     return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"; // 3rd place
   return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"; // Rest

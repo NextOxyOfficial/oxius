@@ -123,7 +123,7 @@
                       :class="
                         n <= Math.floor(product.rating)
                           ? 'text-yellow-400'
-                          : 'text-gray-200'
+                          : 'text-gray-300'
                       "
                     />
                   </div>

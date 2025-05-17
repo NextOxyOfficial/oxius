@@ -483,7 +483,7 @@
                 >
                   {{ user?.about }}
                 </p>
-                <p v-else class="text-sm text-gray-400 italic mb-3">
+                <p v-else class="text-sm text-gray-500 italic mb-3">
                   No bio provided
                 </p>
               </div>
@@ -791,7 +791,7 @@
                 <div
                   class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
                 >
-                  <ChevronUp class="h-8 w-8 text-gray-400" />
+                  <ChevronUp class="h-8 w-8 text-gray-500" />
                 </div>
                 <h3 class="text-lg font-medium text-gray-800 mb-1">
                   No posts yet

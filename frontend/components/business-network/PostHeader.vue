@@ -55,7 +55,7 @@
         </p>
 
         <p
-          class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1"
+          class="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-1"
         >
           <UIcon name="i-heroicons-clock" class="h-3 w-3" />
           {{ formatTimeAgo(post?.created_at) }}
@@ -71,7 +71,7 @@
           class="h-8 w-8 pr-3 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
           @click.stop="$emit('toggle-dropdown', post)"
         >
-          <MoreHorizontal class="h-4 w-4 text-gray-600 dark:text-gray-300" />
+          <MoreHorizontal class="h-4 w-4 text-gray-600 dark:text-gray-400" />
         </button>
 
         <!-- Dropdown Menu with glassmorphism effect -->
@@ -82,7 +82,7 @@
         >
           <div class="py-1.5">
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('toggle-save', post)"
               v-if="user?.user"
             >
@@ -110,7 +110,7 @@
             </button>
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click="openPostDeleteModal(post)"
               v-if="post.author_details?.id === user?.user?.id"
             >
@@ -122,7 +122,7 @@
             </button>
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('copy-link', post)"
             >
               <Link2
@@ -137,7 +137,7 @@
             />
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               v-if="user"
             >
               <Flag class="h-4 w-4 mr-2.5 text-amber-600 dark:text-amber-400" />
@@ -177,7 +177,7 @@
             </button>
           </div>
 
-          <p class="text-gray-600 dark:text-gray-300 mb-5">
+          <p class="text-gray-600 dark:text-gray-400 mb-5">
             Are you sure you want to delete this post? This action cannot be
             undone.
           </p>
@@ -185,7 +185,7 @@
           <div class="flex justify-end space-x-3">
             <button
               @click="postToDelete = null"
-              class="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              class="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>

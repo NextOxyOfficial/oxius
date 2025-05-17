@@ -4,7 +4,7 @@
     <div v-if="highestGiftComment" class="mb-3">
       <div class="flex items-center gap-2 mb-1.5">
         <UIcon name="i-heroicons-star" class="w-3.5 h-3.5 text-amber-500" />
-        <span class="text-xs font-medium text-gray-600 dark:text-gray-400"
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-500"
           >Top Gift</span
         >
       </div>
@@ -32,7 +32,7 @@
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${highestGiftComment.author}`"
-                  class="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  class="text-base font-medium text-gray-800 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                 >
                   {{ highestGiftComment.author_details?.name }}
                 </NuxtLink>
@@ -71,9 +71,9 @@
           <div class="flex items-center mt-1 pl-1">
             <UIcon
               name="i-heroicons-clock"
-              class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
+              class="w-3 h-3 text-gray-500 dark:text-gray-500 mr-1"
             />
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-sm text-gray-500 dark:text-gray-500">
               {{ formatTimeAgo(highestGiftComment?.created_at) }}
             </span>
           </div>
@@ -119,7 +119,7 @@
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${comment.author}`"
-                  class="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  class="text-base font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {{ comment.author_details?.name }}
                 </NuxtLink>
@@ -137,7 +137,7 @@
                 <button
                   type="button"
                   @click.stop="toggleDropdown(comment)"
-                  class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                  class="p-1.5 rounded-full text-gray-500 dark:text-gray-500 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
                   aria-label="Comment options"
                 >
                   <UIcon
@@ -158,7 +158,7 @@
                         editComment(post, comment);
                         comment.showDropdown = false;
                       "
-                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
                     >
                       <UIcon
                         name="i-heroicons-pencil-square"
@@ -172,7 +172,7 @@
                         deleteComment(post, comment);
                         comment.showDropdown = false;
                       "
-                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
                       :disabled="comment.isDeleting"
                     >
                       <div v-if="comment.isDeleting" class="mr-2">
@@ -209,7 +209,7 @@
                 <button
                   type="button"
                   @click.prevent="$emit('cancel-edit-comment', comment)"
-                  class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                  class="text-xs text-gray-600 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                 >
                   Cancel
                 </button>
@@ -261,7 +261,7 @@
               <!-- Regular comment -->
               <p
                 v-else
-                class="text-base sm:text-sm text-gray-800 dark:text-gray-200"
+                class="text-base sm:text-sm text-gray-800 dark:text-gray-300"
                 style="word-break: break-word"
               >
                 {{ comment?.content }}
@@ -273,9 +273,9 @@
           <div class="flex items-center mt-1 pl-1">
             <UIcon
               name="i-heroicons-clock"
-              class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
+              class="w-3 h-3 text-gray-500 dark:text-gray-500 mr-1"
             />
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-sm text-gray-500 dark:text-gray-500">
               {{ formatTimeAgo(comment?.created_at) }}
             </span>
           </div>
@@ -457,7 +457,7 @@ const toggleDropdown = (comment) => {
 
 /* Gift message styling */
 .gift-message-text {
-  @apply text-base leading-relaxed text-gray-800 dark:text-gray-200 mt-1;
+  @apply text-base leading-relaxed text-gray-800 dark:text-gray-300 mt-1;
 }
 
 /* Top Gift Comment Styling */

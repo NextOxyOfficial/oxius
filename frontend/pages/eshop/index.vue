@@ -103,7 +103,7 @@
               class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white/95 dark:bg-gray-900/95 backdrop-blur-md mt-[60px] sm:mt-0"
             >
               <h2
-                class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center"
+                class="text-lg font-semibold text-gray-800 dark:text-gray-300 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-circle-stack"
@@ -113,7 +113,7 @@
               </h2>
               <button
                 @click="toggleSidebar"
-                class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-500"
               >
                 <UIcon name="i-heroicons-x-mark" class="size-5" />
               </button>
@@ -124,7 +124,7 @@
             <!-- Featured Categories Section -->
             <div class="mb-4">
               <p
-                class="text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-3 ml-1"
+                class="text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-500 mb-3 ml-1"
               >
                 BROWSE CATEGORIES
               </p>
@@ -136,7 +136,7 @@
                     :class="
                       selectedCategory === category.id
                         ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-300'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-400'
                     "
                   >
                     <div
@@ -148,7 +148,7 @@
                         :class="
                           selectedCategory === category.id
                             ? 'text-emerald-500'
-                            : 'text-gray-600 dark:text-gray-400'
+                            : 'text-gray-600 dark:text-gray-500'
                         "
                       />
                     </div>
@@ -236,7 +236,7 @@
               class="mt-5 rounded-xl bg-white dark:bg-gray-800/70 border border-gray-100 dark:border-gray-700/50 shadow-sm p-4"
             >
               <h3
-                class="font-medium text-gray-800 dark:text-gray-200 flex items-center"
+                class="font-medium text-gray-800 dark:text-gray-300 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-chat-bubble-left-right"
@@ -244,7 +244,7 @@
                 />
                 Customer Support
               </h3>
-              <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">
+              <p class="text-sm mt-2 text-gray-600 dark:text-gray-400">
                 Our team is here to help you with any questions about your
                 orders or products.
               </p>
@@ -331,17 +331,17 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search products, brands, categories..."
-                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-500 dark:placeholder:text-gray-500"
                 @input="debouncedSearch"
               />
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 size-5"
+                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500 size-5"
               />
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <UIcon name="i-heroicons-x-mark" class="size-5" />
               </button>
@@ -353,7 +353,7 @@
             class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
           >
             <h3
-              class="text-base font-medium text-gray-700 dark:text-gray-300 flex items-center lg:whitespace-nowrap"
+              class="text-base font-medium text-gray-700 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
             >
               <UIcon
                 name="i-heroicons-banknotes"
@@ -365,7 +365,7 @@
             <div class="flex items-center gap-3 flex-1">
               <div class="relative flex-1">
                 <span
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 font-medium"
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-500 font-medium"
                   >৳</span
                 >
                 <input
@@ -377,11 +377,11 @@
                 />
               </div>
 
-              <div class="flex-shrink-0 text-gray-400">—</div>
+              <div class="flex-shrink-0 text-gray-500">—</div>
 
               <div class="relative flex-1">
                 <span
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 font-medium"
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-500 font-medium"
                   >৳</span
                 >
                 <input
@@ -413,7 +413,7 @@
           <!-- Categories Column -->
           <div class="lg:col-span-3">
             <h3
-              class="text-base font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center"
+              class="text-base font-medium mb-3 text-gray-700 dark:text-gray-400 flex items-center"
             >
               <UIcon
                 name="i-heroicons-circle-stack"
@@ -455,7 +455,7 @@
           v-if="hasActiveFilters"
           class="flex flex-wrap items-center gap-2 mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/30"
         >
-          <span class="text-sm text-gray-600 dark:text-gray-400 font-medium"
+          <span class="text-sm text-gray-600 dark:text-gray-500 font-medium"
             >Active filters:</span
           >
 
@@ -529,13 +529,13 @@
         >
           <UIcon
             name="i-heroicons-shopping-bag"
-            class="size-12 text-gray-300 dark:text-gray-600"
+            class="size-12 text-gray-400 dark:text-gray-600"
           />
         </div>
-        <h3 class="mt-6 text-xl font-medium text-gray-900 dark:text-gray-100">
+        <h3 class="mt-6 text-xl font-medium text-gray-900 dark:text-gray-200">
           No products found
         </h3>
-        <p class="mt-2 text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+        <p class="mt-2 text-gray-600 dark:text-gray-500 max-w-md mx-auto">
           We couldn't find products matching your criteria. Try adjusting your
           filters.
         </p>
@@ -581,7 +581,7 @@
               class="w-full h-full rounded-full border-3 border-t-emerald-500 animate-spin absolute top-0 left-0"
             ></div>
           </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+          <p class="text-sm text-gray-500 dark:text-gray-500 mt-3">
             Loading more products...
           </p>
         </div>
@@ -589,7 +589,7 @@
           v-else-if="!hasMoreProducts && allProducts.length > 0"
           class="text-center py-4"
         >
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-gray-500 dark:text-gray-500">
             You've reached the end of the list
           </p>
         </div>

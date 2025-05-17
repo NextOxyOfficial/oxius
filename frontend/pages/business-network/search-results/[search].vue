@@ -11,7 +11,7 @@
           </h1>
           <p class="text-gray-600 text-sm mt-1 flex items-center">
             <span class="font-medium text-gray-700">{{ $route.params.search }}</span>
-            <span class="mx-2 text-gray-400">•</span>
+            <span class="mx-2 text-gray-500">•</span>
             <span v-if="!loading && allPosts.length > 0">{{ allPosts.length }} {{ allPosts.length === 1 ? 'result' : 'results' }}</span>
             <span v-else-if="!loading && allPosts.length === 0">No results found</span>
             <span v-else>Searching...</span>
@@ -226,7 +226,7 @@
       class="flex flex-col items-center justify-center py-12 text-center bg-white rounded-xl shadow-sm border border-gray-100 px-4"
     >
       <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-6 border border-gray-200">
-        <Search class="h-8 w-8 text-gray-400" />
+        <Search class="h-8 w-8 text-gray-500" />
       </div>
       
       <h3 class="text-lg font-semibold text-gray-800 mb-2">No results found</h3>

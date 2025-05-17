@@ -278,7 +278,7 @@
               class="text-emerald-500 size-6"
             />
             <h2
-              class="text-base text-gray-900 dark:text-gray-100 sm:text-xl font-medium"
+              class="text-base text-gray-900 dark:text-gray-200 sm:text-xl font-medium"
             >
               {{ $t("mobile_recharge") }}
             </h2>

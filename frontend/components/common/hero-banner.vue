@@ -143,9 +143,9 @@
                   <span>Amar Seba</span>
                 </NuxtLink>                
                 <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
-                <div class="service-btn bg-white/70 text-gray-400 relative opacity-80 cursor-not-allowed">
+                <div class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed">
                   <div class="icon-circle bg-gray-100">
-                    <HeartPulse class="icon text-gray-400" />
+                    <HeartPulse class="icon text-gray-500" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>Shastho Sheba</span>
@@ -154,9 +154,9 @@
                 </div>
 
                 <!-- Bill Pay (Coming Soon) - Disabled appearance -->
-                <div class="service-btn bg-white/70 text-gray-400 relative opacity-80 cursor-not-allowed">
+                <div class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed">
                   <div class="icon-circle bg-gray-100">
-                    <Receipt class="icon text-gray-400" />
+                    <Receipt class="icon text-gray-500" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>Bill Pay</span>
@@ -260,10 +260,10 @@
         <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
         <div class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed">
           <div class="mobile-icon-circle bg-gray-100">
-            <HeartPulse class="mobile-icon text-gray-400" />
+            <HeartPulse class="mobile-icon text-gray-500" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-400">Shastho Sheba</span>
+            <span class="text-sm leading-tight text-gray-500">Shastho Sheba</span>
           </div>
           <span class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm">Coming Soon</span>
         </div>
@@ -271,10 +271,10 @@
         <!-- Bill Pay (Coming Soon) - Disabled appearance -->
         <div class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed">
           <div class="mobile-icon-circle bg-gray-100">
-            <Receipt class="mobile-icon text-gray-400" />
+            <Receipt class="mobile-icon text-gray-500" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-400">Bill Pay</span>
+            <span class="text-sm leading-tight text-gray-500">Bill Pay</span>
           </div>
           <span class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm">Coming Soon</span>
         </div>        

@@ -6,7 +6,7 @@
       aria-label="Search"
     >
       <SearchIcon
-        class="h-[18px] w-[18px] text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+        class="h-[18px] w-[18px] text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
       />
     </button>
 
@@ -31,7 +31,7 @@
           class="p-3 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm"
         >
           <h4
-            class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-2 px-1"
+            class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-medium mb-2 px-1"
           >
             Search
           </h4>
@@ -40,11 +40,11 @@
               type="text"
               placeholder="Type to search..."
               v-model="searchQuery"
-              class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-all duration-300 shadow-sm search-input"
+              class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
               ref="searchInput"
             />
             <div
-              class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400"
+              class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-500"
             >
               <SearchIcon class="h-4.5 w-4.5" />
             </div>
@@ -56,7 +56,7 @@
                 @click="clearSearch"
                 class="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-colors"
               >
-                <XIcon class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                <XIcon class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500" />
               </button>
             </div>
           </div>
@@ -91,7 +91,7 @@
             :class="
               activeTab === 'all'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
             "
             @click="activeTab = 'all'"
           >
@@ -103,7 +103,7 @@
             :class="
               activeTab === 'posts'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
             "
             @click="activeTab = 'posts'"
           >
@@ -121,7 +121,7 @@
             :class="
               activeTab === 'people'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
             "
             @click="activeTab = 'people'"
           >
@@ -141,14 +141,14 @@
           class="max-h-80 overflow-y-auto search-results-container"
         >
           <div class="py-2 px-1">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1.5 px-3">
+            <p class="text-xs text-gray-500 dark:text-gray-500 mb-1.5 px-3">
               Results for "<span
                 class="font-medium text-blue-600 dark:text-blue-400"
                 >{{ searchQuery }}</span
               >"
               <span
                 v-if="usingFuzzySearch"
-                class="text-xs ml-1 text-gray-400 dark:text-gray-500"
+                class="text-xs ml-1 text-gray-500 dark:text-gray-500"
                 >(including similar words)</span
               >
             </p>
@@ -160,7 +160,7 @@
                 class="px-3 pt-1 pb-2"
               >
                 <h4
-                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium"
+                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-medium"
                 >
                   Posts ({{ filteredPosts.length }})
                 </h4>
@@ -181,7 +181,7 @@
                   <div class="flex-1 min-w-0">
                     <!-- Highlighted title with keyword matches -->
                     <p
-                      class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+                      class="text-sm font-medium text-gray-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
                     >
                       <span
                         v-html="highlightMatches(result.title, searchQuery)"
@@ -191,7 +191,7 @@
                     <!-- Content preview with highlighted matches (if available) -->
                     <p
                       v-if="result.post_text"
-                      class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
+                      class="text-xs text-gray-500 dark:text-gray-500 mt-1 line-clamp-2"
                     >
                       <span
                         v-html="
@@ -208,7 +208,7 @@
                         :class="
                           isTagMatched(tag.tag, searchQuery)
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
-                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'
+                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-500'
                         "
                       >
                         #<span
@@ -223,7 +223,7 @@
                       class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors"
                     >
                       <ArrowRight
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                       />
                     </div>
                   </div>
@@ -238,7 +238,7 @@
                 class="px-3 pt-3 pb-2"
               >
                 <h4
-                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium"
+                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-medium"
                 >
                   People ({{ filteredPeople.length }})
                 </h4>
@@ -268,7 +268,7 @@
                   <!-- User info with more detailed display -->
                   <div class="ml-3 flex-1 min-w-0">
                     <p
-                      class="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                      class="text-sm font-medium text-gray-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                     >
                       <span
                         v-html="
@@ -280,7 +280,7 @@
                       ></span>
                     </p>
                     <div
-                      class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400"
+                      class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-500"
                     >
                       <span v-if="person.followers !== undefined">
                         {{ person.followers }}
@@ -308,11 +308,11 @@
                     >
                       <UserPlus
                         v-if="!followingStatus[person.id]"
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                       />
                       <User
                         v-else
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                       />
                     </div>
                   </div>
@@ -342,20 +342,20 @@
           <div
             class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-3 flex items-center justify-center"
           >
-            <SearchOffIcon class="h-6 w-6 text-gray-400 dark:text-gray-500" />
+            <SearchOffIcon class="h-6 w-6 text-gray-500 dark:text-gray-500" />
           </div>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
             No results found
           </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
             We couldn't find anything for "{{ searchQuery }}"
           </p>
           <div
-            class="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
+            class="text-xs text-gray-600 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
           >
             <p class="font-medium mb-1">Suggestions:</p>
             <ul
-              class="text-gray-500 dark:text-gray-400 text-left space-y-1 pl-4 list-disc"
+              class="text-gray-500 dark:text-gray-500 text-left space-y-1 pl-4 list-disc"
             >
               <li>Try different keywords</li>
               <li>Check for typos</li>
@@ -371,15 +371,15 @@
           >
             <SearchIcon class="h-7 w-7 text-blue-500 dark:text-blue-400" />
           </div>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
             Search the platform
           </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
             Find posts, topics, and more
           </p>
 
           <div
-            class="mt-4 space-y-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 border border-gray-100 dark:border-gray-700"
+            class="mt-4 space-y-2 text-xs text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 border border-gray-100 dark:border-gray-700"
           >
             <p class="font-medium">Try searching for:</p>
             <div class="flex flex-wrap gap-1.5 justify-center mt-2">
@@ -387,7 +387,7 @@
                 v-for="(suggestion, i) in searchSuggestions"
                 :key="i"
                 @click="setSearchQuery(suggestion)"
-                class="px-2.5 py-1.5 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-gray-700 dark:text-gray-300"
+                class="px-2.5 py-1.5 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-gray-700 dark:text-gray-400"
               >
                 {{ suggestion }}
               </button>
@@ -395,10 +395,10 @@
           </div>
 
           <div
-            class="mt-4 text-xs text-gray-400 dark:text-gray-500 flex justify-center items-center gap-1.5"
+            class="mt-4 text-xs text-gray-500 dark:text-gray-500 flex justify-center items-center gap-1.5"
           >
             <kbd
-              class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-gray-500 dark:text-gray-400 font-mono"
+              class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-gray-500 dark:text-gray-500 font-mono"
               >ESC</kbd
             >
             to close
@@ -411,7 +411,7 @@
           class="p-8 text-center"
         >
           <div class="loading-spinner mx-auto mb-3"></div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Searching...</p>
+          <p class="text-sm text-gray-500 dark:text-gray-500">Searching...</p>
         </div>
       </div>
     </Transition>

@@ -205,7 +205,7 @@
               color="gray"
               variant="ghost"
               icon="i-heroicons-x-mark-20-solid"
-              class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110"
+              class="text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:hover:text-gray-300 transition-transform transform hover:scale-110"
               @click="isOpen = false"
             />
           </div>
@@ -215,7 +215,7 @@
           <!-- Navigation Links -->
           <div class="px-4 py-6">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 px-4"
+              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-2 px-4"
             >
               {{ $t("menu") }}
             </h3>
@@ -249,7 +249,7 @@
               ]"
               :ui="{
                 inactive:
-                  'after:hidden before:hidden text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors',
+                  'after:hidden before:hidden text-gray-600 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 transition-colors',
                 active:
                   'after:hidden before:hidden text-emerald-600 dark:text-emerald-400 font-semibold',
                 padding: 'py-3 px-4',
@@ -265,7 +265,7 @@
           <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4"
+              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
             >
               {{ $t("download_our_app") }}
             </h3>
@@ -296,7 +296,7 @@
           <!-- Social Media Share Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4"
+              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
             >
               {{ $t("follow_us") }}
             </h3>

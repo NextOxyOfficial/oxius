@@ -297,7 +297,7 @@
               <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
                 <Icon
                   name="heroicons:map-pin"
-                  class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-400"
+                  class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
                 />
                 <span class="line-clamp-1"
                   >{{ post.area }}, {{ post.district }}</span
@@ -316,7 +316,7 @@
                 <div class="text-xs text-gray-500 flex items-center">
                   <Icon
                     name="heroicons:clock"
-                    class="h-3 w-3 mr-1 text-gray-400"
+                    class="h-3 w-3 mr-1 text-gray-500"
                   />
                   {{ formatDate(post.created_at) }}
                 </div>
@@ -333,7 +333,7 @@
           <Icon
             name="heroicons:document-magnifying-glass"
             size="40px"
-            class="text-gray-400 mb-2"
+            class="text-gray-500 mb-2"
           />
           <h3 class="text-base font-medium text-gray-800 mb-1">
             No listings found
@@ -372,7 +372,7 @@
                 </h3>
                 <button
                   type="button"
-                  class="text-gray-400 hover:text-gray-500"
+                  class="text-gray-500 hover:text-gray-500"
                   @click="closePostSaleModal"
                 >
                   <Icon name="heroicons:x-mark" size="24px" />
@@ -409,7 +409,7 @@
                 </h3>
                 <button
                   type="button"
-                  class="text-gray-400 hover:text-gray-500"
+                  class="text-gray-500 hover:text-gray-500"
                   @click="closeMyPostsModal"
                 >
                   <Icon name="heroicons:x-mark" size="24px" />

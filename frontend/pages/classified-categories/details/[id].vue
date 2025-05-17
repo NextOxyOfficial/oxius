@@ -9,14 +9,14 @@
             <ULink
               to="/"
               active-class="text-primary"
-              inactive-class="text-gray-500 dark:text-gray-400"
+              inactive-class="text-gray-500 dark:text-gray-500"
               >Home</ULink
             >
             >
             <ULink
               :to="`/classified-categories/${service.category_details?.id}`"
               active-class="text-primary"
-              inactive-class="text-gray-500 dark:text-gray-400"
+              inactive-class="text-gray-500 dark:text-gray-500"
               >{{ service.category_details?.title }}</ULink
             >
             > <u>{{ service.title }}</u>

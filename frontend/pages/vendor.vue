@@ -516,7 +516,7 @@
                         :class="`w-4 h-4 ${
                           star <= review.rating
                             ? 'text-yellow-400'
-                            : 'text-gray-300'
+                            : 'text-gray-400'
                         }`"
                         fill="currentColor"
                         viewBox="0 0 20 20"

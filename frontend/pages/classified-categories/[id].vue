@@ -13,7 +13,7 @@
           <ULink
             to="/"
             active-class="text-primary"
-            inactive-class="text-gray-500 dark:text-gray-400"
+            inactive-class="text-gray-500 dark:text-gray-500"
             >{{ $t("home") }}</ULink
           >
           <span v-if="categoryDetails?.title">&#8658;</span>
@@ -89,7 +89,7 @@
                 <UIcon
                   v-if="location?.city"
                   name="i-heroicons-chevron-right"
-                  class="mx-1.5 text-gray-400"
+                  class="mx-1.5 text-gray-500"
                 />
               </div>
 
@@ -108,7 +108,7 @@
                 <UIcon
                   v-if="location?.upazila"
                   name="i-heroicons-chevron-right"
-                  class="mx-1.5 text-gray-400"
+                  class="mx-1.5 text-gray-500"
                 />
               </div>
 

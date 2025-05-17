@@ -112,7 +112,7 @@
       <div class="flex flex-col items-center justify-center">
         <div class="bot-container mb-4">
           <div class="bot-icon">
-            <UIcon name="i-carbon:bot" class="text-5xl text-gray-400" />
+            <UIcon name="i-carbon:bot" class="text-5xl text-gray-500" />
           </div>
         </div>
         <div class="text-lg font-medium text-gray-700">

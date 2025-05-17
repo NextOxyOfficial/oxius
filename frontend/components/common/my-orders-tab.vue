@@ -14,7 +14,7 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-400"
+            class="h-6 w-6 animate-spin text-gray-500"
           />
         </div>
         <div class="flex items-center justify-between">
@@ -48,7 +48,7 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-400"
+            class="h-6 w-6 animate-spin text-gray-500"
           />
         </div>
         <div class="flex items-center justify-between">
@@ -79,7 +79,7 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-400"
+            class="h-6 w-6 animate-spin text-gray-500"
           />
         </div>
         <div class="flex items-center justify-between">
@@ -113,7 +113,7 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-400"
+            class="h-6 w-6 animate-spin text-gray-500"
           />
         </div>
         <div class="flex items-center justify-between">
@@ -168,7 +168,7 @@
             <div
               class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
             >
-              <Search class="h-5 w-5 text-gray-400" />
+              <Search class="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </div>
@@ -276,7 +276,7 @@
           <tr v-if="paginatedOrders.length === 0">
             <td colspan="6" class="px-6 py-10 text-center text-gray-500">
               <div class="flex flex-col items-center justify-center">
-                <PackageX class="h-10 w-10 text-gray-300 mb-2" />
+                <PackageX class="h-10 w-10 text-gray-400 mb-2" />
                 No orders found matching your criteria
               </div>
             </td>
@@ -383,7 +383,7 @@
               </button>
               <button
                 @click="showOrderDetailsModal = false"
-                class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+                class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
               >
                 <X class="h-6 w-6" />
               </button>
@@ -880,7 +880,7 @@
           </h3>
           <button
             @click="showAddItemModal = false"
-            class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+            class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
           >
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>
@@ -920,7 +920,7 @@
                 >
                   <UIcon
                     name="i-heroicons-photo"
-                    class="h-8 w-8 text-gray-400"
+                    class="h-8 w-8 text-gray-500"
                   />
                 </div>
               </div>

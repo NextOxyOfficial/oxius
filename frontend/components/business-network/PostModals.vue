@@ -147,7 +147,7 @@
                       <div class="flex items-center gap-1">
                         <NuxtLink
                           :to="`/business-network/profile/${comment.author}`"
-                          class="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          class="text-base font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
                           {{ comment.author_details?.name }}
                         </NuxtLink>
@@ -168,7 +168,7 @@
                         <button
                           type="button"
                           @click.stop="toggleDropdown(comment)"
-                          class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                          class="p-1.5 rounded-full text-gray-500 dark:text-gray-500 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
                           aria-label="Comment options"
                         >
                           <UIcon
@@ -189,7 +189,7 @@
                                 editComment(activeCommentsPost, comment);
                                 comment.showDropdown = false;
                               "
-                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
                             >
                               <UIcon
                                 name="i-heroicons-pencil-square"
@@ -203,7 +203,7 @@
                                 deleteComment(activeCommentsPost, comment);
                                 comment.showDropdown = false;
                               "
-                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
                               :disabled="comment.isDeleting"
                             >
                               <div v-if="comment.isDeleting" class="mr-2">
@@ -242,7 +242,7 @@
                         <button
                           type="button"
                           @click.prevent="$emit('cancel-edit-comment', comment)"
-                          class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                          class="text-xs text-gray-600 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                         >
                           Cancel
                         </button>
@@ -296,7 +296,7 @@
                       <!-- Regular comment -->
                       <p
                         v-else
-                        class="text-base sm:text-sm text-gray-800 dark:text-gray-200"
+                        class="text-base sm:text-sm text-gray-800 dark:text-gray-300"
                         style="word-break: break-word"
                       >
                         {{ comment?.content }}
@@ -308,9 +308,9 @@
                   <div class="flex items-center mt-1 pl-1">
                     <UIcon
                       name="i-heroicons-clock"
-                      class="w-3 h-3 text-gray-400 dark:text-gray-500 mr-1"
+                      class="w-3 h-3 text-gray-500 dark:text-gray-500 mr-1"
                     />
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                    <span class="text-sm text-gray-500 dark:text-gray-500">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
                   </div>
@@ -360,7 +360,7 @@
                   v-model="activeCommentsPost.commentText"
                   placeholder="Add a comment..."
                   rows="1"
-                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
                   @input="
                     autoResize();
                     $emit('handle-comment-input', $event, activeCommentsPost);
@@ -422,7 +422,7 @@
                   class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1"
                 >
                   <button
-                    class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                    class="p-1 rounded-full text-gray-500 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
                     @click="activeCommentsPost.commentText = ''"
                     aria-label="Clear comment"
                   >
@@ -440,7 +440,7 @@
                     ></div>
                   </button>
                   <button
-                    class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                    class="p-1 rounded-full text-gray-500 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
                     aria-label="Clear comment"
                   >
                     <UIcon
@@ -826,7 +826,7 @@ const saveEditComment = (post, comment) => {
 
 /* Gift message styling */
 .gift-message-text {
-  @apply text-base leading-relaxed text-gray-800 dark:text-gray-200 mt-1;
+  @apply text-base leading-relaxed text-gray-800 dark:text-gray-300 mt-1;
 }
 
 /* Top Gift Comment Styling */

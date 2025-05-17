@@ -175,7 +175,7 @@
         <div class="p-4 border-b border-gray-100">
           <div class="relative">
             <SearchIcon
-              class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
             />
             <input
               type="text"
@@ -188,7 +188,7 @@
             <button
               v-if="searchQuery"
               @click="clearSearch"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-600"
             >
               <XIcon class="h-4 w-4" />
             </button>
@@ -229,7 +229,7 @@
             class="p-6 text-center text-gray-500"
           >
             <svg
-              class="mx-auto h-12 w-12 text-gray-300"
+              class="mx-auto h-12 w-12 text-gray-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -256,7 +256,7 @@
         </div>
 
         <div v-if="!searchQuery" class="p-6 text-center text-gray-500">
-          <SearchIcon class="mx-auto h-8 w-8 text-gray-300 mb-2" />
+          <SearchIcon class="mx-auto h-8 w-8 text-gray-400 mb-2" />
           <p>Type to start searching</p>
           <p class="text-xs mt-1">Press ESC to close</p>
         </div>

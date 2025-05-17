@@ -18,7 +18,7 @@
             <div class="flex items-center">
               <UIcon
                 name="i-heroicons-chevron-right"
-                class="size-3 mx-1 text-gray-400"
+                class="size-3 mx-1 text-gray-500"
               />
               <NuxtLink
                 to="/sale/for-sale"
@@ -32,7 +32,7 @@
             <div class="flex items-center">
               <UIcon
                 name="i-heroicons-chevron-right"
-                class="size-3 mx-1 text-gray-400"
+                class="size-3 mx-1 text-gray-500"
               />
               <span class="text-sm text-gray-600 font-medium">{{
                 post.title || "Loading..."
@@ -102,7 +102,7 @@
               <!-- Image Loading Placeholder -->
               <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 z-10">
                 <div class="animate-pulse">
-                  <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-300 dark:text-gray-600" />
+                  <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400 dark:text-gray-600" />
                 </div>
               </div>
               
@@ -121,14 +121,14 @@
               <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4">
                 <button 
                   @click.stop="navigateImage('prev')" 
-                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Previous image"
                 >
                   <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
                 </button>
                 <button 
                   @click.stop="navigateImage('next')" 
-                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                  class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Next image"
                 >
                   <UIcon name="i-heroicons-chevron-right" class="h-6 w-6" />
@@ -160,7 +160,7 @@
               <!-- Zoom Control -->
               <button 
                 @click.stop="openLightbox = true" 
-                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                 aria-label="Zoom image"
               >
                 <UIcon name="i-heroicons-magnifying-glass-plus" class="h-5 w-5" />
@@ -210,8 +210,8 @@
               v-if="!post.images || post.images.length === 0"
               class="text-center py-6 bg-gray-50 dark:bg-gray-900/20"
             >
-              <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto" />
-              <p class="text-gray-500 dark:text-gray-400 mt-2">No images available for this listing</p>
+              <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto" />
+              <p class="text-gray-500 dark:text-gray-500 mt-2">No images available for this listing</p>
             </div>
           </div>
           
@@ -529,7 +529,7 @@
                   <UIcon
                     v-else
                     name="i-heroicons-user"
-                    class="size-8 text-gray-400"
+                    class="size-8 text-gray-500"
                   />
                 </div>
               </div>

@@ -123,7 +123,7 @@
             >
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="h-5 w-5 text-gray-400"
+                class="h-5 w-5 text-gray-500"
               />
             </div>
           </div>
@@ -149,7 +149,7 @@
             v-else
             class="w-full h-48 bg-gray-200 flex items-center justify-center"
           >
-            <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-400" />
+            <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-500" />
           </div>
           <div class="absolute top-2 right-2">
             <span
@@ -213,21 +213,21 @@
             <div class="text-sm text-gray-500 flex items-center">
               <UIcon
                 name="i-heroicons-eye"
-                class="h-4 w-4 mr-1 text-gray-400"
+                class="h-4 w-4 mr-1 text-gray-500"
               />
               {{ product.views }}
             </div>
             <div class="text-sm text-gray-500 flex items-center">
               <UIcon
                 name="i-heroicons-shopping-bag"
-                class="h-4 w-4 mr-1 text-gray-400"
+                class="h-4 w-4 mr-1 text-gray-500"
               />
               {{ product.order_count }}
             </div>
             <div class="text-sm text-gray-500 flex items-center">
               <UIcon
                 name="i-heroicons-cube"
-                class="h-4 w-4 mr-1 text-gray-400"
+                class="h-4 w-4 mr-1 text-gray-500"
               />
               {{ product.quantity }}
             </div>
@@ -327,7 +327,7 @@
         <div class="flex flex-col items-center justify-center">
           <UIcon
             name="i-heroicons-cube-transparent"
-            class="h-12 w-12 text-gray-300 mb-2"
+            class="h-12 w-12 text-gray-400 mb-2"
           />
           No products found matching your criteria
         </div>
@@ -357,7 +357,7 @@
           </h3>
           <button
             @click="showDeleteConfirmModal = false"
-            class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+            class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
           >
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>

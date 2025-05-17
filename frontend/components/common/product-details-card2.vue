@@ -434,7 +434,7 @@
                   "
                   class="w-5 h-5"
                   :class="
-                    star <= review.rating ? 'text-amber-400' : 'text-gray-200'
+                    star <= review.rating ? 'text-amber-400' : 'text-gray-300'
                   "
                 />
               </div>

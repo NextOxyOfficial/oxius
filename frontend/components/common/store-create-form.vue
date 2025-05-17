@@ -69,7 +69,7 @@
         >
           Create Your Store
         </h1>
-        <p class="text-gray-600 dark:text-gray-300">
+        <p class="text-gray-600 dark:text-gray-400">
           Set up your online store and start selling your products
         </p>
       </div>
@@ -81,7 +81,7 @@
           <div class="mb-6">
             <label
               for="storeName"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2"
             >
               Store Name <span class="text-red-500">*</span>
             </label>
@@ -91,7 +91,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-gray-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -121,7 +121,7 @@
           <div class="mb-6">
             <label
               for="storeUsername"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2"
             >
               Store Username <span class="text-red-500">*</span>
             </label>
@@ -131,7 +131,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-gray-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -207,7 +207,7 @@
                   v-if="usernameAvailability.suggestions.length > 0"
                   class="mt-2"
                 >
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-gray-500 dark:text-gray-500">
                     Try one of these instead:
                   </p>
                   <div class="flex flex-wrap gap-2 mt-1">
@@ -215,7 +215,7 @@
                       v-for="suggestion in usernameAvailability.suggestions"
                       :key="suggestion"
                       @click="selectSuggestion(suggestion)"
-                      class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded text-gray-700 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-300"
+                      class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded text-gray-700 dark:text-gray-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                     >
                       {{ suggestion }}
                     </button>
@@ -230,11 +230,11 @@
 
             <!-- Store URL Preview -->
             <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <p class="text-xs text-gray-500 dark:text-gray-500 mb-1">
                 Your store URL will be:
               </p>
               <div class="flex items-center break-words">
-                <span class="text-sm text-gray-600 dark:text-gray-300"
+                <span class="text-sm text-gray-600 dark:text-gray-400"
                   >https://adsyclub.com/eshop/</span
                 >
                 <span
@@ -362,7 +362,7 @@
                   Store Created Successfully!
                 </h3>
                 <div class="mt-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-gray-500 dark:text-gray-500">
                     Your store {{ form.store_name }}" has been created. You can
                     now start adding products and customizing your store.
                   </p>
@@ -382,7 +382,7 @@
             </button>
             <button
               type="button"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               @click="isSuccessModalOpen = false"
             >
               Close
@@ -403,7 +403,7 @@
           <h3 class="text-lg font-medium">KYC Verification Required</h3>
         </div>
 
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p class="text-sm text-gray-500 dark:text-gray-500 mb-4">
           Before creating a store, you need to complete your KYC verification.
           This helps us ensure platform security and comply with regulations.
         </p>

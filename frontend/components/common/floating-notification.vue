@@ -418,7 +418,7 @@ function formatAmount(amount) {
 }
 
 .notification-message {
-  @apply text-sm text-gray-600 dark:text-gray-300;
+  @apply text-sm text-gray-600 dark:text-gray-400;
 }
 
 .notification-backdrop {

@@ -22,7 +22,7 @@
           v-model="post.commentText"
           placeholder="Add a comment..."
           rows="1"
-          class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+          class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
           @input="$emit('handle-comment-input', $event, post)"
           @focus="post.showCommentInput = true"
           @keydown="$emit('handle-mention-keydown', $event, post)"
@@ -39,7 +39,7 @@
           class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
         >
           <button
-            class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+            class="p-1 rounded-full text-gray-500 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
             @click="post.commentText = ''"
             aria-label="Clear comment"
           >
@@ -95,7 +95,7 @@
                   />
                 </div>
                 <h3
-                  class="text-base font-semibold text-gray-800 dark:text-gray-200"
+                  class="text-base font-semibold text-gray-800 dark:text-gray-300"
                 >
                   Send Gift to
                   {{
@@ -129,7 +129,7 @@
               <div class="relative flex flex-col items-center justify-center">
                 <div class="flex items-center justify-center mb-1">
                   <span
-                    class="text-sm text-gray-700 dark:text-gray-300 font-medium"
+                    class="text-sm text-gray-700 dark:text-gray-400 font-medium"
                     >Available Diamonds</span
                   >
                 </div>
@@ -159,7 +159,7 @@
             <div class="px-4 mb-4">
               <div class="flex flex-col">
                 <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1.5 ml-1"
                 >
                   Send gift diamonds
                 </label>
@@ -170,7 +170,7 @@
                     placeholder="Enter diamond amount"
                     :max="availableDiamonds"
                     min="1"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
+                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-slate-800/80"
                   />
                   <div
                     class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
@@ -185,7 +185,7 @@
                 <!-- Gift message input -->
                 <div class="mt-3">
                   <label
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1.5 ml-1"
                   >
                     Gift message
                   </label>
@@ -194,7 +194,7 @@
                       v-model="giftMessage"
                       placeholder="Add a gift message... (optional)"
                       rows="2"
-                      class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80 resize-none"
+                      class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-slate-800/80 resize-none"
                     ></textarea>
                   </div>
                 </div>
@@ -222,7 +222,7 @@
                 <!-- No Balance Message -->
                 <div
                   v-if="availableDiamonds === 0"
-                  class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-400 py-1.5"
+                  class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-500 py-1.5"
                 >
                   <UIcon
                     name="i-heroicons-exclamation-circle"
@@ -250,7 +250,7 @@
                   />
                 </div>
                 <h3
-                  class="text-base font-semibold text-gray-800 dark:text-gray-200"
+                  class="text-base font-semibold text-gray-800 dark:text-gray-300"
                 >
                   Buy Diamonds
                 </h3>
@@ -274,17 +274,17 @@
                     name="i-heroicons-wallet"
                     class="h-4 w-4 text-pink-500 mr-1.5"
                   />
-                  <span class="text-sm text-gray-700 dark:text-gray-300"
+                  <span class="text-sm text-gray-700 dark:text-gray-400"
                     >Account Funds:</span
                   >
                 </div>
                 <div class="flex items-center">
                   <span
-                    class="text-md font-semibold text-gray-800 dark:text-gray-200"
+                    class="text-md font-semibold text-gray-800 dark:text-gray-300"
                     >{{ user.user.balance }}</span
                   >
                   <span
-                    class="text-md font-semibold text-gray-700 dark:text-gray-300 ml-1"
+                    class="text-md font-semibold text-gray-700 dark:text-gray-400 ml-1"
                     >৳</span
                   >
                   <button
@@ -296,7 +296,7 @@
                 </div>
               </div>
 
-              <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                 Purchase diamond packages (10 diamonds = 1 BDT)
               </p>
 
@@ -322,7 +322,7 @@
                       class="h-4 w-4 ml-1 text-pink-400"
                     />
                   </div>
-                  <span class="text-xs text-gray-600 dark:text-gray-300 mt-1"
+                  <span class="text-xs text-gray-600 dark:text-gray-400 mt-1"
                     >{{ pkg.price }} BDT</span
                   >
 
@@ -342,7 +342,7 @@
               <!-- Custom amount input -->
               <div class="mb-5">
                 <label
-                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1"
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-400 mb-1.5 ml-1"
                 >
                   Custom Amount
                 </label>
@@ -352,7 +352,7 @@
                     v-model="customDiamondAmount"
                     placeholder="Enter diamond amount"
                     min="10"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-slate-800/80"
+                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-slate-800/80"
                     @input="onCustomAmountInput"
                   />
                   <div
@@ -402,7 +402,7 @@
         <div class="pt-1 pb-1">
           <!-- Header with subtle styling -->
           <div
-            class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-100/80 dark:border-slate-700/80"
+            class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-500 border-b border-gray-100/80 dark:border-slate-700/80"
           >
             Mention someone
           </div>
@@ -438,12 +438,12 @@
               <!-- User name with subtle styling -->
               <div class="flex flex-col">
                 <span
-                  class="text-sm font-medium text-gray-800 dark:text-gray-200"
+                  class="text-sm font-medium text-gray-800 dark:text-gray-300"
                 >
                   {{ user?.follower_details?.name }}
                 </span>
                 <span
-                  class="text-xs text-gray-500 dark:text-gray-400"
+                  class="text-xs text-gray-500 dark:text-gray-500"
                   v-if="user?.follower_details?.profession"
                 >
                   {{ user?.follower_details?.profession }}
@@ -482,7 +482,7 @@
             <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
               Gift Sent Successfully!
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
               You sent {{ lastGiftAmount }} diamonds to
               {{ post?.author_details?.name || post?.author?.name || "User" }}
             </p>

@@ -24,7 +24,7 @@
                 'size-5 transition-colors',
                 post.post_likes?.find((like) => like.user === user?.user?.id)
                   ? 'text-rose-500 dark:text-rose-400'
-                  : 'text-gray-600 dark:text-gray-400 group-hover:text-rose-500 dark:group-hover:text-rose-400',
+                  : 'text-gray-600 dark:text-gray-500 group-hover:text-rose-500 dark:group-hover:text-rose-400',
               ]"
             />
           </div>
@@ -33,7 +33,7 @@
         <!-- Like counter (small) -->
         <span 
           @click="$emit('open-likes-modal', post)" 
-          class="text-base ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
+          class="text-base ml-1 text-gray-600 dark:text-gray-500 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
         >
           {{ formatCount(post?.post_likes?.length || 0) }}
         </span>
@@ -47,7 +47,7 @@
         ><div class="relative">
             <UIcon
               name="i-heroicons-chat-bubble-oval-left"
-              class="size-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+              class="size-5 text-gray-600 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
             />
           </div>
         </button>
@@ -55,7 +55,7 @@
         <!-- Comment counter (small) -->
         <span 
           @click="$emit('open-comments-modal', post)" 
-          class="text-base ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+          class="text-base ml-1 text-gray-600 dark:text-gray-500 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
         >
           {{ formatCount(post?.post_comments?.length || 0) }}
         </span>
@@ -69,7 +69,7 @@
           <div class="relative">
             <UIcon
               name="ion-paper-plane-outline"
-              class="size-5 text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors"
+              class="size-5 text-gray-600 dark:text-gray-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors"
             />
           </div>
         </button>
@@ -91,7 +91,7 @@
               (i) => i.post === post.id && i.user === user?.user?.id
             )
               ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400',
+              : 'text-gray-600 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400',
           ]"
         />
       </div>

@@ -36,7 +36,7 @@
       >
         <UIcon
           name="i-heroicons-document-magnifying-glass"
-          class="w-12 h-12 text-gray-300 mb-2"
+          class="w-12 h-12 text-gray-400 mb-2"
         />
         No transactions found
       </div>

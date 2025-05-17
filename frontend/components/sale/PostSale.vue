@@ -62,7 +62,7 @@
             </div>
             <span
               class="text-sm font-medium text-center"
-              :class="currentStep >= index ? 'text-gray-700' : 'text-gray-400'"
+              :class="currentStep >= index ? 'text-gray-700' : 'text-gray-500'"
               >{{ step }}</span
             >
             <!-- Connector line -->
@@ -113,7 +113,7 @@
               >
                 <Icon
                   name="heroicons:chevron-down"
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-gray-500"
                 />
               </div>
             </div>
@@ -159,7 +159,7 @@
               >
                 <Icon
                   name="heroicons:chevron-down"
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-gray-500"
                 />
               </div>
             </div>
@@ -190,10 +190,10 @@
               >
                 <Icon
                   name="heroicons:document-text"
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-gray-500"
                 />
               </div>
-              <div class="absolute right-3 bottom-3 text-xs text-gray-400">
+              <div class="absolute right-3 bottom-3 text-xs text-gray-500">
                 {{ formData.title.length }}/100
               </div>
             </div>
@@ -218,7 +218,7 @@
                 placeholder="Describe what you're selling in detail"
                 required
               ></textarea>
-              <div class="absolute right-3 bottom-3 text-xs text-gray-400">
+              <div class="absolute right-3 bottom-3 text-xs text-gray-500">
                 {{ formData.description.length }}/1000
               </div>
             </div>
@@ -274,7 +274,7 @@
                 <div
                   class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
                 >
-                  <Icon name="mdi:currency-bdt" class="h-5 w-5 text-gray-400" />
+                  <Icon name="mdi:currency-bdt" class="h-5 w-5 text-gray-500" />
                 </div>
                 <input
                   type="number"
@@ -403,7 +403,7 @@
                 <div
                   class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
                 >
-                  <Icon name="heroicons:phone" class="h-5 w-5 text-gray-400" />
+                  <Icon name="heroicons:phone" class="h-5 w-5 text-gray-500" />
                 </div>
                 <input
                   type="tel"
@@ -424,7 +424,7 @@
                 >
                   <Icon
                     name="heroicons:envelope"
-                    class="h-5 w-5 text-gray-400"
+                    class="h-5 w-5 text-gray-500"
                   />
                 </div>
                 <input
@@ -482,7 +482,7 @@
               >
                 <Icon
                   name="heroicons:photo"
-                  class="text-gray-400 text-2xl mb-2 group-hover:text-primary transition-colors"
+                  class="text-gray-500 text-2xl mb-2 group-hover:text-primary transition-colors"
                 />
                 <div
                   class="text-sm text-gray-500 group-hover:text-primary transition-colors"

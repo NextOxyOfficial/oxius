@@ -108,7 +108,7 @@
             <div
               class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
             >
-              <Search class="h-5 w-5 text-gray-400" />
+              <Search class="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </div>
@@ -166,7 +166,7 @@
               ৳{{ product.price }}
             </div>
             <div class="text-sm text-gray-500 flex items-center">
-              <Package class="h-4 w-4 mr-1 text-gray-400" />
+              <Package class="h-4 w-4 mr-1 text-gray-500" />
               {{ product.stock }}
             </div>
           </div>
@@ -205,7 +205,7 @@
         class="col-span-full py-10 text-center text-gray-500"
       >
         <div class="flex flex-col items-center justify-center">
-          <PackageX class="h-12 w-12 text-gray-300 mb-2" />
+          <PackageX class="h-12 w-12 text-gray-400 mb-2" />
           No products found matching your criteria
         </div>
       </div>

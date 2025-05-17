@@ -56,7 +56,7 @@
 
               <div class="relative flex justify-between items-center">
                 <div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <div class="text-xs text-gray-600 dark:text-gray-500 mb-1">
                     Available Diamonds
                   </div>
                   <div class="flex items-center">
@@ -74,7 +74,7 @@
                   </div>
                 </div>
                 <div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <div class="text-xs text-gray-600 dark:text-gray-500 mb-1">
                     Account funds
                   </div>
                   <div class="text-base font-semibold">
@@ -95,7 +95,7 @@
                 :class="
                   activeTab === 'purchase'
                     ? 'text-pink-600 dark:text-pink-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-300'
+                    : 'text-gray-600 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
                 "
               >
                 <div class="flex items-center gap-1">
@@ -113,7 +113,7 @@
                 :class="
                   activeTab === 'history'
                     ? 'text-pink-600 dark:text-pink-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-300'
+                    : 'text-gray-600 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
                 "
               >
                 <div class="flex items-center gap-1">
@@ -132,7 +132,7 @@
               <!-- Diamond packages section -->
               <div>
                 <h4
-                  class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+                  class="text-sm font-medium text-gray-700 dark:text-gray-400 mb-3"
                 >
                   Select Diamond Package
                 </h4>
@@ -161,7 +161,7 @@
                       class="h-6 w-6 text-pink-500 mb-0.5"
                     />
                     <div
-                      class="text-base font-semibold text-gray-800 dark:text-gray-100"
+                      class="text-base font-semibold text-gray-800 dark:text-gray-200"
                     >
                       {{ pkg.diamonds }}
                     </div>
@@ -183,7 +183,7 @@
                 <!-- Custom amount input -->
                 <div class="mb-4">
                   <label
-                    class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-xs font-medium text-gray-700 dark:text-gray-400 mb-1"
                   >
                     Custom Amount
                   </label>
@@ -193,7 +193,7 @@
                       v-model="customDiamondAmount"
                       placeholder="Enter diamond amount"
                       min="10"
-                      class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800"
+                      class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800"
                       @input="onCustomAmountInput"
                     />
                     <div
@@ -215,7 +215,7 @@
 
                 <div class="mb-3">
                   <div
-                    class="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1 mb-1.5"
+                    class="text-xs text-gray-700 dark:text-gray-400 flex items-center gap-1 mb-1.5"
                   >
                     <UIcon
                       name="i-heroicons-information-circle"
@@ -280,7 +280,7 @@
                     class="absolute top-0 left-0 rounded-full h-8 w-8 border-2 border-transparent border-t-pink-300 opacity-30"
                   ></div>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-500 dark:text-gray-500">
                   Loading purchase history...
                 </p>
               </div>
@@ -294,10 +294,10 @@
                   name="i-heroicons-exclamation-circle"
                   class="h-8 w-8 text-red-500 mb-3"
                 />
-                <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                <p class="text-sm text-gray-700 dark:text-gray-400 mb-2">
                   Failed to load history
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                   {{ historyError }}
                 </p>
                 <UButton size="xs" color="pink" @click="loadPurchaseHistory"
@@ -312,12 +312,12 @@
               >
                 <UIcon
                   name="i-heroicons-document-text"
-                  class="h-8 w-8 text-gray-400 mb-3"
+                  class="h-8 w-8 text-gray-500 mb-3"
                 />
-                <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                <p class="text-sm text-gray-700 dark:text-gray-400 mb-2">
                   No purchase history
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
                   You haven't purchased any diamonds yet.
                 </p>
                 <UButton size="xs" color="pink" @click="activeTab = 'purchase'"
@@ -329,7 +329,7 @@
               <div v-else>
                 <div class="mb-3 flex items-center justify-between">
                   <h3
-                    class="text-sm font-medium text-gray-800 dark:text-gray-200"
+                    class="text-sm font-medium text-gray-800 dark:text-gray-300"
                   >
                     Recent Transactions
                   </h3>
@@ -368,12 +368,12 @@
                         </div>
                         <div>
                           <div
-                            class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                            class="text-sm font-medium text-gray-900 dark:text-gray-200"
                           >
                             {{ item.amount }} Diamonds
                           </div>
                           <div
-                            class="text-2xs text-gray-500 dark:text-gray-400"
+                            class="text-2xs text-gray-500 dark:text-gray-500"
                           >
                             {{ formatDate(item.created_at) }}
                           </div>
@@ -381,7 +381,7 @@
                       </div>
                       <div class="text-right">
                         <div
-                          class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                          class="text-sm font-medium text-gray-900 dark:text-gray-200"
                         >
                           <span class="text-base">৳</span>{{ item.cost }}
                         </div>
@@ -409,8 +409,8 @@
                       :class="[
                         'px-2 py-1 rounded-md text-xs font-medium transition-colors',
                         currentPage === 1
-                          ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                          ? 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
                       ]"
                     >
                       <UIcon name="i-heroicons-chevron-left" class="h-3 w-3" />
@@ -420,10 +420,10 @@
                       class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-xs"
                     >
                       <span
-                        class="font-medium text-gray-700 dark:text-gray-300"
+                        class="font-medium text-gray-700 dark:text-gray-400"
                         >{{ currentPage }}</span
                       >
-                      <span class="text-gray-500 dark:text-gray-400">
+                      <span class="text-gray-500 dark:text-gray-500">
                         / {{ totalPages }}</span
                       >
                     </div>
@@ -434,8 +434,8 @@
                       :class="[
                         'px-2 py-1 rounded-md text-xs font-medium transition-colors',
                         currentPage >= totalPages
-                          ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                          ? 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
                       ]"
                     >
                       <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />

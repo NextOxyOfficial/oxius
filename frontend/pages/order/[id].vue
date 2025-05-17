@@ -167,13 +167,13 @@
                   <ULink
                     to="/terms/"
                     active-class="text-primary"
-                    inactive-class="text-gray-500 dark:text-gray-400"
+                    inactive-class="text-gray-500 dark:text-gray-500"
                     >Terms & Condition</ULink
                   >,
                   <ULink
                     to="/privacy/"
                     active-class="text-primary"
-                    inactive-class="text-gray-500 dark:text-gray-400"
+                    inactive-class="text-gray-500 dark:text-gray-500"
                     >Privacy Policy</ULink
                   >.
                 </template>

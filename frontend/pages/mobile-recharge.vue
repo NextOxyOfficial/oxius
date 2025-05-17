@@ -20,7 +20,7 @@
             class="w-full px-4 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             :placeholder="t('search_packages')"
           />
-          <span class="absolute right-3 top-2.5 text-gray-400">
+          <span class="absolute right-3 top-2.5 text-gray-500">
             <UIcon name="i-gg-search" class="size-4" />
           </span>
         </div>
@@ -245,7 +245,7 @@
           <h3 class="text-xl font-semibold text-gray-900">Confirm Recharge</h3>
           <button
             @click="selectedPackage = null"
-            class="text-gray-400 hover:text-gray-500"
+            class="text-gray-500 hover:text-gray-500"
           >
             <x-icon class="w-5 h-5" />
           </button>

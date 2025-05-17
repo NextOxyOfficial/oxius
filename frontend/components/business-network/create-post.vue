@@ -37,7 +37,7 @@
               class="absolute right-4 top-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition-colors transform hover:rotate-90 duration-300"
               @click="closeModalWithConfirm"
             >
-              <X class="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              <X class="h-5 w-5 text-gray-500 dark:text-gray-500" />
             </button>
           </div>
 
@@ -66,7 +66,7 @@
               <!-- Title input with character count -->
               <div class="relative group">
                 <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
                 >
                   <Type class="h-4 w-4 text-blue-500" />
                   Post Title
@@ -84,7 +84,7 @@
                     :class="
                       form.title.length > 200
                         ? 'bg-amber-100 text-amber-700'
-                        : 'text-gray-400'
+                        : 'text-gray-500'
                     "
                   >
                     {{ form.title.length }}/255
@@ -95,7 +95,7 @@
               <!-- Description textarea with character count (renamed from Content) -->
               <div class="relative group">
                 <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
                 >
                   <AlignLeft class="h-4 w-4 text-blue-500" />
                   Description
@@ -114,11 +114,11 @@
                       :class="
                         form.content.length > 5000
                           ? 'text-amber-500'
-                          : 'text-gray-400'
+                          : 'text-gray-500'
                       "
                       >{{ form.content.length }}</span
                     >
-                    <span class="text-gray-400"> characters</span>
+                    <span class="text-gray-500"> characters</span>
                   </div>
                 </div>
               </div>
@@ -144,7 +144,7 @@
                     />
                   </div>
                   <p
-                    class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    class="text-sm font-medium text-gray-700 dark:text-gray-400"
                   >
                     {{
                       isDragging
@@ -152,7 +152,7 @@
                         : "Drag images here or click to select"
                     }}
                   </p>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">
                     Select up to 12 images (PNG, JPG, JPEG)
                   </p>
                   <button
@@ -177,7 +177,7 @@
                 <div v-if="images.length > 0" class="space-y-3 overflow-hidden">
                   <div class="flex items-center justify-between">
                     <h4
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                      class="text-sm font-medium text-gray-700 dark:text-gray-400 flex items-center gap-1.5"
                     >
                       <ImageIcon class="h-4 w-4 text-blue-500" />
                       <span>Selected Media</span>
@@ -263,7 +263,7 @@
               <div class="space-y-2 mb-5">
                 <!-- Added mb-5 for the extra space -->
                 <h4
-                  class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                  class="text-sm font-medium text-gray-700 dark:text-gray-400 flex items-center gap-1.5"
                 >
                   <Hash class="h-4 w-4 text-green-500" />
                   Hashtags (Optional)
@@ -315,7 +315,7 @@
                         @keydown.up.prevent="selectPrevSuggestion"
                       />
                       <Hash
-                        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500"
                       />
 
                       <!-- Hashtag Suggestions Dropdown -->
@@ -338,7 +338,7 @@
                           <!-- Search results section -->
                           <div v-if="hashtagSuggestions.length > 0">
                             <div
-                              class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700"
+                              class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700"
                             >
                               Suggested hashtags
                             </div>
@@ -364,7 +364,7 @@
                           <!-- Popular hashtags section -->
                           <div v-if="popularHashtags.length > 0">
                             <div
-                              class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700"
+                              class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700"
                             >
                               Popular Hashtags
                             </div>
@@ -373,7 +373,7 @@
                                 v-for="(tag, index) in popularHashtags"
                                 :key="index"
                                 @click="selectHashtagSuggestion(tag.tag)"
-                                class="px-2 py-1 bg-gray-100 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/20 rounded-full text-xs text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1"
+                                class="px-2 py-1 bg-gray-100 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/20 rounded-full text-xs text-gray-700 dark:text-gray-400 transition-colors flex items-center gap-1"
                               >
                                 <Hash class="h-3 w-3 text-blue-500" />
                                 {{ tag.tag }}
@@ -405,7 +405,7 @@
             class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 sticky bottom-0"
           >
             <button
-              class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md mr-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors hover:shadow-sm"
+              class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md mr-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-400 transition-colors hover:shadow-sm"
               @click="closeModalWithConfirm"
             >
               Cancel
@@ -527,7 +527,7 @@
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                   Discard changes?
                 </h3>
-                <p class="text-gray-600 dark:text-gray-300 mt-1.5">
+                <p class="text-gray-600 dark:text-gray-400 mt-1.5">
                   You have unsaved changes. Are you sure you want to discard
                   your post?
                 </p>
@@ -535,7 +535,7 @@
             </div>
             <div class="flex justify-end gap-3 mt-6">
               <button
-                class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+                class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-400 transition-colors"
                 @click="showConfirmClose = false"
               >
                 Keep Editing

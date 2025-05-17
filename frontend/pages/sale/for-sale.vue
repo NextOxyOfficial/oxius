@@ -68,7 +68,7 @@
                       <UIcon
                         v-if="location?.city"
                         name="i-heroicons-chevron-right"
-                        class="mx-1.5 text-gray-400"
+                        class="mx-1.5 text-gray-500"
                       />
                     </div>
 
@@ -87,7 +87,7 @@
                       <UIcon
                         v-if="location?.upazila"
                         name="i-heroicons-chevron-right"
-                        class="mx-1.5 text-gray-400"
+                        class="mx-1.5 text-gray-500"
                       />
                     </div>
 
@@ -630,7 +630,7 @@
           >
             <UIcon
               name="i-heroicons-face-frown"
-              class="h-16 w-16 text-gray-300"
+              class="h-16 w-16 text-gray-400"
             />
             <h3 class="mt-2 text-lg font-medium text-gray-700">
               No listings found

@@ -80,7 +80,7 @@
             <div class="mb-3 min-w-full px-2">
               <p
                 :class="[
-                  'text-sm text-gray-700 dark:text-gray-200 leading-relaxed',
+                  'text-sm text-gray-700 dark:text-gray-300 leading-relaxed',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="
@@ -176,12 +176,12 @@
       >
         <UIcon
           name="i-heroicons-document-text"
-          class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3"
+          class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-3"
         />
-        <p class="text-gray-500 dark:text-gray-400 mb-2 font-medium">
+        <p class="text-gray-500 dark:text-gray-500 mb-2 font-medium">
           No Post Available
         </p>
-        <p class="text-gray-400 dark:text-gray-500 text-sm">
+        <p class="text-gray-500 dark:text-gray-500 text-sm">
           Check back later for new updates
         </p>
       </div>

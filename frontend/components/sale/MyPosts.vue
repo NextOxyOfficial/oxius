@@ -110,12 +110,12 @@
             <Icon
               name="heroicons:funnel"
               size="16px"
-              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
             />
             <Icon
               name="heroicons:chevron-down"
               size="16px"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
             />
           </div>
 
@@ -152,7 +152,7 @@
                 v-else
                 class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
               >
-                <Icon name="heroicons:photo" class="h-10 w-10 text-gray-400" />
+                <Icon name="heroicons:photo" class="h-10 w-10 text-gray-500" />
               </div>
 
               <!-- Status badge -->
@@ -200,7 +200,7 @@
                           : "Negotiable"
                       }}</span>
                     </div>
-                    <span class="mx-1 text-gray-300">•</span>
+                    <span class="mx-1 text-gray-400">•</span>
                     <div class="flex items-center gap-1">
                       <Icon
                         name="heroicons:calendar"
@@ -268,7 +268,7 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all duration-200"
                 :class="[
                   markingSold === post.id
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow',
                 ]"
               >
@@ -321,7 +321,7 @@
       >
         <div class="mb-4">
           <div class="inline-block p-4 bg-gray-50 rounded-full">
-            <Icon name="heroicons:face-frown" class="h-12 w-12 text-gray-400" />
+            <Icon name="heroicons:face-frown" class="h-12 w-12 text-gray-500" />
           </div>
         </div>
         <h3 class="text-gray-700 text-lg font-medium">

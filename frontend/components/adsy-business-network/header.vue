@@ -66,7 +66,7 @@
               <!-- AdsyClub Button -->
               <NuxtLink
                 to="/"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
                 aria-label="Go to AdsyClub"
               >
                 <div
@@ -85,7 +85,7 @@
               <!-- AdsyNews Button -->
               <NuxtLink
                 to="/adsy-news"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
                 aria-label="Go to AdsyNews"
               >
                 <div

@@ -259,7 +259,7 @@
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-12 w-12 mx-auto text-gray-400 mb-3"
+                class="h-12 w-12 mx-auto text-gray-500 mb-3"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -928,7 +928,7 @@
                     </div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 text-gray-400"
+                      class="h-4 w-4 text-gray-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -977,7 +977,7 @@
                     </div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 text-gray-400"
+                      class="h-4 w-4 text-gray-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -1026,7 +1026,7 @@
                     </div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 text-gray-400"
+                      class="h-4 w-4 text-gray-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -1059,7 +1059,7 @@
               </h3>
               <button
                 @click="closeCreateAdModal"
-                class="text-gray-400 hover:text-gray-500 rounded-md"
+                class="text-gray-500 hover:text-gray-500 rounded-md"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1211,8 +1211,8 @@
                         @click="clickTrack"
                       >
                         <div class="absolute inset-0 flex justify-between px-1">
-                          <span class="text-[8px] text-gray-400">13</span>
-                          <span class="text-[8px] text-gray-400">100</span>
+                          <span class="text-[8px] text-gray-500">13</span>
+                          <span class="text-[8px] text-gray-500">100</span>
                         </div>
                       </div>
                     </div>
@@ -1354,7 +1354,7 @@
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-8 w-8 text-gray-400"
+                            class="h-8 w-8 text-gray-500"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -1816,7 +1816,7 @@
               <h3 class="text-sm font-medium text-gray-900">Ad Preview</h3>
               <button
                 @click="showPreviewModal = false"
-                class="text-gray-400 hover:text-gray-500 rounded-md"
+                class="text-gray-500 hover:text-gray-500 rounded-md"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

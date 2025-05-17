@@ -225,7 +225,7 @@
                             `https://adsyclub.com/eshop/${storeDetails.store_username}`
                           )
                         "
-                        class="ml-1.5 text-gray-400 hover:text-emerald-600 transition-colors flex-shrink-0"
+                        class="ml-1.5 text-gray-500 hover:text-emerald-600 transition-colors flex-shrink-0"
                         :class="{ 'text-emerald-600': copied }"
                       >
                         <UIcon
@@ -239,7 +239,7 @@
                       </button>
                     </div>
                   </div>
-                  <p class="text-xs text-gray-400 mt-1 italic">
+                  <p class="text-xs text-gray-500 mt-1 italic">
                     URL cannot be changed
                   </p>
                 </div>
@@ -348,7 +348,7 @@
                       'h-5 w-5 transition-transform duration-300',
                       activeTab === tab.id
                         ? 'text-indigo-600 scale-110'
-                        : 'text-gray-400',
+                        : 'text-gray-500',
                     ]"
                   />
                   <span>{{ tab.name }}</span>
@@ -422,7 +422,7 @@
             </h3>
             <button
               @click="showEditProductModal = false"
-              class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -595,7 +595,7 @@
             </h3>
             <button
               @click="showDeleteConfirmModal = false"
-              class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -673,7 +673,7 @@
             </h3>
             <button
               @click="showCancelOrderModal = false"
-              class="text-gray-400 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -769,7 +769,7 @@
           </div>
           <button
             @click="removeToast(toast.id)"
-            class="ml-4 text-gray-400 hover:text-gray-600"
+            class="ml-4 text-gray-500 hover:text-gray-600"
           >
             <X class="h-4 w-4" />
           </button>

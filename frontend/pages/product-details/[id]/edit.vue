@@ -75,7 +75,7 @@
                   :alt="currentProduct.name"
                   class="object-cover h-full w-full"
                 />
-                <div v-else class="text-gray-400 flex flex-col items-center">
+                <div v-else class="text-gray-500 flex flex-col items-center">
                   <UIcon name="i-heroicons-photo" class="h-12 w-12" />
                   <span class="text-sm mt-2">No image available</span>
                 </div>

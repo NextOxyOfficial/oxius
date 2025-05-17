@@ -34,12 +34,12 @@
               >
                 <UIcon
                   name="i-heroicons-solid-eye"
-                  class="w-5 h-5 text-gray-400"
+                  class="w-5 h-5 text-gray-500"
                   v-if="isPassword"
                 />
                 <UIcon
                   name="i-heroicons-solid-eye-off"
-                  class="w-5 h-5 text-gray-400"
+                  class="w-5 h-5 text-gray-500"
                   v-else
                 />
               </div>

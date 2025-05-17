@@ -21,7 +21,7 @@
             <h3 class="font-semibold text-gray-900 dark:text-white text-lg">
               {{ $t("add_to_home_screen") }}
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {{ $t("install_app_message") }}
             </p>
             
@@ -55,7 +55,7 @@
           <!-- Close Button -->
           <button
             @click="dismissPrompt"
-            class="flex-shrink-0 p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-transform hover:rotate-90 duration-300"
+            class="flex-shrink-0 p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 transition-transform hover:rotate-90 duration-300"
           >
             <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
           </button>
@@ -74,7 +74,7 @@
         </template>
 
         <div class="space-y-4 py-4">
-          <p class="text-sm text-gray-600 dark:text-gray-300">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
             {{ $t("ios_install_instructions") }}
           </p>
           

@@ -22,7 +22,7 @@
           <div
             class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3 animate-width"
           ></div>
-          <p class="text-xl text-gray-600 dark:text-gray-300">
+          <p class="text-xl text-gray-600 dark:text-gray-400">
             {{ $t("refer") }}
           </p>
         </div>
@@ -31,7 +31,7 @@
         <div
           class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-up"
         >
-          <p class="text-center text-gray-600 dark:text-gray-400 mb-3">
+          <p class="text-center text-gray-600 dark:text-gray-500 mb-3">
             {{ $t("refer_text") }}
           </p>
 
@@ -105,7 +105,7 @@
             </div>
             <div class="flex-1">
               <h3
-                class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1"
+                class="text-sm text-gray-500 dark:text-gray-500 font-medium mb-1"
               >
                 Total Referred Users
               </h3>
@@ -133,7 +133,7 @@
             </div>
             <div class="flex-1">
               <h3
-                class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1"
+                class="text-sm text-gray-500 dark:text-gray-500 font-medium mb-1"
               >
                 Total Earnings
               </h3>
@@ -170,7 +170,7 @@
                   :class="
                     activeTab === index
                       ? 'text-primary-600 dark:text-primary-400 border-b-2 border-green-500'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-white'
+                      : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-400 border-b-2 border-white'
                   "
                   @click="setActiveTab(index)"
                 >
@@ -182,7 +182,7 @@
                     {{ tab.name }}
                     <span
                       v-if="tab.count"
-                      class="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      class="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
                     >
                       {{ tab.count }}
                     </span>
@@ -194,7 +194,7 @@
             <div
               class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"
             >
-              <div class="text-xs text-gray-500 dark:text-gray-400">
+              <div class="text-xs text-gray-500 dark:text-gray-500">
                 {{
                   activeTab === 0
                     ? "Track your earning commissions"
@@ -230,18 +230,18 @@
                     <thead class="bg-gray-50 dark:bg-gray-800/50">
                       <tr>
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           Date
                         </th>
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           Referred User
                         </th>
 
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           Amount
                         </th>
@@ -257,7 +257,7 @@
                         :style="`--delay: ${index * 0.05}s`"
                       >
                         <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
                         >
                           {{ formatDate(earning.date) }}
                         </td>
@@ -269,7 +269,7 @@
                               {{ earning.userName.charAt(0) }}
                             </div>
                             <div
-                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100"
+                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-200"
                             >
                               {{ earning.userName }}
                             </div>
@@ -289,7 +289,7 @@
                       <tr v-if="filteredEarnings.length === 0">
                         <td
                           colspan="4"
-                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-500"
                         >
                           <div class="py-6">
                             <div
@@ -297,7 +297,7 @@
                             >
                               <UIcon
                                 name="i-heroicons-banknotes"
-                                class="text-2xl text-gray-400 dark:text-gray-500"
+                                class="text-2xl text-gray-500 dark:text-gray-500"
                               />
                             </div>
                             <p>No earnings history to display yet.</p>
@@ -328,22 +328,22 @@
                     <thead class="bg-gray-50 dark:bg-gray-800/50">
                       <tr>
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           User
                         </th>
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           Email
                         </th>
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           Date Joined
                         </th>
                         <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
                         >
                           Status
                         </th>
@@ -379,7 +379,7 @@
                               class="user-avatar"
                             />
                             <div
-                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100"
+                              class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-200"
                             >
                               <div>
                                 {{ user.first_name }} {{ user.last_name }}
@@ -391,12 +391,12 @@
                           </div>
                         </td>
                         <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
                         >
                           {{ user.email }}
                         </td>
                         <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
                         >
                           {{
                             user.date_joined_formatted ||
@@ -417,7 +417,7 @@
                       <tr v-if="referredUsers.length === 0">
                         <td
                           colspan="4"
-                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-500"
                         >
                           <div class="py-6">
                             <div
@@ -425,7 +425,7 @@
                             >
                               <UIcon
                                 name="i-heroicons-users"
-                                class="text-2xl text-gray-400 dark:text-gray-500"
+                                class="text-2xl text-gray-500 dark:text-gray-500"
                               />
                             </div>
                             <p>You haven't referred any users yet.</p>
@@ -449,7 +449,7 @@
             <div
               class="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center"
             >
-              <div class="text-xs text-gray-500 dark:text-gray-400">
+              <div class="text-xs text-gray-500 dark:text-gray-500">
                 {{
                   activeTab === 0
                     ? `Showing ${filteredEarnings.length} transactions`
@@ -511,7 +511,7 @@
             on Every Referral
           </h1>
           <p
-            class="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
+            class="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
           >
             Share your unique link with friends, and earn rewards when they
             complete tasks or make purchases. The more friends you refer, the
@@ -556,7 +556,7 @@
               class="h-1 w-20 bg-primary-500 mx-auto mb-6 rounded-full animate-expand"
             ></div>
             <p
-              class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+              class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
             >
               Our referral program is simple, transparent, and rewarding. Just
               follow these easy steps:
@@ -581,7 +581,7 @@
               >
                 Create Account
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-500">
                 Sign up for a free account and get your unique referral link
                 instantly.
               </p>
@@ -604,7 +604,7 @@
               >
                 Share Your Link
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-500">
                 Share your referral link with friends via email, social media,
                 or messaging apps.
               </p>
@@ -627,7 +627,7 @@
               >
                 Earn Commissions
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-500">
                 Earn 5% commission when your friends complete tasks or make
                 purchases.
               </p>
@@ -646,7 +646,7 @@
               >
                 5%
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
                 Commission Rate
               </p>
             </div>
@@ -659,7 +659,7 @@
               >
                 500+
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
                 Active Referrers
               </p>
             </div>
@@ -672,7 +672,7 @@
               >
                 ৳ 10,000
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
                 Top Earner
               </p>
             </div>
@@ -685,7 +685,7 @@
               >
                 24hr
               </div>
-              <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              <p class="text-sm md:text-base text-gray-600 dark:text-gray-500">
                 Quick Payouts
               </p>
             </div>
