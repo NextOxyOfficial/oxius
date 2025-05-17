@@ -1,10 +1,15 @@
-<template>  <div id="home" class="mb-4 py-6 bg-gradient-to-br from-emerald-800 to-blue-900 relative bg-pattern">
-    <div class="max-w-7xl w-full mx-auto px-3">
+<template>  <div id="home">
+    <div class="max-w-7xl w-full mx-auto">
       <div
-        class="rounded-3xl overflow-hidden shadow-xl"
+        class="rounded-sm overflow-hidden shadow-sm"
       >
-        <div class="flex flex-col md:flex-row">          <!-- Left side - Image Slider with reduced height -->
-          <div class="w-full md:w-3/5 relative overflow-hidden touch-slider" ref="sliderContainer">
+        <div class="flex flex-col md:flex-row">          <!-- Left side - Image Slider with reduced height -->          
+          <div 
+            class="w-full md:w-3/5 relative overflow-hidden touch-slider"
+            ref="sliderContainer"
+            @mouseenter="handleSliderHover(true)"
+            @mouseleave="handleSliderHover(false)"
+          >
             <!-- Mobile swipe indicator shown only on mobile -->
             <div class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none">
               <div class="swipe-indicator swipe-indicator-left">
@@ -37,10 +42,11 @@
                   class="w-full h-full object-cover"
                 />
               </div>
-            </div>            <!-- Navigation arrows - hidden on mobile but visible on desktop -->
+            </div>            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
             <button
               @click="prevSlide"
-              class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/40 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 border border-white/30 shadow-lg"
+              class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+              :class="{ 'opacity-100 translate-x-0': isHovering }"
               aria-label="Previous slide"
             >
               <ChevronLeft class="h-5 w-5 text-white" />
@@ -48,33 +54,34 @@
 
             <button
               @click="nextSlide"
-              class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/40 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 border border-white/30 shadow-lg"
+              class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+              :class="{ 'opacity-100 translate-x-0': isHovering }"
               aria-label="Next slide"
             >
               <ChevronRight class="h-5 w-5 text-white" />
-            </button>
-
-            <!-- Slider indicators - improved -->
+            </button><!-- Slider indicators - improved -->
             <div
-              class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20"
+              class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full"
             >
               <button
                 v-for="(_, index) in sliderImages"
                 :key="index"
                 @click="goToSlide(index)"
-                class="w-2.5 h-2.5 rounded-full transition-all duration-300"
+                class="w-2.5 h-2.5 rounded-full transition-all duration-300 relative"
                 :class="{
                   'bg-white scale-110': index === currentSlide,
                   'bg-white/40 hover:bg-white/60': index !== currentSlide,
                 }"
                 :aria-label="`Go to slide ${index + 1}`"
-              ></button>
+              >
+                <span v-if="index === currentSlide" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-50"></span>
+              </button>
             </div>
           </div>          <!-- Right side - Premium content area -->
           <div class="w-full md:w-2/5 p-4 sm:p-8 flex flex-col justify-center bg-white">
-            <div class="relative">
+            <div class="relative text-center">
               <h1
-                class="text-lg sm:text-2xl font-bold leading-tight text-gray-800 mb-6 relative inline-block"
+                class="text-lg sm:text-lg font-medium leading-tight text-gray-800 mb-6 relative inline-block"
               >
                 <span class="relative z-10">{{ $t("bangladesh_first_title") }}</span>
                 <span class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"></span>
@@ -170,9 +177,13 @@
         </div>
       </div>
     </div>    <!-- Mobile service buttons -->
-    <div class="md:hidden px-3 py-4 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-lg shadow-lg my-4">
-      <h2 class="text-base font-semibold text-gray-800 mb-3 text-center">Our Services</h2>
-      <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100"><!-- Business Network -->        <NuxtLink to="/business-network" class="mobile-btn bg-white">
+    <div class="md:hidden text-center px-0.5 py-5 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-sm shadow-sm my-5 relative overflow-hidden">
+      <div class="absolute inset-0 opacity-10 bg-pattern"></div>
+      <h2 class="text-base font-bold leading-tight text-gray-800 mb-4 text-center relative">
+        <span class="relative z-10">Our Services</span>
+        <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-emerald-500 -z-10"></span>
+      </h2>
+      <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10"><!-- Business Network -->        <NuxtLink to="/business-network" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-blue-50">
             <Globe class="mobile-icon text-blue-600" />
           </div>
@@ -384,6 +395,12 @@ const handleTouchEnd = () => {
   resetAutoSlideTimer();
 };
 
+const isHovering = ref(false);
+
+const handleSliderHover = (isHover) => {
+  isHovering.value = isHover;
+};
+
 // Start auto-sliding when component is mounted
 onMounted(() => {
   resetAutoSlideTimer();
@@ -478,10 +495,29 @@ onUnmounted(() => {
   font-weight: 500;
   transition: all 0.3s;
   min-height: 70px;
+  position: relative;
+  overflow: hidden;
 }
 .service-btn:hover {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  background-color: rgba(249, 250, 251, 0.8);
+}
+
+.service-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, #10b981, #3b82f6);
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.service-btn:hover::after {
+  width: 80%;
+  left: 10%;
 }
 
 .icon-circle {
@@ -492,11 +528,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   margin-bottom: 0.5rem;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .service-btn:hover .icon-circle {
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .service-btn .icon {
@@ -530,6 +568,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   margin-bottom: 0.25rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mobile-btn:active .mobile-icon-circle {
+  transform: scale(0.95);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .mobile-icon {
@@ -564,5 +609,22 @@ onUnmounted(() => {
 .touch-slider.swiping-right .swipe-indicator-right {
   opacity: 0.8;
   transform: translateX(0);
+}
+
+.bg-pattern {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-pattern::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.5;
 }
 </style>
