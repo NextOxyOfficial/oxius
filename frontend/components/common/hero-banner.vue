@@ -1,11 +1,12 @@
 <template>  <div id="home">
     <div class="max-w-7xl w-full mx-auto">
       <div
-        class="rounded-sm overflow-hidden shadow-sm"
+        class="rounded-xl overflow-hidden shadow-sm"
       >
-        <div class="flex flex-col md:flex-row">          <!-- Left side - Image Slider with reduced height -->          
+        <div class="flex flex-col md:flex-row">          
+          <!-- Left side - Image Slider with reduced height -->          
           <div 
-            class="w-full md:w-3/5 relative overflow-hidden touch-slider"
+            class="px-2 rounded-xl md:w-3/5 relative overflow-hidden touch-slider"
             ref="sliderContainer"
             @mouseenter="handleSliderHover(true)"
             @mouseleave="handleSliderHover(false)"
@@ -20,7 +21,7 @@
               </div>
             </div>
             <!-- Aspect ratio container - reduced by ~10% -->
-            <div class="relative pb-[45%] md:pb-[45%] lg:pb-[45%]">
+            <div class="rounded-xl overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%]">
               <div
                 v-for="({ id, image }, index) in sliderImages"
                 :key="id"
@@ -42,7 +43,8 @@
                   class="w-full h-full object-cover"
                 />
               </div>
-            </div>            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
+            </div>            
+            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
             <button
               @click="prevSlide"
               class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
@@ -59,7 +61,8 @@
               aria-label="Next slide"
             >
               <ChevronRight class="h-5 w-5 text-white" />
-            </button><!-- Slider indicators - improved -->
+            </button>
+            <!-- Slider indicators - improved -->
             <div
               class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full"
             >
@@ -74,11 +77,11 @@
                 }"
                 :aria-label="`Go to slide ${index + 1}`"
               >
-                <span v-if="index === currentSlide" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-50"></span>
               </button>
             </div>
-          </div>          <!-- Right side - Premium content area -->
-          <div class="w-full md:w-2/5 p-4 flex flex-col justify-center rounded-xl bg-slate-50/80">
+          </div>          
+          <!-- Right side - Premium content area -->
+          <div class="w-full md:w-2/5 max-sm:py-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80">
             <div class="relative text-center">
               <h1
                 class="text-lg sm:text-lg font-medium leading-tight text-gray-800 relative inline-block"
@@ -87,7 +90,7 @@
                 <span class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"></span>
               </h1>
               <!-- Service buttons grid with cool design -->
-              <div class="grid grid-cols-4 gap-0 mt-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100">
+              <div class="grid grid-cols-4 gap-0 my-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100">
                 <!-- Business Network -->
                 <NuxtLink to="/business-network" class="service-btn bg-white hover:bg-blue-50 text-gray-700">
                   <div class="icon-circle bg-blue-50">
@@ -181,58 +184,58 @@
         </div>
       </div>
     </div>    <!-- Mobile service buttons -->
-    <div class="md:hidden text-center px-0.5 py-5 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden">
-      <div class="absolute inset-0 opacity-10 bg-pattern"></div>
-      <h2 class="text-base font-semibold leading-tight text-gray-800 mb-4 text-center relative">
-        <span class="relative z-10">Our Services</span>
-        <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-emerald-500 -z-10"></span>
-      </h2>
+    <div class="md:hidden text-center px-0.5 py-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden">
       <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10">        <!-- Business Network -->        <NuxtLink to="/business-network" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-blue-50">
             <Globe class="mobile-icon text-blue-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Business Network</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Business Network</span>
           </div>
         </NuxtLink>
-          <!-- News -->        <NuxtLink to="/adsy-news" class="mobile-btn bg-white">
+          <!-- News -->        
+           <NuxtLink to="/adsy-news" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-amber-50">
             <Newspaper class="mobile-icon text-amber-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Adsy News</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Adsy News</span>
           </div>
-        </NuxtLink>          <!-- Earn Money -->
+        </NuxtLink>          
+        <!-- Earn Money -->
         <NuxtLink to="/earn-money" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-emerald-50">
             <BadgeDollarSign class="mobile-icon text-emerald-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Earn Money</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Earn Money</span>
           </div>
-        </NuxtLink>        <!-- Eshop -->
+        </NuxtLink>        
+        <!-- Eshop -->
         <NuxtLink to="/eshop" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-purple-50">
             <ShoppingCart class="mobile-icon text-purple-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">eShop</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">eShop</span>
           </div>
-        </NuxtLink>        <!-- Sale Listings -->
+        </NuxtLink>        
+        <!-- Sale Listings -->
         <NuxtLink to="/sale-listings" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-indigo-50">
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Sale Listings</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Sale Listings</span>
           </div>
-        </NuxtLink>        <!-- MindForce -->
+        </NuxtLink>        
+        <!-- MindForce -->
         <NuxtLink to="/mindForce" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-cyan-50">
             <Brain class="mobile-icon text-cyan-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">MindForce</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">MindForce</span>
           </div>
         </NuxtLink>
 
@@ -242,9 +245,10 @@
             <Cog class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Amar Seba</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Amar Seba</span>
           </div>
-        </NuxtLink><!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
+        </NuxtLink>
+        <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
         <div class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed">
           <div class="mobile-icon-circle bg-gray-100">
             <HeartPulse class="mobile-icon text-gray-400" />
@@ -264,21 +268,23 @@
             <span class="text-sm leading-tight text-gray-400">Bill Pay</span>
           </div>
           <span class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm">Coming Soon</span>
-        </div>        <!-- Mobile Recharge -->
+        </div>        
+        <!-- Mobile Recharge -->
         <NuxtLink to="/mobile-recharge" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-orange-50">
             <Smartphone class="mobile-icon text-orange-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Mobile Recharge</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Mobile Recharge</span>
           </div>
-        </NuxtLink>        <!-- Transactions -->
+        </NuxtLink>       
+        <!-- Transactions -->
         <NuxtLink to="/transactions" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-lime-50">
             <CreditCard class="mobile-icon text-lime-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Transactions</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Transactions</span>
           </div>
         </NuxtLink>
 
@@ -288,7 +294,7 @@
             <User class="mobile-icon text-pink-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-700">Membership</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">Membership</span>
           </div>
         </NuxtLink>
       </div>

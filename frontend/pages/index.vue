@@ -3,7 +3,7 @@
     <PublicSection id="classified-services">
       <UContainer
         :ui="{
-          padding: 'px-2',
+          padding: 'px-1',
         }"
         class="relative"
       >
