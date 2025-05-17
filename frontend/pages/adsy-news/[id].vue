@@ -290,6 +290,7 @@ definePageMeta({
 const { get, post } = useApi();
 const route = useRoute();
 const toast = useToast();
+const { user } = useAuth();
 
 const article = ref(null);
 const relatedArticles = ref([]);
@@ -369,6 +370,14 @@ async function getRelatedArticles() {
 }
 
 async function addComment() {
+  if (!user.value) {
+    toast.add({
+      description: "You must be logged in to comment.",
+      color: "red",
+    });
+    return;
+  }
+
   if (!newComment.value.content.trim()) return;
 
   isSubmittingComment.value = true;
