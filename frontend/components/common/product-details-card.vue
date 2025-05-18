@@ -407,7 +407,7 @@
             <div class="ml-3 flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <h4 class="font-medium text-gray-800 dark:text-white truncate">
-                  {{ currentProduct.owner_details?.name || "Anonymous Seller" }}
+                  {{ currentProduct.owner_details?.store_name || "Anonymous Seller" }}
                 </h4>
               </div>
             </div>
