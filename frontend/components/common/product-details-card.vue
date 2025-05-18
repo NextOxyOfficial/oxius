@@ -577,7 +577,7 @@
           <div v-else>            
             <!-- Mobile Similar Products - 2 items on small screens -->            
              <div class="sm:hidden">
-              <div class="flex overflow-x-auto gap-3 pb-4 hide-scrollbar">
+              <div class="flex overflow-x-auto gap-2 pb-4 hide-scrollbar">
                 <div
                   v-for="(product, index) in similarProducts.slice(0, 2)"
                   :key="`mobile-${product.id}`"
@@ -610,11 +610,11 @@
           :to="`/product-details/${currentProduct.slug}`"
           color="primary"
           variant="outline"
-          size="lg"
+          size="md"
           icon="i-material-symbols-light-arrow-right-alt-rounded"
           :ui="{
             size: {
-              lg: 'text-base',
+              lg: 'text-sm',
             },
           }"
           trailing
