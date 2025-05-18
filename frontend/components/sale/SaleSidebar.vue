@@ -149,7 +149,7 @@
           area.
         </p>
         <UButton
-          to="/sale/post"
+          @click="openAddPostModal"
           color="primary"
           size="sm"
           class="w-full flex items-center justify-center gap-1"
@@ -294,6 +294,7 @@ const emits = defineEmits([
   "select-category",
   "select-subcategory",
   "toggle-subcategories",
+  "open-add-post-modal",
 ]);
 
 // Function to toggle mobile sidebar
@@ -327,6 +328,10 @@ function getCategoryIcon(categoryId) {
     6: "i-heroicons-square-3-stack-3d",
   };
   return iconMapping[categoryId] || "i-heroicons-squares-2x2";
+}
+
+function openAddPostModal() {
+  emits("open-add-post-modal");
 }
 
 // Get category count

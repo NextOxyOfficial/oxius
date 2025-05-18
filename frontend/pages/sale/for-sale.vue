@@ -199,6 +199,7 @@
       <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sale Sidebar Component -->
         <SaleSidebar
+          @open-add-post-modal="openPostSaleModal"
           :is-mobile-filter-open="isMobileFilterOpen"
           :categories="categories"
           :total-listings="totalListings"
@@ -264,7 +265,7 @@
                 <UButton
                   color="primary"
                   variant="outline"
-                  to="/sale/post"
+                  @click="openPostSaleModal"
                   class="whitespace-nowrap flex items-center gap-1"
                 >
                   <UIcon name="i-heroicons-plus-circle" />
@@ -753,6 +754,50 @@
         </div>
       </div>
     </UContainer>
+    <!-- Post Sale Modal -->
+    <div
+      v-if="showPostSaleModal"
+      class="fixed inset-0 z-50 overflow-y-auto pt-16"
+    >
+      <!-- Added pt-16 for header spacing -->
+      <div
+        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
+      >
+        <div
+          class="fixed inset-0 transition-opacity"
+          @click="closePostSaleModal"
+        >
+          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <div
+          v-if="user?.user"
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full mx-2"
+        >
+          <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                <div
+                  class="flex justify-between items-center border-b pb-3 mb-4"
+                >
+                  <h3 class="text-lg leading-6 font-medium text-gray-700">
+                    Post a Sale
+                  </h3>
+                  <button
+                    type="button"
+                    class="text-gray-500 hover:text-gray-500"
+                    @click="closePostSaleModal"
+                  >
+                    <Icon name="heroicons:x-mark" size="24px" />
+                  </button>
+                </div>
+                <SalePostSale :categories="categories" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -761,6 +806,8 @@ import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
 import { useApi } from "~/composables/useApi";
 import SaleSidebar from "~/components/sale/SaleSidebar.vue";
+
+const { user } = useAuth();
 
 // API endpoints
 const API_ENDPOINTS = {
@@ -772,6 +819,8 @@ const API_ENDPOINTS = {
   AREAS: "/geo/areas/",
   POSTS: "/sale/posts/",
 };
+
+const showPostSaleModal = ref(false);
 
 const currentPage = ref(1);
 const totalPages = ref(0);
@@ -809,12 +858,12 @@ function clearLocation() {
 }
 
 // Function to handle search form submission
-function filterSearch() {
+async function filterSearch() {
   isLoading.value = true;
   searchQuery.value = form.value.title || "";
 
   // Apply the search query filter
-  loadPosts(1);
+  await loadPosts(1);
   isLoading.value = false;
 }
 
@@ -1450,6 +1499,14 @@ async function goToPage(page) {
     loadPosts(currentPage.value);
   }
 }
+
+const openPostSaleModal = () => {
+  showPostSaleModal.value = true;
+};
+
+const closePostSaleModal = () => {
+  showPostSaleModal.value = false;
+};
 </script>
 
 <style>

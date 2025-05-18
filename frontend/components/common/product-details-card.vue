@@ -115,7 +115,9 @@
                 :src="img.image"
                 :alt="currentProduct.name"
                 class="absolute inset-0 w-full h-full object-cover"
-                @error="(e) => (e.target.src = '/images/placeholder.jpg?size=100')"
+                @error="
+                  (e) => (e.target.src = '/images/placeholder.jpg?size=100')
+                "
               />
             </div>
           </div>
@@ -367,25 +369,36 @@
       </div>
 
       <!-- Seller Information Section -->
-      <div class="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6 mb-6">
-        <div class="bg-slate-50 dark:bg-slate-800/40 rounded-xl overflow-hidden">
+      <div
+        class="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6 mb-6"
+      >
+        <div
+          class="bg-slate-50 dark:bg-slate-800/40 rounded-xl overflow-hidden"
+        >
           <!-- Seller Profile Header -->
-          <div class="flex items-center p-4 border-b border-slate-200 dark:border-slate-700/50">
+          <div
+            class="flex items-center p-4 border-b border-slate-200 dark:border-slate-700/50"
+          >
             <div class="flex-shrink-0 relative">
-              <div class="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+              <div
+                class="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"
+              >
                 <img
-                  v-if="currentProduct.seller?.avatar"
-                  :src="currentProduct.seller?.avatar"
-                  :alt="currentProduct.seller?.name || 'Seller'"
+                  v-if="currentProduct.owner_details?.image"
+                  :src="currentProduct.owner_details?.image"
+                  :alt="currentProduct.owner_details?.name || 'Seller'"
                   class="w-full h-full object-cover"
                 />
                 <div v-else class="flex items-center justify-center h-full">
-                  <UIcon name="i-heroicons-user" class="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                  <UIcon
+                    name="i-heroicons-user"
+                    class="w-8 h-8 text-slate-400 dark:text-slate-500"
+                  />
                 </div>
               </div>
-              <div 
-                v-if="currentProduct.seller?.verified" 
-                class="absolute -right-1 -bottom-1 bg-primary-500 text-white rounded-full p-0.5 border-2 border-white dark:border-slate-800"
+              <div
+                v-if="currentProduct.owner_details?.kyc"
+                class="absolute -right-1 -bottom-1 bg-primary-500 text-white rounded-full px-1.5 border-2 border-white dark:border-slate-800"
               >
                 <UIcon name="i-heroicons-check" class="w-3 h-3" />
               </div>
@@ -394,70 +407,59 @@
             <div class="ml-3 flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <h4 class="font-medium text-gray-800 dark:text-white truncate">
-                  {{ currentProduct.seller?.name || 'Anonymous Seller' }}
+                  {{ currentProduct.owner_details?.name || "Anonymous Seller" }}
                 </h4>
-                <UBadge
-                  v-if="currentProduct.seller?.badge"
-                  color="primary"
-                  variant="subtle"
-                  class="text-xs font-medium"
-                >
-                  {{ currentProduct.seller?.badge }}
-                </UBadge>
-              </div>              <!-- Response Rate - Mobile Only (positioned at start) -->
-              <div class="sm:hidden mb-1.5">
-                <UBadge
-                  :color="currentProduct.seller?.response_rate > 80 ? 'green' : currentProduct.seller?.response_rate > 50 ? 'orange' : 'red'"
-                  class="text-xs"
-                >
-                  {{ currentProduct.seller?.response_rate || '95' }}% Response Rate
-                </UBadge>
-              </div>
-              
-              <div class="flex items-start text-sm text-gray-500 dark:text-slate-400">
-                <UIcon name="i-heroicons-star" class="w-4 h-4 text-yellow-400 mr-1" />
-                <span>{{ currentProduct.seller?.rating || '4.5' }} Rating</span>
-                <span class="mx-2">•</span>
-                <span>{{ currentProduct.seller?.total_sales || '0' }} Sales</span>
               </div>
             </div>
 
-            <div class="hidden sm:block">
-              <UBadge
-                :color="currentProduct.seller?.response_rate > 80 ? 'green' : currentProduct.seller?.response_rate > 50 ? 'orange' : 'red'"
-                class="ml-auto"
-              >
-                {{ currentProduct.seller?.response_rate || '95' }}% Response Rate
-              </UBadge>
-            </div>
+            <div class="hidden sm:block"></div>
           </div>
 
           <!-- Contact Information -->
           <div class="p-4 space-y-3">
             <div class="flex items-center text-sm">
-              <UIcon name="i-heroicons-map-pin" class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2" />
+              <UIcon
+                name="i-heroicons-map-pin"
+                class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2"
+              />
               <span class="text-gray-600 dark:text-slate-300">
-                {{ currentProduct.seller?.location || 'Dhaka, Bangladesh' }}
-              </span>
-            </div>
-            
-            <div class="flex items-center text-sm">
-              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2" />
-              <span class="text-gray-600 dark:text-slate-300">
-                Member since {{ currentProduct.seller?.joined_date || 'January 2023' }}
+                {{
+                  `${currentProduct.owner_details?.upazila}, ${currentProduct.owner_details?.city}, ${currentProduct.owner_details?.state}, ${currentProduct.owner_details?.country}`
+                }}
               </span>
             </div>
 
-            <div v-if="currentProduct.seller?.business_hours" class="flex items-center text-sm">
-              <UIcon name="i-heroicons-calendar" class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2" />
+            <div class="flex items-center text-sm">
+              <UIcon
+                name="i-heroicons-clock"
+                class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2"
+              />
               <span class="text-gray-600 dark:text-slate-300">
-                {{ currentProduct.seller?.business_hours || 'Mon-Fri: 9AM-6PM' }}
+                Member since
+                {{ currentProduct.seller?.joined_date || "January 2023" }}
+              </span>
+            </div>
+
+            <div
+              v-if="currentProduct.seller?.business_hours"
+              class="flex items-center text-sm"
+            >
+              <UIcon
+                name="i-heroicons-calendar"
+                class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2"
+              />
+              <span class="text-gray-600 dark:text-slate-300">
+                {{
+                  currentProduct.seller?.business_hours || "Mon-Fri: 9AM-6PM"
+                }}
               </span>
             </div>
           </div>
 
           <!-- Contact Actions -->
-          <div class="p-4 bg-slate-100 dark:bg-slate-800/80 flex flex-wrap gap-3">
+          <div
+            class="p-4 bg-slate-100 dark:bg-slate-800/80 flex flex-wrap gap-3"
+          >
             <!-- Call Button -->
             <UButton
               v-if="currentProduct.seller?.phone"
@@ -470,21 +472,25 @@
             >
               Call Seller
             </UButton>
-            
+
             <!-- WhatsApp Button -->
             <UButton
-              v-if="currentProduct.seller?.whatsapp || currentProduct.seller?.phone"
+              v-if="
+                currentProduct.seller?.whatsapp || currentProduct.seller?.phone
+              "
               color="green"
               variant="soft"
               size="sm"
               class="flex-1 min-w-0 sm:flex-initial"
-              :to="`https://wa.me/${currentProduct.seller?.whatsapp || currentProduct.seller?.phone}`"
+              :to="`https://wa.me/${
+                currentProduct.seller?.whatsapp || currentProduct.seller?.phone
+              }`"
               target="_blank"
               icon="i-heroicons-chat-bubble-left-right"
             >
               WhatsApp
             </UButton>
-            
+
             <!-- Message Button -->
             <UButton
               color="indigo"
@@ -496,7 +502,7 @@
             >
               Message
             </UButton>
-            
+
             <!-- Store Button -->
             <UButton
               v-if="currentProduct.seller?.store_url"
@@ -534,7 +540,7 @@
             "
           ></div>
         </div>
-          <!-- Similar Products Section -->
+        <!-- Similar Products Section -->
         <div class="mb-8 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
             class="text-lg font-semibold mb-4 text-gray-700 dark:text-white flex items-center"
@@ -545,7 +551,7 @@
             />
             Similar Products
           </h3>
-            <div v-if="isSimilarProductsLoading" class="flex justify-center py-6">
+          <div v-if="isSimilarProductsLoading" class="flex justify-center py-6">
             <div class="flex flex-col items-center">
               <div class="w-10 h-10 relative">
                 <div
@@ -560,7 +566,10 @@
               </p>
             </div>
           </div>
-            <div v-else-if="similarProducts.length === 0" class="py-4 text-center">
+          <div
+            v-else-if="similarProducts.length === 0"
+            class="py-4 text-center"
+          >
             <div
               class="bg-white dark:bg-slate-700/50 rounded-full p-5 w-20 h-20 mx-auto flex items-center justify-center shadow-sm"
             >
@@ -573,30 +582,32 @@
               No similar products found
             </p>
           </div>
-          
-          <div v-else>            
-            <!-- Mobile Similar Products - 2 items on small screens -->            
-             <div class="sm:hidden">
+
+          <div v-else>
+            <!-- Mobile Similar Products - 2 items on small screens -->
+            <div class="sm:hidden">
               <div class="flex overflow-x-auto gap-2 pb-4 hide-scrollbar">
                 <div
                   v-for="(product, index) in similarProducts.slice(0, 2)"
                   :key="`mobile-${product.id}`"
                   class="flex-shrink-0 w-[48%] similar-product-fade-in"
-                  style="animation-delay: calc(var(--i) * 0.1s);"
-                  :style="{'--i': index}"
+                  style="animation-delay: calc(var(--i) * 0.1s)"
+                  :style="{ '--i': index }"
                 >
                   <CommonProductCard :product="product" />
                 </div>
               </div>
             </div>
-              <!-- Desktop Similar Products - 5 items in a single row -->
-            <div class="hidden sm:flex sm:space-x-2 overflow-x-auto pb-4 hide-scrollbar">
+            <!-- Desktop Similar Products - 5 items in a single row -->
+            <div
+              class="hidden sm:flex sm:space-x-2 overflow-x-auto pb-4 hide-scrollbar"
+            >
               <div
                 v-for="(product, index) in similarProducts.slice(0, 5)"
                 :key="`desktop-${product.id}`"
                 class="similar-product-fade-in w-1/4 flex-shrink-0"
-                style="animation-delay: calc(var(--i) * 0.1s);"
-                :style="{'--i': index}"
+                style="animation-delay: calc(var(--i) * 0.1s)"
+                :style="{ '--i': index }"
               >
                 <CommonProductCard :product="product" />
               </div>
@@ -658,32 +669,32 @@ function closeModal() {
 function openMessageModal() {
   emit("open-message-modal", {
     sellerId: currentProduct.seller?.id,
-    sellerName: currentProduct.seller?.name || 'Seller',
+    sellerName: currentProduct.seller?.name || "Seller",
     productId: currentProduct.id,
-    productName: currentProduct.name
+    productName: currentProduct.name,
   });
 }
 
 // Fetch similar products based on the current product's category
 async function fetchSimilarProducts() {
   if (!currentProduct || !currentProduct.category) return;
-  
+
   isSimilarProductsLoading.value = true;
-  
+
   try {
     // Get products from the same category, excluding current product
     const { get } = useApi();
     let queryParams = `category=${currentProduct.category}&page_size=6`;
-    
+
     const response = await get(`/all-products/?${queryParams}`);
     if (response && response.data && response.data.results) {
       // Filter out current product and limit to 5 items
       similarProducts.value = response.data.results
-        .filter(product => product.id !== currentProduct.id)
+        .filter((product) => product.id !== currentProduct.id)
         .slice(0, 5);
     }
   } catch (error) {
-    console.error('Error fetching similar products:', error);
+    console.error("Error fetching similar products:", error);
     similarProducts.value = [];
   } finally {
     isSimilarProductsLoading.value = false;
@@ -730,7 +741,9 @@ watch(
     if (!currentProduct?.id) return;
     isSimilarProductsLoading.value = true;
     try {
-      const response = await fetch(`/api/similar-products/${currentProduct.id}`);
+      const response = await fetch(
+        `/api/similar-products/${currentProduct.id}`
+      );
       similarProducts.value = await response.json();
     } catch (error) {
       console.error("Failed to fetch similar products:", error);

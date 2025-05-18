@@ -1,4 +1,4 @@
-<template >
+<template>
   <div id="sale-category" class="for-sale-section py-6 bg-white rounded-sm">
     <div class="container mx-auto px-2">
       <!-- Updated section header with linked buttons -->
@@ -125,7 +125,8 @@
             ref="categoriesWrapper"
           >
             <!-- Show category loading placeholders when categories are loading -->
-            <template v-if="isLoadingCategories">              <div
+            <template v-if="isLoadingCategories">
+              <div
                 v-for="index in 6"
                 :key="`placeholder-${index}`"
                 class="category-item flex-shrink-0"
@@ -151,7 +152,8 @@
             </template>
 
             <!-- Show loaded categories -->
-            <template v-else>              <div
+            <template v-else>
+              <div
                 v-for="category in categories"
                 :key="category.id"
                 class="category-item flex-shrink-0"
@@ -208,12 +210,13 @@
       <div class="selected-category-items mt-4" v-if="selectedCategory">
         <div class="flex justify-between items-center mb-3">
           <div>
-            <h3 class="text-lg font-semibold">{{ getSelectedCategoryName() }}</h3>
+            <h3 class="text-lg font-semibold">
+              {{ getSelectedCategoryName() }}
+            </h3>
           </div>
           <NuxtLink
             :to="`/sale/for-sale?category=${selectedCategory}`"
             class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
-
           >
             View All <Icon name="heroicons:arrow-right" size="14px" />
           </NuxtLink>
@@ -361,7 +364,7 @@
 
       <div
         v-if="user?.user"
-        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full mx-2"
       >
         <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
@@ -622,7 +625,9 @@ const fetchCategoryPosts = async () => {
     console.log("Fetching posts for category:", selectedCategory.value);
 
     // Update to the correct API endpoint
-    const response = await get(`/sale/posts/?category=${selectedCategory.value}`);
+    const response = await get(
+      `/sale/posts/?category=${selectedCategory.value}`
+    );
 
     if (response.error) {
       console.error("Error response from API:", response.error);
@@ -637,10 +642,13 @@ const fetchCategoryPosts = async () => {
       if (Array.isArray(response.data)) {
         // Direct array of posts
         categoryPosts.value = response.data;
-      } else if (response.data.results && Array.isArray(response.data.results)) {
+      } else if (
+        response.data.results &&
+        Array.isArray(response.data.results)
+      ) {
         // Paginated response
         categoryPosts.value = response.data.results;
-      } else if (typeof response.data === 'object') {
+      } else if (typeof response.data === "object") {
         // Single post object (unlikely but handling just in case)
         categoryPosts.value = [response.data];
       } else {

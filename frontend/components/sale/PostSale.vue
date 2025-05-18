@@ -1,5 +1,5 @@
 <template>
-  <div class="post-sale-container max-w-4xl mx-auto">
+  <div class="post-sale-container max-w-4xl mx-auto text-left">
     <!-- Success Modal -->
     <div
       v-if="showSuccessModal"
