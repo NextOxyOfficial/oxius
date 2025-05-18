@@ -18,7 +18,7 @@
             />
           </div>
         </div>
-        <h3 class="text-2xl font-bold mt-8 text-gray-800">No posts yet</h3>
+        <h3 class="text-2xl font-medium mt-8 text-gray-800">No posts yet</h3>
         <p class="text-gray-600 mt-4 max-w-md mx-auto leading-relaxed">
           Create your first post to start selling items in the marketplace!
         </p>
@@ -182,7 +182,7 @@
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
                     <h3
-                      class="text-xl font-semibold line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
+                      class="text-base text-base line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
                     >
                       {{ post.title }}
                     </h3>
@@ -195,7 +195,7 @@
                         name="heroicons:currency-bangladeshi"
                         class="h-5 w-5 text-primary"
                       />
-                      <span class="font-bold text-gray-700">{{
+                      <span class="font-medium text-gray-700">{{
                         post.price
                           ? `৳${post.price.toLocaleString()}`
                           : "Negotiable"
@@ -322,7 +322,7 @@
           </div>
           <div class="absolute w-full h-8 top-full left-0 bg-gradient-to-b from-gray-200/20 to-transparent -mt-3 blur-xl rounded-full"></div>
         </div>
-        <h3 class="text-gray-700 text-xl font-semibold">
+        <h3 class="text-gray-700 text-base text-base">
           No matching posts found
         </h3>
         <p class="text-gray-500 mt-3 max-w-md mx-auto">
@@ -388,13 +388,13 @@
                   />
                 </div>
                 <div class="mt-3 text-center sm:mt-0 sm:ml-6 sm:text-left">
-                  <h3 class="text-2xl leading-7 font-bold text-gray-800">
+                  <h3 class="text-2xl leading-7 font-medium text-gray-800">
                     Delete Post
                   </h3>
                   <div class="mt-4">
                     <p class="text-gray-600 leading-relaxed">
                       Are you sure you want to delete "<span
-                        class="font-semibold text-gray-800"
+                        class="text-base text-gray-800"
                         >{{ postToDeleteTitle }}</span
                       >"? This action cannot be undone.
                     </p>
