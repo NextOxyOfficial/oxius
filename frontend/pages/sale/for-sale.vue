@@ -526,48 +526,16 @@
           <!-- Recent Listings Section -->
           <div
             class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-3 mb-6"
-          >
-            <div
-              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2"
-            >
+          >            <div class="mb-4">
               <h2 class="text-lg font-medium text-amber-700 flex items-center">
                 <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
                 Recent Listings
               </h2>
-
-              <!-- Tabs moved here -->
-              <div class="overflow-x-auto w-full sm:w-auto pb-1">
-                <UButtonGroup size="sm">
-                  <UButton
-                    color="primary"
-                    :variant="!activeCategoryTab ? 'soft' : 'ghost'"
-                    class="px-4 whitespace-nowrap"
-                    @click="changeActiveCategoryTab(null)"
-                  >
-                    All
-                  </UButton>
-                  <UButton
-                    v-for="(cat, i) in topCategories"
-                    :key="`cat-${cat?.id}+${i}`"
-                    :color="activeCategoryTab === cat.id ? 'primary' : 'gray'"
-                    :variant="activeCategoryTab === cat.id ? 'soft' : 'ghost'"
-                    class="px-4 whitespace-nowrap"
-                    @click="changeActiveCategoryTab(cat.id)"
-                  >
-                    {{ cat.name }}
-                    <span class="text-xs ml-1 opacity-75"
-                      >({{ getCategoryCount(cat.id) }})</span
-                    >
-                  </UButton>
-                </UButtonGroup>
-              </div>
-            </div>
-
-            <!-- Recent Listings Horizontal Scroll -->
+            </div>            <!-- Recent Listings Horizontal Scroll -->
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
               <div class="flex gap-4">
                 <NuxtLink
-                  v-for="(listing, i) in categoryPosts"
+                  v-for="(listing, i) in recentListings"
                   :key="`listing-${i}+${i}`"
                   :to="`/sale/${listing.slug}`"
                   class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-sm transition-shadow group"
@@ -609,23 +577,21 @@
                 </NuxtLink>
               </div>
             </div>
-          </div>
-
-          <!-- Loading State -->
+          </div>          <!-- Loading State -->
           <div
-            v-if="categoryTabLoading"
+            v-if="recentListingsLoading"
             class="py-12 text-center bg-white rounded-lg shadow-sm"
           >
             <UIcon
               name="i-heroicons-arrow-path"
-              class="animate-spin h-8 w-8 mx-auto text-primary"
+              class="animate-spin h-8 w-8 mx-auto text-amber-500"
             />
-            <p class="mt-2 text-gray-500">Loading listings...</p>
+            <p class="mt-2 text-gray-500">Loading recent listings...</p>
           </div>
 
           <!-- Empty State -->
           <div
-            v-else-if="categoryPosts?.length === 0"
+            v-else-if="recentListings?.length === 0"
             class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm"
           >
             <UIcon
@@ -633,11 +599,10 @@
               class="h-16 w-16 text-gray-400"
             />
             <h3 class="mt-2 text-lg font-medium text-gray-700">
-              No listings found
+              No recent listings found
             </h3>
             <p class="mt-1 text-gray-500 max-w-sm text-center">
-              We couldn't find any listings matching your criteria. Try
-              adjusting your filters or search terms.
+              Check back soon for new listings.
             </p>
           </div>
           <!-- Pagination Removed -->
@@ -820,7 +785,6 @@ const form = ref({
 });
 
 // State variables
-const activeCategoryTab = ref(null);
 const isLoading = ref(false);
 const loading = ref(true);
 const listings = ref([]); // Renamed from posts to match template usage
@@ -1308,24 +1272,12 @@ const paginatedCategoryPosts = computed(() => {
 });
 
 // Watch category tab changes to reset pagination
-watch([activeCategoryTab], () => {
-  categoryCurrentPage.value = 1;
-});
-
-// Category tabs section variables
-const topCategories = computed(() => {
-  // Get top 4-5 categories with most listings
-  return categories.value.slice(0, 5);
-});
-
 // Dynamic heading for category browser section
 const categoryBrowserHeading = computed(() => {
   if (selectedSubcategory.value) {
     return getSubcategoryName(selectedSubcategory.value);
   } else if (selectedCategory.value) {
     return getCategoryName(selectedCategory.value);
-  } else if (activeCategoryTab.value) {
-    return getCategoryName(activeCategoryTab.value);
   } else {
     return "All category listings";
   }
@@ -1334,20 +1286,7 @@ const categoryBrowserHeading = computed(() => {
 const categoryPosts = ref([]);
 const categoryTabLoading = ref(false);
 
-// Function to change active category tab
-function changeActiveCategoryTab(categoryId) {
-  activeCategoryTab.value = categoryId;
-
-  // If we're changing category tabs, reset any subcategory selection
-  // but preserve the main selectedCategory value for filtering
-  if (selectedSubcategory.value) {
-    selectedSubcategory.value = null;
-  }
-
-  // Reset to page 1 before loading new category posts
-  categoryCurrentPage.value = 1;
-  loadCategoryPosts();
-}
+// Load category posts function
 
 // Load posts for the selected category tab with improved API paths and fallback
 async function loadCategoryPosts() {
@@ -1358,10 +1297,6 @@ async function loadCategoryPosts() {
     params.append("page", "1");
     params.append("page_size", "24"); // Increased to load more items for pagination (2 pages worth)
     params.append("sort", "-created_at");
-
-    if (activeCategoryTab.value) {
-      params.append("category", activeCategoryTab.value.toString());
-    }
 
     let response;
     try {
@@ -1391,25 +1326,12 @@ async function loadCategoryPosts() {
     console.error("Error loading category posts:", error);
     categoryPosts.value = [];
   } finally {
-    categoryTabLoading.value = false;
-  }
+    categoryTabLoading.value = false;  }
 }
 
 // Recent Listings section variables
-const recentListingsCategory = ref(null);
 const recentListings = ref([]);
 const recentListingsLoading = ref(false);
-
-// Function to change recent listings category
-function changeRecentListingsCategory(categoryId) {
-  if (recentListingsCategory.value === categoryId) {
-    // Toggle off if already active
-    recentListingsCategory.value = null;
-  } else {
-    recentListingsCategory.value = categoryId;
-  }
-  loadRecentListings();
-}
 
 // Load recent listings with improved API paths and fallback
 async function loadRecentListings() {
@@ -1420,10 +1342,6 @@ async function loadRecentListings() {
     params.append("page", "1");
     params.append("page_size", "10");
     params.append("sort", "-created_at"); // Always sort by newest
-
-    if (recentListingsCategory.value) {
-      params.append("category", recentListingsCategory.value.toString());
-    }
 
     let response;
     try {
