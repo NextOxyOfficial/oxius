@@ -510,7 +510,7 @@
         <!-- Full Description Section -->
         <div class="mb-8">
           <h3
-            class="text-base font-Medium mb-4 text-gray-700 dark:text-white flex items-center"
+            class="text-base font-Medium my-3 text-gray-700 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-document-text"
@@ -520,7 +520,7 @@
           </h3>
 
           <div
-            class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-medium prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left"
+            class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-medium prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left px-4"
             v-html="
               currentProduct.description || 'No detailed description available.'
             "
@@ -572,7 +572,7 @@
           <div v-else>
             <!-- Mobile Similar Products - 2 items on small screens -->
             <div class="sm:hidden">
-              <div class="flex overflow-x-auto gap-2 pb-4 hide-scrollbar">
+              <div class="flex overflow-x-auto gap-2 py-2 hide-scrollbar px-1">
                 <div
                   v-for="(product, index) in similarProducts.slice(0, 2)"
                   :key="`mobile-${product.id}`"
@@ -602,7 +602,7 @@
         </div>
       </div>
 
-      <div class="flex justify-center mt-6" v-if="seeDetails">
+      <div class="flex justify-center my-4" v-if="seeDetails">
         <UButton
           :to="`/product-details/${currentProduct.slug}`"
           color="primary"
