@@ -26,7 +26,7 @@
           </div>
           <div class="flex gap-3 justify-between items-start">
             <h3
-              class="text-xl ml-1 md:text-xl font-semibold text-primary-700 dark:text-primary-300 text-left"
+              class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
             >
               {{ currentProduct.name }}
             </h3>
@@ -77,7 +77,7 @@
               <!-- Discount Badge with Improved Design -->
               <div
                 v-if="currentProduct.discount"
-                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-sm transform -rotate-6 animate-pulse"
+                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm transform -rotate-6 animate-pulse"
               >
                 -{{ currentProduct.discount }}% OFF!
               </div>
@@ -85,7 +85,7 @@
               <!-- Free Delivery Badge -->
               <div
                 v-if="currentProduct.is_free_delivery"
-                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-sm"
+                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
               >
                 Free Shipping
               </div>
@@ -182,7 +182,7 @@
           <div class="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl mb-4">
             <div class="flex items-end gap-3">
               <span
-                class="text-2xl font-semibold text-primary-600 dark:text-primary-400"
+                class="text-2xl font-medium text-primary-600 dark:text-primary-400"
               >
                 ৳{{ currentProduct.sale_price || currentProduct.regular_price }}
               </span>
@@ -292,7 +292,7 @@
                 />
 
                 <!-- Button text with animated dot -->
-                <span class="text-base font-semibold">
+                <span class="text-base font-medium">
                   Buy Now
                   <span
                     class="inline-block w-1.5 h-1.5 bg-white rounded-full ml-0.5 animate-pulse"
@@ -359,7 +359,7 @@
                   name="i-heroicons-gift"
                   class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
                 />
-                <span class="font-semibold text-red-600 dark:text-red-400"
+                <span class="font-medium text-red-600 dark:text-red-400"
                   >Free Delivery on this product!</span
                 >
               </li>
@@ -391,8 +391,8 @@
                 />
                 <div v-else class="flex items-center justify-center h-full">
                   <UIcon
-                    name="i-heroicons-user"
-                    class="w-8 h-8 text-slate-400 dark:text-slate-500"
+                    name="ic-twotone-add-business"
+                    class="w-8 h-8 text-orange-400"
                   />
                 </div>
               </div>
@@ -436,22 +436,8 @@
               />
               <span class="text-gray-600 dark:text-slate-300">
                 Member since
-                {{ currentProduct.seller?.joined_date || "January 2023" }}
-              </span>
-            </div>
-
-            <div
-              v-if="currentProduct.seller?.business_hours"
-              class="flex items-center text-sm"
-            >
-              <UIcon
-                name="i-heroicons-calendar"
-                class="w-5 h-5 text-slate-500 flex-shrink-0 mr-2"
-              />
-              <span class="text-gray-600 dark:text-slate-300">
-                {{
-                  currentProduct.seller?.business_hours || "Mon-Fri: 9AM-6PM"
-                }}
+                {{ currentProduct.owner_details?.date_joined }}
+                
               </span>
             </div>
           </div>
@@ -524,7 +510,7 @@
         <!-- Full Description Section -->
         <div class="mb-8">
           <h3
-            class="text-lg font-semibold mb-4 text-gray-700 dark:text-white flex items-center"
+            class="text-base font-Medium mb-4 text-gray-700 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-document-text"
@@ -534,7 +520,7 @@
           </h3>
 
           <div
-            class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-semibold prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left"
+            class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-medium prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left"
             v-html="
               currentProduct.description || 'No detailed description available.'
             "
@@ -543,7 +529,7 @@
         <!-- Similar Products Section -->
         <div class="mb-8 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
-            class="text-lg font-semibold mb-4 text-gray-700 dark:text-white flex items-center"
+            class="text-base font-medium mb-4 text-gray-700 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-squares-2x2"
