@@ -135,7 +135,7 @@
                     class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3.5 transition-all"
                     :class="
                       selectedCategory === category.id
-                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
+                        ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-400'
                     "
                   >
@@ -507,7 +507,7 @@
         <div class="flex flex-col items-center justify-center">
           <div class="w-16 h-16 relative">
             <div
-              class="w-full h-full rounded-full border-4 border-emerald-100 dark:border-emerald-800/20"
+              class="w-full h-full rounded-full border-4 border-emerald-200 dark:border-emerald-800/20"
             ></div>
             <div
               class="w-full h-full rounded-full border-4 border-t-emerald-500 animate-spin absolute top-0 left-0"
@@ -575,7 +575,7 @@
         <div v-if="isLoadingMore" class="flex flex-col items-center">
           <div class="w-10 h-10 relative">
             <div
-              class="w-full h-full rounded-full border-3 border-emerald-100 dark:border-emerald-800/20"
+              class="w-full h-full rounded-full border-3 border-emerald-200 dark:border-emerald-800/20"
             ></div>
             <div
               class="w-full h-full rounded-full border-3 border-t-emerald-500 animate-spin absolute top-0 left-0"

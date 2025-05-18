@@ -28,21 +28,7 @@
 
           <!-- Navigation controls -->
           <div class="flex items-center gap-2">
-            <!-- <button
-              @click="scrollLeft"
-              class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-500 dark:text-slate-300 transition-colors inline-flex items-center"
-              aria-label="Scroll left"
-            >
-              <UIcon name="i-heroicons-chevron-left" class="w-3.5 h-3.5" />
-            </button>
-            <button
-              @click="scrollRight"
-              class="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-500 dark:text-slate-300 transition-colors inline-flex items-center"
-              aria-label="Scroll right"
-            >
-              <UIcon name="i-heroicons-chevron-right" class="w-3.5 h-3.5" />
-            </button> -->
-            <NuxtLink
+            <!-- <NuxtLink
               to="/all-result"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 md:hover:bg-gradient-to-r md:hover:from-primary-50 md:hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium group"
             >
@@ -51,7 +37,7 @@
                 name="i-heroicons-arrow-right"
                 class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
               />
-            </NuxtLink>
+            </NuxtLink> -->
           </div>
         </div>
 

@@ -15,7 +15,7 @@
     </div>
 
     <!-- Content Container with extra padding for hover effects -->
-    <div class="relative z-10 px-2 py-6">
+    <div class="relative z-10 px-2 py-3">
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center">
