@@ -22,7 +22,8 @@
           >
             <!-- Location path with icons -->
             <div class="location-breadcrumb relative my-3 overflow-hidden">
-              <!-- Subtle background effect --> <div
+              <!-- Subtle background effect -->
+              <div
                 class="relative z-10 flex items-center justify-between p-3 rounded-lg border border-primary-100"
               >
                 <!-- Location path with icons -->
@@ -231,7 +232,9 @@
               </UButton>
               <p class="text-gray-500 text-sm">
                 <span class="font-medium text-gray-700">{{
-                  totalListings
+                  selectedCategory
+                    ? getCateogryPostCount(selectedCategory)
+                    : totalListings
                 }}</span>
                 ads found
                 <span v-if="selectedCategory">
@@ -526,12 +529,14 @@
           <!-- Recent Listings Section -->
           <div
             class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-3 mb-6"
-          >            <div class="mb-4">
+          >
+            <div class="mb-4">
               <h2 class="text-lg font-medium text-amber-700 flex items-center">
                 <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
                 Recent Listings
               </h2>
-            </div>            <!-- Recent Listings Horizontal Scroll -->
+            </div>
+            <!-- Recent Listings Horizontal Scroll -->
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
               <div class="flex gap-4">
                 <NuxtLink
@@ -577,7 +582,8 @@
                 </NuxtLink>
               </div>
             </div>
-          </div>          <!-- Loading State -->
+          </div>
+          <!-- Loading State -->
           <div
             v-if="recentListingsLoading"
             class="py-12 text-center bg-white rounded-lg shadow-sm"
@@ -761,8 +767,8 @@ const API_ENDPOINTS = {
   CATEGORIES: "/sale/categories/",
   SUBCATEGORIES: "/sale/subcategories/",
   LISTINGS: "/sale/posts/",
-  DIVISIONS: "/geo/divisions",
-  DISTRICTS: "/geo/districts",
+  DIVISIONS: "/geo/divisions/",
+  DISTRICTS: "/geo/districts/",
   AREAS: "/geo/areas/",
   POSTS: "/sale/posts/",
 };
@@ -824,7 +830,7 @@ const selectedCondition = ref(""); // Added to match template usage
 const sortOption = ref("newest"); // Added to match template usage
 // Pagination variables removed
 const categoryCountsMap = ref({});
-const expandedCategories = ref({});
+const expandedCategories = ref([]);
 
 // Define priceRange object
 const priceRange = ref({
@@ -852,7 +858,6 @@ const sortOptions = [
   { label: "Oldest First", value: "oldest" },
   { label: "Price: Low to High", value: "price_low" },
   { label: "Price: High to Low", value: "price_high" },
-  { label: "Most Viewed", value: "most_viewed" },
 ];
 
 // Computed property for checking active filters
@@ -940,28 +945,11 @@ async function fetchCategories() {
     const response = await get(API_ENDPOINTS.CATEGORIES);
 
     if (response && Array.isArray(response.data)) {
-      categories.value = response.data.map((category) => ({
-        id: category.id,
-        name: category.name,
-        slug: category.slug || category.name.toLowerCase().replace(/\s+/g, "-"),
-        count: category.post_count || 0,
-      }));
-
-      // Update category counts map
-      categories.value.forEach((category) => {
-        categoryCountsMap.value[category.id] = category.count || 0;
-      });
-    } else if (response && response.data && typeof response.data === "object") {
-      // Handle non-array response format
-      const categoriesData = Object.values(response.data).filter(
-        (item) => item && typeof item === "object"
+      categories.value = response.data;
+      totalListings.value = categories.value.reduce(
+        (acc, item) => acc + item.post_count,
+        0
       );
-      categories.value = categoriesData.map((category, index) => ({
-        id: category.id || index + 1,
-        name: category.name || `Category ${index + 1}`,
-        slug: category.slug || `category-${index + 1}`,
-        count: category.post_count || 0,
-      }));
     } else {
       categories.value = [];
     }
@@ -1037,29 +1025,19 @@ async function loadPosts(page = 1) {
         totalPages.value = Math.ceil(
           +response.data.count / +response.data.results.length
         );
-        totalListings.value = response.data.count || 0;
       } else if (Array.isArray(response.data)) {
         // Array response
         listings.value = mapListingsData(response.data);
-        totalListings.value = response.data?.length;
       }
     } else {
       listings.value = [];
-      totalListings.value = 0;
     }
   } catch (error) {
     console.error("Error loading listings:", error);
     listings.value = [];
-    totalListings.value = 0;
   } finally {
     loading.value = false;
   }
-}
-
-// Function to handle empty or failed listings responses
-function handleEmptyListings() {
-  console.log("No listings available");
-  return [];
 }
 
 // Map listing data to a consistent format
@@ -1105,16 +1083,10 @@ function getCategoryName(categoryId) {
   return category ? category.name : "";
 }
 
-// Get category icon from category data or use default
-function getCategoryIcon(categoryId) {
+function getCateogryPostCount(categoryId) {
+  if (!categoryId) return 0;
   const category = categories.value.find((c) => c.id === parseInt(categoryId));
-  return category && category.icon
-    ? `i-heroicons-${category.icon}`
-    : "i-heroicons-squares-2x2";
-}
-
-function getCategoryCount(categoryId) {
-  return categoryCountsMap.value[categoryId] || 0;
+  return category ? category.post_count : 0;
 }
 
 function getConditionLabel(condition) {
@@ -1180,12 +1152,6 @@ function formatDate(dateStr) {
   });
 }
 
-// Subcategory handling
-function hasSubcategories(categoryId) {
-  // This would be replaced with actual subcategory check from API data
-  return categoryId === 1 || categoryId === 2 || categoryId === 3;
-}
-
 async function getSubcategories(categoryId) {
   // This should be replaced with an API call
   try {
@@ -1203,11 +1169,8 @@ async function getSubcategories(categoryId) {
   return [];
 }
 
-function toggleSubcategories(categoryId) {
-  expandedCategories.value = {
-    ...expandedCategories.value,
-    [categoryId]: !expandedCategories.value[categoryId],
-  };
+function toggleSubcategories(category) {
+  expandedCategories.value = category;
 }
 
 function selectSubcategory(subcategoryId) {
@@ -1216,27 +1179,27 @@ function selectSubcategory(subcategoryId) {
 }
 
 // Action handlers
-function selectCategory(catId) {
+async function selectCategory(catId) {
   selectedCategory.value = catId;
   selectedSubcategory.value = null;
-  loadPosts(1);
+  await loadPosts(1);
 }
 
-function clearCategory() {
+async function clearCategory() {
   selectedCategory.value = null;
   selectedSubcategory.value = null;
-  loadPosts(1);
+  await loadPosts(1);
 }
 
-function clearSubcategory() {
+async function clearSubcategory() {
   selectedSubcategory.value = null;
-  loadPosts(1);
+  await loadPosts(1);
 }
 
-function clearPriceRange() {
+async function clearPriceRange() {
   priceRange.value.min = "";
   priceRange.value.max = "";
-  loadPosts(1);
+  await loadPosts(1);
 }
 
 function applyFilters() {
@@ -1326,7 +1289,8 @@ async function loadCategoryPosts() {
     console.error("Error loading category posts:", error);
     categoryPosts.value = [];
   } finally {
-    categoryTabLoading.value = false;  }
+    categoryTabLoading.value = false;
+  }
 }
 
 // Recent Listings section variables
@@ -1340,7 +1304,6 @@ async function loadRecentListings() {
   try {
     const params = new URLSearchParams();
     params.append("page", "1");
-    params.append("page_size", "10");
     params.append("sort", "-created_at"); // Always sort by newest
 
     let response;

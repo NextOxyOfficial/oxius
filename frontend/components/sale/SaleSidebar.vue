@@ -46,7 +46,9 @@
                 <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5" />
                 All Categories
               </span>
-              <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">
+              <span
+                class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full"
+              >
                 {{ totalListings }}
               </span>
             </button>
@@ -67,28 +69,31 @@
                   <UIcon :name="getCategoryIcon(category.id)" class="w-5 h-5" />
                   {{ category.name }}
                 </span>
+
                 <div class="flex items-center">
-                  <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full mr-1">
-                    {{ getCategoryCount(category.id) }}
+                  <span
+                    class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full mr-1"
+                  >
+                    {{ category?.post_count }}
                   </span>
-                  <UButton
-                    v-if="hasSubcategories(category.id)"
+                  <!-- <UButton
+                    v-if="hasSubcategories(category)"
                     variant="ghost"
                     color="gray"
                     size="xs"
                     class="p-0 h-6 w-6"
                     :icon="
-                      expandedCategories[category.id]
+                      expandedCategories.id === category.id
                         ? 'i-heroicons-minus-small'
                         : 'i-heroicons-plus-small'
                     "
-                    @click.stop="toggleSubcategories(category.id)"
-                  />
+                    @click.stop="toggleSubcategories(category)"
+                  /> -->
                 </div>
               </button>
 
               <!-- Subcategories -->
-              <transition
+              <!-- <transition
                 enter-active-class="transition-all duration-200 ease-out"
                 leave-active-class="transition-all duration-150 ease-in"
                 enter-from-class="opacity-0 max-h-0"
@@ -97,10 +102,16 @@
                 leave-to-class="opacity-0 max-h-0"
               >
                 <ul
-                  v-if="expandedCategories[category.id] && hasSubcategories(category.id)"
+                  v-if="
+                    expandedCategories?.child_categories?.length > 0 &&
+                    hasSubcategories(category)
+                  "
                   class="ml-5 mt-1 space-y-1 overflow-hidden border-l-2 border-gray-100 pl-2"
                 >
-                  <li v-for="subcategory in getSubcategories(category.id)" :key="subcategory.id">
+                  <li
+                    v-for="subcategory in category.child_categories"
+                    :key="subcategory.id"
+                  >
                     <button
                       @click.stop="selectSubcategory(subcategory.id)"
                       class="w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between text-sm"
@@ -117,21 +128,25 @@
                     </button>
                   </li>
                 </ul>
-              </transition>
+              </transition> -->
             </div>
           </li>
         </ul>
       </div>
 
       <!-- Looking to List a Sale? Section -->
-      <div class="mb-6 bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20">
-        <h3 class="text-base font-medium text-primary mb-2 flex items-center gap-1">
+      <div
+        class="mb-6 bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20"
+      >
+        <h3
+          class="text-base font-medium text-primary mb-2 flex items-center gap-1"
+        >
           <UIcon name="i-heroicons-tag" class="w-4 h-4" />
           Looking to List a Sale?
         </h3>
         <p class="text-sm text-gray-500 mb-3">
-          List your items easily and reach thousands of potential buyers
-          in your area.
+          List your items easily and reach thousands of potential buyers in your
+          area.
         </p>
         <UButton
           to="/sale/post"
@@ -146,13 +161,17 @@
 
       <!-- Sponsored Ads -->
       <div class="mb-6">
-        <h3 class="text-xs uppercase text-gray-500 font-medium mb-2 flex items-center gap-1">
+        <h3
+          class="text-xs uppercase text-gray-500 font-medium mb-2 flex items-center gap-1"
+        >
           <UIcon name="i-heroicons-sparkles" class="w-4 h-4 text-amber-500" />
           Sponsored
         </h3>
 
         <!-- Premium Ad Card -->
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-3 group cursor-pointer hover:shadow-sm transition-shadow">
+        <div
+          class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-3 group cursor-pointer hover:shadow-sm transition-shadow"
+        >
           <div class="relative">
             <img
               src="https://picsum.photos/300/150?ad=1"
@@ -160,7 +179,10 @@
               class="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div class="absolute top-2 left-2">
-              <span class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded font-medium">Premium</span>
+              <span
+                class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded font-medium"
+                >Premium</span
+              >
             </div>
           </div>
           <div class="p-3">
@@ -172,7 +194,9 @@
         </div>
 
         <!-- Regular Ad Card -->
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow">
+        <div
+          class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow"
+        >
           <div class="flex">
             <div class="w-1/3">
               <img
@@ -195,12 +219,16 @@
 
       <!-- Long Height Banner -->
       <div class="mb-6">
-        <h3 class="text-xs uppercase text-gray-500 font-medium mb-2 flex items-center gap-1">
+        <h3
+          class="text-xs uppercase text-gray-500 font-medium mb-2 flex items-center gap-1"
+        >
           <UIcon name="i-heroicons-megaphone" class="w-4 h-4 text-blue-500" />
           Featured Deal
         </h3>
 
-        <div class="bg-white rounded-lg border border-blue-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow">
+        <div
+          class="bg-white rounded-lg border border-blue-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-shadow"
+        >
           <div class="relative">
             <img
               src="https://picsum.photos/300/600?ad=special"
@@ -208,12 +236,15 @@
               class="w-full h-96 object-cover group-hover:scale-102 transition-transform duration-500"
             />
             <div class="absolute top-2 left-2">
-              <span class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded font-medium">Limited Time</span>
+              <span
+                class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded font-medium"
+                >Limited Time</span
+              >
             </div>
-            <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4">
-              <h4 class="font-medium text-white text-base">
-                Summer Sale
-              </h4>
+            <div
+              class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4"
+            >
+              <h4 class="font-medium text-white text-base">Summer Sale</h4>
               <p class="text-blue-200 text-sm font-medium mt-1">
                 Up to 50% off on selected items
               </p>
@@ -234,55 +265,55 @@
 const props = defineProps({
   isMobileFilterOpen: {
     type: Boolean,
-    default: false
+    default: false,
   },
   categories: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   totalListings: {
     type: Number,
-    default: 0
+    default: 0,
   },
   selectedCategory: {
     type: [Number, String, null],
-    default: null
+    default: null,
   },
   selectedSubcategory: {
     type: [String, null],
-    default: null
+    default: null,
   },
   expandedCategories: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 });
 
 const emits = defineEmits([
-  'toggle-mobile-sidebar',
-  'select-category',
-  'select-subcategory',
-  'toggle-subcategories'
+  "toggle-mobile-sidebar",
+  "select-category",
+  "select-subcategory",
+  "toggle-subcategories",
 ]);
 
 // Function to toggle mobile sidebar
 function toggleMobileSidebar() {
-  emits('toggle-mobile-sidebar');
+  emits("toggle-mobile-sidebar");
 }
 
 // Category selection function
 function selectCategory(categoryId) {
-  emits('select-category', categoryId);
+  emits("select-category", categoryId);
 }
 
 // Subcategory selection function
 function selectSubcategory(subcategoryId) {
-  emits('select-subcategory', subcategoryId);
+  emits("select-subcategory", subcategoryId);
 }
 
 // Toggle subcategories function
-function toggleSubcategories(categoryId) {
-  emits('toggle-subcategories', categoryId);
+function toggleSubcategories(category) {
+  emits("toggle-subcategories", category);
 }
 
 // Get category icon
@@ -299,14 +330,11 @@ function getCategoryIcon(categoryId) {
 }
 
 // Get category count
-function getCategoryCount(categoryId) {
-  return props.categories.find(cat => cat.id === categoryId)?.count || 0;
-}
 
 // Check if category has subcategories
-function hasSubcategories(categoryId) {
+function hasSubcategories(category) {
   // This would be replaced with actual subcategory check from API data
-  return categoryId === 1 || categoryId === 2 || categoryId === 3;
+  return category.sub_categories_count > 0;
 }
 
 // Get subcategories for a category

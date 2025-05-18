@@ -4,17 +4,41 @@ from .models import (
     SaleImage, SaleBanner, SaleCondition
 )
 
-class SaleCategorySerializer(serializers.ModelSerializer):
+class SaleCategorySerializerParent(serializers.ModelSerializer):
+    post_count = serializers.SerializerMethodField()
+    sub_categories_count = serializers.SerializerMethodField()
     class Meta:
         model = SaleCategory
-        fields = ['id', 'name', 'icon']
+        fields = '__all__'
+            
+    def get_post_count(self, obj):
+        return obj.posts.count()
+        
+    def get_sub_categories_count(self, obj):
+        return obj.child_categories.count()
 
 class SaleChildCategorySerializer(serializers.ModelSerializer):
-    parent_category = SaleCategorySerializer(source='parent', read_only=True)
+    parent_category = SaleCategorySerializerParent(source='parent', read_only=True)
     
     class Meta:
         model = SaleChildCategory
         fields = ['id', 'name', 'icon', 'parent', 'parent_category']
+
+class SaleCategorySerializer(serializers.ModelSerializer):
+    post_count = serializers.SerializerMethodField()
+    sub_categories_count = serializers.SerializerMethodField()
+    child_categories = SaleChildCategorySerializer(many=True, read_only=True)
+    class Meta:
+        model = SaleCategory
+        fields = '__all__'
+        
+    def get_post_count(self, obj):
+        return obj.posts.count()
+    
+    def get_sub_categories_count(self, obj):
+        return obj.child_categories.count()
+
+
         
 class SaleImageSerializer(serializers.ModelSerializer):
     class Meta:

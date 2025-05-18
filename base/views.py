@@ -2376,10 +2376,7 @@ def product_order_count(request, product_id):
     }
     return Response(data, status=status.HTTP_200_OK)
 
-# for frontend
 
-def index(request, **args):
-    return render(request, 'index.html')
 
 class DiamondPackageListView(generics.ListAPIView):
     queryset = DiamondPackages.objects.all()
@@ -2569,3 +2566,10 @@ class SendDiamondGiftView(APIView):
             print(traceback.format_exc())
             return Response({'error': str(e)}, status=500)
 
+
+
+
+# for frontend
+
+def index(request, **args):
+    return render(request, 'index.html')
