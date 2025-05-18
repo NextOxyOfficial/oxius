@@ -15,7 +15,7 @@
       </div>
       <form
         action="#"
-        class="max-w-xl mx-auto border border-gray-100 p-2 md:p-6 rounded-xl bg-white"
+        class="max-w-xl mx-auto border border-gray-100 p-2 md:p-3 rounded-xl bg-white"
         @submit.prevent="handleForm"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
