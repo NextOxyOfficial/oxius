@@ -92,42 +92,52 @@
         <!-- Left Column - Main Content -->
         <div class="lg:col-span-2">
           <!-- Images Gallery Card - Enhanced Design -->
-          <div
-            class="bg-white rounded-xl shadow-sm overflow-hidden mb-6"
-          >
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <!-- Main Image with Enhanced Gallery Experience -->
             <div
               class="relative h-[400px] md:h-[500px] overflow-hidden bg-gray-50 dark:bg-gray-900/20"
             >
               <!-- Image Loading Placeholder -->
-              <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 z-10">
+              <div
+                v-if="imageLoading"
+                class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 z-10"
+              >
                 <div class="animate-pulse">
-                  <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400 dark:text-gray-500" />
+                  <UIcon
+                    name="i-heroicons-photo"
+                    class="h-16 w-16 text-gray-400 dark:text-gray-500"
+                  />
                 </div>
               </div>
-              
+
               <!-- Main Large Image -->
               <img
                 :src="selectedImage || getMainImage()"
                 :alt="post.title"
                 class="w-full h-full object-contain transition-opacity duration-300"
-                :class="{ 'opacity-0': imageLoading, 'opacity-100': !imageLoading }"
+                :class="{
+                  'opacity-0': imageLoading,
+                  'opacity-100': !imageLoading,
+                }"
                 @click="openLightbox = true"
                 @load="imageLoading = false"
                 @error="handleImageError"
               />
 
               <!-- Image Navigation Controls -->
-              <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4">
-                <button 
-                  @click.stop="navigateImage('prev')" 
+              <div
+                v-if="post.images && post.images.length > 1"
+                class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4"
+              >
+                <button
+                  @click.stop="navigateImage('prev')"
                   class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Previous image"
                 >
                   <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
                 </button>
-                <button 
-                  @click.stop="navigateImage('next')" 
+                <button
+                  @click.stop="navigateImage('next')"
                   class="rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                   aria-label="Next image"
                 >
@@ -137,20 +147,25 @@
 
               <!-- Status Badges with Improved Design -->
               <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
-                <div
-                  v-if="post.status === 'sold'"
-                  class="badge-container"
-                >
-                  <span class="relative inline-flex items-center gap-1 bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm">
+                <div v-if="post.status === 'sold'" class="badge-container">
+                  <span
+                    class="relative inline-flex items-center gap-1 bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm"
+                  >
                     <span class="flex w-2 h-2 relative mr-0.5">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                      <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"
+                      ></span>
+                      <span
+                        class="relative inline-flex rounded-full h-2 w-2 bg-white"
+                      ></span>
                     </span>
                     SOLD
                   </span>
                 </div>
                 <div v-if="post.featured" class="badge-container">
-                  <span class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm flex items-center gap-1">
+                  <span
+                    class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm flex items-center gap-1"
+                  >
                     <UIcon name="i-heroicons-star" class="h-3.5 w-3.5" />
                     FEATURED
                   </span>
@@ -158,16 +173,22 @@
               </div>
 
               <!-- Zoom Control -->
-              <button 
-                @click.stop="openLightbox = true" 
+              <button
+                @click.stop="openLightbox = true"
                 class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
                 aria-label="Zoom image"
               >
-                <UIcon name="i-heroicons-magnifying-glass-plus" class="h-5 w-5" />
+                <UIcon
+                  name="i-heroicons-magnifying-glass-plus"
+                  class="h-5 w-5"
+                />
               </button>
-              
+
               <!-- Image Counter -->
-              <div v-if="post.images && post.images.length > 1" class="absolute bottom-4 left-4 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
+              <div
+                v-if="post.images && post.images.length > 1"
+                class="absolute bottom-4 left-4 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm"
+              >
                 {{ currentImageIndex + 1 }} / {{ post.images.length }}
               </div>
             </div>
@@ -178,18 +199,26 @@
               class="relative bg-gray-50 dark:bg-gray-900/20 py-3 px-4 border-t border-gray-100 dark:border-gray-800"
             >
               <!-- Shadow indicators for scroll -->
-              <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-900/20 z-10"></div>
-              <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent dark:from-gray-900/20 z-10"></div>
-              
+              <div
+                class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-900/20 z-10"
+              ></div>
+              <div
+                class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent dark:from-gray-900/20 z-10"
+              ></div>
+
               <!-- Thumbnails Container with Horizontal Scroll -->
-              <div class="flex space-x-2 overflow-x-auto thumbnails-container pb-1 px-2">
+              <div
+                class="flex space-x-2 overflow-x-auto thumbnails-container pb-1 px-2"
+              >
                 <button
                   v-for="(image, index) in post.images"
                   :key="index"
                   class="flex-shrink-0 cursor-pointer transition-all duration-300 transform rounded-md overflow-hidden border-2"
                   :class="{
-                    'border-primary scale-105 shadow-sm': selectedImage === getImageSrc(image),
-                    'border-transparent hover:border-gray-300 dark:hover:border-gray-600': selectedImage !== getImageSrc(image)
+                    'border-primary scale-105 shadow-sm':
+                      selectedImage === getImageSrc(image),
+                    'border-transparent hover:border-gray-300 dark:hover:border-gray-600':
+                      selectedImage !== getImageSrc(image),
                   }"
                   @click="selectImage(image, index)"
                 >
@@ -210,11 +239,16 @@
               v-if="!post.images || post.images.length === 0"
               class="text-center py-6 bg-gray-50 dark:bg-gray-900/20"
             >
-              <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto" />
-              <p class="text-gray-500 dark:text-gray-500 mt-2">No images available for this listing</p>
+              <UIcon
+                name="i-heroicons-photo"
+                class="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto"
+              />
+              <p class="text-gray-500 dark:text-gray-500 mt-2">
+                No images available for this listing
+              </p>
             </div>
           </div>
-          
+
           <!-- Title, Price, and Details Card -->
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
@@ -222,7 +256,9 @@
             <div
               class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6"
             >
-              <h1 class="text-xl font-semibold text-gray-700">{{ post.title }}</h1>
+              <h1 class="text-xl font-semibold text-gray-700">
+                {{ post.title }}
+              </h1>
               <div class="flex flex-col items-end">
                 <div class="text-xl font-semibold text-primary">
                   <span v-if="post.negotiable && !post.price">Negotiable</span>
@@ -251,7 +287,7 @@
                 <div>
                   <span class="text-gray-500 text-sm">Category</span>
                   <p class="text-gray-700 font-medium">
-                    {{ getCategoryName(post.category) }}
+                    {{ post.category_details.name }}
                   </p>
                 </div>
               </div>
@@ -535,7 +571,7 @@
               </div>
               <div>
                 <h4 class="font-medium text-gray-700">
-                  {{ post.seller?.name || "Anonymous Seller" }}
+                  {{ post.user_name || "Anonymous Seller" }}
                 </h4>
                 <p
                   v-if="post.seller?.member_since"
@@ -679,12 +715,15 @@
     </UContainer>
 
     <!-- Enhanced Image Lightbox Modal -->
-    <UModal v-model="openLightbox" :ui="{ 
-      container: 'flex min-h-screen items-center justify-center p-0 md:p-4',
-      overlay: 'bg-black/90',
-      width: 'max-w-full md:max-w-6xl',
-      base: 'bg-transparent w-full' 
-    }">
+    <UModal
+      v-model="openLightbox"
+      :ui="{
+        container: 'flex min-h-screen items-center justify-center p-0 md:p-4',
+        overlay: 'bg-black/90',
+        width: 'max-w-full md:max-w-6xl',
+        base: 'bg-transparent w-full',
+      }"
+    >
       <div class="relative p-0 md:p-4">
         <!-- Close Button -->
         <button
@@ -696,16 +735,19 @@
         </button>
 
         <!-- Navigation Controls -->
-        <div v-if="post.images && post.images.length > 1" class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4 z-20">
-          <button 
-            @click.stop="navigateImage('prev')" 
+        <div
+          v-if="post.images && post.images.length > 1"
+          class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4 z-20"
+        >
+          <button
+            @click.stop="navigateImage('prev')"
             class="rounded-full p-3 bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all hover:scale-105"
             aria-label="Previous image"
           >
             <UIcon name="i-heroicons-chevron-left" class="h-6 w-6" />
           </button>
-          <button 
-            @click.stop="navigateImage('next')" 
+          <button
+            @click.stop="navigateImage('next')"
             class="rounded-full p-3 bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all hover:scale-105"
             aria-label="Next image"
           >
@@ -714,7 +756,7 @@
         </div>
 
         <!-- Main Image with Zoom Functionality -->
-        <div 
+        <div
           class="lightbox-image-container max-h-[80vh] flex items-center justify-center"
           @wheel="handleZoom"
           @mousedown="startPan"
@@ -727,32 +769,36 @@
             :src="selectedImage || getMainImage()"
             :alt="post.title"
             class="max-w-full max-h-[80vh] object-contain transition-transform duration-300 ease-out"
-            :style="{ transform: `scale(${zoomLevel}) translate(${panPosition.x}px, ${panPosition.y}px)` }"
+            :style="{
+              transform: `scale(${zoomLevel}) translate(${panPosition.x}px, ${panPosition.y}px)`,
+            }"
             @dblclick="toggleZoom"
           />
         </div>
 
         <!-- Zoom Controls -->
         <div class="absolute bottom-4 left-4 flex items-center gap-2 z-20">
-          <button 
-            @click="zoomOut" 
+          <button
+            @click="zoomOut"
             class="rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-opacity"
             :disabled="zoomLevel <= 1"
             :class="{ 'opacity-50': zoomLevel <= 1 }"
           >
             <UIcon name="i-heroicons-minus" class="h-4 w-4" />
           </button>
-          <span class="bg-black/50 px-2 py-1 rounded text-xs text-white">{{ Math.round(zoomLevel * 100) }}%</span>
-          <button 
-            @click="zoomIn" 
+          <span class="bg-black/50 px-2 py-1 rounded text-xs text-white"
+            >{{ Math.round(zoomLevel * 100) }}%</span
+          >
+          <button
+            @click="zoomIn"
             class="rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-opacity"
             :disabled="zoomLevel >= 3"
             :class="{ 'opacity-50': zoomLevel >= 3 }"
           >
             <UIcon name="i-heroicons-plus" class="h-4 w-4" />
           </button>
-          <button 
-            @click="resetZoom" 
+          <button
+            @click="resetZoom"
             class="rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-opacity ml-1"
           >
             <UIcon name="i-heroicons-arrow-path" class="h-4 w-4" />
@@ -769,8 +815,10 @@
             :key="index"
             class="flex-shrink-0 transition-all duration-200 rounded overflow-hidden border-2"
             :class="{
-              'border-primary opacity-100 scale-110': selectedImage === getImageSrc(image),
-              'border-transparent opacity-70 hover:opacity-100': selectedImage !== getImageSrc(image)
+              'border-primary opacity-100 scale-110':
+                selectedImage === getImageSrc(image),
+              'border-transparent opacity-70 hover:opacity-100':
+                selectedImage !== getImageSrc(image),
             }"
             @click="selectImage(image, index)"
           >
