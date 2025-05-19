@@ -1,9 +1,9 @@
 <template>
   <div
-    class="py-3 z-[99999999] bg-slate-100/90 shadow-sm rounded-lg dark:bg-black max-w-[1280px] md:mx-auto"
+    class="py-3 z-[99999999] bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-black max-w-[1280px] md:mx-auto"
     :class="
       isScrolled
-        ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-lg'
+        ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-b-lg'
         : 'sticky'
     "
   >
@@ -248,10 +248,6 @@
                 },
               ]"
               :ui="{
-                inactive:
-                  'after:hidden before:hidden text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors',
-                active:
-                  'after:hidden before:hidden text-emerald-600 dark:text-emerald-400 font-semibold',
                 padding: 'py-3 px-4',
               }"
               class="space-y-2"

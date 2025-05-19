@@ -91,6 +91,28 @@
       <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column - Main Content -->
         <div class="lg:col-span-2">
+          <!-- Title Display Above Images -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+              <h1 class="text-xl font-semibold text-gray-700">
+                {{ post.title }}
+              </h1>
+              <div class="flex flex-col items-start md:items-end">
+                <div class="text-xl font-semibold text-primary">
+                  <span v-if="post.negotiable && !post.price">Negotiable</span>
+                  <span v-else-if="post.price">৳{{ formatPrice(post.price) }}</span>
+                  <span v-else>Contact for Price</span>
+                </div>
+                <div
+                  v-if="post.negotiable && post.price"
+                  class="text-sm text-gray-500"
+                >
+                  Negotiable
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- Images Gallery Card - Enhanced Design -->
           <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <!-- Main Image with Enhanced Gallery Experience -->
@@ -253,29 +275,6 @@
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
           >
-            <div
-              class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6"
-            >
-              <h1 class="text-xl font-semibold text-gray-700">
-                {{ post.title }}
-              </h1>
-              <div class="flex flex-col items-end">
-                <div class="text-xl font-semibold text-primary">
-                  <span v-if="post.negotiable && !post.price">Negotiable</span>
-                  <span v-else-if="post.price"
-                    >৳{{ formatPrice(post.price) }}</span
-                  >
-                  <span v-else>Contact for Price</span>
-                </div>
-                <div
-                  v-if="post.negotiable && post.price"
-                  class="text-sm text-gray-500"
-                >
-                  Negotiable
-                </div>
-              </div>
-            </div>
-
             <!-- Post Details Table -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-6">
               <!-- Category -->
