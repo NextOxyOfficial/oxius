@@ -87,7 +87,7 @@
           class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
         >
           <button
-            class="flex-1 py-2 text-xs font-medium transition-colors"
+            class="flex-1 py-2 text-base font-medium transition-colors"
             :class="
               activeTab === 'all'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
@@ -99,7 +99,7 @@
           </button>
 
           <button
-            class="flex-1 py-2 text-xs font-medium transition-colors"
+            class="flex-1 py-2 text-base font-medium transition-colors"
             :class="
               activeTab === 'posts'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
@@ -117,7 +117,7 @@
           </button>
 
           <button
-            class="flex-1 py-2 text-xs font-medium transition-colors"
+            class="flex-1 py-2 text-base font-medium transition-colors"
             :class="
               activeTab === 'people'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
@@ -326,7 +326,7 @@
           >
             <button
               @click="viewAllResults"
-              class="inline-flex items-center justify-center gap-1.5 py-2 px-4 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full"
+              class="inline-flex items-center justify-center gap-1.5 py-2 px-4 text-base font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full"
             >
               View all results
               <ArrowRight class="h-3 w-3" />

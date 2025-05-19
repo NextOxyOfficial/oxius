@@ -1,155 +1,289 @@
 <template>
-  <div class="bg-gray-50 min-h-screen">
-    <!-- Page Content Container -->
-    <UContainer class="py-6">
-      <!-- Breadcrumbs Navigation -->
-      <nav class="flex mb-5" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-1 md:space-x-3">
-          <li class="inline-flex items-center">
-            <NuxtLink
-              to="/"
-              class="inline-flex items-center text-sm text-gray-500 hover:text-primary"
-            >
-              <UIcon name="i-heroicons-home" class="size-4 mr-2" />
-              Home
-            </NuxtLink>
-          </li>
-          <li>
-            <div class="flex items-center">
-              <UIcon
-                name="i-heroicons-chevron-right"
-                class="size-3 mx-1 text-gray-500"
-              />
+  <div class="bg-gradient-to-b from-gray-50 via-white to-gray-50 min-h-screen product-detail-page">
+    <!-- Floating Back Button with improved styling -->
+    <div class="fixed left-5 top-5 md:hidden z-50">
+      <button 
+        @click="$router.back()" 
+        class="floating-back-btn bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-3 text-gray-700 hover:text-primary hover:scale-105 transition-all duration-300 border border-gray-100"
+      >
+        <UIcon name="i-heroicons-arrow-left" class="size-5" />
+      </button>
+    </div>
+      <!-- Page Content Container with enhanced padding -->
+    <UContainer class="py-10">
+      <!-- Enhanced Breadcrumbs Navigation with Animations -->
+      <nav class="flex mb-8 fade-in-element" aria-label="Breadcrumb">
+        <div class="bg-white/80 backdrop-blur-sm rounded-full px-4 py-2.5 shadow-sm border border-gray-100 overflow-hidden">
+          <ol class="inline-flex items-center flex-wrap gap-1 md:gap-2">
+            <li class="inline-flex items-center animate-slide-in" style="--delay: 100ms;">
               <NuxtLink
-                to="/sale/for-sale"
-                class="text-sm text-gray-500 hover:text-primary"
+                to="/"
+                class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-primary transition-colors group"
               >
-                Sale Posts
+                <span class="bg-gray-100 group-hover:bg-primary-50 p-1.5 rounded-full mr-2 transition-colors">
+                  <UIcon name="i-heroicons-home" class="size-3.5 text-gray-500 group-hover:text-primary-600" />
+                </span>
+                <span class="hidden sm:inline">Home</span>
               </NuxtLink>
-            </div>
-          </li>
-          <li aria-current="page">
-            <div class="flex items-center">
-              <UIcon
-                name="i-heroicons-chevron-right"
-                class="size-3 mx-1 text-gray-500"
-              />
-              <span class="text-sm text-gray-500 font-medium">{{
-                post.title || "Loading..."
-              }}</span>
-            </div>
-          </li>
-        </ol>
-      </nav>
-
-      <!-- Loading State -->
+            </li>
+            <li class="animate-slide-in" style="--delay: 200ms;">
+              <div class="flex items-center">
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="size-3 mx-1 text-gray-400"
+                />
+                <NuxtLink
+                  to="/sale/for-sale"
+                  class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-primary transition-colors px-2 py-1 hover:bg-gray-50 rounded-md"
+                >
+                  Sale Posts
+                </NuxtLink>
+              </div>
+            </li>
+            <li aria-current="page" class="animate-slide-in" style="--delay: 300ms;">
+              <div class="flex items-center">
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="size-3 mx-1 text-gray-400"
+                />
+                <span class="text-sm font-medium text-gray-800 truncate max-w-[150px] md:max-w-xs px-2 py-1 bg-gray-50 rounded-md">
+                  {{ post.title || "Loading..." }}
+                </span>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </nav>      <!-- Enhanced Professional Loading State -->
       <div
         v-if="loading"
-        class="py-20 bg-white rounded-lg shadow-sm border border-gray-100"
+        class="py-28 bg-white rounded-xl shadow-sm border border-gray-100 fade-in-element relative overflow-hidden"
       >
-        <div class="flex flex-col items-center justify-center">
-          <div class="w-16 h-16 relative">
-            <div
-              class="w-full h-full rounded-full border-4 border-primary-100"
-            ></div>
-            <div
-              class="w-full h-full rounded-full border-4 border-t-primary-500 animate-spin absolute top-0 left-0"
-            ></div>
-          </div>
-          <p class="text-center text-gray-500 mt-6 font-medium">
-            Loading post details...
-          </p>
-        </div>
-      </div>
-
-      <!-- Error State -->
-      <div
-        v-else-if="error"
-        class="py-16 text-center bg-white rounded-lg shadow-sm border border-gray-100"
-      >
-        <div class="max-w-md mx-auto">
-          <UIcon
-            name="i-heroicons-exclamation-triangle"
-            class="h-16 w-16 mx-auto text-amber-500"
-          />
-          <h3 class="mt-4 text-lg font-medium text-gray-700">Post not found</h3>
-          <p class="mt-2 text-gray-500">
-            The post you're looking for doesn't exist or has been removed.
-          </p>
-          <UButton
-            color="primary"
-            variant="solid"
-            class="mt-4"
-            to="/sale/for-sale"
-          >
-            Browse Available Listings
-          </UButton>
-        </div>
-      </div>
-
-      <!-- Post Details Content -->
-      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Column - Main Content -->
-        <div class="lg:col-span-2">
-          <!-- Title Display Above Images -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
-            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-              <h1 class="text-xl font-semibold text-gray-700">
-                {{ post.title }}
-              </h1>
-              <div class="flex flex-col items-start md:items-end">
-                <div class="text-xl font-semibold text-primary">
-                  <span v-if="post.negotiable && !post.price">Negotiable</span>
-                  <span v-else-if="post.price">৳{{ formatPrice(post.price) }}</span>
-                  <span v-else>Contact for Price</span>
-                </div>
-                <div
-                  v-if="post.negotiable && post.price"
-                  class="text-sm text-gray-500"
-                >
-                  Negotiable
+        <!-- Background decorative elements -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-400 to-transparent loading-progress"></div>
+        <div class="absolute -left-10 -top-10 w-40 h-40 bg-primary-50 rounded-full blur-3xl opacity-30"></div>
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full blur-3xl opacity-30"></div>
+        
+        <div class="flex flex-col items-center justify-center relative z-10">
+          <!-- Advanced Animated Loading Indicator -->
+          <div class="loading-animation">
+            <div class="w-24 h-24 relative">
+              <div class="w-full h-full rounded-full border-4 border-gray-100"></div>
+              <div class="w-full h-full rounded-full border-4 border-t-primary-500 border-r-primary-400 border-b-primary-300 animate-spin absolute top-0 left-0"></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="relative">
+                  <UIcon name="i-heroicons-shopping-bag" class="size-10 text-primary-400" />
+                  <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- Images Gallery Card - Enhanced Design -->
-          <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <!-- Loading Message -->
+          <div class="mt-10 relative">
+            <p class="text-center text-gray-700 font-medium text-lg">
+              Loading product details<span class="loading-dots">...</span>
+            </p>
+            <div class="mt-3 text-center text-sm text-gray-400">Please wait while we fetch the latest information</div>
+          </div>
+          
+          <!-- Animated Loading Bars -->
+          <div class="mt-8 flex flex-col items-center space-y-3 w-64">
+            <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-primary-300 to-primary-500 w-3/4 animate-pulse-width"></div>
+            </div>
+            <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-primary-300 to-primary-500 w-1/2 animate-pulse-width delay-150"></div>
+            </div>
+            <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-primary-300 to-primary-500 w-1/4 animate-pulse-width delay-300"></div>
+            </div>
+          </div>
+        </div>
+      </div>      <!-- Enhanced Professional Error State -->
+      <div
+        v-else-if="error"
+        class="py-20 text-center bg-white rounded-xl shadow-md border border-gray-100 fade-in-element relative overflow-hidden"
+      >
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-300 to-transparent"></div>
+        <div class="absolute -left-20 -top-20 w-60 h-60 bg-red-50 rounded-full blur-3xl opacity-30"></div>
+        <div class="absolute -right-20 -bottom-20 w-60 h-60 bg-amber-50 rounded-full blur-3xl opacity-30"></div>
+        
+        <div class="max-w-md mx-auto px-6 relative z-10">
+          <!-- Enhanced Error Animation -->
+          <div class="error-animation mb-8 relative">
+            <div class="bg-amber-50 w-32 h-32 rounded-full mx-auto flex items-center justify-center border-4 border-amber-100">
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="h-16 w-16 text-amber-500 error-icon-pulse"
+              />
+            </div>
+            <div class="absolute w-full h-full top-0 left-0 bg-amber-50 rounded-full animate-ping-slow opacity-30"></div>
+          </div>
+          
+          <h3 class="text-2xl font-bold text-gray-800 mb-3 animate-fade-in" style="--delay: 200ms">
+            Oops! Product Not Found
+          </h3>
+          
+          <p class="mt-4 text-gray-600 text-lg mb-8 leading-relaxed animate-fade-in" style="--delay: 300ms">
+            The product you're looking for doesn't exist or has been removed from our marketplace.
+          </p>
+          
+          <!-- Enhanced action buttons -->
+          <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style="--delay: 400ms">
+            <UButton
+              color="primary"
+              variant="solid"
+              class="px-8 py-3.5 text-base font-medium shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5"
+              to="/sale/for-sale"
+            >
+              <UIcon name="i-heroicons-rectangle-stack" class="mr-2 size-5" />
+              Browse Listings
+            </UButton>
+            
+            <UButton
+              color="gray"
+              variant="soft"
+              class="px-6 py-3.5 text-base font-medium hover:bg-gray-100 transition-all"
+              @click="$router.push('/')"
+            >
+              <UIcon name="i-heroicons-home" class="mr-2 size-5" />
+              Back to Home
+            </UButton>
+          </div>
+        </div>
+      </div>      
+      
+      <!-- Enhanced Post Details Content with Professional Styling -->
+      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Main Content -->
+        <div class="lg:col-span-2">
+          <!-- Premium Title & Price Display with Enhanced Design -->
+          <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden mb-5 transform-gpu product-header fade-in-element" id="product-title">
+            <!-- Color accent top bar -->
+            <div class="h-1.5 bg-gradient-to-r from-primary-300 via-primary-500 to-primary-400"></div>
+            
+            <div class="p-6">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <!-- Title and Badges -->
+                <div class="flex-1 slide-up-fade-in" style="--delay: 100ms">
+                  <!-- Premium Title -->
+                  <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">
+                    {{ post.title }}
+                  </h1>
+                  
+                  <!-- Enhanced Badges -->
+                  <div class="flex flex-wrap items-center mt-3 gap-3">
+                    <span 
+                      v-if="post.featured" 
+                      class="inline-flex items-center bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm animate-pulse-subtle"
+                    >
+                      <UIcon name="i-heroicons-star" class="size-3.5 mr-1.5" />
+                      Featured
+                    </span>
+                    <span 
+                      v-if="post.status === 'sold'" 
+                      class="inline-flex items-center bg-blue-500 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm"
+                    >
+                      <UIcon name="i-heroicons-check-circle" class="size-3.5 mr-1.5" />
+                      Sold
+                    </span>
+                    <span class="inline-flex items-center bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full">
+                      <UIcon name="i-heroicons-calendar" class="size-3.5 mr-1.5" />
+                      {{ formatDate(post.created_at) }}
+                    </span>
+                    
+                    <!-- Category Badge -->
+                    <span class="inline-flex items-center bg-primary-50 text-primary-700 text-xs px-3 py-1.5 rounded-full">
+                      <UIcon name="i-heroicons-tag" class="size-3.5 mr-1.5" />
+                      {{ post.category_details?.name || 'General' }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Enhanced Price Container -->
+                <div class="price-container slide-up-fade-in" style="--delay: 200ms">
+                  <div class="price-tag py-4 px-6 bg-gradient-to-br from-primary-50 to-primary-100 border border-primary-200 rounded-lg shadow-sm relative overflow-hidden group">
+                    <!-- Decorative price effect -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    
+                    <!-- Price Value -->
+                    <div class="text-2xl md:text-3xl font-bold text-primary-600 relative">
+                      <span v-if="post.negotiable && !post.price">Negotiable</span>
+                      <span v-else-if="post.price" class="price-highlight">৳{{ formatPrice(post.price) }}</span>
+                      <span v-else>Contact for Price</span>
+                    </div>
+                    
+                    <!-- Negotiable Label -->
+                    <div
+                      v-if="post.negotiable && post.price"
+                      class="mt-1 text-sm text-primary-700 font-medium flex items-center"
+                    >
+                      <UIcon name="i-heroicons-currency-dollar" class="size-4 mr-1.5" />
+                      Price Negotiable
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+            <!-- Professional Images Gallery Card with Advanced Design -->
+          <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6 slide-up-fade-in" style="--delay: 300ms">
+            <!-- Gallery Header -->
+            <div class="bg-gray-50 border-b border-gray-100 px-5 py-3 flex items-center justify-between">
+              <h3 class="font-medium text-gray-700 flex items-center">
+                <UIcon name="i-heroicons-photo" class="size-4 mr-2" />
+                Product Gallery
+              </h3>
+              <span class="text-xs text-gray-500">
+                {{ post.images?.length || 0 }} Photos
+              </span>
+            </div>
+            
             <!-- Main Image with Enhanced Gallery Experience -->
             <div
-              class="relative h-[400px] md:h-[500px] overflow-hidden bg-gray-50 dark:bg-gray-900/20"
+              class="relative h-[400px] md:h-[500px] overflow-hidden bg-gradient-to-b from-gray-50 to-white"
             >
-              <!-- Image Loading Placeholder -->
+              <!-- Image Loading Placeholder with Skeleton Animation -->
               <div
                 v-if="imageLoading"
-                class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 z-10"
+                class="absolute inset-0 flex items-center justify-center bg-gray-50 z-10"
               >
-                <div class="animate-pulse">
-                  <UIcon
-                    name="i-heroicons-photo"
-                    class="h-16 w-16 text-gray-400 dark:text-gray-500"
-                  />
+                <div class="flex flex-col items-center space-y-4">
+                  <div class="animate-pulse-slow">
+                    <div class="w-20 h-20 rounded-full bg-gray-200/70 flex items-center justify-center">
+                      <UIcon
+                        name="i-heroicons-photo"
+                        class="h-10 w-10 text-gray-300"
+                      />
+                    </div>
+                  </div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full animate-pulse"></div>
                 </div>
               </div>
 
-              <!-- Main Large Image -->
-              <img
-                :src="selectedImage || getMainImage()"
-                :alt="post.title"
-                class="w-full h-full object-contain transition-opacity duration-300"
-                :class="{
-                  'opacity-0': imageLoading,
-                  'opacity-100': !imageLoading,
-                }"
-                @click="openLightbox = true"
-                @load="imageLoading = false"
-                @error="handleImageError"
-              />
+              <!-- Main Large Image with Hover Effect -->
+              <div class="h-full w-full flex items-center justify-center overflow-hidden image-container">
+                <img
+                  :src="selectedImage || getMainImage()"
+                  :alt="post.title"
+                  class="w-full h-full object-contain transition-all duration-500 hover:scale-[1.02]"
+                  :class="{
+                    'opacity-0': imageLoading,
+                    'opacity-100': !imageLoading,
+                  }"
+                  @click="openLightbox = true"
+                  @load="imageLoading = false"
+                  @error="handleImageError"
+                />
+                
+                <!-- Watermark/Overlay Effect -->
+                <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/5 via-transparent to-transparent"></div>
+              </div>
 
-              <!-- Image Navigation Controls -->
+              <!-- Enhanced Image Navigation Controls -->
               <div
                 v-if="post.images && post.images.length > 1"
-                class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4"
+                class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between px-4 z-10"
               >
                 <button
                   @click.stop="navigateImage('prev')"
@@ -165,13 +299,11 @@
                 >
                   <UIcon name="i-heroicons-chevron-right" class="h-6 w-6" />
                 </button>
-              </div>
-
-              <!-- Status Badges with Improved Design -->
+              </div>              <!-- Enhanced Status Badges with Modern Design -->
               <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
-                <div v-if="post.status === 'sold'" class="badge-container">
+                <div v-if="post.status === 'sold'" class="badge-container animate-fade-in" style="--delay: 400ms">
                   <span
-                    class="relative inline-flex items-center gap-1 bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm"
+                    class="relative inline-flex items-center gap-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded-md shadow-lg"
                   >
                     <span class="flex w-2 h-2 relative mr-0.5">
                       <span
@@ -184,75 +316,96 @@
                     SOLD
                   </span>
                 </div>
-                <div v-if="post.featured" class="badge-container">
+                <div v-if="post.featured" class="badge-container animate-fade-in" style="--delay: 500ms">
                   <span
-                    class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded shadow-sm flex items-center gap-1"
+                    class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium px-4 py-1.5 rounded-md shadow-lg flex items-center gap-1"
                   >
-                    <UIcon name="i-heroicons-star" class="h-3.5 w-3.5" />
+                    <UIcon name="i-heroicons-star" class="h-3.5 w-3.5 animate-pulse-subtle" />
                     FEATURED
                   </span>
                 </div>
-              </div>
-
-              <!-- Zoom Control -->
+              </div>              <!-- Enhanced Zoom Control -->
               <button
                 @click.stop="openLightbox = true"
-                class="absolute bottom-4 right-4 rounded-full p-2 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm backdrop-blur-sm transition-all hover:scale-105"
+                class="absolute bottom-4 right-4 rounded-full p-3 bg-white/90 text-gray-700 hover:bg-white hover:text-primary-600 shadow-lg border border-gray-100 backdrop-blur-md transition-all hover:scale-110 group"
                 aria-label="Zoom image"
+                title="View fullscreen"
               >
                 <UIcon
                   name="i-heroicons-magnifying-glass-plus"
-                  class="h-5 w-5"
+                  class="h-5 w-5 group-hover:scale-110 transition-transform"
                 />
-              </button>
-
-              <!-- Image Counter -->
+                <span class="absolute -top-8 right-0 bg-black/75 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap backdrop-blur-sm">
+                  View fullscreen
+                </span>
+              </button>              <!-- Enhanced Image Counter -->
               <div
                 v-if="post.images && post.images.length > 1"
-                class="absolute bottom-4 left-4 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm"
+                class="absolute bottom-4 left-4 bg-black/60 text-white text-xs px-3 py-1.5 rounded-md backdrop-blur-md shadow-lg flex items-center space-x-1 animate-fade-in" style="--delay: 600ms"
               >
-                {{ currentImageIndex + 1 }} / {{ post.images.length }}
+                <UIcon name="i-heroicons-photo" class="h-3.5 w-3.5 mr-1.5 text-white/80" />
+                <span class="font-medium">{{ currentImageIndex + 1 }}</span>
+                <span class="text-white/80">/</span>
+                <span>{{ post.images.length }}</span>
               </div>
-            </div>
-
-            <!-- Enhanced Thumbnails Gallery with Scroll -->
+            </div>            <!-- Professional Thumbnails Gallery with Enhanced Scroll -->
             <div
               v-if="post.images && post.images.length > 1"
-              class="relative bg-gray-50 dark:bg-gray-900/20 py-3 px-4 border-t border-gray-100 dark:border-gray-800"
+              class="relative bg-gray-50 py-4 px-5 border-t border-gray-100"
             >
-              <!-- Shadow indicators for scroll -->
+              <!-- Improved Shadow indicators for scroll -->
               <div
-                class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-900/20 z-10"
+                class="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"
               ></div>
               <div
-                class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent dark:from-gray-900/20 z-10"
+                class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"
               ></div>
 
-              <!-- Thumbnails Container with Horizontal Scroll -->
-              <div
-                class="flex space-x-2 overflow-x-auto thumbnails-container pb-1 px-2"
-              >
-                <button
-                  v-for="(image, index) in post.images"
-                  :key="index"
-                  class="flex-shrink-0 cursor-pointer transition-all duration-300 transform rounded-md overflow-hidden border-2"
-                  :class="{
-                    'border-primary scale-105 shadow-sm':
-                      selectedImage === getImageSrc(image),
-                    'border-transparent hover:border-gray-300 dark:hover:border-gray-600':
-                      selectedImage !== getImageSrc(image),
-                  }"
-                  @click="selectImage(image, index)"
+              <!-- Enhanced Thumbnails Container with Horizontal Scroll -->
+              <div class="relative">
+                <!-- Thumbnail Navigation Buttons -->
+                <button 
+                  @click="scrollThumbnails('left')" 
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-20 size-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-700 hover:text-primary-600 hover:scale-105 transition-all border border-gray-200"
                 >
-                  <div class="w-16 h-16 relative">
-                    <img
-                      :src="getImageSrc(image)"
-                      :alt="`${post.title} thumbnail ${index + 1}`"
-                      class="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                  <UIcon name="i-heroicons-chevron-left" class="size-4" />
                 </button>
+                
+                <button 
+                  @click="scrollThumbnails('right')" 
+                  class="absolute right-0 top-1/2 -translate-y-1/2 z-20 size-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-700 hover:text-primary-600 hover:scale-105 transition-all border border-gray-200"
+                >
+                  <UIcon name="i-heroicons-chevron-right" class="size-4" />
+                </button>
+                
+                <!-- Thumbnails Container -->
+                <div
+                  ref="thumbnailsContainer"
+                  class="flex space-x-3 overflow-x-auto thumbnails-container pb-1 px-4 pt-1 scroll-smooth hide-scrollbar"
+                >
+                  <button
+                    v-for="(image, index) in post.images"
+                    :key="index"
+                    class="flex-shrink-0 cursor-pointer transition-all duration-300 transform rounded-md overflow-hidden border-2 hover:shadow-md"
+                    :class="{
+                      'border-primary scale-110 shadow-lg ring-2 ring-primary-100':
+                        selectedImage === getImageSrc(image),
+                      'border-transparent hover:border-gray-300':
+                        selectedImage !== getImageSrc(image),
+                    }"
+                    @click="selectImage(image, index)"
+                  >
+                    <div class="w-16 h-16 relative thumb-hover-effect">
+                      <img
+                        :src="getImageSrc(image)"
+                        :alt="`${post.title} thumbnail ${index + 1}`"
+                        class="w-full h-full object-cover transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -269,59 +422,85 @@
                 No images available for this listing
               </p>
             </div>
-          </div>
-
-          <!-- Location and Posted Date Section -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
-            <!-- Location Row -->
-            <div v-if="post.area || post.district" class="flex items-center">
-              <UIcon
-                name="i-heroicons-map-pin"
-                class="size-5 mr-3 text-primary flex-shrink-0"
-              />
-              <p class="text-gray-700">
-                {{ post.area }}{{ post.area && post.district ? ', ' : '' }}{{ post.district }}
-              </p>
+          </div>          <!-- Enhanced Location and Posted Date Section -->
+          <div class="bg-white rounded-lg shadow-md border border-gray-100 p-0 mb-5 overflow-hidden slide-up-fade-in" style="--delay: 400ms">
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+              <!-- Location Section -->
+              <div v-if="post.area || post.district" class="p-4 flex items-center hover:bg-gray-50 transition-colors group">
+                <div class="size-10 rounded-full bg-primary-50 flex items-center justify-center mr-3 group-hover:bg-primary-100 transition-colors">
+                  <UIcon
+                    name="i-heroicons-map-pin"
+                    class="size-5 text-primary-600 flex-shrink-0"
+                  />
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 uppercase font-medium tracking-wider mb-0.5">Location</div>
+                  <p class="text-gray-700 font-medium">
+                    {{ post.area }}{{ post.area && post.district ? ', ' : '' }}{{ post.district }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Posted Date Section -->
+              <div class="p-4 flex items-center hover:bg-gray-50 transition-colors group">
+                <div class="size-10 rounded-full bg-primary-50 flex items-center justify-center mr-3 group-hover:bg-primary-100 transition-colors">
+                  <UIcon
+                    name="i-heroicons-calendar"
+                    class="size-5 text-primary-600 flex-shrink-0"
+                  />
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 uppercase font-medium tracking-wider mb-0.5">Posted</div>
+                  <p class="text-gray-700 font-medium">
+                    {{ formatDate(post.created_at) }}
+                    <span class="text-xs text-gray-500 ml-1">({{ formatDateFull(post.created_at) }})</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>          <!-- Enhanced Product Details Card -->
+          <div
+            class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden mb-6 slide-up-fade-in" style="--delay: 500ms"
+          >
+            <!-- Card Header -->
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100">
+              <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                <UIcon name="i-heroicons-clipboard-document-list" class="size-5 mr-2 text-primary-600" />
+                Product Specifications
+              </h3>
             </div>
             
-            <!-- Posted Date Row -->
-            <div class="flex items-center mt-2">
-              <UIcon
-                name="i-heroicons-calendar"
-                class="size-5 mr-3 text-primary flex-shrink-0"
-              />
-              <p class="text-gray-700">
-                Posted {{ formatDate(post.created_at) }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Title, Price, and Details Card -->
-          <div
-            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
-          >
-            <!-- Post Details Table -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 mb-6">
-              <!-- Category -->
-              <div class="flex items-center">
-                <UIcon
-                  name="i-heroicons-tag"
-                  class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
-                />
-                <p class="text-gray-700 font-medium truncate">
-                  {{ post.category_details.name }}
-                </p>
-              </div>
-
-              <!-- Condition -->
-              <div class="flex items-center">
-                <UIcon
-                  name="i-heroicons-sparkles"
-                  class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
-                />
-                <p class="text-gray-700 font-medium truncate">
-                  {{ getConditionLabel(post.condition) }}
-                </p>
+            <!-- Post Details Table with Enhanced Design -->
+            <div class="p-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-8 mb-6">
+                <!-- Category with Enhanced Style -->
+                <div class="flex items-center spec-item group">
+                  <div class="size-9 rounded-full bg-gray-50 flex items-center justify-center mr-3 group-hover:bg-primary-50 transition-colors border border-gray-100">
+                    <UIcon
+                      name="i-heroicons-tag"
+                      class="size-4.5 text-gray-500 group-hover:text-primary-600 flex-shrink-0 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Category</div>
+                    <p class="text-gray-800 font-medium truncate">
+                      {{ post.category_details.name }}
+                    </p>
+                  </div>
+                </div>              <!-- Enhanced Condition Display -->
+              <div class="flex items-center spec-item group">
+                <div class="size-9 rounded-full bg-gray-50 flex items-center justify-center mr-3 group-hover:bg-primary-50 transition-colors border border-gray-100">
+                  <UIcon
+                    name="i-heroicons-sparkles"
+                    class="size-4.5 text-gray-500 group-hover:text-primary-600 flex-shrink-0 transition-colors"
+                  />
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Condition</div>
+                  <p class="text-gray-800 font-medium truncate">
+                    {{ getConditionLabel(post.condition) }}
+                  </p>
+                </div>
               </div>
 
               <!-- Additional property for 3rd grid spot -->
@@ -485,180 +664,186 @@
                 <span class="text-gray-500">Map would be displayed here</span>
               </div>
             </div>
-          </div>
-
-          <!-- Safety Tips Card -->
+          </div>          <!-- Enhanced Safety Tips Card -->
           <div
-            class="bg-amber-50 rounded-lg shadow-sm border border-amber-100 p-6"
+            class="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-lg shadow-md border border-amber-200 overflow-hidden slide-up-fade-in" style="--delay: 700ms"
           >
-            <h3 class="text-amber-800 font-medium flex items-center mb-4">
-              <UIcon
-                name="i-heroicons-shield-exclamation"
-                class="size-5 mr-2"
-              />
-              Safety Tips for Buyers
-            </h3>
-            <ul class="space-y-2 text-amber-700 text-sm list-disc list-inside">
-              <li>Meet in a public, well-lit place</li>
-              <li>Verify the item before making payment</li>
-              <li>Don't send money in advance</li>
-              <li>Use secure payment methods</li>
-              <li>Bring a friend when meeting the seller</li>
-              <li>Report suspicious behavior to us</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Right Column - Sidebar -->
-        <div class="lg:col-span-1">
-          <!-- Seller Information Card - Redesigned -->
-          <div
-            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
-          >
-            <h3 class="text-lg font-medium text-gray-700 mb-4">
-              Seller Information
-            </h3>
-
-            <!-- Seller Profile Header -->
-            <div class="flex items-center mb-5">
-              <div class="mr-3">
-                <div
-                  class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-gray-100"
-                >
-                  <UIcon
-                    v-if="!post.seller?.profile_picture"
-                    name="i-heroicons-building-storefront"
-                    class="size-8 text-gray-500"
-                  />
-                  <img
-                    v-else
-                    :src="post.seller.profile_picture"
-                    :alt="post.seller?.name || 'Seller'"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <div>
-                <h4 class="font-medium text-gray-700">
-                  {{ post.user_name || "Anonymous Seller" }}
-                </h4>
-                
-                <!-- Membership Badge -->
-                <div class="flex items-center mt-1">
-                  <span 
-                    :class="[
-                      'text-xs px-2 py-0.5 rounded-full',
-                      post.seller?.is_pro 
-                        ? 'bg-primary-50 text-primary-700 border border-primary-200' 
-                        : 'bg-gray-100 text-gray-700'
-                    ]"
-                  >
-                    <UIcon 
-                      :name="post.seller?.is_pro ? 'i-heroicons-check-badge' : 'i-heroicons-user'" 
-                      class="size-3 mr-0.5 inline-block" 
-                    />
-                    {{ post.seller?.is_pro ? 'Pro Member' : 'Free Member' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Seller Stats -->
-            <div class="grid grid-cols-2 gap-3 mb-5">
-              <div class="bg-gray-50 rounded p-3 flex flex-col items-center">
-                <UIcon name="i-heroicons-calendar-days" class="size-5 text-gray-500 mb-1" />
-                <p class="text-xs text-gray-500">Member since</p>
-                <p class="text-sm font-medium">{{ formatDate(post.seller?.member_since || post.created_at) }}</p>
-              </div>
-              
-              <div class="bg-gray-50 rounded p-3 flex flex-col items-center">
-                <UIcon name="i-heroicons-shopping-bag" class="size-5 text-gray-500 mb-1" />
-                <p class="text-xs text-gray-500">Products</p>
-                <p class="text-sm font-medium">{{ post.seller?.product_count || 1 }}</p>
-              </div>
+            <!-- Safety Tips Header -->
+            <div class="bg-amber-100/50 border-b border-amber-200 px-6 py-4">
+              <h3 class="text-amber-800 font-medium flex items-center">
+                <UIcon
+                  name="i-heroicons-shield-exclamation"
+                  class="size-5 mr-2.5"
+                />
+                Safety Tips for Buyers
+              </h3>
             </div>
             
-            <!-- Contact Information -->
-            <div class="mb-5">
-              <!-- Phone (Clickable) -->
-              <div v-if="post.phone" class="flex items-center mb-3 border-b border-gray-100 pb-3">
-                <UIcon name="i-heroicons-phone" class="size-5 mr-3 text-gray-500" />
-                <div v-if="showPhone">
-                  <a :href="`tel:${post.phone}`" class="text-primary hover:underline">
-                    {{ post.phone }}
-                  </a>
-                </div>
-                <button 
-                  v-else 
-                  @click="showPhone = true"
-                  class="text-sm text-gray-700 hover:text-primary px-2 py-1 rounded border border-gray-200 hover:border-primary-200 transition"
+            <!-- Safety Tips Content -->
+            <div class="p-6">
+              <ul class="space-y-3 safety-tips">
+                <li class="flex items-start hover:bg-amber-100/30 p-2 rounded-md transition-colors">
+                  <UIcon name="i-heroicons-check-circle" class="size-5 mr-2.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span class="text-amber-800">Meet in a public, well-lit place</span>
+                </li>
+                <li class="flex items-start hover:bg-amber-100/30 p-2 rounded-md transition-colors">
+                  <UIcon name="i-heroicons-check-circle" class="size-5 mr-2.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span class="text-amber-800">Verify the item before making payment</span>
+                </li>
+                <li class="flex items-start hover:bg-amber-100/30 p-2 rounded-md transition-colors">
+                  <UIcon name="i-heroicons-exclamation-triangle" class="size-5 mr-2.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span class="text-amber-800">Don't send money in advance</span>
+                </li>
+                <li class="flex items-start hover:bg-amber-100/30 p-2 rounded-md transition-colors">
+                  <UIcon name="i-heroicons-check-circle" class="size-5 mr-2.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span class="text-amber-800">Use secure payment methods</span>
+                </li>
+                <li class="flex items-start hover:bg-amber-100/30 p-2 rounded-md transition-colors">
+                  <UIcon name="i-heroicons-check-circle" class="size-5 mr-2.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span class="text-amber-800">Bring a friend when meeting the seller</span>
+                </li>
+                <li class="flex items-start hover:bg-amber-100/30 p-2 rounded-md transition-colors">
+                  <UIcon name="i-heroicons-flag" class="size-5 mr-2.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span class="text-amber-800">Report suspicious behavior to us</span>
+                </li>
+              </ul>
+              
+              <!-- Safety Verification Link -->
+              <div class="mt-5 pt-4 border-t border-amber-200/50 text-center">
+                <a href="#" class="text-amber-800 hover:text-amber-900 text-sm font-medium inline-flex items-center transition-colors">
+                  <UIcon name="i-heroicons-information-circle" class="size-4 mr-1.5" />
+                  Learn more about safe trading
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>        <!-- Right Column - Sidebar -->
+        <div class="lg:col-span-1">
+          <!-- Professional Seller Information Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-100 mb-6 seller-card overflow-hidden">
+            <!-- Card Header with Premium Style -->
+            <div class="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-800">
+                  Seller Information
+                </h3>
+                <span 
+                  v-if="post.seller?.is_pro"
+                  class="badge-pro flex items-center bg-primary-50 text-primary-700 border border-primary-200 px-2.5 py-1 rounded-full"
                 >
-                  Show Phone Number
-                </button>
+                  <UIcon name="i-heroicons-check-badge" class="size-3.5 mr-1" />
+                  <span class="text-xs font-medium">Pro Seller</span>
+                </span>
               </div>
             </div>
 
-            <!-- Contact Buttons -->
-            <div class="space-y-3">
-              <!-- Call Button -->
-              <UButton
-                v-if="post.phone"
-                color="primary"
-                variant="solid"
-                class="w-full justify-center"
-                icon="i-heroicons-phone"
-                :href="`tel:${post.phone}`"
-              >
-                Call Seller
-              </UButton>
+            <!-- Seller Profile Content -->
+            <div class="p-5">
+              <!-- Seller Profile Header -->
+              <div class="flex items-center mb-5">
+                <div class="mr-4 relative">
+                  <div
+                    class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm seller-avatar"
+                  >
+                    <UIcon
+                      v-if="!post.seller?.profile_picture"
+                      name="i-heroicons-building-storefront"
+                      class="size-9 text-gray-500"
+                    />
+                    <img
+                      v-else
+                      :src="post.seller.profile_picture"
+                      :alt="post.seller?.name || 'Seller'"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div v-if="post.seller?.is_verified" class="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1 border-2 border-white">
+                    <UIcon name="i-heroicons-check" class="size-2.5 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-800 mb-0.5">
+                    {{ post.user_name || "Anonymous Seller" }}
+                  </h4>
+                  <div class="flex items-center text-sm text-gray-500">
+                    <UIcon name="i-heroicons-map-pin" class="size-3.5 mr-1.5" />
+                    <span>{{ post.seller?.location || post.location || "Location not provided" }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Divider -->
+              <div class="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-4"></div>
+              
+              <!-- Contact Information -->
+              <div v-if="post.phone" class="mb-5">
+                <div class="flex flex-col space-y-2">
+                  <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Number</label>
+                  <div class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-md p-2.5">
+                    <div class="flex items-center">
+                      <UIcon name="i-heroicons-phone" class="size-4.5 mr-3 text-primary-600" />
+                      <div v-if="showPhone" class="phone-number-container">
+                        <a :href="`tel:${post.phone}`" class="text-gray-800 font-medium hover:text-primary-700 phone-number">
+                          {{ post.phone }}
+                        </a>
+                      </div>
+                      <div v-else class="phone-number-container">
+                        <span class="text-gray-700 font-medium">•••• •••• {{ post.phone.slice(-4) }}</span>
+                        <button 
+                          @click="showPhone = true"
+                          class="ml-2 text-xs text-primary-600 hover:text-primary-800 font-medium"
+                        >
+                          Show
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      @click="copyPhoneNumber"
+                      class="flex items-center bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-md transition-all copy-btn shadow-sm"
+                    >
+                      <UIcon name="i-heroicons-clipboard-document" class="size-4 mr-1.5" />
+                      <span class="text-xs font-medium">Copy</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-              <!-- Message Button -->
-              <UButton
-                v-if="post.allows_messaging"
-                color="primary"
-                variant="outline"
-                class="w-full justify-center"
-                icon="i-heroicons-chat-bubble-oval-left-ellipsis"
-                @click="showContactForm = true"
-              >
-                Message Seller
-              </UButton>
-
-              <!-- See More Products Button -->
-              <UButton
-                color="gray"
-                variant="soft"
-                class="w-full justify-center"
-                icon="i-heroicons-shopping-bag"
-                :to="`/sale/seller/${post.user_id || post.seller?.id || ''}`"
-              >
-                More Products from Seller
-              </UButton>
-
-              <!-- Actions Row -->
-              <div class="flex items-center gap-2">
-                <!-- Copy Link Button -->
+              <!-- Contact Buttons -->
+              <div class="space-y-3">
+                <!-- Message Button -->
                 <UButton
-                  color="gray"
-                  variant="ghost"
-                  class="flex-1 justify-center"
-                  icon="i-heroicons-link"
-                  :loading="copying"
-                  @click="copyPostLink"
+                  v-if="post.allows_messaging"
+                  color="primary"
+                  variant="solid"
+                  class="w-full justify-center py-2.5 font-medium"
+                  icon="i-heroicons-chat-bubble-oval-left-ellipsis"
+                  @click="showContactForm = true"
                 >
-                  {{ copying ? "Copied!" : "Copy Link" }}
+                  Message Seller
                 </UButton>
 
-                <!-- Report Button -->
+                <!-- See More Products Button -->
                 <UButton
                   color="gray"
-                  variant="ghost"
-                  class="flex-1 justify-center"
-                  icon="i-heroicons-flag"
-                  @click="showReportModal = true"
+                  variant="soft"
+                  class="w-full justify-center py-2.5 font-medium"
+                  icon="i-heroicons-shopping-bag"
+                  :to="`/sale/seller/${post.user_id || post.seller?.id || ''}`"
                 >
-                  Report
+                  More Products from Seller
                 </UButton>
+                
+                <!-- Report Button as Text Link -->
+                <div class="mt-5 text-center">
+                  <button
+                    class="text-gray-400 text-xs font-medium hover:text-red-500 transition-colors flex items-center justify-center w-full"
+                    @click="showReportModal = true"
+                  >
+                    <UIcon name="i-heroicons-flag" class="size-3.5 mr-1.5" />
+                    Report this listing
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -743,6 +928,7 @@
             </p>
           </div>
         </div>
+      </div>
       </div>
     </UContainer>
 
@@ -1208,6 +1394,19 @@ function copyPostLink() {
   });
 }
 
+// Copy phone number to clipboard
+function copyPhoneNumber() {
+  if (!post.value.phone) return;
+  
+  navigator.clipboard.writeText(post.value.phone).then(() => {
+    showNotification({
+      title: "Phone Number Copied",
+      text: "Phone number copied to clipboard",
+      type: "success",
+    });
+  });
+}
+
 // Helper functions
 function getCategoryName(categoryId) {
   if (!categoryId) return "";
@@ -1473,12 +1672,83 @@ function endPan() {
   height: 8px;
 }
 
-.lightbox-thumbnails::-webkit-scrollbar-thumb {
+lightbox-thumbnails::-webkit-scrollbar-thumb {
   background-color: var(--tw-bg-gray-300);
   border-radius: 4px;
 }
 
 lightbox-thumbnails::-webkit-scrollbar-track {
   background-color: var(--tw-bg-gray-50);
+}
+
+/* Professional Seller section styling */
+.seller-card {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.seller-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.seller-avatar {
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.seller-avatar:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+}
+
+.badge-pro {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.badge-pro:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.phone-number-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.phone-number {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.phone-number:hover {
+  color: var(--primary);
+}
+
+.copy-btn {
+  opacity: 0.85;
+  transition: all 0.25s ease;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+/* Gradient divider effect */
+.h-px.bg-gradient-to-r {
+  height: 1px;
+}
+
+/* Button hover improvements */
+:deep(.seller-card .button) {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:deep(.seller-card .button:hover) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 </style>

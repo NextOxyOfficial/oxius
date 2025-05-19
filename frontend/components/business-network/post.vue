@@ -59,8 +59,8 @@
                   ? post.post_details?.post_tags
                   : post?.post_tags"
                 :key="idx"
-                :to="`/business-network/posts/tag/${tag.tag}`"
-                class="text-xs text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full transition-colors hover:text-blue-800 dark:hover:text-blue-300 hashtag"
+                :to="`/business-network/search-results/${tag.tag}`"
+                class="text-sm text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full transition-colors hover:text-blue-800 dark:hover:text-blue-300 hashtag"
               >
                 #{{ tag.tag }}
               </NuxtLink>
