@@ -259,7 +259,7 @@
                   <!-- Avatar with fallback -->
                   <div class="flex-shrink-0 relative">
                     <img
-                      :src="person.avatar_url"
+                      :src="person.image || '/static/frontend/avatar.png'"
                       :alt="person.name || 'User'"
                       class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                     />

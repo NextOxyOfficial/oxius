@@ -709,7 +709,17 @@ const uniqueCategories = computed(() => {
   const map = new Map();
 
   products.value.forEach((product) => {
-    if (product.category_details && !map.has(product.category_details.id)) {
+    if (Array.isArray(product.category_details)) {
+      product.category_details.forEach((category) => {
+        if (category && !map.has(category.id)) {
+          map.set(category.id, true);
+          categories.push(category);
+        }
+      });
+    } else if (
+      product.category_details &&
+      !map.has(product.category_details.id)
+    ) {
       map.set(product.category_details.id, true);
       categories.push(product.category_details);
     }

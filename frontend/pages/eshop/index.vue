@@ -1,10 +1,11 @@
 <template>
   <div
     class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20"
-  >    <!-- Premium Banner Slider with Enhanced Visual Effects -->
+  >
+    <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
       <UContainer>
-        <div 
+        <div
           class="relative overflow-hidden rounded-xl shadow-sm touch-slider"
           ref="sliderContainer"
           @mouseenter="handleSliderHover(true)"
@@ -19,15 +20,20 @@
           ></div>
 
           <!-- Mobile swipe indicator shown only on mobile -->
-          <div class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none">
+          <div
+            class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none"
+          >
             <div class="swipe-indicator swipe-indicator-left">
               <ChevronLeft class="h-8 w-8 text-white" />
             </div>
             <div class="swipe-indicator swipe-indicator-right">
               <ChevronRight class="h-8 w-8 text-white" />
             </div>
-          </div>          <!-- Aspect ratio container for rounded and consistent height - matching hero banner -->
-          <div class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%]">
+          </div>
+          <!-- Aspect ratio container for rounded and consistent height - matching hero banner -->
+          <div
+            class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%]"
+          >
             <div
               v-for="(banner, index) in banners"
               :key="index"
@@ -35,7 +41,7 @@
               :class="{
                 'opacity-100 translate-x-0': index === currentSlide,
                 'opacity-0 translate-x-full': index > currentSlide,
-                'opacity-0 -translate-x-full': index < currentSlide
+                'opacity-0 -translate-x-full': index < currentSlide,
               }"
             >
               <!-- Gradient overlay -->
@@ -69,7 +75,7 @@
           >
             <ChevronRight class="h-5 w-5 text-white" />
           </button>
-          
+
           <!-- Slider indicators -->
           <div
             class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full"
@@ -84,8 +90,7 @@
                 'bg-white/40 hover:bg-white/60': index !== currentSlide,
               }"
               :aria-label="`Go to slide ${index + 1}`"
-            >
-            </button>
+            ></button>
           </div>
         </div>
       </UContainer>
@@ -409,7 +414,7 @@
       <div
         class="bg-white/70 dark:bg-gray-800/40 backdrop-blur-[2px] rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-700/50 shadow-sm"
       >
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div class="">
           <!-- Categories Column -->
           <div class="lg:col-span-3">
             <h3
@@ -424,7 +429,7 @@
 
             <!-- Horizontal scrollable categories -->
             <div
-              class="overflow-x-auto py-2 px-1 flex flex-nowrap gap-2 hide-scrollbar"
+              class="overflow-x-auto py-2 px-1 md:flex flex-nowrap gap-2 hide-scrollbar hidden"
             >
               <div class="flex gap-2">
                 <UBadge
@@ -783,14 +788,14 @@ function handleTouchMove(e) {
   const swipeDiff = touchEndX - touchStartX;
   if (Math.abs(swipeDiff) > 30) {
     e.preventDefault(); // Prevent default only if significant swipe detected
-    
+
     // Add visual feedback with classes
     if (sliderContainer.value) {
-      sliderContainer.value.classList.remove('swiping-left', 'swiping-right');
+      sliderContainer.value.classList.remove("swiping-left", "swiping-right");
       if (swipeDiff > 0) {
-        sliderContainer.value.classList.add('swiping-right');
+        sliderContainer.value.classList.add("swiping-right");
       } else {
-        sliderContainer.value.classList.add('swiping-left');
+        sliderContainer.value.classList.add("swiping-left");
       }
     }
   }
@@ -798,21 +803,21 @@ function handleTouchMove(e) {
 
 function handleTouchEnd() {
   if (!isHandlingTouch) return;
-  
+
   const swipeDiff = touchEndX - touchStartX;
   const minSwipeDistance = 50; // Minimum distance to consider it a swipe
-  
+
   if (swipeDiff > minSwipeDistance) {
     prevSlide(); // Swipe right = previous slide
   } else if (swipeDiff < -minSwipeDistance) {
     nextSlide(); // Swipe left = next slide
   }
-  
+
   // Remove swiping classes
   if (sliderContainer.value) {
-    sliderContainer.value.classList.remove('swiping-left', 'swiping-right');
+    sliderContainer.value.classList.remove("swiping-left", "swiping-right");
   }
-  
+
   isHandlingTouch = false;
   resetSliderInterval();
 }
@@ -1031,24 +1036,28 @@ await Promise.all([fetchCategories(), fetchProducts()]);
 onMounted(() => {
   startSliderInterval();
   initInfiniteScroll();
-  
+
   // Add touch event listeners for banner slider
   if (sliderContainer.value) {
-    sliderContainer.value.addEventListener('touchstart', handleTouchStart, { passive: false });
-    sliderContainer.value.addEventListener('touchmove', handleTouchMove, { passive: false });
-    sliderContainer.value.addEventListener('touchend', handleTouchEnd);
+    sliderContainer.value.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    sliderContainer.value.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+    sliderContainer.value.addEventListener("touchend", handleTouchEnd);
   }
 });
 
 // Clean up slider interval
 onUnmounted(() => {
   clearInterval(intervalId.value);
-  
+
   // Remove touch event listeners
   if (sliderContainer.value) {
-    sliderContainer.value.removeEventListener('touchstart', handleTouchStart);
-    sliderContainer.value.removeEventListener('touchmove', handleTouchMove);
-    sliderContainer.value.removeEventListener('touchend', handleTouchEnd);
+    sliderContainer.value.removeEventListener("touchstart", handleTouchStart);
+    sliderContainer.value.removeEventListener("touchmove", handleTouchMove);
+    sliderContainer.value.removeEventListener("touchend", handleTouchEnd);
   }
 });
 </script>

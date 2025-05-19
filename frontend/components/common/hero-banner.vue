@@ -1,19 +1,19 @@
-<template>  
-<div id="home">
+<template>
+  <div id="home">
     <div class="max-w-7xl w-full mx-auto">
-      <div
-        class="rounded-xl overflow-hidden shadow-sm"
-      >
-        <div class="flex flex-col md:flex-row">          
-          <!-- Left side - Image Slider with reduced height -->          
-          <div 
+      <div class="rounded-xl overflow-hidden shadow-sm">
+        <div class="flex flex-col md:flex-row">
+          <!-- Left side - Image Slider with reduced height -->
+          <div
             class="px-2 rounded-xl md:w-3/5 relative overflow-hidden touch-slider"
             ref="sliderContainer"
             @mouseenter="handleSliderHover(true)"
             @mouseleave="handleSliderHover(false)"
           >
             <!-- Mobile swipe indicator shown only on mobile -->
-            <div class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none">
+            <div
+              class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none"
+            >
               <div class="swipe-indicator swipe-indicator-left">
                 <ChevronLeft class="h-8 w-8 text-white" />
               </div>
@@ -22,7 +22,9 @@
               </div>
             </div>
             <!-- Aspect ratio container - reduced by ~10% -->
-            <div class="rounded-xl mt-4 sm:mt-8 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%]">
+            <div
+              class="rounded-xl mt-4 sm:mt-8 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%]"
+            >
               <div
                 v-for="({ id, image }, index) in sliderImages"
                 :key="id"
@@ -30,7 +32,7 @@
                 :class="{
                   'opacity-100 translate-x-0': index === currentSlide,
                   'opacity-0 translate-x-full': index > currentSlide,
-                  'opacity-0 -translate-x-full': index < currentSlide
+                  'opacity-0 -translate-x-full': index < currentSlide,
                 }"
               >
                 <!-- Gradient overlay -->
@@ -44,7 +46,7 @@
                   class="w-full h-full object-cover"
                 />
               </div>
-            </div>            
+            </div>
             <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
             <button
               @click="prevSlide"
@@ -77,51 +79,73 @@
                   'bg-white/40 hover:bg-white/60': index !== currentSlide,
                 }"
                 :aria-label="`Go to slide ${index + 1}`"
-              >
-              </button>
+              ></button>
             </div>
           </div>
           <!-- Right side - Premium content area -->
-          <div class="w-full md:w-2/5 max-sm:py-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80">
+          <div
+            class="w-full md:w-2/5 max-sm:py-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80"
+          >
             <div class="relative text-center">
               <h1
                 class="text-lg sm:text-base font-medium leading-tight text-gray-700 relative inline-block"
               >
-                <span class="relative z-10">{{ $t("bangladesh_first_title") }}</span>
-                <span class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"></span>
+                <span class="relative z-10">{{
+                  $t("bangladesh_first_title")
+                }}</span>
+                <span
+                  class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"
+                ></span>
               </h1>
               <!-- Service buttons grid with cool design -->
-              <div class="grid grid-cols-4 gap-0 my-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100">
+              <div
+                class="grid grid-cols-4 gap-0 my-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100"
+              >
                 <!-- Business Network -->
-                <NuxtLink to="/business-network" class="service-btn bg-white hover:bg-blue-50 text-gray-700">
+                <NuxtLink
+                  to="/business-network"
+                  class="service-btn bg-white hover:bg-blue-50 text-gray-700"
+                >
                   <div class="icon-circle bg-blue-50">
                     <Globe class="icon text-blue-600" />
                   </div>
                   <span>Business Network</span>
-                </NuxtLink>                  
+                </NuxtLink>
                 <!-- News -->
-                <NuxtLink to="/adsy-news" class="service-btn bg-white hover:bg-amber-50 text-gray-700">
+                <NuxtLink
+                  to="/adsy-news"
+                  class="service-btn bg-white hover:bg-amber-50 text-gray-700"
+                >
                   <div class="icon-circle bg-amber-50">
                     <Newspaper class="icon text-amber-600" />
                   </div>
                   <span>News</span>
-                </NuxtLink>                  
+                </NuxtLink>
                 <!-- Earn Money -->
-                <NuxtLink to="/#micro-gigs" class="service-btn bg-white hover:bg-emerald-50 text-gray-700">
+                <NuxtLink
+                  to="/#micro-gigs"
+                  class="service-btn bg-white hover:bg-emerald-50 text-gray-700"
+                >
                   <div class="icon-circle bg-emerald-50">
                     <BadgeDollarSign class="icon text-emerald-600" />
                   </div>
                   <span>Earn Money</span>
-                </NuxtLink>                
+                </NuxtLink>
                 <!-- Eshop -->
-                <NuxtLink to="/eshop" class="service-btn bg-white hover:bg-purple-50 text-gray-700">
+                <NuxtLink
+                  to="/eshop"
+                  class="service-btn bg-white hover:bg-purple-50 text-gray-700"
+                >
                   <div class="icon-circle bg-purple-50">
                     <ShoppingCart class="icon text-purple-600" />
                   </div>
                   <span>Eshop</span>
-                </NuxtLink>                
+                </NuxtLink>
                 <!-- Sale Listings -->
-                <NuxtLink to="/#sale-category" class="service-btn bg-white hover:bg-indigo-50 text-gray-700">
+                <NuxtLink
+                  to="/#sale-category"
+                  class="service-btn bg-white hover:bg-indigo-50 text-gray-700"
+                >
                   <div class="icon-circle bg-indigo-50">
                     <ListFilter class="icon text-indigo-600" />
                   </div>
@@ -129,7 +153,10 @@
                 </NuxtLink>
 
                 <!-- MindForce -->
-                <NuxtLink to="/business-network/mindforce" class="service-btn bg-white hover:bg-cyan-50 text-gray-700">
+                <NuxtLink
+                  to="/business-network/mindforce"
+                  class="service-btn bg-white hover:bg-cyan-50 text-gray-700"
+                >
                   <div class="icon-circle bg-cyan-50">
                     <Brain class="icon text-cyan-600" />
                   </div>
@@ -137,42 +164,61 @@
                 </NuxtLink>
 
                 <!-- Amar Seba -->
-                <NuxtLink to="/#classified-services" class="service-btn bg-white hover:bg-rose-50 text-gray-700">
+                <NuxtLink
+                  to="/#classified-services"
+                  class="service-btn bg-white hover:bg-rose-50 text-gray-700"
+                >
                   <div class="icon-circle bg-rose-50">
                     <Cog class="icon text-rose-600" />
                   </div>
                   <span>Amar Seba</span>
-                </NuxtLink>                
+                </NuxtLink>
                 <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
-                <div class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed">
+                <div
+                  class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed"
+                >
                   <div class="icon-circle bg-gray-100">
                     <HeartPulse class="icon text-gray-500" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>Shastho Sheba</span>
                   </div>
-                  <span class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming Soon</span>
+                  <span
+                    class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm"
+                    >Coming Soon</span
+                  >
                 </div>
 
                 <!-- Bill Pay (Coming Soon) - Disabled appearance -->
-                <div class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed">
+                <div
+                  class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed"
+                >
                   <div class="icon-circle bg-gray-100">
                     <Receipt class="icon text-gray-500" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>Bill Pay</span>
                   </div>
-                  <span class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm">Coming Soon</span>
+                  <span
+                    class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm"
+                    >Coming Soon</span
+                  >
                 </div>
                 <!-- Mobile Recharge -->
-                <NuxtLink to="/mobile-recharge" class="service-btn bg-white hover:bg-orange-50 text-gray-700">
+                <NuxtLink
+                  to="/mobile-recharge"
+                  class="service-btn bg-white hover:bg-orange-50 text-gray-700"
+                >
                   <div class="icon-circle bg-orange-50">
                     <Smartphone class="icon text-orange-600" />
                   </div>
                   <span>Mobile Recharge</span>
-                </NuxtLink>                
+                </NuxtLink>
                 <!-- Transactions -->
-                <NuxtLink to="/deposit-withdraw" class="service-btn bg-white hover:bg-lime-50 text-gray-700">
+                <NuxtLink
+                  to="/deposit-withdraw"
+                  class="service-btn bg-white hover:bg-lime-50 text-gray-700"
+                >
                   <div class="icon-circle bg-lime-50">
                     <CreditCard class="icon text-lime-600" />
                   </div>
@@ -180,7 +226,10 @@
                 </NuxtLink>
 
                 <!-- Membership -->
-                <NuxtLink to="/upgrade-to-pro" class="service-btn bg-white hover:bg-pink-50 text-gray-700">
+                <NuxtLink
+                  to="/upgrade-to-pro"
+                  class="service-btn bg-white hover:bg-pink-50 text-gray-700"
+                >
                   <div class="icon-circle bg-pink-50">
                     <User class="icon text-pink-600" />
                   </div>
@@ -191,62 +240,78 @@
           </div>
         </div>
       </div>
-    </div>    
+    </div>
     <!-- Mobile service buttons -->
-    <div class="md:hidden text-center px-0.5 py-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden">
-      <div class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10">        
-        <!-- Business Network -->        
-         <NuxtLink to="/business-network" class="mobile-btn bg-white">
+    <div
+      class="md:hidden text-center px-0.5 py-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden"
+    >
+      <div
+        class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10"
+      >
+        <!-- Business Network -->
+        <NuxtLink to="/business-network" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-blue-50">
             <Globe class="mobile-icon text-blue-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Business Network</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Business Network</span
+            >
           </div>
         </NuxtLink>
-          <!-- News -->        
-           <NuxtLink to="/adsy-news" class="mobile-btn bg-white">
+        <!-- News -->
+        <NuxtLink to="/adsy-news" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-amber-50">
             <Newspaper class="mobile-icon text-amber-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Adsy News</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Adsy News</span
+            >
           </div>
-        </NuxtLink>          
+        </NuxtLink>
         <!-- Earn Money -->
         <NuxtLink to="/#micro-gigs" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-emerald-50">
             <BadgeDollarSign class="mobile-icon text-emerald-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Earn Money</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Earn Money</span
+            >
           </div>
-        </NuxtLink>        
+        </NuxtLink>
         <!-- Eshop -->
         <NuxtLink to="/eshop" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-purple-50">
             <ShoppingCart class="mobile-icon text-purple-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">eShop</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >eShop</span
+            >
           </div>
-        </NuxtLink>        
+        </NuxtLink>
         <!-- Sale Listings -->
         <NuxtLink to="/#sale-category" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-indigo-50">
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Sale Listings</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Sale Listings</span
+            >
           </div>
-        </NuxtLink>        
+        </NuxtLink>
         <!-- MindForce -->
         <NuxtLink to="/business-network/mindforce" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-cyan-50">
             <Brain class="mobile-icon text-cyan-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">MindForce</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >MindForce</span
+            >
           </div>
         </NuxtLink>
 
@@ -256,46 +321,64 @@
             <Cog class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Amar Seba</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Amar Seba</span
+            >
           </div>
         </NuxtLink>
         <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
-        <div class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed">
+        <div
+          class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
+        >
           <div class="mobile-icon-circle bg-gray-100">
             <HeartPulse class="mobile-icon text-gray-500" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-500">Shastho Sheba</span>
+            <span class="text-sm leading-tight text-gray-500"
+              >Shastho Sheba</span
+            >
           </div>
-          <span class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm">Coming Soon</span>
+          <span
+            class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm"
+            >Coming Soon</span
+          >
         </div>
 
         <!-- Bill Pay (Coming Soon) - Disabled appearance -->
-        <div class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed">
+        <div
+          class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
+        >
           <div class="mobile-icon-circle bg-gray-100">
             <Receipt class="mobile-icon text-gray-500" />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm leading-tight text-gray-500">Bill Pay</span>
           </div>
-          <span class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm">Coming Soon</span>
-        </div>        
+          <span
+            class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm"
+            >Coming Soon</span
+          >
+        </div>
         <!-- Mobile Recharge -->
         <NuxtLink to="/mobile-recharge" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-orange-50">
             <Smartphone class="mobile-icon text-orange-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Mobile Recharge</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Mobile Recharge</span
+            >
           </div>
-        </NuxtLink>       
+        </NuxtLink>
         <!-- Transactions -->
         <NuxtLink to="/deposit-withdraw" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-lime-50">
             <CreditCard class="mobile-icon text-lime-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Transactions</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Transactions</span
+            >
           </div>
         </NuxtLink>
 
@@ -305,7 +388,9 @@
             <User class="mobile-icon text-pink-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">Membership</span>
+            <span class="text-sm font-medium leading-tight text-gray-700"
+              >Membership</span
+            >
           </div>
         </NuxtLink>
       </div>
@@ -401,14 +486,14 @@ const handleTouchMove = (e) => {
   const swipeDiff = touchEndX - touchStartX;
   if (Math.abs(swipeDiff) > 30) {
     e.preventDefault(); // Prevent default only if significant swipe detected
-    
+
     // Add visual feedback with classes
     if (sliderContainer.value) {
-      sliderContainer.value.classList.remove('swiping-left', 'swiping-right');
+      sliderContainer.value.classList.remove("swiping-left", "swiping-right");
       if (swipeDiff > 0) {
-        sliderContainer.value.classList.add('swiping-right');
+        sliderContainer.value.classList.add("swiping-right");
       } else {
-        sliderContainer.value.classList.add('swiping-left');
+        sliderContainer.value.classList.add("swiping-left");
       }
     }
   }
@@ -416,21 +501,21 @@ const handleTouchMove = (e) => {
 
 const handleTouchEnd = () => {
   if (!isHandlingTouch) return;
-  
+
   const swipeDiff = touchEndX - touchStartX;
   const minSwipeDistance = 50; // Minimum distance to consider it a swipe
-  
+
   if (swipeDiff > minSwipeDistance) {
     prevSlide(); // Swipe right = previous slide
   } else if (swipeDiff < -minSwipeDistance) {
     nextSlide(); // Swipe left = next slide
   }
-  
+
   // Remove swiping classes
   if (sliderContainer.value) {
-    sliderContainer.value.classList.remove('swiping-left', 'swiping-right');
+    sliderContainer.value.classList.remove("swiping-left", "swiping-right");
   }
-  
+
   isHandlingTouch = false;
   resetAutoSlideTimer();
 };
@@ -444,12 +529,16 @@ const handleSliderHover = (isHover) => {
 // Start auto-sliding when component is mounted
 onMounted(() => {
   resetAutoSlideTimer();
-  
+
   // Add touch event listeners
   if (sliderContainer.value) {
-    sliderContainer.value.addEventListener('touchstart', handleTouchStart, { passive: false });
-    sliderContainer.value.addEventListener('touchmove', handleTouchMove, { passive: false });
-    sliderContainer.value.addEventListener('touchend', handleTouchEnd);
+    sliderContainer.value.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    sliderContainer.value.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+    sliderContainer.value.addEventListener("touchend", handleTouchEnd);
   }
 });
 
@@ -458,12 +547,12 @@ onUnmounted(() => {
   if (intervalId) {
     clearInterval(intervalId);
   }
-  
+
   // Remove touch event listeners
   if (sliderContainer.value) {
-    sliderContainer.value.removeEventListener('touchstart', handleTouchStart);
-    sliderContainer.value.removeEventListener('touchmove', handleTouchMove);
-    sliderContainer.value.removeEventListener('touchend', handleTouchEnd);
+    sliderContainer.value.removeEventListener("touchstart", handleTouchStart);
+    sliderContainer.value.removeEventListener("touchmove", handleTouchMove);
+    sliderContainer.value.removeEventListener("touchend", handleTouchEnd);
   }
 });
 </script>
@@ -545,7 +634,7 @@ onUnmounted(() => {
 }
 
 .service-btn::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -618,8 +707,8 @@ onUnmounted(() => {
 }
 
 .mobile-icon {
-  height: 1rem;
-  width: 1rem;
+  height: 1.5rem;
+  width: 1.5rem;
 }
 
 .touch-slider {
