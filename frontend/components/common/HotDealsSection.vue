@@ -48,35 +48,6 @@
 
       <!-- Two-column layout: Fixed Budget Finds + Scrollable Cards -->
       <div class="flex space-x-2">
-        <!-- Fixed Budget Finds Card (Always visible on left) -->
-        <!-- <div
-          class="flex-shrink-0 w-20 sm:w-[12%] bg-white/90 backdrop-blur-sm rounded-lg overflow-visible shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-white/50 card-hover"
-        >
-          <NuxtLink :to="budgetFindsCard.link" class="block">
-            <div class="relative h-[80px] overflow-hidden rounded-t-lg">
-              <div
-                class="absolute inset-0 bg-gradient-to-b from-transparent"
-                :class="budgetFindsCard.gradientClass"
-              ></div>
-              <img
-                :src="budgetFindsCard.image"
-                :alt="budgetFindsCard.title"
-                class="w-full h-full object-cover"
-                loading="eager"
-              />
-              <div
-                class="absolute top-0 left-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-br z-20"
-                :class="budgetFindsCard.badgeClass"
-              >
-                {{ budgetFindsCard.badge }}
-              </div>
-            </div>
-            <div class="p-2 text-center">
-              <h3 class="text-sm text-gray-700">{{ budgetFindsCard.title }}</h3>
-            </div>
-          </NuxtLink>
-        </div> -->
-
         <!-- Scrollable Cards Container - Optimized for performance -->
         <div class="flex-1 overflow-hidden">
           <div
@@ -87,7 +58,7 @@
             <div
               v-for="(deal, index) in specialDeals"
               :key="deal.id"
-              class="flex-shrink-0 w-20 sm:w-[13%] bg-white/90 backdrop-blur-sm rounded-lg overflow-visible shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-white/50 snap-start card-hover"
+              class="flex-shrink-0 w-24 sm:w-[13%] bg-white/90 backdrop-blur-sm rounded-lg overflow-visible shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-white/50 snap-start card-hover"
               @click="handleCardClick(deal)"
             >
               <NuxtLink :to="`/eshop/category/${deal.slug}`" class="block">

@@ -271,205 +271,173 @@
             </div>
           </div>
 
+          <!-- Location and Posted Date Section -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4">
+            <!-- Location Row -->
+            <div v-if="post.area || post.district" class="flex items-center">
+              <UIcon
+                name="i-heroicons-map-pin"
+                class="size-5 mr-3 text-primary flex-shrink-0"
+              />
+              <p class="text-gray-700">
+                {{ post.area }}{{ post.area && post.district ? ', ' : '' }}{{ post.district }}
+              </p>
+            </div>
+            
+            <!-- Posted Date Row -->
+            <div class="flex items-center mt-2">
+              <UIcon
+                name="i-heroicons-calendar"
+                class="size-5 mr-3 text-primary flex-shrink-0"
+              />
+              <p class="text-gray-700">
+                Posted {{ formatDate(post.created_at) }}
+              </p>
+            </div>
+          </div>
+
           <!-- Title, Price, and Details Card -->
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
           >
             <!-- Post Details Table -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 mb-6">
               <!-- Category -->
-              <div class="flex items-start">
+              <div class="flex items-center">
                 <UIcon
                   name="i-heroicons-tag"
-                  class="size-5 mt-0.5 mr-3 text-gray-500"
+                  class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                 />
-                <div>
-                  <span class="text-gray-500 text-sm">Category</span>
-                  <p class="text-gray-700 font-medium">
-                    {{ post.category_details.name }}
-                  </p>
-                </div>
+                <p class="text-gray-700 font-medium truncate">
+                  {{ post.category_details.name }}
+                </p>
               </div>
 
               <!-- Condition -->
-              <div class="flex items-start">
+              <div class="flex items-center">
                 <UIcon
                   name="i-heroicons-sparkles"
-                  class="size-5 mt-0.5 mr-3 text-gray-500"
+                  class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                 />
-                <div>
-                  <span class="text-gray-500 text-sm">Condition</span>
-                  <p class="text-gray-700 font-medium">
-                    {{ getConditionLabel(post.condition) }}
-                  </p>
-                </div>
+                <p class="text-gray-700 font-medium truncate">
+                  {{ getConditionLabel(post.condition) }}
+                </p>
               </div>
 
-              <!-- Location -->
-              <div class="flex items-start">
-                <UIcon
-                  name="i-heroicons-map-pin"
-                  class="size-5 mt-0.5 mr-3 text-gray-500"
-                />
-                <div>
-                  <span class="text-gray-500 text-sm">Location</span>
-                  <p class="text-gray-700">
-                    {{ post.area }}, {{ post.district }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Posted Date -->
-              <div class="flex items-start">
-                <UIcon
-                  name="i-heroicons-calendar"
-                  class="size-5 mt-0.5 mr-3 text-gray-500"
-                />
-                <div>
-                  <span class="text-gray-500 text-sm">Posted</span>
-                  <p class="text-gray-700">
-                    {{ formatDateFull(post.created_at) }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Property-specific fields -->
-              <template v-if="post.category === 1">
-                <div v-if="post.property_type" class="flex items-start">
+              <!-- Additional property for 3rd grid spot -->
+              <template v-if="post.category === 1 && post.property_type">
+                <div class="flex items-center">
                   <UIcon
                     name="i-heroicons-home"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Property Type</span>
-                    <p class="text-gray-700 font-medium">
-                      {{ propertyTypeLabel(post.property_type) }}
-                    </p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">
+                    {{ propertyTypeLabel(post.property_type) }}
+                  </p>
                 </div>
+              </template>
+              <template v-else-if="post.category === 2 && post.make">
+                <div class="flex items-center">
+                  <UIcon
+                    name="i-heroicons-truck"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
+                  />
+                  <p class="text-gray-700 font-medium truncate">{{ post.make }}</p>
+                </div>
+              </template>
+              <template v-else-if="post.category === 3 && post.brand">
+                <div class="flex items-center">
+                  <UIcon
+                    name="i-heroicons-building-storefront"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
+                  />
+                  <p class="text-gray-700 font-medium truncate">{{ post.brand }}</p>
+                </div>
+              </template>
 
-                <div v-if="post.size" class="flex items-start">
+              <!-- Remaining property-specific fields -->
+              <template v-if="post.category === 1">
+                <!-- Skip property_type since it's used above -->
+                <div v-if="post.size" class="flex items-center">
                   <UIcon
                     name="i-heroicons-square-3-stack-3d"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Size</span>
-                    <p class="text-gray-700 font-medium">
-                      {{ post.size }} {{ post.unit || "sqft" }}
-                    </p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">
+                    {{ post.size }} {{ post.unit || "sqft" }}
+                  </p>
                 </div>
 
-                <div v-if="post.bedrooms" class="flex items-start">
+                <div v-if="post.bedrooms" class="flex items-center">
                   <UIcon
                     name="i-heroicons-bed"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Bedrooms</span>
-                    <p class="text-gray-700 font-medium">{{ post.bedrooms }}</p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">
+                    {{ post.bedrooms }}
+                  </p>
                 </div>
 
-                <div v-if="post.bathrooms" class="flex items-start">
+                <div v-if="post.bathrooms" class="flex items-center">
                   <UIcon
                     name="i-heroicons-beaker"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Bathrooms</span>
-                    <p class="text-gray-700 font-medium">
-                      {{ post.bathrooms }}
-                    </p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">
+                    {{ post.bathrooms }}
+                  </p>
                 </div>
               </template>
 
               <!-- Vehicle-specific fields -->
               <template v-if="post.category === 2">
-                <div v-if="post.make" class="flex items-start">
-                  <UIcon
-                    name="i-heroicons-truck"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
-                  />
-                  <div>
-                    <span class="text-gray-500 text-sm">Make</span>
-                    <p class="text-gray-700 font-medium">{{ post.make }}</p>
-                  </div>
-                </div>
-
-                <div v-if="post.model" class="flex items-start">
+                <!-- Skip make since it's used above -->
+                <div v-if="post.model" class="flex items-center">
                   <UIcon
                     name="i-heroicons-tag"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Model</span>
-                    <p class="text-gray-700 font-medium">{{ post.model }}</p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">{{ post.model }}</p>
                 </div>
 
-                <div v-if="post.year" class="flex items-start">
+                <div v-if="post.year" class="flex items-center">
                   <UIcon
                     name="i-heroicons-calendar"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Year</span>
-                    <p class="text-gray-700 font-medium">{{ post.year }}</p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">{{ post.year }}</p>
                 </div>
 
-                <div v-if="post.mileage" class="flex items-start">
+                <div v-if="post.mileage" class="flex items-center">
                   <UIcon
                     name="i-heroicons-arrow-path-rounded-square"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Mileage</span>
-                    <p class="text-gray-700 font-medium">
-                      {{ post.mileage }} {{ post.mileage_unit || "km" }}
-                    </p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">
+                    {{ post.mileage }} {{ post.mileage_unit || "km" }}
+                  </p>
                 </div>
               </template>
 
               <!-- Electronics-specific fields -->
               <template v-if="post.category === 3">
-                <div v-if="post.brand" class="flex items-start">
-                  <UIcon
-                    name="i-heroicons-building-storefront"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
-                  />
-                  <div>
-                    <span class="text-gray-500 text-sm">Brand</span>
-                    <p class="text-gray-700 font-medium">{{ post.brand }}</p>
-                  </div>
-                </div>
-
-                <div v-if="post.model" class="flex items-start">
+                <!-- Skip brand since it's used above -->
+                <div v-if="post.model" class="flex items-center">
                   <UIcon
                     name="i-heroicons-tag"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Model</span>
-                    <p class="text-gray-700 font-medium">{{ post.model }}</p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">{{ post.model }}</p>
                 </div>
 
-                <div v-if="post.warranty" class="flex items-start">
+                <div v-if="post.warranty" class="flex items-center">
                   <UIcon
                     name="i-heroicons-shield-check"
-                    class="size-5 mt-0.5 mr-3 text-gray-500"
+                    class="size-5 mr-2.5 text-gray-500 flex-shrink-0"
                   />
-                  <div>
-                    <span class="text-gray-500 text-sm">Warranty</span>
-                    <p class="text-gray-700 font-medium">
-                      {{ warrantyLabel(post.warranty) }}
-                    </p>
-                  </div>
+                  <p class="text-gray-700 font-medium truncate">
+                    {{ warrantyLabel(post.warranty) }}
+                  </p>
                 </div>
               </template>
             </div>
@@ -543,28 +511,30 @@
 
         <!-- Right Column - Sidebar -->
         <div class="lg:col-span-1">
-          <!-- Seller Contact Card -->
+          <!-- Seller Information Card - Redesigned -->
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6"
           >
             <h3 class="text-lg font-medium text-gray-700 mb-4">
               Seller Information
             </h3>
-            <div class="flex items-center mb-4">
+
+            <!-- Seller Profile Header -->
+            <div class="flex items-center mb-5">
               <div class="mr-3">
                 <div
-                  class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
+                  class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-gray-100"
                 >
+                  <UIcon
+                    v-if="!post.seller?.profile_picture"
+                    name="i-heroicons-building-storefront"
+                    class="size-8 text-gray-500"
+                  />
                   <img
-                    v-if="post.seller?.profile_picture"
+                    v-else
                     :src="post.seller.profile_picture"
                     :alt="post.seller?.name || 'Seller'"
                     class="w-full h-full object-cover"
-                  />
-                  <UIcon
-                    v-else
-                    name="i-heroicons-user"
-                    class="size-8 text-gray-500"
                   />
                 </div>
               </div>
@@ -572,17 +542,65 @@
                 <h4 class="font-medium text-gray-700">
                   {{ post.user_name || "Anonymous Seller" }}
                 </h4>
-                <p
-                  v-if="post.seller?.member_since"
-                  class="text-xs text-gray-500"
+                
+                <!-- Membership Badge -->
+                <div class="flex items-center mt-1">
+                  <span 
+                    :class="[
+                      'text-xs px-2 py-0.5 rounded-full',
+                      post.seller?.is_pro 
+                        ? 'bg-primary-50 text-primary-700 border border-primary-200' 
+                        : 'bg-gray-100 text-gray-700'
+                    ]"
+                  >
+                    <UIcon 
+                      :name="post.seller?.is_pro ? 'i-heroicons-check-badge' : 'i-heroicons-user'" 
+                      class="size-3 mr-0.5 inline-block" 
+                    />
+                    {{ post.seller?.is_pro ? 'Pro Member' : 'Free Member' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seller Stats -->
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <div class="bg-gray-50 rounded p-3 flex flex-col items-center">
+                <UIcon name="i-heroicons-calendar-days" class="size-5 text-gray-500 mb-1" />
+                <p class="text-xs text-gray-500">Member since</p>
+                <p class="text-sm font-medium">{{ formatDate(post.seller?.member_since || post.created_at) }}</p>
+              </div>
+              
+              <div class="bg-gray-50 rounded p-3 flex flex-col items-center">
+                <UIcon name="i-heroicons-shopping-bag" class="size-5 text-gray-500 mb-1" />
+                <p class="text-xs text-gray-500">Products</p>
+                <p class="text-sm font-medium">{{ post.seller?.product_count || 1 }}</p>
+              </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="mb-5">
+              <!-- Phone (Clickable) -->
+              <div v-if="post.phone" class="flex items-center mb-3 border-b border-gray-100 pb-3">
+                <UIcon name="i-heroicons-phone" class="size-5 mr-3 text-gray-500" />
+                <div v-if="showPhone">
+                  <a :href="`tel:${post.phone}`" class="text-primary hover:underline">
+                    {{ post.phone }}
+                  </a>
+                </div>
+                <button 
+                  v-else 
+                  @click="showPhone = true"
+                  class="text-sm text-gray-700 hover:text-primary px-2 py-1 rounded border border-gray-200 hover:border-primary-200 transition"
                 >
-                  Member since {{ formatDate(post.seller.member_since) }}
-                </p>
+                  Show Phone Number
+                </button>
               </div>
             </div>
 
             <!-- Contact Buttons -->
             <div class="space-y-3">
+              <!-- Call Button -->
               <UButton
                 v-if="post.phone"
                 color="primary"
@@ -594,6 +612,7 @@
                 Call Seller
               </UButton>
 
+              <!-- Message Button -->
               <UButton
                 v-if="post.allows_messaging"
                 color="primary"
@@ -605,28 +624,42 @@
                 Message Seller
               </UButton>
 
-              <!-- Copy Link Button -->
+              <!-- See More Products Button -->
               <UButton
                 color="gray"
                 variant="soft"
                 class="w-full justify-center"
-                icon="i-heroicons-link"
-                :loading="copying"
-                @click="copyPostLink"
+                icon="i-heroicons-shopping-bag"
+                :to="`/sale/seller/${post.user_id || post.seller?.id || ''}`"
               >
-                {{ copying ? "Copied!" : "Copy Link" }}
+                More Products from Seller
               </UButton>
 
-              <!-- Report Button -->
-              <UButton
-                color="gray"
-                variant="ghost"
-                class="w-full justify-center"
-                icon="i-heroicons-flag"
-                @click="showReportModal = true"
-              >
-                Report Listing
-              </UButton>
+              <!-- Actions Row -->
+              <div class="flex items-center gap-2">
+                <!-- Copy Link Button -->
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  class="flex-1 justify-center"
+                  icon="i-heroicons-link"
+                  :loading="copying"
+                  @click="copyPostLink"
+                >
+                  {{ copying ? "Copied!" : "Copy Link" }}
+                </UButton>
+
+                <!-- Report Button -->
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  class="flex-1 justify-center"
+                  icon="i-heroicons-flag"
+                  @click="showReportModal = true"
+                >
+                  Report
+                </UButton>
+              </div>
             </div>
           </div>
 
@@ -987,6 +1020,7 @@ const zoomLevel = ref(1);
 const panPosition = ref({ x: 0, y: 0 });
 let isPanning = false;
 let startPanPosition = { x: 0, y: 0 };
+const showPhone = ref(false);
 
 // Form state
 const contactForm = ref({
@@ -1444,7 +1478,7 @@ function endPan() {
   border-radius: 4px;
 }
 
-.lightbox-thumbnails::-webkit-scrollbar-track {
+lightbox-thumbnails::-webkit-scrollbar-track {
   background-color: var(--tw-bg-gray-50);
 }
 </style>

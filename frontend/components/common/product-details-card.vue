@@ -526,16 +526,16 @@
             "
           ></div>
         </div>
-        <!-- Similar Products Section -->
+        <!-- You may also like Section -->
         <div class="mb-8 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
-            class="text-base font-medium mb-4 text-gray-700 dark:text-white flex items-center"
+            class="text-base font-medium my-3 px-2 text-gray-700 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-squares-2x2"
               class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
             />
-            Similar Products
+            You may also like
           </h3>
           <div v-if="isSimilarProductsLoading" class="flex justify-center py-6">
             <div class="flex flex-col items-center">
