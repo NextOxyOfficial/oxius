@@ -200,8 +200,7 @@
           </NuxtLink>
         </div>
       </div>
-        <!-- Search match explanation section -->
-      <div v-if="!loading && !usersLoading && (userResults.length > 0 || allPosts.length > 0)" class="mb-6 bg-white p-4 rounded-lg border border-blue-100/80">
+        <!-- Search match explanation section -->      <div v-if="!loading && !usersLoading && (userResults.length > 0 || allPosts.length > 0)" class="mb-6 bg-white p-4 rounded-lg border border-blue-100/80">
         <div class="flex items-start gap-3">
           <div class="p-2 bg-blue-50 rounded-full mt-1">
             <Search class="h-4 w-4 text-blue-600" />
@@ -209,25 +208,51 @@
           <div>
             <h3 class="font-medium text-gray-800 mb-1.5">Search Results For: "<span class="text-blue-600">{{ $route.params.search }}</span>"</h3>
             <p class="text-sm text-gray-600 mb-2">
-              We search through user names, usernames, post titles, content and hashtags to find the best matches.
+              We search through user names, usernames, post titles, content and hashtags to find the best matches. Results are ranked by relevance.
             </p>
             <div class="flex flex-wrap gap-2 mt-2">
               <div class="flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
                 <span class="mr-1 font-medium">Author match:</span>
                 <span>First/last name or username</span>
               </div>
               <div class="flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
+                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
                 <span class="mr-1 font-medium">Title match:</span>
                 <span>Post title</span>
               </div>
               <div class="flex items-center text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
+                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
                 <span class="mr-1 font-medium">Content match:</span> 
                 <span>Post body</span>
               </div>
               <div class="flex items-center text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
+                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="9" x2="20" y2="9"></line>
+                  <line x1="4" y1="15" x2="20" y2="15"></line>
+                  <line x1="10" y1="3" x2="8" y2="21"></line>
+                  <line x1="16" y1="3" x2="14" y2="21"></line>
+                </svg>
                 <span class="mr-1 font-medium">Hashtag match:</span>
                 <span>Post hashtags</span>
               </div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-gray-100">
+              <p class="text-xs text-gray-500">
+                <span class="font-medium">Exact matches and hashtag matches are weighted highest</span> in search results. Content matching your search term will be highlighted.
+              </p>
             </div>
           </div>
         </div>
@@ -575,7 +600,7 @@ eventBus.on("start-loading-posts", () => {
   loading.value = true;
 });
 
-// Calculate the relevance score of a search result
+// Calculate the relevance score of a search result with improved weighting
 function calculateRelevanceScore(post, searchQuery) {
   if (!post || !searchQuery) return 0;
   
@@ -584,46 +609,91 @@ function calculateRelevanceScore(post, searchQuery) {
   const normalizedQuery = searchQuery.startsWith('#') ? searchQuery.substring(1) : searchQuery;
   const lowerQuery = normalizedQuery.toLowerCase();
   
-  // Check direct hashtag match (highest weight)
-  if (post.matchFields?.includes('hashtag') || 
-     (post.post_tags && post.post_tags.some(tag => tag.tag.toLowerCase() === lowerQuery))) {
+  // Check if this is a hashtag search
+  const isHashtagSearch = searchQuery.startsWith('#');
+  
+  // Check for exact hashtag match (highest weight)
+  if (post.post_tags && post.post_tags.some(tag => tag.tag.toLowerCase() === lowerQuery)) {
+    score += 150; // Increased weight for exact tag matches
+    matchWeight += 5;
+  }
+  // Check for hashtag contains match
+  else if (post.matchFields?.includes('hashtag') || 
+          (post.post_tags && post.post_tags.some(tag => tag.tag.toLowerCase().includes(lowerQuery)))) {
     score += 100;
     matchWeight += 4;
   }
   
-  // Title match (high weight)
-  if (post.matchFields?.includes('title') || 
-     (post.title && post.title.toLowerCase().includes(lowerQuery))) {
+  // Title exact match (very high weight)
+  if (post.title && post.title.toLowerCase() === lowerQuery) {
+    score += 110;
+    matchWeight += 5;
+  }
+  // Title contains match (high weight)
+  else if (post.matchFields?.includes('title') || 
+          (post.title && post.title.toLowerCase().includes(lowerQuery))) {
     score += 75;
     matchWeight += 3;
   }
   
-  // Author match (medium-high weight)
-  if (post.matchFields?.includes('author')) {
-    score += 50;
-    matchWeight += 2;
+  // Author exact match (high weight)
+  if (post.author_details) {
+    const authorFullName = `${post.author_details.first_name || ''} ${post.author_details.last_name || ''}`.toLowerCase();
+    const authorUsername = (post.author_details.username || '').toLowerCase();
+    
+    // Exact name or username match
+    if (authorFullName === lowerQuery || authorUsername === lowerQuery) {
+      score += 90;
+      matchWeight += 4;
+    }
+    // Contains match in name or username
+    else if (post.matchFields?.includes('author') || 
+            authorFullName.includes(lowerQuery) || 
+            authorUsername.includes(lowerQuery)) {
+      score += 50;
+      matchWeight += 2;
+    }
   }
   
-  // Content match (medium weight)
-  if (post.matchFields?.includes('content') || 
-     (post.content && post.content.toLowerCase().includes(lowerQuery))) {
+  // Content exact match (happens when the full search query appears in content)
+  if (post.content && post.content.toLowerCase().includes(` ${lowerQuery} `)) {
+    score += 60;
+    matchWeight += 3;
+  }
+  // Content contains match
+  else if (post.matchFields?.includes('content') || 
+          (post.content && post.content.toLowerCase().includes(lowerQuery))) {
     score += 25;
     matchWeight += 1;
   }
   
-  // Normalize by number of match types (so posts matching in multiple fields rank higher)
-  if (matchWeight > 0) {
-    score = score * (1 + (matchWeight / 10));
+  // Boosting for hashtag searches - give more weight to hashtag matches in hashtag searches
+  if (isHashtagSearch && post.hasMatchingHashtag) {
+    score = score * 1.5; // 50% boost for matching hashtag in hashtag search
   }
   
-  // Recency bonus (newer posts get slight priority)
+  // Boost score based on number of different fields matching (multiplicative)
+  if (matchWeight > 0) {
+    score = score * (1 + (matchWeight / 8));
+  }
+  
+  // Recency bonus (newer posts get priority, more significant for newer posts)
   if (post.created_at) {
     const postDate = new Date(post.created_at);
     const now = new Date();
     const daysDifference = Math.floor((now - postDate) / (1000 * 60 * 60 * 24));
     
-    // Add recency bonus (up to 10 points for posts from today)
-    score += Math.max(0, 10 - daysDifference);
+    // Add recency bonus with exponential decay
+    if (daysDifference === 0) {
+      // Posts from today get a big boost
+      score += 20;
+    } else if (daysDifference <= 7) {
+      // Posts from the past week get a moderate boost
+      score += 15 - daysDifference;
+    } else {
+      // Older posts get a smaller boost with diminishing returns
+      score += Math.max(0, 8 - Math.log2(daysDifference));
+    }
   }
   
   return score;

@@ -52,31 +52,60 @@ class UserSearchView(generics.ListAPIView):
         # Remove hashtag for user search if present
         if normalized_query.startswith('#'):
             normalized_query = normalized_query[1:]
+        
+        if not normalized_query:  # If query was just a # symbol
+            return User.objects.none()
             
-        # Enhanced user search with exact matches prioritized
+        # Enhanced user search with better prioritization
+        
+        # 1. Exact username matches (highest priority)
         exact_username_match = User.objects.filter(username__iexact=normalized_query)
-        exact_name_match = User.objects.filter(
+        
+        # 2. Full name exact matches (first + last name combined)
+        # This uses a custom query that concatenates first and last name
+        full_name_matches = User.objects.filter(
+            Q(first_name__iexact=normalized_query) | 
+            Q(last_name__iexact=normalized_query) |
+            Q(first_name__icontains=normalized_query, last_name__icontains=normalized_query)
+        )
+        
+        # 3. Username starts with query
+        username_starts_with = User.objects.filter(username__istartswith=normalized_query).exclude(
+            username__iexact=normalized_query  # Exclude exact matches to avoid duplicates
+        )
+        
+        # 4. First or last name starts with query
+        name_starts_with = User.objects.filter(
+            Q(first_name__istartswith=normalized_query) | 
+            Q(last_name__istartswith=normalized_query)
+        ).exclude(
             Q(first_name__iexact=normalized_query) | 
             Q(last_name__iexact=normalized_query)
         )
         
-        # Partial matches (contains)
+        # 5. Contains matches for username or name (lowest priority)
         partial_matches = User.objects.filter(
             Q(username__icontains=normalized_query) | 
             Q(first_name__icontains=normalized_query) | 
             Q(last_name__icontains=normalized_query) |
             Q(email__icontains=normalized_query)
         ).exclude(
-            # Exclude exact matches to avoid duplicates
+            # Exclude all previous matches to avoid duplicates
             Q(username__iexact=normalized_query) |
+            Q(username__istartswith=normalized_query) |
             Q(first_name__iexact=normalized_query) | 
-            Q(last_name__iexact=normalized_query)
+            Q(first_name__istartswith=normalized_query) |
+            Q(last_name__iexact=normalized_query) |
+            Q(last_name__istartswith=normalized_query)
         )
         
-        # Combine all matches with priority ordering (exact matches first)
-        return (list(exact_username_match) + 
-                list(exact_name_match) + 
-                list(partial_matches))
+        # Combine all matches with priority ordering
+        combined_results = list(exact_username_match) + list(full_name_matches) + \
+                           list(username_starts_with) + list(name_starts_with) + \
+                           list(partial_matches)
+                           
+        # Return combined and deduplicated results
+        return combined_results
    
     
 # @api_view(['GET'])
@@ -402,12 +431,18 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
         queryset = BusinessNetworkPost.objects.all()
         # Store original queryset for combining with tag results later
         content_query_results = None
+        tag_query_results = None
         
         if query:
             # Normalize query for better matching
             normalized_query = query.strip()
             
-            # Enhanced search: look in title, content, and author name fields
+            # Remove # if the query is a hashtag search
+            if normalized_query.startswith('#'):
+                normalized_query = normalized_query[1:]
+            
+            # Enhanced search: look in title, content, and author name fields with different weights
+            # Use Case insensitive containment for broader matches
             content_query_results = queryset.filter(
                 Q(title__icontains=normalized_query) | 
                 Q(content__icontains=normalized_query) |
@@ -424,23 +459,31 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
                 normalized_tag = normalized_tag[1:]
             
             # Create a query for tag search that checks against the tag field
-            tag_query_results = BusinessNetworkPost.objects.filter(tags__tag__icontains=normalized_tag)
+            # Use iexact for exact tag matches but case insensitive
+            tag_query_exact = BusinessNetworkPost.objects.filter(tags__tag__iexact=normalized_tag)
+            
+            # Also include partial matches with lower priority
+            tag_query_partial = BusinessNetworkPost.objects.filter(tags__tag__icontains=normalized_tag).exclude(
+                tags__tag__iexact=normalized_tag  # Exclude exact matches to avoid duplicates
+            )
+            
+            # Combine exact and partial matches, with exact matches first
+            tag_query_results = list(tag_query_exact) + list(tag_query_partial)
             
             if content_query_results is not None:
-                # Combine the results from content search and tag search
-                queryset = (content_query_results | tag_query_results).distinct()
+                # Combine content and tag results, removing duplicates
+                combined_results = list(content_query_results) + [post for post in tag_query_results if post not in content_query_results]
+                
+                # Convert back to queryset (needed for pagination)
+                post_ids = [post.id for post in combined_results]
+                queryset = BusinessNetworkPost.objects.filter(id__in=post_ids)
             else:
-                queryset = tag_query_results
+                # If only tag search, convert list back to queryset
+                post_ids = [post.id for post in tag_query_results]
+                queryset = BusinessNetworkPost.objects.filter(id__in=post_ids)
         
-        # Annotate with relevance score to improve ordering
-        # This is a basic approach that prioritizes exact matches and title matches
-        if query and query.strip():
-            normalized_query = query.strip()
-            # Return with custom ordering for better search relevance
-            return queryset.distinct().order_by('-created_at')
-        else:
-            # If no query, just return by created date
-            return queryset.order_by('-created_at').distinct()
+        # Ensure we always return distinct results
+        return queryset.distinct().order_by('-created_at')
 
 
 class BusinessNetworkWorkspaceListCreateView(generics.ListCreateAPIView):

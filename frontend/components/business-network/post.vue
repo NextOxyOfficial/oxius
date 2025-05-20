@@ -88,13 +88,12 @@
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
-            
-            <!-- Match indicators to show which fields matched the search -->
-            <div v-if="searchQuery && searchQuery.trim() !== ''" class="flex flex-wrap gap-1 px-2 mb-2">
+              <!-- Enhanced match indicators to show which fields matched the search -->
+            <div v-if="searchQuery && searchQuery.trim() !== ''" class="flex flex-wrap gap-1.5 px-2 mb-2">
               <span 
                 v-for="field in detectMatchedFields(post?.post_details ? post.post_details : post)" 
                 :key="field"
-                class="text-xs px-1.5 py-0.5 rounded-full"
+                class="text-xs px-2 py-0.5 rounded-full flex items-center"
                 :class="{
                   'bg-blue-100 text-blue-700 border border-blue-200': field === 'author',
                   'bg-green-100 text-green-700 border border-green-200': field === 'title',
@@ -102,12 +101,41 @@
                   'bg-purple-100 text-purple-700 border border-purple-200': field === 'hashtag',
                 }"
               >
-                <span v-if="field === 'author'">Matched author</span>
-                <span v-else-if="field === 'title'">Matched title</span>
-                <span v-else-if="field === 'content'">Matched content</span>
-                <span v-else-if="field === 'hashtag'">Matched hashtag</span>
+                <span v-if="field === 'author'" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Author match</span>
+                </span>
+                <span v-else-if="field === 'title'" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  <span>Title match</span>
+                </span>
+                <span v-else-if="field === 'content'" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <span>Content match</span>
+                </span>
+                <span v-else-if="field === 'hashtag'" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="9" x2="20" y2="9"></line>
+                    <line x1="4" y1="15" x2="20" y2="15"></line>
+                    <line x1="10" y1="3" x2="8" y2="21"></line>
+                    <line x1="16" y1="3" x2="14" y2="21"></line>
+                  </svg>
+                  <span>Hashtag match</span>
+                </span>
               </span>
-            </div>  <!-- Post Content with improved styling and enhanced search term highlighting -->
+            </div><!-- Post Content with improved styling and enhanced search term highlighting -->
             <div class="mb-3 min-w-full px-2">
               <!-- Enhanced title highlighting for search results -->
               <h3 
@@ -312,7 +340,7 @@ const { post, del, put, get } = useApi();
 const toast = useToast();
 
 // Highlight search terms in post content
-const highlightSearchTerms = (content) => {
+const highlightSearchTerms = (content, fieldType = 'content') => {
   if (!content || !props.searchQuery || props.searchQuery.trim() === '') return content;
   
   let searchText = props.searchQuery;
@@ -329,7 +357,25 @@ const highlightSearchTerms = (content) => {
     // Escape special regex characters to prevent errors
     const escapedSearchText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escapedSearchText})`, 'gi');
-    return content.replace(regex, '<span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 px-0.5 rounded">$1</span>');
+    
+    // Use different highlight colors based on field type
+    let highlightClass = '';
+    switch(fieldType) {
+      case 'title':
+        highlightClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+        break;
+      case 'author':
+        highlightClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+        break;
+      case 'hashtag':
+        highlightClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+        break;
+      case 'content':
+      default:
+        highlightClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+    }
+    
+    return content.replace(regex, `<span class="${highlightClass} px-0.5 rounded">$1</span>`);
   } catch (e) {
     console.error('Error highlighting search terms:', e);
     return content;
