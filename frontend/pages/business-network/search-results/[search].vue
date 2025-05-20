@@ -200,6 +200,38 @@
           </NuxtLink>
         </div>
       </div>
+        <!-- Search match explanation section -->
+      <div v-if="!loading && !usersLoading && (userResults.length > 0 || allPosts.length > 0)" class="mb-6 bg-white p-4 rounded-lg border border-blue-100/80">
+        <div class="flex items-start gap-3">
+          <div class="p-2 bg-blue-50 rounded-full mt-1">
+            <Search class="h-4 w-4 text-blue-600" />
+          </div>
+          <div>
+            <h3 class="font-medium text-gray-800 mb-1.5">Search Results For: "<span class="text-blue-600">{{ $route.params.search }}</span>"</h3>
+            <p class="text-sm text-gray-600 mb-2">
+              We search through user names, usernames, post titles, content and hashtags to find the best matches.
+            </p>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <div class="flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                <span class="mr-1 font-medium">Author match:</span>
+                <span>First/last name or username</span>
+              </div>
+              <div class="flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
+                <span class="mr-1 font-medium">Title match:</span>
+                <span>Post title</span>
+              </div>
+              <div class="flex items-center text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
+                <span class="mr-1 font-medium">Content match:</span> 
+                <span>Post body</span>
+              </div>
+              <div class="flex items-center text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
+                <span class="mr-1 font-medium">Hashtag match:</span>
+                <span>Post hashtags</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       
       <!-- Users Section - Always displayed first when available -->      <div v-if="!usersLoading && userResults.length > 0" class="mb-8">
         <div class="flex justify-between items-center mb-4 px-1">
@@ -213,11 +245,11 @@
         </div>
         
         <div class="bg-white rounded-lg overflow-hidden border border-gray-200/70">
-          <div class="divide-y divide-gray-100">
-            <BusinessNetworkUserCard
+          <div class="divide-y divide-gray-100">            <BusinessNetworkUserCard
               v-for="user in displayedUsers"
               :key="user.id"
               :user="user"
+              :search-query="$route.params.search"
               class="bg-white hover:bg-blue-50/40 transition-colors"
             />
           </div>
@@ -543,6 +575,60 @@ eventBus.on("start-loading-posts", () => {
   loading.value = true;
 });
 
+// Calculate the relevance score of a search result
+function calculateRelevanceScore(post, searchQuery) {
+  if (!post || !searchQuery) return 0;
+  
+  let score = 0;
+  let matchWeight = 0;
+  const normalizedQuery = searchQuery.startsWith('#') ? searchQuery.substring(1) : searchQuery;
+  const lowerQuery = normalizedQuery.toLowerCase();
+  
+  // Check direct hashtag match (highest weight)
+  if (post.matchFields?.includes('hashtag') || 
+     (post.post_tags && post.post_tags.some(tag => tag.tag.toLowerCase() === lowerQuery))) {
+    score += 100;
+    matchWeight += 4;
+  }
+  
+  // Title match (high weight)
+  if (post.matchFields?.includes('title') || 
+     (post.title && post.title.toLowerCase().includes(lowerQuery))) {
+    score += 75;
+    matchWeight += 3;
+  }
+  
+  // Author match (medium-high weight)
+  if (post.matchFields?.includes('author')) {
+    score += 50;
+    matchWeight += 2;
+  }
+  
+  // Content match (medium weight)
+  if (post.matchFields?.includes('content') || 
+     (post.content && post.content.toLowerCase().includes(lowerQuery))) {
+    score += 25;
+    matchWeight += 1;
+  }
+  
+  // Normalize by number of match types (so posts matching in multiple fields rank higher)
+  if (matchWeight > 0) {
+    score = score * (1 + (matchWeight / 10));
+  }
+  
+  // Recency bonus (newer posts get slight priority)
+  if (post.created_at) {
+    const postDate = new Date(post.created_at);
+    const now = new Date();
+    const daysDifference = Math.floor((now - postDate) / (1000 * 60 * 60 * 24));
+    
+    // Add recency bonus (up to 10 points for posts from today)
+    score += Math.max(0, 10 - daysDifference);
+  }
+  
+  return score;
+}
+
 // Get initial posts or more posts based on pagination
 async function getPosts(isLoadingMore = false, page = 1) {
   try {
@@ -584,16 +670,15 @@ async function getPosts(isLoadingMore = false, page = 1) {
     if (params.older_than) {
       searchParams.append('older_than', params.older_than);
     }
+      // Always include the search term in the main query for searching in name, title and content
+    searchParams.append('q', normalizedQuery);
     
-    // Handle search differently based on whether it's a hashtag search or not
+    // For hashtag searches, also specifically search in tags
     if (isHashtagSearch) {
-      // If it's a hashtag search, focus on tags but also include content
       searchParams.append('tag', normalizedQuery);
-      // Also search in content for the hashtag
-      searchParams.append('q', normalizedQuery);
     } else {
-      // Regular search in content/title/username
-      searchParams.append('q', normalizedQuery);
+      // For regular searches, we want to look in tags as well for better results
+      searchParams.append('tag', normalizedQuery);
     }
     
     const queryString = searchParams.toString();
@@ -621,6 +706,33 @@ async function getPosts(isLoadingMore = false, page = 1) {
             tag.tag.toLowerCase() === normalizedQuery.toLowerCase()
           );
         
+        // Check where the search term appears (for better highlighting)
+        const matchFields = [];
+        
+        // Check author name match
+        if (post.author_details) {
+          const authorName = `${post.author_details.first_name || ''} ${post.author_details.last_name || ''}`.toLowerCase();
+          const username = (post.author_details.username || '').toLowerCase();
+          if (authorName.includes(normalizedQuery.toLowerCase()) || username.includes(normalizedQuery.toLowerCase())) {
+            matchFields.push('author');
+          }
+        }
+        
+        // Check title match
+        if (post.title && post.title.toLowerCase().includes(normalizedQuery.toLowerCase())) {
+          matchFields.push('title');
+        }
+        
+        // Check content match
+        if (post.content && post.content.toLowerCase().includes(normalizedQuery.toLowerCase())) {
+          matchFields.push('content');
+        }
+        
+        // Check hashtag match
+        if (hasMatchingHashtag) {
+          matchFields.push('hashtag');
+        }
+        
         return {
           ...post,
           showFullDescription: false,
@@ -629,6 +741,7 @@ async function getPosts(isLoadingMore = false, page = 1) {
           isCommentLoading: false,
           isLikeLoading: false,
           hasMatchingHashtag: hasMatchingHashtag,
+          matchFields: matchFields,
         };
       });
 
@@ -646,10 +759,20 @@ async function getPosts(isLoadingMore = false, page = 1) {
         `Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`
       );
 
+      // Sort results by relevance (weighted by match type)
+      const sortedUniquePosts = [...uniquePosts].sort((a, b) => {
+        // Calculate relevance scores
+        const scoreA = calculateRelevanceScore(a, searchQuery);
+        const scoreB = calculateRelevanceScore(b, searchQuery);
+        
+        // Sort by relevance score (higher is better)
+        return scoreB - scoreA;
+      });
+
       // On initial load or load more, append to the end
       allPosts.value = isLoadingMore
-        ? [...allPosts.value, ...uniquePosts]
-        : uniquePosts;
+        ? [...allPosts.value, ...sortedUniquePosts]
+        : sortedUniquePosts;
 
       // Update pagination cursor if we got any unique posts
       if (uniquePosts.length > 0) {

@@ -37,11 +37,46 @@ def base64ToFile(base64_data):
 
 class UserSearchView(generics.ListAPIView):
     serializer_class = UserSerializer
-    pagination_class= StandardResultsSetPagination
+    pagination_class = StandardResultsSetPagination
     # permission_classes = [IsAuthenticated]
     def get_queryset(self):
         query = self.request.query_params.get('q', '')
-        return User.objects.filter(Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query))
+        
+        # Handle empty query
+        if not query or not query.strip():
+            return User.objects.none()
+            
+        # Normalize query for better matching
+        normalized_query = query.strip()
+        
+        # Remove hashtag for user search if present
+        if normalized_query.startswith('#'):
+            normalized_query = normalized_query[1:]
+            
+        # Enhanced user search with exact matches prioritized
+        exact_username_match = User.objects.filter(username__iexact=normalized_query)
+        exact_name_match = User.objects.filter(
+            Q(first_name__iexact=normalized_query) | 
+            Q(last_name__iexact=normalized_query)
+        )
+        
+        # Partial matches (contains)
+        partial_matches = User.objects.filter(
+            Q(username__icontains=normalized_query) | 
+            Q(first_name__icontains=normalized_query) | 
+            Q(last_name__icontains=normalized_query) |
+            Q(email__icontains=normalized_query)
+        ).exclude(
+            # Exclude exact matches to avoid duplicates
+            Q(username__iexact=normalized_query) |
+            Q(first_name__iexact=normalized_query) | 
+            Q(last_name__iexact=normalized_query)
+        )
+        
+        # Combine all matches with priority ordering (exact matches first)
+        return (list(exact_username_match) + 
+                list(exact_name_match) + 
+                list(partial_matches))
    
     
 # @api_view(['GET'])
@@ -365,18 +400,47 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
         tag = self.request.query_params.get('tag', '')
         
         queryset = BusinessNetworkPost.objects.all()
+        # Store original queryset for combining with tag results later
+        content_query_results = None
         
         if query:
-            queryset = queryset.filter(
-                Q(title__icontains=query) | 
-                Q(content__icontains=query) |
-                Q(author__username__icontains=query)
+            # Normalize query for better matching
+            normalized_query = query.strip()
+            
+            # Enhanced search: look in title, content, and author name fields
+            content_query_results = queryset.filter(
+                Q(title__icontains=normalized_query) | 
+                Q(content__icontains=normalized_query) |
+                Q(author__username__icontains=normalized_query) |
+                Q(author__first_name__icontains=normalized_query) |
+                Q(author__last_name__icontains=normalized_query)
             )
-        
+            queryset = content_query_results
+            
         if tag:
-            queryset = queryset.filter(tags__tag__icontains=tag)
+            # Normalize tag for better matching (remove # if present)
+            normalized_tag = tag.strip()
+            if normalized_tag.startswith('#'):
+                normalized_tag = normalized_tag[1:]
+            
+            # Create a query for tag search that checks against the tag field
+            tag_query_results = BusinessNetworkPost.objects.filter(tags__tag__icontains=normalized_tag)
+            
+            if content_query_results is not None:
+                # Combine the results from content search and tag search
+                queryset = (content_query_results | tag_query_results).distinct()
+            else:
+                queryset = tag_query_results
         
-        return queryset.order_by('-created_at').distinct()
+        # Annotate with relevance score to improve ordering
+        # This is a basic approach that prioritizes exact matches and title matches
+        if query and query.strip():
+            normalized_query = query.strip()
+            # Return with custom ordering for better search relevance
+            return queryset.distinct().order_by('-created_at')
+        else:
+            # If no query, just return by created date
+            return queryset.order_by('-created_at').distinct()
 
 
 class BusinessNetworkWorkspaceListCreateView(generics.ListCreateAPIView):

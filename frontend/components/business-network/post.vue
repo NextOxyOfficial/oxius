@@ -15,6 +15,16 @@
               'radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%), linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent)',
           }"
         >
+          <!-- Hashtag search indicator -->
+          <div 
+            v-if="searchQuery && searchQuery.startsWith('#') && post.hasMatchingHashtag"
+            class="absolute top-0 right-0 bg-blue-600 text-white px-2 py-1 text-xs font-medium rounded-bl"
+          >
+            <span class="flex items-center">
+              <span class="mr-1">#</span>
+              <span>{{ searchQuery.substring(1) }}</span>
+            </span>
+          </div>
           <div class="sm:px-4 pb-5 pt-0">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
@@ -69,9 +79,7 @@
               >
                 #{{ tag.tag }}
               </NuxtLink>
-            </div>
-
-            <!-- Post Title with enhanced styling -->
+            </div>            <!-- Post Title with enhanced styling -->
             <NuxtLink
               :to="`/business-network/posts/${
                 post?.post ? post.post : post.id
@@ -79,15 +87,45 @@
               class="block text-sm sm:text-base font-semibold mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-700 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
-            </NuxtLink>            <!-- Post Content with improved styling -->
+            </NuxtLink>
+            
+            <!-- Match indicators to show which fields matched the search -->
+            <div v-if="searchQuery && searchQuery.trim() !== ''" class="flex flex-wrap gap-1 px-2 mb-2">
+              <span 
+                v-for="field in detectMatchedFields(post?.post_details ? post.post_details : post)" 
+                :key="field"
+                class="text-xs px-1.5 py-0.5 rounded-full"
+                :class="{
+                  'bg-blue-100 text-blue-700 border border-blue-200': field === 'author',
+                  'bg-green-100 text-green-700 border border-green-200': field === 'title',
+                  'bg-yellow-100 text-yellow-700 border border-yellow-200': field === 'content',
+                  'bg-purple-100 text-purple-700 border border-purple-200': field === 'hashtag',
+                }"
+              >
+                <span v-if="field === 'author'">Matched author</span>
+                <span v-else-if="field === 'title'">Matched title</span>
+                <span v-else-if="field === 'content'">Matched content</span>
+                <span v-else-if="field === 'hashtag'">Matched hashtag</span>
+              </span>
+            </div>  <!-- Post Content with improved styling and enhanced search term highlighting -->
             <div class="mb-3 min-w-full px-2">
+              <!-- Enhanced title highlighting for search results -->
+              <h3 
+                v-if="searchQuery && (post?.post_details ? post.post_details.title : post.title)" 
+                class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5"
+                v-html="
+                  highlightSearchTerms(post?.post_details ? post.post_details.title : post.title, 'title')
+                "
+              ></h3>
+              
+              <!-- Content with better highlighting -->
               <p
                 :class="[
                   'text-sm text-gray-700 dark:text-gray-300 leading-relaxed',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="
-                  highlightSearchTerms(post?.post_details ? post.post_details.content : post.content)
+                  highlightSearchTerms(post?.post_details ? post.post_details.content : post.content, 'content')
                 "
               ></p>
               <button
@@ -288,12 +326,54 @@ const highlightSearchTerms = (content) => {
   if (searchText.length < 2) return content;
   
   try {
-    const regex = new RegExp(`(${searchText})`, 'gi');
+    // Escape special regex characters to prevent errors
+    const escapedSearchText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedSearchText})`, 'gi');
     return content.replace(regex, '<span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 px-0.5 rounded">$1</span>');
   } catch (e) {
     console.error('Error highlighting search terms:', e);
     return content;
   }
+};
+
+// Detect which fields match the search query
+const detectMatchedFields = (post) => {
+  if (!props.searchQuery || props.searchQuery.trim() === '') return [];
+  
+  let searchText = props.searchQuery;
+  
+  // Handle hashtag searches
+  if (searchText.startsWith('#')) {
+    searchText = searchText.substring(1);
+  }
+  
+  const matches = [];
+  const regex = new RegExp(searchText, 'i');
+  
+  // Check post title
+  if (post.title && regex.test(post.title)) {
+    matches.push('title');
+  }
+  
+  // Check post content
+  if (post.content && regex.test(post.content)) {
+    matches.push('content');
+  }
+  
+  // Check author name
+  if (post.author_details) {
+    const authorName = post.author_details.first_name + ' ' + post.author_details.last_name;
+    if (regex.test(authorName) || regex.test(post.author_details.username)) {
+      matches.push('author');
+    }
+  }
+  
+  // Check hashtags
+  if (post.post_tags && post.post_tags.some(tag => regex.test(tag.tag))) {
+    matches.push('hashtag');
+  }
+  
+  return matches;
 };
 
 // State
