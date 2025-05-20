@@ -343,6 +343,7 @@
     <UModal
       v-model="showOrderDetailsModal"
       :ui="{ width: 'w-full sm:max-w-3xl' }"
+      :prevent-close="showAddItemModal"
     >
       <div
         class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
@@ -540,7 +541,7 @@
                   Order Items
                 </div>
                 <button
-                  @click="editOrderItems = !editOrderItems"
+                  @click="handleEditOrderItem"
                   class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
                 >
                   <Edit2 class="h-3 w-3 mr-1" />
@@ -676,7 +677,7 @@
                     <tr v-if="editOrderItems">
                       <td colspan="5" class="px-6 py-4">
                         <button
-                          @click="showAddItemModal = true"
+                          @click="handleShowAddItemModal"
                           class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                         >
                           <Plus class="h-3 w-3 mr-1.5" />
@@ -848,16 +849,15 @@
         </div>
       </div>
     </UModal>
-
     <!-- Add Item Modal -->
     <UModal
       v-model="showAddItemModal"
       :ui="{
-        wrapper: 'relative z-[9999999]',
+        wrapper: 'z-[99]',
       }"
     >
       <div
-        class="bg-white rounded-xl shadow-sm overflow-hidden max-w-lg w-full"
+        class="bg-white rounded-xl shadow-sm overflow-hidden max-w-lg w-full relative"
       >
         <div
           class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
@@ -872,6 +872,7 @@
             />
             Add Product to Order
           </h3>
+
           <button
             @click="showAddItemModal = false"
             class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
@@ -880,17 +881,13 @@
           </button>
         </div>
 
-        <div class="px-6 py-4">
+        <div class="px-6 py-4 z-[9999999]">
           <!-- Product Search/Select -->
           <div class="mb-4">
-            <UInputMenu
+            <USelectMenu
               v-model="selectedProductToAdd"
               :options="products"
               option-attribute="name"
-              :ui="{
-                input: 'w-full',
-                container: 'w-full',
-              }"
               placeholder="Search for a product..."
             />
           </div>
@@ -1040,7 +1037,7 @@ import {
   Loader2,
   Printer,
   Plus,
-  Minus
+  Minus,
 } from "lucide-vue-next";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
@@ -1072,7 +1069,7 @@ const editingCustomer = reactive({
   name: "",
   email: "",
   phone: "",
-  address: ""
+  address: "",
 });
 
 // Component state
@@ -1104,6 +1101,7 @@ async function getOrders() {
 async function getProducts() {
   try {
     const res = await get("/my-products/");
+    console.log("Products:", res);
     if (res && res.data) {
       products.value = res.data;
     } else {
@@ -1347,6 +1345,16 @@ const calculateSubtotal = () => {
   }
 };
 
+async function handleEditOrderItem() {
+  editOrderItems.value = !editOrderItems.value;
+  await getProducts();
+}
+
+async function handleShowAddItemModal() {
+  showAddItemModal.value = true;
+  await getProducts();
+}
+
 const calculateTotal = () => {
   const subtotal = calculateSubtotal();
   const deliveryFee = editOrderItems.value
@@ -1389,11 +1397,16 @@ const addItemToOrder = async () => {
     const newItem = {
       product: selectedProductToAdd.value.id,
       quantity: newItemQuantity.value,
-      price: selectedProductToAdd.value.sale_price || selectedProductToAdd.value.regular_price,
+      price:
+        selectedProductToAdd.value.sale_price ||
+        selectedProductToAdd.value.regular_price,
       product_details: {
         name: selectedProductToAdd.value.name,
-        image: selectedProductToAdd.value.image_details && selectedProductToAdd.value.image_details.length > 0
-          ? [selectedProductToAdd.value.image_details[0].image] : [],
+        image:
+          selectedProductToAdd.value.image_details &&
+          selectedProductToAdd.value.image_details.length > 0
+            ? [selectedProductToAdd.value.image_details[0].image]
+            : [],
       },
     };
 
@@ -1529,8 +1542,8 @@ const printOrder = async (order) => {
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Method: ${order.payment_method || 'Cash on Delivery'}`, 120, 77);
-    doc.text(`Status: ${order.payment_status || 'Pending'}`, 120, 82);
+    doc.text(`Method: ${order.payment_method || "Cash on Delivery"}`, 120, 77);
+    doc.text(`Status: ${order.payment_status || "Pending"}`, 120, 82);
 
     // Order items
     doc.setFontSize(12);
@@ -1547,7 +1560,11 @@ const printOrder = async (order) => {
       // Draw item details
       doc.setFontSize(10);
       doc.setTextColor(80, 80, 80);
-      doc.text(`${index + 1}. ${item.product_details?.name || 'Product'}`, 14, yPos);
+      doc.text(
+        `${index + 1}. ${item.product_details?.name || "Product"}`,
+        14,
+        yPos
+      );
 
       doc.setTextColor(100, 100, 100);
       doc.text(`${item.quantity} × ৳${item.price}`, 14, yPos + 5);
@@ -1628,7 +1645,7 @@ const showToast = (type, title, message) => {
     toast.add({
       title,
       description: message,
-      color: type === 'success' ? 'green' : 'red'
+      color: type === "success" ? "green" : "red",
     });
   } else {
     console.log(`Toast: ${type} - ${title} - ${message}`);
@@ -1647,7 +1664,7 @@ let orderUpdateInterval;
 onMounted(async () => {
   await getOrders();
   await getProducts();
-  
+
   // Set up polling interval (every 2 minutes)
   orderUpdateInterval = setInterval(() => {
     getOrders();
