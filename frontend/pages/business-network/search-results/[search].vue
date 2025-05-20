@@ -160,7 +160,7 @@
       <div v-if="!usersLoading && userResults.length > 0" class="mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1">People</h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
           <BusinessNetworkUserCard
             v-for="user in displayedUsers"
             :key="user.id"
@@ -169,11 +169,11 @@
         </div>
 
         <!-- Load more people button -->
-        <div v-if="userResults.length > initialUserCount" class="flex justify-center mt-2 mb-6">
+        <div v-if="userResults.length > initialUserCount" class="flex justify-center mt-4 mb-6">
           <button 
             v-if="!showAllUsers" 
             @click="showAllUsers = true"
-            class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors text-sm font-medium shadow-sm"
+            class="flex items-center gap-2 px-5 py-2 bg-white border border-blue-500 rounded text-blue-600 text-sm font-medium"
           >
             <UsersRound class="h-4 w-4" />
             <span>Load More People</span>
