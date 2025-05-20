@@ -216,7 +216,7 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span class="mr-1 font-medium">Author match:</span>
+                <span class="mr-1 font-medium">Name Match:</span>
                 <span>First/last name or username</span>
               </div>
               <div class="flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
