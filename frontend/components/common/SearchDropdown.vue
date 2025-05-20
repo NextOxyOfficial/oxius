@@ -271,15 +271,14 @@
                 :key="'person-' + (person.id || index)"
                 class="p-3 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 cursor-pointer transition-all duration-200 rounded-lg mx-1 mb-1 group border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30"
                 @click="navigateToProfile(person)"
-              >
-                <!-- Person card with avatar and details -->
+              >                <!-- Person card with avatar and details -->
                 <div class="flex items-center">
                   <!-- Avatar with enhanced styling and fallback -->
                   <div class="flex-shrink-0 relative">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-[2px] group-hover:from-blue-100 group-hover:to-blue-50 dark:group-hover:from-blue-900/30 dark:group-hover:to-blue-800/30 transition-all">
                       <img
-                        v-if="person.image"
-                        :src="person.image"
+                        v-if="person.image || person.avatar_url || person.profile_image"
+                        :src="person.image || person.avatar_url || person.profile_image"
                         :alt="person.name || 'User'"
                         class="h-full w-full rounded-full object-cover border-2 border-white dark:border-gray-800"
                       />
@@ -287,39 +286,75 @@
                         {{ (person.name?.charAt(0) || 'U').toUpperCase() }}
                       </div>
                     </div>
-                    <!-- Online status indicator could go here -->
+                    
+                    <!-- Status indicators - Online, Pro, Verified -->
+                    <div class="absolute -bottom-1 -right-1 flex space-x-0.5">
+                      <!-- Online status indicator (green dot) -->
+                      <div v-if="person.is_online" class="w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800 animate-pulse"></div>
+                      
+                      <!-- Pro badge if user is a pro member -->
+                      <div v-if="person.is_pro || person.pro_badge" 
+                           class="w-4 h-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center shadow-sm"
+                           title="Pro Member">
+                        <span class="text-[6px] text-white font-bold">PRO</span>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- User info with more detailed display -->
                   <div class="ml-3 flex-1 min-w-0">
-                    <p
-                      class="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-                    >
-                      <span
-                        v-html="
-                          highlightMatches(
-                            person.name || 'Unknown User',
-                            searchQuery
-                          )
-                        "
-                      ></span>
-                    </p>
-                    <div
+                    <div class="flex items-center gap-1">
+                      <p
+                        class="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors inline-flex items-center"
+                      >
+                        <span
+                          v-html="
+                            highlightMatches(
+                              person.name || 'Unknown User',
+                              searchQuery
+                            )
+                          "
+                        ></span>                        <!-- Verification badge -->
+                        <span v-if="person.is_verified || person.verified_badge" class="inline-block ml-1" title="Verified Account">
+                          <span class="flex items-center justify-center w-4 h-4 bg-blue-500 dark:bg-blue-600 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-2.5 h-2.5 text-white fill-current">
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
+                            </svg>
+                          </span>
+                        </span>
+                      </p>
+                    </div>                    <div
                       class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-500"
                     >
+                      <!-- Professional information with icon -->
+                      <span v-if="person.title || person.profession || person.position || person.headline" class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span
+                          class="truncate max-w-[120px]"
+                          v-html="highlightMatches(person.title || person.profession || person.position || person.headline, searchQuery)"
+                        ></span>
+                      </span>
+                      
+                      <!-- Followers count -->
                       <span v-if="person.followers !== undefined" class="flex items-center">
+                        <span v-if="person.title || person.profession || person.position || person.headline" class="mx-1.5 opacity-40">•</span>
                         <User class="h-3 w-3 mr-0.5 opacity-70" />
                         <span>
                           {{ person.followers }}
                           <span class="opacity-80">{{ person.followers === 1 ? "follower" : "followers" }}</span>
                         </span>
                       </span>
-                      <span v-if="person.title" class="flex items-center">
+                      
+                      <!-- Location information if available -->
+                      <span v-if="person.location" class="flex items-center">
                         <span class="mx-1.5 opacity-40">•</span>
-                        <span
-                          class="truncate max-w-[120px]"
-                          v-html="highlightMatches(person.title, searchQuery)"
-                        ></span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>{{ person.location }}</span>
                       </span>
                     </div>
                   </div>
@@ -1023,6 +1058,40 @@ const viewAllResults = () => {
   }
 };
 
+// Focus the first search result for keyboard navigation
+const focusFirstResult = () => {
+  nextTick(() => {
+    // Find the first result element based on the active tab
+    let firstResultElement = null;
+    if (activeTab.value === 'all' || activeTab.value === 'posts') {
+      if (filteredPosts.value.length > 0) {
+        firstResultElement = document.querySelector('.search-results-container [key^="post-"]');
+      } else if (filteredPeople.value.length > 0) {
+        firstResultElement = document.querySelector('.search-results-container [key^="person-"]');
+      }
+    } else if (activeTab.value === 'people' && filteredPeople.value.length > 0) {
+      firstResultElement = document.querySelector('.search-results-container [key^="person-"]');
+    } else if (activeTab.value === 'posts' && filteredPosts.value.length > 0) {
+      firstResultElement = document.querySelector('.search-results-container [key^="post-"]');
+    }
+
+    if (firstResultElement) {
+      firstResultElement.focus();
+      firstResultElement.setAttribute('tabindex', '0');
+    }
+  });
+};
+
+// Focus the "View all results" button
+const focusViewAllButton = () => {
+  nextTick(() => {
+    const viewAllButton = document.querySelector('.view-all-button');
+    if (viewAllButton) {
+      viewAllButton.focus();
+    }
+  });
+};
+
 // Handle clicks outside of search dropdown to close it
 const handleClickOutside = (event) => {
   const searchDropdown = document.querySelector(".search-dropdown-container");
@@ -1144,9 +1213,7 @@ const performSearch = async (query, useFuzzySearch = false) => {
     console.log("Posts search response:", postsRes);
     console.log("People search response:", peopleRes);
 
-    const postResults = postsRes.data?.results || [];
-
-    // Process people results to ensure we have the required fields
+    const postResults = postsRes.data?.results || [];    // Process people results to ensure we have the required fields
     let peopleResults = [];
     if (peopleRes.data?.results && Array.isArray(peopleRes.data.results)) {
       peopleResults = peopleRes.data.results.map((person) => {
@@ -1154,13 +1221,22 @@ const performSearch = async (query, useFuzzySearch = false) => {
         return {
           id: person.id,
           name: person.name || "Unknown User",
-          avatar_url: person.image || null,
+          // Support multiple avatar/image field names from API
+          avatar_url: person.image || person.avatar_url || person.profile_image || null,
+          // Get followers count from various possible API fields
           followers: person.follower_count || person.followers || 0,
-          title: person.profession || person.position || person.bio || "",
-
+          // Professional information from various possible API fields
+          title: person.profession || person.position || person.headline || person.bio || "",
+          // Location info if available
+          location: person.location || person.city || "",
+          
+          // User status and badges
           is_following: !!person.is_following,
-
-          // Add any additional fields your backend provides
+          is_verified: !!person.is_verified || !!person.verified || !!person.verified_badge,
+          is_pro: !!person.is_pro || !!person.pro_user || !!person.pro_badge,
+          is_online: !!person.is_online || !!person.online_status,
+          
+          // Preserve all original fields from the API
           ...person,
         };
       });
@@ -1421,5 +1497,57 @@ watch(searchQuery, (newValue) => {
 /* Modern keyboard styles */
 kbd {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge animations and effects */
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-pulse {
+  animation: gentle-pulse 2s infinite;
+}
+
+/* Pro badge glow effect */
+[title="Pro Member"] {
+  box-shadow: 0 0 0 rgba(245, 158, 11, 0.4);
+  animation: pro-pulse 2s infinite;
+}
+
+@keyframes pro-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+/* Verification badge subtle animation */
+[title="Verified Account"] svg {
+  animation: verified-rotate 10s infinite linear;
+  transform-origin: center;
+}
+
+@keyframes verified-rotate {
+  0% {
+    transform: rotateY(0deg);
+  }
+  25% {
+    transform: rotateY(90deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+  75% {
+    transform: rotateY(270deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
 }
 </style>
