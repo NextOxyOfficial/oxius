@@ -228,14 +228,14 @@
                     <div class="flex gap-2.5">
                       <button
                         @click="$emit('edit-post', post)"
-                        class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
+                        class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
                         title="Edit post"
                       >
                         <Icon name="heroicons:pencil-square" size="20px" />
                       </button>
                       <button
                         @click="confirmDelete(post.id, post.title)"
-                        class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
+                        class="p-2.5 text-red-500 hover:bg-red-50 rounded-lg duration-200"
                         title="Delete post"
                       >
                         <Icon name="heroicons:trash" size="20px" />
@@ -322,7 +322,7 @@
                     </div>
                   </div>
                   <div
-                    class="mt-3 items-center text-sm text-gray-600 gap-1.5 bg-gray-50/80 px-3 py-1.5 rounded-lg inline-flex"
+                    class="mt-3 items-center text-sm text-gray-600 gap-1.5 bg-gray-50/80 px-3 py-1.5 rounded-lg flex"
                   >
                     <Icon
                       name="heroicons:map-pin"
@@ -365,14 +365,14 @@
               <div class="flex gap-2.5">
                 <button
                   @click="$emit('edit-post', post)"
-                  class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
+                  class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
                   title="Edit post"
                 >
                   <Icon name="heroicons:pencil-square" size="20px" />
                 </button>
                 <button
                   @click="confirmDelete(post.id, post.title)"
-                  class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
+                  class="p-2.5 text-red-500 hover:bg-red-50 rounded-lg duration-200"
                   title="Delete post"
                 >
                   <Icon name="heroicons:trash" size="20px" />
@@ -435,7 +435,7 @@
             <div class="flex gap-2.5">
               <button
                 @click="$emit('edit-post', post)"
-                class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
+                class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200  border border-gray-100 hover:border-blue-100"
                 title="Edit post"
               >
                 <Icon name="heroicons:pencil-square" size="20px" />
