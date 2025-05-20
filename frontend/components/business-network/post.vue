@@ -2,10 +2,12 @@
   <div class="max-w-3xl pb-8 pt-3">
     <div class="space-y-6">
       <!-- Loop through posts and insert sponsored products after every 5 posts -->
-      <template v-for="(post, index) in posts" :key="post.id">
-        <!-- Post Card with glassmorphism effect -->
+      <template v-for="(post, index) in posts" :key="post.id">        <!-- Post Card with glassmorphism effect -->
         <div
-          class="transform transition-all duration-300 bg-white/90 dark:bg-slate-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden backdrop-blur-md shadow-sm hover:shadow-sm dark:shadow-slate-800/20"
+          :class="[
+            'transform transition-all duration-300 bg-white/90 dark:bg-slate-800/90 rounded-xl overflow-hidden backdrop-blur-md shadow-sm hover:shadow-sm dark:shadow-slate-800/20',
+            post.hasMatchingHashtag ? 'border-blue-300 border-2' : 'border border-gray-200/50 dark:border-gray-700/50'
+          ]"
           :style="{
             animationDelay: `${index * 0.05}s`,
             animation: `fadeIn 0.5s ease-out forwards`,
@@ -45,22 +47,25 @@
               @toggle-save="toggleSave"
             />
 
-            <!-- Tags with clean styling -->
-            <div
+            <!-- Tags with clean styling -->            <div
               v-if="
                 post?.post_details
                   ? post.post_details?.post_tags?.length > 0
                   : post?.post_tags?.length > 0
               "
               class="flex flex-wrap gap-1.5 mb-2 px-2"
-            >
-              <NuxtLink
+            >              <NuxtLink
                 v-for="(tag, idx) in post?.post_details
                   ? post.post_details?.post_tags
                   : post?.post_tags"
                 :key="idx"
-                :to="`/business-network/search-results/${tag.tag}`"
-                class="text-sm text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full transition-colors hover:text-blue-800 dark:hover:text-blue-300 hashtag"
+                :to="`/business-network/search-results/${encodeURIComponent('#')}${encodeURIComponent(tag.tag)}`"
+                :class="[
+                  'text-sm px-2 py-0.5 rounded-full transition-colors hashtag',
+                  searchQuery && (searchQuery === '#' + tag.tag || searchQuery === tag.tag)
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-700'
+                    : 'text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300'
+                ]"
               >
                 #{{ tag.tag }}
               </NuxtLink>
@@ -74,9 +79,7 @@
               class="block text-sm sm:text-base font-semibold mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-700 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
-            </NuxtLink>
-
-            <!-- Post Content with improved styling -->
+            </NuxtLink>            <!-- Post Content with improved styling -->
             <div class="mb-3 min-w-full px-2">
               <p
                 :class="[
@@ -84,7 +87,7 @@
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="
-                  post?.post_details ? post.post_details.content : post.content
+                  highlightSearchTerms(post?.post_details ? post.post_details.content : post.content)
                 "
               ></p>
               <button
@@ -256,6 +259,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  searchQuery: {
+    type: String,
+    default: "",
+  }
 });
 
 // Emits
@@ -265,6 +272,29 @@ const emit = defineEmits(["gift-sent"]);
 const { user } = useAuth();
 const { post, del, put, get } = useApi();
 const toast = useToast();
+
+// Highlight search terms in post content
+const highlightSearchTerms = (content) => {
+  if (!content || !props.searchQuery || props.searchQuery.trim() === '') return content;
+  
+  let searchText = props.searchQuery;
+  
+  // Handle hashtag searches
+  if (searchText.startsWith('#')) {
+    searchText = searchText.substring(1);
+  }
+  
+  // Don't attempt highlighting if search term is too short
+  if (searchText.length < 2) return content;
+  
+  try {
+    const regex = new RegExp(`(${searchText})`, 'gi');
+    return content.replace(regex, '<span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 px-0.5 rounded">$1</span>');
+  } catch (e) {
+    console.error('Error highlighting search terms:', e);
+    return content;
+  }
+};
 
 // State
 const loading = ref(false);

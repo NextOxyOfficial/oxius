@@ -103,7 +103,7 @@
             <!-- Price Section with Improved Logic - regular_price is used if sale_price is missing/0/null -->
             <div class="flex flex-col h-10">
               <span
-                class="font-semibold text-gray-700 dark:text-white text-sm flex items-center"
+                class="font-semibold text-gray-700 dark:text-white text-base flex items-center"
               >
                 <span class="text-xs mr-1 text-slate-500">৳</span
                 >{{

@@ -13,9 +13,15 @@
             </span>
             Search Results
           </h1>          <p class="text-gray-500 text-sm mt-2 flex items-center">
-            <span class="font-medium text-blue-700">{{
-              $route.params.search
-            }}</span>
+            <span class="font-medium text-blue-700 flex items-center">
+              <span v-if="$route.params.search && $route.params.search.startsWith('#')" 
+                class="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+              >
+                <Hash class="h-3 w-3 mr-1" />
+                Hashtag
+              </span>
+              {{ $route.params.search }}
+            </span>
             <span class="mx-2 text-blue-200">•</span>
             <span v-if="!loading && !usersLoading && (allPosts.length > 0 || userResults.length > 0)"
               class="flex items-center gap-1"
@@ -162,20 +168,27 @@
         </div>
       </div>
     </template>    <!-- Search Results Section -->
-    <div class="relative" v-if="!loading || !usersLoading || userResults.length > 0 || allPosts.length > 0">
-        <!-- No Results Message - Professionally styled -->
+    <div class="relative" v-if="!loading || !usersLoading || userResults.length > 0 || allPosts.length > 0">        <!-- No Results Message - Professionally styled -->
       <div 
         v-if="!loading && !usersLoading && userResults.length === 0 && allPosts.length === 0" 
         class="flex flex-col items-center justify-center py-10 text-center bg-white rounded-lg border border-gray-200/80 shadow-sm"
       >
         <div class="mb-4">
           <div class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-            <Search class="h-7 w-7 text-blue-500" />
+            <Search v-if="!$route.params.search.startsWith('#')" class="h-7 w-7 text-blue-500" />
+            <Hash v-else class="h-7 w-7 text-blue-500" />
           </div>
         </div>
-        <h3 class="text-xl font-semibold text-gray-800 mb-2">No Results Found</h3>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+          {{ $route.params.search.startsWith('#') ? 'No Results for this Hashtag' : 'No Results Found' }}
+        </h3>
         <p class="text-gray-600 max-w-md mx-auto mb-6 px-4">
-          We couldn't find any matches for "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>". Try using different keywords or checking for typos.
+          <template v-if="$route.params.search.startsWith('#')">
+            We couldn't find any posts or people using the hashtag "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>". Try a different hashtag or check the spelling.
+          </template>
+          <template v-else>
+            We couldn't find any matches for "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>". Try using different keywords or checking for typos.
+          </template>
         </p>
         <div class="mt-2">
           <NuxtLink
@@ -221,9 +234,8 @@
         </div>
         
         <div class="border-b border-gray-100 my-6"></div>
-      </div>
-        <!-- Posts Section -->
-      <div v-if="!loading || allPosts.length > 0">
+      </div>      <!-- Posts Section -->
+      <div>
         <!-- Post header with improved styling -->
         <div class="flex justify-between items-center mb-4 px-1" v-if="allPosts.length > 0">
           <h2 class="text-lg font-semibold text-gray-800 flex items-center">
@@ -247,18 +259,28 @@
           v-if="!loading && displayedPosts.length === 0 && allPosts.length === 0 && userResults.length > 0"
           class="bg-white rounded-lg border border-gray-200 p-6 text-center mb-6"
         >
-          <MessageSquare class="h-10 w-10 text-gray-300 mx-auto mb-3" />
-          <p class="text-gray-600 font-medium mb-1">No posts found</p>
+          <div class="mx-auto w-fit mb-3">
+            <MessageSquare v-if="!$route.params.search.startsWith('#')" class="h-10 w-10 text-gray-300" />
+            <Hash v-else class="h-10 w-10 text-blue-200" />
+          </div>
+          <p class="text-gray-600 font-medium mb-1">
+            {{ $route.params.search.startsWith('#') ? 'No posts with this hashtag' : 'No posts found' }}
+          </p>
           <p class="text-gray-500 text-sm">
-            No posts matching "{{ $route.params.search }}" were found, but we did find people.
+            <template v-if="$route.params.search.startsWith('#')">
+              No posts with the hashtag "{{ $route.params.search }}" were found, but we did find people.
+            </template>
+            <template v-else>
+              No posts matching "{{ $route.params.search }}" were found, but we did find people.
+            </template>
           </p>
         </div>
-        
-        <!-- Posts container with improved styling -->
+          <!-- Posts container with improved styling -->
         <div class="bg-white rounded-lg overflow-hidden border border-gray-200/70" v-if="displayedPosts.length > 0">
           <BusinessNetworkPost
             :posts="displayedPosts"
             :id="user?.user?.id"
+            :search-query="route.params.search"
             class="result-card"
             @gift-sent="handleGiftSent"
           />
@@ -538,30 +560,77 @@ async function getPosts(isLoadingMore = false, page = 1) {
     if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
+    }    // Extract the search query
+    const searchQuery = route.params.search;
+      // If the search query starts with #, it's a hashtag search
+    const isHashtagSearch = searchQuery.startsWith('#');
+    const normalizedQuery = isHashtagSearch ? searchQuery.substring(1) : searchQuery;
+    
+    // Debug hashtag search information
+    console.debug('Search info:', {
+      originalQuery: searchQuery,
+      isHashtagSearch,
+      normalizedQuery
+    });
+    
+    // Build complete params object for the search
+    const searchParams = new URLSearchParams();
+    
+    // Always include these parameters
+    searchParams.append('page', page.toString());
+    searchParams.append('page_size', params.page_size.toString());
+    
+    // Add pagination cursor if available
+    if (params.older_than) {
+      searchParams.append('older_than', params.older_than);
     }
-
-    console.log("Fetching posts with params:", params);
+    
+    // Handle search differently based on whether it's a hashtag search or not
+    if (isHashtagSearch) {
+      // If it's a hashtag search, focus on tags but also include content
+      searchParams.append('tag', normalizedQuery);
+      // Also search in content for the hashtag
+      searchParams.append('q', normalizedQuery);
+    } else {
+      // Regular search in content/title/username
+      searchParams.append('q', normalizedQuery);
+    }
+    
+    const queryString = searchParams.toString();
+    console.log("Fetching posts with params:", Object.fromEntries(searchParams));
 
     const [response] = await Promise.all([
-      get(
-        `/bn/posts/search/?q=${route.params.search}&tag=${route.params.search}&page=${page}`
-      ),
+      get(`/bn/posts/search/?${queryString}`),
       // Add a minimum delay for UX, shorter for subsequent loads
       new Promise((resolve) => setTimeout(resolve, isLoadingMore ? 300 : 800)),
-    ]);
-
-    if (response.data && response.data.results) {
+    ]);    if (response.data && response.data.results) {
       const newPosts = response.data.results;
-
-      // Process posts to ensure they have necessary UI properties
-      const processedPosts = newPosts.map((post) => ({
-        ...post,
-        showFullDescription: false,
-        showDropdown: false,
-        commentText: "",
-        isCommentLoading: false,
-        isLikeLoading: false,
-      }));
+      
+      console.log("Search results for:", route.params.search, {
+        totalResults: newPosts.length,
+        firstPost: newPosts.length > 0 ? {
+          content: newPosts[0].content?.substring(0, 50) + "...",
+          tags: newPosts[0].tags,
+        } : 'No posts found'
+      });      // Process posts to ensure they have necessary UI properties
+      const processedPosts = newPosts.map((post) => {
+        // Check if this post has matching hashtags when doing a hashtag search
+        const hasMatchingHashtag = isHashtagSearch && 
+          post.post_tags && 
+          post.post_tags.some(tag => 
+            tag.tag.toLowerCase() === normalizedQuery.toLowerCase()
+          );
+        
+        return {
+          ...post,
+          showFullDescription: false,
+          showDropdown: false,
+          commentText: "",
+          isCommentLoading: false,
+          isLikeLoading: false,
+          hasMatchingHashtag: hasMatchingHashtag,
+        };
+      });
 
       // Filter out duplicate posts based on their IDs
       const uniquePosts = processedPosts.filter((post) => {
@@ -642,8 +711,24 @@ async function getUsers() {
   try {
     usersLoading.value = true;
 
+    // Extract the search query
+    const searchQuery = route.params.search;
+    
+    // Build search params for user search
+    const searchParams = new URLSearchParams();
+    
+    // If search starts with #, remove it for user search
+    if (searchQuery.startsWith('#')) {
+      searchParams.append('q', searchQuery.substring(1));
+    } else {
+      searchParams.append('q', searchQuery);
+    }
+    
+    const queryString = searchParams.toString();
+    console.log("Fetching users with params:", Object.fromEntries(searchParams));
+
     const [response] = await Promise.all([
-      get(`/bn/user-search/?q=${route.params.search}`),
+      get(`/bn/user-search/?${queryString}`),
       // Add a minimum delay for UX
       new Promise((resolve) => setTimeout(resolve, 800)),
     ]);
@@ -823,12 +908,16 @@ const handleNewPost = (newPost) => {
 // Handle new search from end of results or no results section
 const handleNewSearch = () => {
   if (newSearchQuery.value && newSearchQuery.value.trim() !== "") {
+    // Preserve hashtag format if present
+    const query = newSearchQuery.value.trim();
+    
+    // Properly encode the search query for URLs, maintaining the # character for hashtags
+    const encodedQuery = query.startsWith('#') 
+      ? encodeURIComponent('#') + encodeURIComponent(query.substring(1))
+      : encodeURIComponent(query);
+    
     // Navigate to new search results
-    navigateTo(
-      `/business-network/search-results/${encodeURIComponent(
-        newSearchQuery.value.trim()
-      )}`
-    );
+    navigateTo(`/business-network/search-results/${encodedQuery}`);
   }
 };
 
