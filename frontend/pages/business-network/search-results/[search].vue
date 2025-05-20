@@ -1,42 +1,50 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
-    <!-- Enhanced Search Results Header -->
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">    <!-- Enhanced Search Results Header -->
     <div
-      class="relative bg-white rounded-xl shadow-sm mb-6 border border-gray-100"
+      class="relative bg-white rounded-lg shadow-sm mb-6 border-0"
     >
       <div
-        class="flex flex-col md:flex-row md:items-center justify-between px-6 py-4"
+        class="flex flex-col md:flex-row md:items-center justify-between px-6 py-5 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-t-lg border-b border-blue-200/50"
       >
         <div class="mb-4 md:mb-0">
-          <h1 class="text-xl font-semibold text-gray-700 flex items-center">
-            <span class="bg-blue-100 rounded-full p-1.5 mr-2.5">
-              <Search class="h-4 w-4 text-blue-600" />
+          <h1 class="text-xl font-semibold text-gray-800 flex items-center">
+            <span class="bg-blue-200/70 rounded-full p-2 mr-3 shadow-sm">
+              <Search class="h-4 w-4 text-blue-700" />
             </span>
             Search Results
-          </h1>          <p class="text-gray-500 text-sm mt-1 flex items-center">
-            <span class="font-medium text-gray-700">{{
+          </h1>          <p class="text-gray-500 text-sm mt-2 flex items-center">
+            <span class="font-medium text-blue-700">{{
               $route.params.search
             }}</span>
-            <span class="mx-2 text-gray-500">•</span>
+            <span class="mx-2 text-blue-200">•</span>
             <span v-if="!loading && !usersLoading && (allPosts.length > 0 || userResults.length > 0)"
-              >{{ userResults.length + allPosts.length }}
-              {{ userResults.length + allPosts.length === 1 ? "result" : "results" }}
-              <span v-if="userResults.length > 0 && allPosts.length > 0">
-                ({{ userResults.length }} {{ userResults.length === 1 ? "person" : "people" }}, 
-                {{ allPosts.length }} {{ allPosts.length === 1 ? "post" : "posts" }})
+              class="flex items-center gap-1"
+            >
+              <span class="font-medium text-gray-700">{{ userResults.length + allPosts.length }}</span>
+              <span>{{ userResults.length + allPosts.length === 1 ? "result" : "results" }}</span>
+              <span v-if="userResults.length > 0 && allPosts.length > 0" class="flex items-center gap-1 ml-1">
+                <span class="text-gray-400 text-xs">(</span>
+                <UsersRound class="h-3 w-3 text-gray-500" />
+                <span class="text-gray-600">{{ userResults.length }}</span>
+                <span class="mr-1 text-gray-400">,</span>
+                <MessageSquare class="h-3 w-3 text-gray-500" />
+                <span class="text-gray-600">{{ allPosts.length }}</span>
+                <span class="text-gray-400 text-xs">)</span>
               </span>
             </span>
             <span v-else-if="!loading && !usersLoading && allPosts.length === 0 && userResults.length === 0"
+              class="text-gray-600"
               >No results found</span
             >
-            <span v-else>Searching...</span>
+            <span v-else class="text-blue-600 flex items-center">
+              <Loader2 class="h-3 w-3 animate-spin mr-1" />
+              Searching...
+            </span>
           </p>
-        </div>
-
-        <div class="flex items-center gap-2">
+        </div>        <div class="flex items-center">
           <NuxtLink
             :to="`/business-network`"
-            class="flex items-center gap-2 px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:underline transition-colors text-sm"
+            class="flex items-center gap-1.5 px-4 py-1.5 bg-white text-blue-600 rounded-md border border-blue-200 shadow-sm transition-colors text-sm font-medium"
           >
             <ArrowLeft class="h-3.5 w-3.5" />
             <span>Back to feed</span>
@@ -155,89 +163,113 @@
       </div>
     </template>    <!-- Search Results Section -->
     <div class="relative" v-if="!loading || !usersLoading || userResults.length > 0 || allPosts.length > 0">
-      
-      <!-- No Results Message -->
+        <!-- No Results Message - Professionally styled -->
       <div 
         v-if="!loading && !usersLoading && userResults.length === 0 && allPosts.length === 0" 
-        class="flex flex-col items-center justify-center py-8 text-center"
+        class="flex flex-col items-center justify-center py-10 text-center bg-white rounded-lg border border-gray-200/80 shadow-sm"
       >
-        <div class="relative mb-4">
-          <div class="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
-            <Search class="h-8 w-8 text-gray-400" />
+        <div class="mb-4">
+          <div class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
+            <Search class="h-7 w-7 text-blue-500" />
           </div>
         </div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-1">No Results Found</h3>
-        <p class="text-gray-500 max-w-md mx-auto mb-6">
-          We couldn't find any matches for "{{ $route.params.search }}". Try using different keywords or checking for typos.
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No Results Found</h3>
+        <p class="text-gray-600 max-w-md mx-auto mb-6 px-4">
+          We couldn't find any matches for "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>". Try using different keywords or checking for typos.
         </p>
+        <div class="mt-2">
+          <NuxtLink
+            to="/business-network"
+            class="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <Home class="h-4 w-4" />
+            <span>Return to feed</span>
+          </NuxtLink>
+        </div>
       </div>
       
-      <!-- Users Section - Always displayed first when available -->
-      <div v-if="!usersLoading && userResults.length > 0" class="mb-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1">People</h2>
-        
-        <div class="mb-2 text-sm text-gray-500 px-1">
-          Found {{ userResults.length }} {{ userResults.length === 1 ? 'person' : 'people' }} matching "{{ $route.params.search }}"
+      <!-- Users Section - Always displayed first when available -->      <div v-if="!usersLoading && userResults.length > 0" class="mb-8">
+        <div class="flex justify-between items-center mb-4 px-1">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+            <UsersRound class="h-4 w-4 text-blue-600 mr-2" />
+            People
+          </h2>
+          <div class="text-sm text-gray-500">
+            Found {{ userResults.length }} {{ userResults.length === 1 ? 'person' : 'people' }} matching "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>"
+          </div>
         </div>
         
-        <div class="divide-y divide-gray-100">
-          <BusinessNetworkUserCard
-            v-for="user in displayedUsers"
-            :key="user.id"
-            :user="user"
-          />
-        </div>
-
-        <!-- Load more people button -->
-        <div v-if="userResults.length > initialUserCount" class="flex justify-center mt-4 mb-2">
+        <div class="bg-white rounded-lg overflow-hidden border border-gray-200/70">
+          <div class="divide-y divide-gray-100">
+            <BusinessNetworkUserCard
+              v-for="user in displayedUsers"
+              :key="user.id"
+              :user="user"
+              class="bg-white hover:bg-blue-50/40 transition-colors"
+            />
+          </div>
+        </div>        <!-- Load more people button -->
+        <div v-if="userResults.length > initialUserCount" class="flex justify-center bg-gray-50/70 py-3 border-t border-gray-100">
           <button 
             v-if="!showAllUsers" 
             @click="showAllUsers = true"
-            class="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-full text-gray-700 text-sm font-medium hover:bg-gray-50 shadow-sm"
+            class="flex items-center gap-2 px-5 py-2 bg-white border border-blue-200 rounded text-blue-700 text-sm font-medium hover:bg-blue-50 transition-colors"
           >
             <UsersRound class="h-4 w-4" />
-            <span>Load More People</span>
+            <span>View All {{ userResults.length }} People</span>
           </button>
         </div>
         
         <div class="border-b border-gray-100 my-6"></div>
       </div>
-      
-      <!-- Posts Section -->
+        <!-- Posts Section -->
       <div v-if="!loading || allPosts.length > 0">
-        <!-- Post header -->
-        <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1" v-if="allPosts.length > 0">Posts</h2>
-        
-        <!-- Search result count when posts are loaded -->
-        <div
-          v-if="!loading && displayedPosts.length > 0"
-          class="mb-4 text-sm text-gray-500 px-1"
-        >
-          Found {{ allPosts.length }}
-          {{ allPosts.length === 1 ? "post" : "posts" }} matching "<span
-            class="font-medium text-gray-700"
-            >{{ $route.params.search }}</span
-          >"
-        </div>
-
-        <BusinessNetworkPost
-          v-if="!loading || allPosts.length > 0"
-          :posts="displayedPosts"
-          :id="user?.user?.id"
-          class="result-card"
-          @gift-sent="handleGiftSent"
-        />
-      </div>
-    </div>
-
-    <!-- Enhanced load more indicator with improved skeleton -->
-    <div v-if="loadingMore && !loading" class="pb-6">
-      <div class="flex justify-center items-center py-4">
-        <div class="relative">
-          <Loader2 class="h-8 w-8 text-blue-600 animate-spin" />
+        <!-- Post header with improved styling -->
+        <div class="flex justify-between items-center mb-4 px-1" v-if="allPosts.length > 0">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+            <MessageSquare class="h-4 w-4 text-blue-600 mr-2" />
+            Posts
+          </h2>
+          
+          <!-- Search result count when posts are loaded -->
           <div
-            class="absolute inset-0 -m-1 rounded-full animate-ping opacity-30 bg-blue-400"
-          ></div>
+            v-if="!loading && displayedPosts.length > 0"
+            class="text-sm text-gray-500"
+          >
+            Found {{ allPosts.length }}
+            {{ allPosts.length === 1 ? "post" : "posts" }} matching "<span
+              class="text-blue-600 font-medium"
+              >{{ $route.params.search }}</span
+            >"
+          </div>
+        </div>        <!-- Empty state for posts when users are found but no posts -->
+        <div
+          v-if="!loading && displayedPosts.length === 0 && allPosts.length === 0 && userResults.length > 0"
+          class="bg-white rounded-lg border border-gray-200 p-6 text-center mb-6"
+        >
+          <MessageSquare class="h-10 w-10 text-gray-300 mx-auto mb-3" />
+          <p class="text-gray-600 font-medium mb-1">No posts found</p>
+          <p class="text-gray-500 text-sm">
+            No posts matching "{{ $route.params.search }}" were found, but we did find people.
+          </p>
+        </div>
+        
+        <!-- Posts container with improved styling -->
+        <div class="bg-white rounded-lg overflow-hidden border border-gray-200/70" v-if="displayedPosts.length > 0">
+          <BusinessNetworkPost
+            :posts="displayedPosts"
+            :id="user?.user?.id"
+            class="result-card"
+            @gift-sent="handleGiftSent"
+          />
+        </div>
+      </div>
+    </div>    <!-- Enhanced load more indicator with improved styling -->
+    <div v-if="loadingMore && !loading" class="pb-6">
+      <div class="flex justify-center items-center py-5 bg-white rounded-lg border border-gray-200/70 mb-6">
+        <div class="flex items-center">
+          <Loader2 class="h-5 w-5 text-blue-600 animate-spin mr-3" />
+          <span class="text-blue-700 font-medium">Loading more results...</span>
         </div>
       </div>
 
@@ -300,23 +332,20 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Enhanced end of results indicator -->
+    </div>    <!-- Enhanced end of results indicator with professional styling -->
     <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
-      class="flex flex-col items-center justify-center py-8 text-center"
+      class="flex flex-col items-center justify-center py-8 text-center bg-white rounded-lg border border-gray-200/70 mb-6"
     >
-      <div class="relative mb-4">
+      <div class="mb-4">
         <div
-          class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center"
+          class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center"
         >
-          <Check class="h-8 w-8 text-blue-600" />
+          <Check class="h-6 w-6 text-blue-600" />
         </div>
-        <div
-          class="absolute inset-0 bg-blue-50/50 rounded-full animate-ping-slow opacity-70 w-16 h-16"
-        ></div>
       </div>
 
-      <h3 class="text-lg font-semibold text-gray-700 mb-1">
+      <h3 class="text-lg font-semibold text-gray-800 mb-1">
         End of Search Results
       </h3>
       <p class="text-gray-500 mb-4 max-w-md">
@@ -455,6 +484,7 @@ import {
   Home,
   Image,
   UsersRound,
+  MessageSquare
 } from "lucide-vue-next";
 const route = useRoute();
 
@@ -996,14 +1026,13 @@ const scrollToTop = () => {
   background: #a0a0a0;
 }
 
-/* Card hover effects */
+/* Professional card styling */
 .result-card {
-  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-.result-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+.result-card:not(:last-child) {
+  margin-bottom: 12px;
 }
 </style>
