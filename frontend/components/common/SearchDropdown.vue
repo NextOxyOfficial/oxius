@@ -1,13 +1,14 @@
-<template>
-  <div class="relative search-button-container">
+<template>  <div class="relative search-button-container">
     <button
-      class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+      class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group relative overflow-hidden"
       @click="toggleSearchDropdown"
       aria-label="Search"
     >
       <SearchIcon
-        class="h-[18px] w-[18px] text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+        class="h-[18px] w-[18px] text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors z-10 relative"
       />
+      <!-- Ripple effect -->
+      <span class="absolute inset-0 bg-blue-50 dark:bg-blue-900/20 transform scale-0 group-hover:scale-100 transition-transform duration-300 rounded-full"></span>
     </button>
 
     <!-- Enhanced Search Dropdown with Improved Animation -->
@@ -25,44 +26,55 @@
         role="dialog"
         aria-modal="true"
         aria-label="Search dialog"
-      >
-        <!-- Enhanced Search Header with Spelling Suggestion -->
+        @keydown.esc="showSearchDropdown = false"
+      >        <!-- Enhanced Modern Search Header with Spelling Suggestion -->
         <div
-          class="p-3 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm"
+          class="p-3 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800/90 dark:to-gray-800/70 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm"
         >
-          <h4
-            class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-medium mb-2 px-1"
-          >
-            Search
-          </h4>
-          <div class="relative">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <h4
+              class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium flex items-center"
+            >
+              <SearchIcon class="h-3 w-3 mr-1.5 text-blue-500 dark:text-blue-400" />
+              Advanced Search
+            </h4>
+            <div class="text-xs text-gray-400 dark:text-gray-500 flex items-center">
+              <kbd class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-500 dark:text-gray-400 font-mono text-[10px]">Enter</kbd>
+              <span class="mx-1">to search</span>
+            </div>
+          </div>
+          <div class="relative group">
             <input
               type="text"
-              placeholder="Type to search..."
+              placeholder="Type to search people, posts, tags..."
               v-model="searchQuery"
-              class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
+              @keydown.enter="handleEnterKey"
+              @keydown.down="focusFirstResult"
+              @keydown.up="focusViewAllButton"
+              class="w-full pl-10 pr-10 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
               ref="searchInput"
+              aria-label="Search query"
             />
             <div
-              class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-500"
+              class="absolute left-3 top-3 text-gray-400 dark:text-gray-500 transition-colors group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400"
             >
-              <SearchIcon class="h-4.5 w-4.5" />
+              <SearchIcon class="h-[18px] w-[18px]" />
             </div>
 
-            <div class="absolute right-3 top-2.5 flex items-center gap-2">
+            <div class="absolute right-3 top-3 flex items-center gap-2">
               <span v-if="isLoading" class="loading-spinner"></span>
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-colors"
+                class="rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-1 transition-colors group"
               >
-                <XIcon class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500" />
+                <XIcon class="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
               </button>
             </div>
           </div>
 
-          <!-- Spelling suggestion banner -->
-          <div v-if="spellingSuggestion && searchQuery" class="mt-2 px-1">
+          <!-- Enhanced Spelling suggestion banner with animation -->
+          <div v-if="spellingSuggestion && searchQuery" class="mt-2 px-1 animate-fadeIn">
             <button
               @click="applySpellingSuggestion"
               class="text-xs flex items-center text-left w-full rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 px-2.5 py-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
@@ -164,66 +176,78 @@
                 >
                   Posts ({{ filteredPosts.length }})
                 </h4>
-              </div>
-
-              <div
+              </div>              <div
                 v-for="(result, index) in limitedFilteredPosts"
                 :key="'post-' + result.id"
-                class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
+                class="p-3 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 cursor-pointer transition-all duration-200 rounded-lg mx-1 mb-1 group border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30"
                 @click="navigateToPost(result)"
-                :class="{
-                  'border-b border-gray-100 dark:border-gray-800':
-                    index < limitedFilteredPosts.length - 1,
-                }"
               >
-                <!-- Post content -->
-                <div class="flex items-start justify-between">
+                <!-- Post content with enhanced styling -->
+                <div class="flex items-start justify-between gap-3">
+                  <!-- Left side icon container -->
+                  <div class="flex-shrink-0 mt-1">
+                    <div class="w-8 h-8 rounded-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/50 dark:border-blue-800/30 flex items-center justify-center group-hover:from-blue-100 group-hover:to-blue-200/70 dark:group-hover:from-blue-800/30 dark:group-hover:to-blue-700/20 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                      </svg>
+                    </div>
+                  </div>
+                  
                   <div class="flex-1 min-w-0">
-                    <!-- Highlighted title with keyword matches -->
+                    <!-- Highlighted title with keyword matches and improved styling -->
                     <p
-                      class="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+                      class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
                     >
                       <span
                         v-html="highlightMatches(result.title, searchQuery)"
                       ></span>
                     </p>
 
-                    <!-- Content preview with highlighted matches (if available) -->
+                    <!-- Content preview with highlighted matches and improved styling -->
                     <p
-                      v-if="result.post_text"
-                      class="text-xs text-gray-500 dark:text-gray-500 mt-1 line-clamp-2"
+                      v-if="result.post_text || result.content"
+                      class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
                     >
                       <span
                         v-html="
-                          getContentPreview(result.post_text, searchQuery)
+                          getContentPreview(result.post_text || result.content, searchQuery)
                         "
                       ></span>
-                    </p>
-
-                    <div class="flex flex-wrap gap-1 mt-1.5">
+                    </p>                    <!-- Enhanced tag section with animation on hover -->
+                    <div class="flex flex-wrap gap-1.5 mt-2">
                       <span
                         v-for="tag in result.post_tags"
                         :key="tag.id"
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200"
                         :class="
                           isTagMatched(tag.tag, searchQuery)
-                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
-                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-500'
+                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40'
+                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 border border-gray-200/60 dark:border-gray-700/50 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-700/50'
                         "
                       >
-                        #<span
+                        <span class="mr-0.5 opacity-60">#</span><span
                           v-html="highlightMatches(tag.tag, searchQuery)"
                         ></span>
                       </span>
                     </div>
+                    
+                    <!-- Post date if available -->
+                    <div v-if="result.created_at" class="flex items-center mt-1.5">
+                      <span class="text-[10px] text-gray-400 dark:text-gray-500 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {{ formatTimeAgo(result.created_at) }}
+                      </span>
+                    </div>
                   </div>
 
-                  <div class="flex-shrink-0 ml-3">
+                  <div class="flex-shrink-0 self-center">
                     <div
-                      class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors"
+                      class="h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-all shadow-sm"
                     >
                       <ArrowRight
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all transform group-hover:translate-x-0.5"
                       />
                     </div>
                   </div>
@@ -242,27 +266,28 @@
                 >
                   People ({{ filteredPeople.length }})
                 </h4>
-              </div>
-
-              <div
+              </div>              <div
                 v-for="(person, index) in limitedFilteredPeople"
                 :key="'person-' + (person.id || index)"
-                class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150 rounded-lg mx-1 mb-0.5 group"
+                class="p-3 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 cursor-pointer transition-all duration-200 rounded-lg mx-1 mb-1 group border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30"
                 @click="navigateToProfile(person)"
-                :class="{
-                  'border-b border-gray-100 dark:border-gray-800':
-                    index < limitedFilteredPeople.length - 1,
-                }"
               >
                 <!-- Person card with avatar and details -->
                 <div class="flex items-center">
-                  <!-- Avatar with fallback -->
+                  <!-- Avatar with enhanced styling and fallback -->
                   <div class="flex-shrink-0 relative">
-                    <img
-                      :src="person.image || '/static/frontend/avatar.png'"
-                      :alt="person.name || 'User'"
-                      class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                    />
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-[2px] group-hover:from-blue-100 group-hover:to-blue-50 dark:group-hover:from-blue-900/30 dark:group-hover:to-blue-800/30 transition-all">
+                      <img
+                        v-if="person.image"
+                        :src="person.image"
+                        :alt="person.name || 'User'"
+                        class="h-full w-full rounded-full object-cover border-2 border-white dark:border-gray-800"
+                      />
+                      <div v-else class="h-full w-full rounded-full bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
+                        {{ (person.name?.charAt(0) || 'U').toUpperCase() }}
+                      </div>
+                    </div>
+                    <!-- Online status indicator could go here -->
                   </div>
 
                   <!-- User info with more detailed display -->
@@ -282,54 +307,62 @@
                     <div
                       class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-500"
                     >
-                      <span v-if="person.followers !== undefined">
-                        {{ person.followers }}
-                        {{ person.followers === 1 ? "follower" : "followers" }}
+                      <span v-if="person.followers !== undefined" class="flex items-center">
+                        <User class="h-3 w-3 mr-0.5 opacity-70" />
+                        <span>
+                          {{ person.followers }}
+                          <span class="opacity-80">{{ person.followers === 1 ? "follower" : "followers" }}</span>
+                        </span>
                       </span>
                       <span v-if="person.title" class="flex items-center">
-                        <span class="mx-1.5">•</span>
+                        <span class="mx-1.5 opacity-40">•</span>
                         <span
-                          class="truncate"
+                          class="truncate max-w-[120px]"
                           v-html="highlightMatches(person.title, searchQuery)"
                         ></span>
                       </span>
                     </div>
                   </div>
 
-                  <!-- Action button -->
+                  <!-- Action button with enhanced styling -->
                   <div
                     class="flex-shrink-0"
                     v-if="person?.id !== user?.user?.id && user"
                     :ref="(el) => registerObserver(el, person.id)"
+                    @click.stop
                   >
-                    <div
-                      class="h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/30 transition-colors"
+                    <button
+                      class="h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-all shadow-sm hover:shadow"
                       @click="toggleFollow(person.id)"
                     >
                       <UserPlus
                         v-if="!followingStatus[person.id]"
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-3.5 w-3.5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                       />
                       <User
                         v-else
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 transition-colors"
                       />
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
             </template>
           </div>
-        </div>
-        <div
-          class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50"
+        </div>        <div
+          class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gradient-to-b from-gray-50/80 to-gray-50 dark:from-gray-800/50 dark:to-gray-800/80"
         >
           <button
             @click="viewAllResults"
-            class="inline-flex items-center justify-center gap-1.5 py-2 px-4 text-base font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full"
+            class="view-all-button inline-flex items-center justify-center gap-1.5 py-2.5 px-4 text-sm font-medium text-white dark:text-gray-900 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 rounded-md transition-all duration-300 w-full shadow-sm hover:shadow relative overflow-hidden group"
+            tabindex="0"
+            ref="viewAllButton"
           >
-            View all results
-            <ArrowRight class="h-3 w-3" />
+            <span class="relative z-10 flex items-center">
+              View all results
+              <ArrowRight class="h-3.5 w-3.5 ml-1.5 transform group-hover:translate-x-0.5 transition-transform" />
+            </span>
+            <span class="absolute inset-0 bg-white/10 dark:bg-black/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
           </button>
         </div>
 
@@ -945,6 +978,15 @@ const toggleSearchDropdown = () => {
   }
 };
 
+// Handle Enter key press in search input
+const handleEnterKey = (event) => {
+  // If search query exists, navigate to search results
+  if (searchQuery.value.trim()) {
+    viewAllResults();
+    event.preventDefault();
+  }
+};
+
 // Clear search input
 const clearSearch = () => {
   searchQuery.value = "";
@@ -995,6 +1037,40 @@ const handleClickOutside = (event) => {
   ) {
     showSearchDropdown.value = false;
   }
+};
+
+// Format date to relative time ago
+const formatTimeAgo = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} second${diffInSeconds !== 1 ? 's' : ''} ago`;
+  }
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+  }
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
+  }
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
+  }
+  
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month${diffInMonths !== 1 ? 's' : ''} ago`;
+  }
+  
+  const diffInYears = Math.floor(diffInMonths / 12);
+  return `${diffInYears} year${diffInYears !== 1 ? 's' : ''} ago`;
 };
 
 // Use lifecycle hooks to add and remove the global listener
@@ -1206,22 +1282,24 @@ watch(searchQuery, (newValue) => {
 /* Glass effect for header */
 .backdrop-blur-sm {
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Professional shadow for dropdown */
 .shadow-professional {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-/* Loading spinner animation */
+/* Loading spinner animation with enhanced design */
 .loading-spinner {
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(59, 130, 246, 0.3);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
   border-radius: 50%;
   border-top-color: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1);
   animation: spin 0.8s linear infinite;
 }
 
@@ -1231,12 +1309,13 @@ watch(searchQuery, (newValue) => {
   }
 }
 
-/* Improved search input focus styles */
+/* Enhanced search input focus styles */
 .search-input:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
-/* Enhanced scrollbar for search results */
+/* Enhanced scrollbar for search results with smoother appearance */
 .search-results-container {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
@@ -1253,9 +1332,14 @@ watch(searchQuery, (newValue) => {
 .search-results-container::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 9999px;
+  transition: background-color 0.3s;
 }
 
-/* Mobile adjustments - FIXED POSITIONING */
+.search-results-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.8);
+}
+
+/* Mobile adjustments with improved fixed positioning */
 @media (max-width: 640px) {
   .search-dropdown-container {
     position: fixed;
@@ -1266,10 +1350,11 @@ watch(searchQuery, (newValue) => {
     top: 5rem;
     margin: 0 auto;
     z-index: 1000;
+    max-height: 80vh;
   }
 }
 
-/* Keyword highlight animation */
+/* Keyword highlight animation with subtle pulse */
 :deep(.bg-yellow-100) {
   position: relative;
   animation: highlight-pulse 2s infinite;
@@ -1281,14 +1366,41 @@ watch(searchQuery, (newValue) => {
     opacity: 1;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.85;
   }
+}
+
+/* Fade in animation for new elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* View all button hover effect */
+.view-all-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.view-all-button:active {
+  transform: translateY(0);
 }
 
 /* Improve line clamp for multi-line text */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
@@ -1297,5 +1409,17 @@ watch(searchQuery, (newValue) => {
 /* Fix for v-html content styling */
 :deep(span) {
   vertical-align: middle;
+}
+
+/* Improve focus handling for keyboard navigation */
+.view-all-button:focus,
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Modern keyboard styles */
+kbd {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 </style>
