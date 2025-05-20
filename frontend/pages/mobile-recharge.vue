@@ -323,9 +323,7 @@
           </button>
           <button
             @click="handleRecharge"
-            :disabled="
-              !hasSufficientBalance || (!phoneNumber && hasSufficientBalance)
-            "
+            :disabled="!hasSufficientBalance"
             class="flex-1 py-2 px-4 text-white font-medium rounded-md transition"
             :class="[
               hasSufficientBalance
@@ -421,12 +419,18 @@ function selectPackage(pack) {
 async function handleRecharge() {
   // Skip recharge if balance is insufficient
   if (!hasSufficientBalance.value) {
-    toast.error("Insufficient balance for this recharge");
+    toast.add({
+      title: "Insufficient balance for this recharge",
+      color: "red",
+    });
     return;
   }
 
-  if (!phoneNumber.value) {
-    toast.error("Please enter a valid phone number");
+  // Validate phone number
+
+  const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
+  if (!phoneNumber.value || !phoneNumberValid.test(phoneNumber.value)) {
+    toast.add({ title: "Please enter a valid phone number", color: "red" });
     return;
   }
 
