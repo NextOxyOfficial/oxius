@@ -19,11 +19,11 @@
               $route.params.search
             }}</span>
             <span class="mx-2 text-gray-500">•</span>
-            <span v-if="!loading && allPosts.length > 0"
-              >{{ allPosts.length }}
-              {{ allPosts.length === 1 ? "result" : "results" }}</span
+            <span v-if="!loading && !usersLoading && (allPosts.length > 0 || userResults.length > 0)"
+              >{{ userResults.length + allPosts.length }}
+              {{ userResults.length + allPosts.length === 1 ? "result" : "results" }}</span
             >
-            <span v-else-if="!loading && allPosts.length === 0"
+            <span v-else-if="!loading && !usersLoading && allPosts.length === 0 && userResults.length === 0"
               >No results found</span
             >
             <span v-else>Searching...</span>
@@ -43,7 +43,7 @@
     </div>
 
     <!-- Enhanced skeleton loaders -->
-    <template v-if="loading && !loadingMore && allPosts.length === 0">
+    <template v-if="(loading || usersLoading) && !loadingMore && allPosts.length === 0 && userResults.length === 0">
       <div class="p-4">
         <div class="relative mb-8">
           <!-- Pulse loading animation -->
@@ -153,27 +153,61 @@
       </div>
     </template>
 
-    <!-- Actual posts displayed after loading -->
-    <div class="relative">
-      <!-- Search result count when posts are loaded -->
-      <div
-        v-if="!loading && displayedPosts.length > 0"
-        class="mb-4 text-sm text-gray-500 px-1"
-      >
-        Showing {{ displayedPosts.length }}
-        {{ displayedPosts.length === 1 ? "result" : "results" }} for "<span
-          class="font-medium text-gray-700"
-          >{{ $route.params.search }}</span
-        >"
-      </div>
+    <!-- Search Results Section -->
+    <div class="relative" v-if="!loading || !usersLoading || userResults.length > 0 || allPosts.length > 0">
+      
+      <!-- Users Section -->
+      <div v-if="!usersLoading && userResults.length > 0" class="mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1">People</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <BusinessNetworkUserCard
+            v-for="user in displayedUsers"
+            :key="user.id"
+            :user="user"
+          />
+        </div>
 
-      <BusinessNetworkPost
-        v-if="!loading || allPosts.length > 0"
-        :posts="displayedPosts"
-        :id="user?.user?.id"
-        class="result-card"
-        @gift-sent="handleGiftSent"
-      />
+        <!-- Load more people button -->
+        <div v-if="userResults.length > initialUserCount" class="flex justify-center mt-2 mb-6">
+          <button 
+            v-if="!showAllUsers" 
+            @click="showAllUsers = true"
+            class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors text-sm font-medium shadow-sm"
+          >
+            <UsersRound class="h-4 w-4" />
+            <span>Load More People</span>
+          </button>
+        </div>
+        
+        <div class="border-b border-gray-200 my-6"></div>
+      </div>
+      
+      <!-- Posts Section -->
+      <div v-if="!loading || allPosts.length > 0">
+        <!-- Post header -->
+        <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1" v-if="allPosts.length > 0">Posts</h2>
+
+        <!-- Search result count when posts are loaded -->
+        <div
+          v-if="!loading && displayedPosts.length > 0"
+          class="mb-4 text-sm text-gray-500 px-1"
+        >
+          Showing {{ displayedPosts.length }}
+          {{ displayedPosts.length === 1 ? "post" : "posts" }} for "<span
+            class="font-medium text-gray-700"
+            >{{ $route.params.search }}</span
+          >"
+        </div>
+
+        <BusinessNetworkPost
+          v-if="!loading || allPosts.length > 0"
+          :posts="displayedPosts"
+          :id="user?.user?.id"
+          class="result-card"
+          @gift-sent="handleGiftSent"
+        />
+      </div>
     </div>
 
     <!-- Enhanced load more indicator with improved skeleton -->
@@ -402,6 +436,7 @@ import {
   ChevronUp,
   Home,
   Image,
+  UsersRound,
 } from "lucide-vue-next";
 const route = useRoute();
 
@@ -414,6 +449,13 @@ const { get } = useApi();
 const { user } = useAuth();
 const eventBus = useEventBus();
 const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplicates
+
+// User search state
+const userResults = ref([]); // User search results
+const displayedUsers = ref([]); // Currently displayed users
+const usersLoading = ref(true);
+const initialUserCount = 10; // Initial number of users to display
+const showAllUsers = ref(false); // Whether to show all users
 
 // Search state
 const newSearchQuery = ref("");
@@ -547,11 +589,56 @@ async function getPosts(isLoadingMore = false, page = 1) {
   }
 }
 
+// Get user search results
+async function getUsers() {
+  try {
+    usersLoading.value = true;
+
+    const [response] = await Promise.all([
+      get(`/bn/user-search/?q=${route.params.search}`),
+      // Add a minimum delay for UX
+      new Promise((resolve) => setTimeout(resolve, 800)),
+    ]);
+
+    if (response.data && response.data.results) {
+      userResults.value = response.data.results;
+      updateDisplayedUsers();
+    } else {
+      userResults.value = [];
+      displayedUsers.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to load users:", error);
+    useToast().add({
+      title: "Error",
+      description: "Failed to load users",
+      color: "red",
+      timeout: 3000,
+    });
+    userResults.value = [];
+    displayedUsers.value = [];
+  } finally {
+    usersLoading.value = false;
+  }
+}
+
 // Function to update displayed posts with proper grouping
 function updateDisplayedPosts() {
   // Create a new array to avoid reactivity issues
   displayedPosts.value = [...allPosts.value];
 }
+
+// Function to update displayed users
+function updateDisplayedUsers() {
+  displayedUsers.value = showAllUsers.value
+    ? [...userResults.value]
+    : [...userResults.value.slice(0, initialUserCount)];
+}
+
+// Watch for changes to showAllUsers
+watch(showAllUsers, () => {
+  updateDisplayedUsers();
+});
 
 // Handle gift sent event from child components
 function handleGiftSent(giftData) {
@@ -576,14 +663,16 @@ function handleGiftSent(giftData) {
 function loadData() {
   // Reset state
   loading.value = true;
+  usersLoading.value = true;
   page.value = 1;
   hasMore.value = true;
   lastCreatedAt.value = null;
   loadedPostIds.value.clear(); // Reset tracked post IDs when reloading
 
-  // Get initial posts with a slight delay
+  // Get initial posts and users with a slight delay
   setTimeout(() => {
     getPosts();
+    getUsers();
   }, 100); // Small delay to ensure navigation completes first
 }
 
