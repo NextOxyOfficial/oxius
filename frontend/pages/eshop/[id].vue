@@ -53,8 +53,8 @@
                   class="w-full h-full rounded-lg overflow-hidden bg-gray-100"
                 >
                   <img
-                    v-if="storeDetails?.store_logo"
-                    :src="storeDetails?.store_logo"
+                    v-if="user?.user?.image"
+                    :src="user?.user?.image"
                     alt="Store Logo"
                     class="w-full h-full object-cover"
                   />
@@ -67,13 +67,13 @@
                 </div>
 
                 <!-- Logo Upload Button -->
-                <button
+                <!-- <button
                   v-if="isOwner"
                   @click="showLogoUpload = true"
                   class="absolute -right-2 -bottom-1 z-30 bg-white shadow text-gray-700 rounded-full p-1.5 hover:bg-gray-50 transition-colors"
                 >
                   <ImageIcon class="w-3.5 h-3.5" />
-                </button>
+                </button> -->
               </div>
             </div>
 
