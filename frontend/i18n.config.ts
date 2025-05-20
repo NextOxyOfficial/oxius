@@ -1,5 +1,3 @@
-import { se } from "date-fns/locale";
-
 export default defineI18nConfig(() => ({
   legacy: false,
   locale: "en",
@@ -168,6 +166,7 @@ export default defineI18nConfig(() => ({
       // add_to_home_screen: "Add to Home Screen",
       tap_add: "Tap 'Add' in the top right corner",
       // got_it: "Got It",
+      all_over_bangladesh: "All Over Bangladesh",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -334,6 +333,7 @@ export default defineI18nConfig(() => ({
       // add_to_home_screen: "হোম স্ক্রিনে যোগ করুন",
       tap_add: "উপরের ডান কোণে 'যোগ করুন' ট্যাপ করুন",
       // got_it: "বুঝেছি",
+      all_over_bangladesh: "সমগ্র বাংলাদেশ",
     },
   },
 }));

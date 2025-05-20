@@ -111,7 +111,6 @@
                       v-if="!errorIndex.includes(i)"
                       :src="gig.category_details?.image"
                       class="w-12 rounded-full object-contain"
-                      @error="handleImageError(i)"
                     />
                     <img
                       v-else

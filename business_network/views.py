@@ -374,7 +374,7 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
             )
         
         if tag:
-            queryset = queryset.filter(post_tags__tag__icontains=tag)
+            queryset = queryset.filter(tags__tag__icontains=tag)
         
         return queryset.order_by('-created_at').distinct()
 

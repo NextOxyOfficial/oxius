@@ -1,7 +1,12 @@
-<template>  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
+<template>
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
     <!-- Enhanced Search Results Header -->
-    <div class="relative bg-white rounded-xl shadow-sm mb-6 border border-gray-100">
-      <div class="flex flex-col md:flex-row md:items-center justify-between px-6 py-4">
+    <div
+      class="relative bg-white rounded-xl shadow-sm mb-6 border border-gray-100"
+    >
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between px-6 py-4"
+      >
         <div class="mb-4 md:mb-0">
           <h1 class="text-xl font-semibold text-gray-700 flex items-center">
             <span class="bg-blue-100 rounded-full p-1.5 mr-2.5">
@@ -10,16 +15,23 @@
             Search Results
           </h1>
           <p class="text-gray-500 text-sm mt-1 flex items-center">
-            <span class="font-medium text-gray-700">{{ $route.params.search }}</span>
+            <span class="font-medium text-gray-700">{{
+              $route.params.search
+            }}</span>
             <span class="mx-2 text-gray-500">•</span>
-            <span v-if="!loading && allPosts.length > 0">{{ allPosts.length }} {{ allPosts.length === 1 ? 'result' : 'results' }}</span>
-            <span v-else-if="!loading && allPosts.length === 0">No results found</span>
+            <span v-if="!loading && allPosts.length > 0"
+              >{{ allPosts.length }}
+              {{ allPosts.length === 1 ? "result" : "results" }}</span
+            >
+            <span v-else-if="!loading && allPosts.length === 0"
+              >No results found</span
+            >
             <span v-else>Searching...</span>
           </p>
         </div>
-        
+
         <div class="flex items-center gap-2">
-          <NuxtLink 
+          <NuxtLink
             :to="`/business-network`"
             class="flex items-center gap-2 px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:underline transition-colors text-sm"
           >
@@ -29,7 +41,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Enhanced skeleton loaders -->
     <template v-if="loading && !loadingMore && allPosts.length === 0">
       <div class="p-4">
@@ -38,12 +50,16 @@
           <div class="flex justify-center items-center">
             <div class="relative">
               <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
-              <div class="absolute inset-0 -m-2 rounded-full animate-ping opacity-30 bg-blue-400"></div>
+              <div
+                class="absolute inset-0 -m-2 rounded-full animate-ping opacity-30 bg-blue-400"
+              ></div>
             </div>
           </div>
-          <p class="text-center text-blue-600 text-sm font-medium mt-4">Searching for relevant posts...</p>
+          <p class="text-center text-blue-600 text-sm font-medium mt-4">
+            Searching for relevant posts...
+          </p>
         </div>
-        
+
         <!-- Enhanced skeleton loaders for posts -->
         <div
           v-for="i in 3"
@@ -53,61 +69,104 @@
           <!-- Header -->
           <div class="p-4 border-b border-gray-50">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse relative overflow-hidden">
-                <div class="absolute inset-0 bg-gray-100 animate-pulse-wave"></div>
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse relative overflow-hidden"
+              >
+                <div
+                  class="absolute inset-0 bg-gray-100 animate-pulse-wave"
+                ></div>
               </div>
               <div class="flex-1 space-y-2">
-                <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/4"></div>
-                <div class="h-2.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/6"></div>
+                <div
+                  class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/4"
+                ></div>
+                <div
+                  class="h-2.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/6"
+                ></div>
               </div>
-              <div class="h-7 w-7 rounded-md bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse"></div>
+              <div
+                class="h-7 w-7 rounded-md bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse"
+              ></div>
             </div>
           </div>
-          
+
           <!-- Content -->
           <div class="p-4">
             <!-- Content lines -->
             <div class="space-y-3 mb-4">
-              <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-3/4"></div>
-              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-full"></div>
-              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-5/6"></div>
-              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-4/6"></div>
+              <div
+                class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-3/4"
+              ></div>
+              <div
+                class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-full"
+              ></div>
+              <div
+                class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-5/6"
+              ></div>
+              <div
+                class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-4/6"
+              ></div>
             </div>
-            
+
             <!-- Media placeholder -->
-            <div class="h-40 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-pulse mb-4 overflow-hidden relative">
-              <div class="absolute inset-0 bg-gray-100 animate-pulse-slower opacity-50"></div>
+            <div
+              class="h-40 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-pulse mb-4 overflow-hidden relative"
+            >
+              <div
+                class="absolute inset-0 bg-gray-100 animate-pulse-slower opacity-50"
+              ></div>
               <div class="absolute inset-0 flex items-center justify-center">
-                <div class="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+                <div
+                  class="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center"
+                >
                   <Image class="w-5 h-5 text-white/50" />
                 </div>
               </div>
             </div>
-            
+
             <!-- Action buttons -->
-            <div class="flex justify-between items-center pt-2 border-t border-gray-50">
-              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
-              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
-              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+            <div
+              class="flex justify-between items-center pt-2 border-t border-gray-50"
+            >
+              <div
+                class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+              ></div>
+              <div
+                class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+              ></div>
+              <div
+                class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+              ></div>
             </div>
           </div>
-          
+
           <!-- Tag indicators at bottom -->
           <div class="px-4 pb-4 flex gap-2">
-            <div class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-16"></div>
-            <div class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+            <div
+              class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-16"
+            ></div>
+            <div
+              class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+            ></div>
           </div>
         </div>
       </div>
     </template>
-    
+
     <!-- Actual posts displayed after loading -->
     <div class="relative">
       <!-- Search result count when posts are loaded -->
-      <div v-if="!loading && displayedPosts.length > 0" class="mb-4 text-sm text-gray-500 px-1">
-        Showing {{ displayedPosts.length }} {{ displayedPosts.length === 1 ? 'result' : 'results' }} for "<span class="font-medium text-gray-700">{{ $route.params.search }}</span>"
+      <div
+        v-if="!loading && displayedPosts.length > 0"
+        class="mb-4 text-sm text-gray-500 px-1"
+      >
+        Showing {{ displayedPosts.length }}
+        {{ displayedPosts.length === 1 ? "result" : "results" }} for "<span
+          class="font-medium text-gray-700"
+          >{{ $route.params.search }}</span
+        >"
       </div>
-      
+
       <BusinessNetworkPost
         v-if="!loading || allPosts.length > 0"
         :posts="displayedPosts"
@@ -122,45 +181,73 @@
       <div class="flex justify-center items-center py-4">
         <div class="relative">
           <Loader2 class="h-8 w-8 text-blue-600 animate-spin" />
-          <div class="absolute inset-0 -m-1 rounded-full animate-ping opacity-30 bg-blue-400"></div>
+          <div
+            class="absolute inset-0 -m-1 rounded-full animate-ping opacity-30 bg-blue-400"
+          ></div>
         </div>
       </div>
-      
+
       <!-- Enhanced skeleton loader for loading more posts -->
-      <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6 relative">
+      <div
+        class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6 relative"
+      >
         <!-- Header -->
         <div class="p-4 border-b border-gray-50">
           <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse relative overflow-hidden">
-              <div class="absolute inset-0 bg-gray-100 animate-pulse-wave"></div>
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse relative overflow-hidden"
+            >
+              <div
+                class="absolute inset-0 bg-gray-100 animate-pulse-wave"
+              ></div>
             </div>
             <div class="flex-1 space-y-2">
-              <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/4"></div>
-              <div class="h-2.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/6"></div>
+              <div
+                class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/4"
+              ></div>
+              <div
+                class="h-2.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-1/6"
+              ></div>
             </div>
-            <div class="h-7 w-7 rounded-md bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse"></div>
+            <div
+              class="h-7 w-7 rounded-md bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse"
+            ></div>
           </div>
         </div>
-        
+
         <!-- Content -->
         <div class="p-4">
           <!-- Content lines -->
           <div class="space-y-3 mb-4">
-            <div class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-3/4"></div>
-            <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-full"></div>
-            <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-5/6"></div>
+            <div
+              class="h-3.5 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-3/4"
+            ></div>
+            <div
+              class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-full"
+            ></div>
+            <div
+              class="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-5/6"
+            ></div>
           </div>
-          
+
           <!-- Action buttons -->
-          <div class="flex justify-between items-center pt-2 border-t border-gray-50">
-            <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
-            <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
-            <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"></div>
+          <div
+            class="flex justify-between items-center pt-2 border-t border-gray-50"
+          >
+            <div
+              class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+            ></div>
+            <div
+              class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+            ></div>
+            <div
+              class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full animate-pulse w-20"
+            ></div>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- Enhanced end of results indicator -->
     <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
@@ -172,16 +259,20 @@
         >
           <Check class="h-8 w-8 text-blue-600" />
         </div>
-        <div class="absolute inset-0 bg-blue-50/50 rounded-full animate-ping-slow opacity-70 w-16 h-16"></div>
+        <div
+          class="absolute inset-0 bg-blue-50/50 rounded-full animate-ping-slow opacity-70 w-16 h-16"
+        ></div>
       </div>
-      
+
       <h3 class="text-lg font-semibold text-gray-700 mb-1">
         End of Search Results
       </h3>
       <p class="text-gray-500 mb-4 max-w-md">
-        You've seen all posts matching your search for "{{ $route.params.search }}".
+        You've seen all posts matching your search for "{{
+          $route.params.search
+        }}".
       </p>
-      
+
       <div class="flex flex-col sm:flex-row gap-3 mb-8">
         <button
           @click="scrollToTop"
@@ -190,7 +281,7 @@
           <ChevronUp class="h-4 w-4" />
           <span>Back to top</span>
         </button>
-        
+
         <NuxtLink
           to="/business-network"
           class="flex items-center justify-center gap-2 px-5 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
@@ -199,9 +290,11 @@
           <span>Return to feed</span>
         </NuxtLink>
       </div>
-      
+
       <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 max-w-md">
-        <h4 class="font-medium text-gray-700 mb-2">Looking for something else?</h4>
+        <h4 class="font-medium text-gray-700 mb-2">
+          Looking for something else?
+        </h4>
         <div class="relative">
           <input
             type="text"
@@ -225,15 +318,18 @@
       v-if="!loading && !loadingMore && allPosts.length === 0"
       class="flex flex-col items-center justify-center py-12 text-center bg-white rounded-xl shadow-sm border border-gray-100 px-4"
     >
-      <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-6 border border-gray-200">
+      <div
+        class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-6 border border-gray-200"
+      >
         <Search class="h-8 w-8 text-gray-500" />
       </div>
-      
+
       <h3 class="text-lg font-semibold text-gray-700 mb-2">No results found</h3>
       <p class="text-gray-500 mb-6 max-w-md">
-        We couldn't find any posts matching "{{ $route.params.search }}". Try adjusting your search terms or filters.
+        We couldn't find any posts matching "{{ $route.params.search }}". Try
+        adjusting your search terms or filters.
       </p>
-      
+
       <div class="w-full max-w-md">
         <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
           <h4 class="font-medium text-gray-700 mb-3">Suggestions:</h4>
@@ -256,7 +352,7 @@
             </li>
           </ul>
         </div>
-        
+
         <div class="relative">
           <input
             type="text"
@@ -272,7 +368,7 @@
             <Search class="h-4 w-4" />
           </button>
         </div>
-        
+
         <div class="mt-6">
           <NuxtLink
             to="/business-network"
@@ -357,7 +453,9 @@ async function getPosts(isLoadingMore = false, page = 1) {
     console.log("Fetching posts with params:", params);
 
     const [response] = await Promise.all([
-      get(`/bn/posts/search/?q=${route.params.search}&page=${page}`),
+      get(
+        `/bn/posts/search/?q=${route.params.search}&tag=${route.params.search}&page=${page}`
+      ),
       // Add a minimum delay for UX, shorter for subsequent loads
       new Promise((resolve) => setTimeout(resolve, isLoadingMore ? 300 : 800)),
     ]);
@@ -567,9 +665,13 @@ const handleNewPost = (newPost) => {
 
 // Handle new search from end of results or no results section
 const handleNewSearch = () => {
-  if (newSearchQuery.value && newSearchQuery.value.trim() !== '') {
+  if (newSearchQuery.value && newSearchQuery.value.trim() !== "") {
     // Navigate to new search results
-    navigateTo(`/business-network/search-results/${encodeURIComponent(newSearchQuery.value.trim())}`);
+    navigateTo(
+      `/business-network/search-results/${encodeURIComponent(
+        newSearchQuery.value.trim()
+      )}`
+    );
   }
 };
 
@@ -729,7 +831,8 @@ const scrollToTop = () => {
 }
 
 @keyframes ping-slow {
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(1.5);
     opacity: 0;
   }
@@ -773,6 +876,7 @@ const scrollToTop = () => {
 
 .result-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 </style>

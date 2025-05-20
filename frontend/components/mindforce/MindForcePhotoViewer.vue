@@ -22,7 +22,9 @@
       </button>
 
       <!-- Close instruction text -->
-      <div class="absolute top-6 left-1/2 transform -translate-x-1/2 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+      <div
+        class="absolute top-6 left-1/2 transform -translate-x-1/2 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full"
+      >
         <p class="text-white/80 text-sm">Click anywhere to close</p>
       </div>
 
@@ -31,7 +33,6 @@
           :src="getPhotoUrl(photos[currentPhotoIndex])"
           alt="Photo"
           class="mx-auto max-h-[80vh] max-w-full object-contain rounded-lg shadow-sm"
-          @error="handleImageError"
         />
 
         <div
@@ -56,9 +57,7 @@
           </button>
         </div>
 
-        <div
-          class="absolute bottom-4 left-0 right-0 flex justify-center gap-2"
-        >
+        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
           <button
             v-for="(_, i) in photos"
             :key="i"
@@ -84,81 +83,88 @@ import { ref } from "vue";
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   photos: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   currentPhotoIndex: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'update:currentIndex']);
+const emit = defineEmits(["update:modelValue", "update:currentIndex"]);
 
 // Track image load errors
 const imageError = ref(false);
 
 const getPhotoUrl = (photo) => {
-  if (!photo) return '/placeholder.svg';
-  
+  if (!photo) return "/placeholder.svg";
+
   // Reset error state when trying to get a new URL
   imageError.value = false;
-  
+
   try {
     // Handle string URLs directly
-    if (typeof photo === 'string') return photo;
-    
+    if (typeof photo === "string") return photo;
+
     // Handle objects with standard image properties
     if (photo.image) return photo.image;
     if (photo.preview) return photo.preview;
     if (photo.url) return photo.url;
     if (photo.src) return photo.src;
-    
+
     // Handle other potential object structures
     for (const key of Object.keys(photo)) {
       const value = photo[key];
-      if (typeof value === 'string' && 
-          (value.startsWith('http') || 
-           value.startsWith('/') || 
-           value.startsWith('data:'))) {
+      if (
+        typeof value === "string" &&
+        (value.startsWith("http") ||
+          value.startsWith("/") ||
+          value.startsWith("data:"))
+      ) {
         return value;
       }
     }
-    
+
     // If all else fails, return placeholder
-    return '/placeholder.svg';
+    return "/placeholder.svg";
   } catch (err) {
-    console.error('Error processing photo URL:', err);
-    return '/placeholder.svg';
+    console.error("Error processing photo URL:", err);
+    return "/placeholder.svg";
   }
 };
 
 const handleImageError = () => {
   imageError.value = true;
-  console.warn('Image failed to load:', props.photos[props.currentPhotoIndex]);
+  console.warn("Image failed to load:", props.photos[props.currentPhotoIndex]);
 };
 
 const nextPhoto = () => {
   if (props.photos.length <= 1) return;
   const newIndex = (props.currentPhotoIndex + 1) % props.photos.length;
-  emit('update:currentIndex', newIndex);
+  emit("update:currentIndex", newIndex);
 };
 
 const prevPhoto = () => {
   if (props.photos.length <= 1) return;
-  const newIndex = (props.currentPhotoIndex - 1 + props.photos.length) % props.photos.length;
-  emit('update:currentIndex', newIndex);
+  const newIndex =
+    (props.currentPhotoIndex - 1 + props.photos.length) % props.photos.length;
+  emit("update:currentIndex", newIndex);
 };
 </script>
 
 <style scoped>
 /* Add some animation for a smoother experience */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 img {

@@ -9,7 +9,7 @@
 
     <!-- Sidebar -->
     <aside
-      :class="[ 
+      :class="[
         'sm:max-h-screen fixed sm:static top-14 bottom-0 pb-16 sm:pb-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out rounded-t-sm',
         isMobile
           ? cart.burgerMenu
@@ -35,14 +35,11 @@
       <!-- Sidebar Content (Scrollable) -->
       <div class="flex-1 overflow-y-auto py-4 px-2 space-y-7 -mt-12 sm:-mt-10">
         <!-- Main Menu Section -->
-        <SidebarMenu 
-          :isMobile="isMobile" 
-          @menu-click="handleMenuClick" 
-        />
+        <SidebarMenu :isMobile="isMobile" @menu-click="handleMenuClick" />
 
         <!-- Workspaces Section -->
         <!-- (This section is commented out in the original code) -->
-        
+
         <!-- Create Workspace Modal -->
         <Teleport to="body">
           <div
@@ -93,17 +90,17 @@
 
         <!-- Useful Links Section -->
         <SidebarUsefulLinks />
-        
+
         <!-- Adsy News Section -->
-        <SidebarNews 
-          :news-items="newsItems" 
+        <SidebarNews
+          :news-items="newsItems"
           :is-loading="isLoadingNews"
           @navigation="handleNavigation"
         />
 
         <!-- Hashtags Section -->
-        <SidebarHashtags 
-          :tags="tags" 
+        <SidebarHashtags
+          :tags="tags"
           :is-loading="false"
           @tag-click="handleTagClick"
         />
@@ -195,25 +192,29 @@ async function fetchHashtags() {
   try {
     // Set loading state
     const isLoadingHashtags = ref(true);
-    
+
     // Use the top-tags endpoint as primary source for trending hashtags
     const response = await get("/bn/top-tags/");
     if (response.data && Array.isArray(response.data)) {
       // Ensure each tag has an ID and properly map the data structure
       const hashtagData = response.data.map((tag) => ({
-        id: tag.id || Math.random().toString(36).substr(2, 9), 
+        id: tag.id || Math.random().toString(36).substr(2, 9),
         tag: tag.tag || "",
         count: tag.count || 0,
       }));
-      
+
       // Take only the top trending hashtags (sorted by count)
-      tags.value = hashtagData
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 30); // Get top 30 for potential display
-        
-      console.log("Hashtags loaded successfully from top-tags:", tags.value.length);
+      tags.value = hashtagData.sort((a, b) => b.count - a.count).slice(0, 30); // Get top 30 for potential display
+
+      console.log(
+        "Hashtags loaded successfully from top-tags:",
+        tags.value.length
+      );
     } else {
-      console.warn("Unexpected hashtags response format from top-tags:", response.data);
+      console.warn(
+        "Unexpected hashtags response format from top-tags:",
+        response.data
+      );
       // Try alternative endpoint as fallback
       const fallbackResponse = await get("/bn/trending-tags/?limit=30");
       if (fallbackResponse.data && Array.isArray(fallbackResponse.data)) {
@@ -227,13 +228,13 @@ async function fetchHashtags() {
       } else {
         // If both attempts fail, set some default tags so UI isn't empty
         tags.value = [
-          { id: '1', tag: 'adsy', count: 120 },
-          { id: '2', tag: 'business', count: 85 },
-          { id: '3', tag: 'network', count: 74 },
-          { id: '4', tag: 'tech', count: 63 },
-          { id: '5', tag: 'startup', count: 57 },
-          { id: '6', tag: 'marketing', count: 49 },
-          { id: '7', tag: 'innovation', count: 43 }
+          { id: "1", tag: "adsy", count: 120 },
+          { id: "2", tag: "business", count: 85 },
+          { id: "3", tag: "network", count: 74 },
+          { id: "4", tag: "tech", count: 63 },
+          { id: "5", tag: "startup", count: 57 },
+          { id: "6", tag: "marketing", count: 49 },
+          { id: "7", tag: "innovation", count: 43 },
         ];
         console.log("Using default hashtags as fallback");
       }
@@ -242,13 +243,13 @@ async function fetchHashtags() {
     console.error("Error fetching hashtags:", error);
     // Set default tags if fetch fails
     tags.value = [
-      { id: '1', tag: 'adsy', count: 120 },
-      { id: '2', tag: 'business', count: 85 },
-      { id: '3', tag: 'network', count: 74 },
-      { id: '4', tag: 'tech', count: 63 },
-      { id: '5', tag: 'startup', count: 57 },
-      { id: '6', tag: 'marketing', count: 49 },
-      { id: '7', tag: 'innovation', count: 43 }
+      { id: "1", tag: "adsy", count: 120 },
+      { id: "2", tag: "business", count: 85 },
+      { id: "3", tag: "network", count: 74 },
+      { id: "4", tag: "tech", count: 63 },
+      { id: "5", tag: "startup", count: 57 },
+      { id: "6", tag: "marketing", count: 49 },
+      { id: "7", tag: "innovation", count: 43 },
     ];
     console.log("Using default hashtags due to error");
   }
@@ -396,9 +397,9 @@ const handleMenuClick = (path) => {
 };
 
 const handleTagClick = (tag) => {
-  console.log(`Tag clicked: ${tag.tag}`);
+  console.log(`Tag clicked:`, tag);
   // Implement the navigation or filtering by tag functionality
-  handleNavigation(`/hashtag/${tag.tag}`);
+  handleNavigation(`/business-network/search-results/${tag.tag}`);
 };
 
 // Updated the toggleSidebar function to handle mobile screen issues and ensure proper state management.

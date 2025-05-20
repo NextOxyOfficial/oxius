@@ -5,13 +5,17 @@
       v-if="!posts.length && !isLoading"
       class="text-center p-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
     >
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-indigo-50/30 z-0"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-primary/5 to-indigo-50/30 z-0"
+      ></div>
       <div class="relative z-10 mb-10">
         <div class="flex justify-center">
           <div
             class="p-7 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full inline-block shadow-inner overflow-hidden relative group"
           >
-            <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-indigo-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-primary/10 to-indigo-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+            ></div>
             <Icon
               name="heroicons:clipboard-document-list"
               class="h-16 w-16 text-primary drop-shadow-sm transform group-hover:scale-110 transition-transform duration-500"
@@ -25,7 +29,7 @@
       </div>
       <button
         @click="$emit('create-post')"
-        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-10 py-3.5 rounded-xl flex items-center gap-2 mx-auto shadow-sm hover:shadow-primary/20   transform hover:-translate-y-1"
+        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-10 py-3.5 rounded-xl flex items-center gap-2 mx-auto shadow-sm hover:shadow-primary/20 transform hover:-translate-y-1"
       >
         <Icon name="heroicons:plus-circle" size="22px" />
         Create Post
@@ -37,34 +41,62 @@
       v-else-if="isLoading"
       class="p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
     >
-      <div class="absolute inset-0 bg-gradient-to-tr from-blue-50/20 to-transparent"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-tr from-blue-50/20 to-transparent"
+      ></div>
       <div
         class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 relative z-10"
-      >        <div class="h-7 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md w-36 animate-shimmer"></div>
+      >
+        <div
+          class="h-7 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md w-36 animate-shimmer"
+        ></div>
         <div class="flex gap-4">
-          <div class="h-10 w-36 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"></div>
-          <div class="h-10 w-28 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"></div>
+          <div
+            class="h-10 w-36 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"
+          ></div>
+          <div
+            class="h-10 w-28 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"
+          ></div>
         </div>
       </div>
       <div v-for="i in 3" :key="i" class="mb-8 relative z-10">
         <div
-          class="flex items-center gap-6 p-6 rounded-xl border border-gray-100/80 hover:border-gray-200  bg-white/50"
-        >          <div class="w-28 h-28 bg-gradient-to-br from-gray-200 to-gray-100 rounded-xl animate-shimmer shadow-sm"></div>
+          class="flex items-center gap-6 p-6 rounded-xl border border-gray-100/80 hover:border-gray-200 bg-white/50"
+        >
+          <div
+            class="w-28 h-28 bg-gradient-to-br from-gray-200 to-gray-100 rounded-xl animate-shimmer shadow-sm"
+          ></div>
           <div class="flex-1">
-            <div class="h-6 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md mb-4 w-3/4 animate-shimmer"></div>
-            <div class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md mb-4 w-1/2 animate-shimmer"></div>
-            <div class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md mb-4 w-2/3 animate-shimmer"></div>
+            <div
+              class="h-6 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md mb-4 w-3/4 animate-shimmer"
+            ></div>
+            <div
+              class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md mb-4 w-1/2 animate-shimmer"
+            ></div>
+            <div
+              class="h-5 bg-gradient-to-r from-gray-200 to-gray-100 rounded-md mb-4 w-2/3 animate-shimmer"
+            ></div>
             <div class="flex gap-3 mt-3">
-              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full w-24 animate-shimmer"></div>
-              <div class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full w-20 animate-shimmer"></div>
+              <div
+                class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full w-24 animate-shimmer"
+              ></div>
+              <div
+                class="h-8 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full w-20 animate-shimmer"
+              ></div>
             </div>
           </div>
           <div class="flex flex-col gap-4 items-end">
             <div class="flex gap-3">
-              <div class="w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"></div>
-              <div class="w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"></div>
+              <div
+                class="w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"
+              ></div>
+              <div
+                class="w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"
+              ></div>
             </div>
-            <div class="w-28 h-10 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"></div>
+            <div
+              class="w-28 h-10 bg-gradient-to-r from-gray-200 to-gray-100 rounded-lg animate-shimmer"
+            ></div>
           </div>
         </div>
       </div>
@@ -74,7 +106,8 @@
     <div
       v-else
       class="bg-white/95 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-    >      <!-- Header with Filters and controls -->
+    >
+      <!-- Header with Filters and controls -->
       <div
         class="flex flex-wrap justify-between items-center p-6 bg-gradient-to-r from-gray-50/80 via-white/60 to-white/80 border-b border-gray-100/70 backdrop-blur-sm"
       >
@@ -82,13 +115,16 @@
           <div
             class="flex items-center gap-1.5 bg-gradient-to-r from-gray-50 to-gray-100/70 px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 shadow-sm"
           >
-            <Icon name="heroicons:document-text" class="h-4 w-4 text-primary/70" />
+            <Icon
+              name="heroicons:document-text"
+              class="h-4 w-4 text-primary/70"
+            />
             <span>{{ posts.length }}</span>
             <span>{{ posts.length === 1 ? "post" : "posts" }}</span>
           </div>
           <button
             @click="refreshPosts"
-            class="p-2.5 text-gray-600 hover:text-primary bg-white/80 hover:bg-blue-50 rounded-full   shadow-sm hover:shadow border border-gray-100/70"
+            class="p-2.5 text-gray-600 hover:text-primary bg-white/80 hover:bg-blue-50 rounded-full shadow-sm hover:shadow border border-gray-100/70"
             title="Refresh posts"
           >
             <Icon
@@ -103,7 +139,7 @@
           <div class="relative">
             <select
               v-model="statusFilter"
-              class="border border-gray-200/80 rounded-lg py-2.5 text-sm font-medium pl-10 pr-10 text-gray-700 bg-white/90 shadow-sm hover:shadow focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none "
+              class="border border-gray-200/80 rounded-lg py-2.5 text-sm font-medium pl-10 pr-10 text-gray-700 bg-white/90 shadow-sm hover:shadow focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
             >
               <option value="">All posts</option>
               <option value="pending">Pending review</option>
@@ -125,24 +161,21 @@
 
           <button
             @click="$emit('create-post')"
-            class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium text-sm px-4 py-2.5 rounded-lg flex items-center gap-2   shadow hover:shadow-primary/20 transform hover:-translate-y-0.5"
+            class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 shadow hover:shadow-primary/20 transform hover:-translate-y-0.5"
           >
             <Icon name="heroicons:plus-circle" size="18px" />
             New Post
           </button>
         </div>
-      </div>      <!-- Post items -->
+      </div>
+      <!-- Post items -->
       <div class="divide-y divide-gray-50">
-        <div
-          v-for="post in filteredPosts"
-          :key="post.id"
-          class="p-"
-        >
+        <div v-for="post in filteredPosts" :key="post.id" class="p-">
           <div class="flex gap-2 p-2">
             <!-- Post image -->
             <NuxtLink
               :to="`/sale/${post.slug}`"
-              class="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-sm border border-gray-100/80 group-hover:shadow-sm   transform group-hover:scale-[1.03]"
+              class="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-sm border border-gray-100/80 group-hover:shadow-sm transform group-hover:scale-[1.03]"
             >
               <img
                 v-if="post.main_image"
@@ -175,22 +208,22 @@
                   {{ formatStatus(post.status) }}
                 </span>
               </div>
-            </NuxtLink>            
+            </NuxtLink>
             <!-- Post details -->
             <div class="flex-1 min-w-0">
               <div class="flex justify-between items-start">
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
                     <h3
-                      class="text-base text-base line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
+                      class="text-base line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
                     >
                       {{ post.title }}
                     </h3>
                   </NuxtLink>
-                  <div
-                    class="mt-3 flex items-center text-sm gap-3"
-                  >
-                    <div class="flex items-center gap-1.5 bg-gradient-to-r from-primary/5 to-primary/10 px-3 py-1.5 rounded-lg shadow-sm">
+                  <div class="mt-3 flex items-center text-sm gap-3">
+                    <div
+                      class="flex items-center gap-1.5 bg-gradient-to-r from-primary/5 to-primary/10 px-3 py-1.5 rounded-lg shadow-sm"
+                    >
                       <Icon
                         name="heroicons:currency-bangladeshi"
                         class="h-5 w-5 text-primary"
@@ -201,16 +234,20 @@
                           : "Negotiable"
                       }}</span>
                     </div>
-                    <div class="flex items-center gap-1.5 bg-gray-100/70 px-3 py-1.5 rounded-lg">
+                    <div
+                      class="flex items-center gap-1.5 bg-gray-100/70 px-3 py-1.5 rounded-lg"
+                    >
                       <Icon
                         name="heroicons:calendar"
                         class="h-4 w-4 text-gray-600"
                       />
-                      <span class="text-gray-700">{{ formatDate(post.created_at) }}</span>
+                      <span class="text-gray-700">{{
+                        formatDate(post.created_at)
+                      }}</span>
                     </div>
                   </div>
                   <div
-                    class="mt-3 flex items-center text-sm text-gray-600 gap-1.5 bg-gray-50/80 px-3 py-1.5 rounded-lg inline-flex"
+                    class="mt-3 items-center text-sm text-gray-600 gap-1.5 bg-gray-50/80 px-3 py-1.5 rounded-lg inline-flex"
                   >
                     <Icon
                       name="heroicons:map-pin"
@@ -224,35 +261,43 @@
                     class="mt-4 flex flex-block items-start text-xs text-gray-600 gap-3"
                   >
                     <span
-                      class="flex items-start gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100/80 group-hover:bg-gray-50/80 group-hover:border-gray-200/80  "
+                      class="flex items-start gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100/80 group-hover:bg-gray-50/80 group-hover:border-gray-200/80"
                     >
-                      <Icon name="heroicons:eye" class="h-3.5 w-3.5 text-gray-500" />
-                      <span class="font-medium">{{ post.view_count }}</span> views
+                      <Icon
+                        name="heroicons:eye"
+                        class="h-3.5 w-3.5 text-gray-500"
+                      />
+                      <span class="font-medium">{{ post.view_count }}</span>
+                      views
                     </span>
                     <span
                       v-if="post.condition"
-                      class="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100/80 group-hover:bg-gray-50/80 group-hover:border-gray-200/80  "
+                      class="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100/80 group-hover:bg-gray-50/80 group-hover:border-gray-200/80"
                     >
-                      <Icon name="heroicons:tag" class="h-3.5 w-3.5 text-gray-500" />
+                      <Icon
+                        name="heroicons:tag"
+                        class="h-3.5 w-3.5 text-gray-500"
+                      />
                       {{ post.condition }}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>            <!-- Action buttons -->
+            </div>
+            <!-- Action buttons -->
             <div class="flex flex-col gap-4 items-end justify-between">
               <!-- Edit/Delete buttons -->
               <div class="flex gap-2.5">
                 <button
                   @click="$emit('edit-post', post)"
-                  class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg  duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
+                  class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
                   title="Edit post"
                 >
                   <Icon name="heroicons:pencil-square" size="20px" />
                 </button>
                 <button
                   @click="confirmDelete(post.id, post.title)"
-                  class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg  duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
+                  class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
                   title="Delete post"
                 >
                   <Icon name="heroicons:trash" size="20px" />
@@ -263,7 +308,7 @@
                 v-if="post.status !== 'sold' && post.status !== 'pending'"
                 @click="markAsSold(post.id)"
                 :disabled="markingSold === post.id"
-                class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg   shadow-sm"
+                class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg shadow-sm"
                 :class="[
                   markingSold === post.id
                     ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
@@ -310,27 +355,40 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Empty filtered state -->
+      </div>
+      <!-- Empty filtered state -->
       <div
         v-if="posts.length > 0 && filteredPosts.length === 0"
         class="py-16 text-center bg-gradient-to-b from-white to-gray-50/80"
       >
         <div class="mb-5 relative">
-          <div class="inline-block p-6 bg-gradient-to-br from-gray-50 to-white rounded-full shadow-inner relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-gray-100/20 to-gray-200/30 opacity-50"></div>
-            <Icon name="heroicons:face-frown" class="h-16 w-16 text-gray-400 relative z-10" />
+          <div
+            class="inline-block p-6 bg-gradient-to-br from-gray-50 to-white rounded-full shadow-inner relative overflow-hidden"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-gray-100/20 to-gray-200/30 opacity-50"
+            ></div>
+            <Icon
+              name="heroicons:face-frown"
+              class="h-16 w-16 text-gray-400 relative z-10"
+            />
           </div>
-          <div class="absolute w-full h-8 top-full left-0 bg-gradient-to-b from-gray-200/20 to-transparent -mt-3 blur-xl rounded-full"></div>
+          <div
+            class="absolute w-full h-8 top-full left-0 bg-gradient-to-b from-gray-200/20 to-transparent -mt-3 blur-xl rounded-full"
+          ></div>
         </div>
         <h3 class="text-gray-700 text-base text-base">
           No matching posts found
         </h3>
         <p class="text-gray-500 mt-3 max-w-md mx-auto">
-          There are no posts with the "<span class="font-medium text-gray-600">{{ statusFilter }}</span>" status.
+          There are no posts with the "<span
+            class="font-medium text-gray-600"
+            >{{ statusFilter }}</span
+          >" status.
         </p>
         <button
           @click="statusFilter = ''"
-          class="mt-6 px-7 py-3 bg-gradient-to-r from-gray-100 to-white text-gray-700 rounded-xl   shadow-sm hover:shadow-sm border border-gray-200/50 transform hover:-translate-y-0.5"
+          class="mt-6 px-7 py-3 bg-gradient-to-r from-gray-100 to-white text-gray-700 rounded-xl shadow-sm hover:shadow-sm border border-gray-200/50 transform hover:-translate-y-0.5"
         >
           <span class="flex items-center gap-2">
             <Icon name="heroicons:arrow-path" class="h-5 w-5" />
@@ -346,7 +404,7 @@
       >
         <button
           @click="loadMorePosts"
-          class="px-8 py-3 border border-gray-200/70 rounded-xl text-gray-700 bg-white hover:bg-gradient-to-r hover:from-primary/5 hover:to-indigo-50   shadow-sm hover:shadow-sm flex items-center gap-3 mx-auto transform hover:-translate-y-0.5"
+          class="px-8 py-3 border border-gray-200/70 rounded-xl text-gray-700 bg-white hover:bg-gradient-to-r hover:from-primary/5 hover:to-indigo-50 shadow-sm hover:shadow-sm flex items-center gap-3 mx-auto transform hover:-translate-y-0.5"
           :disabled="isLoadingMore"
         >
           <span
@@ -359,16 +417,21 @@
             Loading more posts...
           </span>
           <span v-else class="flex items-center gap-3 justify-center">
-            <Icon name="heroicons:arrow-down" size="20px" class="text-primary" />
+            <Icon
+              name="heroicons:arrow-down"
+              size="20px"
+              class="text-primary"
+            />
             <span class="font-medium">Load more posts</span>
           </span>
         </button>
       </div>
-    </div>    <!-- Delete confirmation modal -->
+    </div>
+    <!-- Delete confirmation modal -->
     <Teleport to="body">
       <div
         v-if="showDeleteModal"
-        class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-md "
+        class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-md"
       >
         <div
           class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
@@ -376,12 +439,16 @@
           <div
             class="inline-block align-bottom bg-white/95 backdrop-blur-sm rounded-2xl text-left overflow-hidden sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100"
           >
-            <div class="bg-gradient-to-b from-white to-gray-50/80 px-7 pt-7 pb-6">
+            <div
+              class="bg-gradient-to-b from-white to-gray-50/80 px-7 pt-7 pb-6"
+            >
               <div class="sm:flex sm:items-start">
                 <div
                   class="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-red-50 to-red-100 sm:mx-0 sm:h-14 sm:w-14 shadow-inner overflow-hidden relative"
                 >
-                  <div class="absolute inset-0 bg-gradient-to-r from-red-500/5 to-red-600/10 opacity-70"></div>
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-red-500/5 to-red-600/10 opacity-70"
+                  ></div>
                   <Icon
                     name="heroicons:exclamation-triangle"
                     class="h-8 w-8 text-red-500 drop-shadow-sm"
@@ -402,10 +469,12 @@
                 </div>
               </div>
             </div>
-            <div class="bg-gradient-to-b from-gray-50/70 to-gray-100/40 px-7 py-5 sm:flex sm:flex-row-reverse gap-4">
+            <div
+              class="bg-gradient-to-b from-gray-50/70 to-gray-100/40 px-7 py-5 sm:flex sm:flex-row-reverse gap-4"
+            >
               <button
                 type="button"
-                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none   transform hover:-translate-y-0.5 sm:ml-3 sm:w-auto"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none transform hover:-translate-y-0.5 sm:ml-3 sm:w-auto"
                 @click="deletePost"
               >
                 <span class="flex items-center gap-2">
@@ -415,7 +484,7 @@
               </button>
               <button
                 type="button"
-                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none   transform hover:-translate-y-0.5 sm:mt-0 sm:w-auto"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transform hover:-translate-y-0.5 sm:mt-0 sm:w-auto"
                 @click="showDeleteModal = false"
               >
                 Cancel
@@ -770,7 +839,12 @@ onMounted(() => {
 .animate-shimmer {
   background-size: 200% 100%;
   animation: shimmer 1.5s linear infinite;
-  background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 @keyframes shimmer {
@@ -792,7 +866,12 @@ onMounted(() => {
   right: -100%;
   bottom: 0;
   left: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   animation: skeleton-pulse 1.8s infinite;
 }
 
@@ -820,7 +899,6 @@ onMounted(() => {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
-
 
 /* Hover scale effect */
 .group:hover .group-hover\:scale-105 {

@@ -208,9 +208,7 @@
             ></span>
 
             <!-- Button content -->
-            <span class="relative z-10 font-medium">{{
-              $t("see_more")
-            }}</span>
+            <span class="relative z-10 font-medium">{{ $t("see_more") }}</span>
             <UIcon
               v-if="!isLoadingMore"
               name="i-heroicons-arrow-down"
@@ -471,7 +469,6 @@
                               v-if="!errorIndex.includes(i)"
                               :src="gig.category_details?.image"
                               class="w-10 h-10 object-contain"
-                              @error="handleImageError(i)"
                             />
                             <img
                               v-else

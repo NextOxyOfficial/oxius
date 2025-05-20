@@ -320,18 +320,17 @@
               </div>
             </template>
           </div>
-
-          <div
-            class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50"
+        </div>
+        <div
+          class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50"
+        >
+          <button
+            @click="viewAllResults"
+            class="inline-flex items-center justify-center gap-1.5 py-2 px-4 text-base font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full"
           >
-            <button
-              @click="viewAllResults"
-              class="inline-flex items-center justify-center gap-1.5 py-2 px-4 text-base font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors w-full"
-            >
-              View all results
-              <ArrowRight class="h-3 w-3" />
-            </button>
-          </div>
+            View all results
+            <ArrowRight class="h-3 w-3" />
+          </button>
         </div>
 
         <!-- Enhanced No Results Message -->
