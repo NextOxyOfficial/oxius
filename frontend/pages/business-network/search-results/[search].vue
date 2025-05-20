@@ -13,16 +13,19 @@
               <Search class="h-4 w-4 text-blue-600" />
             </span>
             Search Results
-          </h1>
-          <p class="text-gray-500 text-sm mt-1 flex items-center">
+          </h1>          <p class="text-gray-500 text-sm mt-1 flex items-center">
             <span class="font-medium text-gray-700">{{
               $route.params.search
             }}</span>
             <span class="mx-2 text-gray-500">•</span>
             <span v-if="!loading && !usersLoading && (allPosts.length > 0 || userResults.length > 0)"
               >{{ userResults.length + allPosts.length }}
-              {{ userResults.length + allPosts.length === 1 ? "result" : "results" }}</span
-            >
+              {{ userResults.length + allPosts.length === 1 ? "result" : "results" }}
+              <span v-if="userResults.length > 0 && allPosts.length > 0">
+                ({{ userResults.length }} {{ userResults.length === 1 ? "person" : "people" }}, 
+                {{ allPosts.length }} {{ allPosts.length === 1 ? "post" : "posts" }})
+              </span>
+            </span>
             <span v-else-if="!loading && !usersLoading && allPosts.length === 0 && userResults.length === 0"
               >No results found</span
             >
@@ -54,9 +57,8 @@
                 class="absolute inset-0 -m-2 rounded-full animate-ping opacity-30 bg-blue-400"
               ></div>
             </div>
-          </div>
-          <p class="text-center text-blue-600 text-sm font-medium mt-4">
-            Searching for relevant posts...
+          </div>          <p class="text-center text-blue-600 text-sm font-medium mt-4">
+            Searching for "{{ $route.params.search }}"...
           </p>
         </div>
 
@@ -151,16 +153,34 @@
           </div>
         </div>
       </div>
-    </template>
-
-    <!-- Search Results Section -->
+    </template>    <!-- Search Results Section -->
     <div class="relative" v-if="!loading || !usersLoading || userResults.length > 0 || allPosts.length > 0">
       
-      <!-- Users Section -->
+      <!-- No Results Message -->
+      <div 
+        v-if="!loading && !usersLoading && userResults.length === 0 && allPosts.length === 0" 
+        class="flex flex-col items-center justify-center py-8 text-center"
+      >
+        <div class="relative mb-4">
+          <div class="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
+            <Search class="h-8 w-8 text-gray-400" />
+          </div>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-1">No Results Found</h3>
+        <p class="text-gray-500 max-w-md mx-auto mb-6">
+          We couldn't find any matches for "{{ $route.params.search }}". Try using different keywords or checking for typos.
+        </p>
+      </div>
+      
+      <!-- Users Section - Always displayed first when available -->
       <div v-if="!usersLoading && userResults.length > 0" class="mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1">People</h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+        <div class="mb-2 text-sm text-gray-500 px-1">
+          Found {{ userResults.length }} {{ userResults.length === 1 ? 'person' : 'people' }} matching "{{ $route.params.search }}"
+        </div>
+        
+        <div class="divide-y divide-gray-100">
           <BusinessNetworkUserCard
             v-for="user in displayedUsers"
             :key="user.id"
@@ -169,32 +189,32 @@
         </div>
 
         <!-- Load more people button -->
-        <div v-if="userResults.length > initialUserCount" class="flex justify-center mt-4 mb-6">
+        <div v-if="userResults.length > initialUserCount" class="flex justify-center mt-4 mb-2">
           <button 
             v-if="!showAllUsers" 
             @click="showAllUsers = true"
-            class="flex items-center gap-2 px-5 py-2 bg-white border border-blue-500 rounded text-blue-600 text-sm font-medium"
+            class="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-full text-gray-700 text-sm font-medium hover:bg-gray-50 shadow-sm"
           >
             <UsersRound class="h-4 w-4" />
             <span>Load More People</span>
           </button>
         </div>
         
-        <div class="border-b border-gray-200 my-6"></div>
+        <div class="border-b border-gray-100 my-6"></div>
       </div>
       
       <!-- Posts Section -->
       <div v-if="!loading || allPosts.length > 0">
         <!-- Post header -->
         <h2 class="text-lg font-semibold text-gray-800 mb-3 px-1" v-if="allPosts.length > 0">Posts</h2>
-
+        
         <!-- Search result count when posts are loaded -->
         <div
           v-if="!loading && displayedPosts.length > 0"
           class="mb-4 text-sm text-gray-500 px-1"
         >
-          Showing {{ displayedPosts.length }}
-          {{ displayedPosts.length === 1 ? "post" : "posts" }} for "<span
+          Found {{ allPosts.length }}
+          {{ allPosts.length === 1 ? "post" : "posts" }} matching "<span
             class="font-medium text-gray-700"
             >{{ $route.params.search }}</span
           >"
@@ -280,9 +300,7 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Enhanced end of results indicator -->
+    </div>    <!-- Enhanced end of results indicator -->
     <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center"
@@ -349,7 +367,7 @@
 
     <!-- Enhanced no results message -->
     <div
-      v-if="!loading && !loadingMore && allPosts.length === 0"
+      v-if="!loading && !usersLoading && !loadingMore && allPosts.length === 0 && userResults.length === 0"
       class="flex flex-col items-center justify-center py-12 text-center bg-white rounded-xl shadow-sm border border-gray-100 px-4"
     >
       <div
@@ -461,7 +479,7 @@ const showAllUsers = ref(false); // Whether to show all users
 const newSearchQuery = ref("");
 
 // Batch size and pagination
-const POSTS_PER_BATCH = 5;
+const POSTS_PER_BATCH = 10; // Load 10 posts initially
 const page = ref(1);
 const hasMore = ref(true);
 const lastCreatedAt = ref(null); // For pagination cursor
@@ -667,12 +685,22 @@ function loadData() {
   page.value = 1;
   hasMore.value = true;
   lastCreatedAt.value = null;
+  showAllUsers.value = false; // Reset user display to show initial count only
   loadedPostIds.value.clear(); // Reset tracked post IDs when reloading
+  allPosts.value = []; // Clear all posts
+  userResults.value = []; // Clear all user results
+  displayedPosts.value = []; // Clear displayed posts
+  displayedUsers.value = []; // Clear displayed users
 
   // Get initial posts and users with a slight delay
   setTimeout(() => {
-    getPosts();
-    getUsers();
+    // Fetch users first then posts to prioritize showing people results first
+    const fetchData = async () => {
+      await getUsers(); // Get users first
+      await getPosts(); // Then get posts
+    };
+    
+    fetchData();
   }, 100); // Small delay to ensure navigation completes first
 }
 
@@ -710,6 +738,16 @@ onMounted(() => {
   loadData();
   setupInfiniteScroll();
 });
+
+// Watch for route changes to reload data when search query changes
+watch(
+  () => route.params.search,
+  (newSearch, oldSearch) => {
+    if (newSearch !== oldSearch) {
+      loadData();
+    }
+  }
+);
 
 // Event listener setup
 onMounted(() => {
