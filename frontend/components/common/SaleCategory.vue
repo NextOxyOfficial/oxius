@@ -390,45 +390,55 @@
   </div>
 
   <!-- My Posts Modal -->
-  <div v-if="showMyPostsModal" class="fixed inset-0 z-50 overflow-y-auto pt-16">
-    <!-- Added pt-16 for header spacing -->
+  <Teleport to="body">
     <div
-      class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
+      v-if="showMyPostsModal"
+      class="fixed inset-0 z-50 overflow-y-auto pt-0 md:pt-16"
     >
-      <div class="fixed inset-0 transition-opacity" @click="closeMyPostsModal">
-        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
-
+      <!-- Added pt-16 for header spacing -->
       <div
-        v-if="user?.user"
-        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
       >
-        <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-              <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-700">
-                  My Posts
-                </h3>
-                <button
-                  type="button"
-                  class="text-gray-500 hover:text-gray-500"
-                  @click="closeMyPostsModal"
+        <div
+          class="fixed inset-0 transition-opacity"
+          @click="closeMyPostsModal"
+        >
+          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <div
+          v-if="user?.user"
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+        >
+          <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                <div
+                  class="flex justify-between items-center border-b pb-3 mb-4"
                 >
-                  <Icon name="heroicons:x-mark" size="24px" />
-                </button>
+                  <h3 class="text-lg leading-6 font-medium text-gray-700">
+                    My Posts
+                  </h3>
+                  <button
+                    type="button"
+                    class="text-gray-500 hover:text-gray-500"
+                    @click="closeMyPostsModal"
+                  >
+                    <Icon name="heroicons:x-mark" size="24px" />
+                  </button>
+                </div>
+                <MyPosts
+                  @create-post="switchToPostSaleModal"
+                  @edit-post="handleEditPost"
+                  @delete-post="handleDeletePost"
+                />
               </div>
-              <MyPosts
-                @create-post="switchToPostSaleModal"
-                @edit-post="handleEditPost"
-                @delete-post="handleDeletePost"
-              />
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>

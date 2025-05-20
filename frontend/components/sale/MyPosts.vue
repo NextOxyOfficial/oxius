@@ -170,7 +170,7 @@
       </div>
       <!-- Post items -->
       <div class="divide-y divide-gray-50">
-        <div v-for="post in filteredPosts" :key="post.id" class="p-">
+        <div v-for="post in filteredPosts" :key="post.id" class="mb-3 md:mb-4">
           <div class="flex gap-2 p-2">
             <!-- Post image -->
             <NuxtLink
@@ -211,7 +211,7 @@
             </NuxtLink>
             <!-- Post details -->
             <div class="flex-1 min-w-0">
-              <div class="flex justify-between items-start">
+              <div class="flex items-start">
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
                     <h3
@@ -220,6 +220,81 @@
                       {{ post.title }}
                     </h3>
                   </NuxtLink>
+                  <!-- Action buttons for mobile -->
+                  <div
+                    class="flex items-center gap-4 justify-between md:hidden mt-3"
+                  >
+                    <!-- Edit/Delete buttons -->
+                    <div class="flex gap-2.5">
+                      <button
+                        @click="$emit('edit-post', post)"
+                        class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
+                        title="Edit post"
+                      >
+                        <Icon name="heroicons:pencil-square" size="20px" />
+                      </button>
+                      <button
+                        @click="confirmDelete(post.id, post.title)"
+                        class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
+                        title="Delete post"
+                      >
+                        <Icon name="heroicons:trash" size="20px" />
+                      </button>
+                    </div>
+                    <!-- Mark as Sold button with states -->
+                    <button
+                      v-if="post.status !== 'sold' && post.status !== 'pending'"
+                      @click="markAsSold(post.id)"
+                      :disabled="markingSold === post.id"
+                      class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg shadow-sm"
+                      :class="[
+                        markingSold === post.id
+                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600 hover:from-blue-500/20 hover:to-blue-600/20 hover:shadow border border-blue-200/50',
+                      ]"
+                    >
+                      <Icon
+                        :name="
+                          markingSold === post.id
+                            ? 'heroicons:clock'
+                            : 'heroicons:tag'
+                        "
+                        size="18px"
+                        class="flex-shrink-0"
+                      />
+                      {{
+                        markingSold === post.id
+                          ? "Processing..."
+                          : "Mark as Sold"
+                      }}
+                    </button>
+
+                    <!-- Pending notice -->
+                    <div
+                      v-else-if="post.status === 'pending'"
+                      class="flex items-center gap-2.5 px-5 py-2.5 text-sm bg-gradient-to-r from-amber-50/80 to-amber-100/50 text-amber-600 rounded-lg shadow-sm border border-amber-200/30 backdrop-blur-sm"
+                    >
+                      <Icon
+                        name="heroicons:clock"
+                        size="18px"
+                        class="flex-shrink-0"
+                      />
+                      Awaiting Approval
+                    </div>
+
+                    <!-- Sold status indicator -->
+                    <div
+                      v-else
+                      class="flex items-center gap-2.5 px-5 py-2.5 text-sm bg-gradient-to-r from-green-50/80 to-emerald-50/80 text-green-600 rounded-lg shadow-sm border border-green-200/30 backdrop-blur-sm"
+                    >
+                      <Icon
+                        name="heroicons:check-circle"
+                        size="18px"
+                        class="flex-shrink-0"
+                      />
+                      Sold
+                    </div>
+                  </div>
                   <div class="mt-3 flex items-center text-sm gap-3">
                     <div
                       class="flex items-center gap-1.5 bg-gradient-to-r from-primary/5 to-primary/10 px-3 py-1.5 rounded-lg shadow-sm"
@@ -285,7 +360,7 @@
               </div>
             </div>
             <!-- Action buttons -->
-            <div class="flex flex-col gap-4 items-end justify-between">
+            <div class="md:flex md:flex-col items-end gap-4 hidden">
               <!-- Edit/Delete buttons -->
               <div class="flex gap-2.5">
                 <button
@@ -354,6 +429,69 @@
               </div>
             </div>
           </div>
+          <!-- Action buttons for mobile -->
+          <!-- <div class="flex items-center gap-4 justify-between md:hidden">
+            
+            <div class="flex gap-2.5">
+              <button
+                @click="$emit('edit-post', post)"
+                class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-blue-100"
+                title="Edit post"
+              >
+                <Icon name="heroicons:pencil-square" size="20px" />
+              </button>
+              <button
+                @click="confirmDelete(post.id, post.title)"
+                class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
+                title="Delete post"
+              >
+                <Icon name="heroicons:trash" size="20px" />
+              </button>
+            </div>
+            
+            <button
+              v-if="post.status !== 'sold' && post.status !== 'pending'"
+              @click="markAsSold(post.id)"
+              :disabled="markingSold === post.id"
+              class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg shadow-sm"
+              :class="[
+                markingSold === post.id
+                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600 hover:from-blue-500/20 hover:to-blue-600/20 hover:shadow border border-blue-200/50',
+              ]"
+            >
+              <Icon
+                :name="
+                  markingSold === post.id ? 'heroicons:clock' : 'heroicons:tag'
+                "
+                size="18px"
+                class="flex-shrink-0"
+              />
+              {{ markingSold === post.id ? "Processing..." : "Mark as Sold" }}
+            </button>
+
+            
+            <div
+              v-else-if="post.status === 'pending'"
+              class="flex items-center gap-2.5 px-5 py-2.5 text-sm bg-gradient-to-r from-amber-50/80 to-amber-100/50 text-amber-600 rounded-lg shadow-sm border border-amber-200/30 backdrop-blur-sm"
+            >
+              <Icon name="heroicons:clock" size="18px" class="flex-shrink-0" />
+              Awaiting Approval
+            </div>
+
+            
+            <div
+              v-else
+              class="flex items-center gap-2.5 px-5 py-2.5 text-sm bg-gradient-to-r from-green-50/80 to-emerald-50/80 text-green-600 rounded-lg shadow-sm border border-green-200/30 backdrop-blur-sm"
+            >
+              <Icon
+                name="heroicons:check-circle"
+                size="18px"
+                class="flex-shrink-0"
+              />
+              Sold
+            </div>
+          </div> -->
         </div>
       </div>
       <!-- Empty filtered state -->
