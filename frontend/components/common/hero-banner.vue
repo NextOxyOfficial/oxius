@@ -36,9 +36,9 @@
                 }"
               >
                 <!-- Gradient overlay -->
-                <div
+                <!-- <div
                   class="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20 z-10"
-                ></div>
+                ></div> -->
                 <img
                   v-if="image"
                   :src="image"
