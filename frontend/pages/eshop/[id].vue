@@ -138,7 +138,7 @@
               class="inline-flex items-center bg-indigo-100 text-indigo-800 rounded-full px-3 py-1 text-xs"
             >
               <UIcon name="i-heroicons-shopping-bag" class="w-3 h-3 mr-1" />
-              {{ products.length }} Products
+              {{ products?.length }} Products
             </span>
           </div>
         </div>
