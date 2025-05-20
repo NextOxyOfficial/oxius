@@ -119,10 +119,10 @@ class SalePost(models.Model):
     negotiable = models.BooleanField(default=False)
     
     # Location information
-    division = models.CharField(max_length=100)
-    district = models.CharField(max_length=100)
-    area = models.CharField(max_length=100)
-    detailed_address = models.TextField()
+    division = models.CharField(max_length=100,blank=True, null=True)
+    district = models.CharField(max_length=100,blank=True, null=True)
+    area = models.CharField(max_length=100,blank=True, null=True)
+    detailed_address = models.TextField(blank=True, null=True)
     
     # Contact information
     phone = models.CharField(max_length=15)

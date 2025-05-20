@@ -50,10 +50,14 @@
         <div
           class="relative z-10 flex items-center justify-between px-3 pl-12 rounded-lg border border-primary-100"
         >
-          <!-- Location path with icons -->          <div class="flex items-center flex-wrap location-path">
+          <!-- Location path with icons -->
+          <div class="flex items-center flex-wrap location-path">
             <!-- Show country if allOverBangladesh is true or only country is set -->
-            <div 
-              v-if="location?.allOverBangladesh || (location?.country && !location?.state)" 
+            <div
+              v-if="
+                location?.allOverBangladesh ||
+                (location?.country && !location?.state)
+              "
               class="location-segment flex items-center"
               data-location="country"
             >
@@ -64,11 +68,11 @@
               <span class="font-medium text-gray-700">{{
                 location?.country || "Bangladesh"
               }}</span>
-              <span 
+              <span
                 v-if="location?.allOverBangladesh"
                 class="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full"
               >
-                All over {{location?.country || "Bangladesh"}}
+                All over {{ location?.country || "Bangladesh" }}
               </span>
             </div>
 
@@ -450,11 +454,17 @@
         </UCard>
       </TransitionGroup>
       <UDivider v-if="searchError" label="" class="mt-3 sm:mt-5" />
-      <h3 v-if="searchError" class="text-xl font-semibold mt-6 text-green-900">
+      <h3
+        v-if="searchError && !location?.allOverBangladesh"
+        class="text-xl font-semibold mt-6 text-green-900"
+      >
         {{ $t("nearby_location") }}
       </h3>
 
-      <div class="services mt-3" v-if="nearby_services?.length">
+      <div
+        class="services mt-3"
+        v-if="nearby_services?.length && !location?.allOverBangladesh"
+      >
         <UCard
           :ui="{
             background: '',
@@ -564,7 +574,11 @@
         </UCard>
       </div>
       <UCard
-        v-else-if="!isNearByLoading && !nearby_services.length"
+        v-else-if="
+          !isNearByLoading &&
+          !nearby_services.length &&
+          !location?.allOverBangladesh
+        "
         class="py-16 text-center mt-6"
       >
         <p>
@@ -575,7 +589,8 @@
       <h3 class="mt-3 mb-2 sm:my-6 text-lg font-semibold text-green-950">
         AdsyAI Bot
         <UIcon class="text-xl" name="i-carbon:bot" />
-      </h3>      <UCard
+      </h3>
+      <UCard
         v-if="form.city || location?.allOverBangladesh"
         class="text-center border border-green-900/30 border-dashed"
         :ui="{
@@ -607,7 +622,7 @@ const { formatDate } = useUtils();
 const isLoading = ref(false);
 const isNearByLoading = ref(false);
 const searchLocationOption = ref(false);
-import { useRoute } from 'vue-router';
+import { useRoute } from "vue-router";
 const router = useRoute();
 const form = ref({
   country: "Bangladesh",
@@ -709,20 +724,20 @@ async function filterSearch() {
   const { title, category, ...rest } = form.value;
   const locationData = {
     ...rest,
-    allOverBangladesh: location.value?.allOverBangladesh || false
+    allOverBangladesh: location.value?.allOverBangladesh || false,
   };
   location.value = locationData;
   search.value = [];
   isLoading.value = true;
-  
+
   // Build the API request URL
   let apiUrl = `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}`;
-  
+
   // Only add state, city, and upazila params if not showing all over Bangladesh
   if (!location.value?.allOverBangladesh) {
     apiUrl += `&state=${form.value.state}&city=${form.value.city}&upazila=${form.value.upazila}`;
   }
-  
+
   const res = await get(apiUrl);
 
   setTimeout(() => {
@@ -744,19 +759,19 @@ async function fetchNearbyAds() {
   if (!location.value) return;
 
   isNearByLoading.value = true;
-  
+
   // If showing all over Bangladesh, get a sample of ads from across the country
   if (location.value.allOverBangladesh) {
     const countrySearchRes = await get(
       `/classified-posts/filter/?category=${router.params.id}&country=${form.value.country}`
     );
-    
+
     nearby_services.value = countrySearchRes.data.filter(
       (service) =>
         service.service_status.toLowerCase() === "approved" &&
         service.active_service
     );
-    
+
     isNearByLoading.value = false;
     return;
   }

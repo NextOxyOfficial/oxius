@@ -307,7 +307,19 @@
             <label class="block text-sm font-medium text-gray-700 mb-2"
               >Location <span class="text-red-500">*</span></label
             >
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <UCheckbox
+              v-model="allOverBangladesh"
+              name="all-bangladesh"
+              :label="
+                t('all_over_bangladesh') ||
+                'Show content from all over Bangladesh'
+              "
+              color="primary"
+            />
+            <div
+              class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2"
+              v-if="!allOverBangladesh"
+            >
               <div>
                 <select
                   v-model="formData.division"
@@ -622,6 +634,7 @@ import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useSalePost } from "~/composables/useSalePost";
 const { get } = useApi();
 
+const { t } = useI18n();
 // Initialize composables
 const {
   createSalePost,
@@ -640,6 +653,8 @@ const props = defineProps({
     default: null,
   },
 });
+
+const allOverBangladesh = ref(false);
 
 // Form data with simplified fields
 const formData = reactive({
@@ -941,9 +956,11 @@ const validateStep = () => {
       errors.price = "Please enter a price or mark as negotiable";
     }
 
-    if (!formData.division) errors.division = "Please select division";
-    if (!formData.district) errors.district = "Please select district";
-    if (!formData.area) errors.area = "Please select area";
+    if (!allOverBangladesh.value) {
+      if (!formData.division) errors.division = "Please select division";
+      if (!formData.district) errors.district = "Please select district";
+      if (!formData.area) errors.area = "Please select area";
+    }
     if (!formData.detailedAddress)
       errors.detailedAddress = "Please enter detailed address";
     if (!formData.phone) errors.phone = "Please enter phone number";
