@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-6xl mx-auto my-4">
     <!-- Main Product Section -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
       <!-- Gallery Section - 3 columns on large screens -->
@@ -305,7 +305,7 @@
         </a>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 px-2">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 px-1">
         <div
           v-for="item in product.similarListings.slice(0, 4)"
           :key="item.id"

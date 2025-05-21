@@ -270,8 +270,7 @@
 
           <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-7">
             <!-- Profile Picture and Mobile Stats -->
-            <div class="flex flex-col items-center sm:items-start">
-              <div class="relative group">
+            <div class="flex flex-col items-center sm:items-start">              <div class="relative group">
                 <div class="relative">
                   <!-- Professional border for profile picture -->
                   <div
@@ -290,6 +289,22 @@
                       class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
+                    
+                    <!-- Change profile picture overlay - only visible for own profile -->
+                    <NuxtLink 
+                      v-if="user?.id === currentUser?.user?.id"
+                      to="/settings" 
+                      class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 z-20 cursor-pointer"
+                      title="Change profile picture"
+                    >
+                      <div class="bg-white bg-opacity-90 p-2.5 rounded-full transform scale-90 group-hover:scale-100 transition-transform duration-300 shadow-lg">
+                        <UIcon 
+                          name="i-heroicons-camera" 
+                          class="size-7 text-blue-600" 
+                        />
+                      </div>
+                      <span class="sr-only">Change profile picture</span>
+                    </NuxtLink>
                   </div>
                 </div>
               </div>
