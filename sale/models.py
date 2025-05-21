@@ -127,8 +127,7 @@ class SalePost(models.Model):
     # Contact information
     phone = models.CharField(max_length=15)
     email = models.EmailField(blank=True, null=True)
-    
-    # Status and metadata
+      # Status and metadata
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -144,20 +143,23 @@ class SalePost(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            # Generate a base slug from the title
-            base_slug = slugify(self.title)
+            # Use the title directly without slugifying to preserve Bangla characters
+            from django.utils.encoding import iri_to_uri
+            
+            # Remove spaces and convert to lowercase where possible
+            base_slug = self.title.replace(' ', '-')
             
             # Add a unique identifier (first 8 chars of a UUID)
             unique_id = str(uuid.uuid4()).split('-')[0]
             
-            # Combine base slug with unique identifier
-            self.slug = f"{base_slug}-{unique_id}"
+            # Combine base slug with unique identifier and ensure URL safety
+            self.slug = iri_to_uri(f"{base_slug}-{unique_id}")
             
             # If the slug is too long, truncate the title part
             max_base_length = 280  # Allow space for the unique ID and hyphen
             if len(self.slug) > 300:
                 truncated_base = base_slug[:max_base_length]
-                self.slug = f"{truncated_base}-{unique_id}"
+                self.slug = iri_to_uri(f"{truncated_base}-{unique_id}")
         
         # Link to condition object if available
         if self.condition and not self.condition_object:

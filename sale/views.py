@@ -64,6 +64,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
     """ViewSet for handling sale posts"""
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field='slug'
+    lookup_value_converter = 'str'  # Ensure proper handling of Bangla characters in URL
     pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):

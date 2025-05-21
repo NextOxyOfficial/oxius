@@ -111,6 +111,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Allow Unicode URLs (for Bangla slugs)
+APPEND_SLASH = True
+ALLOW_UNICODE_SLUGS = True
+
 # Whitenoise configuration
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
