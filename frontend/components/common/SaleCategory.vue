@@ -294,17 +294,18 @@
               <!-- Title with truncation -->
               <h4 class="font-medium text-gray-700 line-clamp-1 text-sm">
                 {{ post.title }}
-              </h4>
-
+              </h4>              
               <!-- Address with location icon -->
               <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
                 <Icon
                   name="heroicons:map-pin"
                   class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
                 />
-                <span class="line-clamp-1"
-                  >{{ post.area }}, {{ post.district }}</span
-                >
+                {{
+                    post?.division && post?.district && post?.area
+                      ? `${post?.division}, ${post?.district}, ${post?.area}`
+                      : `All Over Bangladesh`
+                  }}
               </div>
 
               <div class="mt-auto flex justify-between items-center pt-1">
