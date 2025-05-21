@@ -197,11 +197,13 @@
                   </div>
                 </div>
                 <div>
-                  <button
-                    class="bg-white hover:bg-gray-50 text-emerald-600 text-sm px-4 py-2 rounded-md transition-all duration-200"
+                  <NuxtLink
+                
+                   href="/contact-us" class="bg-white hover:bg-gray-50 text-emerald-600 text-sm px-4 py-2 rounded-md transition-all duration-200"
                   >
                     Apply Now
-                  </button>
+                  </NuxtLink
+                >
                 </div>
               </div>
             </div>
@@ -238,7 +240,7 @@
               Details
             </h2>
             <p
-              class="text-gray-600 whitespace-pre-line text-sm leading-relaxed"
+              class="text-gray-600 sm:px-6 whitespace-pre-line text-sm leading-relaxed"
             >
               {{ product?.description }}
             </p>
@@ -250,11 +252,11 @@
                 class="text-base font-semibold mb-3 text-gray-800 flex items-center"
               >
                 <MapPin class="h-4 w-4 mr-2 text-emerald-600" />
-                Location
+                Item/Property Address
               </h3>
               <div
                 v-if="product?.division && product?.district && product?.area"
-                class="text-sm text-gray-700"
+                class="text-sm sm:px-6 text-gray-700"
               >
                 {{
                   product?.division && product?.district && product?.area

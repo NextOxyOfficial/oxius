@@ -305,7 +305,7 @@
           <!-- Location Selection -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Location <span class="text-red-500">*</span></label
+              >Targeted Location <span class="text-red-500">*</span> <span class="text-xs">(Where you want to show your ad)</span></label
             >
             <UCheckbox
               v-model="allOverBangladesh"
@@ -389,7 +389,7 @@
             <label
               for="detailedAddress"
               class="block text-sm font-medium text-gray-700 mb-2"
-              >Detailed Address <span class="text-red-500">*</span></label
+              >Item/Property Address <span class="text-red-500">*</span></label
             >
             <textarea
               id="detailedAddress"
