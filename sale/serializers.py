@@ -4,6 +4,8 @@ from .models import (
     SaleImage, SaleBanner, SaleCondition
 )
 
+from base.serializers import UserSerializer
+
 class SaleCategorySerializerParent(serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     sub_categories_count = serializers.SerializerMethodField()
@@ -99,7 +101,7 @@ class SalePostDetailSerializer(serializers.ModelSerializer):
     images = SaleImageSerializer(many=True, read_only=True)
     category_details = SaleCategorySerializer(source='category', read_only=True)
     child_category_details = SaleChildCategorySerializer(source='child_category', read_only=True)
-    user_name = serializers.SerializerMethodField()
+    user_details = UserSerializer(source='user', read_only=True)
     
     class Meta:
         model = SalePost
@@ -109,15 +111,14 @@ class SalePostDetailSerializer(serializers.ModelSerializer):
             'price', 'negotiable', 'division', 'district', 'area', 
             'detailed_address', 'phone', 'email', 'status',
             'view_count', 'created_at', 'updated_at', 'images',
-            'user_name'
+            'user_details'
         ]
         read_only_fields = [
             'id', 'slug', 'status', 'view_count', 
             'created_at', 'updated_at'
         ]
     
-    def get_user_name(self, obj):
-        return obj.user.get_full_name() or obj.user.username
+    
 
 class SalePostCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating a sale post"""

@@ -215,7 +215,7 @@
             </h3>
           </div>
           <NuxtLink
-            :to="`/sale/for-sale?category=${selectedCategory}`"
+            :to="`/sale`"
             class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
           >
             View All <Icon name="heroicons:arrow-right" size="14px" />

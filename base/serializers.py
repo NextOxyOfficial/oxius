@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
-
+from sale.models import SalePost
 from cities_light.models import City, Region, Country
 
 
@@ -15,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
     follow_count = serializers.SerializerMethodField()
+    sale_post_count = serializers.SerializerMethodField()
     class Meta:
         model = User
         # Exclude the password field for security
@@ -33,6 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_follow_count(self, obj):
         return BusinessNetworkFollowerModel.objects.filter(follower=obj).count()
+    
+    def get_sale_post_count(self, obj):
+        return SalePost.objects.filter(user=obj).count()
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
