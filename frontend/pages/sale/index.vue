@@ -521,12 +521,6 @@
             </div>
           </div>
 
-          <!-- Sponsored Banner -->
-          <!-- Sponsored Banner - Will be replaced with dynamic data from API -->
-          <div v-if="false" class="mb-6 rounded-lg shadow-sm overflow-hidden">
-            <!-- Banner content will be loaded from API -->
-          </div>
-
           <!-- Recent Listings Section -->
           <div
             class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-3 mb-6"
@@ -583,36 +577,17 @@
                 </NuxtLink>
               </div>
             </div>
-          </div>
-          <!-- Loading State -->
-          <div
-            v-if="recentListingsLoading"
-            class="py-12 text-center bg-white rounded-lg shadow-sm"
-          >
-            <UIcon
-              name="i-heroicons-arrow-path"
-              class="animate-spin h-8 w-8 mx-auto text-amber-500"
-            />
-            <p class="mt-2 text-gray-500">Loading recent listings...</p>
+          </div>          <div v-if="recentListingsLoading" class="py-12 text-center bg-white rounded-lg shadow-sm">
+            <UIcon name="i-heroicons-arrow-path" class="animate-spin h-8 w-8 mx-auto text-amber-500" />
+            <p class="mt-2 text-gray-500 text-sm">Loading recent listings...</p>
           </div>
 
           <!-- Empty State -->
-          <div
-            v-else-if="recentListings?.length === 0"
-            class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm"
-          >
-            <UIcon
-              name="i-heroicons-face-frown"
-              class="h-16 w-16 text-gray-400"
-            />
-            <h3 class="mt-2 text-lg font-medium text-gray-700">
-              No recent listings found
-            </h3>
-            <p class="mt-1 text-gray-500 max-w-sm text-center">
-              Check back soon for new listings.
-            </p>
+          <div v-else-if="recentListings?.length === 0" class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm">
+            <UIcon name="i-heroicons-face-frown" class="h-16 w-16 text-gray-400" />
+            <h3 class="mt-2 text-lg font-medium text-gray-700">No recent listings found</h3>
+            <p class="mt-1 text-gray-500 max-w-sm text-center">Check back soon for new listings.</p>
           </div>
-          <!-- Pagination Removed -->
 
           <!-- Buyer Tips & Safety Guide -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -990,7 +965,6 @@ const areaOptions = computed(() => {
 // Fetch categories from the API
 async function fetchCategories() {
   try {
-    // Use a more generic path that's likely to work
     const response = await get(API_ENDPOINTS.CATEGORIES);
 
     if (response && Array.isArray(response.data)) {
@@ -1002,8 +976,6 @@ async function fetchCategories() {
     } else {
       categories.value = [];
     }
-
-    console.log("Categories loaded:", categories.value);
   } catch (error) {
     console.error("Error fetching categories:", error);
     categories.value = [];
@@ -1012,7 +984,6 @@ async function fetchCategories() {
 
 // Function to handle empty or failed category responses
 function handleEmptyCategories() {
-  console.log("No categories available");
   return [];
 }
 
@@ -1051,21 +1022,8 @@ async function loadPosts(page = 1) {
       price_high: "-price",
       most_viewed: "-views",
     };
-    params.append("sort", sortMapping[sortOption.value] || "-created_at");
-
-    // Try different API paths to increase chances of success
-    let response;
-    try {
-      response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
-    } catch (firstError) {
-      console.log("First API path failed, trying alternative");
-      try {
-        response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
-      } catch (secondError) {
-        console.log("Second API path failed, trying last alternative");
-        response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
-      }
-    }
+    params.append("sort", sortMapping[sortOption.value] || "-created_at");    // Get data from API
+    const response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
 
     if (response && response.data) {
       if (response.data.results) {
@@ -1299,29 +1257,16 @@ const categoryPosts = ref([]);
 const categoryTabLoading = ref(false);
 
 // Load category posts function
-
-// Load posts for the selected category tab with improved API paths and fallback
 async function loadCategoryPosts() {
   categoryTabLoading.value = true;
 
   try {
     const params = new URLSearchParams();
     params.append("page", "1");
-    params.append("page_size", "24"); // Increased to load more items for pagination (2 pages worth)
+    params.append("page_size", "24");
     params.append("sort", "-created_at");
 
-    let response;
-    try {
-      response = await get(API_ENDPOINTS.POSTS);
-    } catch (firstError) {
-      console.log("First category API path failed, trying alternative");
-      try {
-        response = await get(API_ENDPOINTS.POSTS);
-      } catch (secondError) {
-        console.log("Second category API path failed, trying last alternative");
-        response = await get(API_ENDPOINTS.POSTS);
-      }
-    }
+    const response = await get(API_ENDPOINTS.POSTS);
 
     if (response && response.data) {
       if (response.data.results) {
@@ -1346,7 +1291,7 @@ async function loadCategoryPosts() {
 const recentListings = ref([]);
 const recentListingsLoading = ref(false);
 
-// Load recent listings with improved API paths and fallback
+// Load recent listings
 async function loadRecentListings() {
   recentListingsLoading.value = true;
 
@@ -1355,20 +1300,7 @@ async function loadRecentListings() {
     params.append("page", "1");
     params.append("sort", "-created_at"); // Always sort by newest
 
-    let response;
-    try {
-      response = await get(API_ENDPOINTS.POSTS);
-    } catch (firstError) {
-      console.log("First recent listings API path failed, trying alternative");
-      try {
-        response = await get(API_ENDPOINTS.POSTS);
-      } catch (secondError) {
-        console.log(
-          "Second recent listings API path failed, trying last alternative"
-        );
-        response = await get(API_ENDPOINTS.POSTS);
-      }
-    }
+    const response = await get(API_ENDPOINTS.POSTS);
 
     if (response && response.data) {
       if (response.data.results) {
@@ -1391,10 +1323,8 @@ async function loadRecentListings() {
 
 // Modified onMounted to also load recent listings
 onMounted(() => {
-  console.log("Component mounted - starting data loading");
   // Load categories first
   fetchCategories().then(() => {
-    console.log("Categories loaded, now loading other data");
     // Then load all list types in parallel
     Promise.all([
       loadPosts(),
