@@ -279,7 +279,7 @@
 
                   <!-- Profile image container -->
                   <div
-                    class="size-44 rounded-full border-4 border-white shadow-sm bg-white overflow-hidden relative z-10"
+                    class="size-44 rounded-full border-4 border-white shadow-sm bg-white overflow-hidden relative z-60"
                   >
                     <img
                       :src="
@@ -288,13 +288,12 @@
                       :alt="user?.name"
                       class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                       loading="lazy"
-                    />
-                    
-                    <!-- Persistent change profile picture button - only visible for own profile -->
-                    <div v-if="user?.id === currentUser?.user?.id" class="absolute bottom-0 right-0 z-20">
+                    />                    
+                    <!-- Persistent change profile picture button - only visible for own profile -->                    <div v-if="user?.id === currentUser?.user?.id" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-20">
                       <button 
-                        @click="toggleProfilePhotoMenu"
-                        class="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all duration-300"
+                        @click.stop="toggleProfilePhotoMenu"
+                        class="rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+                        ref="cameraButtonRef"
                       >
                         <UIcon 
                           name="i-heroicons-camera" 
@@ -304,7 +303,7 @@
                         <!-- Menu with options -->
                       <div 
                         v-if="showProfilePhotoMenu"
-                        class="absolute bottom-12 right-0 bg-white rounded-md shadow-lg p-2 w-40 border border-gray-200 z-30 profile-photo-menu"
+                        class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-md shadow-lg p-2 w-40 border border-gray-200 z-50 profile-photo-menu"
                       >
                         <NuxtLink 
                           to="/settings" 
@@ -313,9 +312,8 @@
                           <UIcon name="i-heroicons-pencil-square" class="size-4" />
                           <span class="text-sm">Change Photo</span>
                         </NuxtLink>
-                        
-                        <button 
-                          @click="openProfilePhotoModal"
+                          <button 
+                          @click.stop="openProfilePhotoModal"
                           class="flex items-center gap-2 p-2 text-gray-700 hover:bg-blue-50 rounded-md transition-colors w-full text-left"
                         >
                           <UIcon name="i-heroicons-eye" class="size-4" />
@@ -1086,31 +1084,56 @@ const showProfilePhotoMenu = ref(false);
 const showProfilePhotoModal = ref(false);
 
 // Toggle profile photo menu
-const toggleProfilePhotoMenu = () => {
+const cameraButtonRef = ref(null);
+
+const toggleProfilePhotoMenu = (event) => {
+  // Toggle the menu state
   showProfilePhotoMenu.value = !showProfilePhotoMenu.value;
   
-  // Auto-close menu after a delay when it's open
+  // Add click event listener to handle clicks outside the menu
   if (showProfilePhotoMenu.value) {
-    document.addEventListener('click', closeMenuOnClickOutside);
+    // Use nextTick to ensure the DOM is updated before adding the event listener
+    nextTick(() => {
+      document.addEventListener('click', closeMenuOnClickOutside);
+    });
   } else {
     document.removeEventListener('click', closeMenuOnClickOutside);
+  }
+  
+  // Stop event propagation to prevent immediate closing
+  if (event) {
+    event.stopPropagation();
   }
 };
 
 // Close menu when clicking outside
 const closeMenuOnClickOutside = (event) => {
-  // Check if the click was outside the menu
+  // Check if the click was outside both the menu and the button
   const menuElement = document.querySelector('.profile-photo-menu');
-  if (menuElement && !menuElement.contains(event.target)) {
+  const buttonElement = cameraButtonRef.value?.$el || cameraButtonRef.value;
+  
+  if (
+    menuElement && 
+    !menuElement.contains(event.target) && 
+    buttonElement && 
+    !buttonElement.contains(event.target)
+  ) {
     showProfilePhotoMenu.value = false;
     document.removeEventListener('click', closeMenuOnClickOutside);
   }
 };
 
 // Open profile photo modal
-const openProfilePhotoModal = () => {
+const openProfilePhotoModal = (event) => {
+  if (event) {
+    event.stopPropagation(); // Prevent the click from closing the menu
+  }
+  
   showProfilePhotoModal.value = true;
   showProfilePhotoMenu.value = false; // Close the menu
+  
+  // Remove document click listener
+  document.removeEventListener('click', closeMenuOnClickOutside);
 };
 
 // Close profile photo modal
