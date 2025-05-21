@@ -821,7 +821,7 @@
 
     <!-- Product Limit Modal -->
     <UModal v-model="showProductLimitModal">
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-md">
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden max-w-md">
         <!-- Premium gradient header -->
         <div class="bg-gradient-to-r from-red-500 via-orange-400 to-amber-500 p-6 text-white relative overflow-hidden">
           <!-- Decorative elements -->

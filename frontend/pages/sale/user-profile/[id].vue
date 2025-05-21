@@ -40,7 +40,7 @@
           <div class="absolute bottom-0 right-0 z-20">
             <button
               @click="toggleProfilePhotoMenu"
-              class="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all duration-300"
+              class="bg-white rounded-full p-2 shadow-sm hover:shadow-sm transition-all duration-300"
               ref="cameraButtonRef"
             >
               <UIcon
@@ -52,7 +52,7 @@
             <!-- Menu with options -->
             <div
               v-if="showProfilePhotoMenu"
-              class="absolute bottom-12 right-0 bg-white rounded-md shadow-lg p-2 w-40 border border-gray-200 z-30"
+              class="absolute bottom-12 right-0 bg-white rounded-md shadow-sm p-2 w-40 border border-gray-200 z-30"
               ref="profilePhotoMenuRef"
             >
               <div class="flex flex-col space-y-1">

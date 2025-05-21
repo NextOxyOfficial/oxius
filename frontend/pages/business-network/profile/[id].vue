@@ -297,7 +297,7 @@
                     >
                       <button
                         @click.stop="toggleProfilePhotoMenu"
-                        class="rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+                        class="rounded-full shadow-sm hover:shadow-sm transition-all duration-300"
                         ref="cameraButtonRef"
                       >
                         <UIcon
@@ -308,7 +308,7 @@
                       <!-- Menu with options -->
                       <div
                         v-if="showProfilePhotoMenu"
-                        class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-md shadow-lg p-2 w-40 border border-gray-200 z-50 profile-photo-menu"
+                        class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white rounded-md shadow-sm p-2 w-40 border border-gray-200 z-50 profile-photo-menu"
                       >
                         <NuxtLink
                           to="/settings"
@@ -975,7 +975,7 @@
         width: 'max-w-xl',
         container: 'flex min-h-screen items-center justify-center p-4',
         overlay: 'bg-black/80',
-        base: 'bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden',
+        base: 'bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden',
       }"
     >
       <div class="p-4 relative">
@@ -990,7 +990,7 @@
 
         <div class="flex justify-center mb-4">
           <div
-            class="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-lg"
+            class="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-sm"
           >
             <img
               :src="user?.image || '/static/frontend/images/placeholder.jpg'"

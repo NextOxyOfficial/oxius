@@ -1,6 +1,6 @@
 <template>  <!-- Sidebar with filters -->
   <div
-    class="filter-sidebar lg:w-72 bg-white rounded-lg shadow-md border border-gray-100"
+    class="filter-sidebar lg:w-72 bg-white rounded-lg shadow-sm border border-gray-100"
     :class="[
       isMobileFilterOpen ? 'mobile-sidebar-open' : 'mobile-sidebar-closed',
       'lg:block',
@@ -129,7 +129,7 @@
 
         <!-- Small Regular Ad Card - Improved Design -->
         <div
-          class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-4 group cursor-pointer hover:shadow-md transition-all duration-300"
+          class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-4 group cursor-pointer hover:shadow-sm transition-all duration-300"
         >
           <div class="flex">
             <div class="w-1/3 bg-gray-50">
@@ -168,7 +168,7 @@
         </h3>
 
         <div
-          class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-md transition-all duration-300"
+          class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-sm transition-all duration-300"
         >
           <div class="relative">
             <img
@@ -179,7 +179,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
             <div class="absolute top-3 left-3">
               <span
-                class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 shadow-lg"
+                class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 shadow-sm"
               >
                 <UIcon name="i-heroicons-clock" class="w-3 h-3" />
                 Limited Time
@@ -192,7 +192,7 @@
               <p class="text-blue-50 text-sm font-medium mt-1">
                 Up to 50% off on selected items
               </p>
-              <UButton size="xs" color="white" class="mt-3 shadow-lg hover:bg-white hover:text-blue-600 transition-colors" variant="solid">
+              <UButton size="xs" color="white" class="mt-3 shadow-sm hover:bg-white hover:text-blue-600 transition-colors" variant="solid">
                 Shop Now
               </UButton>
             </div>
@@ -202,7 +202,7 @@
     </div>
 
     <!-- Fixed bottom CTA for mobile -->
-    <div class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-md z-20">
+    <div class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20">
       <UButton
         @click="openAddPostModal"
         color="primary"
