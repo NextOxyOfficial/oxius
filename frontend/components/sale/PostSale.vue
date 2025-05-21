@@ -848,8 +848,8 @@ function handleFileUpload(event, index) {
   }
 
   // Validate file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    errors.images = "Image size should be less than 5MB";
+  if (file.size > 12 * 1024 * 1024) {
+    errors.images = "Image size should be less than 12MB";
     return;
   }
 
