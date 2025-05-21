@@ -83,7 +83,7 @@
 
         <!-- Profile Info -->
         <div
-          class="pt-20 flex flex-col md:flex-row md:items-end justify-between"
+          class="flex flex-col md:flex-row md:items-end justify-between"
         >
           <div>
             <div class="flex items-center">
@@ -339,14 +339,13 @@
                 v-for="product in products"
                 :key="product.id"
                 class="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden"
-              >                <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
-                  <NuxtLink :to="`/sale/${product.slug}`">
-                    <img
-                      :src="product.main_image || '/static/frontend/avatar.png'"
-                      :alt="product.title"
-                      class="absolute inset-0 w-full h-full object-contain"
-                    />
-                  </NuxtLink>
+              >
+                <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
+                  <img
+                    :src="product.main_image || '/static/frontend/avatar.png'"
+                    :alt="product.title"
+                    class="absolute inset-0 w-full h-full object-contain"
+                  />
                 </div>
 
                 <div class="p-4 sm:w-2/3 flex flex-col">                  <h3 class="font-semibold text-gray-800 mb-1">
@@ -378,16 +377,17 @@
 
                   <p class="text-sm text-gray-600 mt-2 line-clamp-2">
                     {{ product.description || "No description available." }}
-                  </p>                  <div
+                  </p>
+
+                  <div
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                   >
-                    <NuxtLink
-                      :to="`/sale/${product.slug}`"
+                    <button
                       class="text-emerald-600 hover:text-emerald-700 text-xs flex items-center"
                     >
                       View Details
                       <ChevronRight class="h-3 w-3 ml-1" />
-                    </NuxtLink>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -935,9 +935,7 @@ const openProfilePhotoModal = () => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
-  box-orient: vertical;
   overflow: hidden;
 }
 </style>
