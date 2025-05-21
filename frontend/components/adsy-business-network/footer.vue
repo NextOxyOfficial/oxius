@@ -46,12 +46,11 @@
             />
             <div v-if="$route.path === '/business-network/notifications'" class="icon-gradient-red"></div>
             <div class="icon-reflection"></div>
-          </div>
-          <span
+          </div>          <span
             v-if="unreadCount > 0"
-            class="absolute -top-1 -right-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 shadow-sm border border-white/40 animate-pulse-slow z-10"
+            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse z-10"
           >
-            {{ unreadCount }}
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
           </span>
         </div>
         <span class="font-medium tracking-wide">Notifications</span>
@@ -303,6 +302,7 @@ function handleProfileClick() {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #60a5fa, #3b82f6, #2563eb);
+  background-clip: text;
   -webkit-background-clip: text;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolyline points='12 6 12 12 16 14'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center;
   mask-size: contain;
@@ -314,6 +314,7 @@ function handleProfileClick() {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #f87171, #ef4444, #dc2626);
+  background-clip: text;
   -webkit-background-clip: text;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'%3E%3C/path%3E%3Cpath d='M13.73 21a2 2 0 0 1-3.46 0'%3E%3C/path%3E%3C/svg%3E") no-repeat center;
   mask-size: contain;
@@ -325,6 +326,7 @@ function handleProfileClick() {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #c084fc, #a855f7, #7e22ce);
+  background-clip: text;
   -webkit-background-clip: text;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E") no-repeat center;
   mask-size: contain;
@@ -336,6 +338,7 @@ function handleProfileClick() {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #4ade80, #22c55e, #16a34a);
+  background-clip: text;
   -webkit-background-clip: text;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='12' y1='20' x2='12' y2='10'%3E%3C/line%3E%3Cline x1='18' y1='20' x2='18' y2='4'%3E%3C/line%3E%3Cline x1='6' y1='20' x2='6' y2='16'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
   mask-size: contain;
@@ -347,6 +350,7 @@ function handleProfileClick() {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #fb923c, #f97316, #ea580c);
+  background-clip: text;
   -webkit-background-clip: text;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
   mask-size: contain;
@@ -358,6 +362,7 @@ function handleProfileClick() {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  background-clip: text;
   -webkit-background-clip: text;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M12.6 11.992v-5.586q0-.176-.141-.318q-.14-.142-.318-.142H9.075q-.176 0-.318.142t-.142.318v1.585q0 .176.142.318q.142.142.318.142h1.585v3.563q0 .175.142.317q.142.142.318.142h.3q.176 0 .318-.142q.142-.142.142-.318m-1.159 3.086q-1.888 0-3.56-.712t-2.91-1.951q-1.24-1.24-1.952-2.91Q2.308 8.406 2.308 6.52t.711-3.56q.712-1.674 1.952-2.911Q6.21-.19 7.881-.902t3.56-.712q1.887 0 3.56.712t2.91 1.951q1.24 1.237 1.952 2.91q.711 1.674.711 3.561t-.711 3.56q-.712 1.671-1.952 2.91q-1.237 1.24-2.91 1.952q-1.673.711-3.56.711'/%3E%3C/svg%3E") no-repeat center;
   mask-size: contain;

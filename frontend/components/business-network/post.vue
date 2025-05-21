@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl pb-8 pt-3">
+  <div class="max-w-3xl pb-8">
     <div class="space-y-6">
       <!-- Loop through posts and insert sponsored products after every 5 posts -->
       <template v-for="(post, index) in posts" :key="post.id">        <!-- Post Card with glassmorphism effect -->
