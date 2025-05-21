@@ -96,7 +96,7 @@
 
           <div class="mt-4">
             <span class="text-2xl font-bold text-emerald-600"
-              >${{ product?.price.toLocaleString() }}</span
+              >৳{{ product?.price.toLocaleString() }}</span
             >
           </div>
 
@@ -198,12 +198,11 @@
                 </div>
                 <div>
                   <NuxtLink
-                
-                   href="/contact-us" class="bg-white hover:bg-gray-50 text-emerald-600 text-sm px-4 py-2 rounded-md transition-all duration-200"
+                    href="/contact-us"
+                    class="bg-white hover:bg-gray-50 text-emerald-600 text-sm px-4 py-2 rounded-md transition-all duration-200"
                   >
                     Apply Now
-                  </NuxtLink
-                >
+                  </NuxtLink>
                 </div>
               </div>
             </div>

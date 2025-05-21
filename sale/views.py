@@ -75,6 +75,10 @@ class SalePostViewSet(viewsets.ModelViewSet):
             queryset = SalePost.objects.filter(user=self.request.user)
             
         # Apply filters if provided
+        seller =  self.request.query_params.get('seller')
+        if seller:
+            queryset = queryset.filter(user__id=seller)
+        
         category = self.request.query_params.get('category')
         if category:
             queryset = queryset.filter(category=category)
