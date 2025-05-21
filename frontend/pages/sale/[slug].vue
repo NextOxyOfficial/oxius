@@ -63,7 +63,7 @@
 
       <!-- Product Info - 2 columns on large screens -->
       <div class="lg:col-span-2">
-        <div class="bg-white rounded-lg p-6 border border-gray-200">
+        <div class="bg-white rounded-lg p-3 border border-gray-200">
           <div class="flex justify-between items-start">
             <h1 class="text-xl font-bold text-gray-800">{{ product.title }}</h1>
             <div class="flex space-x-2">
@@ -181,7 +181,7 @@
       <!-- Product Details - 2 columns on large screens -->
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg overflow-hidden border border-gray-200">
-          <div class="p-6">
+          <div class="p-3">
             <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
               <ClipboardList class="h-5 w-5 mr-2 text-emerald-600" />
               Details
@@ -294,7 +294,7 @@
 
     <!-- Similar Listings -->
     <div class="mt-8">
-      <div class="flex items-center justify-between mb-4 px-6">
+      <div class="flex items-center justify-between mb-4 px-3">
         <h2 class="text-lg font-bold text-gray-800 flex items-center">
           <LayoutGrid class="h-5 w-5 mr-2 text-emerald-600" />
           Similar Listings You May Like
