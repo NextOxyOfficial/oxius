@@ -212,6 +212,7 @@
           <div class="mt-4 flex justify-between">
             <button
               class="flex-1 mr-2 text-sm py-2 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-600"
+              @click="openReportDialog"
             >
               <Flag class="h-3 w-3 mr-1" />
               Report Ad
@@ -524,6 +525,107 @@
         </div>
       </div>
     </div>
+
+    <!-- Report Dialog -->
+    <div
+      v-if="showReportDialog"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click="closeReportDialog"
+    >
+      <div
+        class="bg-white rounded-lg max-w-md w-full mx-4 border border-gray-200"
+        @click.stop
+      >
+        <div class="flex justify-between items-center p-5 border-b">
+          <h3 class="font-semibold text-gray-800">Report Ad</h3>
+          <button
+            @click="closeReportDialog"
+            class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+        <div class="p-5">
+          <p class="text-sm text-gray-600 mb-4">
+            Please select a reason for reporting this ad:
+          </p>
+
+          <div class="space-y-2">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                v-model="reportReason"
+                value="fake"
+                class="text-emerald-600"
+              />
+              <span class="text-sm text-gray-700"
+                >Fake or misleading listing</span
+              >
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                v-model="reportReason"
+                value="prohibited"
+                class="text-emerald-600"
+              />
+              <span class="text-sm text-gray-700"
+                >Prohibited item</span
+              >
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                v-model="reportReason"
+                value="offensive"
+                class="text-emerald-600"
+              />
+              <span class="text-sm text-gray-700">Offensive content</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                v-model="reportReason"
+                value="scam"
+                class="text-emerald-600"
+              />
+              <span class="text-sm text-gray-700">Scam or fraud</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                v-model="reportReason"
+                value="other"
+                class="text-emerald-600"
+              />
+              <span class="text-sm text-gray-700">Other</span>
+            </label>
+          </div>
+
+          <textarea
+            v-if="reportReason === 'other'"
+            v-model="reportDetails"
+            placeholder="Please provide details about your report..."
+            class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-700 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          ></textarea>
+
+          <div class="mt-6 flex justify-end space-x-3">
+            <button
+              class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50"
+              @click="closeReportDialog"
+            >
+              Cancel
+            </button>
+            <button
+              class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm transition-colors duration-200"
+              @click="submitReport"
+            >
+              Submit Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -589,10 +691,13 @@ await getSimilarProducts();
 const currentImageIndex = ref(0);
 const showPhone = ref(false);
 const shareDialogOpen = ref(false);
+const showReportDialog = ref(false);
 const galleryRef = ref(null);
 const touchStartX = ref(0);
 const touchEndX = ref(0);
 const shareUrl = ref(window.location.href);
+const reportReason = ref("");
+const reportDetails = ref("");
 
 // Format date
 const formatDate = (dateString) => {
@@ -708,6 +813,23 @@ const shareViaMedia = (platform) => {
   }
 
   closeShareDialog();
+};
+
+// Report functionality
+const openReportDialog = () => {
+  showReportDialog.value = true;
+};
+
+const closeReportDialog = () => {
+  showReportDialog.value = false;
+};
+
+const submitReport = () => {
+  console.log("Report submitted:", {
+    reason: reportReason.value,
+    details: reportDetails.value,
+  });
+  closeReportDialog();
 };
 </script>
 
