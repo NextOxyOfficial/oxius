@@ -947,7 +947,7 @@ function handleFileUpload(event, field) {
   }
 
   // Updated the file size limit to 10 MB for initial upload
-  const maxSize = 10 * 1024 * 1024; // 10MB
+  const maxSize = 12 * 1024 * 1024; // 10MB
   const targetSize = 150 * 1024; // 150KB target size
 
   if (file.size > maxSize) {

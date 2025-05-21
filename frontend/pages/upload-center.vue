@@ -636,10 +636,10 @@ function handleFileUpload(event, field) {
   if (!file) return;
 
   // Check file size (limit to 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  const maxSize = 12 * 1024 * 1024; // 5MB in bytes
   if (file.size > maxSize) {
     toast.add({
-      title: "File size too large. Maximum size is 5MB.",
+      title: "File size too large. Maximum size is 12MB.",
       type: "error",
     });
     return;

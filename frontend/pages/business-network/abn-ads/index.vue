@@ -2458,8 +2458,8 @@ const handleImageUpload = (event) => {
   if (files && files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image size should be less than 5MB");
+      if (file.size > 12 * 1024 * 1024) {
+        alert("Image size should be less than 12MB");
         continue;
       }
       if (adForm.value.images?.length < 4) {

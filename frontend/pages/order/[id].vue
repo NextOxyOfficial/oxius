@@ -395,11 +395,11 @@ function handleFileUpload(event, field) {
   const file = files[0];
 
   // Validate file size (5MB limit)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  const maxSize = 12 * 1024 * 1024; // 5MB in bytes
   if (file.size > maxSize) {
     toast.add({
       title: "File size too large",
-      description: "Maximum size allowed is 5MB",
+      description: "Maximum size allowed is 12MB",
       color: "red",
     });
     return;

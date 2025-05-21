@@ -519,8 +519,8 @@ function handleFileUpload(event) {
   }
 
   // Validate file size (10MB max)
-  if (file.size > 10 * 1024 * 1024) {
-    uploadError.value = "File size should be less than 10MB";
+  if (file.size > 12 * 1024 * 1024) {
+    uploadError.value = "File size should be less than 12MB";
     return;
   }
 

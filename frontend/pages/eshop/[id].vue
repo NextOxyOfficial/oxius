@@ -803,8 +803,8 @@ async function handleBannerUpload(e) {
     isLoading.value = true;
 
     // Validate file size (limit to 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      throw new Error("File size exceeds 2MB limit");
+    if (file.size > 12 * 1024 * 1024) {
+      throw new Error("File size exceeds 12MB limit");
     }
 
     // Validate file type
@@ -864,8 +864,8 @@ async function handleLogoUpload(e) {
     isLoading.value = true;
 
     // Validate file size (limit to 1MB)
-    if (file.size > 1 * 1024 * 1024) {
-      throw new Error("File size exceeds 1MB limit");
+    if (file.size > 12 * 1024 * 1024) {
+      throw new Error("File size exceeds 12MB limit");
     }
 
     // Validate file type

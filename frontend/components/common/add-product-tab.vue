@@ -958,8 +958,8 @@ function handleFileUpload(event) {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      uploadError.value = "Image size must be less than 5MB";
+    if (file.size > 12 * 1024 * 1024) {
+      uploadError.value = "Image size must be less than 12MB";
       isUploading.value = false;
       return;
     }
