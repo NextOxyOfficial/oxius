@@ -329,7 +329,11 @@
                       class="h-4 w-4 text-gray-600"
                     />
                     <span class="line-clamp-1"
-                      >{{ post.area }}, {{ post.district }}</span
+                      >{{
+                    post?.division && post?.district && post?.area
+                      ? `${post?.division}, ${post?.district}, ${post?.area}`
+                      : `All Over Bangladesh`
+                  }}</span
                     >
                   </div>
                   <div
