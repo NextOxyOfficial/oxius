@@ -23,7 +23,7 @@
             </div>
             <!-- Aspect ratio container - reduced by ~10% -->
             <div
-              class="rounded-xl mt-4 sm:mt-8 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%]"
+              class="rounded-xl mt-4 sm:mt-8 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%] shadow-sm"
             >
               <div
                 v-for="({ id, image }, index) in sliderImages"
@@ -35,7 +35,7 @@
                   'opacity-0 -translate-x-full': index < currentSlide,
                 }"
               >
-                                <img
+                <img
                   v-if="image"
                   :src="image"
                   :alt="`Slide ${index + 1}`"
