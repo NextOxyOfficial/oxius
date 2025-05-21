@@ -47,7 +47,7 @@
         </div>
 
         <!-- Thumbnail Gallery -->
-        <div class="flex mt-3 space-x-2 overflow-x-auto pb-2">
+        <div class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2">
           <div
             v-for="(image, index) in product?.images"
             :key="index"
@@ -171,7 +171,7 @@
                 <div>
                   <h3 class="font-bold text-white text-sm">Need financing?</h3>
                   <p class="text-emerald-100 text-sm mt-1">
-                    Get pre-approved in minutes
+                    Get Free consultation from our experts
                   </p>
                   <div class="mt-3 flex items-center">
                     <div class="flex -space-x-1">
@@ -375,13 +375,15 @@
               View Seller Profile
             </button>
 
-            <a
-              href="#"
-              class="mt-3 text-emerald-600 hover:text-emerald-600 text-sm flex items-center justify-center"
+            <NuxtLink
+             @click="
+                navigateTo('/sale/user-profile/' + product.user_details?.id)
+              "
+              class="cursorpointer mt-3 text-emerald-600 hover:text-emerald-600 text-sm flex items-center justify-center"
             >
               View more listings from this seller
               <ChevronRight class="h-3 w-3 ml-1" />
-            </a>
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -404,9 +406,10 @@
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2 px-1">
-        <div
+        <NuxtLink
           v-for="item in similarProducts.slice(0, 4)"
           :key="item.id"
+          :to="`/sale/${item.slug}`"
           class="bg-white rounded-lg overflow-hidden group border border-gray-200 hover:border-emerald-200 transition-all duration-300"
         >
           <div class="relative aspect-video">
@@ -417,21 +420,21 @@
             />
           </div>
           <div class="p-4">
-            <h3 class="font-semibold truncate text-sm text-gray-800">
+            <h3 class="font-semibold truncate text-sm text-gray-800 hover:text-emerald-600">
               {{ item.title }}
             </h3>
             <div class="flex justify-between items-center mt-2">
               <span class="font-bold text-emerald-600 text-sm"
-                >${{ item?.price.toLocaleString() }}</span
+                >৳{{ item?.price.toLocaleString() }}</span
               >
-              <button
+              <span
                 class="text-gray-400 hover:text-emerald-600 h-6 w-6 p-0 transition-colors duration-200"
               >
                 <ExternalLink class="h-4 w-4" />
-              </button>
+              </span>
             </div>
           </div>
-        </div>
+        </NuxtLink>
       </div>
     </div>
 

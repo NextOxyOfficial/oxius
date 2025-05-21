@@ -284,18 +284,19 @@
                 v-for="product in products"
                 :key="product.id"
                 class="bg-white rounded-lg overflow-hidden"
-              >
-                <div class="relative aspect-video">
-                  <img
-                    :src="product.main_image"
-                    :alt="product.title"
-                    class="absolute inset-0 w-full h-full object-contain"
-                  />
-                </div>
-
-                <div class="p-4">
+              >                <div class="relative aspect-video">
+                  <NuxtLink :to="`/sale/${product.slug}`">
+                    <img
+                      :src="product.main_image"
+                      :alt="product.title"
+                      class="absolute inset-0 w-full h-full object-contain"
+                    />
+                  </NuxtLink>
+                </div><div class="p-4">
                   <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
-                    {{ product.title }}
+                    <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
+                      {{ product.title }}
+                    </NuxtLink>
                   </h3>
 
                   <div class="flex items-center justify-between mt-2">
@@ -317,17 +318,16 @@
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
-                  </div>
-
-                  <div
+                  </div>                  <div
                     class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100"
                   >
-                    <button
+                    <NuxtLink
+                      :to="`/sale/${product.slug}`"
                       class="text-emerald-600 hover:text-emerald-700 text-xs flex items-center"
                     >
                       View Details
                       <ChevronRight class="h-3 w-3 ml-1" />
-                    </button>
+                    </NuxtLink>
                   </div>
                 </div>
               </div>
@@ -339,18 +339,20 @@
                 v-for="product in products"
                 :key="product.id"
                 class="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden"
-              >
-                <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
-                  <img
-                    :src="product.main_image || '/static/frontend/avatar.png'"
-                    :alt="product.title"
-                    class="absolute inset-0 w-full h-full object-contain"
-                  />
+              >                <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
+                  <NuxtLink :to="`/sale/${product.slug}`">
+                    <img
+                      :src="product.main_image || '/static/frontend/avatar.png'"
+                      :alt="product.title"
+                      class="absolute inset-0 w-full h-full object-contain"
+                    />
+                  </NuxtLink>
                 </div>
 
-                <div class="p-4 sm:w-2/3 flex flex-col">
-                  <h3 class="font-semibold text-gray-800 mb-1">
-                    {{ product.title }}
+                <div class="p-4 sm:w-2/3 flex flex-col">                  <h3 class="font-semibold text-gray-800 mb-1">
+                    <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
+                      {{ product.title }}
+                    </NuxtLink>
                   </h3>
 
                   <div class="flex items-center justify-between mt-2">
@@ -376,17 +378,16 @@
 
                   <p class="text-sm text-gray-600 mt-2 line-clamp-2">
                     {{ product.description || "No description available." }}
-                  </p>
-
-                  <div
+                  </p>                  <div
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                   >
-                    <button
+                    <NuxtLink
+                      :to="`/sale/${product.slug}`"
                       class="text-emerald-600 hover:text-emerald-700 text-xs flex items-center"
                     >
                       View Details
                       <ChevronRight class="h-3 w-3 ml-1" />
-                    </button>
+                    </NuxtLink>
                   </div>
                 </div>
               </div>
@@ -934,7 +935,9 @@ const openProfilePhotoModal = () => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
+  box-orient: vertical;
   overflow: hidden;
 }
 </style>
