@@ -242,10 +242,22 @@
               {{ $t("location") }}
             </h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <UCheckbox
+              v-model="allOverBangladesh"
+              name="all-bangladesh"
+              :label="
+                t('all_over_bangladesh') ||
+                'Show content from all over Bangladesh'
+              "
+              color="primary"
+            />
+
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-3"
+              v-if="!allOverBangladesh"
+            >
               <UFormGroup
                 label="State"
-                
                 :error="
                   !form.state && checkSubmit && 'You must select a state!'
                 "
@@ -269,7 +281,6 @@
 
               <UFormGroup
                 label="City"
-                
                 :error="!form.city && checkSubmit && 'You must select a city'"
                 class="mb-5"
               >
@@ -324,6 +335,7 @@
                 !form.location && checkSubmit && 'You must enter your address!'
               "
               class="mb-5"
+              :class="allOverBangladesh ? 'mt-3' : 'mt-0'"
             >
               <UTextarea
                 v-model="form.location"
@@ -425,6 +437,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+const { t } = useI18n();
 const isOpen = ref(false);
 const { get, post, put, baseURL } = useApi();
 const { user } = useAuth();
@@ -432,6 +445,7 @@ const toast = useToast();
 const categories = ref([]);
 const checkSubmit = ref(false);
 const isLoading = ref(false);
+const allOverBangladesh = ref(false);
 
 const form = ref({
   price: 0,
@@ -496,7 +510,7 @@ function validateForm() {
   submitValues.value = negotiable
     ? { ...rest, negotiable }
     : { ...rest, price };
-const { state, city, upazila,...filetered } = submitValues.value;
+  const { state, city, upazila, ...filetered } = submitValues.value;
   // Validate each field in submitValues
   for (const key in filetered) {
     const value = filetered[key];
