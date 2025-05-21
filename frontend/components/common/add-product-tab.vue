@@ -251,13 +251,13 @@
                       v-if="img.image"
                       :src="img.image"
                       :alt="`Uploaded file ${i + 1}`"
-                      class="object-cover w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
+                      class="object-contain w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
                     />
                     <img
                       v-else
                       :src="img"
                       :alt="`Uploaded file ${i + 1}`"
-                      class="object-cover w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
+                      class="object-contain w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
                     />
 
                     <!-- Premium overlay controls -->

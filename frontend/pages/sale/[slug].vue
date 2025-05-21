@@ -16,7 +16,7 @@
               product.images[currentImageIndex]?.image || '/placeholder.svg'
             "
             :alt="product.title"
-            class="absolute inset-0 w-full h-full object-cover"
+            class="absolute inset-0 w-full h-full object-contain"
           />
           <button
             class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200"
@@ -61,7 +61,7 @@
             <img
               :src="image.image || '/placeholder.svg'"
               :alt="`Thumbnail ${index + 1}`"
-              class="absolute inset-0 w-full h-full object-cover"
+              class="absolute inset-0 w-full h-full object-contain"
             />
           </div>
         </div>
@@ -324,7 +324,7 @@
                     product.user_details?.image || '/static/frontend/avatar.png'
                   "
                   :alt="product.user_details?.name"
-                  class="h-full w-full object-cover"
+                  class="h-full w-full object-contain"
                 />
               </div>
               <div>
@@ -414,7 +414,7 @@
             <img
               :src="item?.main_image || '/placeholder.svg'"
               :alt="item?.title"
-              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              class="absolute inset-0 w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
             />
           </div>
           <div class="p-4">

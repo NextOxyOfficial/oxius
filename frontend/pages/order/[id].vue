@@ -100,7 +100,7 @@
                 >
                   View
                 </button>
-                <video class="w-20 object-cover shadow" :src="m.video"></video>
+                <video class="w-20 object-contain shadow" :src="m.video"></video>
               </a>
             </div>
           </div>

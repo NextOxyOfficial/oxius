@@ -506,7 +506,7 @@
               <img
                 v-else
                 :src="imagePreviewUrls[n - 1]"
-                class="absolute inset-0 w-full h-full object-cover rounded-lg"
+                class="absolute inset-0 w-full h-full object-contain rounded-lg"
                 alt="Preview"
               />
 

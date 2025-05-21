@@ -564,7 +564,7 @@
                     <img
                       :src="editingProduct.image"
                       alt="Product preview"
-                      class="h-32 w-32 object-cover rounded-md border border-gray-200"
+                      class="h-32 w-32 object-contain rounded-md border border-gray-200"
                     />
                   </div>
                 </div>

@@ -232,7 +232,7 @@
                 <img
                   :src="img"
                   :alt="`Uploaded file ${i}`"
-                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  class="w-full h-full object-contain transition-transform group-hover:scale-105"
                 />
                 <div
                   class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all"

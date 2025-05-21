@@ -160,13 +160,13 @@
                     <NuxtImg
                       v-if="service.medias && service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
                       alt="Post image"
                     />
                     <img
                       v-else
                       :src="service.category_details.image"
-                      class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
                       alt="Category image"
                     />
                   </div>

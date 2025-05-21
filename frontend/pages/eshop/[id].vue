@@ -56,7 +56,7 @@
                     v-if="user?.user?.image"
                     :src="user?.user?.image"
                     alt="Store Logo"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-contain"
                   />
                   <div
                     v-else

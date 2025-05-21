@@ -181,7 +181,7 @@
                 v-if="post.main_image"
                 :src="post.main_image"
                 :alt="post.title"
-                class="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                class="w-full h-full object-contain transform transition-transform duration-700 group-hover:scale-110"
               />
               <div
                 v-else

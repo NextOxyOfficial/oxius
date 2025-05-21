@@ -127,7 +127,7 @@
             v-if="product.image_details.length"
             :src="product.image_details[0].image"
             :alt="product.name"
-            class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+            class="w-full h-48 object-contain transition-transform duration-500 group-hover:scale-105"
           />
           <div class="absolute top-2 right-2">
             <span

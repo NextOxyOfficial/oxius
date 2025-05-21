@@ -56,7 +56,7 @@
             target="_blank"
             :href="'/media-viewer?url=' + m.image + '&type=image'"
           >
-            <NuxtImg class="h-48 w-64 object-cover shadow" :src="m.image" />
+            <NuxtImg class="h-48 w-64 object-contain shadow" :src="m.image" />
           </a>
           <a
             class=""
@@ -64,7 +64,7 @@
             :href="'/media-viewer?url=' + m.video + '&type=video'"
             v-if="m.video"
           >
-            <video class="h-48 w-64 object-cover shadow" :src="m.video"></video>
+            <video class="h-48 w-64 object-contain shadow" :src="m.video"></video>
           </a>
         </div>
       </div>

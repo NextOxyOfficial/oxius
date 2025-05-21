@@ -25,7 +25,7 @@
                 <img
                   :src="src"
                   :alt="`Slide ${index + 1}`"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-contain"
                 />
               </div>
             </div>

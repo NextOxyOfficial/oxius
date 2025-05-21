@@ -159,7 +159,7 @@
                   <img
                     :src="card.image"
                     :alt="card.name"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-contain"
                     loading="lazy"
                   />
                   <div

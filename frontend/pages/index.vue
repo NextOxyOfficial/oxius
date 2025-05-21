@@ -177,7 +177,7 @@
                     v-if="service?.medias[0]?.image"
                     :src="service?.medias[0]?.image"
                     :title="service.title"
-                    class="size-8 object-cover"
+                    class="size-8 object-contain"
                   />
                   <NuxtImg
                     v-else

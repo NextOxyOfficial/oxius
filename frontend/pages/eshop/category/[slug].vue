@@ -52,7 +52,7 @@
                 v-if="banner.image"
                 :src="banner.image"
                 :alt="banner.title || `Slide ${index + 1}`"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-contain"
               />
             </div>
           </div>

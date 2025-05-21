@@ -54,7 +54,7 @@
                 <img
                   :src="getImageUrl(banners[0]?.image)"
                   :alt="banners[0]?.title || 'Promotion'"
-                  class="w-full h-20 sm:h-20 md:h-32 object-cover"
+                  class="w-full h-20 sm:h-20 md:h-32 object-contain"
                 />
               </a>
             </div>
@@ -68,7 +68,7 @@
                 <img
                   :src="getImageUrl(banners[1]?.image)"
                   :alt="banners[1]?.title || 'Offer'"
-                  class="w-full h-20 sm:h-20 md:h-32 object-cover"
+                  class="w-full h-20 sm:h-20 md:h-32 object-contain"
                 />
               </a>
             </div>
@@ -81,7 +81,7 @@
               <img
                 src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion"
                 alt="Promotion"
-                class="w-full h-16 sm:h-20 md:h-32 object-cover"
+                class="w-full h-16 sm:h-20 md:h-32 object-contain"
               />
             </div>
 
@@ -92,7 +92,7 @@
               <img
                 src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer"
                 alt="Offer"
-                class="w-full h-16 sm:h-20 md:h-32 object-cover"
+                class="w-full h-16 sm:h-20 md:h-32 object-contain"
               />
             </div>
           </template>
@@ -284,7 +284,7 @@
                 <img
                   :src="post.main_image"
                   :alt="post.title"
-                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  class="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
                   loading="lazy"
                 />
               </div>

@@ -28,7 +28,7 @@
           <img 
             :src="seller.avatar || '/placeholder.svg'" 
             :alt="seller.name"
-            class="h-full w-full object-cover"
+            class="h-full w-full object-contain"
           />
           
           <!-- Persistent camera icon -->
@@ -252,7 +252,7 @@
                   <img 
                     :src="product.image" 
                     :alt="product.title"
-                    class="absolute inset-0 w-full h-full object-cover"
+                    class="absolute inset-0 w-full h-full object-contain"
                   />
                   <div class="absolute top-2 right-2">
                     <span v-if="product.isNew" class="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded">New</span>
@@ -296,7 +296,7 @@
                   <img 
                     :src="product.image" 
                     :alt="product.title"
-                    class="absolute inset-0 w-full h-full object-cover"
+                    class="absolute inset-0 w-full h-full object-contain"
                   />
                   <div class="absolute top-2 right-2">
                     <span v-if="product.isNew" class="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded">New</span>

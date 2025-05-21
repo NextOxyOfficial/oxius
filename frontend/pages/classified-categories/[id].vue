@@ -309,12 +309,12 @@
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="object-cover size-24 rounded-md"
+                      class="object-contain size-24 rounded-md"
                     />
                     <img
                       v-else
                       :src="service.category_details.image"
-                      class="object-cover size-24 rounded-md"
+                      class="object-contain size-24 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">
@@ -499,12 +499,12 @@
                     <NuxtImg
                       v-if="service.medias[0]?.image"
                       :src="service.medias[0].image"
-                      class="object-cover size-24 rounded-md"
+                      class="object-contain size-24 rounded-md"
                     />
                     <img
                       v-else
                       :src="service.category_details.image"
-                      class="object-cover size-24 rounded-md"
+                      class="object-contain size-24 rounded-md"
                     />
                   </div>
                   <div class="flex-1 text-sm sm:text-base">

@@ -21,13 +21,13 @@
               v-if="userProfile.image"
               :src="userProfile.image"
               alt="Profile"
-              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm"
+              class="w-20 h-20 rounded-full object-contain border-4 border-white shadow-sm"
             />
             <div
               v-else
               src="/static/frontend/avatar.png"
               alt="Profile"
-              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm"
+              class="w-20 h-20 rounded-full object-contain border-4 border-white shadow-sm"
             >
               <!-- Better profile icon fallback -->
               <UIcon
@@ -267,7 +267,7 @@
                     <img
                       :src="userProfile.image"
                       alt="Profile"
-                      class="w-24 h-24 rounded-full object-cover border-2 border-white shadow"
+                      class="w-24 h-24 rounded-full object-contain border-2 border-white shadow"
                     />
                     <button
                       type="button"

@@ -343,7 +343,7 @@
                           person.profile_image
                         "
                         :alt="person.name || 'User'"
-                        class="h-full w-full rounded-full object-cover border-2 border-white dark:border-gray-800"
+                        class="h-full w-full rounded-full object-contain border-2 border-white dark:border-gray-800"
                       />
                       <div
                         v-else

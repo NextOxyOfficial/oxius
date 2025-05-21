@@ -42,7 +42,7 @@
           <img
             :src="getProductImage(product)"
             :alt="product.name"
-            class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out-expo hover:scale-110"
+            class="absolute inset-0 w-full h-full object-contain object-center transition-transform duration-700 ease-out-expo hover:scale-110"
             loading="lazy"
           />
 

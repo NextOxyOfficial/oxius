@@ -70,7 +70,7 @@
                   <img
                     :src="deal.image"
                     :alt="deal.name"
-                    class="w-full h-full object-contain md:object-cover"
+                    class="w-full h-full object-contain md:object-contain"
                     loading="lazy"
                   />
 

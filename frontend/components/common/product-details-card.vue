@@ -113,7 +113,7 @@
               <img
                 :src="img.image"
                 :alt="currentProduct.name"
-                class="absolute inset-0 w-full h-full object-cover"
+                class="absolute inset-0 w-full h-full object-contain"
               />
             </div>
           </div>
@@ -383,7 +383,7 @@
                   v-if="currentProduct.owner_details?.image"
                   :src="currentProduct.owner_details?.image"
                   :alt="currentProduct.owner_details?.name || 'Seller'"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-contain"
                 />
                 <div v-else class="flex items-center justify-center h-full">
                   <UIcon

@@ -73,7 +73,7 @@
                   v-if="currentProduct.image_details?.length > 0"
                   :src="currentProduct.image_details[0].image"
                   :alt="currentProduct.name"
-                  class="object-cover h-full w-full"
+                  class="object-contain h-full w-full"
                 />
                 <div v-else class="text-gray-500 flex flex-col items-center">
                   <UIcon name="i-heroicons-photo" class="h-12 w-12" />

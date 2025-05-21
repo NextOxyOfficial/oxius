@@ -31,7 +31,7 @@
                 <img
                   :src="userProfile.image"
                   :alt="`Uploaded profile image`"
-                  class="rounded-full size-[100px] object-cover"
+                  class="rounded-full size-[100px] object-contain"
                 />
                 <div
                   class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"

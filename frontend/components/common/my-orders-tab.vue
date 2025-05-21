@@ -600,7 +600,7 @@
                           <div class="flex-shrink-0 h-10 w-10">
                             <img
                               v-if="item?.product_details?.image[0]"
-                              class="h-10 w-10 rounded-md object-cover"
+                              class="h-10 w-10 rounded-md object-contain"
                               :src="item?.product_details?.image[0]"
                               alt=""
                             />
@@ -698,7 +698,7 @@
                 >
                   <div class="flex items-start space-x-3">
                     <img
-                      class="h-16 w-16 rounded-md object-cover"
+                      class="h-16 w-16 rounded-md object-contain"
                       :src="item.image"
                       alt=""
                     />
@@ -903,7 +903,7 @@
                   v-if="selectedProductToAdd.image_details?.length"
                   :src="selectedProductToAdd.image_details[0].image"
                   :alt="selectedProductToAdd.name"
-                  class="h-full w-full object-cover"
+                  class="h-full w-full object-contain"
                 />
                 <div
                   v-else

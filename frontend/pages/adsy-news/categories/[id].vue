@@ -46,7 +46,7 @@
                   <img
                     :src="article.image"
                     :alt="article.title"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-contain"
                   />
                   <div class="absolute top-0 left-0 m-2">
                     <span
@@ -145,7 +145,7 @@
                 <img
                   :src="article.image"
                   :alt="article.title"
-                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
                 />
                 <div class="absolute top-0 left-0 m-3">
                   <span

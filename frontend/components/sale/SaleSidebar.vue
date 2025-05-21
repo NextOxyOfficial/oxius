@@ -176,7 +176,7 @@
             <img
               src="https://picsum.photos/300/150?ad=1"
               alt="Premium Ad"
-              class="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+              class="w-full h-32 object-contain group-hover:scale-105 transition-transform duration-300"
             />
             <div class="absolute top-2 left-2">
               <span
@@ -202,7 +202,7 @@
               <img
                 src="https://picsum.photos/300/150?ad=2"
                 alt="Ad"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
               />
             </div>
             <div class="w-2/3 p-3">
@@ -233,7 +233,7 @@
             <img
               src="https://picsum.photos/300/600?ad=special"
               alt="Special Featured Deal"
-              class="w-full h-96 object-cover group-hover:scale-102 transition-transform duration-500"
+              class="w-full h-96 object-contain group-hover:scale-102 transition-transform duration-500"
             />
             <div class="absolute top-2 left-2">
               <span
