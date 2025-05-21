@@ -353,6 +353,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  formRefresh: {
+    type: Boolean,
+    default: false,
+  },
   initialFormData: {
     type: Object,
     default: () => ({
@@ -365,6 +369,21 @@ const props = defineProps({
     }),
   },
 });
+
+defineExpose({
+  resetFormData,
+});
+
+function resetFormData() {
+  formData.value = {
+    title: "",
+    description: "",
+    category: "",
+    payment_option: "free",
+    payment_amount: "",
+    images: [],
+  };
+}
 
 const emit = defineEmits(["update:modelValue", "submit"]);
 

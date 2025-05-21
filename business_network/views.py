@@ -809,16 +809,12 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
         
         
     def create(self, request, *args, **kwargs):
+        print(request.data)
         images_data = request.data.pop('images', None)
-        serializer = self.get_serializer(data=
-                                         {'title':request.data['title'],
-                                          'description':request.data['description'],
-                                          'category':request.data['category'],
-                                          'user':request.user.id,
-                                          'payment_option':request.data['payment_option'],
-                                          'payment_amount':request.data['payment_amount'],
-                                          }
-                                         )
+        data = request.data
+        data['user'] = request.user.id
+        serializer = self.get_serializer(data=data )
+                                         
                 
         serializer.is_valid(raise_exception=True)
         mindforce = serializer.save()

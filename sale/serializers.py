@@ -125,55 +125,61 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         child=serializers.ImageField(allow_empty_file=False),
         required=False, write_only=True
     )
-    
+
+    # Optional fields
+    division = serializers.CharField(required=False, allow_blank=True)
+    district = serializers.CharField(required=False, allow_blank=True)
+    area = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = SalePost
         fields = [
             'title', 'description', 'condition', 'category', 'child_category',
-            'price', 'negotiable', 'division', 'district', 'area', 
-            'detailed_address', 'phone', 'email', 'images'
+            'price', 'negotiable', 'detailed_address', 'phone', 'email',
+            'division', 'district', 'area', 'images'
         ]
-        
+            
     def validate(self, data):
         """Validate required fields"""
         required_fields = ['title', 'description', 'condition', 'category', 
-                          'division', 'district', 'area', 'detailed_address', 'phone']
-        
+                        'detailed_address', 'phone']
+
+        print("from serializer", data)
+
         # Validate price and negotiable (one must be present)
         if not data.get('price') and not data.get('negotiable'):
             raise serializers.ValidationError({"price": "Either price or negotiable must be provided"})
-        
+
         # Check all required fields
         for field in required_fields:
             if field not in data or data[field] is None or data[field] == '':
                 raise serializers.ValidationError({field: f"{field} is required"})
-        
+            
         return data
-    
+
     def create(self, validated_data):
         images_data = validated_data.pop('images', [])
         user = self.context['request'].user
         validated_data['user'] = user
-        
+
         # Handle negotiable price
         if validated_data.get('negotiable') and not validated_data.get('price'):
             validated_data['price'] = None
-        
+
         # Find matching condition_object if applicable
         from .models import SaleCondition
         condition_value = validated_data.get('condition')
         if condition_value:
             try:
-                # Look up the condition object by value
                 condition_object = SaleCondition.objects.filter(value=condition_value).first()
                 if condition_object:
                     validated_data['condition_object'] = condition_object
             except Exception as e:
                 print(f"Error finding condition object: {e}")
-            
+
         # Create the post
         post = SalePost.objects.create(**validated_data)
-        
+
         # Process images
         for i, image_data in enumerate(images_data):
             SaleImage.objects.create(
@@ -182,5 +188,5 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
                 is_main=(i == 0),  # First image is main
                 order=i
             )
-            
+
         return post
