@@ -269,7 +269,7 @@
           </div>
         </div>
         
-        <div class="bg-white rounded-lg overflow-hidden border border-gray-200/70">
+        <div class="bg-white rounded-lg overflow-hidden">
           <div class="divide-y divide-gray-100">            <BusinessNetworkUserCard
               v-for="user in displayedUsers"
               :key="user.id"
@@ -333,12 +333,11 @@
           </p>
         </div>
           <!-- Posts container with improved styling -->
-        <div class="bg-white rounded-lg overflow-hidden border border-gray-200/70" v-if="displayedPosts.length > 0">
+        <div class="bg-white rounded-lg overflow-hidden" v-if="displayedPosts.length > 0">
           <BusinessNetworkPost
             :posts="displayedPosts"
             :id="user?.user?.id"
             :search-query="route.params.search"
-            class="result-card"
             @gift-sent="handleGiftSent"
           />
         </div>
@@ -1308,13 +1307,4 @@ const scrollToTop = () => {
   background: #a0a0a0;
 }
 
-/* Professional card styling */
-.result-card {
-  border-radius: 8px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}
-
-.result-card:not(:last-child) {
-  margin-bottom: 12px;
-}
 </style>
