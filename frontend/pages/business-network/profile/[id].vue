@@ -290,21 +290,39 @@
                       loading="lazy"
                     />
                     
-                    <!-- Change profile picture overlay - only visible for own profile -->
-                    <NuxtLink 
-                      v-if="user?.id === currentUser?.user?.id"
-                      to="/settings" 
-                      class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 z-20 cursor-pointer"
-                      title="Change profile picture"
-                    >
-                      <div class="bg-white bg-opacity-90 p-2.5 rounded-full transform scale-90 group-hover:scale-100 transition-transform duration-300 shadow-lg">
+                    <!-- Persistent change profile picture button - only visible for own profile -->
+                    <div v-if="user?.id === currentUser?.user?.id" class="absolute bottom-0 right-0 z-20">
+                      <button 
+                        @click="toggleProfilePhotoMenu"
+                        class="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all duration-300"
+                      >
                         <UIcon 
                           name="i-heroicons-camera" 
-                          class="size-7 text-blue-600" 
+                          class="size-5 text-blue-600" 
                         />
+                      </button>
+                        <!-- Menu with options -->
+                      <div 
+                        v-if="showProfilePhotoMenu"
+                        class="absolute bottom-12 right-0 bg-white rounded-md shadow-lg p-2 w-40 border border-gray-200 z-30 profile-photo-menu"
+                      >
+                        <NuxtLink 
+                          to="/settings" 
+                          class="flex items-center gap-2 p-2 text-gray-700 hover:bg-blue-50 rounded-md transition-colors"
+                        >
+                          <UIcon name="i-heroicons-pencil-square" class="size-4" />
+                          <span class="text-sm">Change Photo</span>
+                        </NuxtLink>
+                        
+                        <button 
+                          @click="openProfilePhotoModal"
+                          class="flex items-center gap-2 p-2 text-gray-700 hover:bg-blue-50 rounded-md transition-colors w-full text-left"
+                        >
+                          <UIcon name="i-heroicons-eye" class="size-4" />
+                          <span class="text-sm">View Photo</span>
+                        </button>
                       </div>
-                      <span class="sr-only">Change profile picture</span>
-                    </NuxtLink>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -938,11 +956,58 @@
           </transition>
         </div>
       </div>
-    </div>
-    <BusinessNetworkDiamondPurchaseModal
+    </div>    <BusinessNetworkDiamondPurchaseModal
       :modelValue="showDiamondModal"
       @close="showDiamondModal = false"
     />
+    
+    <!-- Profile Photo Modal -->
+    <UModal v-model="showProfilePhotoModal" :ui="{
+      width: 'max-w-xl',
+      container: 'flex min-h-screen items-center justify-center p-4',
+      overlay: 'bg-black/80',
+      base: 'bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden',
+    }">
+      <div class="p-4 relative">
+        <button 
+          @click="closeProfilePhotoModal" 
+          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+        >
+          <X class="h-5 w-5" />
+        </button>
+        
+        <h3 class="text-xl font-semibold mb-4 text-center">Profile Photo</h3>
+        
+        <div class="flex justify-center mb-4">
+          <div class="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-lg">
+            <img 
+              :src="user?.image || '/static/frontend/images/placeholder.jpg'" 
+              :alt="user?.name" 
+              class="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+        
+        <div class="flex justify-center gap-4 mt-6">
+          <NuxtLink 
+            v-if="user?.id === currentUser?.user?.id"
+            to="/settings" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
+          >
+            <Edit class="h-4 w-4" />
+            Change Photo
+          </NuxtLink>
+          
+          <button 
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
+            @click="closeProfilePhotoModal"
+          >
+            <X class="h-4 w-4" />
+            Close
+          </button>
+        </div>
+      </div>
+    </UModal>
   </div>
 </template>
 
@@ -1017,6 +1082,41 @@ const allMedia = ref([]);
 const followLoading = ref(false);
 const isFollowing = ref(false);
 const showDiamondModal = ref(false);
+const showProfilePhotoMenu = ref(false);
+const showProfilePhotoModal = ref(false);
+
+// Toggle profile photo menu
+const toggleProfilePhotoMenu = () => {
+  showProfilePhotoMenu.value = !showProfilePhotoMenu.value;
+  
+  // Auto-close menu after a delay when it's open
+  if (showProfilePhotoMenu.value) {
+    document.addEventListener('click', closeMenuOnClickOutside);
+  } else {
+    document.removeEventListener('click', closeMenuOnClickOutside);
+  }
+};
+
+// Close menu when clicking outside
+const closeMenuOnClickOutside = (event) => {
+  // Check if the click was outside the menu
+  const menuElement = document.querySelector('.profile-photo-menu');
+  if (menuElement && !menuElement.contains(event.target)) {
+    showProfilePhotoMenu.value = false;
+    document.removeEventListener('click', closeMenuOnClickOutside);
+  }
+};
+
+// Open profile photo modal
+const openProfilePhotoModal = () => {
+  showProfilePhotoModal.value = true;
+  showProfilePhotoMenu.value = false; // Close the menu
+};
+
+// Close profile photo modal
+const closeProfilePhotoModal = () => {
+  showProfilePhotoModal.value = false;
+};
 
 // Set up event listener for navigation events
 onMounted(() => {

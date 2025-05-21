@@ -24,12 +24,47 @@
       
       <div class="px-6 pb-6 relative">
         <!-- Profile Avatar -->
-        <div class="absolute -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden">
+        <div class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden group">
           <img 
             :src="seller.avatar || '/placeholder.svg'" 
             :alt="seller.name"
             class="h-full w-full object-cover"
           />
+          
+          <!-- Persistent camera icon -->
+          <div class="absolute bottom-0 right-0 z-20">
+            <button 
+              @click="toggleProfilePhotoMenu"
+              class="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all duration-300"
+              ref="cameraButtonRef"
+            >
+              <UIcon name="i-heroicons-camera" class="size-5 text-emerald-600" />
+            </button>
+            
+            <!-- Menu with options -->
+            <div 
+              v-if="showProfilePhotoMenu"
+              class="absolute bottom-12 right-0 bg-white rounded-md shadow-lg p-2 w-40 border border-gray-200 z-30"
+              ref="profilePhotoMenuRef"
+            >
+              <div class="flex flex-col space-y-1">
+                <button 
+                  @click="navigateToSettings"
+                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-700 transition-colors"
+                >
+                  <UIcon name="i-heroicons-pencil-square" class="size-4 text-emerald-600" />
+                  <span>Change Photo</span>
+                </button>
+                <button 
+                  @click="openProfilePhotoModal"
+                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-700 transition-colors"
+                >
+                  <UIcon name="i-heroicons-eye" class="size-4 text-emerald-600" />
+                  <span>View Photo</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         
         <!-- Profile Info -->
@@ -467,6 +502,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Profile Photo Modal -->
+    <UModal v-model="showProfilePhotoModal" :ui="{
+      width: 'max-w-3xl',
+      container: 'flex min-h-screen items-center justify-center p-4',
+      overlay: 'bg-black/80',
+      base: 'bg-transparent dark:bg-transparent rounded-lg overflow-hidden',
+    }">
+      <div class="p-4 relative">
+        <img 
+          :src="seller.avatar || '/placeholder.svg'" 
+          :alt="seller.name"
+          class="max-h-[80vh] max-w-full object-contain rounded-lg"
+        />
+        <button 
+          @click="showProfilePhotoModal = false"
+          class="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 p-2 rounded-full transition-all duration-200"
+        >
+          <UIcon name="i-heroicons-x-mark" class="size-5" />
+        </button>
+      </div>
+    </UModal>
   </div>
 </template>
 
@@ -505,6 +562,10 @@ const showShareDialog = ref(false);
 const reportReason = ref('');
 const reportDetails = ref('');
 const shareUrl = ref(window.location.href);
+const showProfilePhotoMenu = ref(false);
+const cameraButtonRef = ref(null);
+const profilePhotoMenuRef = ref(null);
+const showProfilePhotoModal = ref(false);
 
 // Sample seller data
 const seller = reactive({
@@ -776,6 +837,19 @@ const shareViaMedia = (platform) => {
   }
 
   closeShareDialog();
+};
+
+// Profile photo menu methods
+const toggleProfilePhotoMenu = () => {
+  showProfilePhotoMenu.value = !showProfilePhotoMenu.value;
+};
+
+const navigateToSettings = () => {
+  alert("Navigating to settings to change photo.");
+};
+
+const openProfilePhotoModal = () => {
+  showProfilePhotoModal.value = true;
 };
 </script>
 
