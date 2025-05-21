@@ -32,14 +32,14 @@
           </button>
           <div class="absolute bottom-3 right-3 flex space-x-2">
             <button
-              class="bg-white/90 hover:bg-white text-gray-800 text-xs h-7 px-3 rounded-md transition-all duration-200 flex items-center"
+              class="bg-white/90 hover:bg-white text-gray-800 text-sm h-7 px-3 rounded-md transition-all duration-200 flex items-center"
               @click="downloadImage"
             >
               <Download class="h-3 w-3 mr-1" />
               Download
             </button>
             <span
-              class="bg-white/90 text-gray-800 text-xs px-3 py-1.5 rounded-md"
+              class="bg-white/90 text-gray-800 text-sm px-3 py-1.5 rounded-md"
             >
               {{ currentImageIndex + 1 }}/{{ product.images?.length }}
             </span>
@@ -84,7 +84,7 @@
             </div>
           </div>
 
-          <div class="mt-2 flex items-center text-xs text-gray-500">
+          <div class="mt-2 flex items-center text-sm text-gray-500">
             <span class="font-medium text-gray-600 mr-2"
               >Ad ID: {{ product?.id }}</span
             >
@@ -108,7 +108,7 @@
                 <Tag class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-xs font-medium text-gray-500">Category</div>
+                <div class="text-sm font-medium text-gray-500">Category</div>
                 <div class="text-sm text-gray-700">
                   {{ product.category_details?.name }}
                 </div>
@@ -122,7 +122,7 @@
                 <Layers class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-xs font-medium text-gray-500">
+                <div class="text-sm font-medium text-gray-500">
                   Sub-Category
                 </div>
                 <div class="text-sm text-gray-700">
@@ -138,7 +138,7 @@
                 <ShieldCheck class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-xs font-medium text-gray-500">Condition</div>
+                <div class="text-sm font-medium text-gray-500">Condition</div>
                 <div class="text-sm text-gray-700">{{ product.condition }}</div>
               </div>
             </div>
@@ -150,7 +150,7 @@
                 <MapPin class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-xs font-medium text-gray-500">Location</div>
+                <div class="text-sm font-medium text-gray-500">Location</div>
                 <div class="text-sm text-gray-700">
                   {{
                     product?.division && product?.district && product?.area
@@ -170,28 +170,28 @@
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="font-bold text-white text-sm">Need financing?</h3>
-                  <p class="text-emerald-100 text-xs mt-1">
+                  <p class="text-emerald-100 text-sm mt-1">
                     Get pre-approved in minutes
                   </p>
                   <div class="mt-3 flex items-center">
                     <div class="flex -space-x-1">
                       <div
-                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-xs"
+                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-sm"
                       >
                         $
                       </div>
                       <div
-                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-xs"
+                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-sm"
                       >
                         %
                       </div>
                       <div
-                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-xs"
+                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-sm"
                       >
                         ✓
                       </div>
                     </div>
-                    <span class="ml-2 text-white text-xs font-medium"
+                    <span class="ml-2 text-white text-sm font-medium"
                       >Competitive rates available</span
                     >
                   </div>
@@ -211,13 +211,13 @@
 
           <div class="mt-4 flex justify-between">
             <button
-              class="flex-1 mr-2 text-xs py-2 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-600"
+              class="flex-1 mr-2 text-sm py-2 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-600"
             >
               <Flag class="h-3 w-3 mr-1" />
               Report Ad
             </button>
             <button
-              class="flex-1 text-xs py-2 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-600"
+              class="flex-1 text-sm py-2 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-600"
               @click="handleShare"
             >
               <Share2 class="h-3 w-3 mr-1" />
@@ -330,7 +330,7 @@
                 <h3 class="font-semibold text-gray-800">
                   {{ product.user_details?.name }}
                 </h3>
-                <p class="text-xs text-gray-500">
+                <p class="text-sm text-gray-500">
                   Member since
                   {{ formatDate(product.user_details.date_joined) }}
                 </p>
@@ -377,7 +377,7 @@
 
             <a
               href="#"
-              class="mt-3 text-emerald-600 hover:text-emerald-600 text-xs flex items-center justify-center"
+              class="mt-3 text-emerald-600 hover:text-emerald-600 text-sm flex items-center justify-center"
             >
               View more listings from this seller
               <ChevronRight class="h-3 w-3 ml-1" />
@@ -396,7 +396,7 @@
         </h2>
         <NuxtLink
           href="/sale"
-          class="text-emerald-600 hover:text-emerald-600 text-xs flex items-center"
+          class="text-emerald-600 hover:text-emerald-600 text-sm flex items-center"
         >
           View all
           <ChevronRight class="h-3 w-3 ml-1" />
@@ -460,7 +460,7 @@
               <div
                 class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
               >
-                <span class="text-xs truncate text-gray-600">{{
+                <span class="text-sm truncate text-gray-600">{{
                   shareUrl
                 }}</span>
               </div>
@@ -481,7 +481,7 @@
                 @click="shareViaMedia('facebook')"
               >
                 <span
-                  class="w-5 h-5 bg-blue-600 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-blue-600 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >f</span
                 >
                 Facebook
@@ -491,7 +491,7 @@
                 @click="shareViaMedia('twitter')"
               >
                 <span
-                  class="w-5 h-5 bg-sky-500 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-sky-500 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >t</span
                 >
                 Twitter
@@ -501,7 +501,7 @@
                 @click="shareViaMedia('whatsapp')"
               >
                 <span
-                  class="w-5 h-5 bg-emerald-500 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-emerald-500 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >w</span
                 >
                 WhatsApp
@@ -511,7 +511,7 @@
                 @click="shareViaMedia('email')"
               >
                 <span
-                  class="w-5 h-5 bg-gray-700 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-gray-700 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >@</span
                 >
                 Email
