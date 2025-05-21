@@ -529,7 +529,7 @@
           </button>
         </div>
 
-        <div class="mt-6">
+        <div class="my-8">
           <NuxtLink
             to="/business-network"
             class="flex items-center justify-center gap-2 px-5 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"

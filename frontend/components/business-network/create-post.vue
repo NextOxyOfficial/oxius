@@ -762,8 +762,8 @@ const handleFileUpload = async (event) => {
         continue; // Skip non-image files
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        uploadError.value = "Some images exceed 5MB and were skipped";
+      if (file.size > 12 * 1024 * 1024) {
+        uploadError.value = "Some images exceed 12MB and were skipped";
         continue; // Skip large files
       }
 
@@ -833,7 +833,7 @@ const processImage = (file) => {
         let height = img.height;
 
         // Resize while maintaining aspect ratio
-        const maxSize = 1000;
+        const maxSize = 1300;
         if (width > maxSize || height > maxSize) {
           if (width > height) {
             height = height * (maxSize / width);
@@ -1071,11 +1071,6 @@ const refreshPostsWithJWT = async () => {
       return;
     }
 
-    // Optionally, you can also directly fetch new posts here
-    // const response = await get('/bn/posts/', {
-    //   headers: { Authorization: `Bearer ${token}` }
-    // });
-    // Do something with the refreshed posts
   } catch (error) {
     console.error("Error refreshing posts with JWT:", error);
   }
