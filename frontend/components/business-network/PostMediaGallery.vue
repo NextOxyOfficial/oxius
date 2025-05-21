@@ -152,7 +152,7 @@
               class="absolute bottom-0 left-0 right-0 h-1.5 bg-blue-500"
             ></div>            <!-- Media counter badge on thumbnails -->
             <div 
-              class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 rounded-full text-white text-[10px] font-medium shadow-sm border border-white/10 flex items-center"
+              class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 rounded-full text-white text-xs font-medium shadow-sm border border-white/10 flex items-center"
             >
               <span>{{ mediaIndex + 1 }}</span>
             </div>
@@ -162,7 +162,7 @@
               v-if="activeIndex === mediaIndex" 
               class="absolute top-1 left-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shadow-sm"
             >
-              <span class="text-white text-[8px]">
+              <span class="text-white text-xs">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-2.5 h-2.5">
                   <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
                 </svg>

@@ -75,7 +75,7 @@
                   />
 
                   <div
-                    class="absolute top-0 left-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-br z-20"
+                    class="absolute top-0 left-0 text-white text-xs font-semibold px-1.5 py-0.5 rounded-br z-20"
                     :class="deal.badge_color"
                   >
                     {{ deal.badge }}

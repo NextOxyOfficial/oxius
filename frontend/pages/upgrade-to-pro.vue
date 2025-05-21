@@ -739,7 +739,7 @@
                   >
                     <!-- Badge showing savings -->
                     <span
-                      class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-semibold shadow-sm transform transition-all duration-300 scale-90"
+                      class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold shadow-sm transform transition-all duration-300 scale-90"
                       :class="
                         months === 12 ? 'opacity-100' : 'opacity-0 scale-75'
                       "
@@ -862,7 +862,7 @@
                   <!-- Instant badge -->
                   <div class="absolute top-2 right-2">
                     <span
-                      class="px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded"
+                      class="px-1.5 py-0.5 text-xs uppercase tracking-wider font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded"
                       >Instant</span
                     >
                   </div>

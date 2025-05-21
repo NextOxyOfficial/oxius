@@ -163,7 +163,7 @@
                     loading="lazy"
                   />
                   <div
-                    class="absolute top-0 right-0 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-bl z-20"
+                    class="absolute top-0 right-0 text-white text-xs font-semibold px-1.5 py-0.5 rounded-bl z-20"
                     :class="card.badge_color"
                   >
                     {{ card.badge }}

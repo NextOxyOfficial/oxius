@@ -291,7 +291,7 @@
                   <div class="flex items-center justify-between">
                     <h4 class="flex items-center text-md font-medium text-gray-700">
                       {{ friend.name }}
-                      <span v-if="friend.isBlocked" class="ml-1 rounded-sm bg-red-100 px-1 py-0.5 text-[8px] text-red-600">
+                      <span v-if="friend.isBlocked" class="ml-1 rounded-sm bg-red-100 px-1 py-0.5 text-xs text-red-600">
                         BLOCKED
                       </span>
                     </h4>
@@ -608,10 +608,10 @@
                         ></div>
                       </div>
                       <div class="mt-1 flex items-center justify-between">
-                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
+                        <span class="text-xs" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
                           {{ formatVoiceDuration(message.media.currentTime || 0) }}
                         </span>
-                        <span class="text-[8px]" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
+                        <span class="text-xs" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
                           {{ formatVoiceDuration(message.media.duration || 0) }}
                         </span>
                       </div>
@@ -773,7 +773,7 @@
                 <div class="h-full w-full rounded-full bg-green-500"></div>
               </div>
               <div class="mt-1 flex items-center justify-between">
-                <span class="text-[8px] text-gray-500">0:{{ recordingDuration.toString().padStart(2, '0') }}</span>
+                <span class="text-xs text-gray-500">0:{{ recordingDuration.toString().padStart(2, '0') }}</span>
               </div>
             </div>
             <button @click="clearRecordedVoice" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">

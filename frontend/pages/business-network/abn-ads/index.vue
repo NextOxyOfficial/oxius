@@ -1211,8 +1211,8 @@
                         @click="clickTrack"
                       >
                         <div class="absolute inset-0 flex justify-between px-1">
-                          <span class="text-[8px] text-gray-500">13</span>
-                          <span class="text-[8px] text-gray-500">100</span>
+                          <span class="text-xs text-gray-500">13</span>
+                          <span class="text-xs text-gray-500">100</span>
                         </div>
                       </div>
                     </div>

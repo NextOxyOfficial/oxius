@@ -48,7 +48,7 @@
               class="text-xs text-gray-400 dark:text-gray-500 flex items-center"
             >
               <kbd
-                class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-500 dark:text-gray-400 font-mono text-[10px]"
+                class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-500 dark:text-gray-400 font-mono text-xs"
                 >Enter</kbd
               >
               <span class="mx-1">to search</span>
@@ -272,7 +272,7 @@
                       class="flex items-center mt-1.5"
                     >
                       <span
-                        class="text-[10px] text-gray-400 dark:text-gray-500 flex items-center"
+                        class="text-xs text-gray-400 dark:text-gray-500 flex items-center"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -367,7 +367,7 @@
                         class="w-4 h-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center shadow-sm"
                         title="Pro Member"
                       >
-                        <span class="text-[6px] text-white font-bold">PRO</span>
+                        <span class="text-xs text-white font-bold">PRO</span>
                       </div>
                     </div>
                   </div>
