@@ -422,6 +422,7 @@ class ClassifiedCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ClassifiedCategory.objects.all()
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]  # For reading; you might want IsAdminUser for writing
+    lookup_field = 'slug'
     
 class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by('title')

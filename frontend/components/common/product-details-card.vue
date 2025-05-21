@@ -122,13 +122,16 @@
         <!-- Right column with product info -->
         <div>
           <!-- Category Name -->
-          <div class="flex items-center gap-2 mb-2">
+          <div
+            class="flex items-center gap-2 mb-2"
+            v-if="currentProduct?.category_details?.length > 0"
+          >
             <UBadge
               color="gray"
               variant="subtle"
               class="uppercase text-xs tracking-wider"
             >
-              {{ currentProduct?.category_details?.name || "Uncategorized" }}
+              {{ currentProduct?.category_details[0]?.name || "Uncategorized" }}
             </UBadge>
             <div v-if="currentProduct.weight" class="text-xs text-slate-500">
               Weight: {{ currentProduct.weight }}kg

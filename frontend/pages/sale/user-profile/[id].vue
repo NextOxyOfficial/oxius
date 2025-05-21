@@ -195,7 +195,7 @@
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-bold text-gray-800 flex items-center">
                 <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
-                {{ seller.name }}'s Listings ({{ seller.totalListings }})
+                {{ seller.name }}'s Listings ({{ seller.sale_post_count }})
               </h2>
 
               <div class="flex items-center space-x-2">
@@ -248,11 +248,11 @@
               >
                 <option value="">All Categories</option>
                 <option
-                  v-for="(category, index) in seller.categories"
-                  :key="index"
-                  :value="category"
+                  v-for="category in categories"
+                  :key="category.id"
+                  :value="category?.name"
                 >
-                  {{ category }}
+                  {{ category?.name }}
                 </option>
               </select>
 
@@ -261,10 +261,13 @@
                 class="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
               >
                 <option value="">All Conditions</option>
-                <option value="new">New</option>
-                <option value="like-new">Like New</option>
-                <option value="good">Good</option>
-                <option value="fair">Fair</option>
+                <option
+                  v-for="condition in conditions"
+                  :value="condition.value"
+                  :key="condition.id"
+                >
+                  {{ condition.name }}
+                </option>
               </select>
 
               <button
@@ -278,23 +281,16 @@
             <!-- Grid View -->
             <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-4">
               <div
-                v-for="product in paginatedProducts"
+                v-for="product in products"
                 :key="product.id"
                 class="bg-white rounded-lg overflow-hidden"
               >
                 <div class="relative aspect-video">
                   <img
-                    :src="product.image"
+                    :src="product.main_image"
                     :alt="product.title"
                     class="absolute inset-0 w-full h-full object-contain"
                   />
-                  <div class="absolute top-2 right-2">
-                    <span
-                      v-if="product.isNew"
-                      class="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded"
-                      >New</span
-                    >
-                  </div>
                 </div>
 
                 <div class="p-4">
@@ -307,16 +303,20 @@
                       >${{ product.price.toLocaleString() }}</span
                     >
                     <span class="text-xs text-gray-500">{{
-                      formatDate(product.postedDate)
+                      formatDate(product.created_at)
                     }}</span>
                   </div>
 
                   <div class="flex items-center mt-3 text-xs text-gray-500">
                     <Tag class="h-3 w-3 mr-1" />
-                    <span>{{ product.category }}</span>
+                    <span>{{ product.category_name }}</span>
                     <span class="mx-2">•</span>
                     <MapPin class="h-3 w-3 mr-1" />
-                    <span>{{ product.location }}</span>
+                    <span>{{
+                      product?.division && product?.district && product?.area
+                        ? `${product?.division}, ${product?.district}, ${product?.area}`
+                        : `All Over Bagnladesh`
+                    }}</span>
                   </div>
 
                   <div
@@ -336,23 +336,16 @@
             <!-- List View -->
             <div v-else class="space-y-4">
               <div
-                v-for="product in paginatedProducts"
+                v-for="product in products"
                 :key="product.id"
                 class="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden"
               >
                 <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
                   <img
-                    :src="product.image"
+                    :src="product.main_image || '/static/frontend/avatar.png'"
                     :alt="product.title"
                     class="absolute inset-0 w-full h-full object-contain"
                   />
-                  <div class="absolute top-2 right-2">
-                    <span
-                      v-if="product.isNew"
-                      class="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded"
-                      >New</span
-                    >
-                  </div>
                 </div>
 
                 <div class="p-4 sm:w-2/3 flex flex-col">
@@ -365,7 +358,7 @@
                       >${{ product.price.toLocaleString() }}</span
                     >
                     <span class="text-xs text-gray-500">{{
-                      formatDate(product.postedDate)
+                      formatDate(product.created_at)
                     }}</span>
                   </div>
 
@@ -374,7 +367,11 @@
                     <span>{{ product.category }}</span>
                     <span class="mx-2">•</span>
                     <MapPin class="h-3 w-3 mr-1" />
-                    <span>{{ product.location }}</span>
+                    <span>{{
+                      product?.division && product?.district && product?.area
+                        ? `${product?.division}, ${product?.district}, ${product?.area}`
+                        : `All Over Bagnladesh`
+                    }}</span>
                   </div>
 
                   <p class="text-sm text-gray-600 mt-2 line-clamp-2">
@@ -396,7 +393,7 @@
             </div>
 
             <!-- Empty State -->
-            <div v-if="filteredProducts.length === 0" class="py-8 text-center">
+            <div v-if="products?.length === 0" class="py-8 text-center">
               <div
                 class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4"
               >
@@ -429,7 +426,7 @@
 
               <div class="flex items-center space-x-1">
                 <button
-                  v-for="page in totalPages"
+                  v-for="page in pages"
                   :key="page"
                   :class="`h-8 w-8 rounded-md flex items-center justify-center text-sm ${
                     currentPage === page
@@ -444,7 +441,9 @@
 
               <button
                 class="flex items-center text-sm text-gray-600 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="currentPage === totalPages"
+                :disabled="
+                  pages?.length === 0 ? true : currentPage === pages?.length
+                "
                 @click="nextPage"
               >
                 Next
@@ -656,7 +655,7 @@
     >
       <div class="p-4 relative">
         <img
-          :src="seller.avatar || '/placeholder.svg'"
+          :src="seller.image || '/placeholder.svg'"
           :alt="seller.name"
           class="max-h-[80vh] max-w-full object-contain rounded-lg"
         />
@@ -713,6 +712,7 @@ const showProfilePhotoMenu = ref(false);
 const cameraButtonRef = ref(null);
 const profilePhotoMenuRef = ref(null);
 const showProfilePhotoModal = ref(false);
+const totalPages = ref(0);
 
 const seller = ref({});
 
@@ -737,9 +737,14 @@ async function getProducts() {
     const response = await get(
       `/sale/posts/?page=${currentPage.value}&seller=${params.id}`
     );
-
+    console.log("prod", response.data);
     if (response.data) {
       console.log(response.data);
+      if (!totalPages.value > 0) {
+        totalPages.value = Math.ceil(
+          response.data?.count / response.data?.results
+        );
+      }
       products.value = response.data?.results;
     }
   } catch (error) {
@@ -749,42 +754,43 @@ async function getProducts() {
 
 await getProducts();
 
-// Computed properties
-const filteredProducts = computed(() => {
-  let result = [...products.value];
+const categories = ref([]);
 
-  // Apply category filter
-  if (categoryFilter.value) {
-    result = result.filter(
-      (product) => product.category === categoryFilter.value
-    );
+async function getCategories() {
+  try {
+    const response = await get("/sale/categories/");
+    console.log(response.data);
+    if (response.data) {
+      categories.value = response.data;
+    }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
   }
+}
 
-  // Apply condition filter
-  if (conditionFilter.value) {
-    result = result.filter(
-      (product) => product.condition === conditionFilter.value
-    );
+await getCategories();
+
+const conditions = ref([]);
+
+async function getConditions() {
+  try {
+    const response = await get("/sale/conditions/");
+    console.log("conditions", response.data);
+    if (response.data) {
+      conditions.value = response.data;
+    }
+  } catch (error) {
+    console.error("Error fetching conditions:", error);
   }
+}
+await getConditions();
 
-  // Apply sorting
-  switch (sortOption.value) {
-    case "price-low":
-      result.sort((a, b) => a.price - b.price);
-      break;
-    case "price-high":
-      result.sort((a, b) => b.price - a.price);
-      break;
-    case "popular":
-      result.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
-      break;
-    case "recent":
-    default:
-      result.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-      break;
+const pages = computed(() => {
+  const pages = [];
+  for (let i = 1; i <= totalPages.value; i++) {
+    pages.push(i);
   }
-
-  return result;
+  return pages;
 });
 
 // Format date

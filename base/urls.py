@@ -26,7 +26,7 @@ urlpatterns = [
   path('persons/update/<str:email>/', update_user,name='update_user'),
   path('user/<str:identifier>/', get_user_with_identifier, name='get_user_with_identifier'),
   path('classified-categories/',GetClassifiedCategories.as_view()),
-  path('details/classified-categories/<uuid:pk>/', ClassifiedCategoryDetailView.as_view(), name='classified-category-detail'),
+  path('details/classified-categories/<slug:slug>/', ClassifiedCategoryDetailView.as_view(), name='classified-category-detail'),
   path('classified-categories-all/',GetClassifiedCategoriesAll.as_view()),
   path('classified-categories/<str:cid>/',classifiedCategoryPosts),
   path('classified-categories/post/<str:pk>/',classifiedCategoryPost),

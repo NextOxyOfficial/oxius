@@ -11,7 +11,7 @@
             class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
           ></div>
           <img
-            :src="post?.author_details?.image || '/placeholder.svg'"
+            :src="post?.author_details?.image || '/static/frontend/avatar.png'"
             :alt="post?.author_details?.name"
             class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-sm transition-all duration-300 group-hover:shadow-sm transform group-hover:scale-105"
           />
@@ -36,7 +36,8 @@
         <NuxtLink
           :to="`/business-network/profile/${post.author}`"
           class="font-semibold text-gray-700 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
-        >          <p class="truncate max-w-[220px]">
+        >
+          <p class="truncate max-w-[220px]">
             {{ capitalizeNames(post?.author_details?.name) }}
           </p>
           <!-- Removed Pro text badge next to username -->
@@ -223,10 +224,11 @@ const isCreatePostOpen = ref(false);
 
 // Function to capitalize first letter of each word in a name
 function capitalizeNames(name) {
-  if (!name) return '';
-  return name.split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+  if (!name) return "";
+  return name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 }
 
 defineProps({

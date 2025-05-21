@@ -305,7 +305,10 @@
           <!-- Location Selection -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Targeted Location <span class="text-red-500">*</span> <span class="text-xs">(Where you want to show your ad)</span></label
+              >Targeted Location <span class="text-red-500">*</span>
+              <span class="text-xs"
+                >(Where you want to show your ad)</span
+              ></label
             >
             <UCheckbox
               v-model="allOverBangladesh"
@@ -316,6 +319,7 @@
               "
               color="primary"
             />
+            <UDivider label="OR" />
             <div
               class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2"
               v-if="!allOverBangladesh"

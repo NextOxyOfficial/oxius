@@ -165,7 +165,7 @@
               :loading="isLoading"
               color="primary"
               variant="solid"
-              :label="t('search')"
+              :label="$t('search')"
               @click="filterSearch"
               class="sm:h-10 max-sm:!text-base w-24 justify-center"
               :ui="{
@@ -266,14 +266,14 @@
           <UButton
             color="primary"
             variant="outline"
-            :label="t('post_classified')"
+            :label="$t('post_classified')"
             icon="i-heroicons-plus"
             to="/classified-categories/post/"
             class="pulse-effect"
           />
         </div>
       </div>
-      <div class="search mt-4" v-if="search.length">
+      <div class="search mt-4" v-if="search?.length">
         <UCard
           :ui="{
             background: '',
@@ -384,7 +384,10 @@
           </NuxtLink>
         </UCard>
         <UDivider label="" class="mt-2 sm:mt-5" />
-        <h3 class="text-xl font-semibold mt-6 text-green-900">
+        <h3
+          v-if="!location?.allOverBangladesh"
+          class="text-xl font-semibold mt-6 text-green-900"
+        >
           Nearby location's ads
         </h3>
       </div>
@@ -438,14 +441,14 @@
             <UButton
               color="gray"
               variant="ghost"
-              :label="t('change_location')"
+              :label="$t('change_location')"
               icon="i-heroicons-map"
               @click="clearLocation"
             />
             <UButton
               color="primary"
               variant="outline"
-              :label="t('post_classified')"
+              :label="$t('post_classified')"
               icon="i-heroicons-plus"
               to="/classified-categories/post/"
               class="pulse-effect"
@@ -576,7 +579,7 @@
       <UCard
         v-else-if="
           !isNearByLoading &&
-          !nearby_services.length &&
+          !nearby_services?.length &&
           !location?.allOverBangladesh
         "
         class="py-16 text-center mt-6"
@@ -637,15 +640,29 @@ const categoryTitle = ref("");
 const services = ref([]);
 const search = ref([]);
 const searchError = ref(false);
-
 const categoryDetails = ref({});
+
+async function fetchServices() {
+  const response = await get(
+    `/classified-categories/${categoryDetails.value.id}/`
+  );
+  services.value = response.data?.filter(
+    (service) =>
+      service.service_status.toLowerCase() === "approved" &&
+      service.active_service
+  );
+  // categoryTitle.value = response.data[0]?.category_details.title;
+}
+
 async function getCategoryDetails() {
   try {
     const { data } = await get(
       `/details/classified-categories/${router.params.id}/`
     );
-
-    categoryDetails.value = data;
+    if (data) {
+      categoryDetails.value = data;
+      await fetchServices();
+    }
   } catch (error) {
     console.error(error);
   }
@@ -708,17 +725,6 @@ watch(
 
 // geo filter
 
-async function fetchServices() {
-  const response = await get(`/classified-categories/${router.params.id}/`);
-  services.value = response.data?.filter(
-    (service) =>
-      service.service_status.toLowerCase() === "approved" &&
-      service.active_service
-  );
-  categoryTitle.value = response.data[0]?.category_details.title;
-}
-fetchServices();
-
 async function filterSearch() {
   // Preserve allOverBangladesh flag if it exists in the current location
   const { title, category, ...rest } = form.value;
@@ -731,7 +737,7 @@ async function filterSearch() {
   isLoading.value = true;
 
   // Build the API request URL
-  let apiUrl = `/classified-posts/filter/?category=${router.params.id}&title=${form.value.title}&country=${form.value.country}`;
+  let apiUrl = `/classified-posts/filter/?category=${categoryDetails.value.id}&title=${form.value.title}&country=${form.value.country}`;
 
   // Only add state, city, and upazila params if not showing all over Bangladesh
   if (!location.value?.allOverBangladesh) {
@@ -741,7 +747,7 @@ async function filterSearch() {
   const res = await get(apiUrl);
 
   setTimeout(() => {
-    if (res.data.length > 0) {
+    if (res.data?.length > 0) {
       search.value = res.data;
       searchError.value = false;
     } else {
@@ -763,7 +769,7 @@ async function fetchNearbyAds() {
   // If showing all over Bangladesh, get a sample of ads from across the country
   if (location.value.allOverBangladesh) {
     const countrySearchRes = await get(
-      `/classified-posts/filter/?category=${router.params.id}&country=${form.value.country}`
+      `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}`
     );
 
     nearby_services.value = countrySearchRes.data.filter(
@@ -778,12 +784,12 @@ async function fetchNearbyAds() {
 
   // First try: search in the same city, any upazila
   const citySearchRes = await get(
-    `/classified-posts/filter/?category=${router.params.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
+    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
 
   // If city search has results, use those
   console.log("near by", citySearchRes.data);
-  if (citySearchRes.data.length > 0) {
+  if (citySearchRes.data?.length > 0) {
     nearby_services.value = citySearchRes.data.filter(
       (service) =>
         service.service_status.toLowerCase() === "approved" &&
@@ -795,7 +801,7 @@ async function fetchNearbyAds() {
 
   // Second try: search in the same state, any city
   const stateSearchRes = await get(
-    `/classified-posts/filter/?category=${router.params.id}&country=${form.value.country}&state=${form.value.state}`
+    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}`
   );
 
   nearby_services.value = stateSearchRes.data.filter(
