@@ -91,7 +91,7 @@
                 {{ seller.name }}
               </h1>
               <div
-                class="ml-3 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-xs font-medium flex items-center"
+                class="ml-3 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-sm font-medium flex items-center"
                 v-if="seller.kyc"
               >
                 <CheckCircle class="h-3 w-3 mr-1" />
@@ -244,7 +244,7 @@
 
               <select
                 v-model="categoryFilter"
-                class="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
+                class="text-sm border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
               >
                 <option value="">All Categories</option>
                 <option
@@ -258,7 +258,7 @@
 
               <select
                 v-model="conditionFilter"
-                class="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
+                class="text-sm border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
               >
                 <option value="">All Conditions</option>
                 <option
@@ -271,7 +271,7 @@
               </select>
 
               <button
-                class="ml-auto text-xs text-emerald-600 hover:text-emerald-700"
+                class="ml-auto text-sm text-emerald-600 hover:text-emerald-700"
                 @click="clearFilters"
               >
                 Clear All Filters
@@ -303,12 +303,12 @@
                     <span class="font-bold text-emerald-700"
                       >${{ product.price.toLocaleString() }}</span
                     >
-                    <span class="text-xs text-gray-500">{{
+                    <span class="text-sm text-gray-500">{{
                       formatDate(product.created_at)
                     }}</span>
                   </div>
 
-                  <div class="flex items-center mt-3 text-xs text-gray-500">
+                  <div class="flex items-center mt-3 text-sm text-gray-500">
                     <Tag class="h-3 w-3 mr-1" />
                     <span>{{ product.category_name }}</span>
                     <span class="mx-2">•</span>
@@ -323,7 +323,7 @@
                   >
                     <NuxtLink
                       :to="`/sale/${product.slug}`"
-                      class="text-emerald-600 hover:text-emerald-700 text-xs flex items-center"
+                      class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center"
                     >
                       View Details
                       <ChevronRight class="h-3 w-3 ml-1" />
@@ -358,12 +358,12 @@
                     <span class="font-bold text-emerald-700"
                       >${{ product.price.toLocaleString() }}</span
                     >
-                    <span class="text-xs text-gray-500">{{
+                    <span class="text-sm text-gray-500">{{
                       formatDate(product.created_at)
                     }}</span>
                   </div>
 
-                  <div class="flex items-center mt-3 text-xs text-gray-500">
+                  <div class="flex items-center mt-3 text-sm text-gray-500">
                     <Tag class="h-3 w-3 mr-1" />
                     <span>{{ product.category }}</span>
                     <span class="mx-2">•</span>
@@ -383,7 +383,7 @@
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                   >
                     <button
-                      class="text-emerald-600 hover:text-emerald-700 text-xs flex items-center"
+                      class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center"
                     >
                       View Details
                       <ChevronRight class="h-3 w-3 ml-1" />
@@ -582,7 +582,7 @@
               <div
                 class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
               >
-                <span class="text-xs truncate text-gray-600">{{
+                <span class="text-sm truncate text-gray-600">{{
                   shareUrl
                 }}</span>
               </div>
@@ -603,7 +603,7 @@
                 @click="shareViaMedia('facebook')"
               >
                 <span
-                  class="w-5 h-5 bg-blue-600 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-blue-600 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >f</span
                 >
                 Facebook
@@ -613,7 +613,7 @@
                 @click="shareViaMedia('twitter')"
               >
                 <span
-                  class="w-5 h-5 bg-sky-500 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-sky-500 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >t</span
                 >
                 Twitter
@@ -623,7 +623,7 @@
                 @click="shareViaMedia('whatsapp')"
               >
                 <span
-                  class="w-5 h-5 bg-green-500 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-green-500 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >w</span
                 >
                 WhatsApp
@@ -633,7 +633,7 @@
                 @click="shareViaMedia('email')"
               >
                 <span
-                  class="w-5 h-5 bg-gray-700 text-white rounded flex items-center justify-center mr-2 text-xs"
+                  class="w-5 h-5 bg-gray-700 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >@</span
                 >
                 Email
