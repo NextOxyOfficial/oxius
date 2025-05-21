@@ -167,6 +167,10 @@ export default defineI18nConfig(() => ({
       tap_add: "Tap 'Add' in the top right corner",
       // got_it: "Got It",
       all_over_bangladesh: "All Over Bangladesh",
+      sale_listing: "Sale Listings",
+      mindforce: "Mindforce",
+      shastho_sheba: "Shastho Sheba",
+      bill_pay: "Bill Pay",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -334,6 +338,10 @@ export default defineI18nConfig(() => ({
       tap_add: "উপরের ডান কোণে 'যোগ করুন' ট্যাপ করুন",
       // got_it: "বুঝেছি",
       all_over_bangladesh: "সমগ্র বাংলাদেশ",
+      sale_listing: "সেল লিস্টিংস",
+      mindforce: "মাইন্ডফোর্স",
+      shastho_sheba: "স্বাস্থ্য সেবা",
+      bill_pay: "বিল পে",
     },
   },
 }));

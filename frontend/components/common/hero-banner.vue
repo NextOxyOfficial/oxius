@@ -105,7 +105,7 @@
                   <div class="icon-circle bg-blue-50">
                     <Globe class="icon text-blue-600" />
                   </div>
-                  <span>Business Network</span>
+                  <span>{{ $t("business_network") }}</span>
                 </NuxtLink>
                 <!-- News -->
                 <NuxtLink
@@ -115,7 +115,7 @@
                   <div class="icon-circle bg-amber-50">
                     <Newspaper class="icon text-amber-600" />
                   </div>
-                  <span>News</span>
+                  <span>{{ $t("adsy_news") }}</span>
                 </NuxtLink>
                 <!-- Earn Money -->
                 <NuxtLink
@@ -125,7 +125,7 @@
                   <div class="icon-circle bg-emerald-50">
                     <BadgeDollarSign class="icon text-emerald-600" />
                   </div>
-                  <span>Earn Money</span>
+                  <span>{{ $t("earn_money") }}</span>
                 </NuxtLink>
                 <!-- Eshop -->
                 <NuxtLink
@@ -135,7 +135,7 @@
                   <div class="icon-circle bg-purple-50">
                     <ShoppingCart class="icon text-purple-600" />
                   </div>
-                  <span>Eshop</span>
+                  <span>{{ $t("eshop") }}</span>
                 </NuxtLink>
                 <!-- Sale Listings -->
                 <NuxtLink
@@ -145,7 +145,7 @@
                   <div class="icon-circle bg-indigo-50">
                     <ListFilter class="icon text-indigo-600" />
                   </div>
-                  <span>Sale Listings</span>
+                  <span>{{ $t("sale_listing") }}</span>
                 </NuxtLink>
 
                 <!-- MindForce -->
@@ -156,7 +156,7 @@
                   <div class="icon-circle bg-cyan-50">
                     <Brain class="icon text-cyan-600" />
                   </div>
-                  <span>MindForce</span>
+                  <span>{{ $t("mindforce") }}</span>
                 </NuxtLink>
 
                 <!-- Amar Seba -->
@@ -167,7 +167,7 @@
                   <div class="icon-circle bg-rose-50">
                     <Cog class="icon text-rose-600" />
                   </div>
-                  <span>Amar Seba</span>
+                  <span>{{ $t("classified_service") }}</span>
                 </NuxtLink>
                 <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
                 <div
@@ -177,7 +177,7 @@
                     <HeartPulse class="icon text-gray-500" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
-                    <span>Shastho Sheba</span>
+                    <span>{{ $t("shastho_sheba") }}</span>
                   </div>
                   <span
                     class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm"
@@ -193,7 +193,7 @@
                     <Receipt class="icon text-gray-500" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
-                    <span>Bill Pay</span>
+                    <span>{{ $t("bill_pay") }}</span>
                   </div>
                   <span
                     class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm"
@@ -208,7 +208,7 @@
                   <div class="icon-circle bg-orange-50">
                     <Smartphone class="icon text-orange-600" />
                   </div>
-                  <span>Mobile Recharge</span>
+                  <span>{{ $t("mobile_recharge") }}</span>
                 </NuxtLink>
                 <!-- Transactions -->
                 <NuxtLink
@@ -218,7 +218,7 @@
                   <div class="icon-circle bg-lime-50">
                     <CreditCard class="icon text-lime-600" />
                   </div>
-                  <span>Transactions</span>
+                  <span>{{ $t("deposit_withdraw") }}</span>
                 </NuxtLink>
 
                 <!-- Membership -->
@@ -229,7 +229,7 @@
                   <div class="icon-circle bg-pink-50">
                     <User class="icon text-pink-600" />
                   </div>
-                  <span>Membership</span>
+                  <span>{{ $t("packeges") }}</span>
                 </NuxtLink>
               </div>
             </div>
@@ -250,9 +250,9 @@
             <Globe class="mobile-icon text-blue-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Business Network</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("business_network")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- News -->
@@ -261,9 +261,9 @@
             <Newspaper class="mobile-icon text-amber-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Adsy News</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("adsy_news")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- Earn Money -->
@@ -272,9 +272,9 @@
             <BadgeDollarSign class="mobile-icon text-emerald-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Earn Money</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("earn_money")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- Eshop -->
@@ -283,9 +283,9 @@
             <ShoppingCart class="mobile-icon text-purple-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >eShop</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("eshop")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- Sale Listings -->
@@ -294,9 +294,9 @@
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Sale Listings</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("sale_listing")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- MindForce -->
@@ -305,9 +305,9 @@
             <Brain class="mobile-icon text-cyan-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >MindForce</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("mindforce")
+            }}</span>
           </div>
         </NuxtLink>
 
@@ -317,9 +317,9 @@
             <Cog class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Amar Seba</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("classified_service")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
@@ -330,9 +330,9 @@
             <HeartPulse class="mobile-icon text-gray-500" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-500"
-              >Shastho Sheba</span
-            >
+            <span class="text-sm leading-tight text-gray-500">{{
+              $t("shastho_sheba")
+            }}</span>
           </div>
           <span
             class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm"
@@ -348,7 +348,9 @@
             <Receipt class="mobile-icon text-gray-500" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-500">Bill Pay</span>
+            <span class="text-sm leading-tight text-gray-500">{{
+              $t("bill_pay")
+            }}</span>
           </div>
           <span
             class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm"
@@ -361,9 +363,9 @@
             <Smartphone class="mobile-icon text-orange-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Mobile Recharge</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("mobile_recharge")
+            }}</span>
           </div>
         </NuxtLink>
         <!-- Transactions -->
@@ -372,9 +374,9 @@
             <CreditCard class="mobile-icon text-lime-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Transactions</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("deposit_withdraw")
+            }}</span>
           </div>
         </NuxtLink>
 
@@ -384,9 +386,9 @@
             <User class="mobile-icon text-pink-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700"
-              >Membership</span
-            >
+            <span class="text-sm font-medium leading-tight text-gray-700">{{
+              $t("packeges")
+            }}</span>
           </div>
         </NuxtLink>
       </div>

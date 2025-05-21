@@ -8,7 +8,9 @@
           <!-- Left side - Image Slider with reduced height -->
           <div class="w-full relative overflow-hidden">
             <!-- Aspect ratio container - reduced by ~10% -->
-            <div class="relative pb-[40.625%] md:pb-[40.4%] lg:pb-[40.625%]">
+            <div
+              class="relative pb-[40.625%] md:pb-[40.4%] lg:pb-[40.625%] shadow-sm"
+            >
               <div
                 v-for="(src, index) in sliderImages"
                 :key="index"
@@ -19,9 +21,7 @@
                 }"
               >
                 <!-- Gradient overlay -->
-                <div
-                  class="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent z-10"
-                ></div>
+
                 <img
                   :src="src"
                   :alt="`Slide ${index + 1}`"
