@@ -280,7 +280,7 @@
 
                   <!-- Profile image container -->
                   <div
-                    class="size-44 rounded-full border-4 border-white shadow-sm bg-white relative z-50"
+                    class="size-44 rounded-full overflow-hidden border-4 border-white shadow-sm bg-white relative"
                   >
                     <img
                       :src="
@@ -293,7 +293,7 @@
                     <!-- Persistent change profile picture button - only visible for own profile -->
                     <div
                       v-if="user?.id === currentUser?.user?.id"
-                      class="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-20"
+                      class="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-50"
                     >
                       <button
                         @click.stop="toggleProfilePhotoMenu"
