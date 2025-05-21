@@ -401,11 +401,24 @@
               >
                 <UIcon name="i-heroicons-check" class="w-3 h-3" />
               </div>
-            </div>
-
+            </div>            
             <div class="ml-3 flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <h4 class="font-medium text-gray-800 dark:text-white truncate">
+              <div class="flex items-center gap-2">                <NuxtLink 
+                  v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
+                  :to="`/eshop/${
+                    currentProduct.owner_details?.store_username ||
+                    currentProduct.owner_details?.id
+                  }`"
+                  class="hover:text-emerald-600 transition-colors"
+                >
+                  <h4 class="font-medium text-gray-800 dark:text-white truncate">
+                    {{
+                      currentProduct.owner_details?.store_name ||
+                      "Anonymous Seller"
+                    }}
+                  </h4>
+                </NuxtLink>
+                <h4 v-else class="font-medium text-gray-800 dark:text-white truncate">
                   {{
                     currentProduct.owner_details?.store_name ||
                     "Anonymous Seller"
@@ -488,16 +501,17 @@
               icon="i-heroicons-envelope"
             >
               Message
-            </UButton>
-
-            <!-- Store Button -->
+            </UButton>              <!-- Store Button -->
             <UButton
-              v-if="currentProduct.seller?.store_url"
+              v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
               color="gray"
               variant="soft"
               size="sm"
               class="flex-1 min-w-0 sm:flex-initial"
-              :to="currentProduct.seller?.store_url"
+              :to="`/eshop/${
+                currentProduct.owner_details?.store_username ||
+                currentProduct.owner_details?.id
+              }`"
               icon="i-heroicons-building-storefront"
             >
               Visit Store
