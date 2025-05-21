@@ -6,8 +6,7 @@
         class="relative bg-white rounded-xl md:rounded-2xl shadow-sm mb-8 md:mb-10 overflow-hidden"
       >
         <div class="absolute inset-0 z-0">
-          <!-- Banner Background with Blurred Bottom Edge -->
-          <div
+          <!-- Banner Background with Blurred Bottom Edge -->          <div
             class="h-40 sm:h-48 md:h-60 w-full bg-cover bg-center relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-16 sm:after:h-24 after:bg-gradient-to-t after:from-white after:to-transparent"
             :style="{
               backgroundImage: storeDetails?.store_banner
@@ -19,18 +18,6 @@
             <div
               class="absolute inset-0 bg-indigo-900/40 mix-blend-multiply"
             ></div>
-
-            <!-- Upload Banner Button -->
-            <button
-              v-if="isOwner"
-              @click="showBannerUpload = true"
-              class="absolute top-3 right-3 md:top-4 md:right-4 z-30 bg-white/80 hover:bg-white backdrop-blur-sm text-gray-800 font-medium px-2 py-1 md:px-3 md:py-1.5 rounded text-xs md:text-sm flex items-center gap-1 md:gap-1.5 shadow-sm hover:shadow transition-all"
-            >
-              <Camera class="w-3 h-3 md:w-4 md:h-4" />
-              <span>{{
-                storeDetails?.store_banner ? "Update Cover" : "Add Cover"
-              }}</span>
-            </button>
           </div>
         </div>
 
@@ -48,8 +35,7 @@
             >
               <div
                 class="h-24 w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 rounded-xl bg-white p-1.5 shadow-sm"
-              >
-                <div
+              >                <div
                   class="w-full h-full rounded-lg overflow-hidden bg-gray-100"
                 >
                   <img
@@ -65,15 +51,6 @@
                     {{ getInitials(storeDetails?.store_name || "Store") }}
                   </div>
                 </div>
-
-                <!-- Logo Upload Button -->
-                <!-- <button
-                  v-if="isOwner"
-                  @click="showLogoUpload = true"
-                  class="absolute -right-2 -bottom-1 z-30 bg-white shadow text-gray-700 rounded-full p-1.5 hover:bg-gray-50 transition-colors"
-                >
-                  <ImageIcon class="w-3.5 h-3.5" />
-                </button> -->
               </div>
             </div>
 
@@ -630,11 +607,6 @@ import {
   Mail,
   ChevronRight,
   X,
-  Camera,
-  ImageIcon,
-  Heart,
-  Truck,
-  PackageX,
   Phone,
   LocateIcon,
 } from "lucide-vue-next";
@@ -696,10 +668,6 @@ const visibleSections = reactive({
   details: false,
   cta: false,
 });
-const bannerImage = ref(null);
-const logoImage = ref(null);
-const showBannerUpload = ref(false);
-const showLogoUpload = ref(false);
 
 // Get unique categories from products
 const uniqueCategories = computed(() => {
@@ -788,132 +756,9 @@ function clearFilters() {
 }
 
 // Refs
-const bannerRef = ref(null);
 const categoriesRef = ref(null);
 const detailsRef = ref(null);
 const ctaRef = ref(null);
-
-// Handle file uploads with improved error handling
-async function handleBannerUpload(e) {
-  const files = Array.from(e.target.files);
-  const file = files[0];
-  if (!file) return;
-
-  try {
-    isLoading.value = true;
-
-    // Validate file size (limit to 2MB)
-    if (file.size > 12 * 1024 * 1024) {
-      throw new Error("File size exceeds 12MB limit");
-    }
-
-    // Validate file type
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      throw new Error("Only JPEG, PNG, and WEBP formats are allowed");
-    }
-
-    // Convert file to base64
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
-
-    // Set local state for preview
-    bannerImage.value = base64;
-
-    // Make API call with the proper headers
-    const response = await patch(`/store/${router.params.id}/`, {
-      store_banner: base64,
-    });
-
-    // Show success message
-    toast.add({
-      title: "Banner Updated",
-      description: "Your store banner has been successfully updated",
-      color: "green",
-    });
-
-    // Hide the upload modal
-    showBannerUpload.value = false;
-
-    // Update store details with new data
-    storeDetails.value = response.data;
-  } catch (error) {
-    console.error("Error uploading banner:", error);
-    toast.add({
-      title: "Upload Failed",
-      description:
-        error.message || "Could not upload banner. Please try again.",
-      color: "red",
-    });
-  } finally {
-    isLoading.value = false;
-    // Refresh store details
-    await getStoreDetails();
-  }
-}
-
-async function handleLogoUpload(e) {
-  const files = Array.from(e.target.files);
-  const file = files[0];
-  if (!file) return;
-
-  try {
-    isLoading.value = true;
-
-    // Validate file size (limit to 1MB)
-    if (file.size > 12 * 1024 * 1024) {
-      throw new Error("File size exceeds 12MB limit");
-    }
-
-    // Validate file type
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      throw new Error("Only JPEG, PNG, and WEBP formats are allowed");
-    }
-
-    // Convert file to base64
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
-
-    // Set local state for preview
-    logoImage.value = base64;
-
-    // Make API call with the proper headers
-    const response = await patch(`/store/${router.params.id}/`, {
-      store_logo: base64,
-    });
-
-    // Show success message
-    toast.add({
-      title: "Logo Updated",
-      description: "Your store logo has been successfully updated",
-      color: "green",
-    });
-
-    // Hide the upload modal
-    showLogoUpload.value = false;
-
-    // Update store details with new data
-    storeDetails.value = response.data;
-  } catch (error) {
-    console.error("Error uploading logo:", error);
-    toast.add({
-      title: "Upload Failed",
-      description: error.message || "Could not upload logo. Please try again.",
-      color: "red",
-    });
-  } finally {
-    isLoading.value = false;
-    // Refresh store details
-    await getStoreDetails();
-  }
-}
 
 // Helper function to clean phone number for WhatsApp
 function cleanPhoneNumber(phone) {
@@ -938,7 +783,6 @@ onMounted(async () => {
     rootMargin: "0px",
     threshold: 0.2,
   };
-
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.target === categoriesRef.value) {
@@ -951,26 +795,13 @@ onMounted(async () => {
     });
   }, observerOptions);
 
-  // Handle parallax effect
-  const handleScroll = () => {
-    if (bannerRef.value) {
-      const scrollPosition = window.scrollY;
-      const translateY = Math.min(scrollPosition * 0.3, 100); // Limit the movement
-      bannerRef.value.style.transform = `translateY(${translateY}px)`;
-    }
-  };
-
   // Observe sections for animations
   if (categoriesRef.value) sectionObserver.observe(categoriesRef.value);
   if (detailsRef.value) sectionObserver.observe(detailsRef.value);
   if (ctaRef.value) sectionObserver.observe(ctaRef.value);
 
-  window.addEventListener("scroll", handleScroll);
-  handleScroll(); // Initial call
-
-  // Clean up event listeners and observers
+  // Clean up observers
   onUnmounted(() => {
-    window.removeEventListener("scroll", handleScroll);
     sectionObserver.disconnect();
   });
 });
@@ -984,6 +815,7 @@ onMounted(async () => {
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: all 0.2s ease;
+  line-clamp: 2; /* Standard property for compatibility */
 }
 
 /* Add new style for hiding scrollbars while allowing scrolling */
