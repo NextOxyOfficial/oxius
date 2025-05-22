@@ -853,6 +853,10 @@ const navigateMedia = (direction, index) => {
     activeMediaIndex.value = (activeMediaIndex.value + 1) % totalMedia;
   } else if (direction === "prev") {
     activeMediaIndex.value = (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
+  } else if (direction === "select") {
+    // This case is for direct selection, but index is required
+    console.warn("Index is required for 'select' direction");
+    return;
   }
 
   activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
