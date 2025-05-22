@@ -25,7 +25,7 @@
           <X class="h-5 w-5 text-white" />
         </button>
       </div>      <!-- Serial Photos Container - Displays all photos in a vertical layout -->
-      <div class="w-full max-w-5xl flex flex-col items-center py-8" @click.stop>
+      <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
         <!-- Loop through all photos if we have more than one -->
         <template v-if="activePost && activePost.post_media.length > 1">
           <div 
