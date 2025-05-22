@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-6xl mx-auto my-4">
     <!-- Main Product Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
       <!-- Gallery Section - 3 columns on large screens -->
       <div class="lg:col-span-3 relative">
         <div
@@ -230,7 +230,7 @@
     </div>
 
     <!-- Details Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
       <!-- Product Details - 2 columns on large screens -->
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg overflow-hidden border border-gray-200">
