@@ -1,6 +1,6 @@
 <template>
   <div id="sale-category" class="for-sale-section py-6 bg-white rounded-sm">
-    <div class="container mx-auto px-2">
+    <div class="container mx-auto px-1">
       <!-- Updated section header with linked buttons -->
       <div
         class="section-header sm:mb-8 mb-5 flex justify-between items-center"
