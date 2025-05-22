@@ -25,10 +25,10 @@
         </div>
       </div>
 
-      <div class="px-6 pb-6 relative">
-        <!-- Profile Avatar -->
+      <div class="px-6 pb-6 relative">        <!-- Profile Avatar -->
         <div
-          class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden group"
+          class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden group cursor-pointer"
+          @click="openProfilePhotoModal"
         >
           <img
             :src="seller.image || '/static/frontend/avatar.png'"
@@ -642,37 +642,25 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Profile Photo Modal -->
-    <UModal
-      v-model="showProfilePhotoModal"
-      :ui="{
-        width: 'max-w-3xl',
-        container: 'flex min-h-screen items-center justify-center p-4',
-        overlay: 'bg-black/80',
-        base: 'bg-transparent dark:bg-transparent rounded-lg overflow-hidden',
-      }"
-    >
-      <div class="p-4 relative">
-        <img
-          :src="seller.image || '/placeholder.svg'"
-          :alt="seller.name"
-          class="max-h-[80vh] max-w-full object-contain rounded-lg"
-        />
-        <button
-          @click="showProfilePhotoModal = false"
-          class="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 p-2 rounded-full transition-all duration-200"
-        >
-          <UIcon name="i-heroicons-x-mark" class="size-5" />
-        </button>
-      </div>
-    </UModal>
+    </div>    <!-- Profile Photo Modal -->
+    <MediaViewer
+      v-if="showProfilePhotoModal"
+      :activeMedia="profilePhotoMedia"
+      :user="user"
+      :profileMode="true"
+      :profileUser="seller"
+      @close-media="showProfilePhotoModal = false"
+    />
+      :profileMode="true"
+      :profileUser="seller"
+      @close-media="showProfilePhotoModal = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed } from "vue";
+import MediaViewer from "~/components/business-network/MediaViewer.vue";
 import {
   User,
   MapPin,
@@ -713,6 +701,7 @@ const showProfilePhotoMenu = ref(false);
 const cameraButtonRef = ref(null);
 const profilePhotoMenuRef = ref(null);
 const showProfilePhotoModal = ref(false);
+const profilePhotoMedia = ref(null); // For MediaViewer
 const totalPages = ref(0);
 
 const seller = ref({});
@@ -926,6 +915,13 @@ const navigateToSettings = () => {
 };
 
 const openProfilePhotoModal = () => {
+  // Create a media object for the profile photo
+  profilePhotoMedia.value = {
+    image: seller.value?.image || '/placeholder.svg',
+    type: 'image',
+    id: seller.value?.id || 'profile'
+  };
+  
   showProfilePhotoModal.value = true;
 };
 </script>
@@ -936,6 +932,7 @@ const openProfilePhotoModal = () => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   overflow: hidden;
 }
 </style>

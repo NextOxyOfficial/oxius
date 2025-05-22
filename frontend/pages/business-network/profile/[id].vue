@@ -276,11 +276,10 @@
                   <!-- Professional border for profile picture -->
                   <div
                     class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1"
-                  ></div>
-
-                  <!-- Profile image container -->
+                  ></div>                  <!-- Profile image container -->
                   <div
-                    class="size-44 rounded-full overflow-hidden border-4 border-white shadow-sm bg-white relative"
+                    class="size-44 rounded-full overflow-hidden border-4 border-white shadow-sm bg-white relative cursor-pointer"
+                    @click="openProfilePhotoModal"
                   >
                     <img
                       :src="
@@ -966,60 +965,15 @@
     <BusinessNetworkDiamondPurchaseModal
       :modelValue="showDiamondModal"
       @close="showDiamondModal = false"
+    />    <!-- Profile Photo Modal -->
+    <MediaViewer
+      v-if="showMediaViewer"
+      :activeMedia="profilePhotoMedia"
+      :user="currentUser"
+      :profileMode="true"
+      :profileUser="user"
+      @close-media="closeProfilePhotoModal"
     />
-
-    <!-- Profile Photo Modal -->
-    <UModal
-      v-model="showProfilePhotoModal"
-      :ui="{
-        width: 'max-w-xl',
-        container: 'flex min-h-screen items-center justify-center p-4',
-        overlay: 'bg-black/80',
-        base: 'bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden',
-      }"
-    >
-      <div class="p-4 relative">
-        <button
-          @click="closeProfilePhotoModal"
-          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-        >
-          <X class="h-5 w-5" />
-        </button>
-
-        <h3 class="text-xl font-semibold mb-4 text-center">Profile Photo</h3>
-
-        <div class="flex justify-center mb-4">
-          <div
-            class="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-sm"
-          >
-            <img
-              :src="user?.image || '/static/frontend/images/placeholder.jpg'"
-              :alt="user?.name"
-              class="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div class="flex justify-center gap-4 mt-6">
-          <NuxtLink
-            v-if="user?.id === currentUser?.user?.id"
-            to="/settings"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-          >
-            <Edit class="h-4 w-4" />
-            Change Photo
-          </NuxtLink>
-
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-            @click="closeProfilePhotoModal"
-          >
-            <X class="h-4 w-4" />
-            Close
-          </button>
-        </div>
-      </div>
-    </UModal>
   </div>
 </template>
 
@@ -1029,6 +983,7 @@ definePageMeta({
 });
 
 import BusinessNetworkDiamondPurchaseModal from "~/components/business-network/DiamondPurchaseModal.vue";
+import MediaViewer from "~/components/business-network/MediaViewer.vue";
 import {
   Camera,
   Edit,
@@ -1097,6 +1052,10 @@ const showDiamondModal = ref(false);
 const showProfilePhotoMenu = ref(false);
 const showProfilePhotoModal = ref(false);
 
+// Profile photo for MediaViewer
+const profilePhotoMedia = ref(null);
+const showMediaViewer = ref(false);
+
 // Toggle profile photo menu
 const cameraButtonRef = ref(null);
 
@@ -1143,7 +1102,14 @@ const openProfilePhotoModal = (event) => {
     event.stopPropagation(); // Prevent the click from closing the menu
   }
 
-  showProfilePhotoModal.value = true;
+  // Create a media object for the profile photo
+  profilePhotoMedia.value = {
+    image: user.value?.image || '/static/frontend/images/placeholder.jpg',
+    type: 'image',
+    id: user.value?.id || 'profile'
+  };
+  
+  showMediaViewer.value = true;
   showProfilePhotoMenu.value = false; // Close the menu
 
   // Remove document click listener
@@ -1152,7 +1118,7 @@ const openProfilePhotoModal = (event) => {
 
 // Close profile photo modal
 const closeProfilePhotoModal = () => {
-  showProfilePhotoModal.value = false;
+  showMediaViewer.value = false;
 };
 
 // Set up event listener for navigation events

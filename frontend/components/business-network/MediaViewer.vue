@@ -5,14 +5,19 @@
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
       @click="$emit('close-media')"
-    >      <!-- Fixed header with X button that stays visible while scrolling -->
-      <div class="sticky top-14 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
+    >      <!-- Fixed header with X button that stays visible while scrolling -->      <div class="sticky top-14 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
         <div class="text-white font-medium flex items-center">
           <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-gray-800/80 rounded-full text-sm">
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
           </span>
           <span v-if="activePost?.title" class="truncate max-w-[200px] sm:max-w-[300px]">
             {{ activePost.title }}
+          </span>
+          <span v-if="profileMode && profileUser?.name" class="truncate max-w-[200px] sm:max-w-[300px]">
+            {{ profileUser.name }}'s Profile Photo
+          </span>
+          <span v-else-if="profileMode" class="truncate max-w-[200px] sm:max-w-[300px]">
+            Profile Photo
           </span>
         </div>
         
@@ -24,8 +29,41 @@
         >
           <X class="h-5 w-5 text-white" />
         </button>
-      </div>      <!-- Serial Photos Container - Displays all photos in a vertical layout -->
-      <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
+      </div>      <!-- Serial Photos Container - Displays all photos in a vertical layout -->      <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
+        <!-- Profile Photo Mode -->
+        <div 
+          v-if="profileMode && activeMedia" 
+          class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
+        >
+          <div class="relative flex justify-center items-center py-6 px-6">
+            <div class="relative fade-in">
+              <!-- Profile photo with special styling -->
+              <div class="relative mx-auto">
+                <!-- Decorative gradient border for profile photo -->
+                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1 blur-sm opacity-80"></div>
+                
+                <img
+                  :src="activeMedia.image || activeMedia.url"
+                  :alt="profileUser?.name ? `${profileUser.name}'s profile photo` : 'Profile photo'"
+                  class="relative max-h-[85vh] max-w-full object-contain rounded-lg shadow-lg"
+                />
+                
+                <!-- Download button (visible to all users) -->
+                <div class="absolute top-4 right-4 z-10">
+                  <a 
+                    :href="activeMedia.image || activeMedia.url" 
+                    :download="`profile-photo`"
+                    class="p-2.5 rounded-full bg-black/70 hover:bg-black/90 transition-all duration-200 shadow-md inline-flex scale-in"
+                    title="Download photo"
+                  >
+                    <Download class="h-4.5 w-4.5 text-blue-500" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Loop through all photos if we have more than one -->
         <template v-if="activePost && activePost.post_media.length > 1">
           <div 
@@ -374,6 +412,16 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  // New prop for profile photo mode
+  profileMode: {
+    type: Boolean,
+    default: false
+  },
+  // Profile user object for displaying name in header
+  profileUser: {
+    type: Object,
+    default: null
+  }
 });
 
 const emit = defineEmits([
