@@ -151,6 +151,7 @@ def get_top_contributors(request):
 @permission_classes([IsAuthenticated])
 def update_user(request, email):
     data = request.data
+    print(data)
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
@@ -170,7 +171,14 @@ def update_user(request, email):
                 {'message': 'Failed to process image', 'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+    if 'store_banner' in data:
+        try:
+            data['store_banner'] = base64ToFile(data['store_banner'])
+        except Exception as e:
+            return Response(
+                {'message': 'Failed to process store banner', 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     data['id'] = user.id
     serializer = UserSerializer(user, data=data, partial=True)
 
