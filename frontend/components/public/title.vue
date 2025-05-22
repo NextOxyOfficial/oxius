@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-between mb-4 md:mb-8">
+  <div class="flex items-center justify-between mb-2 md:mb-6">
     <div>
       <div class="py-4 text-start relative">
         <h1
