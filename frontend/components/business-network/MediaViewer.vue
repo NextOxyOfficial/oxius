@@ -32,8 +32,8 @@
             v-for="(media, index) in activePost.post_media" 
             :key="media.id"
             :id="`media-item-${index}`"
-            class="w-11/12 sm:w-3/4 mb-14 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl transform transition-all duration-300 hover:shadow-2xl border border-gray-800"
-          >            <div class="relative flex justify-center items-center p-5">
+            class="w-full sm:w-3/4 mb-5 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl transform transition-all duration-300 hover:shadow-2xl border border-gray-800"
+          >            <div class="relative flex justify-center items-center p-1">
               <!-- Display image -->              
               <div v-if="media.type === 'image' || !media.type" class="relative fade-in">
                 <img
