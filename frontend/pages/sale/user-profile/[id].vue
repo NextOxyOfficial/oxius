@@ -191,14 +191,14 @@
       <!-- Seller Products - 2 columns on large screens -->
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div class="p-5">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-gray-800 flex items-center">
+          <div class="py-5 px-1">
+            <div class="flex-block items-center justify-between mb-4">
+              <h2 class="text-lg mb-4 font-bold text-gray-800 flex items-center">
                 <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
                 {{ seller.name }}'s Listings ({{ seller.sale_post_count }})
               </h2>
 
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center justify-center space-x-2">
                 <select
                   v-model="sortOption"
                   class="text-sm border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white"
@@ -213,7 +213,7 @@
                   class="flex border border-gray-200 rounded-md overflow-hidden"
                 >
                   <button
-                    :class="`px-2 py-1.5 ${
+                    :class="`px-3 py-3 ${
                       viewMode === 'grid'
                         ? 'bg-emerald-50 text-emerald-600'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
@@ -223,7 +223,7 @@
                     <LayoutGrid class="h-4 w-4" />
                   </button>
                   <button
-                    :class="`px-2 py-1.5 ${
+                    :class="`px-3 py-3 ${
                       viewMode === 'list'
                         ? 'bg-emerald-50 text-emerald-600'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
@@ -271,7 +271,7 @@
               </select>
 
               <button
-                class="ml-auto text-sm text-emerald-600 hover:text-emerald-700"
+                class="ml-1 text-sm text-emerald-600 hover:text-emerald-700"
                 @click="clearFilters"
               >
                 Clear All Filters
@@ -279,7 +279,7 @@
             </div>
 
             <!-- Grid View -->
-            <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-4">
+            <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-2">
               <div
                 v-for="product in products"
                 :key="product.id"

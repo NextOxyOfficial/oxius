@@ -394,7 +394,7 @@
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-1 mb-6"
           >
             <div
-              class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2"
+              class="flex flex-col sm:flex-row items-center justify-between my-4 gap-2"
             >
               <h2 class="text-lg font-medium text-gray-700">
                 {{ categoryBrowserHeading }}
@@ -431,9 +431,9 @@
                     class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                   />
                   <div
-                    class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-2"
+                    class="absolute bottom-0 left-0 w-full p-2"
                   >
-                    <div class="text-white text-sm font-medium line-clamp-1">
+                    <div class="text-gray-600 text-sm font-semibold line-clamp-2">
                       {{ post?.title || `Post title` }}
                     </div>
                   </div>
@@ -442,7 +442,7 @@
                 <!-- Price -->
                 <div class="p-2 border-t border-gray-100">
                   <div class="flex items-center justify-between">
-                    <p class="text-primary font-medium">
+                    <p class="text-green-700 font-medium">
                       <span v-if="post.negotiable && !post.price"
                         >Negotiable</span
                       >
