@@ -1,21 +1,23 @@
-<template>  <Teleport to="body">    <div
+<template>
+  <Teleport to="body">
+    <div
       v-if="activeMedia"
       class="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-start p-4 overflow-auto"
       @click="$emit('close-media')"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
-      <!-- X button to close the viewer (positioned at the top-right corner) -->
+      <!-- X button to close the viewer (with white background for visibility) -->
       <button
-        class="absolute top-4 right-4 z-[10000] bg-black/60 hover:bg-black/80 text-white p-2 rounded-full shadow-lg transition-colors"
+        class="absolute top-4 right-4 z-[10000] p-3 bg-white rounded-full shadow-lg transition-colors hover:bg-gray-100"
         @click.stop="$emit('close-media')"
         aria-label="Close viewer"
       >
-        <X class="h-6 w-6" />
+        <X class="h-6 w-6 text-black" />
       </button>
 
       <!-- Header toolbar -->
-      <div class="w-full max-w-7xl flex justify-between items-center mb-4 px-2 py-2 bg-black/60 backdrop-blur-sm rounded-lg">
+      <div class="w-full max-w-7xl flex justify-between items-center mb-4 px-4 py-3 mt-12">
         <div class="text-white font-medium flex items-center">
           <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-white/10 rounded-full text-sm">
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
@@ -24,12 +26,15 @@
             {{ activePost.title }}
           </span>
         </div>
-      </div><!-- Facebook-style sequential photo viewer -->
-      <div class="w-full max-w-5xl flex flex-col items-center" @click.stop>
+      </div>
+
+      <!-- Single-photo serial view with white background -->
+      <div class="w-full max-w-4xl flex flex-col items-center" @click.stop>
         <!-- Current active media -->
-        <div class="relative max-w-4xl w-full mb-4 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-2xl">
-          <div class="relative flex justify-center items-center py-4">
-            <div v-if="activeMedia.type === 'image' || !activeMedia.type" class="relative">              <img
+        <div class="relative w-full mb-4 bg-white rounded-lg overflow-hidden shadow-2xl">
+          <div class="relative flex justify-center items-center py-6 px-6">
+            <div v-if="activeMedia.type === 'image' || !activeMedia.type" class="relative">
+              <img
                 :src="activeMedia.image"
                 alt="Media preview"
                 class="max-h-[70vh] max-w-full object-contain"
@@ -38,9 +43,9 @@
               <div class="absolute top-4 right-4 z-10">
                 <button 
                   @click.stop="showMediaMenu = !showMediaMenu"
-                  class="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
                 >
-                  <MoreVertical class="h-5 w-5" />
+                  <MoreVertical class="h-5 w-5 text-gray-700" />
                 </button>
                 
                 <!-- Dropdown menu -->
@@ -111,9 +116,9 @@
               <div class="absolute top-4 right-4 z-10">
                 <button 
                   @click.stop="showMediaMenu = !showMediaMenu"
-                  class="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
                 >
-                  <MoreVertical class="h-5 w-5" />
+                  <MoreVertical class="h-5 w-5 text-gray-700" />
                 </button>
                 
                 <!-- Dropdown menu -->
@@ -145,61 +150,56 @@
               
               <!-- Delete confirmation modal is shared with image type -->
             </div>
-            
-            <!-- Navigation buttons - only shown if there are multiple media items -->
-            <button
-              v-if="activePost && activePost.post_media.length > 1"
-              @click.stop="$emit('navigate-media', 'prev')"
-              class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
-              aria-label="Previous image"
-            >
-              <ChevronLeft class="h-6 w-6" />
-            </button>
-            
-            <button
-              v-if="activePost && activePost.post_media.length > 1"
-              @click.stop="$emit('navigate-media', 'next')"
-              class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
-              aria-label="Next image"
-            >
-              <ChevronRight class="h-6 w-6" />
-            </button>
           </div>
         </div>
         
-        <!-- Image pagination dots -->
-        <div v-if="activePost && activePost.post_media.length > 1" class="flex items-center justify-center space-x-2 mb-4">
+        <!-- Navigation controls at the bottom -->
+        <div v-if="activePost && activePost.post_media.length > 1" class="flex justify-between w-full max-w-4xl mb-6">
           <button
-            v-for="(media, index) in activePost.post_media"
-            :key="media.id"
-            @click.stop="$emit('navigate-media', 'select', index)"
-            class="w-3 h-3 rounded-full transition-all duration-200"
-            :class="activeMediaIndex === index ? 'bg-blue-500 scale-110' : 'bg-white/40 hover:bg-white/60'"
-            :aria-label="`View image ${index + 1}`"
-          ></button>
+            @click.stop="$emit('navigate-media', 'prev')"
+            class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <ChevronLeft class="h-5 w-5" />
+            <span>Previous</span>
+          </button>
+          
+          <div class="flex items-center">
+            <span class="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700">
+              {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
+            </span>
+          </div>
+          
+          <button
+            @click.stop="$emit('navigate-media', 'next')"
+            class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <span>Next</span>
+            <ChevronRight class="h-5 w-5" />
+          </button>
         </div>
         
-        <!-- Image swipe thumbnails - small strip showing neighboring images -->
+        <!-- Image thumbnails in a single row -->
         <div 
           v-if="activePost && activePost.post_media.length > 1"
-          class="flex overflow-x-auto scrollbar-hide gap-2 py-2 px-4 max-w-full mb-2"
+          class="w-full max-w-4xl overflow-x-auto scrollbar-hide py-4 px-2 bg-white/10 rounded-lg"
         >
-          <div
-            v-for="(media, index) in activePost.post_media"
-            :key="media.id"
-            class="relative flex-shrink-0 w-16 h-16 cursor-pointer rounded-md overflow-hidden transition-all duration-200"
-            :class="activeMediaIndex === index ? 'ring-2 ring-blue-500 scale-110 z-10' : 'opacity-70 hover:opacity-100'"
-            @click.stop="$emit('navigate-media', 'select', index)"
-          >
-            <img
-              :src="media.image"
-              :alt="`Media ${index + 1}`"
-              class="h-full w-full object-cover"
-            />
-            
-            <!-- Small badge showing image number -->
-            <div class="absolute top-0.5 right-0.5 bg-black/60 text-white text-xs font-medium rounded-sm w-4 h-4 flex items-center justify-center">
-              {{ index + 1 }}
+          <div class="flex gap-3 min-w-max">
+            <div
+              v-for="(media, index) in activePost.post_media"
+              :key="media.id"
+              class="relative flex-shrink-0 w-16 h-16 cursor-pointer rounded-lg overflow-hidden transition-all duration-200"
+              :class="activeMediaIndex === index ? 'ring-3 ring-blue-600 scale-110 z-10' : 'ring-1 ring-gray-300 hover:ring-blue-400'"
+              @click.stop="$emit('navigate-media', 'select', index)"
+            >
+              <img
+                :src="media.image"
+                :alt="`Media ${index + 1}`"
+                class="h-full w-full object-cover"
+              />
+              <div class="absolute inset-0 flex items-center justify-center bg-black/40" 
+                   :class="{'opacity-0': activeMediaIndex === index}">
+                <span class="text-white font-medium">{{ index + 1 }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -221,6 +221,9 @@ import {
   Trash2,
 } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from 'vue';
+
+// Get toast utility
+const toast = useToast();
 
 const props = defineProps({
   activeMedia: {
@@ -274,7 +277,8 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
 });
 
-onUnmounted(() => {  window.removeEventListener('keydown', handleKeyDown);
+onUnmounted(() => {  
+  window.removeEventListener('keydown', handleKeyDown);
 });
 
 // Touch gesture handlers
@@ -310,11 +314,22 @@ const handleTouchEnd = (event) => {
     // Right swipe (previous image)
     else {
       emit('navigate-media', 'prev');
-    }  }
+    }
+  }
 };
 
 // Media menu functions
 const confirmDeleteMedia = () => {
+  // Check if this is the user's own post before allowing deletion
+  if (!user.value || (activePost.value && activePost.value.author !== user.value.user?.id)) {
+    toast.add({
+      title: "You can only delete your own photos",
+      color: "red",
+    });
+    showMediaMenu.value = false;
+    return;
+  }
+  
   showMediaMenu.value = false;
   showDeleteConfirm.value = true;
 };
@@ -326,7 +341,11 @@ const deleteMedia = () => {
   emit('delete-media-comment', props.activeMedia);
   emit('close-media'); // Close the viewer after delete
   
-  // You could show a toast notification here if you have a toast system
+  // Show a toast notification
+  toast.add({
+    title: "Photo deleted successfully",
+    color: "green",
+  });
 };
 
 // Format time ago function
