@@ -358,7 +358,7 @@
             class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
           >
             <h3
-              class="text-base font-medium text-gray-700 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
+              class="text-base px-2 font-medium text-gray-700 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
             >
               <UIcon
                 name="i-heroicons-banknotes"
@@ -429,7 +429,7 @@
 
             <!-- Horizontal scrollable categories -->
             <div
-              class="overflow-x-auto py-2 px-1 flex flex-nowrap gap-2 hide-scrollbar"
+              class="overflow-x-auto py-2 px-1 md:flex flex-nowrap gap-2 hide-scrollbar hidden"
             >
               <div class="flex gap-2">
                 <UBadge

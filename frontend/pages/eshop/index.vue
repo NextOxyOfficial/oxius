@@ -358,7 +358,7 @@
             class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
           >
             <h3
-              class="text-base font-medium text-gray-700 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
+              class="text-base px-2 font-medium text-gray-700 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
             >
               <UIcon
                 name="i-heroicons-banknotes"
