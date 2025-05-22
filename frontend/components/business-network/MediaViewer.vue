@@ -35,7 +35,7 @@
           v-if="profileMode && activeMedia" 
           class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
         >
-          <div class="relative flex justify-center items-center py-6 px-6">
+          <div class="relative flex justify-center items-center py-6 px-1">
             <div class="relative fade-in">
               <!-- Profile photo with special styling -->
               <div class="relative mx-auto">
@@ -85,7 +85,8 @@
                 <div class="absolute top-4 left-4 px-3 py-1.5 bg-black/70 backdrop-blur-md rounded-full text-white text-xs font-medium shadow-md flex items-center space-x-1.5">
                   <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                   <span>{{ index + 1 }} / {{ activePost.post_media.length }}</span>
-                </div>                  <!-- Three-dot menu dropdown -->
+                </div>                  
+                <!-- Three-dot menu dropdown -->
                 <div 
                   v-if="isCurrentUserPostOwner"
                   class="absolute top-4 right-4 z-10"
