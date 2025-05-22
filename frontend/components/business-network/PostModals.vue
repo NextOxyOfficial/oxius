@@ -4,7 +4,7 @@
     <Teleport to="body">
       <div
         v-if="activeLikesPost"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
         @click="$emit('close-likes-modal')"
       >
         <div
@@ -95,7 +95,7 @@
     <Teleport to="body">
       <div
         v-if="activeCommentsPost"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
         @click="$emit('close-comments-modal')"
       >
         <div
@@ -112,7 +112,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-base text-gray-500 truncate">
+            <p class="text-sm text-gray-500 truncate">
               {{ activeCommentsPost.title }}
             </p>
           </div>
@@ -147,7 +147,7 @@
                       <div class="flex items-center gap-1">
                         <NuxtLink
                           :to="`/business-network/profile/${comment.author}`"
-                          class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
                           {{ comment.author_details?.name }}
                         </NuxtLink>
@@ -180,7 +180,7 @@
                         <!-- Dropdown menu -->
                         <div
                           v-if="comment.showDropdown"
-                          class="absolute right-0 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
+                          class="absolute right-0 -mt-10 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
                           @click.stop
                         >
                           <div class="py-1">
@@ -235,7 +235,7 @@
                       <textarea
                         :id="`comment-edit-${comment.id}`"
                         v-model="comment.editText"
-                        class="w-full text-base p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
+                        class="w-full text-sm p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
                         rows="2"
                       ></textarea>
                       <div class="flex justify-end space-x-2 mt-2">
@@ -296,7 +296,7 @@
                       <!-- Regular comment -->
                       <p
                         v-else
-                        class="text-base sm:text-sm text-gray-700 dark:text-gray-300"
+                        class="text-sm sm:text-sm text-gray-700 dark:text-gray-300"
                         style="word-break: break-word"
                       >
                         {{ comment?.content }}
@@ -472,14 +472,14 @@
     <Teleport to="body">
       <div
         v-if="commentToDelete"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
         @click="$emit('cancel-delete-comment')"
       >
         <div
           class="bg-white rounded-lg max-w-sm w-full p-4 shadow-sm"
           @click.stop
         >
-          <h3 class="text-lg font-semibold mb-2">Delete Comment</h3>
+          <h3 class="text-base font-semibold mb-2">Delete Comment</h3>
           <p class="text-gray-500 mb-4">
             Are you sure you want to delete this comment? This action cannot be
             undone.
@@ -515,7 +515,7 @@
         >
           <!-- Header with close and download buttons -->
           <div class="flex items-center justify-between p-4 text-white">
-            <h3 class="font-medium text-lg truncate">
+            <h3 class="font-medium text-base truncate">
               {{ activePhotoViewer.title || "Photo" }}
             </h3>
             <div class="flex items-center gap-3">
@@ -826,7 +826,7 @@ const saveEditComment = (post, comment) => {
 
 /* Gift message styling */
 .gift-message-text {
-  @apply text-base leading-relaxed text-gray-700 dark:text-gray-300 mt-1;
+  @apply text-sm leading-relaxed text-gray-700 dark:text-gray-300 mt-1;
 }
 
 /* Top Gift Comment Styling */

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="max-w-6xl mx-auto px-1 py-6">
     <!-- Seller Profile Header -->
 
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">

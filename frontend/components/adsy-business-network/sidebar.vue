@@ -44,7 +44,7 @@
         <Teleport to="body">
           <div
             v-if="isCreateWorkspaceModalOpen"
-            class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+            class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
             @click="isCreateWorkspaceModalOpen = false"
           >
             <div

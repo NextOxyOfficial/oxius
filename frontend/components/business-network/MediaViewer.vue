@@ -36,7 +36,8 @@
        <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
         <!-- Profile Photo Mode -->
         <div 
-          v-if="profileMode && activeMedia"          class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
+          v-if="profileMode && activeMedia"          
+          class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
         >
           <div class="relative flex justify-center items-center py-10 px-1">
             <div class="relative fade-in">

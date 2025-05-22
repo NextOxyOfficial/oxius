@@ -312,6 +312,53 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- Store Banner Upload -->
+              <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+                <label class="block text-base font-medium text-gray-700 mb-3"
+                  >Store/For Sale Banner</label
+                >
+                <div class="flex flex-col space-y-4">
+                  <!-- Current banner preview -->
+                  <div v-if="userProfile.store_banner" class="relative">
+                    <img
+                      :src="userProfile.store_banner"
+                      alt="Store Banner"
+                      class="w-full h-40 rounded-lg object-cover border-2 border-white shadow"
+                    />
+                    <button
+                      type="button"
+                      class="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-sm text-red-500 hover:bg-red-50 transition-colors"
+                      @click="showDeleteBannerConfirmModal = true"
+                      aria-label="Remove banner image"
+                    >
+                      <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <!-- Banner placeholder when no banner -->
+                  <div v-else class="relative">
+                    <div class="w-full h-40 rounded-lg bg-emerald-50 flex items-center justify-center border-2 border-white shadow overflow-hidden">
+                      <UIcon name="i-heroicons-photo" class="w-12 h-12 text-emerald-300" />
+                    </div>
+                  </div>
+
+                  <!-- Upload button -->
+                  <div class="relative">
+                    <input
+                      type="file"
+                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      @change="handleBannerUpload($event)"
+                      accept="image/*"
+                    />
+                    <div class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors rounded-lg cursor-pointer">
+                      <UIcon name="i-heroicons-photo" class="w-5 h-5 text-emerald-500" />
+                      <span class="text-sm text-emerald-600 font-medium">Upload Banner Image</span>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">Recommended size: 1600×400 pixels. Max size: 10MB.</p>
+                  </div>
+                </div>
+              </div>
 
               <!-- Personal Information -->
               <div class="space-y-4">
@@ -687,6 +734,82 @@
         </div>
       </div>
     </div>
+    
+    <!-- Banner delete confirmation modal -->
+    <div
+      v-if="showDeleteBannerConfirmModal"
+      class="fixed inset-0 z-10 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
+      >
+        <div
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+          aria-hidden="true"
+          @click="showDeleteBannerConfirmModal = false"
+        ></div>
+        <span
+          class="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+          >&#8203;</span
+        >
+        <div
+          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-slide-up"
+        >
+          <div
+            class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 to-red-600"
+          ></div>
+          <div
+            class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
+          >
+            <h3
+              class="text-xl font-semibold text-gray-700 flex items-center"
+              id="modal-title-banner"
+            >
+              <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
+              Confirm Deletion
+            </h3>
+            <button
+              @click="showDeleteBannerConfirmModal = false"
+              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+            >
+              <X class="h-6 w-6" />
+            </button>
+          </div>
+          <div class="px-6 py-4">
+            <p class="text-gray-700">
+              Are you sure you want to delete store banner image?
+            </p>
+          </div>
+          <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+            <button
+              @click="deleteBannerUpload()"
+              class="inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-base font-medium text-white hover:from-red-600 hover:to-red-700 focus:outline-none sm:text-sm transition-all duration-200 transform hover:-translate-y-0.5"
+              :disabled="isProcessing"
+            >
+              <span v-if="!isProcessing" class="flex items-center">
+                <Trash2 class="h-4 w-4 mr-1.5" />
+                Delete
+              </span>
+              <span v-else class="flex items-center">
+                <Loader2 class="h-4 w-4 mr-1.5 animate-spin" />
+                Deleting...
+              </span>
+            </button>
+            <button
+              @click="showDeleteBannerConfirmModal = false"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+            >
+              <X class="h-4 w-4 mr-1.5" />
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </PublicSection>
 </template>
 
@@ -700,6 +823,7 @@ const { user } = useAuth();
 const toast = useToast();
 // State Management
 const showDeleteConfirmModal = ref(false);
+const showDeleteBannerConfirmModal = ref(false); // New state for banner delete modal
 const isProcessing = ref(false);
 const activeTab = ref("profile");
 const userProfile = ref({});
@@ -845,8 +969,7 @@ async function handlePasswordChange() {
       error.response?.data?.message || "Failed to change password",
       "red"
     );
-    console.error(error);
-  } finally {
+    console.error(error);  } finally {
     passwordLoading.value = false;
   }
 }
@@ -854,7 +977,6 @@ async function handlePasswordChange() {
 // Handle profile update
 async function handleForm() {
   isLoading.value = true;
-
   try {
     // Create a copy of the profile data
     const profileData = { ...userProfile.value };
@@ -862,16 +984,13 @@ async function handleForm() {
     // Set the name properly
     profileData.name = `${profileData.first_name || ""} ${
       profileData.last_name || ""
-    }`.trim();
-
-    // Remove properties that shouldn't be sent to the API
+    }`.trim();    // Remove properties that shouldn't be sent to the API
     const {
       groups,
       user_permissions,
       nid,
       refer,
       store_logo,
-      store_banner,
       ...dataToSend
     } = profileData;
 
@@ -888,6 +1007,20 @@ async function handleForm() {
       // Explicitly set image to empty string for removal
       // Some APIs handle null differently than empty string, so try both approaches
       dataToSend.image = "";
+    }
+    
+    // Handle store_banner in the same way
+    if (typeof profileData.store_banner === "string") {
+      if (profileData.store_banner.includes("data:image")) {
+        // This is a new banner upload as base64
+        dataToSend.store_banner = profileData.store_banner;
+      } else if (profileData.store_banner.includes("http")) {
+        // This is an existing banner URL - don't include it in the update
+        delete dataToSend.store_banner;
+      }
+    } else if (profileData.store_banner === null) {
+      // Explicitly set store_banner to empty string for removal
+      dataToSend.store_banner = "";
     }
 
     console.log(
@@ -1047,6 +1180,105 @@ function handleFileUpload(event, field) {
   reader.readAsDataURL(file);
 }
 
+// Handle banner image upload
+function handleBannerUpload(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+
+  const file = files[0];
+
+  // Validate file type
+  if (!file.type.match(/^image\/(jpeg|png|gif|webp|bmp)$/i)) {
+    showToast(
+      "Invalid File Type",
+      "Please select a valid image file (JPEG, PNG, GIF)",
+      "red"
+    );
+    return;
+  }
+
+  // Check file size (max 10MB)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  const targetSize = 500 * 1024; // 500KB target size for compression
+
+  if (file.size > maxSize) {
+    showToast(
+      "File Too Large",
+      `Banner image must be smaller than 10MB. Current size: ${(
+        file.size /
+        (1024 * 1024)
+      ).toFixed(1)}MB`,
+      "red"
+    );
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    // Resize and compress the image
+    const img = new Image();
+    img.onload = function () {
+      // Banner dimensions
+      const MAX_WIDTH = 1600;
+      const MAX_HEIGHT = 400;
+
+      let width = img.width;
+      let height = img.height;
+
+      // Calculate new dimensions while maintaining aspect ratio
+      if (width > MAX_WIDTH) {
+        height = (height * MAX_WIDTH) / width;
+        width = MAX_WIDTH;
+      }
+      
+      if (height > MAX_HEIGHT) {
+        width = (width * MAX_HEIGHT) / height;
+        height = MAX_HEIGHT;
+      }
+
+      // Create canvas to resize image
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw image at new size
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Compress with decreasing quality until we hit target size
+      let quality = 0.9; // Start with good quality
+      let resultImage = canvas.toDataURL("image/jpeg", quality);
+      let resultSize = Math.round((resultImage.length * 3) / 4); // Estimate base64 size
+
+      // Iteratively reduce quality until we get under target size
+      while (resultSize > targetSize && quality > 0.3) {
+        quality -= 0.1;
+        resultImage = canvas.toDataURL("image/jpeg", quality);
+        resultSize = Math.round((resultImage.length * 3) / 4);
+      }
+
+      // Update the banner image
+      userProfile.value.store_banner = resultImage;
+
+      const finalSizeKB = (resultSize / 1024).toFixed(1);
+      showToast(
+        "Banner Ready",
+        `Banner image compressed to ${finalSizeKB}KB and ready for upload`,
+        "green"
+      );
+    };
+    img.src = reader.result;
+  };
+
+  reader.onerror = (error) => {
+    console.error("Error reading file:", error);
+    showToast("Error", "Failed to process the banner image file", "red");
+  };
+
+  reader.readAsDataURL(file);
+}
+
 // Handle profile image removal
 async function deleteUpload() {
   // Mark as explicitly null to ensure the API recognizes it's being removed
@@ -1067,6 +1299,22 @@ async function deleteUpload() {
   } finally {
     isProcessing.value = false;
   }
+}
+
+// Handle banner image removal
+async function deleteBannerUpload() {
+  // Mark as explicitly null to ensure the API recognizes it's being removed
+  userProfile.value.store_banner = null;
+
+  // Mark form as dirty to enable the save button
+  formDirty.value = true;
+  isProcessing.value = true;
+  showDeleteBannerConfirmModal.value = false;
+  
+  // We just update the user profile with a null store_banner
+  // The actual deletion happens when we save the profile
+  showToast("Success", "Banner removed successfully", "green");
+  isProcessing.value = false;
 }
 
 // Add event listeners when component is mounted
