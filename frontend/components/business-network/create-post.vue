@@ -833,7 +833,7 @@ const processImage = (file) => {
         let height = img.height;
 
         // Resize while maintaining aspect ratio
-        const maxSize = 1300;
+        const maxSize = 5000;
         if (width > maxSize || height > maxSize) {
           if (width > height) {
             height = height * (maxSize / width);
