@@ -653,13 +653,13 @@ async function fetchServices() {
   );
   // categoryTitle.value = response.data[0]?.category_details.title;
 }
-
 async function getCategoryDetails() {
   try {
     const { data } = await get(
       `/details/classified-categories/${router.params.id}/`
     );
     if (data) {
+      console.log("category details", data);
       categoryDetails.value = data;
       await fetchServices();
     }

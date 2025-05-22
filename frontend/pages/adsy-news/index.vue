@@ -26,7 +26,7 @@
               }}</span>
             </div>
             <h2
-              class="text-base sm:text-base md:text-base  font-semibold mb-4 leading-tight"
+              class="text-base sm:text-base md:text-base font-semibold mb-4 leading-tight"
             >
               <NuxtLink
                 :to="`/adsy-news/${latestArticle.slug}/`"
@@ -226,9 +226,9 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="font-medium text-sm sm:text-base mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
+                  class="font-medium text-sm sm:text-base mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 clamp-2 overflow-hidden"
                 >
-                  {{ article.title }}
+                  {{ article.title.substring(0, 50) + "..." }}
                 </h3>
               </NuxtLink>
               <div
@@ -716,6 +716,13 @@ onUnmounted(() => {
 :root {
   --color-primary: #e53e3e;
   --color-primary-dark: #c53030;
+}
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
 }
 
 .bg-primary {
