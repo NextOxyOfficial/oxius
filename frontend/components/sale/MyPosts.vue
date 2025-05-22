@@ -161,7 +161,7 @@
 
           <button
             @click="$emit('create-post')"
-            class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 shadow hover:shadow-primary/20 transform hover:-translate-y-0.5"
+            class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium text-sm px-2 py-1.5 rounded-lg flex items-center gap-2 shadow hover:shadow-primary/20 transform hover:-translate-y-0.5"
           >
             <Icon name="heroicons:plus-circle" size="18px" />
             New Post
@@ -215,7 +215,7 @@
                 <div>
                   <NuxtLink :to="`/sale/${post.slug}`">
                     <h3
-                      class="text-base line-clamp-1 text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
+                      class="text-base line-clamp-2 px-2 text-start text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
                     >
                       {{ post.title }}
                     </h3>
@@ -225,20 +225,20 @@
                     class="flex items-center gap-4 justify-between md:hidden mt-3"
                   >
                     <!-- Edit/Delete buttons -->
-                    <div class="flex gap-2.5">
+                    <div class="flex">
                       <button
                         @click="$emit('edit-post', post)"
                         class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
                         title="Edit post"
                       >
-                        <Icon name="heroicons:pencil-square" size="20px" />
+                        <Icon name="heroicons:pencil-square" size="size-4" />
                       </button>
                       <button
                         @click="confirmDelete(post.id, post.title)"
                         class="p-2.5 text-red-500 hover:bg-red-50 rounded-lg duration-200"
                         title="Delete post"
                       >
-                        <Icon name="heroicons:trash" size="20px" />
+                        <Icon name="heroicons:trash" size="size-4" />
                       </button>
                     </div>
                     <!-- Mark as Sold button with states -->
@@ -246,7 +246,7 @@
                       v-if="post.status !== 'sold' && post.status !== 'pending'"
                       @click="markAsSold(post.id)"
                       :disabled="markingSold === post.id"
-                      class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg shadow-sm"
+                      class="flex items-center gap-2.5 px-2 py-1.5 text-sm rounded-lg shadow-sm"
                       :class="[
                         markingSold === post.id
                           ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
@@ -295,7 +295,19 @@
                       Sold
                     </div>
                   </div>
-                  <div class="mt-3 flex items-center text-sm gap-3">
+                  <div class="mt-1 flex items-center text-sm gap-3">
+                    
+                    <div
+                      class="flex items-center gap-1.5 bg-gray-100/70 px-3 py-1.5 rounded-lg"
+                    >
+                      <Icon
+                        name="heroicons:calendar"
+                        class="h-4 w-4 text-gray-600"
+                      />
+                      <span class="text-gray-700">{{
+                        formatDate(post.created_at)
+                      }}</span>
+                    </div>
                     <div
                       class="flex items-center gap-1.5 bg-gradient-to-r from-primary/5 to-primary/10 px-3 py-1.5 rounded-lg shadow-sm"
                     >
@@ -309,20 +321,9 @@
                           : "Negotiable"
                       }}</span>
                     </div>
-                    <div
-                      class="flex items-center gap-1.5 bg-gray-100/70 px-3 py-1.5 rounded-lg"
-                    >
-                      <Icon
-                        name="heroicons:calendar"
-                        class="h-4 w-4 text-gray-600"
-                      />
-                      <span class="text-gray-700">{{
-                        formatDate(post.created_at)
-                      }}</span>
-                    </div>
                   </div>
                   <div
-                    class="mt-3 items-center text-sm text-gray-600 gap-1.5 bg-gray-50/80 px-3 py-1.5 rounded-lg flex"
+                    class="mt-1.5 items-center text-sm text-gray-600 gap-1.5 bg-gray-50/80 px-3 py-1.5 rounded-lg flex"
                   >
                     <Icon
                       name="heroicons:map-pin"
@@ -337,7 +338,7 @@
                     >
                   </div>
                   <div
-                    class="mt-4 flex flex-block items-start text-xs text-gray-600 gap-3"
+                    class="mt-2 flex flex-block items-start text-xs text-gray-600 gap-3"
                   >
                     <span
                       class="flex items-start gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100/80 group-hover:bg-gray-50/80 group-hover:border-gray-200/80"
@@ -372,14 +373,14 @@
                   class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
                   title="Edit post"
                 >
-                  <Icon name="heroicons:pencil-square" size="20px" />
+                  <Icon name="heroicons:pencil-square" size="size-4" />
                 </button>
                 <button
                   @click="confirmDelete(post.id, post.title)"
                   class="p-2.5 text-red-500 hover:bg-red-50 rounded-lg duration-200"
                   title="Delete post"
                 >
-                  <Icon name="heroicons:trash" size="20px" />
+                  <Icon name="heroicons:trash" size="size-4" />
                 </button>
               </div>
               <!-- Mark as Sold button with states -->
@@ -442,14 +443,14 @@
                 class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200  border border-gray-100 hover:border-blue-100"
                 title="Edit post"
               >
-                <Icon name="heroicons:pencil-square" size="20px" />
+                <Icon name="heroicons:pencil-square" size="size-4" />
               </button>
               <button
                 @click="confirmDelete(post.id, post.title)"
                 class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
                 title="Delete post"
               >
-                <Icon name="heroicons:trash" size="20px" />
+                <Icon name="heroicons:trash" size="size-4" />
               </button>
             </div>
             
@@ -561,7 +562,7 @@
           <span v-else class="flex items-center gap-3 justify-center">
             <Icon
               name="heroicons:arrow-down"
-              size="20px"
+              size="size-4"
               class="text-primary"
             />
             <span class="font-medium">Load more posts</span>
