@@ -6,7 +6,7 @@
       @touchend="handleTouchEnd"
       @click="$emit('close-media')"
     >      <!-- Fixed header with X button that stays visible while scrolling -->
-      <div class="sticky top-0 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
+      <div class="sticky top-14 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
         <div class="text-white font-medium flex items-center">
           <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-gray-800/80 rounded-full text-sm">
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
