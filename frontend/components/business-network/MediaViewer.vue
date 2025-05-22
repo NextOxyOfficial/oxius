@@ -2,29 +2,38 @@
   <Teleport to="body">
     <div
       v-if="activeMedia"
-      class="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4"
+      class="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-start p-4 overflow-auto"
       @click="$emit('close-media')"
     >
-      <div
-        class="relative max-w-3xl w-full max-h-[80vh] bg-white rounded-lg overflow-hidden flex flex-col"
-        @click.stop
-      >
+      <!-- Header toolbar -->
+      <div class="w-full max-w-7xl flex justify-between items-center mb-4 px-2 py-2 bg-black/60 backdrop-blur-sm rounded-lg">
+        <div class="text-white font-medium flex items-center">
+          <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-white/10 rounded-full text-sm">
+            {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
+          </span>
+          <span v-if="activePost?.title" class="truncate max-w-[200px] sm:max-w-[300px]">
+            {{ activePost.title }}
+          </span>
+        </div>
         <button
-          class="absolute right-2 top-2 z-10 p-1 rounded-full bg-black/50 text-white"
-          @click="$emit('close-media')"
+          class="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          @click.stop="$emit('close-media')"
         >
           <X class="h-6 w-6" />
         </button>
+      </div>
 
-        <div class="flex-1 overflow-hidden relative">
-          <div
-            v-if="activeMedia.type === 'image' || !activeMedia.type"
-            class="relative h-[45vh] w-full"
-          >
+      <!-- Current active media (large view) -->
+      <div
+        class="relative max-w-4xl w-full mb-6 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-2xl"
+        @click.stop
+      >
+        <div class="relative flex justify-center items-center py-4">
+          <div v-if="activeMedia.type === 'image' || !activeMedia.type" class="relative">
             <img
               :src="activeMedia.image"
               alt="Media preview"
-              class="w-full h-full object-contain"
+              class="max-h-[70vh] max-w-full object-contain"
             />
             <a
               :href="activeMedia.image"
@@ -39,7 +48,7 @@
             <video
               :src="activeMedia.url || activeMedia.video"
               controls
-              class="w-full h-auto max-h-[45vh]"
+              class="max-h-[70vh] max-w-full"
             ></video>
             <a
               :href="activeMedia.url || activeMedia.video"
@@ -51,25 +60,34 @@
             </a>
           </div>
         </div>
+      </div>
 
-        <!-- Media navigation -->
-        <div v-if="activePost && activePost.post_media.length > 1">
-          <button
-            class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/75 rounded-full p-2.5 text-white touch-manipulation transition-all duration-200 hover:scale-110 shadow-sm backdrop-blur-sm"
-            @click.stop="$emit('navigate-media', 'prev')"
-          >
-            <ChevronLeft class="h-5 w-5" />
-          </button>
-          <button
-            class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/75 rounded-full p-2.5 text-white touch-manipulation transition-all duration-200 hover:scale-110 shadow-sm backdrop-blur-sm"
-            @click.stop="$emit('navigate-media', 'next')"
-          >
-            <ChevronRight class="h-5 w-5" />
-          </button>
-          <div
-            class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm font-medium shadow-sm"
-          >
-            {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
+      <!-- Serial photo viewer grid -->
+      <div v-if="activePost && activePost.post_media.length > 1" 
+           class="w-full max-w-6xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 bg-white/5 backdrop-blur-sm rounded-lg"
+           @click.stop>
+        <div
+          v-for="(media, index) in activePost.post_media"
+          :key="media.id"
+          class="relative group cursor-pointer overflow-hidden rounded-lg"
+          :class="{'ring-2 ring-blue-500 shadow-lg': activeMediaIndex === index}"
+          @click="$emit('navigate-media', index === activeMediaIndex ? null : 'select', index)"
+        >
+          <div class="aspect-square overflow-hidden">
+            <img
+              :src="media.image"
+              :alt="`Media ${index + 1}`"
+              class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+            />
+          </div>
+          
+          <!-- Active indicator -->
+          <div v-if="activeMediaIndex === index" 
+               class="absolute inset-0 border-2 border-blue-500 rounded-lg"></div>
+          
+          <!-- Image number -->
+          <div class="absolute top-2 right-2 px-2 py-1 bg-black/60 rounded text-white text-xs font-medium">
+            {{ index + 1 }}
           </div>
         </div>
       </div>
@@ -159,3 +177,20 @@ const formatTimeAgo = (dateString) => {
   } ago`;
 };
 </script>
+
+<style scoped>
+/* Add smooth transitions for hover effects */
+.transition-transform {
+  transition: transform 0.3s ease-out;
+}
+
+/* Optional zoom effect on hover */
+.group:hover img {
+  transform: scale(1.05);
+}
+
+/* Smoothly highlight the active image */
+.ring-blue-500 {
+  transition: all 0.2s ease-out;
+}
+</style>

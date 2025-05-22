@@ -5,13 +5,12 @@
         class="relative w-full overflow-hidden min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
-      ><!-- Main image with click handler for advancing to next image -->
-        <img
+      ><!-- Main image with click handler for advancing to next image -->        <img
           :src="post.post_media[activeIndex].image"
           alt="Media"
           class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain cursor-pointer"
-          @click="post.post_media.length > 1 && navigateMedia('next')"
-        />        <!-- Image counter indicator with interaction hint -->
+          @click="$emit('open-media', post, post.post_media[activeIndex])"
+        /><!-- Image counter indicator with interaction hint -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-sm border border-white/10">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
@@ -136,7 +135,7 @@
               'ring-1 ring-white/70 dark:ring-slate-700/90':
                 activeIndex !== mediaIndex,
             }"
-            @click="setActiveMedia(mediaIndex)"
+            @click="setActiveMedia(mediaIndex); $emit('open-media', post, post.post_media[mediaIndex])"
           >
             <div class="h-full w-full overflow-hidden rounded-md">
               <img

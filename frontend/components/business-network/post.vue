@@ -117,7 +117,7 @@
                 </span>
                 <span v-else-if="field === 'content'" class="flex items-center">
                   <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="16" y1="13" x2="8" y2="13"></line>
                     <line x1="16" y1="17" x2="8" y2="17"></line>
@@ -839,16 +839,20 @@ const closeMedia = () => {
   mediaCommentText.value = "";
 };
 
-const navigateMedia = (direction) => {
+const navigateMedia = (direction, index) => {
   if (!activePost.value || !activePost.value.post_media) return;
 
   const totalMedia = activePost.value.post_media.length;
 
-  if (direction === "next") {
+  // If an index is directly provided (for serial view selection)
+  if (typeof index === 'number') {
+    activeMediaIndex.value = index;
+  } 
+  // For next/prev navigation
+  else if (direction === "next") {
     activeMediaIndex.value = (activeMediaIndex.value + 1) % totalMedia;
-  } else {
-    activeMediaIndex.value =
-      (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
+  } else if (direction === "prev") {
+    activeMediaIndex.value = (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
   }
 
   activeMedia.value = activePost.value.post_media[activeMediaIndex.value];
