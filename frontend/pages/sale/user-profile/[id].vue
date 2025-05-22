@@ -25,7 +25,8 @@
         </div>
       </div>
 
-      <div class="px-6 pb-6 relative">        <!-- Profile Avatar -->
+      <div class="px-6 pb-6 relative">        
+        <!-- Profile Avatar -->
         <div
           class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden group cursor-pointer"
           @click="openProfilePhotoModal"
@@ -192,13 +193,13 @@
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div class="py-5 px-1 sm:px-4">
-            <div class="flex-block items-center justify-between mb-4">
+            <div class="max-sm:flex-block flex items-center justify-between max-sm:mb-4">
               <h2 class="text-lg mb-4 font-bold text-gray-800 flex items-center">
                 <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
                 {{ seller.name }}'s Listings ({{ seller.sale_post_count }})
               </h2>
 
-              <div class="flex items-center justify-center space-x-2">
+              <div class="flex items-center max-sm:justify-center space-x-2">
                 <select
                   v-model="sortOption"
                   class="text-sm border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white"
@@ -647,10 +648,6 @@
       v-if="showProfilePhotoModal"
       :activeMedia="profilePhotoMedia"
       :user="user"
-      :profileMode="true"
-      :profileUser="seller"
-      @close-media="showProfilePhotoModal = false"
-    />
       :profileMode="true"
       :profileUser="seller"
       @close-media="showProfilePhotoModal = false"
