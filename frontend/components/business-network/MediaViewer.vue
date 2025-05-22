@@ -51,9 +51,11 @@
                 <div class="absolute top-4 left-4 px-3 py-1 bg-black/50 rounded-full text-white text-sm">
                   {{ index + 1 }} / {{ activePost.post_media.length }}
                 </div>
-                
-                <!-- Three-dot menu dropdown -->
-                <div class="absolute top-4 right-4 z-10">
+                  <!-- Three-dot menu dropdown -->
+                <div 
+                  v-if="isCurrentUserPostOwner"
+                  class="absolute top-4 right-4 z-10"
+                >
                   <button 
                     @click.stop="showMediaMenuForItem(index)"
                     class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
@@ -87,6 +89,21 @@
                     </div>
                   </div>
                 </div>
+                
+                <!-- Download button (visible to all users) -->
+                <div 
+                  v-if="!isCurrentUserPostOwner" 
+                  class="absolute top-4 right-4 z-10"
+                >
+                  <a 
+                    :href="media.image" 
+                    :download="`media-${media.id}`"
+                    class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors inline-flex"
+                    title="Download photo"
+                  >
+                    <Download class="h-5 w-5 text-gray-700" />
+                  </a>
+                </div>
               </div>
               
               <!-- Display video if it's a video type -->
@@ -101,9 +118,11 @@
                 <div class="absolute top-4 left-4 px-3 py-1 bg-black/50 rounded-full text-white text-sm">
                   {{ index + 1 }} / {{ activePost.post_media.length }}
                 </div>
-                
-                <!-- Three-dot menu dropdown for video -->
-                <div class="absolute top-4 right-4 z-10">
+                  <!-- Three-dot menu dropdown for video -->
+                <div 
+                  v-if="isCurrentUserPostOwner"
+                  class="absolute top-4 right-4 z-10"
+                >
                   <button 
                     @click.stop="showMediaMenuForItem(index)"
                     class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
@@ -137,6 +156,21 @@
                     </div>
                   </div>
                 </div>
+                
+                <!-- Download button for video (visible to all users) -->
+                <div 
+                  v-if="!isCurrentUserPostOwner" 
+                  class="absolute top-4 right-4 z-10"
+                >
+                  <a 
+                    :href="media.url || media.video" 
+                    :download="`video-${media.id}`"
+                    class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors inline-flex"
+                    title="Download video"
+                  >
+                    <Download class="h-5 w-5 text-gray-700" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -154,9 +188,11 @@
                 alt="Media preview"
                 class="max-h-[85vh] max-w-full object-contain"
               />
-              
-              <!-- Three-dot menu dropdown -->
-              <div class="absolute top-4 right-4 z-10">
+                <!-- Three-dot menu dropdown (only visible to post owner) -->
+              <div 
+                v-if="isCurrentUserPostOwner"
+                class="absolute top-4 right-4 z-10"
+              >
                 <button 
                   @click.stop="showMediaMenu = !showMediaMenu"
                   class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
@@ -190,6 +226,21 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- Download button (visible to all users) -->
+              <div 
+                v-if="!isCurrentUserPostOwner" 
+                class="absolute top-4 right-4 z-10"
+              >
+                <a 
+                  :href="activeMedia.image" 
+                  :download="`media-${activeMedia.id}`"
+                  class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors inline-flex"
+                  title="Download photo"
+                >
+                  <Download class="h-5 w-5 text-gray-700" />
+                </a>
+              </div>
             </div>
             
             <div v-else-if="activeMedia.type === 'video'" class="relative">
@@ -198,9 +249,11 @@
                 controls
                 class="max-h-[85vh] max-w-full"
               ></video>
-              
-              <!-- Three-dot menu dropdown for video -->
-              <div class="absolute top-4 right-4 z-10">
+                <!-- Three-dot menu dropdown for video (only visible to post owner) -->
+              <div 
+                v-if="isCurrentUserPostOwner"
+                class="absolute top-4 right-4 z-10"
+              >
                 <button 
                   @click.stop="showMediaMenu = !showMediaMenu"
                   class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
@@ -233,6 +286,21 @@
                     </button>
                   </div>
                 </div>
+              </div>
+              
+              <!-- Download button for video (visible to all users) -->
+              <div 
+                v-if="!isCurrentUserPostOwner" 
+                class="absolute top-4 right-4 z-10"
+              >
+                <a 
+                  :href="activeMedia.url || activeMedia.video" 
+                  :download="`video-${activeMedia.id}`"
+                  class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors inline-flex"
+                  title="Download video"
+                >
+                  <Download class="h-5 w-5 text-gray-700" />
+                </a>
               </div>
             </div>
           </div>
@@ -285,7 +353,7 @@ import {
   MoreVertical,
   Trash2,
 } from "lucide-vue-next";
-import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
+import { onMounted, onUnmounted, ref, watch, nextTick, computed } from 'vue';
 
 // Get toast utility
 const toast = useToast();
@@ -329,6 +397,14 @@ const showMediaMenu = ref(false);
 const showDeleteConfirm = ref(false);
 const activeMenuIndex = ref(null);
 const mediaToDelete = ref(null);
+
+// Computed property to check if current user is the post owner
+const isCurrentUserPostOwner = computed(() => {
+  if (!props.user || !props.activePost?.author) {
+    return false;
+  }
+  return props.user.user?.id === props.activePost.author;
+});
 
 // Show media menu for a specific item
 const showMediaMenuForItem = (index) => {
@@ -399,7 +475,7 @@ const handleTouchEnd = (event) => {
 // Media menu functions
 const confirmDeleteMedia = (media) => {
   // Check if this is the user's own post before allowing deletion
-  if (!user.value || (activePost.value && activePost.value.author !== user.value.user?.id)) {
+  if (!isCurrentUserPostOwner.value) {
     toast.add({
       title: "You can only delete your own photos",
       color: "red",
