@@ -191,7 +191,7 @@
       <!-- Seller Products - 2 columns on large screens -->
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div class="py-5 px-1">
+          <div class="py-5 px-1 sm:px-4">
             <div class="flex-block items-center justify-between mb-4">
               <h2 class="text-lg mb-4 font-bold text-gray-800 flex items-center">
                 <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
