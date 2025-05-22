@@ -5,7 +5,9 @@
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
       @click="$emit('close-media')"
-    >      <!-- Fixed header with X button that stays visible while scrolling -->      <div class="sticky top-14 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
+    >      
+    <!-- Fixed header with X button that stays visible while scrolling -->      
+    <div class="sticky top-14 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
         <div class="text-white font-medium flex items-center">
           <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-gray-800/80 rounded-full text-sm">
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
@@ -29,15 +31,18 @@
         >
           <X class="h-5 w-5 text-white" />
         </button>
-      </div>      <!-- Serial Photos Container - Displays all photos in a vertical layout -->      <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
+      </div>      
+      <!-- Serial Photos Container - Displays all photos in a vertical layout -->      
+       <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
         <!-- Profile Photo Mode -->
         <div 
           v-if="profileMode && activeMedia"          class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
         >
-          <div class="relative flex justify-center items-center py-10 px-10">
+          <div class="relative flex justify-center items-center py-10 px-1">
             <div class="relative fade-in">
               <!-- Profile photo with special styling -->
-              <div class="relative mx-auto">                <!-- Decorative gradient border for profile photo -->
+              <div class="relative mx-auto">                
+                <!-- Decorative gradient border for profile photo -->
                 <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1 blur-sm opacity-80"></div>
                 
                 <img
@@ -206,7 +211,8 @@
                 </div>
               </div>
             </div>
-          </div>        </template>
+          </div>        
+        </template>
           <!-- Single photo view if there's only one photo and not in profile mode -->
         <div 
           v-else-if="!profileMode"
@@ -218,7 +224,8 @@
                 :src="activeMedia.image"
                 alt="Media preview"
                 class="max-h-[85vh] max-w-full object-contain rounded-md"
-              />                <!-- Three-dot menu dropdown (only visible to post owner) -->
+              />                
+              <!-- Three-dot menu dropdown (only visible to post owner) -->
               <div 
                 v-if="isCurrentUserPostOwner"
                 class="absolute top-4 right-4 z-10"
