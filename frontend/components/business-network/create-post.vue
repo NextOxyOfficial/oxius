@@ -1006,7 +1006,7 @@ async function handleCreatePost() {
       eventBus.emit("post-updated", response.data);
     } else {
       // Create new post
-      console.log("Creating new post with data:", images.value.length, {
+      console.log("Creating new post with data:", form, {
         title: form.value.title,
         content: form.value.content.substring(0, 50) + "...",
         imagesCount: images.value.length,
