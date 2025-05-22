@@ -20,7 +20,7 @@
               : '/static/frontend/images/placeholder.jpg'
           "
           :alt="article.title"
-          class="w-full h-full object-contain"
+          class="w-full h-full object-cover"
         />
         <div
           class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"
@@ -197,7 +197,7 @@
                       : '/static/frontend/images/placeholder.jpg'
                   "
                   :alt="relatedArticle.title"
-                  class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
               </div>
               <div class="p-4">

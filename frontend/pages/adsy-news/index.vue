@@ -8,7 +8,7 @@
           <img
             :src="latestArticle.image"
             :alt="latestArticle.title"
-            class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div
             class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
@@ -111,7 +111,7 @@
                   <img
                     :src="article.image"
                     :alt="article.title"
-                    class="w-full h-full object-contain"
+                    class="w-full h-full object-cover"
                   />
                   <div class="absolute top-0 left-0 m-2">
                     <span
@@ -210,7 +210,7 @@
                 <img
                   :src="article.image"
                   :alt="article.title"
-                  class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
                 <div class="absolute top-0 left-0 m-3">
                   <span
