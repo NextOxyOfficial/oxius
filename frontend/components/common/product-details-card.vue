@@ -403,7 +403,8 @@
               </div>
             </div>            
             <div class="ml-3 flex-1 min-w-0">
-              <div class="flex items-center gap-2">                <NuxtLink 
+              <div class="flex items-center gap-2">                
+                <NuxtLink 
                   v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
                   :to="`/eshop/${
                     currentProduct.owner_details?.store_username ||
@@ -411,7 +412,7 @@
                   }`"
                   class="hover:text-emerald-600 transition-colors"
                 >
-                  <h4 class="font-medium text-gray-800 dark:text-white truncate">
+                  <h4 class="font-medium text-green-800 dark:text-white truncate">
                     {{
                       currentProduct.owner_details?.store_name ||
                       "Anonymous Seller"
@@ -501,7 +502,8 @@
               icon="i-heroicons-envelope"
             >
               Message
-            </UButton>              <!-- Store Button -->
+            </UButton>              
+            <!-- Store Button -->
             <UButton
               v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
               color="gray"
