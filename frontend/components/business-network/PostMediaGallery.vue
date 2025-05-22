@@ -1,5 +1,6 @@
 <template>
-  <div class="mb-3">    <!-- Main content area -->
+  <div class="mb-3">    
+    <!-- Main content area -->
     <div class="relative overflow-hidden">      <div
         ref="mediaContainer"
         class="relative w-full overflow-hidden min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
@@ -27,7 +28,8 @@
           <div class="text-white text-sm flex items-center">
             <span>Tap to browse</span>
           </div>
-        </div><!-- Download button (invisible but still functional) -->
+        </div>
+        <!-- Download button (invisible but still functional) -->
         <button 
           @click.stop="downloadImage(post.post_media[activeIndex].image)"
           class="absolute top-3.5 right-3.5 p-2 opacity-0 pointer-events-auto"
@@ -56,7 +58,8 @@
           <span class="sr-only">Next image</span>
         </button>
       </div>
-    </div>    <!-- Thumbnail gallery - only show if there's more than one media item -->
+    </div>    
+    <!-- Thumbnail gallery - only show if there's more than one media item -->
     <div v-if="post.post_media.length > 1" class="relative px-0.5 mt-5">
       <!-- Gallery Heading -->
       <div class="flex items-center px-4 justify-between mb-4 relative">        
@@ -149,7 +152,8 @@
             <div
               v-if="activeIndex === mediaIndex"
               class="absolute bottom-0 left-0 right-0 h-1.5 bg-blue-500"
-            ></div>            <!-- Media counter badge on thumbnails -->
+            ></div>            
+            <!-- Media counter badge on thumbnails -->
             <div 
               class="absolute top-1 right-1 px-1.5 py-0.5 bg-black/50 rounded-full text-white text-xs font-medium shadow-sm border border-white/10 flex items-center"
             >
@@ -169,7 +173,8 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Right navigation arrow -->
+      </div>      
+      <!-- Right navigation arrow -->
       <button
         v-show="canScrollRight"
         @click="scrollThumbnails('right')"

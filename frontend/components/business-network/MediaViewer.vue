@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="activeMedia"
-      class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-start overflow-auto scrollbar-custom"
+      class="fixed inset-0 z-[9999] mt-14 bg-white flex flex-col items-center justify-start overflow-auto scrollbar-custom"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
@@ -19,7 +19,7 @@
         
         <!-- X button that's always visible -->
         <button
-          class="p-3 bg-white rounded-full shadow-md transition-colors hover:bg-gray-100 border-2 border-gray-300"
+          class="p-3 bg-white rounded-full shadow-sm transition-colors hover:bg-gray-100 border-2 border-gray-300"
           @click.stop="$emit('close-media')"
           aria-label="Close viewer"
         >
@@ -35,9 +35,9 @@
             v-for="(media, index) in activePost.post_media" 
             :key="media.id"
             :id="`media-item-${index}`"
-            class="w-full mb-8 bg-white rounded-lg overflow-hidden shadow-md"
+            class="w-full mb-8 bg-white rounded-lg overflow-hidden shadow-sm"
           >
-            <div class="relative flex justify-center items-center py-6 px-6">
+            <div class="relative flex justify-center items-center p-2">
               <!-- Display image -->
               <div v-if="media.type === 'image' || !media.type" class="relative">
                 <img
@@ -64,7 +64,7 @@
                   <!-- Dropdown menu -->
                   <div 
                     v-if="activeMenuIndex === index && showMediaMenu" 
-                    class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
+                    class="absolute right-0 mt-2 w-48 rounded-md shadow-sm bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
                     @click.stop
                   >
                     <div class="py-1">
@@ -114,7 +114,7 @@
                   <!-- Dropdown menu -->
                   <div 
                     v-if="activeMenuIndex === index && showMediaMenu" 
-                    class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
+                    class="absolute right-0 mt-2 w-48 rounded-md shadow-sm bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
                     @click.stop
                   >
                     <div class="py-1">
@@ -145,7 +145,7 @@
         <!-- Single photo view if there's only one photo -->
         <div 
           v-else 
-          class="w-full mb-8 bg-white rounded-lg overflow-hidden shadow-md"
+          class="w-full mb-8 bg-white rounded-lg overflow-hidden shadow-sm"
         >
           <div class="relative flex justify-center items-center py-6 px-6">
             <div v-if="activeMedia.type === 'image' || !activeMedia.type" class="relative">
@@ -167,7 +167,7 @@
                 <!-- Dropdown menu -->
                 <div 
                   v-if="showMediaMenu" 
-                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
+                  class="absolute right-0 mt-2 w-48 rounded-md shadow-sm bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
                   @click.stop
                 >
                   <div class="py-1">
@@ -211,7 +211,7 @@
                 <!-- Dropdown menu -->
                 <div 
                   v-if="showMediaMenu" 
-                  class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
+                  class="absolute right-0 mt-2 w-48 rounded-md shadow-sm bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
                   @click.stop
                 >
                   <div class="py-1">
@@ -247,7 +247,7 @@
       @click.stop="showDeleteConfirm = false"
     >
       <div 
-        class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6 m-4"
+        class="bg-white dark:bg-slate-800 rounded-lg shadow-sm max-w-md w-full p-6 m-4"
         @click.stop
       >
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete photo?</h3>
