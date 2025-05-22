@@ -32,20 +32,19 @@
       </div>      <!-- Serial Photos Container - Displays all photos in a vertical layout -->      <div class="w-full max-w-5xl flex flex-col items-center py-14" @click.stop>
         <!-- Profile Photo Mode -->
         <div 
-          v-if="profileMode && activeMedia" 
-          class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
+          v-if="profileMode && activeMedia"          class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
         >
-          <div class="relative flex justify-center items-center py-6 px-1">
+          <div class="relative flex justify-center items-center py-10 px-10">
             <div class="relative fade-in">
               <!-- Profile photo with special styling -->
-              <div class="relative mx-auto">
-                <!-- Decorative gradient border for profile photo -->
+              <div class="relative mx-auto">                <!-- Decorative gradient border for profile photo -->
                 <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 p-1 -m-1 blur-sm opacity-80"></div>
                 
                 <img
                   :src="activeMedia.image || activeMedia.url"
                   :alt="profileUser?.name ? `${profileUser.name}'s profile photo` : 'Profile photo'"
                   class="relative max-h-[85vh] max-w-full object-contain rounded-lg shadow-lg"
+                  style="max-width: 80vw;"
                 />
                 
                 <!-- Download button (visible to all users) -->
@@ -63,9 +62,8 @@
             </div>
           </div>
         </div>
-        
-        <!-- Loop through all photos if we have more than one -->
-        <template v-if="activePost && activePost.post_media.length > 1">
+          <!-- Loop through all photos if we have more than one and not in profile mode -->
+        <template v-if="!profileMode && activePost && activePost.post_media.length > 1">
           <div 
             v-for="(media, index) in activePost.post_media" 
             :key="media.id"
@@ -208,11 +206,10 @@
                 </div>
               </div>
             </div>
-          </div>
-        </template>
-          <!-- Single photo view if there's only one photo -->
+          </div>        </template>
+          <!-- Single photo view if there's only one photo and not in profile mode -->
         <div 
-          v-else 
+          v-else-if="!profileMode"
           class="w-full md:w-4/5 lg:w-3/4 mb-8 bg-gray-900/70 rounded-xl overflow-hidden shadow-xl border border-gray-800"
         >
           <div class="relative flex justify-center items-center py-6 px-6">
