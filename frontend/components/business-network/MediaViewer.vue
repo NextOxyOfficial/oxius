@@ -2,43 +2,159 @@
   <Teleport to="body">
     <div
       v-if="activeMedia"
-      class="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-start p-4 overflow-auto"
-      @click="$emit('close-media')"
+      class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-start overflow-auto scrollbar-custom"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
-      <!-- X button to close the viewer (with white background for visibility) -->
-      <button
-        class="absolute top-4 right-4 z-[10000] p-3 bg-white rounded-full shadow-lg transition-colors hover:bg-gray-100"
-        @click.stop="$emit('close-media')"
-        aria-label="Close viewer"
-      >
-        <X class="h-6 w-6 text-black" />
-      </button>
-
-      <!-- Header toolbar -->
-      <div class="w-full max-w-7xl flex justify-between items-center mb-4 px-4 py-3 mt-12">
-        <div class="text-white font-medium flex items-center">
-          <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-white/10 rounded-full text-sm">
+      <!-- Fixed header with X button that stays visible while scrolling -->
+      <div class="sticky top-0 left-0 w-full z-[10000] bg-white shadow-sm flex justify-between items-center px-4 py-3">
+        <div class="text-black font-medium flex items-center">
+          <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-gray-100 rounded-full text-sm">
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
           </span>
           <span v-if="activePost?.title" class="truncate max-w-[200px] sm:max-w-[300px]">
             {{ activePost.title }}
           </span>
         </div>
+        
+        <!-- X button that's always visible -->
+        <button
+          class="p-3 bg-white rounded-full shadow-md transition-colors hover:bg-gray-100 border-2 border-gray-300"
+          @click.stop="$emit('close-media')"
+          aria-label="Close viewer"
+        >
+          <X class="h-6 w-6 text-black" />
+        </button>
       </div>
 
-      <!-- Single-photo serial view with white background -->
-      <div class="w-full max-w-4xl flex flex-col items-center" @click.stop>
-        <!-- Current active media -->
-        <div class="relative w-full mb-4 bg-white rounded-lg overflow-hidden shadow-2xl">
+      <!-- Serial Photos Container - Displays all photos in a vertical layout -->
+      <div class="w-full max-w-4xl flex flex-col items-center py-4" @click.stop>
+        <!-- Loop through all photos if we have more than one -->
+        <template v-if="activePost && activePost.post_media.length > 1">
+          <div 
+            v-for="(media, index) in activePost.post_media" 
+            :key="media.id"
+            :id="`media-item-${index}`"
+            class="w-full mb-8 bg-white rounded-lg overflow-hidden shadow-md"
+          >
+            <div class="relative flex justify-center items-center py-6 px-6">
+              <!-- Display image -->
+              <div v-if="media.type === 'image' || !media.type" class="relative">
+                <img
+                  :src="media.image"
+                  alt="Media preview"
+                  class="max-h-[85vh] max-w-full object-contain"
+                  loading="lazy"
+                />
+                
+                <!-- Media counter indicator -->
+                <div class="absolute top-4 left-4 px-3 py-1 bg-black/50 rounded-full text-white text-sm">
+                  {{ index + 1 }} / {{ activePost.post_media.length }}
+                </div>
+                
+                <!-- Three-dot menu dropdown -->
+                <div class="absolute top-4 right-4 z-10">
+                  <button 
+                    @click.stop="showMediaMenuForItem(index)"
+                    class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
+                  >
+                    <MoreVertical class="h-5 w-5 text-gray-700" />
+                  </button>
+                  
+                  <!-- Dropdown menu -->
+                  <div 
+                    v-if="activeMenuIndex === index && showMediaMenu" 
+                    class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
+                    @click.stop
+                  >
+                    <div class="py-1">
+                      <a 
+                        :href="media.image" 
+                        :download="`media-${media.id}`"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        @click.stop="showMediaMenu = false"
+                      >
+                        <Download class="h-4 w-4 mr-2" />
+                        <span>Download photo</span>
+                      </a>
+                      <button 
+                        class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        @click.stop="confirmDeleteMedia(media)"
+                      >
+                        <Trash2 class="h-4 w-4 mr-2" />
+                        <span>Delete photo</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Display video if it's a video type -->
+              <div v-else-if="media.type === 'video'" class="relative">
+                <video
+                  :src="media.url || media.video"
+                  controls
+                  class="max-h-[85vh] max-w-full"
+                ></video>
+                
+                <!-- Media counter indicator -->
+                <div class="absolute top-4 left-4 px-3 py-1 bg-black/50 rounded-full text-white text-sm">
+                  {{ index + 1 }} / {{ activePost.post_media.length }}
+                </div>
+                
+                <!-- Three-dot menu dropdown for video -->
+                <div class="absolute top-4 right-4 z-10">
+                  <button 
+                    @click.stop="showMediaMenuForItem(index)"
+                    class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
+                  >
+                    <MoreVertical class="h-5 w-5 text-gray-700" />
+                  </button>
+                  
+                  <!-- Dropdown menu -->
+                  <div 
+                    v-if="activeMenuIndex === index && showMediaMenu" 
+                    class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50"
+                    @click.stop
+                  >
+                    <div class="py-1">
+                      <a 
+                        :href="media.url || media.video" 
+                        :download="`video-${media.id}`"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        @click.stop="showMediaMenu = false"
+                      >
+                        <Download class="h-4 w-4 mr-2" />
+                        <span>Download video</span>
+                      </a>
+                      <button 
+                        class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        @click.stop="confirmDeleteMedia(media)"
+                      >
+                        <Trash2 class="h-4 w-4 mr-2" />
+                        <span>Delete video</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        
+        <!-- Single photo view if there's only one photo -->
+        <div 
+          v-else 
+          class="w-full mb-8 bg-white rounded-lg overflow-hidden shadow-md"
+        >
           <div class="relative flex justify-center items-center py-6 px-6">
             <div v-if="activeMedia.type === 'image' || !activeMedia.type" class="relative">
               <img
                 :src="activeMedia.image"
                 alt="Media preview"
-                class="max-h-[70vh] max-w-full object-contain"
+                class="max-h-[85vh] max-w-full object-contain"
               />
+              
               <!-- Three-dot menu dropdown -->
               <div class="absolute top-4 right-4 z-10">
                 <button 
@@ -66,7 +182,7 @@
                     </a>
                     <button 
                       class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      @click.stop="confirmDeleteMedia"
+                      @click.stop="confirmDeleteMedia(activeMedia)"
                     >
                       <Trash2 class="h-4 w-4 mr-2" />
                       <span>Delete photo</span>
@@ -74,44 +190,15 @@
                   </div>
                 </div>
               </div>
-              
-              <!-- Delete confirmation modal -->
-              <div 
-                v-if="showDeleteConfirm" 
-                class="fixed inset-0 bg-black/80 flex items-center justify-center z-[10001]"
-                @click.stop="showDeleteConfirm = false"
-              >
-                <div 
-                  class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6 m-4"
-                  @click.stop
-                >
-                  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete photo?</h3>
-                  <p class="text-gray-600 dark:text-gray-300 mb-5">
-                    Are you sure you want to delete this photo? This action cannot be undone.
-                  </p>
-                  <div class="flex justify-end space-x-3">
-                    <button 
-                      class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
-                      @click.stop="showDeleteConfirm = false"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                      @click.stop="deleteMedia"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
+            
             <div v-else-if="activeMedia.type === 'video'" class="relative">
               <video
                 :src="activeMedia.url || activeMedia.video"
                 controls
-                class="max-h-[70vh] max-w-full"
+                class="max-h-[85vh] max-w-full"
               ></video>
+              
               <!-- Three-dot menu dropdown for video -->
               <div class="absolute top-4 right-4 z-10">
                 <button 
@@ -139,7 +226,7 @@
                     </a>
                     <button 
                       class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      @click.stop="confirmDeleteMedia"
+                      @click.stop="confirmDeleteMedia(activeMedia)"
                     >
                       <Trash2 class="h-4 w-4 mr-2" />
                       <span>Delete video</span>
@@ -147,61 +234,39 @@
                   </div>
                 </div>
               </div>
-              
-              <!-- Delete confirmation modal is shared with image type -->
             </div>
           </div>
         </div>
-        
-        <!-- Navigation controls at the bottom -->
-        <div v-if="activePost && activePost.post_media.length > 1" class="flex justify-between w-full max-w-4xl mb-6">
-          <button
-            @click.stop="$emit('navigate-media', 'prev')"
-            class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow text-gray-700 hover:bg-gray-100 transition-colors"
+      </div>
+    </div>
+    
+    <!-- Delete confirmation modal -->
+    <div 
+      v-if="showDeleteConfirm" 
+      class="fixed inset-0 bg-black/80 flex items-center justify-center z-[10001]"
+      @click.stop="showDeleteConfirm = false"
+    >
+      <div 
+        class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6 m-4"
+        @click.stop
+      >
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete photo?</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-5">
+          Are you sure you want to delete this photo? This action cannot be undone.
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button 
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+            @click.stop="showDeleteConfirm = false"
           >
-            <ChevronLeft class="h-5 w-5" />
-            <span>Previous</span>
+            Cancel
           </button>
-          
-          <div class="flex items-center">
-            <span class="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700">
-              {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
-            </span>
-          </div>
-          
-          <button
-            @click.stop="$emit('navigate-media', 'next')"
-            class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow text-gray-700 hover:bg-gray-100 transition-colors"
+          <button 
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+            @click.stop="deleteMedia"
           >
-            <span>Next</span>
-            <ChevronRight class="h-5 w-5" />
+            Delete
           </button>
-        </div>
-        
-        <!-- Image thumbnails in a single row -->
-        <div 
-          v-if="activePost && activePost.post_media.length > 1"
-          class="w-full max-w-4xl overflow-x-auto scrollbar-hide py-4 px-2 bg-white/10 rounded-lg"
-        >
-          <div class="flex gap-3 min-w-max">
-            <div
-              v-for="(media, index) in activePost.post_media"
-              :key="media.id"
-              class="relative flex-shrink-0 w-16 h-16 cursor-pointer rounded-lg overflow-hidden transition-all duration-200"
-              :class="activeMediaIndex === index ? 'ring-3 ring-blue-600 scale-110 z-10' : 'ring-1 ring-gray-300 hover:ring-blue-400'"
-              @click.stop="$emit('navigate-media', 'select', index)"
-            >
-              <img
-                :src="media.image"
-                :alt="`Media ${index + 1}`"
-                class="h-full w-full object-cover"
-              />
-              <div class="absolute inset-0 flex items-center justify-center bg-black/40" 
-                   :class="{'opacity-0': activeMediaIndex === index}">
-                <span class="text-white font-medium">{{ index + 1 }}</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -220,7 +285,7 @@ import {
   MoreVertical,
   Trash2,
 } from "lucide-vue-next";
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 
 // Get toast utility
 const toast = useToast();
@@ -259,15 +324,40 @@ const emit = defineEmits([
   "update:media-comment-text",
 ]);
 
-// Add keyboard navigation
+// Media menu states
+const showMediaMenu = ref(false);
+const showDeleteConfirm = ref(false);
+const activeMenuIndex = ref(null);
+const mediaToDelete = ref(null);
+
+// Show media menu for a specific item
+const showMediaMenuForItem = (index) => {
+  if (activeMenuIndex.value === index && showMediaMenu.value) {
+    showMediaMenu.value = false;
+  } else {
+    activeMenuIndex.value = index;
+    showMediaMenu.value = true;
+  }
+};
+
+// Scroll to the active media when opening the viewer
+watch(() => props.activeMedia, (newVal) => {
+  if (newVal && props.activePost && props.activePost.post_media.length > 1) {
+    // Use nextTick to ensure DOM is updated
+    nextTick(() => {
+      const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+});
+
+// Add keyboard navigation for close
 const handleKeyDown = (event) => {
   if (!props.activeMedia) return;
   
-  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-    emit('navigate-media', 'next');
-  } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-    emit('navigate-media', 'prev');
-  } else if (event.key === 'Escape') {
+  if (event.key === 'Escape') {
     emit('close-media');
   }
 };
@@ -285,41 +375,29 @@ onUnmounted(() => {
 const touchStartX = ref(0);
 const touchStartY = ref(0);
 
-// Media menu state
-const showMediaMenu = ref(false);
-const showDeleteConfirm = ref(false);
-
 const handleTouchStart = (event) => {
   touchStartX.value = event.touches[0].clientX;
   touchStartY.value = event.touches[0].clientY;
 };
 
 const handleTouchEnd = (event) => {
-  if (!props.activePost || props.activePost.post_media.length <= 1) return;
-  
   const touchEndX = event.changedTouches[0].clientX;
   const touchEndY = event.changedTouches[0].clientY;
   
   const diffX = touchEndX - touchStartX.value;
   const diffY = touchEndY - touchStartY.value;
   
-  // Check if the swipe was more horizontal than vertical and if it was significant enough
-  if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-    event.stopPropagation(); // Prevent closing the modal
-    
-    // Left swipe (next image)
-    if (diffX < 0) {
-      emit('navigate-media', 'next');
-    } 
-    // Right swipe (previous image)
-    else {
-      emit('navigate-media', 'prev');
+  // If horizontal swipe is much stronger than vertical, handle as a close gesture
+  if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 100) {
+    // Right swipe to close (mimics common mobile pattern)
+    if (diffX > 0) {
+      emit('close-media');
     }
   }
 };
 
 // Media menu functions
-const confirmDeleteMedia = () => {
+const confirmDeleteMedia = (media) => {
   // Check if this is the user's own post before allowing deletion
   if (!user.value || (activePost.value && activePost.value.author !== user.value.user?.id)) {
     toast.add({
@@ -330,15 +408,15 @@ const confirmDeleteMedia = () => {
     return;
   }
   
+  mediaToDelete.value = media;
   showMediaMenu.value = false;
   showDeleteConfirm.value = true;
 };
 
 const deleteMedia = () => {
   // Here you would implement the actual delete functionality
-  // For now, we'll just close the modal and emit an event that the parent can handle
   showDeleteConfirm.value = false;
-  emit('delete-media-comment', props.activeMedia);
+  emit('delete-media-comment', mediaToDelete.value || props.activeMedia);
   emit('close-media'); // Close the viewer after delete
   
   // Show a toast notification
@@ -392,16 +470,6 @@ const formatTimeAgo = (dateString) => {
   transition: transform 0.3s ease-out;
 }
 
-/* Optional zoom effect on hover */
-.group:hover img {
-  transform: scale(1.05);
-}
-
-/* Smoothly highlight the active image */
-.ring-blue-500 {
-  transition: all 0.2s ease-out;
-}
-
 /* Hide scrollbar but maintain functionality */
 .scrollbar-hide {
   scrollbar-width: none; /* Firefox */
@@ -411,19 +479,35 @@ const formatTimeAgo = (dateString) => {
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Slide animations for images */
-@keyframes fadeInSlideUp {
+/* Custom scrollbar for vertical serial view */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth fade-in animation for images */
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.fade-slide-enter-active {
-  animation: fadeInSlideUp 0.3s ease-out;
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
 }
 </style>
