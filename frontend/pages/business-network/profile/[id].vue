@@ -238,32 +238,37 @@
             </div>
 
             <div class="flex gap-2">
-              <!-- Action buttons for mobile -->
-              <button
+              <!-- Action buttons for mobile -->              <button
                 v-if="user?.id !== currentUser?.user?.id && currentUser"
                 :class="[
-                  'px-3 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all duration-300',
+                  'px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 min-w-[90px] text-center relative overflow-hidden group/follow',
                   isFollowing
                     ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-700'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm text-white',
+                    : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white',
                 ]"
                 :disabled="followLoading"
                 @click="toggleFollow"
               >
-                <div
-                  v-if="followLoading"
-                  class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
-                ></div>
+                <span class="relative z-10 flex items-center justify-center gap-1.5">
+                  <div
+                    v-if="followLoading"
+                    class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
+                  ></div>
 
-                <template v-else-if="isFollowing">
-                  <Check class="h-3 w-3 animate-scaleIn" />
-                  Unfollow
-                </template>
+                  <template v-else-if="isFollowing">
+                    <Check class="h-3 w-3 animate-scaleIn" />
+                    Following
+                  </template>
 
-                <template v-else>
-                  <UserPlus class="h-3 w-3 animate-scaleIn" />
-                  Follow
-                </template>
+                  <template v-else>
+                    <UserPlus class="h-3 w-3 animate-scaleIn" />
+                    Follow
+                  </template>
+                </span>
+                <span 
+                  class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
+                  v-if="!isFollowing"
+                ></span>
               </button>
             </div>
           </div>
