@@ -37,9 +37,6 @@
         <!-- Main Menu Section -->
         <SidebarMenu :isMobile="isMobile" @menu-click="handleMenuClick" />
 
-        <!-- Workspaces Section -->
-        <!-- (This section is commented out in the original code) -->
-
         <!-- Create Workspace Modal -->
         <Teleport to="body">
           <div
@@ -84,8 +81,10 @@
                   </button>
                 </div>
               </form>
-            </div>          </div>
-        </Teleport>        <!-- Useful Links Section -->
+            </div>         
+           </div>
+        </Teleport>        
+        <!-- Useful Links Section -->
         <SidebarUsefulLinks />
         
         <!-- Gold Sponsor Modal -->
@@ -96,7 +95,8 @@
             @submit="handleGoldSponsorSubmit" 
           />
         </Teleport>
-          <!-- Become Gold Sponsor Section -->        <div class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
+          <!-- Become Gold Sponsor Section -->        
+           <div class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
           <!-- Shimmering effect at top -->
           <div class="absolute top-0 left-0 right-0 h-1 overflow-hidden">
             <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
@@ -108,11 +108,12 @@
                 <span class="text-amber-500 relative z-10 text-lg">✦</span>
               </div>
               <span class="text-gold-gradient">My Gold Sponsorships</span>
-            </h3>
-              <!-- Stats cards with improved design -->
+            </h3>            
+            <!-- Stats cards with improved design -->
             <div class="grid grid-cols-2 gap-2 mb-3">
               <div class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30">
-                <div class="text-lg font-semibold text-amber-600 dark:text-amber-400">
+                <div v-if="isLoadingSponsors" class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-10 mx-auto mb-1"></div>
+                <div v-else class="text-lg font-semibold text-amber-600 dark:text-amber-400">
                   {{ goldSponsorsCount }}
                 </div>
                 <div class="text-xs text-gray-600 dark:text-gray-400">Active Sponsorships</div>
@@ -120,7 +121,9 @@
               <div 
                 class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30 group relative"
                 title="Total number of times your sponsors have been viewed"
-              >              <div class="text-lg font-semibold text-amber-600 dark:text-amber-400">
+              >              
+                <div v-if="isLoadingSponsors" class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-16 mx-auto mb-1"></div>
+                <div v-else class="text-lg font-semibold text-amber-600 dark:text-amber-400">
                   {{ sponsorViews.toLocaleString() }}
                 </div>
                 <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center">
@@ -128,9 +131,18 @@
                   <UIcon name="i-heroicons-information-circle" class="w-3 h-3 ml-0.5 text-gray-400" />
                 </div>
               </div>
+            </div>              
+            <!-- My Sponsorships List -->
+            <div v-if="isLoadingSponsors" class="mb-3">
+              <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
+              <ul class="space-y-1.5">
+                <li v-for="i in 2" :key="i" class="flex items-center animate-pulse">
+                  <div class="h-5 w-5 rounded-full overflow-hidden mr-2 bg-amber-100/50 dark:bg-amber-900/30 flex-shrink-0"></div>
+                  <div class="h-3 bg-amber-100/50 dark:bg-amber-900/30 rounded w-20"></div>
+                </li>
+              </ul>
             </div>
-              <!-- My Sponsorships List -->
-            <div v-if="featuredSponsors.length > 0" class="mb-3">
+            <div v-else-if="featuredSponsors.length > 0" class="mb-3">
               <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
               <ul class="space-y-1.5">
                 <li 
@@ -149,7 +161,10 @@
                 </li>
               </ul>
             </div>
-            <div v-else-if="goldSponsorsCount === 0" class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
+            <div v-else-if="goldSponsorsCount > 0" class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
+              You have {{ goldSponsorsCount }} sponsorship(s) pending approval
+            </div>
+            <div v-else class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
               You don't have any active sponsorships yet
             </div>
             
@@ -231,9 +246,10 @@ const { unreadCount, fetchUnreadCount } = useNotifications();
 
 // Gold Sponsor modal
 const isGoldSponsorModalOpen = ref(false);
-const goldSponsorsCount = ref(5); // Default value until fetched from API
-const sponsorViews = ref(12540); // Default value until fetched from API
+const goldSponsorsCount = ref(0); // Start with zero until fetched from API
+const sponsorViews = ref(0); // Start with zero until fetched from API
 const featuredSponsors = ref([]); // Will hold a few featured sponsors
+const isLoadingSponsors = ref(false); // Loading state for gold sponsor data
 
 // Loading states
 const isLoadingNews = ref(false);
@@ -450,14 +466,21 @@ async function fetchTopContributors() {
 // Gold Sponsors Data
 async function fetchGoldSponsorsData() {
   try {
+    isLoadingSponsors.value = true;
+    
+    // Use the correct API endpoint with the /api prefix
     const response = await get("/api/bn/gold-sponsors/stats/");
+    
     if (response.data) {
+      // Update the counts with real values from the API
       goldSponsorsCount.value = response.data.active_count || 0;
       sponsorViews.value = response.data.total_views || 0;
       
-      // If there are featured sponsors available, store them
+      // Update the featured sponsors list if available
       if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {
         featuredSponsors.value = response.data.featured_sponsors.slice(0, 3); // Take up to 3 sponsors
+      } else {
+        featuredSponsors.value = []; // Clear the list if no sponsors available
       }
       
       // Log successful fetch for debugging
@@ -468,9 +491,12 @@ async function fetchGoldSponsorsData() {
       });
     } else {
       console.warn("Unexpected gold sponsors response format:", response.data);
-    }  } catch (error) {
+    }
+  } catch (error) {
     console.error("Error fetching gold sponsors data:", error);
     // Keep the default values if the API fails
+  } finally {
+    isLoadingSponsors.value = false;
   }
 }
 
@@ -519,8 +545,12 @@ const handleTagClick = (tag) => {
 const handleGoldSponsorSubmit = async (formData) => {
   try {
     console.log("Gold Sponsor application submitted:", formData);
-    // Here we would typically submit the data to the backend
-    // await post("/bn/gold-sponsors/apply/", formData);
+    // Submit the data to the backend with the correct API endpoint
+    const response = await post("/api/bn/gold-sponsors/apply/", formData);
+    
+    if (response.error) {
+      throw new Error(response.error);
+    }
     
     // Show success message
     toast.add({
@@ -531,9 +561,6 @@ const handleGoldSponsorSubmit = async (formData) => {
     
     // After successful submission, refresh the gold sponsors data
     await fetchGoldSponsorsData();
-    
-    // Increment the active sponsors count as feedback (will be overwritten when data refreshes)
-    goldSponsorsCount.value += 1;
   } catch (error) {
     console.error("Error submitting gold sponsor application:", error);
     toast.add({

@@ -68,7 +68,7 @@
             class="transform transition-all duration-300 hover:-translate-y-1"
           >
             <NuxtLink 
-              :to="`/business-network/profile/${sponsor.id}`"
+              :to="sponsor.profile_url ? sponsor.profile_url : `/business-network/profile/${sponsor.id}`"
               class="flex flex-col items-center p-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl border border-amber-100/50 dark:border-amber-900/30 hover:shadow-md group h-full"
             >
               <!-- Profile image with gold border -->

@@ -88,7 +88,8 @@
                     placeholder="Enter your phone number"
                     required
                   />
-                </div>                <div>
+                </div>                
+                <div>
                   <label for="website" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Website URL</label>
                   <input 
                     id="website" 
@@ -153,11 +154,10 @@
                       <div class="h-3 bg-gray-200 rounded w-1/2"></div>
                     </div>
                   </div>
-                  
-                  <!-- Package error -->
-                  <div v-else-if="packageError" class="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p class="text-sm text-red-600">{{ packageError }}</p>
-                    <button @click="fetchPackages" class="mt-2 text-sm text-red-700 underline">Try again</button>
+                    <!-- Package error -->
+                  <div v-else-if="packageError" class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p class="text-sm text-amber-700">{{ packageError }}</p>
+                    <button @click="fetchPackages" class="mt-2 text-sm text-amber-700 underline">Try again</button>
                   </div>
                   
                   <!-- Package list -->
@@ -194,8 +194,7 @@
               <div v-if="submitSuccess" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p class="text-sm text-green-600">✓ Your Gold Sponsor application has been submitted successfully!</p>
               </div>
-              
-              <!-- Submit button -->
+                <!-- Submit buttons -->
               <div class="mt-5">
                 <button 
                   type="submit" 
@@ -211,6 +210,25 @@
                   </span>
                   <span v-else>Submit Application</span>
                 </button>
+                
+                <!-- Alternative submission method if regular method fails -->
+                <div v-if="submitError" class="mt-3">
+                  <button 
+                    type="button" 
+                    @click.prevent="submitFormDirectFetch"
+                    class="w-full py-2 px-4 border border-amber-300 rounded-md shadow-sm text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="isSubmitting"
+                  >
+                    <span v-if="isSubmitting" class="flex items-center justify-center">
+                      <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-amber-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Trying alternative method...
+                    </span>
+                    <span v-else>Try Alternative Submission Method</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -222,6 +240,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useApi } from '~/composables/useApi'
 
 const props = defineProps({
   isOpen: {
@@ -229,6 +248,9 @@ const props = defineProps({
     default: false
   }
 });
+
+// Import useApi composable
+const { get, post } = useApi();
 
 const emit = defineEmits(['close', 'submit']);
 
@@ -281,11 +303,48 @@ const fetchPackages = async () => {
   packageError.value = '';
   
   try {
-    const response = await $fetch('/api/bn/gold-sponsors/packages/');
-    packages.value = response;
+    console.log('Fetching sponsorship packages...');
+    console.log('API endpoint URL (direct fetch):', '/api/bn/gold-sponsors/packages/');
+    console.log('API endpoint URL (useApi):', '/bn/gold-sponsors/packages/');
+    
+    // Try direct fetch first as a more reliable option
+    try {
+      const directResponse = await $fetch('/api/bn/gold-sponsors/packages/', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('Direct fetch response:', directResponse);
+      if (Array.isArray(directResponse)) {
+        packages.value = directResponse;
+        console.log('Packages loaded successfully (direct):', packages.value.length);
+        return;
+      }
+    } catch (directError) {
+      console.error('Direct fetch failed, falling back to useApi:', directError);
+    }
+    
+    // Fall back to useApi if direct fetch failed
+    // Note: useApi already adds /api prefix, so we shouldn't include it in the path
+    const result = await get('/bn/gold-sponsors/packages/');
+    
+    if (result.error) {
+      console.error('API Error fetching packages:', result.error);
+      throw new Error('Failed to fetch packages: ' + (result.error?.message || 'Unknown error'));
+    } else if (result.data && Array.isArray(result.data)) {
+      packages.value = result.data;
+      console.log('Packages loaded successfully:', packages.value.length);
+    } else {
+      console.log('No packages data received');
+      packageError.value = 'No sponsorship packages available.';
+      packages.value = [];
+    }
   } catch (error) {
-    console.error('Error fetching packages:', error);
-    packageError.value = 'Failed to load sponsorship packages. Please try again.';
+    console.error('Error fetching packages:', error);    packageError.value = 'Using default package options. You can still submit your application.';
+    console.log('Setting fallback packages');
+    
     // Fallback to default packages
     packages.value = [
       {
@@ -294,10 +353,240 @@ const fetchPackages = async () => {
         description: 'Premium visibility for 1 month',
         price: 2999,
         duration_months: 1
+      },
+      {
+        id: 2,
+        name: '3 Months Gold Sponsor',
+        description: 'Premium visibility for 3 months (10% discount)',
+        price: 8099,
+        duration_months: 3
+      },
+      {
+        id: 3,
+        name: '6 Months Gold Sponsor',
+        description: 'Premium visibility for 6 months (15% discount)',
+        price: 15299,
+        duration_months: 6
       }
     ];
   } finally {
     isLoadingPackages.value = false;
+  }
+};
+
+// Direct fetch fallback (in case useApi has issues)
+const submitFormDirectFetch = async () => {
+  try {
+    isSubmitting.value = true;
+    submitError.value = '';
+    submitSuccess.value = false;
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('business_name', form.value.businessName);
+    formData.append('business_description', form.value.businessDescription);
+    formData.append('contact_email', form.value.contactEmail);
+    formData.append('phone_number', form.value.phoneNumber);
+    
+    if (form.value.website) {
+      // Make sure website has http/https prefix
+      const website = form.value.website.trim();
+      formData.append('website', 
+        website.startsWith('http://') || website.startsWith('https://') 
+          ? website 
+          : `https://${website}`
+      );
+    }
+    
+    if (form.value.profileUrl) {
+      // Make sure profile URL has http/https prefix
+      const profileUrl = form.value.profileUrl.trim();
+      formData.append('profile_url', 
+        profileUrl.startsWith('http://') || profileUrl.startsWith('https://') 
+          ? profileUrl 
+          : `https://${profileUrl}`
+      );
+    }
+    
+    // Ensure package_id is properly added as a number
+    formData.append('package_id', parseInt(form.value.selectedPackage, 10));
+    
+    if (form.value.logo) {
+      formData.append('logo', form.value.logo);
+    }
+    
+    console.log('Using direct axios fetch as fallback');
+    
+    // Debug formData in direct fetch
+    console.log('FormData entries for direct fetch:');
+    for(let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + (pair[0] === 'logo' ? 'File object' : pair[1]));
+    }
+    
+    // Try with post method from useApi first
+    try {
+      console.log('Trying with useApi post method');
+      const apiResponse = await post('/bn/gold-sponsors/apply/', formData);
+      
+      if (apiResponse.error) {
+        throw new Error(apiResponse.error.message || JSON.stringify(apiResponse.error));
+      }
+      
+      console.log('useApi response:', apiResponse);
+      const responseData = apiResponse.data;
+      
+      submitSuccess.value = true;
+      emit('submit', responseData);
+      
+      // Reset form and close modal after success
+      resetForm();
+      setTimeout(() => {
+        close();
+      }, 2000);
+      
+      return;
+    } catch (apiError) {
+      console.error('useApi approach failed:', apiError);
+      console.log('Falling back to raw fetch');
+      
+      // Fall back to direct fetch with credentials
+      const response = await fetch('/api/bn/gold-sponsors/apply/', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include', // Include credentials like cookies
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error response:', response.status, errorText);
+        
+        // Check if we received HTML instead of JSON
+        if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+          console.error('Received HTML response instead of JSON. This could be a server error or CSRF issue.');
+          throw { 
+            response: { 
+              status: response.status,
+              data: 'Server error - received HTML instead of JSON. Try refreshing the page.'
+            },
+            message: `Error ${response.status}: Server returned HTML instead of JSON`
+          };
+        }
+        
+        try {
+          // Try to parse the error as JSON
+          const errorData = JSON.parse(errorText);
+          throw { 
+            response: { 
+              status: response.status,
+              data: errorData 
+            },
+            message: `Error ${response.status}: ${JSON.stringify(errorData)}`
+          };
+        } catch (jsonError) {
+          // If can't parse as JSON, use the raw text
+          throw { 
+            response: { 
+              status: response.status,
+              data: errorText 
+            },
+            message: `Error ${response.status}: ${errorText}`
+          };
+        }
+      }
+      
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (parseError) {
+        console.error('Error parsing response as JSON:', parseError);
+        const rawText = await response.text();
+        console.log('Raw response text:', rawText);
+        throw new Error('Invalid JSON response from server');
+      }
+      
+      console.log('Direct fetch response:', responseData);
+      
+      submitSuccess.value = true;
+      emit('submit', responseData);
+      
+      // Reset form and close modal after success
+      resetForm();
+      setTimeout(() => {
+        close();
+      }, 2000);
+    }
+  } catch (error) {
+    console.error('Error in direct fetch submission:', error);
+    console.log('Direct fetch error object:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      response: error.response,
+      data: error.data
+    });
+    
+    // More detailed error handling for direct fetch
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      console.log('Direct fetch error response data:', errorData);
+      
+      if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+        const errorMessages = [];
+        
+        Object.keys(errorData).forEach(key => {
+          if (Array.isArray(errorData[key])) {
+            errorData[key].forEach(message => {
+              errorMessages.push(`${key}: ${message}`);
+            });
+          } else if (typeof errorData[key] === 'object') {
+            errorMessages.push(`${key}: ${JSON.stringify(errorData[key])}`);
+          } else {
+            errorMessages.push(`${key}: ${errorData[key]}`);
+          }
+        });
+        
+        if (errorMessages.length > 0) {
+          submitError.value = `Alternative method error: ${errorMessages.join(', ')}`;
+        } else {
+          submitError.value = `Alternative method error: ${JSON.stringify(errorData)}`;
+        }
+      } else if (typeof errorData === 'string') {
+        submitError.value = `Alternative method error: ${errorData}`;
+      } else {
+        submitError.value = `Alternative method error: ${JSON.stringify(errorData)}`;
+      }
+    } else if (error.data) {
+      // Some fetch libraries put the response data in error.data
+      console.log('Direct fetch error data:', error.data);
+      submitError.value = `Alternative method error: ${typeof error.data === 'string' ? error.data : JSON.stringify(error.data)}`;
+    } else {
+      submitError.value = `Alternative method error: ${error.message || 'Failed to submit application. Please try again.'}`;
+    }
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const resetForm = () => {
+  form.value = {
+    businessName: '',
+    businessDescription: '',
+    contactEmail: '',
+    phoneNumber: '',
+    website: '',
+    profileUrl: '',
+    selectedPackage: 1,
+    logo: null
+  };
+  logoPreview.value = null;
+  logoFilename.value = '';
+  
+  // Reset file input
+  if (logoFileInput.value) {
+    logoFileInput.value.value = '';
   }
 };
 
@@ -317,6 +606,18 @@ const submitForm = async () => {
   submitError.value = '';
   submitSuccess.value = false;
   
+  // Debug information
+  console.log('Form values before submission:', {
+    businessName: form.value.businessName,
+    businessDescription: form.value.businessDescription,
+    contactEmail: form.value.contactEmail,
+    phoneNumber: form.value.phoneNumber,
+    website: form.value.website,
+    profileUrl: form.value.profileUrl,
+    selectedPackage: form.value.selectedPackage,
+    hasLogo: !!form.value.logo
+  });
+  
   try {
     // Create FormData for file upload
     const formData = new FormData();
@@ -324,42 +625,116 @@ const submitForm = async () => {
     formData.append('business_description', form.value.businessDescription);
     formData.append('contact_email', form.value.contactEmail);
     formData.append('phone_number', form.value.phoneNumber);
-    formData.append('website', form.value.website);
-    formData.append('profile_url', form.value.profileUrl);
-    formData.append('package_id', form.value.selectedPackage);
+    
+    // Check if optional fields are empty and provide defaults
+    if (form.value.website) {
+      // Make sure website has http/https prefix
+      const website = form.value.website.trim();
+      formData.append('website', 
+        website.startsWith('http://') || website.startsWith('https://') 
+          ? website 
+          : `https://${website}`
+      );
+    }
+    
+    if (form.value.profileUrl) {
+      // Make sure profile URL has http/https prefix
+      const profileUrl = form.value.profileUrl.trim();
+      formData.append('profile_url', 
+        profileUrl.startsWith('http://') || profileUrl.startsWith('https://') 
+          ? profileUrl 
+          : `https://${profileUrl}`
+      );
+    }
+    
+    // Ensure package_id is properly added as a number
+    formData.append('package_id', parseInt(form.value.selectedPackage, 10));
+    
+    console.log('Form data being submitted:', {
+      business_name: form.value.businessName,
+      business_description: form.value.businessDescription,
+      contact_email: form.value.contactEmail,
+      phone_number: form.value.phoneNumber,
+      website: form.value.website ? (form.value.website.startsWith('http') ? form.value.website : `https://${form.value.website}`) : '',
+      profile_url: form.value.profileUrl ? (form.value.profileUrl.startsWith('http') ? form.value.profileUrl : `https://${form.value.profileUrl}`) : '',
+      package_id: parseInt(form.value.selectedPackage, 10),
+      has_logo: !!form.value.logo
+    });
     
     if (form.value.logo) {
       formData.append('logo', form.value.logo);
     }
-      // Submit to API
-    const response = await $fetch('/api/bn/gold-sponsors/apply/', {
-      method: 'POST',
-      body: formData
-    });
+
+    // First try CSRF-protected request with credentials
+    console.log('Trying with fetch API and credentials');
+    
+    // Debug formData entries
+    console.log('FormData entries:');
+    for(let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + (pair[0] === 'logo' ? 'File object' : pair[1]));
+    }
+    
+    let responseData;
+    
+    try {
+      // Using fetch with credentials
+      const response = await fetch('/api/bn/gold-sponsors/apply/', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error response:', response.status, errorText);
+        
+        // Check if the response is HTML (likely CSRF or server error page)
+        if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+          throw new Error('Server returned HTML instead of JSON - possible CSRF or server error.');
+        }
+        
+        // Try to parse error as JSON
+        const errorData = JSON.parse(errorText);
+        throw { 
+          response: { status: response.status, data: errorData },
+          message: `Error ${response.status}: ${JSON.stringify(errorData)}`
+        };
+      }
+      
+      try {
+        responseData = await response.json();
+      } catch (parseError) {
+        console.error('Error parsing response as JSON:', parseError);
+        const rawText = await response.text();
+        console.log('Raw response text:', rawText);
+        throw new Error('Invalid JSON response from server');
+      }
+    } catch (fetchError) {
+      console.error('Fetch attempt failed:', fetchError);
+      console.log('Trying with useApi as fallback');
+      
+      // Try useApi as fallback
+      const apiResponse = await post('/bn/gold-sponsors/apply/', formData);
+      
+      if (apiResponse.error) {
+        throw new Error(apiResponse.error.message || JSON.stringify(apiResponse.error));
+      }
+      
+      responseData = apiResponse.data;
+    }
+    
+    console.log('Submission successful, response data:', responseData);
     
     submitSuccess.value = true;
     
     // Emit the submit event with the response data
-    emit('submit', response);
+    emit('submit', responseData);
     
-    // Reset form
-    form.value = {
-      businessName: '',
-      businessDescription: '',
-      contactEmail: '',
-      phoneNumber: '',
-      website: '',
-      profileUrl: '',
-      selectedPackage: 1,
-      logo: null
-    };
-    logoPreview.value = null;
-    logoFilename.value = '';
-    
-    // Reset file input
-    if (logoFileInput.value) {
-      logoFileInput.value.value = '';
-    }
+    // Reset form after successful submission
+    resetForm();
     
     // Close the modal after a short delay to show success message
     setTimeout(() => {
@@ -368,7 +743,58 @@ const submitForm = async () => {
     
   } catch (error) {
     console.error('Error submitting gold sponsor application:', error);
-    submitError.value = error.data?.message || 'Failed to submit application. Please try again.';
+    
+    // Detailed error logging
+    console.log('Error object:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      response: error.response,
+      data: error.data
+    });
+    
+    // Improved error handling to show more detailed error messages
+    if (error.response?.data) {
+      // Handle Django REST framework validation errors
+      const errorData = error.response.data;
+      console.log('Error response data:', errorData);
+      
+      if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+        const errorMessages = [];
+        
+        // Process DRF validation errors which come as field->error array
+        Object.keys(errorData).forEach(key => {
+          if (Array.isArray(errorData[key])) {
+            errorData[key].forEach(message => {
+              errorMessages.push(`${key}: ${message}`);
+            });
+          } else if (typeof errorData[key] === 'object') {
+            errorMessages.push(`${key}: ${JSON.stringify(errorData[key])}`);
+          } else {
+            errorMessages.push(`${key}: ${errorData[key]}`);
+          }
+        });
+        
+        if (errorMessages.length > 0) {
+          submitError.value = errorMessages.join('\n');
+        } else {
+          submitError.value = JSON.stringify(errorData);
+        }
+      } else if (typeof errorData === 'string') {
+        submitError.value = errorData;
+      } else {
+        submitError.value = JSON.stringify(errorData);
+      }
+    } else if (error.data) {
+      // Some fetch libraries put the response data in error.data
+      console.log('Error data:', error.data);
+      submitError.value = typeof error.data === 'string' ? error.data : JSON.stringify(error.data);
+    } else {
+      submitError.value = error.message || 'Failed to submit application. Please try again.';
+    }
+    
+    // If the primary submission method failed, suggest using the alternative method
+    submitError.value += '\n\nPlease try the alternative submission method below.';
   } finally {
     isSubmitting.value = false;
   }

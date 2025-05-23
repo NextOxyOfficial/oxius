@@ -25,7 +25,8 @@
       </NuxtLink>
     </div>    
     <!-- Sponsors Grid -->
-    <div class="sponsors-container overflow-hidden relative">      <!-- Loading state -->
+    <div class="sponsors-container overflow-hidden relative">      
+      <!-- Loading state -->
       <div v-if="isLoading" class="flex py-3 gap-3 px-2 overflow-hidden justify-between">
         <!-- Mobile Skeletons (3) -->
         <div v-for="i in 3" :key="i" class="flex-shrink-0 animate-pulse md:hidden">
@@ -216,16 +217,17 @@
                         <UIcon name="i-heroicons-globe-alt" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
                         <a :href="selectedSponsor.website" target="_blank" class="text-gray-600 dark:text-gray-300 text-sm md:text-base hover:text-amber-600 dark:hover:text-amber-400">{{ selectedSponsor.website }}</a>
                       </div>
-                      
-                      <!-- View full profile button -->
+                        <!-- View full profile button -->
                       <div class="pt-3 md:pt-4">
-                        <NuxtLink 
-                          :to="`/business-network/profile/${selectedSponsor.id}`"
+                        <component :is="selectedSponsor.profile_url && selectedSponsor.profile_url.startsWith('http') ? 'a' : 'NuxtLink'"
+                          :to="selectedSponsor.profile_url ? selectedSponsor.profile_url : `/business-network/profile/${selectedSponsor.id}`"
+                          :href="selectedSponsor.profile_url && selectedSponsor.profile_url.startsWith('http') ? selectedSponsor.profile_url : null"
+                          :target="selectedSponsor.profile_url && selectedSponsor.profile_url.startsWith('http') ? '_blank' : '_self'"
                           class="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-md transition-all duration-300 text-sm md:text-base"
                         >
-                          Visit Sponsore's Profile
+                          Visit Sponsor's Profile
                           <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4 md:w-5 md:h-5" />
-                        </NuxtLink>
+                        </component>
                       </div>
                     </div>
                   </div>
