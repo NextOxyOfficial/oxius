@@ -450,7 +450,7 @@ async function fetchTopContributors() {
 // Gold Sponsors Data
 async function fetchGoldSponsorsData() {
   try {
-    const response = await get("/bn/gold-sponsors/stats/");
+    const response = await get("/api/bn/gold-sponsors/stats/");
     if (response.data) {
       goldSponsorsCount.value = response.data.active_count || 0;
       sponsorViews.value = response.data.total_views || 0;

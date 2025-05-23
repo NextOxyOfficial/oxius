@@ -118,31 +118,39 @@ async function fetchGoldSponsors() {
     isLoading.value = true;
     error.value = null;
     
-    // For design testing, use dummy sponsors data
-    // This will be replaced with actual API call later
-    const dummySponsors = [
-      { id: 1, name: 'Ahmed Hassan', image: 'https://randomuser.me/api/portraits/men/32.jpg' },
-      { id: 2, name: 'Sarah Rahman', image: 'https://randomuser.me/api/portraits/women/44.jpg' },
-      { id: 3, name: 'Kamal Ahmed', image: 'https://randomuser.me/api/portraits/men/62.jpg' },
-      { id: 4, name: 'Nusrat Jahan', image: 'https://randomuser.me/api/portraits/women/68.jpg' },
-      { id: 5, name: 'Zubair Khan', image: 'https://randomuser.me/api/portraits/men/77.jpg' },
-      { id: 6, name: 'Tahmina Akter', image: 'https://randomuser.me/api/portraits/women/54.jpg' },
-      { id: 7, name: 'Rahim Uddin', image: 'https://randomuser.me/api/portraits/men/41.jpg' },
-      { id: 8, name: 'Fahmida Khatun', image: 'https://randomuser.me/api/portraits/women/33.jpg' },
-      { id: 9, name: 'Jahangir Alam', image: 'https://randomuser.me/api/portraits/men/21.jpg' },
-      { id: 10, name: 'Sabina Yasmin', image: 'https://randomuser.me/api/portraits/women/29.jpg' }
-    ];
+    // Fetch active/featured gold sponsors from API
+    const response = await get('/api/bn/gold-sponsors/list/');
     
-    // Simulate API delay
-    setTimeout(() => {
-      sponsors.value = dummySponsors;
-      isLoading.value = false;
-    }, 1000);
+    if (response && Array.isArray(response)) {
+      // Map API response to component format
+      sponsors.value = response.map(sponsor => ({
+        id: sponsor.id,
+        name: sponsor.business_name,
+        image: sponsor.logo ? sponsor.logo : '/static/frontend/avatar.png',
+        business_description: sponsor.business_description,
+        contact_email: sponsor.contact_email,
+        phone_number: sponsor.phone_number,
+        website: sponsor.website,
+        profile_url: sponsor.profile_url,
+        package: sponsor.package,
+        start_date: sponsor.start_date,
+        end_date: sponsor.end_date,
+        status: sponsor.status,
+        is_featured: sponsor.is_featured
+      }));
+    } else {
+      // If no sponsors or unexpected response format
+      sponsors.value = [];
+    }
     
+    isLoading.value = false;
   } catch (err) {
     console.error('Error fetching gold sponsors:', err);
     error.value = 'Failed to load gold sponsors';
     isLoading.value = false;
+    
+    // Fallback to empty array instead of dummy data
+    sponsors.value = [];
   }
 }
 

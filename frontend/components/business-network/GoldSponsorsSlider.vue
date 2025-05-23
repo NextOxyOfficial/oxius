@@ -172,11 +172,9 @@
                   </div>
                 </div>
                   <!-- Sponsor Profile -->
-                <div class="py-6 px-2 bg-white dark:bg-slate-800">                  <!-- Description area first -->
-                  <div class="space-y-4 mb-4 md:mb-6">
+                <div class="py-6 px-2 bg-white dark:bg-slate-800">                  <!-- Description area first -->                  <div class="space-y-4 mb-4 md:mb-6">
                     <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">
-                      {{ selectedSponsor.name }} is one of our esteemed gold sponsors, contributing significantly to our business network. 
-                      Their commitment to excellence and innovation has made them a valuable member of our community.
+                      {{ selectedSponsor.business_description || `${selectedSponsor.name} is one of our esteemed gold sponsors, contributing significantly to our business network. Their commitment to excellence and innovation has made them a valuable member of our community.` }}
                     </p>
                   </div>
                     <!-- Profile and contact side by side -->
@@ -200,22 +198,23 @@
                       </div>
                       <!-- Gold sponsor text under profile -->
                       <p class="text-amber-600 dark:text-amber-400 mt-3 font-medium text-sm md:text-base">Gold Sponsor</p>
-                    </div>
-                      <!-- Right side: Name and contact details -->
+                    </div>                    <!-- Right side: Name and contact details -->
                     <div class="flex-grow space-y-2 md:space-y-3">
                       <h2 class="text-xl font-semibold text-gray-800 dark:text-white">{{ selectedSponsor.name }}</h2>
                       
-                      <div class="flex items-center">
+                      <div v-if="selectedSponsor.contact_email" class="flex items-center">
                         <UIcon name="i-heroicons-envelope" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
-                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">contact@example.com</span>
+                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">{{ selectedSponsor.contact_email }}</span>
                       </div>
-                      <div class="flex items-center">
+                      
+                      <div v-if="selectedSponsor.phone_number" class="flex items-center">
                         <UIcon name="i-heroicons-phone" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
-                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">+1 (555) 123-4567</span>
+                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">{{ selectedSponsor.phone_number }}</span>
                       </div>
-                      <div class="flex items-center">
+                      
+                      <div v-if="selectedSponsor.website" class="flex items-center">
                         <UIcon name="i-heroicons-globe-alt" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
-                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">www.example.com</span>
+                        <a :href="selectedSponsor.website" target="_blank" class="text-gray-600 dark:text-gray-300 text-sm md:text-base hover:text-amber-600 dark:hover:text-amber-400">{{ selectedSponsor.website }}</a>
                       </div>
                       
                       <!-- View full profile button -->
@@ -309,48 +308,41 @@ function closeModal() {
 async function fetchGoldSponsors() {
   try {
     isLoading.value = true;
+    error.value = null;
     
-    // For design testing, use dummy sponsors data
-    // This will be replaced with actual API call later
-    const dummySponsors = [
-      { id: 1, name: 'Ahmed Hassan', image: 'https://randomuser.me/api/portraits/men/32.jpg' },
-      { id: 2, name: 'Sarah Rahman', image: 'https://randomuser.me/api/portraits/women/44.jpg' },
-      { id: 3, name: 'Kamal Ahmed', image: 'https://randomuser.me/api/portraits/men/62.jpg' },
-      { id: 4, name: 'Nusrat Jahan', image: 'https://randomuser.me/api/portraits/women/68.jpg' },
-      { id: 5, name: 'Zubair Khan', image: 'https://randomuser.me/api/portraits/men/77.jpg' },
-      { id: 6, name: 'Tahmina Akter', image: 'https://randomuser.me/api/portraits/women/54.jpg' },
-      { id: 7, name: 'Rahim Uddin', image: 'https://randomuser.me/api/portraits/men/41.jpg' },
-      { id: 8, name: 'Fahmida Khatun', image: 'https://randomuser.me/api/portraits/women/33.jpg' },
-      { id: 9, name: 'Jahangir Alam', image: 'https://randomuser.me/api/portraits/men/21.jpg' },
-      { id: 10, name: 'Sabina Yasmin', image: 'https://randomuser.me/api/portraits/women/29.jpg' }
-    ];
+    // Fetch active/featured gold sponsors from API
+    const response = await get('/api/bn/gold-sponsors/list/');
     
-    // Shuffle the sponsors array (Fisher-Yates algorithm)
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
+    if (response && Array.isArray(response)) {
+      // Map API response to component format
+      sponsors.value = response.map(sponsor => ({
+        id: sponsor.id,
+        name: sponsor.business_name,
+        image: sponsor.logo ? sponsor.logo : '/static/frontend/avatar.png',
+        business_description: sponsor.business_description,
+        contact_email: sponsor.contact_email,
+        phone_number: sponsor.phone_number,
+        website: sponsor.website,
+        profile_url: sponsor.profile_url,
+        package: sponsor.package,
+        start_date: sponsor.start_date,
+        end_date: sponsor.end_date,
+        status: sponsor.status,
+        is_featured: sponsor.is_featured
+      }));
+    } else {
+      // If no sponsors or unexpected response format
+      sponsors.value = [];
     }
     
-    // Simulate API delay
-    setTimeout(() => {
-      // Shuffle and limit based on screen size (handled in template with CSS)
-      sponsors.value = shuffleArray([...dummySponsors]);
-      isLoading.value = false;
-    }, 1000);
-    
-    // Uncomment this code when ready to use the real API
-    /*
-    const { data } = await get('/bn/top-contributors/');
-    sponsors.value = data.filter(contributor => contributor.is_pro).slice(0, 10);
     isLoading.value = false;
-    */
   } catch (err) {
     console.error('Error fetching gold sponsors:', err);
     error.value = 'Failed to load gold sponsors';
     isLoading.value = false;
+    
+    // Fallback to empty array instead of dummy data
+    sponsors.value = [];
   }
 }
 
