@@ -431,30 +431,35 @@
                 </div>
 
                 <!-- Action buttons (Desktop) -->
-                <div class="hidden sm:flex">
-                  <button
+                <div class="hidden sm:flex">                  <button
                     v-if="user?.id !== currentUser?.user?.id && currentUser"
                     :class="[
-                      'px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-all duration-300',
+                      'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 relative overflow-hidden group/follow',
                       isFollowing
-                        ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-700'
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm text-white',
+                        ? 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                        : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white',
                     ]"
                     :disabled="followLoading"
                     @click="toggleFollow"
                   >
-                    <div
-                      v-if="followLoading"
-                      class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
-                    ></div>
-                    <template v-else-if="isFollowing">
-                      <Check class="h-3 w-3 animate-scaleIn" />
-                      Unfollow
-                    </template>
-                    <template v-else>
-                      <UserPlus class="h-3 w-3 animate-scaleIn" />
-                      Follow
-                    </template>
+                    <span class="relative z-10 flex items-center justify-center gap-1.5">
+                      <div
+                        v-if="followLoading"
+                        class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
+                      ></div>
+                      <template v-else-if="isFollowing">
+                        <Check class="h-3 w-3 animate-scaleIn" />
+                        Following
+                      </template>
+                      <template v-else>
+                        <UserPlus class="h-3 w-3 animate-scaleIn" />
+                        Follow
+                      </template>
+                    </span>
+                    <span 
+                      class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
+                      v-if="!isFollowing"
+                    ></span>
                   </button>
                 </div>
               </div>
@@ -1426,11 +1431,16 @@ const tabs =
 // Toggle follow action
 const toggleFollow = async () => {
   if (followLoading.value) return;
+  
   followLoading.value = true;
-  isFollowing.value = !isFollowing.value;
+  const wasFollowing = isFollowing.value;
+  
+  // Optimistic UI update
+  isFollowing.value = !wasFollowing;
 
-  if (isFollowing.value) {
-    try {
+  try {
+    if (!wasFollowing) {
+      // Follow user
       const { data } = await post(`/bn/users/${route.params.id}/follow/`);
 
       if (data) {
@@ -1444,14 +1454,10 @@ const toggleFollow = async () => {
           color: "green",
         });
       }
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-      isFollowing.value = !isFollowing.value; // Revert state on error    } finally {
-      followLoading.value = false;
-    }
-  } else {
-    try {
+    } else {
+      // Unfollow user
       const res = await del(`/bn/users/${route.params.id}/unfollow/`);
+      
       if (res.data === undefined) {
         // Update followers count accordingly
         user.value.followers_count = Math.max(
@@ -1466,12 +1472,13 @@ const toggleFollow = async () => {
           color: "gray",
         });
       }
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-      isFollowing.value = !isFollowing.value; // Revert state on error
-    } finally {
-      followLoading.value = false;
     }
+  } catch (error) {
+    console.error("Error toggling follow:", error);
+    // Revert state on error
+    isFollowing.value = wasFollowing;
+  } finally {
+    followLoading.value = false;
   }
 };
 

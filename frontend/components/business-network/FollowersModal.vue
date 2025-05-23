@@ -103,17 +103,17 @@
         <div v-else>
           <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group hover:bg-gray-50 dark:hover:bg-slate-700/30 rounded-lg px-2 transition-all duration-200 ripple-effect transform hover:translate-x-1 shadow-soft">
             <!-- Clickable area that navigates to profile (wraps image and text) -->
-            <div class="flex items-center flex-1 cursor-pointer" @click="navigateToProfile(user)">
-              <div class="flex-shrink-0 relative">
+            <div class="flex items-center flex-1 cursor-pointer" @click="navigateToProfile(user)">              <div class="flex-shrink-0 relative">
                 <!-- Premium border for profile picture -->
                 <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 dark:from-blue-600 dark:to-indigo-500 p-0.5 -m-0.5 opacity-80"></div>
-                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 relative">
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 relative bg-gray-50 dark:bg-slate-800">
                   <img 
                     :src="user.profile_image || '/static/frontend/images/placeholder.jpg'" 
                     :alt="user.full_name || user.username"
                     class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                     loading="lazy"
                     @error="handleImageError"
+                    onerror="this.onerror=null; this.src='/static/frontend/images/placeholder.jpg';"
                   />
                 </div>
               </div>
@@ -131,18 +131,38 @@
                 </p>
               </div>
             </div>
-            <div>
-              <button 
+            <div>              <button 
                 v-if="user.id !== currentUserId && currentUser?.value?.user?.id"
                 :class="[
-                  'text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-300',
+                  'text-sm font-medium px-4 py-1.5 rounded-full transition-all duration-300 relative overflow-hidden group/follow',
                   user.is_following
                     ? 'border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-white'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm hover:shadow'
+                    : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white'
                 ]"
                 @click.stop="toggleFollow(user)"
+                :disabled="user.isFollowLoading"
               >
-                {{ user.is_following ? 'Following' : 'Follow' }}
+                <span class="relative z-10 flex items-center justify-center gap-1.5">
+                  <!-- Loading indicator -->
+                  <div v-if="user.isFollowLoading" class="h-3 w-3 border-2 border-t-transparent border-current rounded-full animate-spin"></div>
+                  <!-- Icon for following state -->
+                  <UIcon 
+                    v-else-if="user.is_following" 
+                    name="i-heroicons-check" 
+                    class="w-3 h-3 transition-all duration-300 animate-scaleIn" 
+                  />
+                  <!-- Icon for follow state -->
+                  <UIcon 
+                    v-else 
+                    name="i-heroicons-user-plus" 
+                    class="w-3 h-3 transition-all duration-300 animate-scaleIn" 
+                  />
+                  {{ user.isFollowLoading ? 'Processing...' : (user.is_following ? 'Following' : 'Follow') }}
+                </span>
+                <span 
+                  class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
+                  v-if="!user.is_following"
+                ></span>
               </button>
             </div>
           </div>
@@ -296,8 +316,7 @@ async function fetchUsers() {
           console.log('Missing user details for item:', item);
           return null;
         }
-        
-        // Create a unified user object with consistent properties
+          // Create a unified user object with consistent properties
         return {
           id: userDetails.id,
           username: userDetails.username,
@@ -307,7 +326,8 @@ async function fetchUsers() {
           profile_image: userDetails.profile_image || userDetails.avatar,
           profession: userDetails.profession || userDetails.title,
           is_following: !!item.is_following,
-          kyc: userDetails.kyc
+          kyc: userDetails.kyc,
+          isFollowLoading: false // Initialize loading state for each user
         };
       }).filter(user => user !== null); // Remove any null entries
       
@@ -342,11 +362,17 @@ function loadMoreUsers() {
 async function toggleFollow(user) {
   if (!currentUser?.value?.user?.id) return;
   
+  // Prevent multiple clicks if already processing
+  if (user.isFollowLoading) return;
+  
   try {
+    // Set loading state
+    user.isFollowLoading = true;
     const isCurrentlyFollowing = user.is_following;
     
     // Optimistic UI update
     user.is_following = !isCurrentlyFollowing;    
+    
     if (isCurrentlyFollowing) {
       // Unfollow user
       await del(`/bn/users/${user.id}/unfollow/`);
@@ -364,6 +390,9 @@ async function toggleFollow(user) {
     console.error('Error toggling follow status:', error);
     // Revert the optimistic update on error
     user.is_following = !user.is_following;
+  } finally {
+    // Always clear the loading state
+    user.isFollowLoading = false;
   }
 }
 
