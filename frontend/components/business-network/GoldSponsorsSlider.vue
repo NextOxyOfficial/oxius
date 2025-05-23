@@ -61,7 +61,7 @@
         </div>
       </div>
         <!-- Content -->
-      <div v-else class="flex pt-2 gap-1.5 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
+      <div v-else class="flex py-2 gap-1.5 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
         <div 
           v-for="(sponsor, index) in sponsors.slice(0, 3)" 
           :key="'mobile-' + index"

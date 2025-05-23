@@ -184,9 +184,8 @@
                     </div>
                   </div>
                 </div>
-              </div>
-                <!-- Error message -->
-              <div v-if="submitError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              </div>                <!-- Error message - only show if there's an error and no success -->
+              <div v-if="submitError && !submitSuccess" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p class="text-sm text-red-600">{{ submitError }}</p>
               </div>
               
@@ -210,9 +209,8 @@
                   </span>
                   <span v-else>Submit Application</span>
                 </button>
-                
-                <!-- Alternative submission method if regular method fails -->
-                <div v-if="submitError" class="mt-3">
+                  <!-- Alternative submission method if regular method fails and not already successful -->
+                <div v-if="submitError && !submitSuccess" class="mt-3">
                   <button 
                     type="button" 
                     @click.prevent="submitFormDirectFetch"
@@ -222,7 +220,7 @@
                     <span v-if="isSubmitting" class="flex items-center justify-center">
                       <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-amber-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       Trying alternative method...
                     </span>
@@ -435,7 +433,15 @@ const submitFormDirectFetch = async () => {
       console.log('useApi response:', apiResponse);
       const responseData = apiResponse.data;
       
+      // Additional validation to ensure success
+      if (!responseData) {
+        throw new Error('No response data received');
+      }
+      
+      // IMPORTANT: First clear any previous error to avoid displaying both error and success
+      submitError.value = '';
       submitSuccess.value = true;
+      
       emit('submit', responseData);
       
       // Reset form and close modal after success
@@ -500,6 +506,12 @@ const submitFormDirectFetch = async () => {
       let responseData;
       try {
         responseData = await response.json();
+        console.log('Direct fetch parsed response:', responseData);
+        
+        // Validate the response to ensure it's actually successful
+        if (responseData && responseData.error) {
+          throw new Error(responseData.error);
+        }
       } catch (parseError) {
         console.error('Error parsing response as JSON:', parseError);
         const rawText = await response.text();
@@ -509,7 +521,15 @@ const submitFormDirectFetch = async () => {
       
       console.log('Direct fetch response:', responseData);
       
+      // IMPORTANT: First clear any previous error to avoid displaying both error and success
+      submitError.value = '';
       submitSuccess.value = true;
+      
+      // Check for success message in the response
+      if (responseData && responseData.message) {
+        console.log('Success message from server:', responseData.message);
+      }
+      
       emit('submit', responseData);
       
       // Reset form and close modal after success
@@ -650,17 +670,6 @@ const submitForm = async () => {
     // Ensure package_id is properly added as a number
     formData.append('package_id', parseInt(form.value.selectedPackage, 10));
     
-    console.log('Form data being submitted:', {
-      business_name: form.value.businessName,
-      business_description: form.value.businessDescription,
-      contact_email: form.value.contactEmail,
-      phone_number: form.value.phoneNumber,
-      website: form.value.website ? (form.value.website.startsWith('http') ? form.value.website : `https://${form.value.website}`) : '',
-      profile_url: form.value.profileUrl ? (form.value.profileUrl.startsWith('http') ? form.value.profileUrl : `https://${form.value.profileUrl}`) : '',
-      package_id: parseInt(form.value.selectedPackage, 10),
-      has_logo: !!form.value.logo
-    });
-    
     if (form.value.logo) {
       formData.append('logo', form.value.logo);
     }
@@ -706,6 +715,15 @@ const submitForm = async () => {
       
       try {
         responseData = await response.json();
+        console.log('Response parsed successfully:', responseData);
+        
+        // Additional validation to ensure the response is actually successful
+        if (responseData && responseData.message && responseData.message.includes('success')) {
+          console.log('Detected success message in response');
+        } else if (responseData && responseData.error) {
+          console.error('Error in response despite OK status:', responseData);
+          throw new Error(responseData.error);
+        }
       } catch (parseError) {
         console.error('Error parsing response as JSON:', parseError);
         const rawText = await response.text();
@@ -724,10 +742,24 @@ const submitForm = async () => {
       }
       
       responseData = apiResponse.data;
+      
+      // Better validation of the useApi response
+      if (!responseData) {
+        console.error('No data in useApi response');
+        throw new Error('No data received from server');
+      }
+      
+      if (responseData.error || responseData.status === 'error') {
+        console.error('Error indicated in useApi response data:', responseData);
+        throw new Error(responseData.error || 'Unknown server error');
+      }
     }
     
+    // If we've reached this point, the submission was successful
     console.log('Submission successful, response data:', responseData);
     
+    // IMPORTANT: Clear any previous error to prevent showing both error and success
+    submitError.value = '';
     submitSuccess.value = true;
     
     // Emit the submit event with the response data
