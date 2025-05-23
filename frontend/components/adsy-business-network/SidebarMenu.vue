@@ -2,8 +2,7 @@
   <div class="relative">
     <div
       class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30 rounded-lg backdrop-blur-sm z-0"
-    ></div>
-    <!-- Create Post Button (Added at top of menu) - Now only shown for logged in users -->
+    ></div>    <!-- Create Post Button (Added at top of menu) - Now only shown for logged in users -->
     <button
         v-if="user?.user"
         @click="openCreatePostModal"
@@ -134,6 +133,7 @@ import {
   Zap,
   Globe,
   Plus,
+  Star
 } from "lucide-vue-next";
 import { useNotifications } from "~/composables/useNotifications";
 
@@ -144,6 +144,7 @@ const props = defineProps({
 const emit = defineEmits(['menu-click']);
 
 const route = useRoute();
+const router = useRouter();
 const { user } = useAuth();
 const { unreadCount } = useNotifications();
 
@@ -159,6 +160,12 @@ const mainMenu = computed(() => [
     label: "Profile",
     path: `/business-network/profile/${user.value?.user?.id}`,
     icon: User,
+    active: false,
+  },
+  {
+    label: "Gold Sponsors",
+    path: "/business-network/gold-sponsors",
+    icon: Star,
     active: false,
   },
   {
@@ -219,6 +226,11 @@ const handleMenuClick = (path) => {
 const openCreatePostModal = () => {
   const eventBus = useEventBus('create-post-event'); // Use a specific named event bus
   eventBus.emit("open-create-post-modal");
+};
+
+// Navigate to Gold Sponsor page
+const navigateToGoldSponsor = () => {
+  router.push('/business-network/gold-sponsors');
 };
 
 // Helper function to get dynamic colors for menu items

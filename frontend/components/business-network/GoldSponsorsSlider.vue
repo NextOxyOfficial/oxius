@@ -60,7 +60,7 @@
         </div>
       </div>
         <!-- Content -->
-      <div v-else class="flex pt-2 gap-3 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
+      <div v-else class="flex pt-2 gap-1.5 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
         <div 
           v-for="(sponsor, index) in sponsors.slice(0, 3)" 
           :key="'mobile-' + index"
@@ -203,7 +203,7 @@
                     </div>
                       <!-- Right side: Name and contact details -->
                     <div class="flex-grow space-y-2 md:space-y-3">
-                      <h2 class="text-xl md:text-xl font-semibold text-gray-800 dark:text-white mb-2 md:mb-4">{{ selectedSponsor.name }}</h2>
+                      <h2 class="text-xl font-semibold text-gray-800 dark:text-white">{{ selectedSponsor.name }}</h2>
                       
                       <div class="flex items-center">
                         <UIcon name="i-heroicons-envelope" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
@@ -224,7 +224,7 @@
                           :to="`/business-network/profile/${selectedSponsor.id}`"
                           class="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-md transition-all duration-300 text-sm md:text-base"
                         >
-                          View Full Profile
+                          Visit Sponsore's Profile
                           <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4 md:w-5 md:h-5" />
                         </NuxtLink>
                       </div>
