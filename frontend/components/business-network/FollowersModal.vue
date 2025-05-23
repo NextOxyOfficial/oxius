@@ -1,97 +1,101 @@
 <template>
-  <div class="fixed inset-0 z-50 overflow-auto bg-black/60 backdrop-blur-sm flex justify-center items-center p-4" v-if="show">
-    <div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-xl w-full max-w-xl flex flex-col transform transition-all border border-gray-200/50 dark:border-slate-700/50 overflow-hidden" style="max-height: 85vh; height: auto;">
-      <!-- Header with gradient background -->
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between relative overflow-hidden">
-        <!-- Background gradient pattern for added premium feel -->
-        <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 dark:from-blue-900/10 dark:to-indigo-900/10 pointer-events-none"></div>
-        <div class="absolute inset-0 opacity-5 bg-pattern"></div>
-        
-        <div class="flex items-center relative z-10">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+  <div 
+    class="fixed inset-0 z-50 overflow-auto bg-black/60 flex justify-center items-center p-4" 
+    v-if="show"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    @keydown.esc="closeModal"
+    tabindex="-1"
+    ref="modalRef"
+  >
+    <div class="bg-white dark:bg-slate-800 rounded-md shadow-md w-full max-w-xl flex flex-col border border-gray-200 dark:border-slate-700 overflow-hidden" style="max-height: 85vh; height: auto;">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">        
+        <div class="flex items-center">
+          <h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
             {{ activeTab === 'followers' ? 'Followers' : 'Following' }}
-            <span class="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
+            <span class="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded">
               {{ totalCount }}
             </span>
           </h3>
-        </div>
+        </div>        
         <button 
           @click="closeModal" 
-          class="relative z-10 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded"
+          aria-label="Close modal"
+          ref="closeButtonRef"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+          <UIcon name="i-heroicons-x-mark" class="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
-
       <!-- Tabs -->
-      <div class="flex border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80">
+      <div class="flex border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80" role="tablist">
         <button 
           @click="activeTab = 'followers'" 
-          class="flex-1 py-3 px-4 text-center focus:outline-none transition-colors duration-200 relative"
-          :class="activeTab === 'followers' ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+          class="flex-1 py-3 px-4 text-center"
+          :class="activeTab === 'followers' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-500 dark:text-gray-400'"
+          role="tab"
+          :aria-selected="activeTab === 'followers'"
+          id="followers-tab"
+          aria-controls="followers-panel"
         >
-          <span class="relative z-10">Followers</span>
-          <!-- Animated underline effect -->
-          <div 
-            v-if="activeTab === 'followers'" 
-            class="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-blue-500 to-indigo-500 animate-fadeIn"
-          ></div>
-          <!-- Tab hover effect -->
-          <div 
-            class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 opacity-0 hover:opacity-100 transition-opacity -z-10"
-          ></div>
-        </button>
+          <span>Followers</span>
+        </button>        
         <button 
           @click="activeTab = 'following'" 
-          class="flex-1 py-3 px-4 text-center focus:outline-none transition-colors duration-200 relative"
-          :class="activeTab === 'following' ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+          class="flex-1 py-3 px-4 text-center"
+          :class="activeTab === 'following' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-500 dark:text-gray-400'"
+          role="tab"
+          :aria-selected="activeTab === 'following'"
+          id="following-tab"
+          aria-controls="following-panel"
         >
-          <span class="relative z-10">Following</span>
-          <!-- Animated underline effect -->
-          <div 
-            v-if="activeTab === 'following'" 
-            class="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-blue-500 to-indigo-500 animate-fadeIn"
-          ></div>
-          <!-- Tab hover effect -->
-          <div 
-            class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 opacity-0 hover:opacity-100 transition-opacity -z-10"
-          ></div>
+          <span>Following</span>
         </button>
-      </div>
-
+      </div>      
       <!-- Search Input -->
       <div class="px-6 py-3 border-b border-gray-100 dark:border-slate-700/50">
         <div class="relative">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400" />
+            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400" aria-hidden="true" />
           </div>
           <input
             type="text"
-            class="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 transition-colors"
+            class="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full pl-10 p-2.5"
             placeholder="Search by name or username"
             v-model="searchTerm"
+            aria-label="Search users"
           />
         </div>
       </div>      
       <!-- Loading Skeleton -->
       <div v-if="isLoading" class="overflow-y-auto flex-1 px-6 py-3">
-        <div v-for="i in 5" :key="`skeleton-${i}`" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 animate-pulse">
-          <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-600 overflow-hidden relative">
-            <!-- Premium border for skeleton profile picture -->
-            <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-200 to-indigo-200 dark:from-blue-700 dark:to-indigo-700 p-0.5 -m-0.5 opacity-50"></div>
+        <p class="sr-only" role="status">Loading users, please wait...</p>
+        <div v-for="i in 5" :key="`skeleton-${i}`" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0">
+          <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-600 overflow-hidden">
+            <!-- Simple skeleton circle -->
           </div>
           <div class="ml-3 flex-1">
-            <div class="h-4 bg-gray-200 dark:bg-slate-600 rounded w-1/3 mb-2"></div>
-            <div class="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/4"></div>
+            <div class="h-4 bg-gray-200 dark:bg-slate-600 rounded w-1/3 mb-2">
+            </div>
+            <div class="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/4">
+            </div>
           </div>
-          <div class="w-24 h-8 bg-gray-200 dark:bg-slate-600 rounded-md"></div>
-        </div>      </div>
-
-    <!-- User List -->
-      <div v-else class="overflow-y-auto flex-1 px-4 py-2" style="min-height: 200px; max-height: 60vh;">
-        <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+          <div class="w-24 h-8 bg-gray-200 dark:bg-slate-600 rounded-md">
+          </div>
+        </div>
+      </div>    
+      <!-- User List -->
+      <div v-else class="overflow-y-auto flex-1 px-4 py-2" style="min-height: 200px; max-height: 60vh;" 
+        :role="activeTab === 'followers' ? 'tabpanel' : 'tabpanel'" 
+        :id="activeTab === 'followers' ? 'followers-panel' : 'following-panel'" 
+        :aria-labelledby="activeTab === 'followers' ? 'followers-tab' : 'following-tab'"
+        aria-live="polite"
+      ><div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+          <p class="sr-only" role="status">{{ activeTab === 'followers' ? 'No followers found' : 'Not following anyone' }}</p>
           <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4">
-            <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-300 dark:text-gray-600" />
+            <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
           </div>
           <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">
             {{ activeTab === 'followers' ? 'No followers found' : 'Not following anyone' }}
@@ -100,30 +104,38 @@
             Try a different search term
           </p>
         </div>
-        <div v-else>
-          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group hover:bg-gray-50 dark:hover:bg-slate-700/30 rounded-lg px-2 transition-all duration-200 ripple-effect transform hover:translate-x-1 shadow-soft">
+        <div v-else>          
+          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 px-2">
             <!-- Clickable area that navigates to profile (wraps image and text) -->
-            <div class="flex items-center flex-1 cursor-pointer" @click="navigateToProfile(user)">              <div class="flex-shrink-0 relative">
-                <!-- Premium border for profile picture -->
-                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 dark:from-blue-600 dark:to-indigo-500 p-0.5 -m-0.5 opacity-80"></div>
-                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 relative bg-gray-50 dark:bg-slate-800">
+            <div class="flex items-center flex-1 cursor-pointer" @click="navigateToProfile(user)">
+              <div class="flex-shrink-0">                
+              <div class="w-12 h-12 rounded-full overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+                  <!-- Show user icon when no image is available -->
+                  <div v-if="!user.profile_image" class="w-full h-full flex items-center justify-center">
+                    <UIcon name="i-heroicons-user" class="w-7 h-7 text-gray-400" />
+                  </div>
+                  <!-- Display the image when available -->
                   <img 
-                    :src="user.profile_image || '/static/frontend/images/placeholder.jpg'" 
+                    v-else
+                    :src="formatImageUrl(user.profile_image)" 
                     :alt="user.full_name || user.username"
-                    class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                    class="w-full h-full object-cover"
                     loading="lazy"
                     @error="handleImageError"
-                    onerror="this.onerror=null; this.src='/static/frontend/images/placeholder.jpg';"
+                    referrerpolicy="no-referrer"
+                    aria-hidden="false"
                   />
                 </div>
-              </div>
-              <div class="ml-3 flex-1 min-w-0">
-                <div class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate block transition-colors">
+              </div>              
+              <div class="ml-3 flex-1 min-w-0">                
+                <div class="text-sm font-medium text-gray-900 dark:text-white truncate block">
                   {{ user.full_name || user.username }}
                   <UIcon 
                     v-if="user.kyc" 
                     name="i-mdi-check-decagram" 
-                    class="inline-block w-4 h-4 text-blue-600 dark:text-blue-400 ml-1 animate-pulse-subtle" 
+                    class="inline-block w-4 h-4 text-blue-600 dark:text-blue-400 ml-1"
+                    aria-label="Verified user"
+                    role="img"
                   />
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -131,52 +143,40 @@
                 </p>
               </div>
             </div>
-            <div>              <button 
+            <div>                
+              <button 
                 v-if="user.id !== currentUserId && currentUser?.value?.user?.id"
                 :class="[
-                  'text-sm font-medium px-4 py-1.5 rounded-full transition-all duration-300 relative overflow-hidden group/follow',
+                  'text-sm font-medium px-3 py-1 rounded-md min-w-[90px] text-center',
                   user.is_following
-                    ? 'border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-white'
-                    : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white'
+                    ? 'border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-white'
+                    : 'bg-blue-500 text-white'
                 ]"
                 @click.stop="toggleFollow(user)"
                 :disabled="user.isFollowLoading"
+                aria-label="Toggle follow status"
               >
-                <span class="relative z-10 flex items-center justify-center gap-1.5">
-                  <!-- Loading indicator -->
-                  <div v-if="user.isFollowLoading" class="h-3 w-3 border-2 border-t-transparent border-current rounded-full animate-spin"></div>
-                  <!-- Icon for following state -->
-                  <UIcon 
-                    v-else-if="user.is_following" 
-                    name="i-heroicons-check" 
-                    class="w-3 h-3 transition-all duration-300 animate-scaleIn" 
-                  />
-                  <!-- Icon for follow state -->
-                  <UIcon 
-                    v-else 
-                    name="i-heroicons-user-plus" 
-                    class="w-3 h-3 transition-all duration-300 animate-scaleIn" 
-                  />
-                  {{ user.isFollowLoading ? 'Processing...' : (user.is_following ? 'Following' : 'Follow') }}
+                <span class="flex items-center justify-center gap-1">
+                  <!-- Loading indicator - fixed width to prevent layout shift -->
+                  <div v-if="user.isFollowLoading" class="h-3 w-3 border-2 border-t-transparent border-current rounded-full">
+                  </div>
+                  <!-- Text for button -->
+                  <span>{{ user.isFollowLoading ? 'Loading...' : (user.is_following ? 'Following' : 'Follow') }}
+                  </span>
                 </span>
-                <span 
-                  class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
-                  v-if="!user.is_following"
-                ></span>
               </button>
             </div>
           </div>
         </div>
-      </div>
-
+      </div>        
       <!-- Load More -->
       <div v-if="hasMoreUsers && !isLoading && filteredUsers.length > 0" class="px-6 py-3 border-t border-gray-100 dark:border-slate-700 flex justify-center bg-gray-50 dark:bg-slate-800/80">
         <button 
           @click="loadMoreUsers" 
-          class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-700 dark:hover:text-blue-300 focus:outline-none flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          class="text-blue-600 dark:text-blue-400 text-sm font-medium px-4 py-2 bg-white dark:bg-slate-700 rounded-md border border-gray-200 dark:border-slate-600 min-w-[100px] text-center"
           :disabled="loadingMore"
+          aria-label="Load more users"
         >
-          <UIcon v-if="loadingMore" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
           <span v-if="loadingMore">Loading...</span>
           <span v-else>Load More</span>
         </button>
@@ -186,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useApi } from '~/composables/useApi';
 import { useAuth } from '~/composables/useAuth';
 import { navigateTo } from '#app';
@@ -216,6 +216,35 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'follow-changed']);
+
+// Refs for focus management
+const modalRef = ref(null);
+const closeButtonRef = ref(null);
+const previousFocus = ref(null);
+
+// Focus management
+onMounted(() => {
+  // Store the element that had focus before opening the modal
+  if (typeof document !== 'undefined') {
+    previousFocus.value = document.activeElement;
+  }
+});
+
+watch(() => props.show, (isVisible) => {
+  if (isVisible) {
+    // Focus the modal when it opens
+    nextTick(() => {
+      if (modalRef.value) {
+        modalRef.value.focus();
+      }
+    });
+  } else if (previousFocus.value) {
+    // Return focus to the previously focused element when modal closes
+    nextTick(() => {
+      previousFocus.value.focus();
+    });
+  }
+});
 
 // Composables
 const { get, post, del } = useApi();
@@ -286,7 +315,7 @@ function resetData() {
   searchTerm.value = '';
 }
 
-// Fetch users based on active tab
+// Updated fetchUsers function with better profile image debugging
 async function fetchUsers() {
   if (!props.userId) return;
   
@@ -315,15 +344,26 @@ async function fetchUsers() {
         if (!userDetails) {
           console.log('Missing user details for item:', item);
           return null;
+        }        // Determine the best profile image to use
+        let profileImage = null;
+        if (userDetails.profile_image) {
+          profileImage = userDetails.profile_image;
+        } else if (userDetails.avatar) {
+          profileImage = userDetails.avatar;
+        } else if (userDetails.image) {
+          profileImage = userDetails.image;
         }
-          // Create a unified user object with consistent properties
+        
+        console.log(`User ${userDetails.username}: Using profile image: ${profileImage}`);
+          
+        // Create a unified user object with consistent properties
         return {
           id: userDetails.id,
           username: userDetails.username,
           full_name: userDetails.first_name && userDetails.last_name 
             ? `${userDetails.first_name} ${userDetails.last_name}` 
             : userDetails.name || userDetails.username,
-          profile_image: userDetails.profile_image || userDetails.avatar,
+          profile_image: profileImage,
           profession: userDetails.profession || userDetails.title,
           is_following: !!item.is_following,
           kyc: userDetails.kyc,
@@ -343,7 +383,8 @@ async function fetchUsers() {
       console.error('Invalid response format:', data);
     }
   } catch (error) {
-    console.error(`Error fetching ${activeTab.value}:`, error);  } finally {
+    console.error(`Error fetching ${activeTab.value}:`, error);
+  } finally {
     isLoading.value = false;
     loadingMore.value = false;
   }
@@ -407,7 +448,59 @@ function navigateToProfile(user) {
 // Handle image loading errors
 function handleImageError(event) {
   // Replace with placeholder image if the profile image fails to load
-  event.target.src = '/static/frontend/images/placeholder.jpg';
+  if (event && event.target) {
+    const originalSrc = event.target.src;
+    console.log(`Image failed to load: ${originalSrc}`);
+    
+    // Check if this is already a fallback image to prevent infinite loops
+    if (event.target.classList.contains('fallback-image')) {
+      console.log('Already using fallback image, not replacing again');
+      return;
+    }
+    
+    // Try to use a robust placeholder path
+    const placeholderPath = '/static/frontend/images/placeholder.jpg';
+    
+    // Set a direct path to the placeholder image
+    event.target.src = placeholderPath;
+    
+    // Add a class to indicate it's a fallback image
+    event.target.classList.add('fallback-image');
+    
+    // Log the error for debugging
+    console.log(`Image loading error handled, replaced ${originalSrc} with ${placeholderPath}`);
+    
+    // Prevent further error loops
+    event.target.onerror = null;
+  }
+}
+
+// Format image URL to ensure proper display
+function formatImageUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  
+  // Clean the URL first
+  let formattedUrl = url.trim();
+  
+  // Handle protocol-relative URLs
+  if (formattedUrl.startsWith('//')) {
+    formattedUrl = 'https:' + formattedUrl;
+  }
+  // Handle relative URLs
+  else if (!formattedUrl.startsWith('http') && !formattedUrl.startsWith('/')) {
+    formattedUrl = '/' + formattedUrl;
+  }
+  
+  // Fix double slashes in paths (but not in protocol)
+  if (formattedUrl.includes('//') && !formattedUrl.startsWith('http')) {
+    formattedUrl = formattedUrl.replace(/([^:])\/\//g, '$1/');
+  }
+  
+  // Add timestamp to bypass cache
+  const timestamp = Date.now();
+  return formattedUrl.includes('?') ? 
+    `${formattedUrl}&t=${timestamp}` : 
+    `${formattedUrl}?t=${timestamp}`;
 }
 
 // Close the modal
@@ -417,133 +510,33 @@ function closeModal() {
 </script>
 
 <style scoped>
-/* Smooth scrolling for user list */
-.overflow-y-auto {
-  scroll-behavior: smooth;
-}
-
-/* Animation for modal */
-.transform {
-  transition: transform 0.3s ease-out, opacity 0.3s ease;
-}
-
-/* Add focus styles for better accessibility */
-button:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.5);
-  outline-offset: 2px;
-}
-
-/* Custom scrollbar */
+/* Basic styling for scrollbars */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.03);
-  border-radius: 10px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.2);
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.4);
+/* Fallback image styling */
+.fallback-image {
+  object-fit: cover;
+  background-color: #f3f4f6;
 }
 
-/* Dark mode adjustments */
-.dark .overflow-y-auto::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+/* Focus styling for better keyboard navigation */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 
-.dark .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
-}
-
-.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
-}
-
-/* Animation for pulse effect */
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Animation for fade in */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease forwards;
-}
-
-/* Click ripple effect animation */
-@keyframes ripple {
-  0% {
-    transform: scale(0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
-
-.ripple-effect {
-  position: relative;
-  overflow: hidden;
-}
-
-.ripple-effect::after {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, rgba(99, 102, 241, 0.4) 10%, transparent 10.01%);
-  background-repeat: no-repeat;
-  background-position: 50%;
-  transform: scale(10);
-  opacity: 0;
-  transition: transform 0.5s, opacity 0.5s;
-}
-
-.ripple-effect:active::after {
-  transform: scale(0);
-  opacity: 0.3;
-  transition: 0s;
-  animation: ripple 0.5s ease-out;
-}
-
-/* Background pattern */
-.bg-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-/* Premium shadow effects for cards */
-.shadow-soft {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03), 0 6px 15px rgba(0, 0, 0, 0.02),
-    0 12px 30px rgba(0, 0, 0, 0.01);
-  transition: all 0.3s ease;
-}
-
-.shadow-soft:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05), 0 10px 25px rgba(0, 0, 0, 0.04),
-    0 15px 35px rgba(0, 0, 0, 0.02);
+/* Make sure the modal is keyboard navigable */
+[role="dialog"] {
+  outline: none;
 }
 </style>
