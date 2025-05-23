@@ -72,7 +72,8 @@
             v-model="searchTerm"
           />
         </div>
-      </div>      <!-- Loading Skeleton -->
+      </div>      
+      <!-- Loading Skeleton -->
       <div v-if="isLoading" class="overflow-y-auto flex-1 px-6 py-3">
         <div v-for="i in 5" :key="`skeleton-${i}`" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 animate-pulse">
           <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-600 overflow-hidden relative">
@@ -88,7 +89,7 @@
       </div>
 
       <!-- User List -->
-      <div v-else class="overflow-y-auto flex-1 px-6">
+      <div v-else class="overflow-y-auto flex-1 p-6">
         <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
           <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4">
             <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-300 dark:text-gray-600" />
@@ -99,39 +100,38 @@
           <p v-if="searchTerm" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Try a different search term
           </p>
-        </div>
-        
+        </div>        
         <div v-else>
-          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group">
-            <div class="flex-shrink-0 relative">
-              <!-- Premium border for profile picture -->
-              <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 dark:from-blue-600 dark:to-indigo-500 p-0.5 -m-0.5 opacity-80"></div>
-              <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 relative">
-                <img 
-                  :src="user.profile_image || user.image || '/static/frontend/images/placeholder.jpg'" 
-                  :alt="user.full_name || user.name || user.username"
-                  class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
+          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group hover:bg-gray-50 dark:hover:bg-slate-700/30 rounded-lg px-2 cursor-pointer transition-all duration-200 ripple-effect transform hover:translate-x-1 shadow-soft">
+            <!-- Clickable area that navigates to profile (wraps image and text) -->
+            <div class="flex items-center flex-1" @click="navigateToProfile(user)">
+              <div class="flex-shrink-0 relative">
+                <!-- Premium border for profile picture -->
+                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 dark:from-blue-600 dark:to-indigo-500 p-0.5 -m-0.5 opacity-80"></div>
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 relative">
+                  <img 
+                    :src="user.profile_image || user.image || '/static/frontend/images/placeholder.jpg'" 
+                    :alt="user.full_name || user.name || user.username"
+                    class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              <div class="ml-3 flex-1 min-w-0">
+                <div class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate block transition-colors">
+                  {{ user.full_name || user.name || user.username }}
+                  <UIcon 
+                    v-if="user.kyc" 
+                    name="i-mdi-check-decagram" 
+                    class="inline-block w-4 h-4 text-blue-600 dark:text-blue-400 ml-1 animate-pulse-subtle" 
+                  />
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {{ user.profession || user.username }}
+                </p>
               </div>
             </div>
-            <div class="ml-3 flex-1 min-w-0">
-              <NuxtLink 
-                :to="`/business-network/profile/${user.id}`" 
-                class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate block transition-colors"
-                @click="closeModal"
-              >
-                {{ user.full_name || user.name || user.username }}
-                <UIcon 
-                  v-if="user.kyc" 
-                  name="i-mdi-check-decagram" 
-                  class="inline-block w-4 h-4 text-blue-600 dark:text-blue-400 ml-1 animate-pulse-subtle" 
-                />
-              </NuxtLink>
-              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {{ user.profession || user.username }}
-              </p>
-            </div>            <div>
+            <div>
               <button 
                 v-if="user.id !== currentUserId && currentUser?.value?.user?.id"
                 :class="[
@@ -140,7 +140,7 @@
                     ? 'border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-white'
                     : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm hover:shadow'
                 ]"
-                @click="toggleFollow(user)"
+                @click.stop="toggleFollow(user)"
               >
                 {{ user.is_following ? 'Following' : 'Follow' }}
               </button>
@@ -169,6 +169,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useApi } from '~/composables/useApi';
 import { useAuth } from '~/composables/useAuth';
+import { navigateTo } from '#app';
 
 const props = defineProps({
   show: {
@@ -328,6 +329,14 @@ async function toggleFollow(user) {
   }
 }
 
+// Navigate to user profile
+function navigateToProfile(user) {
+  // Close the modal first
+  closeModal();
+  // Navigate to the user's profile page
+  navigateTo(`/business-network/profile/${user.profile.id}`);
+}
+
 // Close the modal
 function closeModal() {
   emit('close');
@@ -405,6 +414,47 @@ button:focus {
 
 .animate-fadeIn {
   animation: fadeIn 0.5s ease forwards;
+}
+
+/* Click ripple effect animation */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(99, 102, 241, 0.4) 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.5s;
+}
+
+.ripple-effect:active::after {
+  transform: scale(0);
+  opacity: 0.3;
+  transition: 0s;
+  animation: ripple 0.5s ease-out;
 }
 
 /* Background pattern */

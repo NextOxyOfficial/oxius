@@ -2,7 +2,8 @@
   <div class="max-w-3xl pb-8">
     <div class="space-y-6">
       <!-- Loop through posts and insert sponsored products after every 5 posts -->
-      <template v-for="(post, index) in posts" :key="post.id">        <!-- Post Card with glassmorphism effect -->
+      <template v-for="(post, index) in posts" :key="post.id">        
+        <!-- Post Card with glassmorphism effect -->
         <div
           :class="[
             'transform transition-all duration-300 bg-white/90 dark:bg-slate-800/90 rounded-xl overflow-hidden backdrop-blur-md shadow-sm hover:shadow-sm dark:shadow-slate-800/20',
