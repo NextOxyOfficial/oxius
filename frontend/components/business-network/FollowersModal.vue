@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-auto bg-black/60 backdrop-blur-sm flex justify-center items-center p-4" v-if="show">
-    <div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col transform transition-all border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
+    <div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-xl w-full max-w-xl flex flex-col transform transition-all border border-gray-200/50 dark:border-slate-700/50 overflow-hidden" style="max-height: 85vh; height: auto;">
       <!-- Header with gradient background -->
       <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between relative overflow-hidden">
         <!-- Background gradient pattern for added premium feel -->
@@ -85,11 +85,10 @@
             <div class="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/4"></div>
           </div>
           <div class="w-24 h-8 bg-gray-200 dark:bg-slate-600 rounded-md"></div>
-        </div>
-      </div>
+        </div>      </div>
 
-      <!-- User List -->
-      <div v-else class="overflow-y-auto flex-1 p-6">
+    <!-- User List -->
+      <div v-else class="overflow-y-auto flex-1 px-4 py-2" style="min-height: 200px; max-height: 60vh;">
         <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
           <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4">
             <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-300 dark:text-gray-600" />
@@ -100,26 +99,27 @@
           <p v-if="searchTerm" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Try a different search term
           </p>
-        </div>        
+        </div>
         <div v-else>
-          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group hover:bg-gray-50 dark:hover:bg-slate-700/30 rounded-lg px-2 cursor-pointer transition-all duration-200 ripple-effect transform hover:translate-x-1 shadow-soft">
+          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group hover:bg-gray-50 dark:hover:bg-slate-700/30 rounded-lg px-2 transition-all duration-200 ripple-effect transform hover:translate-x-1 shadow-soft">
             <!-- Clickable area that navigates to profile (wraps image and text) -->
-            <div class="flex items-center flex-1" @click="navigateToProfile(user)">
+            <div class="flex items-center flex-1 cursor-pointer" @click="navigateToProfile(user)">
               <div class="flex-shrink-0 relative">
                 <!-- Premium border for profile picture -->
                 <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-300 to-indigo-400 dark:from-blue-600 dark:to-indigo-500 p-0.5 -m-0.5 opacity-80"></div>
                 <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-slate-700 relative">
                   <img 
-                    :src="user.profile_image || user.image || '/static/frontend/images/placeholder.jpg'" 
-                    :alt="user.full_name || user.name || user.username"
+                    :src="user.profile_image || '/static/frontend/images/placeholder.jpg'" 
+                    :alt="user.full_name || user.username"
                     class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                     loading="lazy"
+                    @error="handleImageError"
                   />
                 </div>
               </div>
               <div class="ml-3 flex-1 min-w-0">
                 <div class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate block transition-colors">
-                  {{ user.full_name || user.name || user.username }}
+                  {{ user.full_name || user.username }}
                   <UIcon 
                     v-if="user.kyc" 
                     name="i-mdi-check-decagram" 
@@ -210,9 +210,14 @@ const searchTerm = ref('');
 const page = ref(1);
 const hasMoreUsers = ref(true);
 const currentUserId = computed(() => currentUser?.value?.user?.id);
+const totalCountValue = ref(0);
 
 // Get total count based on active tab
 const totalCount = computed(() => {
+  // Return the value from the API if available, otherwise fall back to the props
+  if (totalCountValue.value > 0) {
+    return totalCountValue.value;
+  }
   return activeTab.value === 'followers' ? props.followersCount : props.followingCount;
 });
 
@@ -266,26 +271,59 @@ async function fetchUsers() {
   if (!props.userId) return;
   
   isLoading.value = true;
-    try {
+  try {
     const endpoint = activeTab.value === 'followers' 
       ? `/bn/users/${props.userId}/followers/` 
       : `/bn/users/${props.userId}/following/`;
     
+    console.log('Fetching from endpoint:', endpoint);
+    
     const { data } = await get(endpoint, {
       params: { page: page.value, page_size: 20 }
-    });    
+    });
+    
+    console.log('User data from API:', data);
+    
     if (data && data.results && Array.isArray(data.results)) {
+      // Process the user data array to ensure consistent structure
+      const processedUsers = data.results.map(item => {
+        // Extract user from either follower_details or following_details
+        const userDetails = activeTab.value === 'followers' 
+          ? item.follower_details 
+          : item.following_details;
+        
+        if (!userDetails) {
+          console.log('Missing user details for item:', item);
+          return null;
+        }
+        
+        // Create a unified user object with consistent properties
+        return {
+          id: userDetails.id,
+          username: userDetails.username,
+          full_name: userDetails.first_name && userDetails.last_name 
+            ? `${userDetails.first_name} ${userDetails.last_name}` 
+            : userDetails.name || userDetails.username,
+          profile_image: userDetails.profile_image || userDetails.avatar,
+          profession: userDetails.profession || userDetails.title,
+          is_following: !!item.is_following,
+          kyc: userDetails.kyc
+        };
+      }).filter(user => user !== null); // Remove any null entries
+      
       if (page.value === 1) {
-        users.value = data.results;
+        users.value = processedUsers;
       } else {
-        users.value = [...users.value, ...data.results];
+        users.value = [...users.value, ...processedUsers];
       }
       
       hasMoreUsers.value = !!data.next;
+      totalCountValue.value = data.count || totalCountValue.value;
+    } else {
+      console.error('Invalid response format:', data);
     }
   } catch (error) {
-    console.error(`Error fetching ${activeTab.value}:`, error);
-  } finally {
+    console.error(`Error fetching ${activeTab.value}:`, error);  } finally {
     isLoading.value = false;
     loadingMore.value = false;
   }
@@ -334,7 +372,13 @@ function navigateToProfile(user) {
   // Close the modal first
   closeModal();
   // Navigate to the user's profile page
-  navigateTo(`/business-network/profile/${user.profile.id}`);
+  navigateTo(`/business-network/profile/${user.id}`);
+}
+
+// Handle image loading errors
+function handleImageError(event) {
+  // Replace with placeholder image if the profile image fails to load
+  event.target.src = '/static/frontend/images/placeholder.jpg';
 }
 
 // Close the modal
