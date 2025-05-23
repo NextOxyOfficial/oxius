@@ -80,7 +80,7 @@
                   class="size-20 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
                 <!-- Gold badge -->
-                <div class="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-20 transform transition-transform group-hover:scale-110 group-hover:rotate-12">
+                <div class="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-20 transform transition-transform group-hover: group-hover:rotate-12">
                   <UIcon
                     name="i-heroicons-star"
                     class="w-3 h-3 text-white"
@@ -115,7 +115,7 @@
                   class="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
                 <!-- Gold badge -->
-                <div class="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-20 transform transition-transform group-hover:scale-110 group-hover:rotate-12">
+                <div class="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-20 transform transition-transform group-hover: group-hover:rotate-12">
                   <UIcon
                     name="i-heroicons-star"
                     class="w-3 h-3 text-white"
@@ -171,61 +171,63 @@
                     <div class="swiper-button-prev opacity-0"></div>
                   </div>
                 </div>
-                
-                <!-- Sponsor Profile -->
-                <div class="py-6 px-6 bg-white dark:bg-slate-800">
-                  <div class="flex items-center justify-center mb-4">
-                    <div class="relative">
-                      <div class="absolute inset-0 rounded-full golden-border scale-110"></div>
-                      <img 
-                        :src="selectedSponsor.image || '/static/frontend/avatar.png'" 
-                        :alt="selectedSponsor.name"
-                        class="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 relative z-10"
-                      />
-                      <!-- Gold badge -->
-                      <div class="absolute bottom-0 right-0 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md z-20">
-                        <UIcon
-                          name="i-heroicons-star"
-                          class="w-6 h-6 text-white"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-2">{{ selectedSponsor.name }}</h2>
-                  <p class="text-center text-amber-600 dark:text-amber-400 mb-4">Gold Sponsor</p>
-                  
-                  <!-- Description area -->
-                  <div class="space-y-4">
-                    <p class="text-gray-600 dark:text-gray-300">
+                  <!-- Sponsor Profile -->
+                <div class="py-6 px-6 bg-white dark:bg-slate-800">                  <!-- Description area first -->
+                  <div class="space-y-4 mb-4 md:mb-6">
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">
                       {{ selectedSponsor.name }} is one of our esteemed gold sponsors, contributing significantly to our business network. 
                       Their commitment to excellence and innovation has made them a valuable member of our community.
                     </p>
-                    
-                    <!-- Contact information -->
-                    <div class="mt-6 px-4 space-y-3 border-t border-gray-100 dark:border-gray-700 pt-4">
-                      <div class="flex items-center">
-                        <UIcon name="i-heroicons-envelope" class="w-5 h-5 mr-2 text-amber-500" />
-                        <span class="text-gray-600 dark:text-gray-300">contact@example.com</span>
+                  </div>
+                    <!-- Profile and contact side by side -->
+                  <div class="flex flex-row gap-6 mt-4 border-t border-gray-100 dark:border-gray-700 pt-6">
+                    <!-- Left side: Profile photo and badge -->
+                    <div class="flex-shrink-0 mt-2 flex flex-col items-center">
+                      <div class="relative">
+                        <div class="absolute inset-0 rounded-lg golden-border "></div>
+                        <img 
+                          :src="selectedSponsor.image || '/static/frontend/avatar.png'" 
+                          :alt="selectedSponsor.name"
+                          class="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-4 border-white dark:border-slate-700 relative z-10"
+                        />
+                        <!-- Gold badge -->
+                        <div class="absolute bottom-0 right-0 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center shadow-md z-20">
+                          <UIcon
+                            name="i-heroicons-star"
+                            class="w-5 h-5 md:w-6 md:h-6 text-white"
+                          />
+                        </div>
                       </div>
-                      <div class="flex items-center">
-                        <UIcon name="i-heroicons-phone" class="w-5 h-5 mr-2 text-amber-500" />
-                        <span class="text-gray-600 dark:text-gray-300">+1 (555) 123-4567</span>
-                      </div>
-                      <div class="flex items-center">
-                        <UIcon name="i-heroicons-globe-alt" class="w-5 h-5 mr-2 text-amber-500" />
-                        <span class="text-gray-600 dark:text-gray-300">www.example.com</span>
-                      </div>
+                      <!-- Gold sponsor text under profile -->
+                      <p class="text-amber-600 dark:text-amber-400 mt-3 font-medium text-sm md:text-base">Gold Sponsor</p>
                     </div>
+                      <!-- Right side: Name and contact details -->
+                    <div class="flex-grow space-y-2 md:space-y-3">
+                      <h2 class="text-xl md:text-xl font-semibold text-gray-800 dark:text-white mb-2 md:mb-4">{{ selectedSponsor.name }}</h2>
+                      
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-envelope" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
+                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">contact@example.com</span>
+                      </div>
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-phone" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
+                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">+1 (555) 123-4567</span>
+                      </div>
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-globe-alt" class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" />
+                        <span class="text-gray-600 dark:text-gray-300 text-sm md:text-base">www.example.com</span>
+                      </div>
+                      
                       <!-- View full profile button -->
-                    <div class="flex justify-center mt-6">
-                      <NuxtLink 
-                        :to="`/business-network/profile/${selectedSponsor.id}`"
-                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-md transition-all duration-300"
-                      >
-                        View Full Profile
-                        <UIcon name="i-heroicons-arrow-right" class="ml-1 w-5 h-5" />
-                      </NuxtLink>
+                      <div class="pt-3 md:pt-4">
+                        <NuxtLink 
+                          :to="`/business-network/profile/${selectedSponsor.id}`"
+                          class="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-md transition-all duration-300 text-sm md:text-base"
+                        >
+                          View Full Profile
+                          <UIcon name="i-heroicons-arrow-right" class="ml-1 w-4 h-4 md:w-5 md:h-5" />
+                        </NuxtLink>
+                      </div>
                     </div>
                   </div>
                 </div>
