@@ -1,5 +1,5 @@
 <template>
-  <div class="gold-sponsors-slider relative px-3 bg-gradient-to-r from-amber-50/50 to-yellow-50/50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 backdrop-blur-sm shadow-sm">
+  <div class="gold-sponsors-slider relative mt-2 px-3 bg-gradient-to-r from-amber-50/50 to-yellow-50/50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 backdrop-blur-sm shadow-sm">
     <!-- Top pattern decoration -->
     <div class="absolute top-0 left-0 right-0 h-1.5 overflow-hidden">
       <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
