@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\NextOxy\Desktop\office\oxy-us\frontend\components\common\ProductDetailEditor.vue -->
 <template>
   <div
     class="product-detail-editor bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden"

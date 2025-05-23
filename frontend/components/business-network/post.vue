@@ -58,14 +58,16 @@
               @toggle-save="toggleSave"
             />
 
-            <!-- Tags with clean styling -->            <div
+            <!-- Tags with clean styling -->            
+             <div
               v-if="
                 post?.post_details
                   ? post.post_details?.post_tags?.length > 0
                   : post?.post_tags?.length > 0
               "
               class="flex flex-wrap gap-1.5 mb-2 px-2"
-            >              <NuxtLink
+            >              
+            <NuxtLink
                 v-for="(tag, idx) in post?.post_details
                   ? post.post_details?.post_tags
                   : post?.post_tags"
@@ -80,7 +82,8 @@
               >
                 #{{ tag.tag }}
               </NuxtLink>
-            </div>            <!-- Post Title with enhanced styling -->
+            </div>            
+            <!-- Post Title with enhanced styling -->
             <NuxtLink
               :to="`/business-network/posts/${
                 post?.post ? post.post : post.id
