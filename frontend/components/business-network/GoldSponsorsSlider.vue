@@ -60,7 +60,7 @@
         </div>
       </div>
         <!-- Content -->
-      <div v-else class="flex py-2 gap-3 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
+      <div v-else class="flex pt-2 gap-3 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
         <div 
           v-for="(sponsor, index) in sponsors.slice(0, 3)" 
           :key="'mobile-' + index"
@@ -172,7 +172,7 @@
                   </div>
                 </div>
                   <!-- Sponsor Profile -->
-                <div class="py-6 px-6 bg-white dark:bg-slate-800">                  <!-- Description area first -->
+                <div class="py-6 px-2 bg-white dark:bg-slate-800">                  <!-- Description area first -->
                   <div class="space-y-4 mb-4 md:mb-6">
                     <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">
                       {{ selectedSponsor.name }} is one of our esteemed gold sponsors, contributing significantly to our business network. 
