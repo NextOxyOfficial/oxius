@@ -55,8 +55,7 @@ export default defineNuxtConfig({
         { name: "apple-mobile-web-app-title", content: "AdsyClub" },
         { name: "mobile-web-app-capable", content: "yes" },
         { name: "application-name", content: "AdsyClub" },
-      ],
-      link: [
+      ],      link: [
         {
           rel: "icon",
           type: "image/x-icon",
@@ -93,6 +92,17 @@ export default defineNuxtConfig({
           rel: "apple-touch-startup-image",
           href: "/static/frontend/icons/splash-640x1136.png",
           media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
+        },
+        // Swiper CSS
+        {
+          rel: "stylesheet",
+          href: "https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css",
+        },
+      ],
+      script: [
+        {
+          src: "https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js",
+          defer: true,
         },
       ],
     },

@@ -3,7 +3,7 @@
     <!-- Top pattern decoration -->
     <div class="absolute top-0 left-0 right-0 h-1.5 overflow-hidden">
       <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
-    </div>    <div class="flex items-center justify-between px-2 mb-2">
+    </div>    <div class="flex items-center justify-between px-2 my-2">
       <h3 class="text-sm font-semibold flex items-center">
         <div class="w-5 h-5 flex items-center justify-center mr-1.5 relative">
           <div class="absolute inset-0 rounded-full golden-border"></div>
@@ -25,22 +25,29 @@
       </NuxtLink>
     </div>    
     <!-- Sponsors Grid -->
-    <div class="sponsors-container overflow-hidden relative">        <!-- Loading state -->
-      <div v-if="isLoading" class="flex py-3 gap-4 px-2 overflow-hidden">
-        <div v-for="i in 3" :key="i" class="flex-shrink-0 animate-pulse md:hidden" style="width: 90px">
-          <div class="flex flex-col items-center">
-            <div class="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 mb-2 relative overflow-hidden">
+    <div class="sponsors-container overflow-hidden relative">      <!-- Loading state -->
+      <div v-if="isLoading" class="flex py-3 gap-3 px-2 overflow-hidden justify-between">
+        <!-- Mobile Skeletons (3) -->
+        <div v-for="i in 3" :key="i" class="flex-shrink-0 animate-pulse md:hidden">
+          <div class="flex flex-col items-center p-2">
+            <div class="size-20 rounded-full bg-amber-100 dark:bg-amber-900/30 mb-2 relative overflow-hidden">
               <div class="absolute inset-0 golden-border opacity-30"></div>
+              <!-- Skeleton badge -->
+              <div class="absolute -bottom-1 -right-1 bg-amber-200/70 dark:bg-amber-800/50 rounded-full w-5 h-5"></div>
             </div>
-            <div class="h-4 bg-amber-100 dark:bg-amber-900/30 rounded w-16"></div>
+            <div class="h-5 bg-amber-100 dark:bg-amber-900/30 rounded w-20 mt-1"></div>
           </div>
         </div>
-        <div v-for="i in 5" :key="i + 3" class="flex-shrink-0 animate-pulse hidden md:block" style="width: 90px">
-          <div class="flex flex-col items-center">
+        
+        <!-- Desktop Skeletons (5) -->
+        <div v-for="i in 5" :key="i + 3" class="flex-shrink-0 animate-pulse hidden md:block">
+          <div class="flex flex-col items-center p-2">
             <div class="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 mb-2 relative overflow-hidden">
               <div class="absolute inset-0 golden-border opacity-30"></div>
+              <!-- Skeleton badge -->
+              <div class="absolute -bottom-1 -right-1 bg-amber-200/70 dark:bg-amber-800/50 rounded-full w-5 h-5"></div>
             </div>
-            <div class="h-4 bg-amber-100 dark:bg-amber-900/30 rounded w-16"></div>
+            <div class="h-4 bg-amber-100 dark:bg-amber-900/30 rounded w-16 mt-1"></div>
           </div>
         </div>
       </div>
@@ -53,16 +60,15 @@
         </div>
       </div>
         <!-- Content -->
-      <div v-else class="flex py-2 gap-3 justify-between md:justify-between overflow-hidden">
-        <!-- Mobile View (3 sponsors) -->
+      <div v-else class="flex py-2 gap-3 justify-between md:justify-between overflow-hidden">        <!-- Mobile View (3 sponsors) -->
         <div 
           v-for="(sponsor, index) in sponsors.slice(0, 3)" 
           :key="'mobile-' + index"
           class="sponsor-item md:hidden"
         >
-          <NuxtLink 
-            :to="`/business-network/profile/${sponsor.id}`"
-            class="block p-2"
+          <div 
+            class="block p-2 cursor-pointer"
+            @click="openSponsorModal(sponsor)"
           >
             <div class="flex flex-col items-center">
               <!-- Profile image with gold border -->
@@ -87,18 +93,16 @@
                 <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-300"></span>
               </h4>
             </div>
-          </NuxtLink>
-        </div>
-
-        <!-- Desktop View (5 sponsors) -->
+          </div>
+        </div>        <!-- Desktop View (5 sponsors) -->
         <div 
           v-for="(sponsor, index) in sponsors.slice(0, 5)" 
           :key="'desktop-' + index"
           class="sponsor-item hidden md:block"
         >
-          <NuxtLink 
-            :to="`/business-network/profile/${sponsor.id}`"
-            class="block p-2"
+          <div 
+            class="block p-2 cursor-pointer"
+            @click="openSponsorModal(sponsor)"
           >
             <div class="flex flex-col items-center">
               <!-- Profile image with gold border -->
@@ -123,15 +127,117 @@
                 <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-amber-500 group-hover:w-full transition-all duration-300"></span>
               </h4>
             </div>
-          </NuxtLink>
-        </div>
-      </div>
+          </div>
+        </div>      </div>
     </div>
+    
+    <!-- Sponsor Detail Modal -->
+    <Teleport to="body">
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform scale-95 opacity-0"
+        enter-to-class="transform scale-100 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="transform scale-100 opacity-100"
+        leave-to-class="transform scale-95 opacity-0"
+      >
+        <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeModal"></div>
+            
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">              <div class="absolute top-0 right-0 pt-4 pr-4 z-50">
+                <button type="button" @click="closeModal" class="bg-white dark:bg-slate-700 rounded-full p-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none shadow-md">
+                  <span class="sr-only">Close</span>
+                  <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
+                </button>
+              </div>                <div v-if="selectedSponsor" class="relative">
+                <!-- Banner Slider (above sponsor details) -->
+                <div class="relative h-56 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20">
+                  <div class="swiper-container h-full relative">
+                    <div class="swiper-wrapper">
+                      <!-- Placeholder banners (in real implementation, would come from API) -->
+                      <div class="swiper-slide" v-for="(banner, index) in sponsorBanners" :key="index">
+                        <img :src="banner" class="w-full h-full object-cover" :alt="`${selectedSponsor.name} banner`" />
+                      </div>
+                    </div>
+                    <!-- Pagination dots -->
+                    <div class="swiper-pagination absolute bottom-2"></div>
+                    <!-- Navigation arrows (hidden but functional) -->
+                    <div class="swiper-button-next opacity-0"></div>
+                    <div class="swiper-button-prev opacity-0"></div>
+                  </div>
+                </div>
+                
+                <!-- Sponsor Profile -->
+                <div class="py-6 px-6 bg-white dark:bg-slate-800">
+                  <div class="flex items-center justify-center mb-4">
+                    <div class="relative">
+                      <div class="absolute inset-0 rounded-full golden-border scale-110"></div>
+                      <img 
+                        :src="selectedSponsor.image || '/static/frontend/avatar.png'" 
+                        :alt="selectedSponsor.name"
+                        class="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 relative z-10"
+                      />
+                      <!-- Gold badge -->
+                      <div class="absolute bottom-0 right-0 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md z-20">
+                        <UIcon
+                          name="i-heroicons-star"
+                          class="w-6 h-6 text-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-2">{{ selectedSponsor.name }}</h2>
+                  <p class="text-center text-amber-600 dark:text-amber-400 mb-4">Gold Sponsor</p>
+                  
+                  <!-- Description area -->
+                  <div class="space-y-4">
+                    <p class="text-gray-600 dark:text-gray-300">
+                      {{ selectedSponsor.name }} is one of our esteemed gold sponsors, contributing significantly to our business network. 
+                      Their commitment to excellence and innovation has made them a valuable member of our community.
+                    </p>
+                    
+                    <!-- Contact information -->
+                    <div class="mt-6 px-4 space-y-3 border-t border-gray-100 dark:border-gray-700 pt-4">
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-envelope" class="w-5 h-5 mr-2 text-amber-500" />
+                        <span class="text-gray-600 dark:text-gray-300">contact@example.com</span>
+                      </div>
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-phone" class="w-5 h-5 mr-2 text-amber-500" />
+                        <span class="text-gray-600 dark:text-gray-300">+1 (555) 123-4567</span>
+                      </div>
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-globe-alt" class="w-5 h-5 mr-2 text-amber-500" />
+                        <span class="text-gray-600 dark:text-gray-300">www.example.com</span>
+                      </div>
+                    </div>
+                      <!-- View full profile button -->
+                    <div class="flex justify-center mt-6">
+                      <NuxtLink 
+                        :to="`/business-network/profile/${selectedSponsor.id}`"
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-md transition-all duration-300"
+                      >
+                        View Full Profile
+                        <UIcon name="i-heroicons-arrow-right" class="ml-1 w-5 h-5" />
+                      </NuxtLink>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watchEffect } from 'vue';
 import { useApi } from '~/composables/useApi';
 import { useI18n } from 'vue-i18n';
 
@@ -142,6 +248,58 @@ const { get } = useApi();
 const sponsors = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
+
+// Modal state
+const showModal = ref(false);
+const selectedSponsor = ref(null);
+
+// Placeholder banners for the slider (would come from API in real implementation)
+const sponsorBanners = ref([
+  'https://placehold.co/1200x400/fff5e0/ffa500?text=Banner+1',
+  'https://placehold.co/1200x400/fff8e7/ffb700?text=Banner+2',
+  'https://placehold.co/1200x400/fffaf0/ffc800?text=Banner+3',
+]);
+
+// Open sponsor modal
+function openSponsorModal(sponsor) {
+  selectedSponsor.value = sponsor;
+  showModal.value = true;
+  
+  // Initialize swiper in the next tick after DOM update
+  setTimeout(() => {
+    if (typeof window !== 'undefined' && window.Swiper) {
+      new window.Swiper('.swiper-container', {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+        // Enhanced touch settings
+        touchEventsTarget: 'container',
+        grabCursor: true,
+        touchRatio: 1,
+        touchAngle: 45,
+        threshold: 5,
+      });
+    }
+  }, 100);
+}
+
+// Close sponsor modal
+function closeModal() {
+  showModal.value = false;
+  selectedSponsor.value = null;
+}
 
 // Fetch gold sponsors
 async function fetchGoldSponsors() {
@@ -288,5 +446,38 @@ onMounted(() => {
     min-width: 56px;
     min-height: 56px;
   }
+}
+
+/* Modal styles */
+.modal-enter-active, .modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-enter-from, .modal-leave-to {
+  opacity: 0;
+}
+
+/* Swiper custom styles */
+.swiper-container .swiper-pagination-bullet {
+  background: white;
+  opacity: 0.7;
+}
+.swiper-container .swiper-pagination-bullet-active {
+  background: #f59e0b;
+  opacity: 1;
+}
+.swiper-button-next, .swiper-button-prev {
+  color: white !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced touch interaction */
+.swiper-container {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+}
+.swiper-container:active {
+  cursor: grabbing;
 }
 </style>
