@@ -218,7 +218,7 @@
                   <div class="icon-circle bg-lime-50">
                     <CreditCard class="icon text-lime-600" />
                   </div>
-                  <span>{{ $t("transaction") }}</span>
+                  <span>{{ $t("adsy_pay") }}</span>
                 </NuxtLink>
 
                 <!-- Membership -->
@@ -375,7 +375,7 @@
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-700">{{
-              $t("transaction")
+              $t("adsy_pay")
             }}</span>
           </div>
         </NuxtLink>

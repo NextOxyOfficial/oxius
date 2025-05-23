@@ -171,6 +171,8 @@ export default defineI18nConfig(() => ({
       mindforce: "Mindforce",
       shastho_sheba: "Shastho Sheba",
       bill_pay: "Bill Pay",
+      adsy_pay: "Adsy Pay",
+
     },
     bn: {
       welcome: "স্বাগতম",
@@ -342,6 +344,8 @@ export default defineI18nConfig(() => ({
       mindforce: "মাইন্ডফোর্স",
       shastho_sheba: "স্বাস্থ্য সেবা",
       bill_pay: "বিল পে",
+      adsy_pay: "অ্যাডজি পে",
+      
     },
   },
 }));

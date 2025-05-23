@@ -752,12 +752,12 @@
                         badge: {
                           show: true,
                           type: 'pro',
-                          text: t('pro'),
+                          text: $t('pro'),
                         },
                       },
 
                       {
-                        label: $t('transaction'),
+                        label: $t('adsy_pay'),
                         to: '/deposit-withdraw',
                         icon: 'i-heroicons-banknotes',
                         color: 'text-emerald-600 dark:text-emerald-400',
