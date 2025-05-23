@@ -1,5 +1,8 @@
 <template>
   <div class="max-w-3xl pb-8">
+    <!-- Gold Sponsors Slider -->
+    <GoldSponsorsSlider class="mb-6" />
+    
     <div class="space-y-6">
       <!-- Loop through posts and insert sponsored products after every 5 posts -->
       <template v-for="(post, index) in posts" :key="post.id">        
@@ -318,6 +321,7 @@
 
 <script setup>
 import { Loader2 } from "lucide-vue-next";
+import GoldSponsorsSlider from './GoldSponsorsSlider.vue';
 
 // Props
 const props = defineProps({

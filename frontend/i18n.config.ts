@@ -135,10 +135,10 @@ export default defineI18nConfig(() => ({
       city: "City",
       select_city: "Select your city",
       area_upozila: "Area/Upazila",
-      select_area_upozila: "Select your area/upazila",
-      business_network: "Business Network",
+      select_area_upozila: "Select your area/upazila",      business_network: "Business Network",
       adsy_news: "Adsy News",
       verification: "Verification",
+      gold_sponsors: "Gold Sponsors",
       // PWA Installation translations
       add_to_home_screen: "Add AdsyClub to Home Screen",
       install_app_message:
@@ -308,10 +308,10 @@ export default defineI18nConfig(() => ({
       city: "জেলা ",
       select_city: "জেলা সিলেক্ট করুন",
       area_upozila: "এলাকা/উপজেলা",
-      select_area_upozila: "এলাকা/উপজেলা সিলেক্ট করুন",
-      business_network: "বিজনেস নেটওয়ার্ক",
+      select_area_upozila: "এলাকা/উপজেলা সিলেক্ট করুন",      business_network: "বিজনেস নেটওয়ার্ক",
       adsy_news: "নিউজ",
       verification: "ভেরিফিকেশন",
+      gold_sponsors: "গোল্ড স্পন্সর",
       // PWA Installation translations for Bangla
       add_to_home_screen: "AdsyClub হোম স্ক্রিনে যোগ করুন",
       install_app_message:
