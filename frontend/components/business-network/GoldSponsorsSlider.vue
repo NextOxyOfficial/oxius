@@ -148,7 +148,7 @@
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeModal"></div>
             
             <!-- Modal panel -->
-            <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">              <div class="absolute top-0 right-0 pt-4 pr-4 z-50">
+            <div class="inline-block align-bottom mt-10 sm:mt-20 bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">              <div class="absolute top-0 right-0 pt-4 pr-4 z-50">
                 <button type="button" @click="closeModal" class="bg-white dark:bg-slate-700 rounded-full pt-1 px-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none shadow-md">
                   <span class="sr-only">Close</span>
                   <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
