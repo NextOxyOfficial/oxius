@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import *
 
 urlpatterns = [
@@ -65,10 +65,12 @@ urlpatterns = [
     # business-network minforce comments endpoints
     path('mindforce/<str:mindforce_id>/comments/', BusinessNetworkMindforceCommentsListCreateView.as_view(), name='mindforce-comment-list-create'),
     path('mindforce/comments/<str:id>/', BusinessNetworkMindforceCommentDetailView.as_view(), name='mindforce-comment-detail'),
-    
-    # Notification endpoints
+      # Notification endpoints
     path('notifications/', BusinessNetworkNotificationListView.as_view(), name='notification-list'),
     path('notifications/<str:id>/read/', BusinessNetworkNotificationReadView.as_view(), name='notification-read'),
     path('notifications/mark-all-read/', BusinessNetworkMarkAllNotificationsReadView.as_view(), name='mark-all-notifications-read'),
     path('notifications/unread-count/', BusinessNetworkUnreadNotificationCountView.as_view(), name='unread-notification-count'),
+    
+    # Gold Sponsors endpoints
+    path('gold-sponsors/', include('business_network.gold_sponsors.urls')),
 ]

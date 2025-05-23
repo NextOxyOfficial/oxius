@@ -142,14 +142,29 @@
                   </div>
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Recommended: 250x250px, PNG or JPG</p>
                 </div>
-                
-                <!-- Sponsorship package selection -->
+                  <!-- Sponsorship package selection -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Sponsorship Package</label>
-                  <div class="space-y-2">
+                  
+                  <!-- Loading packages -->
+                  <div v-if="isLoadingPackages" class="space-y-2">
+                    <div class="border rounded-lg p-3 animate-pulse">
+                      <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Package error -->
+                  <div v-else-if="packageError" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-sm text-red-600">{{ packageError }}</p>
+                    <button @click="fetchPackages" class="mt-2 text-sm text-red-700 underline">Try again</button>
+                  </div>
+                  
+                  <!-- Package list -->
+                  <div v-else class="space-y-2">
                     <div 
-                      v-for="(pkg, index) in packages" 
-                      :key="index"
+                      v-for="pkg in packages" 
+                      :key="pkg.id"
                       class="relative border rounded-lg p-3 cursor-pointer transition-all"
                       :class="form.selectedPackage === pkg.id ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700'"
                       @click="form.selectedPackage = pkg.id"
@@ -159,7 +174,7 @@
                           <span class="font-medium text-gray-800 dark:text-white">{{ pkg.name }}</span>
                           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ pkg.description }}</p>
                         </div>
-                        <div class="text-amber-600 dark:text-amber-400 font-bold">{{ pkg.price }}</div>
+                        <div class="text-amber-600 dark:text-amber-400 font-bold">৳{{ pkg.price }}</div>
                       </div>
                       <div v-if="form.selectedPackage === pkg.id" class="absolute top-2 right-2 text-amber-500">
                         <div class="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
@@ -170,15 +185,30 @@
                   </div>
                 </div>
               </div>
+                <!-- Error message -->
+              <div v-if="submitError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-600">{{ submitError }}</p>
+              </div>
+              
+              <!-- Success message -->
+              <div v-if="submitSuccess" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p class="text-sm text-green-600">✓ Your Gold Sponsor application has been submitted successfully!</p>
+              </div>
               
               <!-- Submit button -->
               <div class="mt-5">
                 <button 
                   type="submit" 
-                  class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-                  :disabled="isSubmitting"
+                  class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="isSubmitting || isLoadingPackages"
                 >
-                  <span v-if="isSubmitting">Submitting...</span>
+                  <span v-if="isSubmitting" class="flex items-center justify-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </span>
                   <span v-else>Submit Application</span>
                 </button>
               </div>
@@ -191,6 +221,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -234,29 +266,45 @@ const handleLogoUpload = (event) => {
 };
 
 // Sponsorship packages
-const packages = [
-  {
-    id: 1,
-    name: '1 Month Gold Sponsor',
-    description: 'Premium visibility for 1 month',
-    price: '৳2,999'
-  },
-  {
-    id: 2,
-    name: '3 Months Gold Sponsor',
-    description: 'Premium visibility for 3 months with 10% discount',
-    price: '৳8,099'
-  },
-  {
-    id: 3,
-    name: '6 Months Gold Sponsor',
-    description: 'Premium visibility for 6 months with 15% discount',
-    price: '৳15,299'
-  }
-];
+const packages = ref([]);
+const isLoadingPackages = ref(false);
+const packageError = ref('');
 
 // Form submission state
 const isSubmitting = ref(false);
+const submitError = ref('');
+const submitSuccess = ref(false);
+
+// Fetch packages from API
+const fetchPackages = async () => {
+  isLoadingPackages.value = true;
+  packageError.value = '';
+  
+  try {
+    const response = await $fetch('/api/bn/gold-sponsors/packages/');
+    packages.value = response;
+  } catch (error) {
+    console.error('Error fetching packages:', error);
+    packageError.value = 'Failed to load sponsorship packages. Please try again.';
+    // Fallback to default packages
+    packages.value = [
+      {
+        id: 1,
+        name: '1 Month Gold Sponsor',
+        description: 'Premium visibility for 1 month',
+        price: 2999,
+        duration_months: 1
+      }
+    ];
+  } finally {
+    isLoadingPackages.value = false;
+  }
+};
+
+// Initialize packages on component mount
+onMounted(() => {
+  fetchPackages();
+});
 
 // Close modal function
 const close = () => {
@@ -266,14 +314,35 @@ const close = () => {
 // Submit form function
 const submitForm = async () => {
   isSubmitting.value = true;
+  submitError.value = '';
+  submitSuccess.value = false;
   
   try {
-    // Here you would typically make an API call to submit the form data
-    // For now, we'll just simulate a delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('business_name', form.value.businessName);
+    formData.append('business_description', form.value.businessDescription);
+    formData.append('contact_email', form.value.contactEmail);
+    formData.append('phone_number', form.value.phoneNumber);
+    formData.append('website', form.value.website);
+    formData.append('profile_url', form.value.profileUrl);
+    formData.append('package_id', form.value.selectedPackage);
     
-    // Emit the submit event with the form data
-    emit('submit', form.value);    // Reset form
+    if (form.value.logo) {
+      formData.append('logo', form.value.logo);
+    }
+      // Submit to API
+    const response = await $fetch('/api/bn/gold-sponsors/apply/', {
+      method: 'POST',
+      body: formData
+    });
+    
+    submitSuccess.value = true;
+    
+    // Emit the submit event with the response data
+    emit('submit', response);
+    
+    // Reset form
     form.value = {
       businessName: '',
       businessDescription: '',
@@ -292,10 +361,14 @@ const submitForm = async () => {
       logoFileInput.value.value = '';
     }
     
-    // Close the modal
-    close();
+    // Close the modal after a short delay to show success message
+    setTimeout(() => {
+      close();
+    }, 2000);
+    
   } catch (error) {
     console.error('Error submitting gold sponsor application:', error);
+    submitError.value = error.data?.message || 'Failed to submit application. Please try again.';
   } finally {
     isSubmitting.value = false;
   }

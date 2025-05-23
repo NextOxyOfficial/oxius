@@ -1,6 +1,12 @@
 from django.db import models
+from django.utils.text import slugify
+from django.utils import timezone
 from base.models import *
 import re
+import os
+import uuid
+import random
+import string
 
 # Add this helper function for generating unique slugs
 def generate_unique_slug(model_class, field_value, instance=None):
@@ -554,3 +560,86 @@ class BusinessNetworkNotification(models.Model):
         
     def __str__(self):
         return f"{self.actor.username} {self.get_type_display()} to {self.recipient.username}"
+
+
+# Gold Sponsor Models
+
+def sponsor_logo_path(instance, filename):
+    """Generate a unique path for uploading sponsor logos"""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('business_network/gold_sponsors', filename)
+
+
+class SponsorshipPackage(models.Model):
+    """Model for different gold sponsorship packages"""
+    name = models.CharField(max_length=100)
+    description = models.TextField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    duration_months = models.IntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Sponsorship Package"
+        verbose_name_plural = "Sponsorship Packages"
+    
+    def __str__(self):
+        return f"{self.name} - ৳{self.price}"
+
+
+class GoldSponsor(models.Model):
+    """Model for gold sponsors"""
+    STATUS_CHOICES = (
+        ('pending', 'Pending Approval'),
+        ('active', 'Active'),
+        ('expired', 'Expired'),
+        ('rejected', 'Rejected'),
+    )
+    
+    business_name = models.CharField(max_length=255)
+    business_description = models.TextField(max_length=500)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    contact_email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    website = models.URLField(blank=True, null=True)
+    profile_url = models.URLField(blank=True, null=True)
+    logo = models.ImageField(upload_to=sponsor_logo_path, blank=True, null=True)
+    
+    # Package information
+    package = models.ForeignKey(SponsorshipPackage, on_delete=models.PROTECT, related_name='sponsors')
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(blank=True, null=True)
+    
+    # Status and timestamps
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    is_featured = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Gold Sponsor"
+        verbose_name_plural = "Gold Sponsors"
+        ordering = ['-created_at']
+    
+    def save(self, *args, **kwargs):
+        # Generate a slug if not provided
+        if not self.slug:
+            self.slug = slugify(self.business_name)
+            # Ensure unique slug
+            original_slug = self.slug
+            counter = 1
+            while GoldSponsor.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        
+        # Calculate end date based on package duration
+        if not self.end_date and self.package:
+            from datetime import timedelta
+            self.end_date = self.start_date + timedelta(days=30 * self.package.duration_months)
+            
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.business_name
