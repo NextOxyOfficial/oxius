@@ -119,11 +119,16 @@ async function fetchGoldSponsors() {
     error.value = null;
     
     // Fetch active/featured gold sponsors from API
-    const response = await get('/api/bn/gold-sponsors/list/');
+    const result = await get('/bn/gold-sponsors/list/');
     
-    if (response && Array.isArray(response)) {
+    // Check if the API call was successful
+    if (result.error) {
+      console.error('API Error:', result.error);
+      error.value = 'Failed to load gold sponsors';
+      sponsors.value = [];
+    } else if (result.data && Array.isArray(result.data)) {
       // Map API response to component format
-      sponsors.value = response.map(sponsor => ({
+      sponsors.value = result.data.map(sponsor => ({
         id: sponsor.id,
         name: sponsor.business_name,
         image: sponsor.logo ? sponsor.logo : '/static/frontend/avatar.png',
@@ -138,8 +143,11 @@ async function fetchGoldSponsors() {
         status: sponsor.status,
         is_featured: sponsor.is_featured
       }));
+      
+      console.log('Gold sponsors loaded:', sponsors.value.length);
     } else {
       // If no sponsors or unexpected response format
+      console.log('No sponsors data received');
       sponsors.value = [];
     }
     
