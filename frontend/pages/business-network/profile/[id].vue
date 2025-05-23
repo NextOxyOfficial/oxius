@@ -367,7 +367,7 @@
                 v-if="currentUser?.user?.id === user?.id"
                 class="flex items-center gap-3 mt-4 sm:hidden"
               >
-                <div class="flex items-center space-x-2 mt-2 py-1.5">
+                <div class="flex items-center space-x-2 py-1.5">
                   <UIcon name="i-mdi-diamond" class="text-pink-500 w-4 h-4" />
                   <span class="font-semibold text-md"
                     >{{ user?.diamond_balance }} Diamonds</span
@@ -468,7 +468,7 @@
               <div
                 class="hidden sm:flex sm:flex-col items-start mt-3 mb-3 gap-1 border-b border-gray-100 pb-3"
               >
-                <div class="flex items-center gap-3 text-sm">                  <div
+                <div class="flex items-center gap-3 text-sm mb-2">                  <div
                     class="flex items-center hover:scale-105 transition-transform cursor-pointer"
                   >
                     <span class="font-semibold">{{
