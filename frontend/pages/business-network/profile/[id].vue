@@ -332,8 +332,8 @@
                 </div>
               </div>
 
-              <!-- User Stats for Mobile -->
-              <div class="flex w-full justify-center sm:hidden mt-4 space-x-6">
+              <!-- User Stats for Mobile -->              
+               <div class="flex w-full justify-center sm:hidden mt-4 space-x-6">
                 <div
                   class="text-center hover:scale-105 transition-transform cursor-pointer"
                 >
@@ -343,6 +343,7 @@
                   <div class="text-sm font-medium text-gray-500">Posts</div>
                 </div>
                 <div
+                  @click="openFollowersModal('followers')"
                   class="text-center hover:scale-105 transition-transform cursor-pointer"
                 >
                   <div class="text-base font-semibold">
@@ -351,6 +352,7 @@
                   <div class="text-sm font-medium text-gray-500">Followers</div>
                 </div>
                 <div
+                  @click="openFollowersModal('following')"
                   class="text-center hover:scale-105 transition-transform cursor-pointer"
                 >
                   <div class="text-base font-semibold">
@@ -461,8 +463,7 @@
               <div
                 class="hidden sm:flex sm:flex-col items-start mt-3 mb-3 gap-1 border-b border-gray-100 pb-3"
               >
-                <div class="flex items-center gap-3 text-sm">
-                  <div
+                <div class="flex items-center gap-3 text-sm">                  <div
                     class="flex items-center hover:scale-105 transition-transform cursor-pointer"
                   >
                     <span class="font-semibold">{{
@@ -471,6 +472,7 @@
                     <span class="text-gray-500 ml-1.5">Posts</span>
                   </div>
                   <div
+                    @click="openFollowersModal('followers')"
                     class="flex items-center hover:scale-105 transition-transform cursor-pointer"
                   >
                     <span class="font-semibold">{{
@@ -479,6 +481,7 @@
                     <span class="text-gray-500 ml-1.5">Followers</span>
                   </div>
                   <div
+                    @click="openFollowersModal('following')"
                     class="flex items-center hover:scale-105 transition-transform cursor-pointer"
                   >
                     <span class="font-semibold">{{
@@ -961,8 +964,7 @@
           </transition>
         </div>
       </div>
-    </div>
-    <BusinessNetworkDiamondPurchaseModal
+    </div>    <BusinessNetworkDiamondPurchaseModal
       :modelValue="showDiamondModal"
       @close="showDiamondModal = false"
     />    <!-- Profile Photo Modal -->
@@ -974,6 +976,16 @@
       :profileUser="user"
       @close-media="closeProfilePhotoModal"
     />
+    <!-- Followers/Following Modal -->
+    <FollowersModal
+      :show="showFollowersModal"
+      :userId="route.params.id"
+      :initialTab="activeFollowersTab"
+      :followersCount="user?.followers_count || 0"
+      :followingCount="user?.following_count || 0"
+      @close="showFollowersModal = false"
+      @follow-changed="handleFollowStatusChange"
+    />
   </div>
 </template>
 
@@ -984,6 +996,7 @@ definePageMeta({
 
 import BusinessNetworkDiamondPurchaseModal from "~/components/business-network/DiamondPurchaseModal.vue";
 import MediaViewer from "~/components/business-network/MediaViewer.vue";
+import FollowersModal from "~/components/business-network/FollowersModal.vue";
 import {
   Camera,
   Edit,
@@ -1049,6 +1062,8 @@ const allMedia = ref([]);
 const followLoading = ref(false);
 const isFollowing = ref(false);
 const showDiamondModal = ref(false);
+const showFollowersModal = ref(false);
+const activeFollowersTab = ref('followers');
 const showProfilePhotoMenu = ref(false);
 const showProfilePhotoModal = ref(false);
 
@@ -1431,8 +1446,7 @@ const toggleFollow = async () => {
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
-      isFollowing.value = !isFollowing.value; // Revert state on error
-    } finally {
+      isFollowing.value = !isFollowing.value; // Revert state on error    } finally {
       followLoading.value = false;
     }
   } else {
@@ -1457,6 +1471,28 @@ const toggleFollow = async () => {
       isFollowing.value = !isFollowing.value; // Revert state on error
     } finally {
       followLoading.value = false;
+    }
+  }
+};
+
+// Open the followers/following modal
+const openFollowersModal = (tab) => {
+  activeFollowersTab.value = tab;
+  showFollowersModal.value = true;
+};
+
+// Handle follow status change from the modal
+const handleFollowStatusChange = ({ userId, isFollowing: newFollowStatus }) => {
+  // If the user changed is the profile user, update their followers count
+  if (userId === route.params.id) {
+    if (newFollowStatus) {
+      // User was followed
+      user.value.followers_count = (user.value.followers_count || 0) + 1;
+      isFollowing.value = true;
+    } else {
+      // User was unfollowed
+      user.value.followers_count = Math.max(0, (user.value.followers_count || 0) - 1);
+      isFollowing.value = false;
     }
   }
 };
