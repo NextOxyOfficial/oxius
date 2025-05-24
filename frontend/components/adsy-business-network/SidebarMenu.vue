@@ -162,12 +162,7 @@ const mainMenu = computed(() => [
     icon: User,
     active: false,
   },
-  {
-    label: "Gold Sponsors",
-    path: "/business-network/gold-sponsors",
-    icon: Star,
-    active: false,
-  },
+ 
   {
     label: "MindForce",
     path: `/business-network/mindforce`,
@@ -228,10 +223,6 @@ const openCreatePostModal = () => {
   eventBus.emit("open-create-post-modal");
 };
 
-// Navigate to Gold Sponsor page
-const navigateToGoldSponsor = () => {
-  router.push('/business-network/gold-sponsors');
-};
 
 // Helper function to get dynamic colors for menu items
 const getMenuItemColor = (label, type) => {
