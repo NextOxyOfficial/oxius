@@ -161,11 +161,10 @@
           </div>
         </div>
         <span class="font-medium tracking-wide">Login</span>
-      </NuxtLink>
-        <!-- Center element - just a placeholder for non-logged in users -->
+      </NuxtLink>      <!-- Center element - just a placeholder for non-logged in users -->
       <div class="flex flex-col items-center opacity-50 create-button-wrapper">
         <div class="create-post-button-disabled">
-          <Plus class="h-6 w-6 text-gray-300" />
+          <Plus class="h-7 w-7 text-gray-300" />
         </div>
       </div>
       
@@ -419,12 +418,12 @@ function handleCreatePostClick() {
   display: flex;
   justify-content: center;
   width: 20%; /* Equal width for all 5 items */
-  transform: translateY(-5px); /* Less dramatic elevation */
+  transform: translateY(-10px); /* Restore the more elevated appearance */
 }
 
 .create-post-button {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,8 +432,8 @@ function handleCreatePostClick() {
 }
 
 .create-post-icon {
-  width: 42px;
-  height: 42px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
   display: flex;
@@ -444,6 +443,17 @@ function handleCreatePostClick() {
   z-index: 2;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
   transition: all 0.3s ease;
+}
+
+/* Enhanced shadow for create button to give it more elevation */
+.create-post-button::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.15), transparent 70%);
+  z-index: 0;
+  filter: blur(4px);
 }
 
 .create-post-button:hover .create-post-icon {
@@ -475,14 +485,15 @@ function handleCreatePostClick() {
 
 /* Disabled create post button */
 .create-post-button-disabled {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   background: rgba(203, 213, 225, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Footer menu layout */

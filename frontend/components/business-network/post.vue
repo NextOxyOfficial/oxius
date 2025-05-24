@@ -156,7 +156,7 @@
               <!-- Content with better highlighting -->
               <p
                 :class="[
-                  'text-sm text-gray-700 dark:text-gray-300 leading-relaxed',
+                  'text-base text-gray-700 dark:text-gray-300 leading-relaxed',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="
