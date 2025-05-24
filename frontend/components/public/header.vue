@@ -430,17 +430,16 @@
                 width: 'w-full sm:max-w-md',
                 background: 'bg-slate-100',
               }"
-            >
-              <div
+            >              <div
                 class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
               >
                 <UButton
                   icon="i-heroicons-x-mark"
-                  size="md"
+                  size="sm"
                   color="primary"
                   variant="solid"
                   @click="showQr = false"
-                  class="absolute top-1 rounded-full"
+                  class="absolute top-2 right-2 rounded-full"
                 />
 
                 <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
