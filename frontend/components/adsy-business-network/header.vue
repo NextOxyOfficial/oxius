@@ -100,14 +100,27 @@
                   ></span>
                 </span>
               </NuxtLink>
-            </div>
-
-            <!-- Translate Component - Desktop only -->
-            <PublicTranslateHandler class="hidden sm:block px-2" />            <div v-if="!user" class="flex relative menu-container">
+            </div>            <!-- Translate Component - Desktop only -->
+            <PublicTranslateHandler class="hidden sm:block px-2" />            
+            <div v-if="!user" class="flex relative menu-container items-center">
+              <!-- Desktop language switcher (already included above) -->
+              
+              <!-- Mobile Profile Icon -->
+              <div class="sm:hidden">
+                <NuxtLink to="/auth/login">
+                  <div 
+                    class="size-10 rounded-full flex pl-0 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
+                  >
+                    <UIcon name="i-material-symbols-person-rounded" class="size-7 text-gray-500" />
+                  </div>
+                </NuxtLink>
+              </div>
+              
+              <!-- Login Button (Desktop) -->
               <UButton
                 to="/auth/login"
-                label="Login/Register"
                 color="gray"
+                class="max-sm:hidden"
                 :ui="{
                   size: {
                     sm: 'text-xs md:text-sm',
@@ -123,6 +136,8 @@
                 }"
                 size="md"
               >
+                <UIcon name="i-material-symbols-person-rounded" class="mr-1" />
+                Login/Register
               </UButton>
             </div>
             
