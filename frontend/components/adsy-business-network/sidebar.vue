@@ -179,19 +179,6 @@
               You have {{ goldSponsorsCount }} sponsorship(s) pending approval
             </div>            <div v-else class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
               You don't have any active sponsorships yet. 
-              <button 
-                @click="fetchGoldSponsorsData" 
-                class="text-amber-500 underline ml-1 hover:text-amber-600"
-              >
-                Refresh
-              </button>
-              <button 
-                @click="tryAlternativeGoldSponsorFetch" 
-                class="text-amber-600 underline ml-1 hover:text-amber-700"
-                title="Try all possible endpoints"
-              >
-                Try Alternative
-              </button>
             </div>
             
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
@@ -227,7 +214,6 @@
         <SidebarFeaturedProduct
           :product="displayProduct"
           :is-loading="isLoadingProducts"
-          @refresh="changeRandomProduct"
           @navigation="handleNavigation"
         />
 
@@ -254,18 +240,14 @@ import SidebarUsefulLinks from "./SidebarUsefulLinks.vue";
 import GoldSponsorModal from "../business-network/GoldSponsorModal.vue";
 
 // State
-const isOpen = ref(false);
 const isMobile = ref(false);
 const { user } = useAuth();
 const { get, post } = useApi();
 const cart = useStoreCart();
-const route = useRoute();
-const router = useRouter();
 const toast = useToast();
 const tags = ref([]); // Will be populated from hashtags
 const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
-const workspaces = ref([]); // Predefined workspaces with # prefix
 const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
 const { unreadCount, fetchUnreadCount } = useNotifications();
@@ -318,9 +300,6 @@ async function fetchNewsItems() {
 // Hashtags
 async function fetchHashtags() {
   try {
-    // Set loading state
-    const isLoadingHashtags = ref(true);
-
     // Use the top-tags endpoint as primary source for trending hashtags
     const response = await get("/bn/top-tags/");
     if (response.data && Array.isArray(response.data)) {
@@ -332,17 +311,8 @@ async function fetchHashtags() {
       }));
 
       // Take only the top trending hashtags (sorted by count)
-      tags.value = hashtagData.sort((a, b) => b.count - a.count).slice(0, 30); // Get top 30 for potential display
-
-      console.log(
-        "Hashtags loaded successfully from top-tags:",
-        tags.value.length
-      );
+      tags.value = hashtagData.sort((a, b) => b.count - a.count).slice(0, 30);
     } else {
-      console.warn(
-        "Unexpected hashtags response format from top-tags:",
-        response.data
-      );
       // Try alternative endpoint as fallback
       const fallbackResponse = await get("/bn/trending-tags/?limit=30");
       if (fallbackResponse.data && Array.isArray(fallbackResponse.data)) {
@@ -352,7 +322,6 @@ async function fetchHashtags() {
           count: tag.count || 0,
         }));
         tags.value = hashtagData;
-        console.log("Hashtags loaded from fallback:", tags.value.length);
       } else {
         // If both attempts fail, set some default tags so UI isn't empty
         tags.value = [
@@ -364,7 +333,6 @@ async function fetchHashtags() {
           { id: "6", tag: "marketing", count: 49 },
           { id: "7", tag: "innovation", count: 43 },
         ];
-        console.log("Using default hashtags as fallback");
       }
     }
   } catch (error) {
@@ -379,18 +347,6 @@ async function fetchHashtags() {
       { id: "6", tag: "marketing", count: 49 },
       { id: "7", tag: "innovation", count: 43 },
     ];
-    console.log("Using default hashtags due to error");
-  }
-}
-
-// Workspaces
-async function fetchWorkspaces() {
-  try {
-    const response = await get("/bn/workspaces/");
-    workspaces.value = response.data;
-  } catch (error) {
-    console.error("Error fetching workspaces:", error);
-    workspaces.value = [];
   }
 }
 
@@ -407,14 +363,12 @@ async function createWorkspace() {
   }
 
   try {
-    const response = await post("/bn/workspaces/", {
+    await post("/bn/workspaces/", {
       name: newWorkspaceName.value,
     });
-    if (response.data) {
-      await fetchWorkspaces();
-      toast.add({ title: "Workspace created successfully!" });
-      newWorkspaceName.value = "";
-    }
+    toast.add({ title: "Workspace created successfully!" });
+    newWorkspaceName.value = "";
+    isCreateWorkspaceModalOpen.value = false;
   } catch (error) {
     console.log(error);
   }
@@ -494,111 +448,57 @@ async function fetchGoldSponsorsData() {
   try {
     isLoadingSponsors.value = true;
     
-    // Revert back to the original endpoint path that was working before
-    console.log("Fetching gold sponsors data...");
+    // Try to fetch gold sponsor data
     let response;
     try {
-      // Try original endpoint first
       response = await get("/bn/gold-sponsors/stats/");
-      console.log("Using original endpoint path");
     } catch (err) {
-      // Try alternative paths
-      console.log("Trying alternative endpoint formats...");
       try {
         response = await get("/api/bn/gold-sponsors/stats/");
       } catch (err2) {
-        // Last resort, try the new path format
         response = await get("/business_network/gold-sponsors/stats/");
       }
-    }console.log("Full gold sponsors API response:", response);
-    
-    // Debug the raw response structure
-    console.log("Response structure:", {
-      status: response?.status,
-      statusText: response?.statusText,
-      headers: response?.headers,
-      hasData: !!response?.data,
-      dataType: response?.data ? typeof response.data : 'undefined',
-      isDataArray: Array.isArray(response?.data)
-    });
+    }
     
     if (response && response.data) {
-      console.log("Gold sponsors API data:", response.data);
-      console.log("Response data keys:", Object.keys(response.data));
-      
       // Update the counts with real values from the API
       goldSponsorsCount.value = response.data.active_count || 0;
-      console.log("Set goldSponsorsCount to:", goldSponsorsCount.value);
-      
       sponsorViews.value = response.data.total_views || 0;
-      console.log("Set sponsorViews to:", sponsorViews.value);
-        // Update the featured sponsors list if available
-      if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {
-        console.log("Featured sponsors from API:", response.data.featured_sponsors);
-        console.log("Number of featured sponsors:", response.data.featured_sponsors.length);
         
-        // Debug each sponsor and ensure proper formatting
-        const processedSponsors = response.data.featured_sponsors.map((sponsor, index) => {
-          // Ensure each sponsor has the required fields
-          const processedSponsor = {
-            id: sponsor.id || `sponsor-${index}`,
-            name: sponsor.name || sponsor.title || "Unnamed Sponsor", 
-            status: sponsor.status || "active",
-            image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
-          };
-          
-          console.log(`Processed Sponsor ${index + 1}:`, processedSponsor);
-          return processedSponsor;
-        });
+      // Update the featured sponsors list if available
+      if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {
+        // Process sponsors and ensure proper formatting
+        const processedSponsors = response.data.featured_sponsors.map((sponsor, index) => ({
+          id: sponsor.id || `sponsor-${index}`,
+          name: sponsor.name || sponsor.title || "Unnamed Sponsor", 
+          status: sponsor.status || "active",
+          image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
+        }));
         
         featuredSponsors.value = processedSponsors;
-        console.log("Updated featuredSponsors.value length:", featuredSponsors.value.length);
-        console.log("After setting, featuredSponsors contains:", JSON.stringify(featuredSponsors.value));      } else {
-        console.warn("No featured_sponsors array in response, checking alternative formats", response.data);
+      } else {
+        // Check for alternative sponsor data formats
+        const alternativeSponsors = response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors;
         
-        // Check if the data might be in a different format
-        if (response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors) {
-          const alternativeSponsors = response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors;
+        if (Array.isArray(alternativeSponsors) && alternativeSponsors.length > 0) {
+          const processedSponsors = alternativeSponsors.map((sponsor, index) => ({
+            id: sponsor.id || `alt-sponsor-${index}`,
+            name: sponsor.name || sponsor.title || "Sponsor " + (index + 1),
+            status: sponsor.status || "active",
+            image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
+          }));
           
-          if (Array.isArray(alternativeSponsors) && alternativeSponsors.length > 0) {
-            console.log("Found sponsors in alternative field:", alternativeSponsors);
-            
-            // Process the alternative format
-            const processedSponsors = alternativeSponsors.map((sponsor, index) => ({
-              id: sponsor.id || `alt-sponsor-${index}`,
-              name: sponsor.name || sponsor.title || "Sponsor " + (index + 1),
-              status: sponsor.status || "active",
-              image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
-            }));
-            
-            featuredSponsors.value = processedSponsors;
-            console.log("Set featuredSponsors from alternative format:", featuredSponsors.value);
-          } else {
-            featuredSponsors.value = []; // Clear the list if no sponsors available
-          }
-        } else if (response.data.featured_sponsors) {
-          console.warn("featured_sponsors exists but is not an array:", typeof response.data.featured_sponsors);
-          featuredSponsors.value = [];
+          featuredSponsors.value = processedSponsors;
         } else {
-          console.warn("No sponsor data found in response");
-          featuredSponsors.value = []; // Clear the list if no sponsors available
+          featuredSponsors.value = [];
         }
-        console.log("Sponsor list length is now:", featuredSponsors.value.length);
       }
-      
-      // Log successful fetch for debugging
-      console.log("Gold sponsors data processing complete:", {
-        activeCount: goldSponsorsCount.value,
-        totalViews: sponsorViews.value,
-        featuredSponsors: featuredSponsors.value.length
-      });
     } else {
       console.error("Invalid response format from gold sponsors API:", response);
       featuredSponsors.value = [];
     }
   } catch (error) {
     console.error("Error fetching gold sponsors data:", error);
-    // Keep the default values if the API fails
     featuredSponsors.value = [];
   } finally {
     isLoadingSponsors.value = false;
@@ -609,12 +509,11 @@ async function fetchGoldSponsorsData() {
 const handleNavigation = (path) => {
   // Close sidebar on mobile when navigating
   if (isMobile.value) {
-    isOpen.value = false;
     cart.burgerMenu = false;
     document.body.style.overflow = "";
   }
 
-  // Use router to navigate to the path
+  // Use navigateTo for navigation
   navigateTo(path);
 };
 
@@ -622,7 +521,6 @@ const handleNavigation = (path) => {
 const handleMenuClick = (path) => {
   // Close sidebar on mobile
   if (isMobile.value) {
-    isOpen.value = false;
     cart.burgerMenu = false;
     document.body.style.overflow = "";
   }
@@ -630,13 +528,9 @@ const handleMenuClick = (path) => {
   // Trigger appropriate loading state based on the path
   const eventBus = useEventBus();
   if (path.includes("/profile/")) {
-    // For profile pages, emit the profile loading event
     eventBus.emit("start-loading-profile");
-    console.log("Emitted start-loading-profile event");
   } else if (path === "/business-network") {
-    // For main feed, emit the recent posts loading event
     eventBus.emit("load-recent-posts");
-    console.log("Emitted load-recent-posts event");
   }
 };
 
@@ -644,6 +538,11 @@ const handleTagClick = (tag) => {
   console.log(`Tag clicked:`, tag);
   // Implement the navigation or filtering by tag functionality
   handleNavigation(`/business-network/search-results/${tag.tag}`);
+};
+
+// Mobile detection function
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 1024;
 };
 
 // Handle Gold Sponsor form submission
@@ -689,100 +588,6 @@ const handleGoldSponsorSubmit = async (formData) => {
   }
 };
 
-// Updated the toggleSidebar function to handle mobile screen issues and ensure proper state management.
-const toggleSidebar = () => {
-  isOpen.value = !isOpen.value;
-
-  // Prevent body scroll when sidebar is open on mobile
-  if (isOpen.value && isMobile.value) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
-  }
-
-  // Ensure cart.burgerMenu state syncs with isOpen
-  if (isMobile.value) {
-    cart.burgerMenu = isOpen.value;
-  }
-};
-
-// Direct API call function for debugging
-const tryAlternativeGoldSponsorFetch = async () => {
-  try {
-    console.log("Trying direct API calls to fetch gold sponsors...");
-    isLoadingSponsors.value = true;
-    toast.add({ title: "Searching for your sponsors..." });
-    
-    // Try multiple endpoints to find which one works
-    const endpoints = [
-      "/bn/gold-sponsors/my-sponsors/",
-      "/api/bn/gold-sponsors/my-sponsors/",
-      "/bn/gold-sponsors/stats/",
-      "/api/bn/gold-sponsors/stats/"
-    ];
-    
-    for (const endpoint of endpoints) {
-      try {
-        console.log(`Trying endpoint: ${endpoint}`);
-        const response = await get(endpoint);
-        console.log(`Response from ${endpoint}:`, response);
-        
-        if (response && response.data) {
-          // If we get any valid data, show a success message and update UI
-          if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors) && 
-              response.data.featured_sponsors.length > 0) {
-            featuredSponsors.value = response.data.featured_sponsors;
-            toast.add({ title: `Found ${featuredSponsors.value.length} sponsors`, color: "green" });
-            return;
-          } 
-          
-          // Try checking for 'user_sponsors' key which is used in the my-sponsors endpoint
-          if (response.data.sponsors || response.data.user_sponsors) {
-            const sponsors = response.data.sponsors || response.data.user_sponsors;
-            if (Array.isArray(sponsors) && sponsors.length > 0) {
-              featuredSponsors.value = sponsors.map(s => ({
-                id: s.id,
-                name: s.business_name || s.name,  
-                status: s.status || 'active',
-                image: s.logo || s.image
-              }));
-              toast.add({ title: `Found ${featuredSponsors.value.length} sponsors`, color: "green" });
-              return;
-            }
-          }
-          
-          // If we got data but no sponsors, update the count at least
-          if (response.data.active_count !== undefined) {
-            goldSponsorsCount.value = response.data.active_count;
-          }
-        }
-      } catch (err) {
-        // Just log and continue trying other endpoints
-        console.error(`Error with endpoint ${endpoint}:`, err);
-      }
-    }
-    
-    toast.add({ title: "Couldn't find your sponsors", color: "amber" });
-  } catch (error) {
-    console.error("Error in direct API fetch:", error);
-    toast.add({ title: "Error during sponsor search", color: "red" });
-  } finally {
-    isLoadingSponsors.value = false;
-  }
-};
-
-// Check if screen is mobile size and manage sidebar state accordingly
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 1024; // lg breakpoint
-
-  // Auto-close sidebar on mobile when resizing
-  if (isMobile.value) {
-    isOpen.value = false;
-    cart.burgerMenu = false;
-    document.body.style.overflow = "";
-  }
-};
-
 // Lifecycle hooks
 onMounted(async () => {
   // Initial check for mobile
@@ -794,31 +599,21 @@ onMounted(async () => {
   // Fetch unread notification count if user is logged in
   if (user.value?.user?.id) {
     await fetchUnreadCount();
-  }  // Fetch dynamic data regardless of login status
+  }
+  
+  // Fetch dynamic data regardless of login status
   try {
     await Promise.all([
       fetchNewsItems(),
       fetchHashtags(),
       fetchProducts(),
       fetchTopContributors(),
-      // We'll handle gold sponsors separately with retries
-    ]);    // Only fetch workspaces if the user is logged in
+    ]);
+
+    // Only fetch gold sponsor data if user is logged in
     if (user.value?.user?.id) {
-      await fetchWorkspaces();
-      
-      // Try to fetch gold sponsor data safely
       try {
         await fetchGoldSponsorsData();
-        
-        // If we know there are sponsors but none are showing, try the direct approach
-        if (featuredSponsors.value.length === 0 && goldSponsorsCount.value > 0) {
-          console.log("Gold sponsor data inconsistent, trying alternative method");
-          try {
-            await tryAlternativeGoldSponsorFetch();
-          } catch (altError) {
-            console.error("Alternative gold sponsor fetch failed:", altError);
-          }
-        }
       } catch (sponsorError) {
         console.error("Error fetching gold sponsor data:", sponsorError);
         // Errors shouldn't break the sidebar
