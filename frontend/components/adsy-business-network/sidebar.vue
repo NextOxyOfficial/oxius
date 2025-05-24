@@ -140,8 +140,7 @@
                   <div class="h-3 bg-amber-100/50 dark:bg-amber-900/30 rounded w-20"></div>
                 </li>
               </ul>
-            </div>
-            <div v-else-if="featuredSponsors && featuredSponsors.length > 0" class="mb-3">
+            </div>            <div v-else-if="featuredSponsors && featuredSponsors.length > 0" class="mb-3">
               <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
               <ul class="space-y-1.5">
                 <li 
@@ -153,12 +152,12 @@
                     <div class="h-5 w-5 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0">
                       <img 
                         :src="sponsor.image || '/static/frontend/avatar.png'" 
-                        :alt="sponsor.name"
+                        :alt="sponsor.name || 'Sponsor'"
                         class="h-full w-full object-cover"
                       />
                     </div>
                     <span class="text-gray-700 dark:text-gray-300 truncate" :title="sponsor.name">
-                      {{ sponsor.name }}
+                      {{ sponsor.name || 'Unnamed Sponsor' }}
                     </span>
                   </div>
                   <!-- Status badge -->
@@ -178,9 +177,21 @@
             </div>
             <div v-else-if="goldSponsorsCount > 0" class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
               You have {{ goldSponsorsCount }} sponsorship(s) pending approval
-            </div>
-            <div v-else class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
-              You don't have any active sponsorships yet
+            </div>            <div v-else class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
+              You don't have any active sponsorships yet. 
+              <button 
+                @click="fetchGoldSponsorsData" 
+                class="text-amber-500 underline ml-1 hover:text-amber-600"
+              >
+                Refresh
+              </button>
+              <button 
+                @click="tryAlternativeGoldSponsorFetch" 
+                class="text-amber-600 underline ml-1 hover:text-amber-700"
+                title="Try all possible endpoints"
+              >
+                Try Alternative
+              </button>
             </div>
             
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
@@ -483,13 +494,37 @@ async function fetchGoldSponsorsData() {
   try {
     isLoadingSponsors.value = true;
     
-    // Use the correct API endpoint with the /api prefix
+    // Revert back to the original endpoint path that was working before
     console.log("Fetching gold sponsors data...");
-    const response = await get("/api/bn/gold-sponsors/stats/");
-    console.log("Full gold sponsors API response:", response);
+    let response;
+    try {
+      // Try original endpoint first
+      response = await get("/bn/gold-sponsors/stats/");
+      console.log("Using original endpoint path");
+    } catch (err) {
+      // Try alternative paths
+      console.log("Trying alternative endpoint formats...");
+      try {
+        response = await get("/api/bn/gold-sponsors/stats/");
+      } catch (err2) {
+        // Last resort, try the new path format
+        response = await get("/business_network/gold-sponsors/stats/");
+      }
+    }console.log("Full gold sponsors API response:", response);
+    
+    // Debug the raw response structure
+    console.log("Response structure:", {
+      status: response?.status,
+      statusText: response?.statusText,
+      headers: response?.headers,
+      hasData: !!response?.data,
+      dataType: response?.data ? typeof response.data : 'undefined',
+      isDataArray: Array.isArray(response?.data)
+    });
     
     if (response && response.data) {
       console.log("Gold sponsors API data:", response.data);
+      console.log("Response data keys:", Object.keys(response.data));
       
       // Update the counts with real values from the API
       goldSponsorsCount.value = response.data.active_count || 0;
@@ -497,34 +532,58 @@ async function fetchGoldSponsorsData() {
       
       sponsorViews.value = response.data.total_views || 0;
       console.log("Set sponsorViews to:", sponsorViews.value);
-      
-      // Update the featured sponsors list if available
+        // Update the featured sponsors list if available
       if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {
         console.log("Featured sponsors from API:", response.data.featured_sponsors);
         console.log("Number of featured sponsors:", response.data.featured_sponsors.length);
         
-        // Debug each sponsor
-        response.data.featured_sponsors.forEach((sponsor, index) => {
-          console.log(`Sponsor ${index + 1}:`, {
-            id: sponsor.id,
-            name: sponsor.name,
-            status: sponsor.status,
-            image: sponsor.image,
-          });
+        // Debug each sponsor and ensure proper formatting
+        const processedSponsors = response.data.featured_sponsors.map((sponsor, index) => {
+          // Ensure each sponsor has the required fields
+          const processedSponsor = {
+            id: sponsor.id || `sponsor-${index}`,
+            name: sponsor.name || sponsor.title || "Unnamed Sponsor", 
+            status: sponsor.status || "active",
+            image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
+          };
+          
+          console.log(`Processed Sponsor ${index + 1}:`, processedSponsor);
+          return processedSponsor;
         });
         
-        featuredSponsors.value = response.data.featured_sponsors;
+        featuredSponsors.value = processedSponsors;
         console.log("Updated featuredSponsors.value length:", featuredSponsors.value.length);
-        console.log("After setting, featuredSponsors contains:", JSON.stringify(featuredSponsors.value));
-      } else {
-        console.warn("No featured sponsors in response or invalid format", response.data);
-        if (response.data.featured_sponsors) {
+        console.log("After setting, featuredSponsors contains:", JSON.stringify(featuredSponsors.value));      } else {
+        console.warn("No featured_sponsors array in response, checking alternative formats", response.data);
+        
+        // Check if the data might be in a different format
+        if (response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors) {
+          const alternativeSponsors = response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors;
+          
+          if (Array.isArray(alternativeSponsors) && alternativeSponsors.length > 0) {
+            console.log("Found sponsors in alternative field:", alternativeSponsors);
+            
+            // Process the alternative format
+            const processedSponsors = alternativeSponsors.map((sponsor, index) => ({
+              id: sponsor.id || `alt-sponsor-${index}`,
+              name: sponsor.name || sponsor.title || "Sponsor " + (index + 1),
+              status: sponsor.status || "active",
+              image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
+            }));
+            
+            featuredSponsors.value = processedSponsors;
+            console.log("Set featuredSponsors from alternative format:", featuredSponsors.value);
+          } else {
+            featuredSponsors.value = []; // Clear the list if no sponsors available
+          }
+        } else if (response.data.featured_sponsors) {
           console.warn("featured_sponsors exists but is not an array:", typeof response.data.featured_sponsors);
+          featuredSponsors.value = [];
         } else {
-          console.warn("featured_sponsors is missing entirely from response");
+          console.warn("No sponsor data found in response");
+          featuredSponsors.value = []; // Clear the list if no sponsors available
         }
-        featuredSponsors.value = []; // Clear the list if no sponsors available
-        console.log("Cleared featuredSponsors, length is now:", featuredSponsors.value.length);
+        console.log("Sponsor list length is now:", featuredSponsors.value.length);
       }
       
       // Log successful fetch for debugging
@@ -591,8 +650,21 @@ const handleTagClick = (tag) => {
 const handleGoldSponsorSubmit = async (formData) => {
   try {
     console.log("Gold Sponsor application submitted:", formData);
-    // Submit the data to the backend with the correct API endpoint
-    const response = await post("/api/bn/gold-sponsors/apply/", formData);
+    // Submit the data to the backend with the original endpoint path
+    let response;
+    try {
+      // Use the original path that was working before
+      response = await post("/bn/gold-sponsors/apply/", formData);
+    } catch (err) {
+      // Try alternative paths
+      console.log("Trying alternative endpoint format for submission...");
+      try {
+        response = await post("/api/bn/gold-sponsors/apply/", formData);
+      } catch (err2) {
+        // Last resort, try the new format
+        response = await post("/business_network/gold-sponsors/apply/", formData);
+      }
+    }
     
     if (response.error) {
       throw new Error(response.error);
@@ -634,6 +706,71 @@ const toggleSidebar = () => {
   }
 };
 
+// Direct API call function for debugging
+const tryAlternativeGoldSponsorFetch = async () => {
+  try {
+    console.log("Trying direct API calls to fetch gold sponsors...");
+    isLoadingSponsors.value = true;
+    toast.add({ title: "Searching for your sponsors..." });
+    
+    // Try multiple endpoints to find which one works
+    const endpoints = [
+      "/bn/gold-sponsors/my-sponsors/",
+      "/api/bn/gold-sponsors/my-sponsors/",
+      "/bn/gold-sponsors/stats/",
+      "/api/bn/gold-sponsors/stats/"
+    ];
+    
+    for (const endpoint of endpoints) {
+      try {
+        console.log(`Trying endpoint: ${endpoint}`);
+        const response = await get(endpoint);
+        console.log(`Response from ${endpoint}:`, response);
+        
+        if (response && response.data) {
+          // If we get any valid data, show a success message and update UI
+          if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors) && 
+              response.data.featured_sponsors.length > 0) {
+            featuredSponsors.value = response.data.featured_sponsors;
+            toast.add({ title: `Found ${featuredSponsors.value.length} sponsors`, color: "green" });
+            return;
+          } 
+          
+          // Try checking for 'user_sponsors' key which is used in the my-sponsors endpoint
+          if (response.data.sponsors || response.data.user_sponsors) {
+            const sponsors = response.data.sponsors || response.data.user_sponsors;
+            if (Array.isArray(sponsors) && sponsors.length > 0) {
+              featuredSponsors.value = sponsors.map(s => ({
+                id: s.id,
+                name: s.business_name || s.name,  
+                status: s.status || 'active',
+                image: s.logo || s.image
+              }));
+              toast.add({ title: `Found ${featuredSponsors.value.length} sponsors`, color: "green" });
+              return;
+            }
+          }
+          
+          // If we got data but no sponsors, update the count at least
+          if (response.data.active_count !== undefined) {
+            goldSponsorsCount.value = response.data.active_count;
+          }
+        }
+      } catch (err) {
+        // Just log and continue trying other endpoints
+        console.error(`Error with endpoint ${endpoint}:`, err);
+      }
+    }
+    
+    toast.add({ title: "Couldn't find your sponsors", color: "amber" });
+  } catch (error) {
+    console.error("Error in direct API fetch:", error);
+    toast.add({ title: "Error during sponsor search", color: "red" });
+  } finally {
+    isLoadingSponsors.value = false;
+  }
+};
+
 // Check if screen is mobile size and manage sidebar state accordingly
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024; // lg breakpoint
@@ -657,20 +794,35 @@ onMounted(async () => {
   // Fetch unread notification count if user is logged in
   if (user.value?.user?.id) {
     await fetchUnreadCount();
-  }
-  // Fetch dynamic data regardless of login status
+  }  // Fetch dynamic data regardless of login status
   try {
     await Promise.all([
       fetchNewsItems(),
       fetchHashtags(),
       fetchProducts(),
       fetchTopContributors(),
-      fetchGoldSponsorsData(),
-    ]);
-
-    // Only fetch workspaces if the user is logged in
+      // We'll handle gold sponsors separately with retries
+    ]);    // Only fetch workspaces if the user is logged in
     if (user.value?.user?.id) {
       await fetchWorkspaces();
+      
+      // Try to fetch gold sponsor data safely
+      try {
+        await fetchGoldSponsorsData();
+        
+        // If we know there are sponsors but none are showing, try the direct approach
+        if (featuredSponsors.value.length === 0 && goldSponsorsCount.value > 0) {
+          console.log("Gold sponsor data inconsistent, trying alternative method");
+          try {
+            await tryAlternativeGoldSponsorFetch();
+          } catch (altError) {
+            console.error("Alternative gold sponsor fetch failed:", altError);
+          }
+        }
+      } catch (sponsorError) {
+        console.error("Error fetching gold sponsor data:", sponsorError);
+        // Errors shouldn't break the sidebar
+      }
     }
   } catch (error) {
     console.error("Error fetching sidebar content:", error);
