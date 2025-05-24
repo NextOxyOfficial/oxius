@@ -462,37 +462,20 @@
 
       <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex max-sm:justify-between gap-2">
-            <USelect
+          <div class="flex max-sm:justify-between gap-2">            <USelect
               v-model="filters.type"
-              :options="[
-                { name: 'All Types', value: '' },
-                { name: 'Deposit', value: 'deposit' },
-                { name: 'Withdraw', value: 'withdraw' },
-                { name: 'Transfer', value: 'transfer' },
-              ]"
+              :options="transactionTypeOptions.map(option => ({ name: option.label, value: option.value }))"
               option-attribute="name"
               value-attribute="value"
+              placeholder="Filter by type"
             />
-            <!-- <select
-              v-model="filters.type"
-              class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm sm:text-base px-4"
-            >
-              <option value="">All Types</option>
-              <option value="Deposit">Deposit</option>
-              <option value="Withdraw">Withdraw</option>
-              <option value="Transfer">Transfer</option>
-            </select> -->
+            
             <USelect
               v-model="filters.status"
-              :options="[
-                { name: 'All Statuses', value: '' },
-                { name: 'Completed', value: 'completed' },
-                { name: 'Pending', value: 'pending' },
-                { name: 'Rejected', value: 'rejected' },
-              ]"
-              option-attribute="name"
+              :options="transactionStatusOptions.map(option => ({ name: option.label, value: option.value }))"
+              option-attribute="name" 
               value-attribute="value"
+              placeholder="Filter by status"
             />
             <!-- <select
               v-model="filters.status"
@@ -507,11 +490,11 @@
         </div>
       </div>
       <div class="overflow-hidden">
-        <UTable :columns="columns" :rows="paginatedTransactions">
-          <template #type-data="{ row }">
+        <UTable :columns="columns" :rows="paginatedTransactions">          <template #type-data="{ row }">
             <div class="flex items-center">
+              <!-- Deposit icon -->
               <span
-                v-if="row.transaction_type === 'Deposit'"
+                v-if="row.transaction_type?.toLowerCase() === 'deposit'"
                 class="flex-shrink-0 h-5 w-5 text-green-500"
               >
                 <svg
@@ -527,8 +510,10 @@
                   <path d="m19 12-7 7-7-7" />
                 </svg>
               </span>
+              
+              <!-- Withdraw icon -->
               <span
-                v-else-if="row.transaction_type === 'Withdraw'"
+                v-else-if="row.transaction_type?.toLowerCase() === 'withdraw'"
                 class="flex-shrink-0 h-5 w-5 text-red-500"
               >
                 <svg
@@ -544,7 +529,12 @@
                   <path d="m5 12 7-7 7 7" />
                 </svg>
               </span>
-              <span v-else class="flex-shrink-0 h-5 w-5 text-blue-500">
+              
+              <!-- Transfer icon -->
+              <span 
+                v-else-if="row.transaction_type?.toLowerCase() === 'transfer'" 
+                class="flex-shrink-0 h-5 w-5 text-blue-500"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -560,41 +550,164 @@
                   <path d="M20 17H4" />
                 </svg>
               </span>
+              
+              <!-- Diamond transactions icon -->
               <span
-                class="ml-2 text-sm text-gray-700 capitalize"
-                v-if="row.transaction_type === 'order_payment'"
-                >{{
-                  row.transaction_type === "order_payment"
-                    ? "Product Purchase"
-                    : row.transaction_type
-                }}</span
+                v-else-if="row.transaction_type?.toLowerCase().startsWith('diamond_')"
+                class="flex-shrink-0 h-5 w-5 text-purple-500"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M16 2H8l-4 6h16l-4-6z" />
+                  <path d="M4 8l8 14 8-14-8 14z" />
+                </svg>
+              </span>
+              
+              <!-- Mobile recharge icon -->
               <span
-                class="ml-2 text-sm text-gray-700 capitalize"
-                v-if="row.transaction_type === 'order_received'"
-                >{{
-                  row.transaction_type === "order_received"
-                    ? "Order Received"
-                    : row.transaction_type
-                }}</span
+                v-else-if="row.transaction_type?.toLowerCase() === 'mobile_recharge'"
+                class="flex-shrink-0 h-5 w-5 text-blue-500"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <path d="m12 17 .01.01" />
+                  <path d="M12 7V6.02" />
+                </svg>
+              </span>
+              
+              <!-- Purchase icon -->
               <span
-                class="ml-2 text-sm text-gray-700 capitalize"
-                v-if="row.transaction_type == 'transfer'"
-                >{{ row.transaction_type }}</span
+                v-else-if="row.transaction_type?.toLowerCase() === 'order_payment'"
+                class="flex-shrink-0 h-5 w-5 text-green-600"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+              </span>
+              
+              <!-- Subscription icon -->
+              <span
+                v-else-if="row.transaction_type?.toLowerCase() === 'pro_subscription'"
+                class="flex-shrink-0 h-5 w-5 text-amber-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 2L5 12l7 10 7-10z" />
+                  <path d="M5 12h14" />
+                </svg>
+              </span>
+              
+              <!-- Commission icon -->
+              <span
+                v-else-if="row.transaction_type?.toLowerCase() === 'referral_commission'"
+                class="flex-shrink-0 h-5 w-5 text-yellow-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor" 
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                  <path d="M6 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                  <path d="M6 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                  <path d="m15 13-3-2" />
+                  <path d="m15 17-3 2" />
+                  <path d="M9 7 6 5" />
+                </svg>
+              </span>
+              
+              <!-- Default icon for other types -->
+              <span v-else class="flex-shrink-0 h-5 w-5 text-gray-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
+                </svg>
+              </span>
+              
+              <!-- Display transaction type name -->
+              <span class="ml-2 text-sm text-gray-700">
+                {{ getTransactionTypeName(row.transaction_type) }}
+              </span>
             </div>
-          </template>
-          <template #recipient-data="{ row }">
+          </template>          <template #recipient-data="{ row }">
+            <!-- Show recipient details if available -->
             <div class="text-sm text-gray-500 capitalize" v-if="row?.to_user_details">
               {{ row.to_user_details.first_name }}
               {{ row.to_user_details.last_name }}
             </div>
-          </template>
-          <template #sender-data="{ row }">
+              <!-- For self-transactions like deposits, purchases, etc. show "Myself" -->
+            <div class="text-sm text-gray-500" v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(row.transaction_type?.toLowerCase())">
+              Myself
+            </div>
+            
+            <!-- For diamond transactions without recipient -->
+            <div class="text-sm text-gray-500" v-else-if="row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !row.to_user_details">
+              Personal Account
+            </div>
+          </template>          <template #sender-data="{ row }">
+            <!-- Show sender details if available -->
             <div class="text-sm text-gray-500 capitalize" v-if="row?.user_details">
               {{ row.user_details.first_name }}
               {{ row.user_details.last_name }}
+            </div>
+            
+            <!-- For system-generated transactions -->
+            <div class="text-sm text-gray-500" v-else-if="row.transaction_type?.toLowerCase()?.includes('system') || row.transaction_type?.toLowerCase()?.includes('admin')">
+              System
+            </div>
+              <!-- For payments to self -->
+            <div class="text-sm text-gray-500" v-else-if="['deposit', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase())">
+              Payment Gateway
+            </div>
+            
+            <!-- For system-generated diamond additions -->
+            <div class="text-sm text-gray-500" v-else-if="['diamond_bonus', 'diamond_refund'].includes(row.transaction_type?.toLowerCase())">
+              System
             </div>
           </template>
           <template #method-data="{ row }">
@@ -606,41 +719,49 @@
             <div class="text-sm text-gray-500">
               {{ formatDate(row.created_at) }}
             </div>
-          </template>
-          <template #amount-data="{ row }">
+          </template>          <template #amount-data="{ row }">
             <div
-              v-if="row.amount !== '0.00'"
               class="text-sm font-medium"
               :class="{
-                'text-green-600': row.transaction_type === 'Deposit',
-                'text-red-600': row.transaction_type === 'Withdraw',
-                'text-blue-600': row.transaction_type === 'Transfer',
+                'text-green-600': ['deposit', 'diamond_bonus', 'diamond_refund', 'referral_commission'].includes(row.transaction_type?.toLowerCase()),
+                'text-red-600': ['withdraw', 'diamond_purchase', 'pro_subscription', 'order_payment', 'mobile_recharge'].includes(row.transaction_type?.toLowerCase()),
+                'text-blue-600': row.transaction_type?.toLowerCase() === 'transfer',
+                'text-purple-600': row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase()),
+                'text-gray-700': !row.transaction_type
               }"
-            >
-              {{ formatAmount(row.amount, row.transaction_type.toLowerCase()) }}
+            >              {{ 
+                formatAmount(
+                  row.amount !== '0.00' ? 
+                  row.amount : 
+                  (row.payable_amount || row.cost || 0), 
+                  row.transaction_type?.toLowerCase()
+                ) 
+              }}              <span v-if="row.transaction_type?.toLowerCase()?.startsWith('diamond_')" class="text-xs ml-1 whitespace-nowrap">
+                ({{ row.diamonds || parseInt(row.quantity) || row.quantity || row.amount || 0 }} 💎)
+              </span>
             </div>
-            <div
-              v-else
-              class="text-sm font-medium"
-              :class="{
-                'text-green-600': row.transaction_type === 'Deposit',
-                'text-red-600': row.transaction_type === 'Withdraw',
-                'text-blue-600': row.transaction_type === 'Transfer',
-              }"
-            >
-              {{ formatAmount(row.payable_amount, row.transaction_type.toLowerCase()) }}
-            </div>
-          </template>
-          <template #status-data="{ row }">
+          </template>          <template #status-data="{ row }">
             <span
               class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
               :class="{
-                'bg-green-100 text-green-800': row.bank_status === 'completed',
-                'bg-yellow-100 text-yellow-800': row.bank_status === 'pending',
-                'bg-red-100 text-red-800': row.bank_status === 'failed',
+                'bg-green-100 text-green-800': 
+                  row.bank_status === 'completed' || row.status === 'completed' || row.completed,
+                'bg-yellow-100 text-yellow-800': 
+                  row.bank_status === 'pending' || row.status === 'pending' || (!row.completed && !row.rejected),
+                'bg-red-100 text-red-800': 
+                  row.bank_status === 'failed' || row.bank_status === 'rejected' ||
+                  row.status === 'failed' || row.status === 'rejected' ||
+                  row.rejected
               }"
             >
-              {{ row.bank_status.charAt(0).toUpperCase() + row.bank_status.slice(1) }}
+              {{ 
+                (row.bank_status || row.status || 
+                  (row.completed ? 'Completed' : (row.rejected ? 'Rejected' : 'Pending'))
+                ).charAt(0).toUpperCase() + 
+                (row.bank_status || row.status || 
+                  (row.completed ? 'Completed' : (row.rejected ? 'Rejected' : 'Pending'))
+                ).slice(1) 
+              }}
             </span>
           </template>
           <template #action-data="{ row }">
@@ -1037,14 +1158,14 @@
                       <dd class="text-sm text-gray-700 mt-0 col-span-2 font-mono">
                         {{ selectedTransaction?.id }}
                       </dd>
-                    </div>
-                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Type</dt>
                       <dd
-                        class="text-sm text-gray-700 mt-0 col-span-2 flex items-center uppercase"
+                        class="text-sm text-gray-700 mt-0 col-span-2 flex items-center"
                       >
+                        <!-- Deposit icon -->
                         <span
-                          v-if="selectedTransaction?.type === 'deposit'"
+                          v-if="selectedTransaction?.transaction_type === 'deposit'"
                           class="flex-shrink-0 h-5 w-5 text-green-500 mr-2"
                         >
                           <svg
@@ -1055,14 +1176,15 @@
                             stroke-width="2"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            class="lucide lucide-arrow-down"
                           >
                             <path d="M12 5v14" />
                             <path d="m19 12-7 7-7-7" />
                           </svg>
                         </span>
+                        
+                        <!-- Withdraw icon -->
                         <span
-                          v-else-if="selectedTransaction?.type === 'withdraw'"
+                          v-else-if="selectedTransaction?.transaction_type === 'withdraw'"
                           class="flex-shrink-0 h-5 w-5 text-red-500 mr-2"
                         >
                           <svg
@@ -1073,13 +1195,17 @@
                             stroke-width="2"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            class="lucide lucide-arrow-up"
                           >
                             <path d="M12 19V5" />
                             <path d="m5 12 7-7 7 7" />
                           </svg>
                         </span>
-                        <span v-else class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2">
+                        
+                        <!-- Diamond icons -->
+                        <span
+                          v-else-if="selectedTransaction?.transaction_type?.startsWith('diamond_')"
+                          class="flex-shrink-0 h-5 w-5 text-purple-500 mr-2"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -1088,7 +1214,66 @@
                             stroke-width="2"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            class="lucide lucide-arrow-left-right"
+                          >
+                            <path d="M16 2H8l-4 6h16l-4-6z" />
+                            <path d="M4 8l8 14 8-14-8 14z" />
+                          </svg>
+                        </span>
+                        
+                        <!-- Mobile recharge icon -->
+                        <span
+                          v-else-if="selectedTransaction?.transaction_type === 'mobile_recharge'"
+                          class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <rect x="7" y="2" width="10" height="20" rx="2" />
+                            <path d="m12 17 .01.01" />
+                            <path d="M12 7V6.02" />
+                            <path d="M16 9 8 9" />
+                            <path d="M16 12 8 12" />
+                          </svg>
+                        </span>
+                        
+                        <!-- Subscription icon -->
+                        <span
+                          v-else-if="selectedTransaction?.transaction_type === 'pro_subscription'"
+                          class="flex-shrink-0 h-5 w-5 text-amber-500 mr-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M12 2L5 12l7 10 7-10z" />
+                            <path d="M5 12h14" />
+                          </svg>
+                        </span>
+                        
+                        <!-- Transfer icon -->
+                        <span
+                          v-else-if="selectedTransaction?.transaction_type === 'transfer'"
+                          class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
                           >
                             <path d="M8 3 4 7l4 4" />
                             <path d="M4 7h16" />
@@ -1096,15 +1281,107 @@
                             <path d="M20 17H4" />
                           </svg>
                         </span>
-                        {{
-                          selectedTransaction?.transaction_type === "order_payment"
-                            ? "Product Purchase"
-                            : selectedTransaction?.transaction_type
-                        }}
+                        
+                        <!-- Purchase icon -->
+                        <span
+                          v-else-if="selectedTransaction?.transaction_type === 'order_payment'"
+                          class="flex-shrink-0 h-5 w-5 text-green-600 mr-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                            <path d="M3 6h18" />
+                            <path d="M16 10a4 4 0 0 1-8 0" />
+                          </svg>
+                        </span>
+                        
+                        <!-- Commission icon -->
+                        <span
+                          v-else-if="selectedTransaction?.transaction_type === 'referral_commission'"
+                          class="flex-shrink-0 h-5 w-5 text-yellow-500 mr-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor" 
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M18 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                            <path d="M6 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                            <path d="M6 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                            <path d="m15 13-3-2" />
+                            <path d="m15 17-3 2" />
+                            <path d="M9 7 6 5" />
+                          </svg>
+                        </span>
+                        
+                        <!-- Default icon for other types -->
+                        <span v-else class="flex-shrink-0 h-5 w-5 text-gray-500 mr-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                          </svg>
+                        </span>
+                        
+                        <!-- Transaction type name -->
+                        {{ getTransactionTypeName(selectedTransaction?.transaction_type) }}
+                      </dd>
+                    </div>                    <!-- Sender information -->
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                      <dt class="text-sm font-medium text-gray-500">Sender</dt>
+                      
+                      <!-- When sender details are available -->
+                      <dd
+                        v-if="selectedTransaction?.user_details"
+                        class="text-sm text-gray-700 mt-0 col-span-2 font-mono"
+                      >
+                        <p>{{ selectedTransaction?.user_details?.name || '' }}</p>
+                        <p>{{ selectedTransaction?.user_details?.phone || '' }}</p>
+                        {{ selectedTransaction?.user_details?.email || '' }}
+                      </dd>
+                      
+                      <!-- For payments through gateway -->
+                      <dd v-else-if="['deposit', 'diamond_purchase'].includes(selectedTransaction?.transaction_type)" 
+                          class="text-sm text-gray-700 mt-0 col-span-2">
+                        Payment Gateway
+                      </dd>
+                      
+                      <!-- For system-generated transactions -->
+                      <dd v-else-if="['diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(selectedTransaction?.transaction_type) || selectedTransaction?.transaction_type?.toLowerCase()?.includes('system')" 
+                          class="text-sm text-gray-700 mt-0 col-span-2">
+                        System
+                      </dd>
+                      
+                      <!-- For other transactions -->
+                      <dd v-else class="text-sm text-gray-700 mt-0 col-span-2">
+                        Unknown
                       </dd>
                     </div>
+                    
+                    <!-- Recipient information -->
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Recipient</dt>
+                      
+                      <!-- When recipient details are available -->
                       <dd
                         v-if="selectedTransaction?.to_user_details"
                         class="text-sm text-gray-700 mt-0 col-span-2 font-mono"
@@ -1114,14 +1391,35 @@
                         </p>
                         {{ selectedTransaction?.to_user_details?.email }}
                       </dd>
+                        <!-- For self-transactions like deposits, purchases -->
+                      <dd v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(selectedTransaction?.transaction_type)" 
+                          class="text-sm text-gray-700 mt-0 col-span-2">
+                        Myself
+                      </dd>
+                      
+                      <!-- For diamond transactions without recipient -->
+                      <dd v-else-if="selectedTransaction?.transaction_type?.startsWith('diamond_') && !selectedTransaction?.to_user_details"
+                          class="text-sm text-gray-700 mt-0 col-span-2">
+                        Personal Account
+                      </dd>
+                      
+                      <!-- For other transactions, show payment method if available -->
+                      <dd v-else class="text-sm text-gray-700 mt-0 col-span-2">
+                        {{ selectedTransaction?.payment_method || 'N/A' }}
+                      </dd>
                     </div>
-                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    
+                    <!-- Name information -->
+                    <div v-if="selectedTransaction?.to_user_details" class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Name</dt>
-                      <dd
-                        v-if="selectedTransaction?.to_user_details"
-                        class="text-sm text-gray-700 mt-0 col-span-2"
-                      >
+                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
                         {{ selectedTransaction?.to_user_details.name }}
+                      </dd>
+                    </div>
+                      <!-- Diamond transaction details -->                    <div v-if="selectedTransaction?.transaction_type?.startsWith('diamond_')" class="py-3 grid grid-cols-3 sm:gap-4">
+                      <dt class="text-sm font-medium text-gray-500">Diamond Count</dt>
+                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
+                        {{ selectedTransaction?.diamonds || parseInt(selectedTransaction?.quantity) || selectedTransaction?.quantity || selectedTransaction?.amount || 0 }} 💎
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
@@ -1129,28 +1427,28 @@
                       <dd class="text-sm text-gray-700 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
-                    </div>
-                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Amount</dt>
                       <dd
                         class="text-sm font-medium mt-0 col-span-2"
                         :class="{
-                          'text-green-600': selectedTransaction?.transaction_type === 'deposit',
-                          'text-red-600': selectedTransaction?.transaction_type === 'withdraw',
-                          'text-gray-700': selectedTransaction?.transaction_type === 'transfer',
+                          'text-green-600': ['deposit', 'diamond_bonus', 'diamond_refund', 'referral_commission'].includes(selectedTransaction?.transaction_type),
+                          'text-red-600': ['withdraw', 'diamond_purchase', 'pro_subscription', 'order_payment', 'mobile_recharge'].includes(selectedTransaction?.transaction_type),
+                          'text-blue-600': selectedTransaction?.transaction_type === 'transfer',
+                          'text-purple-600': selectedTransaction?.transaction_type?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(selectedTransaction?.transaction_type),
+                          'text-gray-700': !selectedTransaction?.transaction_type
                         }"
                       >
                         {{
                           selectedTransaction
                             ? formatAmount(
-                                selectedTransaction?.payable_amount,
-                                selectedTransaction?.transaction_type
+                                selectedTransaction.amount || selectedTransaction.payable_amount || selectedTransaction.cost,
+                                selectedTransaction.transaction_type?.toLowerCase()
                               )
                             : ""
                         }}
                       </dd>
-                    </div>
-                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Status</dt>
                       <dd class="text-sm text-gray-700 mt-0 col-span-2">
                         <span
@@ -1158,13 +1456,21 @@
                           class="px-2 inline-flex text-sm leading-5 font-medium rounded-full capitalize"
                           :class="{
                             'bg-green-100 text-green-800':
-                              selectedTransaction?.status === 'completed',
+                              (selectedTransaction?.bank_status === 'completed' || selectedTransaction?.status === 'completed' || selectedTransaction?.completed),
                             'bg-yellow-100 text-yellow-800':
-                              selectedTransaction?.status === 'pending',
-                            'bg-red-100 text-red-800': selectedTransaction?.status === 'failed',
+                              (selectedTransaction?.bank_status === 'pending' || selectedTransaction?.status === 'pending' || (!selectedTransaction?.completed && !selectedTransaction?.rejected)),
+                            'bg-red-100 text-red-800': 
+                              (selectedTransaction?.bank_status === 'failed' || selectedTransaction?.bank_status === 'rejected' || 
+                              selectedTransaction?.status === 'failed' || selectedTransaction?.status === 'rejected' || 
+                              selectedTransaction?.rejected)
                           }"
                         >
-                          {{ selectedTransaction?.bank_status }}
+                          {{ 
+                            selectedTransaction?.bank_status || 
+                            selectedTransaction?.status || 
+                            (selectedTransaction?.completed ? 'Completed' : 
+                              (selectedTransaction?.rejected ? 'Rejected' : 'Pending'))
+                          }}
                         </span>
                       </dd>
                     </div>
@@ -1237,6 +1543,7 @@ async function receivedTransactionsFetch() {
 await receivedTransactionsFetch();
 
 const columns = computed(() => {
+  // Always show type, time, amount, status, and action columns
   const baseColumns = [
     {
       key: "type",
@@ -1260,17 +1567,28 @@ const columns = computed(() => {
     },
   ];
 
+  // Add payment method column for deposit/withdraw transactions
+  if (filters.value.type === 'deposit' || filters.value.type === 'withdraw') {
+    baseColumns.splice(3, 0, {
+      key: "method",
+      label: "Method",
+    });
+  }
+
   // Add sender/recipient columns based on active tab
-  if (transactionTab.value === "sent") {
-    baseColumns.splice(1, 0, {
-      key: "recipient",
-      label: "Recipient",
-    });
-  } else {
-    baseColumns.splice(1, 0, {
-      key: "sender",
-      label: "Sender",
-    });
+  // But only if diamond transaction types are not being filtered
+  if (!filters.value.type?.startsWith('diamond_')) {
+    if (transactionTab.value === "sent") {
+      baseColumns.splice(1, 0, {
+        key: "recipient",
+        label: "Recipient",
+      });
+    } else {
+      baseColumns.splice(1, 0, {
+        key: "sender",
+        label: "Sender",
+      });
+    }
   }
 
   return baseColumns;
@@ -1295,24 +1613,75 @@ const filteredTransactions = computed(() => {
     transactionTab.value === "sent" ? statements.value : receivedTransactions.value;
 
   return activeTransactions.filter(transaction => {
-    // Type filter
-    if (filters.value.type && transaction.transaction_type !== filters.value.type) {
-      return false;
+    // Skip transactions without transaction_type
+    if (!transaction.transaction_type) return false;
+    
+    // Group transaction types for filtering
+    const transactionGroup = getTransactionGroup(transaction.transaction_type.toLowerCase());
+    
+    // Handle Type filter (by group)
+    if (filters.value.type) {
+      // For diamond transactions, check if it starts with diamond_
+      if (filters.value.type === 'diamond' && !transaction.transaction_type.toLowerCase().startsWith('diamond_')) {
+        return false;
+      }
+      // For specific diamond transaction types
+      else if (filters.value.type.startsWith('diamond_') && transaction.transaction_type.toLowerCase() !== filters.value.type) {
+        return false;
+      }
+      // For other transaction groups
+      else if (!filters.value.type.startsWith('diamond_') && filters.value.type !== 'diamond' && transactionGroup !== filters.value.type) {
+        return false;
+      }
     }
 
-    // Status filter
-    if (filters.value.status && transaction.bank_status !== filters.value.status) {
-      return false;
+    // Handle Status filter - check multiple status fields
+    if (filters.value.status) {
+      const transactionStatus = transaction.bank_status || 
+                               transaction.status || 
+                               (transaction.completed ? 'completed' : 
+                                 (transaction.rejected ? 'rejected' : 'pending'));
+                                 
+      if (transactionStatus !== filters.value.status) {
+        return false;
+      }
     }
 
-    // Search (in payment method, amount, or transaction type)
+    // Search across all relevant fields
     if (filters.value.search) {
       const searchTerm = filters.value.search.toLowerCase();
+      
+      // Build array of all searchable fields from the transaction
       const searchableFields = [
+        // Payment information
         transaction.payment_method?.toLowerCase() || "",
+        
+        // Amount fields
         transaction.payable_amount?.toString() || "",
+        transaction.amount?.toString() || "",
+        transaction.cost?.toString() || "",
+        
+        // Type and status
         transaction.transaction_type?.toLowerCase() || "",
+        getTransactionTypeName(transaction.transaction_type)?.toLowerCase() || "",
         transaction.bank_status?.toLowerCase() || "",
+        transaction.status?.toLowerCase() || "",
+        
+        // Description and notes
+        transaction.description?.toLowerCase() || "",
+        transaction.notes?.toLowerCase() || "",
+        
+        // Diamond count for diamond transactions
+        (transaction.transaction_type?.toLowerCase().startsWith('diamond_') ? 
+          transaction.diamonds?.toString() + " diamonds" : ""),
+          
+        // User details
+        transaction.user_details?.name?.toLowerCase() || "",
+        transaction.user_details?.email?.toLowerCase() || "",
+        transaction.user_details?.phone?.toLowerCase() || "",
+        transaction.to_user_details?.name?.toLowerCase() || "",
+        transaction.to_user_details?.email?.toLowerCase() || "",
+        transaction.to_user_details?.phone?.toLowerCase() || ""
       ];
 
       if (!searchableFields.some(field => field.includes(searchTerm))) {
@@ -1361,17 +1730,72 @@ function goToPage(page) {
 
 // Format amount with sign and symbol based on transaction type
 function formatAmount(amount, type) {
-  if (type === "deposit") {
-    return `+৳${amount}`;
-  } else if (type === "withdraw" || type === "transfer") {
-    return `-৳${amount}`;
+  // Ensure amount is properly formatted
+  const formattedAmount = amount ? parseFloat(amount).toFixed(2) : "0.00";
+  
+  // Types that increase balance (positive)
+  const positiveTypes = [
+    "deposit", 
+    "diamond_bonus", 
+    "diamond_refund", 
+    "referral_commission", 
+    "diamond_gift_received"
+  ];
+  
+  // Types that decrease balance (negative)
+  const negativeTypes = [
+    "withdraw", 
+    "transfer", 
+    "diamond_purchase", 
+    "diamond_gift", 
+    "pro_subscription", 
+    "order_payment", 
+    "mobile_recharge"
+  ];
+  
+  if (positiveTypes.includes(type)) {
+    return `+৳${formattedAmount}`;
+  } else if (negativeTypes.includes(type)) {
+    return `-৳${formattedAmount}`;
   }
-  return `৳${amount}`;
+  
+  // Default formatting for unknown types
+  return `৳${formattedAmount}`;
 }
 
-// Open transaction details modal
+// Open transaction details modal with enhanced handling for all transaction types
 function openTransactionDetails(transaction) {
-  selectedTransaction.value = transaction;
+  // Create a copy of the transaction to avoid modifying the original
+  const enhancedTransaction = { ...transaction };
+  
+  // Ensure consistent transaction type case for comparison
+  if (enhancedTransaction.transaction_type) {
+    enhancedTransaction.transaction_type = enhancedTransaction.transaction_type.toLowerCase();
+  }
+  
+  // Handle status field consistency
+  const status = enhancedTransaction.bank_status || 
+                enhancedTransaction.status || 
+                (enhancedTransaction.completed ? 'completed' : 
+                  (enhancedTransaction.rejected ? 'rejected' : 'pending'));
+                    enhancedTransaction.bank_status = status;
+    
+  // For diamond transactions, make sure we have a consistent diamond count display
+  if (enhancedTransaction.transaction_type?.startsWith('diamond_')) {
+    // Get diamond count from any available field
+    enhancedTransaction.diamonds = enhancedTransaction.diamonds || 
+                                 parseInt(enhancedTransaction.quantity) || 
+                                 enhancedTransaction.quantity || 
+                                 enhancedTransaction.amount || 
+                                 0;
+    
+    // If payment amount is missing, calculate it from diamonds
+    if (!enhancedTransaction.amount && !enhancedTransaction.payable_amount && !enhancedTransaction.cost) {
+      enhancedTransaction.amount = enhancedTransaction.diamonds * 10; // Assuming 10 BDT per diamond as default
+    }
+  }
+  
+  selectedTransaction.value = enhancedTransaction;
   showDetailsModal.value = true;
 }
 
@@ -1390,14 +1814,32 @@ const transfer = ref({
 
 const transferErrors = ref({});
 
-// Fetch transaction history
+// Fetch transaction history - gets all transaction types
 const getTransactionHistory = async () => {
   try {
     isLoading.value = true;
-    const res = await get(`/user-balance/${user.value.user.email}/`);
-    statements.value = res.data || [];
-    console.log(res.data, "statements");
+    
+    // 1. Get balance transactions (deposits, withdrawals, transfers)
+    const balanceRes = await get(`/user-balance/${user.value.user.email}/`);
+    const balanceData = balanceRes.data || [];
+      // 2. Get diamond transactions
+    const diamondRes = await get(`/diamonds-transactions/`);    const diamondData = (diamondRes.data?.results || diamondRes.data || []).map(item => ({
+      ...item,
+      transaction_type: `diamond_${item.transaction_type}`,
+      payable_amount: item.cost,
+      amount: item.cost,
+      diamonds: item.diamonds || parseInt(item.quantity) || item.amount || 0, // Ensure diamonds count is captured from all possible fields
+      bank_status: item.completed ? 'completed' : (item.rejected ? 'rejected' : 'pending')
+    }));
 
+    // 3. Combine all transactions
+    statements.value = [...balanceData, ...diamondData].sort((a, b) => {
+      const dateA = new Date(a.created_at || a.updated_at);
+      const dateB = new Date(b.created_at || b.updated_at);
+      return dateB - dateA; // Sort by date descending (newest first)
+    });
+    
+    console.log("All transactions:", statements.value);
     currentPage.value = 1;
   } catch (error) {
     toast.add({
@@ -1697,6 +2139,68 @@ onMounted(() => {
 watch(transactionTab, () => {
   currentPage.value = 1;
 });
+
+// Transaction type filter options
+const transactionTypeOptions = [
+  { value: "", label: "All Types" },
+  { value: "deposit", label: "Deposits" },
+  { value: "withdraw", label: "Withdrawals" },
+  { value: "transfer", label: "Transfers" },
+  { value: "diamond", label: "Diamond Transactions" },
+  { value: "mobile_recharge", label: "Mobile Recharges" },
+  { value: "subscription", label: "Subscriptions" },
+  { value: "purchase", label: "Purchases" },
+  { value: "commission", label: "Commissions" },
+  { value: "other", label: "Other" }
+];
+
+// Transaction status filter options
+const transactionStatusOptions = [
+  { value: "", label: "All Statuses" },
+  { value: "completed", label: "Completed" },
+  { value: "pending", label: "Pending" },
+  { value: "rejected", label: "Rejected" }
+];
+
+// Function to get transaction group based on transaction type
+function getTransactionGroup(transactionType) {
+  // Standard transaction types
+  if (["deposit"].includes(transactionType)) return "deposit";
+  if (["withdraw"].includes(transactionType)) return "withdraw";
+  if (["transfer"].includes(transactionType)) return "transfer";
+  
+  // Diamond-related transactions
+  if (transactionType?.startsWith("diamond_")) return "diamond";
+  
+  // Other specific types
+  if (["mobile_recharge"].includes(transactionType)) return "mobile_recharge";
+  if (["pro_subscription"].includes(transactionType)) return "subscription";
+  if (["order_payment"].includes(transactionType)) return "purchase";
+  if (["referral_commission"].includes(transactionType)) return "commission";
+  
+  // Default case
+  return "other";
+}
+
+// Function to get a user-friendly transaction type name
+function getTransactionTypeName(transactionType) {
+  const typeMap = {
+    "deposit": "Deposit",
+    "withdraw": "Withdrawal",
+    "transfer": "Transfer",
+    "diamond_purchase": "Diamond Purchase",
+    "diamond_gift": "Diamond Gift Sent",
+    "diamond_bonus": "Diamond Bonus",
+    "diamond_refund": "Diamond Refund",
+    "diamond_admin": "Diamond Adjustment",
+    "mobile_recharge": "Mobile Recharge",
+    "pro_subscription": "Pro Subscription",
+    "order_payment": "Product Purchase",
+    "referral_commission": "Referral Commission"
+  };
+  
+  return typeMap[transactionType] || transactionType?.replace("_", " ")?.replace(/\b\w/g, l => l.toUpperCase()) || "Other";
+}
 </script>
 
 <style scoped>
