@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.db.models import Count
+from django.db import models
 from business_network.models import SponsorshipPackage, GoldSponsor
 from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializer, GoldSponsorSerializer
 
@@ -39,35 +39,71 @@ class GoldSponsorListView(generics.ListAPIView):
 def gold_sponsor_stats(request):
     """Get Gold Sponsor statistics for sidebar display"""
     try:
-        # Count active sponsors
-        active_count = GoldSponsor.objects.filter(status='active').count()
+        # Check if user is logged in
+        user_sponsors_data = []
+        total_views = 0
         
-        # Get featured sponsors (limit to 3 for sidebar)
-        featured_sponsors = GoldSponsor.objects.filter(
-            status='active', 
-            is_featured=True
-        ).order_by('-created_at')[:3]
+        if request.user.is_authenticated:
+            print(f"DEBUG: User is authenticated: {request.user.username}")
+            
+            # Get the user's sponsors (regardless of status for display in 'My Sponsorships')
+            user_sponsors = GoldSponsor.objects.filter(
+                user=request.user
+            ).order_by('-created_at')
+            
+            print(f"DEBUG: Found {user_sponsors.count()} sponsors for user")
+            for s in user_sponsors:
+                print(f"DEBUG: Sponsor: {s.business_name}, Status: {s.status}")
+            
+            # Count active user sponsors
+            active_count = user_sponsors.filter(status='active').count()
+            print(f"DEBUG: Active sponsors count: {active_count}")
+            
+            # Calculate total views from all active sponsors
+            if active_count > 0:
+                total_views = GoldSponsor.objects.filter(
+                    user=request.user,
+                    status='active'
+                ).aggregate(models.Sum('views'))['views__sum'] or 0
+                print(f"DEBUG: Total views: {total_views}")
+            
+            # Limit to top 5 sponsors for display
+            user_sponsors = user_sponsors[:5]
+            
+            # Serialize user's sponsors
+            for sponsor in user_sponsors:
+                print(f"DEBUG: Processing sponsor: {sponsor.business_name}")
+                
+                # Check if logo exists and is valid
+                logo_url = None
+                if sponsor.logo:
+                    try:
+                        logo_url = sponsor.logo.url
+                        print(f"DEBUG: Logo URL: {logo_url}")
+                    except:
+                        print(f"DEBUG: Error getting logo URL")
+                
+                sponsor_data = {
+                    'id': sponsor.id,
+                    'name': sponsor.business_name,
+                    'image': logo_url,
+                    'website': sponsor.website,
+                    'business_description': sponsor.business_description,
+                    'status': sponsor.status
+                }
+                user_sponsors_data.append(sponsor_data)
+                print(f"DEBUG: Added sponsor data: {sponsor_data}")
+        else:
+            print("DEBUG: User is not authenticated")
+            active_count = 0
         
-        # Serialize featured sponsors for response
-        featured_sponsors_data = []
-        for sponsor in featured_sponsors:
-            featured_sponsors_data.append({
-                'id': sponsor.id,
-                'name': sponsor.business_name,
-                'image': sponsor.logo.url if sponsor.logo else None,
-                'website': sponsor.website,
-                'business_description': sponsor.business_description
-            })
-        
-        # For now, we'll use a mock total views count
-        # In a real implementation, you might track views in a separate model
-        total_views = active_count * 1250  # Mock calculation
-        
-        return Response({
+        response_data = {
             'active_count': active_count,
             'total_views': total_views,
-            'featured_sponsors': featured_sponsors_data
-        })
+            'featured_sponsors': user_sponsors_data
+        }
+        print(f"DEBUG: Sending response: {response_data}")
+        return Response(response_data)
     except Exception as e:
         return Response(
             {'error': 'Failed to fetch sponsor stats'}, 

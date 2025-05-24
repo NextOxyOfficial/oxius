@@ -131,8 +131,7 @@
                   <UIcon name="i-heroicons-information-circle" class="w-3 h-3 ml-0.5 text-gray-400" />
                 </div>
               </div>
-            </div>              
-            <!-- My Sponsorships List -->
+            </div>                <!-- My Sponsorships List -->
             <div v-if="isLoadingSponsors" class="mb-3">
               <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
               <ul class="space-y-1.5">
@@ -142,22 +141,38 @@
                 </li>
               </ul>
             </div>
-            <div v-else-if="featuredSponsors.length > 0" class="mb-3">
+            <div v-else-if="featuredSponsors && featuredSponsors.length > 0" class="mb-3">
               <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
               <ul class="space-y-1.5">
                 <li 
                   v-for="(sponsor, index) in featuredSponsors" 
                   :key="index"
-                  class="flex items-center text-xs"
+                  class="flex items-center justify-between text-xs"
                 >
-                  <div class="h-5 w-5 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0">
-                    <img 
-                      :src="sponsor.image || '/static/frontend/avatar.png'" 
-                      :alt="sponsor.name"
-                      class="h-full w-full object-cover"
-                    />
+                  <div class="flex items-center overflow-hidden">
+                    <div class="h-5 w-5 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0">
+                      <img 
+                        :src="sponsor.image || '/static/frontend/avatar.png'" 
+                        :alt="sponsor.name"
+                        class="h-full w-full object-cover"
+                      />
+                    </div>
+                    <span class="text-gray-700 dark:text-gray-300 truncate" :title="sponsor.name">
+                      {{ sponsor.name }}
+                    </span>
                   </div>
-                  <span class="text-gray-700 dark:text-gray-300 truncate" :title="sponsor.name">{{ sponsor.name }}</span>
+                  <!-- Status badge -->
+                  <span 
+                    class="text-xs px-1.5 py-0.5 rounded-full capitalize"
+                    :class="{
+                      'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': sponsor.status === 'active',
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': sponsor.status === 'pending',
+                      'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': sponsor.status === 'rejected',
+                      'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400': !sponsor.status || sponsor.status === 'inactive'
+                    }"
+                  >
+                    {{ sponsor.status || 'inactive' }}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -469,32 +484,63 @@ async function fetchGoldSponsorsData() {
     isLoadingSponsors.value = true;
     
     // Use the correct API endpoint with the /api prefix
+    console.log("Fetching gold sponsors data...");
     const response = await get("/api/bn/gold-sponsors/stats/");
+    console.log("Full gold sponsors API response:", response);
     
-    if (response.data) {
+    if (response && response.data) {
+      console.log("Gold sponsors API data:", response.data);
+      
       // Update the counts with real values from the API
       goldSponsorsCount.value = response.data.active_count || 0;
+      console.log("Set goldSponsorsCount to:", goldSponsorsCount.value);
+      
       sponsorViews.value = response.data.total_views || 0;
+      console.log("Set sponsorViews to:", sponsorViews.value);
       
       // Update the featured sponsors list if available
       if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {
-        featuredSponsors.value = response.data.featured_sponsors.slice(0, 3); // Take up to 3 sponsors
+        console.log("Featured sponsors from API:", response.data.featured_sponsors);
+        console.log("Number of featured sponsors:", response.data.featured_sponsors.length);
+        
+        // Debug each sponsor
+        response.data.featured_sponsors.forEach((sponsor, index) => {
+          console.log(`Sponsor ${index + 1}:`, {
+            id: sponsor.id,
+            name: sponsor.name,
+            status: sponsor.status,
+            image: sponsor.image,
+          });
+        });
+        
+        featuredSponsors.value = response.data.featured_sponsors;
+        console.log("Updated featuredSponsors.value length:", featuredSponsors.value.length);
+        console.log("After setting, featuredSponsors contains:", JSON.stringify(featuredSponsors.value));
       } else {
+        console.warn("No featured sponsors in response or invalid format", response.data);
+        if (response.data.featured_sponsors) {
+          console.warn("featured_sponsors exists but is not an array:", typeof response.data.featured_sponsors);
+        } else {
+          console.warn("featured_sponsors is missing entirely from response");
+        }
         featuredSponsors.value = []; // Clear the list if no sponsors available
+        console.log("Cleared featuredSponsors, length is now:", featuredSponsors.value.length);
       }
       
       // Log successful fetch for debugging
-      console.log("Gold sponsors data fetched successfully:", {
+      console.log("Gold sponsors data processing complete:", {
         activeCount: goldSponsorsCount.value,
         totalViews: sponsorViews.value,
         featuredSponsors: featuredSponsors.value.length
       });
     } else {
-      console.warn("Unexpected gold sponsors response format:", response.data);
+      console.error("Invalid response format from gold sponsors API:", response);
+      featuredSponsors.value = [];
     }
   } catch (error) {
     console.error("Error fetching gold sponsors data:", error);
     // Keep the default values if the API fails
+    featuredSponsors.value = [];
   } finally {
     isLoadingSponsors.value = false;
   }
