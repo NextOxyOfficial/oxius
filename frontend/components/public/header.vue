@@ -1,11 +1,11 @@
-<template>
-  <div
+<template>  <div
     class="py-3 z-[99999999] bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-black max-w-[1280px] md:mx-auto"
-    :class="
+    :class="[
       isScrolled
         ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-b-lg'
-        : 'sticky'
-    "
+        : 'sticky',
+      'mobile-app-header' // Adding class for mobile app styling
+    ]"
   >
     <!-- Subscription Warnings - Always visible regardless of scroll state -->
     <div class="subscription-warnings relative px-4">
@@ -173,9 +173,7 @@
           </div>
         </div>
       </transition>
-    </div>
-
-    <UContainer>
+    </div>    <UContainer>
       <!-- <PublicDonation /> -->
       <USlideover
         v-model="isOpen"
@@ -296,8 +294,7 @@
             >
               {{ $t("follow_us") }}
             </h3>
-            <div class="flex items-center gap-4">
-              <a
+            <div class="flex items-center gap-4">              <a
                 href="https://www.facebook.com/profile.php?id=61573940373294"
                 target="_blank"
                 class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition"
@@ -305,44 +302,32 @@
               >
                 <UIcon name="i-logos-facebook" class="w-5 h-5" />
               </a>
-              <!-- <a
-                href="#"
-                class="w-10 h-10 rounded-full bg-sky-400 text-white flex items-center justify-center hover:bg-sky-500 transition"
-                aria-label="Twitter"
-              >
-                <UIcon name="i-heroicons-twitter" class="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center hover:bg-pink-600 transition"
-                aria-label="Instagram"
-              >
-                <UIcon name="i-heroicons-instagram" class="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition"
-                aria-label="YouTube"
-              >
-                <UIcon name="i-heroicons-youtube" class="w-5 h-5" />
-              </a> -->
+              
             </div>
           </div>
 
           <!-- Footer Section -->
         </UCard>
       </USlideover>
-      <div class="flex items-center justify-between gap-1.5 lg:gap-6">
-        <div class="block md:hidden">
-          <UButton
-            @click="isOpen = true"
-            icon="i-ci-hamburger-md"
-            variant="outline"
-            color="gray"
-            size="xs"
-          />
+      
+      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3 py-1">        <!-- Mobile Layout: Menu Button and Logo grouped together -->
+        <div class="flex items-center gap-2">
+          <!-- Mobile View - Sidebar Menu Button (only visible on mobile) -->
+          <div class="md:hidden">
+            <UButton
+              @click="isOpen = true"
+              icon="i-ci-hamburger-md"
+              variant="outline"
+              color="gray"
+              size="sm"
+            />
+          </div>
+          
+          <!-- Logo for all screens - positioned next to hamburger on mobile -->
+          <PublicLogo />
         </div>
-        <PublicLogo class="max-sm:mr-auto" />
+        
+        <!-- Desktop Navigation Menu -->
         <div class="hidden md:block">
           <UHorizontalNavigation
             :links="[
@@ -366,7 +351,6 @@
                 to: '/#micro-gigs',
                 icon: 'i-healthicons:money-bag-outline',
               },
-
               {
                 label: $t('mobile_recharge'),
                 to: '/mobile-recharge',
@@ -381,12 +365,27 @@
             }"
           />
         </div>
-        <div v-if="!user" class="flex relative menu-container">
+        
+        <!-- Not Logged In User Section -->
+        <div v-if="!user" class="flex relative menu-container items-center">
+          <!-- Desktop language switcher -->
           <PublicTranslateHandler class="px-2 max-sm:hidden" />
+          
+          <!-- Mobile Profile Icon -->
+          <div class="sm:hidden mr-2">
+            <div 
+              class="size-9 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
+            >
+              <UIcon name="i-heroicons-user" class="size-5 text-gray-500" />
+            </div>
+          </div>
+          
+          <!-- Login Button -->
           <UButton
             to="/auth/login"
             label="Login/Register"
             color="gray"
+            class="max-sm:hidden"
             :ui="{
               size: {
                 sm: 'text-xs md:text-sm',
@@ -404,18 +403,22 @@
           >
           </UButton>
         </div>
-        <div v-else class="flex relative menu-container">
+          <!-- Logged In User Section -->
+        <div v-else class="flex relative menu-container items-center">
+          <!-- Desktop language switcher -->
           <PublicTranslateHandler class="px-2 max-sm:hidden" />
-          <div class="mr-2" v-if="user && user.user">
+          
+          <!-- QR Code Button -->
+          <div class="flex items-center" v-if="user && user.user">
             <UButton
               icon="i-ic:twotone-qr-code-scanner"
               size="md"
               :ui="{
-                size: { md: 'text-xs sm:text-sm' },
+                size: { md: 'text-sm' },
                 padding: { md: 'px-2.5 py-1.5 sm:px-3 sm:py-2' },
               }"
               color="primary"
-              variant="outline"
+              variant="ghost"
               @click="showQr = !showQr"
               block
             />
@@ -435,7 +438,7 @@
                   color="primary"
                   variant="solid"
                   @click="showQr = false"
-                  class="absolute top-1 right-1 rounded-full"
+                  class="absolute top-1 rounded-full"
                 />
 
                 <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
@@ -448,12 +451,57 @@
                 </div>
               </div>
             </UModal>
+          </div>          
+          <!-- Mobile User Profile Avatar -->
+          <div 
+            @click="openMenu = !openMenu"
+            class="sm:hidden relative cursor-pointer"
+          >
+            <div class="relative">
+              <!-- User profile image (if exists) or fallback icon -->
+              <div 
+                class="size-10 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm"
+              >
+                <img 
+                  v-if="user?.user?.image"
+                  :src="user.user.image"
+                  :alt="user.user.name || user.user.first_name"
+                  class="size-full object-cover"
+                />
+                <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500" />
+              </div>
+              
+              <!-- Pro Badge for mobile -->
+              <span
+                v-if="user?.user?.is_pro"
+                class="absolute -top-1 -right-1 size-5 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
+              >
+                <UIcon
+                  name="i-heroicons-shield-check"
+                  class="size-3 text-white"
+                />
+              </span>
+              
+              <!-- Verification Badge for mobile -->
+              <span
+                v-if="user?.user?.kyc"
+                class="absolute -bottom-1 -right-1 size-5 flex items-center justify-center bg-white rounded-full shadow-sm"
+              >
+                <UIcon
+                  name="mdi:check-decagram"
+                  class="size-4 text-blue-600"
+                />
+              </span>
+            </div>
           </div>
+          
+          <!-- Desktop User Profile Button -->
           <UButton
             size="sm"
             color="primary"
             variant="outline"
             @click="openMenu = !openMenu"
+            class="max-sm:hidden"
             :ui="{
               gap: {
                 sm: 'gap-x-1 md:gap-x-1.5',
@@ -1071,6 +1119,27 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Mobile app specific styling for the header */
+@media (max-width: 640px) {
+  .mobile-app-header {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .mobile-app-header .menu-container {
+    gap: 8px;
+  }
+  
+  /* App-like native styling */
+  .mobile-app-header .flex {
+    justify-content: space-between;
+  }
+  
+  /* Make the logo slightly smaller on mobile for better spacing */
+  .mobile-app-header .public-logo img {
+    max-height: 34px;
+  }
+}
 /* Add this style if you want to animate the transition */
 .fixed {
   animation: slideDown 0.3s ease-in-out;
