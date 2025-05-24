@@ -3,6 +3,7 @@
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
+import uuid  # Add import for UUID
 
 
 def assign_default_user_to_sponsors(apps, schema_editor):
@@ -10,18 +11,29 @@ def assign_default_user_to_sponsors(apps, schema_editor):
     GoldSponsor = apps.get_model('business_network', 'GoldSponsor')
     User = apps.get_model('base', 'User')  # Changed from 'auth' to 'base'
     
-    # Get or create a default admin user
-    admin_user, created = User.objects.get_or_create(
-        username='admin',
-        defaults={
-            'email': 'admin@example.com',
-            'is_staff': True,
-            'is_superuser': True,
-        }
-    )
-    
-    # Assign the admin user to all existing sponsors that don't have a user
-    GoldSponsor.objects.filter(user__isnull=True).update(user=admin_user)
+    # Check if there are any GoldSponsors that need a user assignment
+    if GoldSponsor.objects.filter(user__isnull=True).exists():
+        # First try to find an existing admin user
+        try:
+            admin_user = User.objects.get(is_superuser=True)
+        except User.DoesNotExist:
+            try:
+                # Try to get any user
+                admin_user = User.objects.first()
+            except User.DoesNotExist:
+                # If no users exist, create one with unique values
+                unique_phone = f'admin-{uuid.uuid4().hex[:8]}'
+                unique_email = f'admin-{uuid.uuid4().hex[:8]}@example.com'
+                
+                admin_user = User.objects.create(
+                    username='admin',
+                    email=unique_email,
+                    is_staff=True,
+                    is_superuser=True,
+                    phone=unique_phone,                )
+        
+        # Assign the admin user to all existing sponsors that don't have a user
+        GoldSponsor.objects.filter(user__isnull=True).update(user=admin_user)
 
 
 def reverse_assign_user(apps, schema_editor):
