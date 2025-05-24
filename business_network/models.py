@@ -598,6 +598,9 @@ class GoldSponsor(models.Model):
         ('rejected', 'Rejected'),
     )
     
+    # Ownership field
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gold_sponsors')
+    
     business_name = models.CharField(max_length=255)
     business_description = models.TextField(max_length=500)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
@@ -611,6 +614,9 @@ class GoldSponsor(models.Model):
     package = models.ForeignKey(SponsorshipPackage, on_delete=models.PROTECT, related_name='sponsors')
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(blank=True, null=True)
+    
+    # Views tracking
+    views = models.PositiveIntegerField(default=0)
     
     # Status and timestamps
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -638,8 +644,61 @@ class GoldSponsor(models.Model):
         if not self.end_date and self.package:
             from datetime import timedelta
             self.end_date = self.start_date + timedelta(days=30 * self.package.duration_months)
+        
+        # Handle payment deduction for new sponsorships
+        if not self.pk and self.user and self.package:  # Only for new instances
+            if self.user.balance < self.package.price:
+                from django.core.exceptions import ValidationError
+                raise ValidationError(f"Insufficient balance. You need ৳{self.package.price} but have ৳{self.user.balance}")
+            
+            # Deduct money from user's balance
+            self.user.balance -= self.package.price
+            self.user.save()
             
         super().save(*args, **kwargs)
     
+    def increment_views(self):
+        """Increment views count"""
+        self.views += 1
+        self.save(update_fields=['views'])
+    
+    def is_active(self):
+        """Check if sponsorship is currently active"""
+        return self.status == 'active' and self.end_date > timezone.now()
+    
+    def days_remaining(self):
+        """Get days remaining for the sponsorship"""
+        if self.end_date:
+            remaining = self.end_date - timezone.now()
+            return max(0, remaining.days)
+        return 0
+    
     def __str__(self):
         return self.business_name
+
+
+def sponsor_banner_path(instance, filename):
+    """Generate a unique path for uploading sponsor banners"""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('business_network/gold_sponsors/banners', filename)
+
+
+class GoldSponsorBanner(models.Model):
+    """Model for gold sponsor banners"""
+    sponsor = models.ForeignKey(GoldSponsor, on_delete=models.CASCADE, related_name='banners')
+    title = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ImageField(upload_to=sponsor_banner_path)
+    link_url = models.URLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Gold Sponsor Banner"
+        verbose_name_plural = "Gold Sponsor Banners"
+        ordering = ['order', '-created_at']
+    
+    def __str__(self):
+        return f"Banner for {self.sponsor.business_name}"

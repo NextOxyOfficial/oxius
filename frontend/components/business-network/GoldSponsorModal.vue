@@ -27,9 +27,8 @@
               <div class="absolute inset-0 bg-amber-500 rotate-45 transform origin-top-left"></div>
               <div class="absolute bottom-0 right-0 w-20 h-20 rounded-full bg-yellow-300 -mb-10 -mr-10"></div>
               <div class="absolute top-5 right-10 text-4xl text-white opacity-50">✦</div>
-            </div>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <h2 class="text-2xl font-bold text-white">Become a Gold Sponsor</h2>
+            </div>            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-2xl font-bold text-white">{{ isEditMode ? 'Edit Gold Sponsor' : 'Become a Gold Sponsor' }}</h2>
             </div>
           </div>
           
@@ -140,11 +139,85 @@
                       accept="image/png,image/jpeg,image/jpg,image/svg+xml" 
                       class="hidden"
                     />
-                  </div>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Recommended: 250x250px, PNG or JPG</p>
+                  </div>                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Recommended: 250x250px, PNG or JPG</p>
                 </div>
-                  <!-- Sponsorship package selection -->
+
+                <!-- Banner Upload Section -->
                 <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Promotional Banners (Optional)</label>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Upload banners to showcase your business. These will be displayed in your sponsor details.</p>
+                  
+                  <!-- Banner List -->
+                  <div v-if="banners.length > 0" class="space-y-3 mb-3">
+                    <div v-for="(banner, index) in banners" :key="banner.id" class="border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+                      <div class="flex items-start space-x-3">
+                        <!-- Banner Preview -->
+                        <div class="relative h-16 w-24 rounded border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                          <img v-if="banner.imagePreview" :src="banner.imagePreview" alt="Banner preview" class="h-full w-full object-cover" />
+                          <div v-else class="h-full w-full flex items-center justify-center text-gray-400">
+                            <UIcon name="i-heroicons-photo" class="h-6 w-6" />
+                          </div>
+                        </div>
+                        
+                        <!-- Banner Details -->
+                        <div class="flex-1 space-y-2">
+                          <div>
+                            <input 
+                              v-model="banner.title" 
+                              type="text" 
+                              placeholder="Banner title (optional)" 
+                              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
+                            />
+                          </div>
+                          <div>
+                            <input 
+                              v-model="banner.link_url" 
+                              type="url" 
+                              placeholder="Link URL (optional)" 
+                              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
+                            />
+                          </div>
+                          <div class="flex items-center space-x-2">
+                            <label 
+                              :for="`bannerFile-${index}`" 
+                              class="cursor-pointer px-2 py-1 text-xs bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300"
+                            >
+                              Choose Image
+                            </label>
+                            <input 
+                              :id="`bannerFile-${index}`"
+                              type="file" 
+                              @change="handleBannerUpload($event, index)" 
+                              accept="image/png,image/jpeg,image/jpg" 
+                              class="hidden"
+                            />
+                            <button 
+                              type="button" 
+                              @click="removeBanner(index)"
+                              class="px-2 py-1 text-xs text-red-600 hover:text-red-700 border border-red-300 rounded hover:bg-red-50"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Add Banner Button -->
+                  <button 
+                    v-if="banners.length < maxBanners"
+                    type="button" 
+                    @click="addBanner"
+                    class="w-full py-2 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:border-amber-400 hover:text-amber-600 focus:outline-none focus:border-amber-500"
+                  >
+                    <UIcon name="i-heroicons-plus" class="inline h-4 w-4 mr-1" />
+                    Add Banner ({{ banners.length }}/{{ maxBanners }})
+                  </button>
+                  
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Recommended: 800x400px, PNG or JPG. Max {{ maxBanners }} banners.</p>
+                </div>                  <!-- Sponsorship package selection -->
+                <div v-if="!isEditMode">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Sponsorship Package</label>
                   
                   <!-- Loading packages -->
@@ -188,29 +261,28 @@
               <div v-if="submitError && !submitSuccess" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p class="text-sm text-red-600">{{ submitError }}</p>
               </div>
-              
-              <!-- Success message -->
+                <!-- Success message -->
               <div v-if="submitSuccess" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-sm text-green-600">✓ Your Gold Sponsor application has been submitted successfully!</p>
+                <p class="text-sm text-green-600">✓ {{ isEditMode ? 'Your Gold Sponsor has been updated successfully!' : 'Your Gold Sponsor application has been submitted successfully!' }}</p>
               </div>
                 <!-- Submit buttons -->
               <div class="mt-5">
                 <button 
                   type="submit" 
                   class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="isSubmitting || isLoadingPackages"
+                  :disabled="isSubmitting || (isLoadingPackages && !isEditMode)"
                 >
                   <span v-if="isSubmitting" class="flex items-center justify-center">
                     <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Submitting...
+                    {{ isEditMode ? 'Updating...' : 'Submitting...' }}
                   </span>
-                  <span v-else>Submit Application</span>
+                  <span v-else>{{ isEditMode ? 'Update Sponsor' : 'Submit Application' }}</span>
                 </button>
                   <!-- Alternative submission method if regular method fails and not already successful -->
-                <div v-if="submitError && !submitSuccess" class="mt-3">
+                <div v-if="submitError && !submitSuccess && !isEditMode" class="mt-3">
                   <button 
                     type="button" 
                     @click.prevent="submitFormDirectFetch"
@@ -237,20 +309,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useApi } from '~/composables/useApi'
 
 const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  editSponsor: {
+    type: Object,
+    default: null
   }
 });
 
 // Import useApi composable
-const { get, post } = useApi();
+const { get, post, put } = useApi();
 
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(['close', 'sponsor-created', 'sponsor-updated']);
+
+// Check if we're in edit mode
+const isEditMode = computed(() => !!props.editSponsor);
 
 // Form data
 const form = ref({
@@ -261,13 +340,61 @@ const form = ref({
   website: '',
   profileUrl: '',
   selectedPackage: 1,
-  logo: null
+  logo: null,
+  banners: []
 });
 
 // Logo handling
 const logoFileInput = ref(null);
 const logoPreview = ref(null);
 const logoFilename = ref('');
+
+// Banner handling
+const banners = ref([]);
+const maxBanners = 5;
+
+// Watch for editSponsor changes to populate form
+watch(() => props.editSponsor, (sponsor) => {
+  if (sponsor) {
+    populateFormForEdit(sponsor);
+  } else {
+    resetForm();
+  }
+}, { immediate: true });
+
+// Populate form for editing
+const populateFormForEdit = (sponsor) => {
+  form.value = {
+    businessName: sponsor.business_name || '',
+    businessDescription: sponsor.business_description || '',
+    contactEmail: sponsor.contact_email || '',
+    phoneNumber: sponsor.phone_number || '',
+    website: sponsor.website || '',
+    profileUrl: sponsor.profile_url || '',
+    selectedPackage: sponsor.package?.id || 1,
+    logo: null // Don't pre-populate file input
+  };
+  
+  // Set logo preview if exists
+  if (sponsor.logo) {
+    logoPreview.value = sponsor.logo;
+    logoFilename.value = 'Current logo';
+  }
+  
+  // Populate banners if they exist
+  if (sponsor.banners && Array.isArray(sponsor.banners)) {
+    banners.value = sponsor.banners.map(banner => ({
+      id: banner.id || Date.now() + Math.random(),
+      title: banner.title || '',
+      image: null, // Don't pre-populate file input
+      imagePreview: banner.image || null,
+      link_url: banner.link_url || '',
+      order: banner.order || 1,
+      is_active: banner.is_active !== false,
+      existingId: banner.id // Track existing banner ID for updates
+    }));
+  }
+};
 
 // Function to handle logo upload
 const handleLogoUpload = (event) => {
@@ -281,6 +408,44 @@ const handleLogoUpload = (event) => {
   const reader = new FileReader();
   reader.onload = (e) => {
     logoPreview.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// Banner functions
+const addBanner = () => {
+  if (banners.value.length < maxBanners) {
+    banners.value.push({
+      id: Date.now(),
+      title: '',
+      image: null,
+      imagePreview: null,
+      link_url: '',
+      order: banners.value.length + 1,
+      is_active: true
+    });
+  }
+};
+
+const removeBanner = (index) => {
+  banners.value.splice(index, 1);
+  // Update order for remaining banners
+  banners.value.forEach((banner, idx) => {
+    banner.order = idx + 1;
+  });
+};
+
+const handleBannerUpload = (event, index) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const banner = banners.value[index];
+  banner.image = file;
+  
+  // Create preview URL
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    banner.imagePreview = e.target.result;
   };
   reader.readAsDataURL(file);
 };
@@ -603,6 +768,7 @@ const resetForm = () => {
   };
   logoPreview.value = null;
   logoFilename.value = '';
+  banners.value = [];
   
   // Reset file input
   if (logoFileInput.value) {
@@ -635,7 +801,9 @@ const submitForm = async () => {
     website: form.value.website,
     profileUrl: form.value.profileUrl,
     selectedPackage: form.value.selectedPackage,
-    hasLogo: !!form.value.logo
+    hasLogo: !!form.value.logo,
+    bannersCount: banners.value.length,
+    isEditMode: isEditMode.value
   });
   
   try {
@@ -667,28 +835,54 @@ const submitForm = async () => {
       );
     }
     
-    // Ensure package_id is properly added as a number
-    formData.append('package_id', parseInt(form.value.selectedPackage, 10));
+    // Only add package_id for new sponsors (not for edits)
+    if (!isEditMode.value) {
+      formData.append('package_id', parseInt(form.value.selectedPackage, 10));
+    }
     
     if (form.value.logo) {
       formData.append('logo', form.value.logo);
     }
 
-    // First try CSRF-protected request with credentials
-    console.log('Trying with fetch API and credentials');
+    // Add banner data
+    banners.value.forEach((banner, index) => {
+      if (banner.title) {
+        formData.append(`banners[${index}][title]`, banner.title);
+      }
+      if (banner.link_url) {
+        formData.append(`banners[${index}][link_url]`, banner.link_url);
+      }
+      if (banner.image) {
+        formData.append(`banners[${index}][image]`, banner.image);
+      }
+      formData.append(`banners[${index}][order]`, banner.order);
+      formData.append(`banners[${index}][is_active]`, banner.is_active);
+      if (banner.existingId) {
+        formData.append(`banners[${index}][id]`, banner.existingId);
+      }
+    });
+
+    // Determine endpoint based on mode
+    const endpoint = isEditMode.value 
+      ? `/bn/gold-sponsors/update/${props.editSponsor.id}/`
+      : '/bn/gold-sponsors/apply/';
+    
+    const method = isEditMode.value ? 'PUT' : 'POST';
+    
+    console.log(`${isEditMode.value ? 'Updating' : 'Creating'} sponsor with endpoint:`, endpoint);
     
     // Debug formData entries
     console.log('FormData entries:');
     for(let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + (pair[0] === 'logo' ? 'File object' : pair[1]));
+      console.log(pair[0] + ': ' + (pair[0].includes('image') || pair[0] === 'logo' ? 'File object' : pair[1]));
     }
     
     let responseData;
     
     try {
       // Using fetch with credentials
-      const response = await fetch('/api/bn/gold-sponsors/apply/', {
-        method: 'POST',
+      const response = await fetch(`/api${endpoint}`, {
+        method: method,
         body: formData,
         credentials: 'include',
         headers: {
@@ -735,7 +929,8 @@ const submitForm = async () => {
       console.log('Trying with useApi as fallback');
       
       // Try useApi as fallback
-      const apiResponse = await post('/bn/gold-sponsors/apply/', formData);
+      const apiMethod = isEditMode.value ? put : post;
+      const apiResponse = await apiMethod(endpoint, formData);
       
       if (apiResponse.error) {
         throw new Error(apiResponse.error.message || JSON.stringify(apiResponse.error));
@@ -756,14 +951,18 @@ const submitForm = async () => {
     }
     
     // If we've reached this point, the submission was successful
-    console.log('Submission successful, response data:', responseData);
+    console.log(`${isEditMode.value ? 'Update' : 'Creation'} successful, response data:`, responseData);
     
     // IMPORTANT: Clear any previous error to prevent showing both error and success
     submitError.value = '';
     submitSuccess.value = true;
     
-    // Emit the submit event with the response data
-    emit('submit', responseData);
+    // Emit the appropriate event with the response data
+    if (isEditMode.value) {
+      emit('sponsor-updated', responseData);
+    } else {
+      emit('sponsor-created', responseData);
+    }
     
     // Reset form after successful submission
     resetForm();
@@ -774,7 +973,7 @@ const submitForm = async () => {
     }, 2000);
     
   } catch (error) {
-    console.error('Error submitting gold sponsor application:', error);
+    console.error(`Error ${isEditMode.value ? 'updating' : 'creating'} gold sponsor:`, error);
     
     // Detailed error logging
     console.log('Error object:', {
@@ -822,11 +1021,13 @@ const submitForm = async () => {
       console.log('Error data:', error.data);
       submitError.value = typeof error.data === 'string' ? error.data : JSON.stringify(error.data);
     } else {
-      submitError.value = error.message || 'Failed to submit application. Please try again.';
+      submitError.value = error.message || `Failed to ${isEditMode.value ? 'update' : 'submit'} application. Please try again.`;
     }
     
     // If the primary submission method failed, suggest using the alternative method
-    submitError.value += '\n\nPlease try the alternative submission method below.';
+    if (!isEditMode.value) {
+      submitError.value += '\n\nPlease try the alternative submission method below.';
+    }
   } finally {
     isSubmitting.value = false;
   }

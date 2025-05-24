@@ -247,7 +247,7 @@ import { useApi } from '~/composables/useApi';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-const { get } = useApi();
+const { get, post } = useApi();
 
 // Sample data (will be replaced with API call)
 const sponsors = ref([]);
@@ -259,16 +259,32 @@ const showModal = ref(false);
 const selectedSponsor = ref(null);
 
 // Placeholder banners for the slider (would come from API in real implementation)
-const sponsorBanners = ref([
-  'https://placehold.co/1200x400/fff5e0/ffa500?text=Banner+1',
-  'https://placehold.co/1200x400/fff8e7/ffb700?text=Banner+2',
-  'https://placehold.co/1200x400/fffaf0/ffc800?text=Banner+3',
-]);
+const sponsorBanners = ref([]);
 
 // Open sponsor modal
-function openSponsorModal(sponsor) {
+async function openSponsorModal(sponsor) {
   selectedSponsor.value = sponsor;
   showModal.value = true;
+  
+  // Increment sponsor views when modal is opened
+  try {
+    await incrementSponsorViews(sponsor.id);
+  } catch (error) {
+    console.error('Failed to increment sponsor views:', error);
+  }
+  
+  // Fetch sponsor banners
+  try {
+    await fetchSponsorBanners(sponsor.id);
+  } catch (error) {
+    console.error('Failed to fetch sponsor banners:', error);
+    // Use placeholder banners if fetch fails
+    sponsorBanners.value = [
+      'https://placehold.co/1200x400/fff5e0/ffa500?text=Banner+1',
+      'https://placehold.co/1200x400/fff8e7/ffb700?text=Banner+2',
+      'https://placehold.co/1200x400/fffaf0/ffc800?text=Banner+3',
+    ];
+  }
   
   // Initialize swiper in the next tick after DOM update
   setTimeout(() => {
@@ -353,6 +369,47 @@ async function fetchGoldSponsors() {
     
     // Fallback to empty array instead of dummy data
     sponsors.value = [];
+  }
+}
+
+// Increment sponsor views
+async function incrementSponsorViews(sponsorId) {
+  try {
+    const result = await post(`/bn/gold-sponsors/increment-views/${sponsorId}/`, {});
+    if (result.error) {
+      console.error('Error incrementing sponsor views:', result.error);
+    }
+  } catch (error) {
+    console.error('Error incrementing sponsor views:', error);
+  }
+}
+
+// Fetch sponsor banners
+async function fetchSponsorBanners(sponsorId) {
+  try {
+    const result = await get(`/bn/gold-sponsors/${sponsorId}/banners/`);
+    if (result.error) {
+      console.error('Error fetching sponsor banners:', result.error);
+      sponsorBanners.value = [];
+    } else if (result.data && Array.isArray(result.data)) {
+      // Map banner data to image URLs
+      sponsorBanners.value = result.data
+        .filter(banner => banner.is_active && banner.image)
+        .sort((a, b) => a.order - b.order)
+        .map(banner => banner.image);
+      
+      // If no banners, use placeholder
+      if (sponsorBanners.value.length === 0) {
+        sponsorBanners.value = [
+          'https://placehold.co/1200x400/fff5e0/ffa500?text=No+Banners+Available'
+        ];
+      }
+    } else {
+      sponsorBanners.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching sponsor banners:', error);
+    sponsorBanners.value = [];
   }
 }
 

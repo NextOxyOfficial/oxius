@@ -38,15 +38,24 @@ class SponsorshipPackageAdmin(admin.ModelAdmin):
         }),
     )
 
+class GoldSponsorBannerInline(admin.TabularInline):
+    model = GoldSponsorBanner
+    extra = 1
+    fields = ['title', 'image', 'link_url', 'order', 'is_active']
+
 @admin.register(GoldSponsor)
 class GoldSponsorAdmin(admin.ModelAdmin):
-    list_display = ['business_name', 'contact_email', 'package', 'status', 'is_featured', 'start_date', 'end_date']
-    list_filter = ['status', 'is_featured', 'package', 'created_at']
-    search_fields = ['business_name', 'contact_email', 'phone_number']
+    list_display = ['business_name', 'user', 'contact_email', 'package', 'status', 'views', 'is_featured', 'start_date', 'end_date']
+    list_filter = ['status', 'is_featured', 'package', 'created_at', 'user']
+    search_fields = ['business_name', 'contact_email', 'phone_number', 'user__username', 'user__email']
     ordering = ['-created_at']
-    readonly_fields = ['slug', 'created_at', 'updated_at']
+    readonly_fields = ['slug', 'views', 'created_at', 'updated_at']
+    inlines = [GoldSponsorBannerInline]
     
     fieldsets = (
+        ('Owner Information', {
+            'fields': ('user',)
+        }),
         ('Business Information', {
             'fields': ('business_name', 'business_description', 'slug', 'logo')
         }),
@@ -55,6 +64,10 @@ class GoldSponsorAdmin(admin.ModelAdmin):
         }),
         ('Sponsorship Details', {
             'fields': ('package', 'start_date', 'end_date', 'status', 'is_featured')
+        }),
+        ('Analytics', {
+            'fields': ('views',),
+            'classes': ('collapse',)
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -83,4 +96,11 @@ class GoldSponsorAdmin(admin.ModelAdmin):
         updated = queryset.update(is_featured=False)
         self.message_user(request, f'{updated} sponsors unfeatured.')
     unfeature_sponsors.short_description = "Unfeature selected sponsors"
+
+@admin.register(GoldSponsorBanner)
+class GoldSponsorBannerAdmin(admin.ModelAdmin):
+    list_display = ['sponsor', 'title', 'order', 'is_active', 'created_at']
+    list_filter = ['is_active', 'sponsor']
+    search_fields = ['title', 'sponsor__business_name']
+    ordering = ['sponsor', 'order']
 
