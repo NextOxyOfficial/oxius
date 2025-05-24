@@ -21,7 +21,7 @@
             <UIcon
               :name="post.post_likes?.find((like) => like.user === user?.user?.id) ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
               :class="[
-                'size-5 transition-colors',
+                'size-6 transition-colors',
                 post.post_likes?.find((like) => like.user === user?.user?.id)
                   ? 'text-rose-500 dark:text-rose-400'
                   : 'text-gray-500 dark:text-gray-500 group-hover:text-rose-500 dark:group-hover:text-rose-400',
@@ -33,7 +33,7 @@
         <!-- Like counter (small) -->
         <span 
           @click="$emit('open-likes-modal', post)" 
-          class="text-base ml-1 text-gray-500 dark:text-gray-500 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
+          class="text-base font-medium ml-1 text-gray-500 dark:text-gray-500 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
         >
           {{ formatCount(post?.post_likes?.length || 0) }}
         </span>
@@ -47,7 +47,7 @@
         ><div class="relative">
             <UIcon
               name="i-heroicons-chat-bubble-oval-left"
-              class="size-5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+              class="size-6 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
             />
           </div>
         </button>
@@ -59,10 +59,11 @@
         >
           {{ formatCount(post?.post_comments?.length || 0) }}
         </span>
-      </div>      <!-- Share button (icon only) -->
+      </div>      
+      <!-- Share button (icon only) -->
       <div class="flex items-center group">
         <button
-          class="p-1.5 pt-3 rounded-full transition-colors"
+          class="p-1.5 pt-4 rounded-full transition-colors"
           @click="$emit('share-post', post)"
           title="Share"
         >

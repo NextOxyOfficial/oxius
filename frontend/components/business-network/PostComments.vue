@@ -261,7 +261,7 @@
               <!-- Regular comment -->
               <p
                 v-else
-                class="text-base sm:text-sm text-gray-700 dark:text-gray-300"
+                class="text-base font-medium text-gray-700 dark:text-gray-300"
                 style="word-break: break-word"
               >
                 {{ comment?.content }}

@@ -3,8 +3,8 @@
     class="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-white/95 via-slate-50/95 to-white/95 backdrop-blur-lg border-t border-slate-200/40 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2"
   >
     <div class="absolute inset-0 bg-grid opacity-[0.015] pointer-events-none"></div>
-    
-    <div v-if="user?.user?.id" class="flex justify-between items-center px-2">
+      <div v-if="user?.user?.id" class="flex justify-between items-center px-2">
+      <!-- Recent -->
       <NuxtLink
         to="/business-network"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -29,6 +29,7 @@
         <span class="font-medium tracking-wide">Recent</span>
       </NuxtLink>
       
+      <!-- Notifications -->
       <NuxtLink
         to="/business-network/notifications"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -46,7 +47,8 @@
             />
             <div v-if="$route.path === '/business-network/notifications'" class="icon-gradient-red"></div>
             <div class="icon-reflection"></div>
-          </div>          <span
+          </div>
+          <span
             v-if="unreadCount > 0"
             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse z-10"
           >
@@ -56,6 +58,23 @@
         <span class="font-medium tracking-wide">Notifications</span>
       </NuxtLink>
       
+      <!-- Create Post Button (center) -->
+      <button
+        @click="handleCreatePostClick"
+        class="flex flex-col items-center relative group transition-all duration-300"
+      >
+        <div class="relative">
+          <div class="create-post-button">
+            <div class="create-post-icon">
+              <Plus class="h-7 w-7 text-white font-bold" />
+            </div>
+            <div class="create-post-backdrop"></div>
+          </div>
+        </div>
+        <span class="font-medium tracking-wide text-xs text-blue-600 mt-1">Create</span>
+      </button>
+      
+      <!-- Profile -->
       <NuxtLink
         :to="`/business-network/profile/${user?.user?.id}`"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -79,6 +98,7 @@
         <span class="font-medium tracking-wide">Profile</span>
       </NuxtLink>
       
+      <!-- Adsy Club -->
       <NuxtLink
         to="/"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -98,33 +118,12 @@
             <div class="icon-reflection"></div>
           </div>
         </div>
-        <span class="font-medium tracking-wide">Adsy Club</span>
-      </NuxtLink>
-      
-      <NuxtLink
-        to="/adsy-news"
-        class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
-        :class="
-          $route.path === '/adsy-news'
-            ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
-        "
-      >
-        <div class="relative">
-          <div class="icon-wrapper">
-            <Newspaper
-              class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/adsy-news' ? 'text-orange-500' : 'text-gray-500'"
-            />
-            <div v-if="$route.path === '/adsy-news'" class="icon-gradient-orange"></div>
-            <div class="icon-reflection"></div>
-          </div>
-        </div>
-        <span class="font-medium tracking-wide">Adsy News</span>
+        <span class="font-medium tracking-wide">AdsyClub</span>
       </NuxtLink>
     </div>
-    
-    <div v-else class="flex justify-between items-center">
+      <!-- Footer for non-logged in users -->
+    <div v-else class="flex justify-between items-center px-2">
+      <!-- Recent -->
       <NuxtLink
         to="/business-network"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -147,6 +146,7 @@
         <span class="font-medium tracking-wide">Recent</span>
       </NuxtLink>
       
+      <!-- Login -->
       <NuxtLink
         to="/auth/login"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -158,8 +158,7 @@
       >
         <div class="relative">
           <div class="icon-wrapper">
-            <UIcon
-              name="i-ic-sharp-person"
+            <User
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
               :class="$route.path === '/auth/login' ? 'text-purple-500' : 'text-gray-500'"
             />
@@ -170,6 +169,19 @@
         <span class="font-medium tracking-wide">Login</span>
       </NuxtLink>
       
+      <!-- Center element - just a placeholder for non-logged in users -->
+      <div class="flex flex-col items-center py-2 px-1.5 opacity-50">
+        <div class="relative">
+          <div class="icon-wrapper">
+            <Plus
+              class="h-6 w-6 mb-1 text-gray-300"
+            />
+          </div>
+        </div>
+        <span class="font-medium tracking-wide text-xs text-gray-300">Create</span>
+      </div>
+      
+      <!-- Earn -->
       <NuxtLink
         to="/#micro-gigs"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -193,6 +205,7 @@
         <span class="font-medium tracking-wide">Earn</span>
       </NuxtLink>
       
+      <!-- Adsy Club -->
       <NuxtLink
         to="/"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -212,29 +225,7 @@
             <div class="icon-reflection"></div>
           </div>
         </div>
-        <span class="font-medium tracking-wide">Adsy Club</span>
-      </NuxtLink>
-      
-      <NuxtLink
-        to="/adsy-news"
-        class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
-        :class="
-          $route.path === '/adsy-news'
-            ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
-        "
-      >
-        <div class="relative">
-          <div class="icon-wrapper">
-            <Newspaper
-              class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/adsy-news' ? 'text-orange-500' : 'text-gray-500'"
-            />
-            <div v-if="$route.path === '/adsy-news'" class="icon-gradient-orange"></div>
-            <div class="icon-reflection"></div>
-          </div>
-        </div>
-        <span class="font-medium tracking-wide">Adsy News</span>
+        <span class="font-medium tracking-wide">AdsyClub</span>
       </NuxtLink>
     </div>
   </div>
@@ -249,6 +240,7 @@ import {
   Home,
   Newspaper,
   User,
+  Plus,
 } from "lucide-vue-next";
 
 const { user } = useAuth();
@@ -275,6 +267,13 @@ function handleProfileClick() {
   // Emit loading event for Profile menu
   eventBus.emit('start-loading-profile');
   console.log('Emitted start-loading-profile event from footer');
+}
+
+// Handle Create Post button click
+function handleCreatePostClick() {
+  const createPostEventBus = useEventBus('create-post-event');
+  createPostEventBus.emit("open-create-post-modal");
+  console.log('Emitted open-create-post-modal event from footer');
 }
 </script>
 
@@ -424,5 +423,71 @@ function handleProfileClick() {
 
 .animate-pulse-slow {
   animation: pulse-slow 2s ease-in-out infinite;
+}
+
+/* Create Post Button Styles */
+.create-post-button {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 4px;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.create-post-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+  transition: all 0.3s ease;
+}
+
+.create-post-button:hover .create-post-icon {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
+}
+
+.create-post-button:active .create-post-icon {
+  transform: scale(0.95);
+}
+
+.create-post-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(219, 234, 254, 0.2);
+  filter: blur(8px);
+  z-index: 1;
+  transform: scale(0.7);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.create-post-button:hover .create-post-backdrop {
+  transform: scale(1.2);
+  opacity: 0.6;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
 }
 </style>

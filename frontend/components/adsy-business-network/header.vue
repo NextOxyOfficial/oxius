@@ -1,6 +1,6 @@
 <template>
   <div class="fixed top-0 left-0 right-0 z-[9999999999999] w-full mx-auto">
-    <header class="backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-sm">
+    <header class="backdrop-blur-sm bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-gray-900/95">
       <div class="max-w-5xl mx-auto px-4">
         <div
           class="flex items-center justify-between py-2 bg-gray-100/40"
