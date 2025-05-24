@@ -66,6 +66,7 @@
           v-for="(sponsor, index) in sponsors.slice(0, 3)" 
           :key="'mobile-' + index"
           class="sponsor-item md:hidden"
+          :data-sponsor-id="sponsor.id"
         >
           <div 
             class="block p-2 cursor-pointer"
@@ -95,12 +96,12 @@
               </h4>
             </div>
           </div>
-        </div>        
-        <!-- Desktop View (5 sponsors) -->
+        </div>          <!-- Desktop View (5 sponsors) -->
         <div 
           v-for="(sponsor, index) in sponsors.slice(0, 5)" 
           :key="'desktop-' + index"
           class="sponsor-item hidden md:block"
+          :data-sponsor-id="sponsor.id"
         >
           <div 
             class="block p-2 cursor-pointer"
@@ -261,6 +262,9 @@ const selectedSponsor = ref(null);
 // Placeholder banners for the slider (would come from API in real implementation)
 const sponsorBanners = ref([]);
 
+// Track which sponsors have had their views counted
+const viewedSponsors = ref(new Set());
+
 // Open sponsor modal
 async function openSponsorModal(sponsor) {
   selectedSponsor.value = sponsor;
@@ -412,6 +416,69 @@ async function fetchSponsorBanners(sponsorId) {
     sponsorBanners.value = [];
   }
 }
+
+// Setup intersection observer to track when sponsors become visible
+function setupIntersectionObserver() {
+  if (typeof window === 'undefined' || !window.IntersectionObserver) return;
+  
+  // Create a new intersection observer
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(async (entry) => {
+        // If element is visible and has a sponsor ID
+        if (entry.isIntersecting) {
+          const sponsorId = entry.target.dataset.sponsorId;
+          
+          // Check if we've already counted this sponsor in this session
+          if (sponsorId && !viewedSponsors.value.has(sponsorId)) {
+            // Mark this sponsor as viewed in this session
+            viewedSponsors.value.add(sponsorId);
+            
+            // Increment the views for this sponsor
+            try {
+              await incrementSponsorViews(sponsorId);
+              console.log(`Incremented view count for sponsor ID: ${sponsorId}`);
+            } catch (error) {
+              console.error(`Failed to increment views for sponsor ID: ${sponsorId}`, error);
+            }
+          }
+        }
+      });
+    },
+    {
+      // Options: trigger when at least 70% of the element is visible
+      threshold: 0.7,
+      // Add root margin to trigger a bit earlier before the sponsor becomes fully visible
+      rootMargin: '0px 0px -10% 0px'
+    }
+  );
+  
+  // Observer all sponsor elements
+  const sponsorElements = document.querySelectorAll('.sponsor-item');
+  sponsorElements.forEach((element) => {
+    observer.observe(element);
+  });
+  
+  // Return the observer to be able to disconnect it later
+  return observer;
+}
+
+// Watch for changes in the sponsors array to re-setup the observer
+let intersectionObserver = null;
+watchEffect(() => {
+  // Only run this after the sponsors have been loaded and aren't empty
+  if (sponsors.value.length > 0 && !isLoading.value) {
+    // Wait for the DOM to update with the new sponsors
+    setTimeout(() => {
+      // Disconnect the previous observer if it exists
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
+      }
+      // Setup a new observer
+      intersectionObserver = setupIntersectionObserver();
+    }, 100);
+  }
+});
 
 // Initialize
 onMounted(() => {

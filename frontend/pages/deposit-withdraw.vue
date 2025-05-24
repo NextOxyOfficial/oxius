@@ -96,8 +96,7 @@
                 amount
               />
               <label class="floating-label">Enter Amount</label>
-              <!-- <div class="input-backdrop"></div>
-              <div class="input-currency">৳</div> -->
+              
             </div>
           </div>
           <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
