@@ -3,7 +3,7 @@
     <header class="backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-sm">
       <div class="max-w-5xl mx-auto px-4">
         <div
-          class="flex items-center justify-between h-16 sm:h-18 bg-gray-100/40"
+          class="flex items-center justify-between py-2 bg-gray-100/40"
         >
           <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
           <div class="flex items-center space-x-1 sm:gap-5">
@@ -153,7 +153,7 @@
                 <!-- Pro Badge for mobile - text at top right -->
                 <span
                   v-if="user?.user?.is_pro"
-                  class="absolute -top-1 -right-4 px-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
+                  class="absolute -top-1 -right-3.5 px-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
                 >
                   Pro
                 </span>
