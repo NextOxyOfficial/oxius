@@ -91,21 +91,99 @@ export function useApi() {
         error: err,
       };
     }
-  };
-
-  const del = async (endpoint: string) => {
-    const { data, pending, error, status, refresh } = await useFetch<any>(
-      baseURL + endpoint,
-      {
-        headers: head.value,
-        method: "delete",
+  };  const del = async (endpoint: string) => {
+    try {
+      console.log(`DELETE request to: ${baseURL + endpoint}`);
+      
+      // Check if the JWT token is valid
+      const jwt = useCookie("adsyclub-jwt");
+      if (!jwt.value) {
+        console.error('DELETE request failed: No JWT token available');
+        throw new Error('Authentication token is missing');
       }
-    );
-
-    return {
-      data: data.value,
-      error: error.value,
-    };
+      
+      // Log auth token format (first few chars only for security)
+      console.log('Authorization header present:', !!head.value.Authorization);
+      if (head.value.Authorization) {
+        const tokenPrefix = head.value.Authorization.substring(0, 20);
+        console.log(`Authorization header starts with: ${tokenPrefix}...`);
+      }
+      
+      // Add logging for the full URL
+      console.log(`Full DELETE URL: ${baseURL + endpoint}`);
+      
+      // Make the request with proper error handling
+      const { data, pending, error, status } = await useFetch<any>(
+        baseURL + endpoint,
+        {
+          headers: head.value,
+          method: "delete",
+          retry: 1, // Add a single retry attempt
+          onRequest({ request, options }) {
+            // Request has been made
+            console.log('DELETE request sent with options:', JSON.stringify(options.method));
+          },
+          onRequestError({ request, options, error }) {
+            // Handle request errors
+            console.error('DELETE request error:', error);
+          },
+          onResponse({ request, response, options }) {
+            // Process the response data
+            console.log('DELETE response received, status:', response.status);
+          },
+          onResponseError({ request, response, options }) {
+            // Handle the response errors
+            console.error('DELETE response error:', response.status, response.statusText);
+          }
+        }
+      );
+      
+      // Better error handling
+      if (error.value) {
+        console.error('DELETE error response:', error.value);
+        console.error('Error status:', status.value);
+        
+        // Try to extract more details from the error
+        let errorDetails = 'Unknown error';
+        if (typeof error.value === 'object') {
+          errorDetails = JSON.stringify(error.value);
+        } else if (typeof error.value === 'string') {
+          errorDetails = error.value;
+        }
+        
+        console.error('Error details:', errorDetails);
+        
+        // Return structured error for better handling
+        return {
+          data: null,
+          error: {
+            message: errorDetails,
+            statusCode: status.value,
+            originalError: error.value
+          },
+          status: status.value
+        };
+      } 
+      
+      console.log('DELETE success response:', data.value);
+      
+      // Return successful response
+      return {
+        data: data.value,
+        error: null,
+        status: status.value
+      };
+    } catch (err) {
+      console.error('DELETE request failed with exception:', err);
+      return {
+        data: null,
+        error: {
+          message: err.message || 'Unknown error',
+          originalError: err
+        },
+        status: 500 // Assume server error for uncaught exceptions
+      };
+    }
   };
 
   const Api = {

@@ -627,31 +627,115 @@ const confirmDelete = async () => {
   if (!deletingSponsor.value) return;
   
   try {
-    await deleteApi(`/bn/gold-sponsors/delete/${deletingSponsor.value.id}/`);
+    // Get a fresh instance of the API methods to ensure we're using the latest token
+    const { delete: deleteApi } = useApi();
     
-    // Remove from local array
-    featuredSponsors.value = featuredSponsors.value.filter(s => s.id !== deletingSponsor.value.id);
-    goldSponsorsCount.value = Math.max(0, goldSponsorsCount.value - 1);
+    // Debug sponsor object
+    console.log('Sponsor to delete:', JSON.stringify(deletingSponsor.value));
     
-    toast.add({
-      title: "Success",
-      description: "Sponsor deleted successfully",
-      color: "green",
-    });
+    // Make sure we have a valid ID and use the correct property name
+    // Check for both id and ID properties as APIs sometimes use different casing
+    const sponsorId = deletingSponsor.value.id || deletingSponsor.value.ID;
+    console.log('Extracted sponsor ID:', sponsorId, typeof sponsorId);
     
-    // Refresh the sponsors data
-    await fetchGoldSponsorsData();
+    if (!sponsorId) {
+      throw new Error('Sponsor ID is missing');
+    }
+    
+    // Get the current auth token
+    const authToken = useCookie("adsyclub-jwt").value;
+    console.log('Auth token available:', !!authToken);
+    
+    // Check if token exists before proceeding
+    if (!authToken) {
+      throw new Error('Authentication token is missing');
+    }
+
+    // Try the correct endpoint path
+    try {
+      console.log('Attempting to delete sponsor with ID:', sponsorId);
+      // This is the correct path according to the backend URLs configuration
+      const response = await deleteApi(`/business_network/gold-sponsors/delete/${sponsorId}/`);
+      console.log('Delete response:', response);
+      
+      // Handle successful deletion
+      featuredSponsors.value = featuredSponsors.value.filter(s => s.id !== sponsorId);
+      goldSponsorsCount.value = Math.max(0, goldSponsorsCount.value - 1);
+      
+      toast.add({
+        title: "Success",
+        description: "Sponsor deleted successfully",
+        color: "green",
+      });
+      
+      // Refresh the sponsors data
+      await fetchGoldSponsorsData();
+      return; // Exit early if successful
+    } catch (error) {
+      console.error('Standard API delete attempt failed:', error);
+      
+      // If standard approach fails, try with direct fetch as fallback
+      try {
+        const token = `Bearer ${authToken}`;
+        // Based on URLs, this is the endpoint the backend should be exposing
+        const apiUrl = `${window.location.origin}/api/business_network/gold-sponsors/delete/${sponsorId}/`;
+        console.log('Making direct fetch DELETE request to:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include' // Include cookies
+        });
+        
+        console.log('Direct fetch response status:', response.status);
+        
+        if (response.ok) {
+          // Handle successful deletion
+          featuredSponsors.value = featuredSponsors.value.filter(s => s.id !== sponsorId);
+          goldSponsorsCount.value = Math.max(0, goldSponsorsCount.value - 1);
+          
+          toast.add({
+            title: "Success",
+            description: "Sponsor deleted successfully",
+            color: "green",
+          });
+          
+          // Refresh the sponsors data
+          await fetchGoldSponsorsData();
+          return;
+        } else {
+          // Try to parse response for more details
+          let errorMsg = 'Unknown error';
+          try {
+            const responseData = await response.text();
+            console.error('Direct fetch error response:', responseData);
+            errorMsg = responseData;
+          } catch (e) {
+            console.error('Error parsing error response:', e);
+          }
+          
+          throw new Error(`API returned error status: ${response.status} - ${errorMsg}`);
+        }
+      } catch (directFetchError) {
+        console.error('Direct fetch approach failed:', directFetchError);
+        throw directFetchError; // Re-throw to be caught by outer catch
+      }
+    }
   } catch (error) {
     console.error('Error deleting sponsor:', error);
     toast.add({
       title: "Error",
-      description: "Failed to delete sponsor",
+      description: `Failed to delete sponsor: ${error.message || 'Unknown error'}`,
       color: "red",
     });
+  } finally {
+    // Always close the dialog and reset state
+    showDeleteDialog.value = false;
+    deletingSponsor.value = null;
   }
-  
-  showDeleteDialog.value = false;
-  deletingSponsor.value = null;
 };
 
 const cancelDelete = () => {
