@@ -87,13 +87,57 @@
         <!-- Useful Links Section -->
         <SidebarUsefulLinks />
         
-        <!-- Gold Sponsor Modal -->
-        <Teleport to="body">
+        <!-- Gold Sponsor Modal -->        <Teleport to="body">
           <GoldSponsorModal 
             :is-open="isGoldSponsorModalOpen" 
-            @close="isGoldSponsorModalOpen = false" 
-            @submit="handleGoldSponsorSubmit" 
+            :edit-sponsor="editingSponsor"
+            @close="closeGoldSponsorModal" 
+            @sponsor-created="onSponsorCreated"
+            @sponsor-updated="onSponsorUpdated"
           />
+        </Teleport>
+        
+        <!-- Delete Confirmation Dialog -->
+        <Teleport to="body">
+          <div
+            v-if="showDeleteDialog"
+            class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
+            @click="cancelDelete"
+          >
+            <div
+              class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4 p-6 shadow-xl"
+              @click.stop
+            >
+              <div class="flex items-center mb-4">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                  <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">Delete Sponsor</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+                </div>
+              </div>
+              
+              <p class="text-gray-700 dark:text-gray-300 mb-6">
+                Are you sure you want to delete the sponsor "{{ deletingSponsor?.name }}"? This will permanently remove it from your sponsorships.
+              </p>
+              
+              <div class="flex justify-end space-x-3">
+                <button
+                  @click="cancelDelete"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="confirmDelete"
+                  class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </Teleport>
           <!-- Become Gold Sponsor Section -->        
            <div class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
@@ -142,36 +186,78 @@
               </ul>
             </div>            <div v-else-if="featuredSponsors && featuredSponsors.length > 0" class="mb-3">
               <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
-              <ul class="space-y-1.5">
+              <ul class="space-y-2">
                 <li 
                   v-for="(sponsor, index) in featuredSponsors" 
-                  :key="index"
-                  class="flex items-center justify-between text-xs"
+                  :key="sponsor.id || index"
+                  class="group relative bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                 >
-                  <div class="flex items-center overflow-hidden">
-                    <div class="h-5 w-5 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0">
-                      <img 
-                        :src="sponsor.image || '/static/frontend/avatar.png'" 
-                        :alt="sponsor.name || 'Sponsor'"
-                        class="h-full w-full object-cover"
-                      />
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center overflow-hidden flex-1 min-w-0">
+                      <div class="h-6 w-6 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0">
+                        <img 
+                          :src="sponsor.image || '/static/frontend/avatar.png'" 
+                          :alt="sponsor.name || 'Sponsor'"
+                          class="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-700 dark:text-gray-300 truncate font-medium" :title="sponsor.name">
+                          {{ sponsor.name || 'Unnamed Sponsor' }}
+                        </div>
+                        <!-- View count display -->
+                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          <UIcon name="i-heroicons-eye" class="w-3 h-3 mr-1" />
+                          <span>{{ formatViews(sponsor.views || 0) }} views</span>
+                        </div>
+                      </div>
                     </div>
-                    <span class="text-gray-700 dark:text-gray-300 truncate" :title="sponsor.name">
-                      {{ sponsor.name || 'Unnamed Sponsor' }}
-                    </span>
+                    
+                    <!-- Status badge and actions -->
+                    <div class="flex items-center space-x-1 ml-2">
+                      <span 
+                        class="text-xs px-1.5 py-0.5 rounded-full capitalize"
+                        :class="{
+                          'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': sponsor.status === 'active',
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': sponsor.status === 'pending',
+                          'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': sponsor.status === 'rejected',
+                          'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400': !sponsor.status || sponsor.status === 'inactive'
+                        }"
+                      >
+                        {{ sponsor.status || 'inactive' }}
+                      </span>
+                      
+                      <!-- Edit/Delete Actions (only for active sponsors) -->
+                      <div v-if="sponsor.status === 'active'" class="relative" v-click-outside="() => closeSponsorActionsMenu(sponsor.id)">
+                        <button 
+                          @click="toggleSponsorActionsMenu(sponsor.id)"
+                          class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <UIcon name="i-heroicons-ellipsis-vertical" class="w-3 h-3" />
+                        </button>
+                        
+                        <div 
+                          v-if="activeSponsorActionMenu === sponsor.id"
+                          class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+                        >
+                          <button 
+                            @click="editSponsor(sponsor)"
+                            class="w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                          >
+                            <UIcon name="i-heroicons-pencil" class="w-3 h-3" />
+                            <span>Edit</span>
+                          </button>
+                          <button 
+                            @click="deleteSponsor(sponsor)"
+                            class="w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2"
+                          >
+                            <UIcon name="i-heroicons-trash" class="w-3 h-3" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <!-- Status badge -->
-                  <span 
-                    class="text-xs px-1.5 py-0.5 rounded-full capitalize"
-                    :class="{
-                      'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': sponsor.status === 'active',
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': sponsor.status === 'pending',
-                      'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': sponsor.status === 'rejected',
-                      'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400': !sponsor.status || sponsor.status === 'inactive'
-                    }"
-                  >
-                    {{ sponsor.status || 'inactive' }}
-                  </span>
                 </li>
               </ul>
             </div>
@@ -242,7 +328,7 @@ import GoldSponsorModal from "../business-network/GoldSponsorModal.vue";
 // State
 const isMobile = ref(false);
 const { user } = useAuth();
-const { get, post } = useApi();
+const { get, post, delete: deleteApi } = useApi();
 const cart = useStoreCart();
 const toast = useToast();
 const tags = ref([]); // Will be populated from hashtags
@@ -258,6 +344,12 @@ const goldSponsorsCount = ref(0); // Start with zero until fetched from API
 const sponsorViews = ref(0); // Start with zero until fetched from API
 const featuredSponsors = ref([]); // Will hold a few featured sponsors
 const isLoadingSponsors = ref(false); // Loading state for gold sponsor data
+
+// Edit/Delete functionality
+const editingSponsor = ref(null);
+const activeSponsorActionMenu = ref(null);
+const showDeleteDialog = ref(false);
+const deletingSponsor = ref(null);
 
 // Loading states
 const isLoadingNews = ref(false);
@@ -466,13 +558,13 @@ async function fetchGoldSponsorsData() {
       sponsorViews.value = response.data.total_views || 0;
         
       // Update the featured sponsors list if available
-      if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {
-        // Process sponsors and ensure proper formatting
+      if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {        // Process sponsors and ensure proper formatting
         const processedSponsors = response.data.featured_sponsors.map((sponsor, index) => ({
           id: sponsor.id || `sponsor-${index}`,
           name: sponsor.name || sponsor.title || "Unnamed Sponsor", 
           status: sponsor.status || "active",
-          image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
+          image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png",
+          views: sponsor.views || 0
         }));
         
         featuredSponsors.value = processedSponsors;
@@ -480,12 +572,12 @@ async function fetchGoldSponsorsData() {
         // Check for alternative sponsor data formats
         const alternativeSponsors = response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors;
         
-        if (Array.isArray(alternativeSponsors) && alternativeSponsors.length > 0) {
-          const processedSponsors = alternativeSponsors.map((sponsor, index) => ({
+        if (Array.isArray(alternativeSponsors) && alternativeSponsors.length > 0) {          const processedSponsors = alternativeSponsors.map((sponsor, index) => ({
             id: sponsor.id || `alt-sponsor-${index}`,
             name: sponsor.name || sponsor.title || "Sponsor " + (index + 1),
             status: sponsor.status || "active",
-            image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png"
+            image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png",
+            views: sponsor.views || 0
           }));
           
           featuredSponsors.value = processedSponsors;
@@ -499,11 +591,118 @@ async function fetchGoldSponsorsData() {
     }
   } catch (error) {
     console.error("Error fetching gold sponsors data:", error);
-    featuredSponsors.value = [];
-  } finally {
+    featuredSponsors.value = [];  } finally {
     isLoadingSponsors.value = false;
   }
 }
+
+// Format view counts for display
+const formatViews = (views) => {
+  if (views >= 1000000) {
+    return (views / 1000000).toFixed(1) + 'M';
+  } else if (views >= 1000) {
+    return (views / 1000).toFixed(1) + 'K';
+  }
+  return views.toString();
+};
+
+// Edit/Delete Sponsor Methods
+const toggleSponsorActionsMenu = (sponsorId) => {
+  activeSponsorActionMenu.value = activeSponsorActionMenu.value === sponsorId ? null : sponsorId;
+};
+
+const closeSponsorActionsMenu = (sponsorId) => {
+  if (activeSponsorActionMenu.value === sponsorId) {
+    activeSponsorActionMenu.value = null;
+  }
+};
+
+const editSponsor = (sponsor) => {
+  editingSponsor.value = sponsor;
+  isGoldSponsorModalOpen.value = true;
+  closeSponsorActionsMenu(sponsor.id);
+};
+
+const deleteSponsor = (sponsor) => {
+  deletingSponsor.value = sponsor;
+  showDeleteDialog.value = true;
+  closeSponsorActionsMenu(sponsor.id);
+};
+
+const confirmDelete = async () => {
+  if (!deletingSponsor.value) return;
+  
+  try {
+    await deleteApi(`/bn/gold-sponsors/delete/${deletingSponsor.value.id}/`);
+    
+    // Remove from local array
+    featuredSponsors.value = featuredSponsors.value.filter(s => s.id !== deletingSponsor.value.id);
+    goldSponsorsCount.value = Math.max(0, goldSponsorsCount.value - 1);
+    
+    toast.add({
+      title: "Success",
+      description: "Sponsor deleted successfully",
+      color: "green",
+    });
+    
+    // Refresh the sponsors data
+    await fetchGoldSponsorsData();
+  } catch (error) {
+    console.error('Error deleting sponsor:', error);
+    toast.add({
+      title: "Error",
+      description: "Failed to delete sponsor",
+      color: "red",
+    });
+  }
+  
+  showDeleteDialog.value = false;
+  deletingSponsor.value = null;
+};
+
+const cancelDelete = () => {
+  showDeleteDialog.value = false;
+  deletingSponsor.value = null;
+};
+
+const closeGoldSponsorModal = () => {
+  isGoldSponsorModalOpen.value = false;
+  editingSponsor.value = null;
+};
+
+const onSponsorCreated = (newSponsor) => {
+  // Add the new sponsor to the list
+  featuredSponsors.value.unshift(newSponsor);
+  goldSponsorsCount.value += 1;
+  
+  toast.add({
+    title: "Success",
+    description: "Gold Sponsor created successfully!",
+    color: "green",
+  });
+  
+  closeGoldSponsorModal();
+  // Refresh the data to get updated stats
+  fetchGoldSponsorsData();
+};
+
+const onSponsorUpdated = (updatedSponsor) => {
+  // Update the sponsor in the list
+  const index = featuredSponsors.value.findIndex(s => s.id === updatedSponsor.id);
+  if (index !== -1) {
+    featuredSponsors.value[index] = updatedSponsor;
+  }
+  
+  toast.add({
+    title: "Success", 
+    description: "Gold Sponsor updated successfully!",
+    color: "green",
+  });
+  
+  closeGoldSponsorModal();
+  // Refresh the data to get updated stats
+  fetchGoldSponsorsData();
+};
 
 // Methods
 const handleNavigation = (path) => {
