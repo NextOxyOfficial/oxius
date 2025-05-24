@@ -32,6 +32,9 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            raise serializers.ValidationError("Authentication required")
+            
         banners_data = validated_data.pop('banners', [])
         package = validated_data.pop('package_id')
         validated_data['package'] = package

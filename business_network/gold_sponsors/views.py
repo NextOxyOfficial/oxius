@@ -1,6 +1,8 @@
 from rest_framework import generics, status
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from business_network.models import SponsorshipPackage, GoldSponsor
 from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializer, GoldSponsorSerializer
@@ -14,6 +16,7 @@ class GoldSponsorCreateView(generics.CreateAPIView):
     """Create a new Gold Sponsor application"""
     queryset = GoldSponsor.objects.all()
     serializer_class = GoldSponsorCreateSerializer
+    permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -339,6 +339,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useApi } from '~/composables/useApi'
+import { useAuth } from '~/composables/useAuth'
 
 const props = defineProps({
   isOpen: {
@@ -351,8 +352,9 @@ const props = defineProps({
   }
 });
 
-// Import useApi composable
+// Import useApi and useAuth composables
 const { get, post, put } = useApi();
+const { user } = useAuth();
 
 const emit = defineEmits(['close', 'sponsor-created', 'sponsor-updated']);
 
@@ -551,18 +553,17 @@ const fetchUserBalance = async () => {
     isLoadingBalance.value = true;
     balanceError.value = '';
     
-    const result = await get('/persons/balance/');
-    if (result.error) {
-      console.error('Error fetching user balance:', result.error);
-      balanceError.value = 'Could not fetch balance';
-    } else if (result.data && typeof result.data.balance !== 'undefined') {
-      userBalance.value = result.data.balance;
+    // Get balance from the user store instead of making an API call
+    if (user.value?.user?.balance !== undefined) {
+      userBalance.value = Number(user.value.user.balance);
+      console.log('User balance loaded:', userBalance.value, 'Type:', typeof userBalance.value);
     } else {
       balanceError.value = 'Balance information not available';
+      console.log('Balance not available in user store');
     }
   } catch (error) {
-    console.error('Error fetching user balance:', error);
-    balanceError.value = 'Could not fetch balance';
+    console.error('Error accessing user balance:', error);
+    balanceError.value = 'Could not access balance';
   } finally {
     isLoadingBalance.value = false;
   }
@@ -571,8 +572,18 @@ const fetchUserBalance = async () => {
 // Check if user has sufficient balance for selected package
 const hasInsufficientBalance = computed(() => {
   if (isEditMode.value) return false; // No balance check for edits
+  if (balanceError.value) return false; // Don't show insufficient balance if there's a balance error
   const selectedPkg = packages.value.find(pkg => pkg.id === form.value.selectedPackage);
-  return selectedPkg && userBalance.value < selectedPkg.price;
+  const userBal = Number(userBalance.value);
+  const pkgPrice = Number(selectedPkg?.price || 0);
+  const result = selectedPkg && userBal < pkgPrice;
+  console.log('Balance check:', {
+    userBalance: userBal,
+    packagePrice: pkgPrice,
+    comparison: `${userBal} < ${pkgPrice}`,
+    result
+  });
+  return result;
 });
 
 // Get selected package details
@@ -875,9 +886,10 @@ const submitFormDirectFetch = async () => {
   }
 };
 
-// Initialize packages on component mount
+// Initialize packages and user balance on component mount
 onMounted(() => {
   fetchPackages();
+  fetchUserBalance();
 });
 
 // Close modal function
