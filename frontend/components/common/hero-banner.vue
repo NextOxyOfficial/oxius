@@ -23,7 +23,7 @@
             </div>
             <!-- Aspect ratio container - reduced by ~10% -->
             <div
-              class="rounded-xl mt-4 sm:mt-8 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%] shadow-sm"
+              class="rounded-xl mt-2 sm:mt-6 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%] shadow-sm"
             >
               <div
                 v-for="({ id, image }, index) in sliderImages"
