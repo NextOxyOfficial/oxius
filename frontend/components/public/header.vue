@@ -476,9 +476,9 @@
               <!-- Pro Badge for mobile - text at top right -->
               <span
                 v-if="user?.user?.is_pro"
-                class="absolute -top-1 -right-1 px-2 py-0.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-bold shadow-sm"
+                class="absolute -top-1 -right-1 px-2 py-0.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
               >
-                PRO
+                Pro
               </span>
               
               <!-- Verification Badge for mobile -->
