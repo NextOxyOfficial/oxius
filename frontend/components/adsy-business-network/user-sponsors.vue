@@ -169,15 +169,30 @@ const sponsorCount = computed(() => sponsors.value.length)
 const fetchUserSponsors = async () => {
   loading.value = true
   try {
-    const response = await $fetch('/api/bn/gold-sponsors/my-sponsors/', {
-      headers: {
-        'Authorization': `Bearer ${useAuthStore().token}`
+    // Use the same API pattern as the sidebar
+    const { get } = useApi()
+    let response
+    try {
+      response = await get('/bn/gold-sponsors/my-sponsors/')
+    } catch (err) {
+      try {
+        response = await get('/api/bn/gold-sponsors/my-sponsors/')
+      } catch (err2) {
+        response = await get('/business_network/gold-sponsors/my-sponsors/')
       }
-    })
-    sponsors.value = response.user_sponsors || []
+    }
+    
+    // Extract user sponsors from response
+    if (response && response.data) {
+      const userSponsors = response.data.user_sponsors || response.data.sponsors || response.data || []
+      sponsors.value = Array.isArray(userSponsors) ? userSponsors : []
+    } else {
+      sponsors.value = []
+    }
   } catch (error) {
     console.error('Error fetching user sponsors:', error)
     toast.error('Failed to load sponsors')
+    sponsors.value = []
   } finally {
     loading.value = false
   }
@@ -209,12 +224,9 @@ const confirmDelete = async () => {
   if (!deletingSponsor.value) return
   
   try {
-    await $fetch(`/api/bn/gold-sponsors/delete/${deletingSponsor.value.id}/`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${useAuthStore().token}`
-      }
-    })
+    // Use the same API pattern as the sidebar
+    const { delete: deleteApi } = useApi()
+    await deleteApi(`/bn/gold-sponsors/delete/${deletingSponsor.value.id}/`)
     
     // Remove from local array
     sponsors.value = sponsors.value.filter(s => s.id !== deletingSponsor.value.id)

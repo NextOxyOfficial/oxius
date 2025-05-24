@@ -540,58 +540,52 @@ async function fetchGoldSponsorsData() {
   try {
     isLoadingSponsors.value = true;
     
-    // Try to fetch gold sponsor data
+    // Fetch user's own sponsors (similar to user-sponsors component)
     let response;
     try {
-      response = await get("/bn/gold-sponsors/stats/");
+      response = await get("/bn/gold-sponsors/my-sponsors/");
     } catch (err) {
       try {
-        response = await get("/api/bn/gold-sponsors/stats/");
+        response = await get("/api/bn/gold-sponsors/my-sponsors/");
       } catch (err2) {
-        response = await get("/business_network/gold-sponsors/stats/");
+        response = await get("/business_network/gold-sponsors/my-sponsors/");
       }
     }
     
     if (response && response.data) {
-      // Update the counts with real values from the API
-      goldSponsorsCount.value = response.data.active_count || 0;
-      sponsorViews.value = response.data.total_views || 0;
-        
-      // Update the featured sponsors list if available
-      if (response.data.featured_sponsors && Array.isArray(response.data.featured_sponsors)) {        // Process sponsors and ensure proper formatting
-        const processedSponsors = response.data.featured_sponsors.map((sponsor, index) => ({
+      // Extract user sponsors
+      const userSponsors = response.data.user_sponsors || response.data.sponsors || response.data || [];
+      
+      if (Array.isArray(userSponsors)) {
+        // Process sponsors and ensure proper formatting
+        const processedSponsors = userSponsors.map((sponsor, index) => ({
           id: sponsor.id || `sponsor-${index}`,
-          name: sponsor.name || sponsor.title || "Unnamed Sponsor", 
+          name: sponsor.business_name || sponsor.name || sponsor.title || "Unnamed Sponsor", 
           status: sponsor.status || "active",
-          image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png",
+          image: sponsor.logo || sponsor.image || "/static/frontend/avatar.png",
           views: sponsor.views || 0
         }));
         
         featuredSponsors.value = processedSponsors;
+        goldSponsorsCount.value = processedSponsors.filter(s => s.status === 'active').length;
+        sponsorViews.value = processedSponsors.reduce((total, sponsor) => total + (sponsor.views || 0), 0);
       } else {
-        // Check for alternative sponsor data formats
-        const alternativeSponsors = response.data.sponsors || response.data.user_sponsors || response.data.my_sponsors;
-        
-        if (Array.isArray(alternativeSponsors) && alternativeSponsors.length > 0) {          const processedSponsors = alternativeSponsors.map((sponsor, index) => ({
-            id: sponsor.id || `alt-sponsor-${index}`,
-            name: sponsor.name || sponsor.title || "Sponsor " + (index + 1),
-            status: sponsor.status || "active",
-            image: sponsor.image || sponsor.logo || "/static/frontend/avatar.png",
-            views: sponsor.views || 0
-          }));
-          
-          featuredSponsors.value = processedSponsors;
-        } else {
-          featuredSponsors.value = [];
-        }
+        featuredSponsors.value = [];
+        goldSponsorsCount.value = 0;
+        sponsorViews.value = 0;
       }
     } else {
       console.error("Invalid response format from gold sponsors API:", response);
       featuredSponsors.value = [];
+      goldSponsorsCount.value = 0;
+      sponsorViews.value = 0;
     }
   } catch (error) {
     console.error("Error fetching gold sponsors data:", error);
-    featuredSponsors.value = [];  } finally {
+    featuredSponsors.value = [];
+    goldSponsorsCount.value = 0;
+    sponsorViews.value = 0;
+  } finally {
     isLoadingSponsors.value = false;
   }
 }
