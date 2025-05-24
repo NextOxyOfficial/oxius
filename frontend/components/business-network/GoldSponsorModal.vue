@@ -9,7 +9,7 @@
     leave-to-class="transform scale-95 opacity-0"
   >
     <div v-if="isOpen" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="gold-sponsor-modal" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-20 pb-20 text-center sm:block sm:p-0">
+      <div class="flex items-end justify-center min-h-screen pt-20 pb-20 text-center sm:block">
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="close"></div>
           <!-- Modal panel -->
