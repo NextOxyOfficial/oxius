@@ -353,6 +353,28 @@ const logoFilename = ref('');
 const banners = ref([]);
 const maxBanners = 5;
 
+// Define resetForm function before using it in watch
+const resetForm = () => {
+  form.value = {
+    businessName: '',
+    businessDescription: '',
+    contactEmail: '',
+    phoneNumber: '',
+    website: '',
+    profileUrl: '',
+    selectedPackage: 1,
+    logo: null
+  };
+  logoPreview.value = null;
+  logoFilename.value = '';
+  banners.value = [];
+  
+  // Reset file input
+  if (logoFileInput.value) {
+    logoFileInput.value.value = '';
+  }
+};
+
 // Watch for editSponsor changes to populate form
 watch(() => props.editSponsor, (sponsor) => {
   if (sponsor) {
@@ -752,27 +774,6 @@ const submitFormDirectFetch = async () => {
     }
   } finally {
     isSubmitting.value = false;
-  }
-};
-
-const resetForm = () => {
-  form.value = {
-    businessName: '',
-    businessDescription: '',
-    contactEmail: '',
-    phoneNumber: '',
-    website: '',
-    profileUrl: '',
-    selectedPackage: 1,
-    logo: null
-  };
-  logoPreview.value = null;
-  logoFilename.value = '';
-  banners.value = [];
-  
-  // Reset file input
-  if (logoFileInput.value) {
-    logoFileInput.value.value = '';
   }
 };
 
