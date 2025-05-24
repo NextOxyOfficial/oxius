@@ -6,7 +6,7 @@
       aria-label="Search"
     >
       <SearchIcon
-        class="h-[18px] w-[18px] text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors z-10 relative"
+        class="size-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors z-10 relative"
       />
       <!-- Ripple effect -->
       <span

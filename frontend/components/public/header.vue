@@ -310,7 +310,7 @@
         </UCard>
       </USlideover>
       
-      <div class="flex items-center justify-between gap-2 lg:gap-6 pl-3 pr-4">        
+      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">        
         <!-- Mobile Layout: Menu Button and Logo grouped together -->
         <div class="flex items-center gap-4">
           <!-- Mobile View - Sidebar Menu Button (only visible on mobile) -->

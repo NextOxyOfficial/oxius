@@ -1,7 +1,7 @@
 <template>
   <div class="fixed top-0 left-0 right-0 z-[9999999999999] w-full mx-auto">
     <header class="backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-sm">
-      <div class="max-w-5xl mx-auto pl-1 pr-2 sm:px-4">
+      <div class="max-w-5xl mx-auto px-4">
         <div
           class="flex items-center justify-between h-16 sm:h-18 bg-gray-100/40"
         >
@@ -46,7 +46,7 @@
                   alt="Adsy Logo"
                   width="150"
                   height="50"
-                  class="h-7 sm:h-10 w-auto object-contain"
+                  class="h-8 sm:h-10 w-auto object-contain"
                   loading="eager"
                 />
                 <div
@@ -57,7 +57,7 @@
           </div>
 
           <!-- Right Section: Search + Navigation + User Menu -->
-          <div class="flex items-center sm:gap-3 relative">
+          <div class="flex items-center gap-3 sm:gap-3 relative">
             <!-- Search Component -->
             <CommonSearchDropdown ref="searchDropdownRef" />
 
@@ -103,8 +103,7 @@
             </div>
 
             <!-- Translate Component - Desktop only -->
-            <PublicTranslateHandler class="hidden sm:block px-2" />
-            <div v-if="!user" class="flex relative menu-container">
+            <PublicTranslateHandler class="hidden sm:block px-2" />            <div v-if="!user" class="flex relative menu-container">
               <UButton
                 to="/auth/login"
                 label="Login/Register"
@@ -126,15 +125,63 @@
               >
               </UButton>
             </div>
-            <UButton
+            
+            <!-- Mobile User Profile Avatar -->
+            <div 
               v-else
+              @click="openMenu = !openMenu"
+              class="sm:hidden relative cursor-pointer"
+            >            
+              <div class="relative">
+                <!-- User profile image with pink gradient border for Pro users -->
+                <div 
+                  :class="[
+                    'size-11 rounded-full flex items-center justify-center overflow-hidden shadow-sm',
+                    user?.user?.is_pro ? 'pro-profile-pink-border' : 'border-2 border-white'
+                  ]"
+                >
+                  <img 
+                    v-if="user?.user?.image"
+                    :src="user.user.image"
+                    :alt="user.user.name || user.user.first_name"
+                    class="size-full object-cover rounded-full relative z-1"
+                    style="position: relative; z-index: 1;"
+                  />
+                  <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500 relative z-1" style="position: relative; z-index: 1;" />
+                </div>
+                
+                <!-- Pro Badge for mobile - text at top right -->
+                <span
+                  v-if="user?.user?.is_pro"
+                  class="absolute -top-1 -right-4 px-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
+                >
+                  Pro
+                </span>
+                
+                <!-- Verification Badge for mobile -->
+                <span
+                  v-if="user?.user?.kyc"
+                  class="absolute -bottom-1 -right-1 size-4 flex items-center justify-center bg-white rounded-full shadow-sm"
+                >
+                  <UIcon
+                    name="mdi:check-decagram"
+                    class="size-4 text-blue-600"
+                  />
+                </span>
+              </div>
+            </div>
+            
+            <!-- Desktop User Profile Button -->
+            <UButton
+              v-if="user"
               size="sm"
               color="primary"
               variant="outline"
               @click="openMenu = !openMenu"
+              class="max-sm:hidden"
               :ui="{
                 gap: {
-                  sm: 'gap-x-0.5',
+                  sm: 'gap-x-1 md:gap-x-1.5',
                 },
                 size: {
                   sm: 'text-xs sm:text-sm',
@@ -152,16 +199,20 @@
             >
               <span
                 v-if="user?.user?.is_pro"
-                class="text-xs px-0.5 py-0.5 text-blue-800 rounded-full font-medium shadow-sm"
+                class="text-2xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
               >
-                <div class="flex items-center">
-                  <UIcon name="i-heroicons-shield-check" class="size-4" />
+                <div class="flex items-center gap-1">
+                  <UIcon
+                    name="i-heroicons-shield-check"
+                    class="size-4 text-white"
+                  />
+                  <span class="text-xs">Pro</span>
                 </div>
               </span>
               <UIcon
                 v-if="user?.user?.kyc"
                 name="mdi:check-decagram"
-                class="w-4 h-4 text-blue-600"
+                class="w-5 h-5 text-blue-600"
               />
               <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
 
@@ -171,7 +222,7 @@
                 v-if="!openMenu"
               />
               <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
-            </UButton>            <!-- User dropdown menu component -->
+            </UButton><!-- User dropdown menu component -->
             <BusinessNetworkDropdownMenu
               :user="user"
               :is-open="openMenu"
@@ -231,18 +282,21 @@ const mobileMenuOpen = ref(false);
 // Handle clicks outside of user menu dropdown to close it
 const handleClickOutside = (event) => {
   // For user menu dropdown
-  // Only proceed if the menu is open and we have valid refs
+  // Only proceed if the menu is open
   if (openMenu.value) {
-    // Get the menu element and the button that opens it
+    // Get the menu element and any elements that trigger the menu
     const menuElement = menuRef.value;
     const userButton = userButtonRef.value?.$el || userButtonRef.value;
-
-    // Check if click was outside both elements
+    
+    // Find mobile profile avatar if it exists
+    const mobileProfileAvatar = document.querySelector('.sm\\:hidden.relative.cursor-pointer');
+    
+    // Check if click was outside all menu-related elements
     if (
-      menuElement &&
-      userButton &&
+      menuElement && 
       !menuElement.contains(event.target) &&
-      !userButton.contains(event.target)
+      ((userButton && !userButton.contains(event.target)) || !userButton) &&
+      ((mobileProfileAvatar && !mobileProfileAvatar.contains(event.target)) || !mobileProfileAvatar)
     ) {
       // Close the menu
       openMenu.value = false;
@@ -425,6 +479,66 @@ function formatDate(date) {
     top: 5rem;
     margin: 0 auto;
     z-index: 1000;
+  }
+}
+
+/* Text size for badges */
+.text-2xs {
+  font-size: 0.65rem;
+  line-height: 1rem;
+}
+
+/* Pink gradient border for Pro user profile */
+.pro-profile-pink-border {
+  position: relative;
+  border: none;
+  isolation: isolate; /* Create a new stacking context */
+}
+
+/* Pink gradient outline - the outer ring */
+.pro-profile-pink-border::before {
+  content: '';
+  position: absolute;
+  inset: -3px; /* Creates border effect */
+  background: linear-gradient(135deg, #ec4899, #d946ef, #c026d3);
+  border-radius: 100%;
+  z-index: 0; /* Changed from -1 to 0 */
+  animation: rotate-border 6s linear infinite; /* Slowed down animation for better performance */
+  will-change: transform; /* Optimize animation performance */
+}
+
+/* Inner white space to create the outline effect */
+.pro-profile-pink-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px; /* Slightly smaller than outer ring to create outline */
+  background: var(--bg-color, white); /* Use CSS variable for background color */
+  border-radius: 100%;
+  z-index: 0; /* Changed from -1 to 0 */
+}
+
+/* Set background color for light/dark mode */
+:root {
+  --bg-color: white;
+}
+
+.dark .pro-profile-pink-border::after {
+  --bg-color: #1e293b; /* Dark mode background color - matches slate-800 */
+}
+
+@keyframes rotate-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Media query to disable animations on low-performance devices or when battery is low */
+@media (prefers-reduced-motion: reduce) {
+  .pro-profile-pink-border::before {
+    animation: none;
   }
 }
 </style>
