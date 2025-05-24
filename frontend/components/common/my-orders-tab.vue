@@ -346,7 +346,7 @@
       :prevent-close="showAddItemModal"
     >
       <div
-        class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        class="flex items-center justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
       >
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
@@ -532,8 +532,7 @@
               </div>
             </div>
 
-            <div class="mt-6">
-              <h4
+            <div class="mt-6">              <h4
                 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center justify-between"
               >
                 <div class="flex items-center">
@@ -548,6 +547,17 @@
                   {{ editOrderItems ? "Cancel" : "Edit Items" }}
                 </button>
               </h4>
+
+              <!-- Edit Mode Indicator -->
+              <div 
+                v-if="editOrderItems" 
+                class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center"
+              >
+                <UIcon name="i-heroicons-pencil-square" class="h-4 w-4 text-blue-500 mr-2" />
+                <span class="text-sm text-blue-700 font-medium">
+                  Edit Mode Active: You can now modify quantities, remove items, or add new products to this order.
+                </span>
+              </div>
 
               <!-- Desktop view for order items -->
               <div
@@ -594,16 +604,23 @@
                       v-for="(item, index) in editingOrderItems"
                       :key="index"
                       class="hover:bg-gray-50"
-                    >
-                      <td class="px-6 py-4 whitespace-nowrap">
+                    >                      <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                           <div class="flex-shrink-0 h-10 w-10">
                             <img
-                              v-if="item?.product_details?.image[0]"
+                              v-if="getItemImage(item)"
                               class="h-10 w-10 rounded-md object-contain"
-                              :src="item?.product_details?.image[0]"
-                              alt=""
+                              :src="getItemImage(item)"
+                              :alt="item.product_details?.name || 'Product'"
                             />
+                            <div
+                              v-else
+                              class="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center"
+                            >
+                              <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                              </svg>
+                            </div>
                           </div>
                           <div class="ml-4">
                             <div class="text-sm font-medium text-gray-700">
@@ -673,16 +690,19 @@
                           <Trash2 class="h-4 w-4" />
                         </button>
                       </td>
-                    </tr>
-                    <tr v-if="editOrderItems">
+                    </tr>                    <tr v-if="editOrderItems">
                       <td colspan="5" class="px-6 py-4">
-                        <button
+                        <UButton
                           @click="handleShowAddItemModal"
-                          class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                          color="indigo"
+                          variant="outline"
+                          icon="i-heroicons-plus"
+                          size="sm"
+                          :loading="false"
+                          class="hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                          <Plus class="h-3 w-3 mr-1.5" />
-                          Add Item
-                        </button>
+                          Add Product to Order
+                        </UButton>
                       </td>
                     </tr>
                   </tbody>
@@ -695,15 +715,25 @@
                   v-for="(item, index) in editingOrderItems"
                   :key="index"
                   class="bg-white border border-gray-200 rounded-lg p-4"
-                >
-                  <div class="flex items-start space-x-3">
-                    <img
-                      class="h-16 w-16 rounded-md object-contain"
-                      :src="item.image"
-                      alt=""
-                    />
+                >                  <div class="flex items-start space-x-3">
+                    <div class="h-16 w-16 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+                      <img
+                        v-if="getItemImage(item)"
+                        class="h-full w-full object-contain"
+                        :src="getItemImage(item)"
+                        :alt="item.product_details?.name || 'Product'"
+                      />
+                      <div
+                        v-else
+                        class="h-full w-full flex items-center justify-center"
+                      >
+                        <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                      </div>
+                    </div>
                     <div class="flex-1">
-                      <h5 class="font-medium text-gray-700">{{ item.name }}</h5>
+                      <h5 class="font-medium text-gray-700">{{ item.product_details?.name || 'Product' }}</h5>
                       <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <span class="text-gray-500">Price:</span>
@@ -762,15 +792,15 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                <button
+                </div>                
+                <!-- <button
                   v-if="editOrderItems"
-                  @click="showAddItemModal = true"
+                  @click="handleShowAddItemModal"
                   class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                 >
                   <Plus class="h-3 w-3 mr-1.5" />
                   Add Item
-                </button>
+                </button> -->
               </div>
             </div>
 
@@ -847,14 +877,24 @@
             </button>
           </div>
         </div>
-      </div>
-    </UModal>
-    <!-- Add Item Modal -->
-    <UModal
+      </div>    </UModal>
+    
+    <!-- DEBUG: Modal State Indicator -->
+    <div 
+      v-if="showAddItemModal" 
+      class="fixed top-4 right-4 bg-red-500 text-white p-2 rounded z-[9999]"
+    >
+      DEBUG: showAddItemModal is TRUE
+    </div>
+    
+    <!-- Add Item Modal -->    <UModal
       v-model="showAddItemModal"
       :ui="{
-        wrapper: 'z-[99]',
+        wrapper: 'z-[100]',
+        overlay: 'z-[99]',
+        modal: 'z-[101]'
       }"
+      prevent-close
     >
       <div
         class="bg-white rounded-xl shadow-sm overflow-hidden max-w-lg w-full relative"
@@ -862,7 +902,7 @@
         <div
           class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"
         ></div>
-        <div
+        <!-- <div
           class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
         >
           <h3 class="text-xl font-semibold text-gray-700 flex items-center">
@@ -871,38 +911,75 @@
               class="h-5 w-5 mr-2 text-indigo-600"
             />
             Add Product to Order
-          </h3>
-
+          </h3>          
           <button
-            @click="showAddItemModal = false"
-            class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+            @click="closeAddItemModal"
+            class="text-gray-500 hover:text-gray-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
           >
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>
-        </div>
-
-        <div class="px-6 py-4 z-[9999999]">
+        </div>         -->
+        <div class="px-6 py-4">          
           <!-- Product Search/Select -->
           <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Select Product
+            </label>
             <USelectMenu
               v-model="selectedProductToAdd"
-              :options="products"
+              :options="availableProductsForOrder"
               option-attribute="name"
+              value-attribute="id"
               placeholder="Search for a product..."
-            />
-          </div>
-
-          <!-- Selected Product Details -->
+              searchable
+              :searchable-placeholder="'Type to search products...'"
+              class="w-full"
+              :loading="!products.length"
+            >
+              <template #option="{ option }">
+                <div class="flex items-center space-x-3">
+                  <div class="h-10 w-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+                    <img
+                      v-if="option.image_details?.length"
+                      :src="option.image_details[0].image"
+                      :alt="option.name"
+                      class="h-full w-full object-cover"
+                    />
+                    <div v-else class="h-full w-full flex items-center justify-center">
+                      <UIcon name="i-heroicons-photo" class="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">
+                      {{ option.name }}
+                    </p>
+                    <p class="text-sm text-gray-500">
+                      ৳{{ option.sale_price || option.regular_price }} - Available: {{ getAvailableStock(option) }}
+                    </p>
+                  </div>
+                </div>
+              </template>
+              <template #empty>
+                <div class="text-center py-4">
+                  <UIcon name="i-heroicons-inbox" class="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p class="text-sm text-gray-500">No products available</p>
+                </div>
+              </template>
+            </USelectMenu>
+            <p v-if="availableProductsForOrder.length === 0 && products.length > 0" class="text-sm text-amber-600 mt-1">
+              All your products are either out of stock or already added to this order.
+            </p>
+          </div><!-- Selected Product Details -->
           <div
-            v-if="selectedProductToAdd"
+            v-if="selectedProductDetails"
             class="bg-gray-50 rounded-lg p-4 mb-4"
           >
             <div class="flex items-start space-x-3">
               <div class="h-16 w-16 rounded-md overflow-hidden bg-gray-200">
                 <img
-                  v-if="selectedProductToAdd.image_details?.length"
-                  :src="selectedProductToAdd.image_details[0].image"
-                  :alt="selectedProductToAdd.name"
+                  v-if="selectedProductDetails.image_details?.length"
+                  :src="selectedProductDetails.image_details[0].image"
+                  :alt="selectedProductDetails.name"
                   class="h-full w-full object-contain"
                 />
                 <div
@@ -917,11 +994,11 @@
               </div>
               <div class="flex-1">
                 <h5 class="font-medium text-gray-700">
-                  {{ selectedProductToAdd.name }}
+                  {{ selectedProductDetails.name }}
                 </h5>
                 <p class="text-sm text-gray-500 mt-1 line-clamp-2">
                   {{
-                    selectedProductToAdd.short_description ||
+                    selectedProductDetails.short_description ||
                     "No description available"
                   }}
                 </p>
@@ -929,13 +1006,13 @@
                   <div>
                     <span class="text-gray-500">Price:</span>
                     <span class="font-medium ml-1"
-                      >৳{{ selectedProductToAdd.sale_price }}</span
+                      >৳{{ selectedProductDetails.sale_price || selectedProductDetails.regular_price }}</span
                     >
                   </div>
                   <div>
                     <span class="text-gray-500">Available:</span>
                     <span class="font-medium ml-1">{{
-                      selectedProductToAdd.quantity
+                      maxAvailableQuantity
                     }}</span>
                   </div>
                 </div>
@@ -944,7 +1021,7 @@
           </div>
 
           <!-- Quantity Input -->
-          <div v-if="selectedProductToAdd">
+          <div v-if="selectedProductDetails">
             <label
               for="quantity-input"
               class="block text-sm font-medium text-gray-700 mb-1"
@@ -987,38 +1064,40 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">          
           <UButton
             @click="addItemToOrder"
             :disabled="
-              !selectedProductToAdd ||
+              !selectedProductDetails ||
               newItemQuantity < 1 ||
-              newItemQuantity > maxAvailableQuantity
+              newItemQuantity > maxAvailableQuantity ||
+              maxAvailableQuantity <= 0
             "
             color="indigo"
             :loading="isAddingItem"
             icon="i-heroicons-plus"
           >
             Add to Order
-          </UButton>
-          <UButton
-            @click="showAddItemModal = false"
+          </UButton>          <UButton
+            @click="closeAddItemModal"
             color="gray"
             variant="outline"
             icon="i-heroicons-x-mark"
           >
             Cancel
-          </UButton>
-        </div>
+          </UButton>        </div>
       </div>
     </UModal>
-  </div>
+    
+      </div>
 </template>
 
 <script setup>
 const { user } = useAuth();
 const { get, patch, put } = useApi();
 const { formatDate } = useUtils();
+const toast = useToast();
+import { nextTick } from 'vue';
 import {
   ShoppingBag,
   ShoppingCart,
@@ -1100,16 +1179,36 @@ async function getOrders() {
 
 async function getProducts() {
   try {
+    console.log('=== getProducts started ===');
     const res = await get("/my-products/");
-    console.log("Products:", res);
-    if (res && res.data) {
-      products.value = res.data;
+    console.log("Products API response:", res);
+    
+    if (res && res.data && Array.isArray(res.data)) {
+      console.log("Raw products count:", res.data.length);
+      const filteredProducts = res.data.filter(product => {
+        const isValid = product && 
+          product.id && 
+          product.name && 
+          (product.quantity > 0); // Only include products with stock
+        console.log(`Product ${product?.name || 'unnamed'}: valid=${isValid}, quantity=${product?.quantity}`);
+        return isValid;
+      });
+      
+      products.value = filteredProducts;
+      console.log("Filtered products count:", products.value.length);
+      console.log("Filtered products:", products.value.map(p => ({ id: p.id, name: p.name, quantity: p.quantity })));
+      
+      return products.value; // Return the products for verification
     } else {
+      console.warn("Invalid products response structure:", res);
       products.value = [];
+      return [];
     }
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error('=== getProducts ERROR ===', error);
     products.value = [];
+    showToast("error", "Error Loading Products", "Failed to load your products. Please try again.");
+    throw error; // Re-throw to be caught by the calling function
   }
 }
 
@@ -1255,8 +1354,73 @@ const displayedPages = computed(() => {
 
 const maxAvailableQuantity = computed(() => {
   if (!selectedProductToAdd.value) return 0;
-  return selectedProductToAdd.value.quantity || 0;
+  
+  // Find the product object if selectedProductToAdd is just an ID
+  let product = selectedProductToAdd.value;
+  if (typeof selectedProductToAdd.value === 'string' || typeof selectedProductToAdd.value === 'number') {
+    product = products.value.find(p => p.id === selectedProductToAdd.value);
+  }
+  
+  if (!product) return 0;
+  
+  // Check if this product is already in the order
+  const existingItem = editingOrderItems.value.find(item => item.product === product.id);
+  const alreadyInOrder = existingItem ? existingItem.quantity : 0;
+  
+  return Math.max(0, (product.quantity || 0) - alreadyInOrder);
 });
+
+const selectedProductDetails = computed(() => {
+  if (!selectedProductToAdd.value) return null;
+  
+  // Find the product object if selectedProductToAdd is just an ID
+  let product = selectedProductToAdd.value;
+  if (typeof selectedProductToAdd.value === 'string' || typeof selectedProductToAdd.value === 'number') {
+    product = products.value.find(p => p.id === selectedProductToAdd.value);
+  }
+  
+  return product;
+});
+
+const availableProductsForOrder = computed(() => {
+  console.log('=== availableProductsForOrder computed ===');
+  console.log('products.value.length:', products.value?.length || 0);
+  console.log('editingOrderItems.value.length:', editingOrderItems.value?.length || 0);
+  
+  const filtered = products.value.filter(product => {
+    const existingItem = editingOrderItems.value.find(item => item.product === product.id);
+    const alreadyInOrder = existingItem ? existingItem.quantity : 0;
+    const available = (product.quantity || 0) > alreadyInOrder;
+    console.log(`Filter check - Product ${product.name}: stock=${product.quantity}, inOrder=${alreadyInOrder}, available=${available}`);
+    return available;
+  });
+  
+  console.log('availableProductsForOrder result:', filtered.length, filtered);
+  return filtered;
+});
+
+// Helper function to get available stock for a product
+const getAvailableStock = (product) => {
+  const existingItem = editingOrderItems.value.find(item => item.product === product.id);
+  const alreadyInOrder = existingItem ? existingItem.quantity : 0;
+  return Math.max(0, (product.quantity || 0) - alreadyInOrder);
+};
+
+// Helper function to get item image
+const getItemImage = (item) => {
+  // Handle different image data structures
+  if (item?.product_details?.image) {
+    // If image is an array, return the first element
+    if (Array.isArray(item.product_details.image) && item.product_details.image.length > 0) {
+      return item.product_details.image[0];
+    }
+    // If image is a string, return it directly
+    if (typeof item.product_details.image === 'string') {
+      return item.product_details.image;
+    }
+  }
+  return null;
+};
 
 // Methods
 const getStatusClass = (status) => {
@@ -1346,13 +1510,86 @@ const calculateSubtotal = () => {
 };
 
 async function handleEditOrderItem() {
+  console.log('=== handleEditOrderItem called ===');
+  console.log('Current editOrderItems.value:', editOrderItems.value);
+  const wasEditing = editOrderItems.value;
   editOrderItems.value = !editOrderItems.value;
-  await getProducts();
+  console.log('New editOrderItems.value:', editOrderItems.value);
+  
+  if (editOrderItems.value && !wasEditing) {
+    // Entering edit mode
+    showToast("info", "Edit Mode Enabled", "You can now modify order items and add new products.");
+    console.log('Loading products...');
+    await getProducts();
+    console.log('Products loaded in handleEditOrderItem');
+  } else if (!editOrderItems.value && wasEditing) {
+    // Exiting edit mode
+    showToast("info", "Edit Mode Disabled", "Order item editing has been disabled.");
+  }
 }
 
+const closeAddItemModal = () => {
+  console.log('=== closeAddItemModal called ===');
+  console.log('showAddItemModal.value before:', showAddItemModal.value);
+  showAddItemModal.value = false;
+  console.log('showAddItemModal.value after:', showAddItemModal.value);
+  selectedProductToAdd.value = null;
+  newItemQuantity.value = 1;
+};
+
 async function handleShowAddItemModal() {
-  showAddItemModal.value = true;
-  await getProducts();
+  try {
+    console.log('=== handleShowAddItemModal started ===');
+    console.log('editOrderItems.value:', editOrderItems.value);
+    console.log('editingOrderItems.value:', editingOrderItems.value);
+    console.log('selectedOrder.value:', selectedOrder.value);
+    
+    // Check if edit mode is enabled
+    if (!editOrderItems.value) {
+      showToast("warning", "Edit Mode Required", "Please enable 'Edit Items' mode first to add products to the order.");
+      return;
+    }
+    
+    // Reset form state
+    selectedProductToAdd.value = null;
+    newItemQuantity.value = 1;
+    
+    // Ensure products are loaded
+    console.log('Current products count:', products.value?.length || 0);
+    if (!products.value || products.value.length === 0) {
+      console.log('Loading products...');
+      await getProducts();
+      console.log('Products loaded:', products.value?.length || 0);
+    }
+    
+    // Filter out products that are out of stock
+    const availableProducts = products.value.filter(product => {
+      const existingItem = editingOrderItems.value.find(item => item.product === product.id);
+      const alreadyInOrder = existingItem ? existingItem.quantity : 0;
+      const available = (product.quantity || 0) > alreadyInOrder;
+      console.log(`Product ${product.name}: stock=${product.quantity}, inOrder=${alreadyInOrder}, available=${available}`);
+      return available;
+    });
+    
+    console.log('Available products count:', availableProducts.length);
+    
+    if (availableProducts.length === 0) {
+      console.log('No products available for selection');
+      showToast("warning", "No Products Available", "All products are either out of stock or already added to this order.");
+      return;
+    }
+      console.log('Opening add item modal...');
+    showAddItemModal.value = true;
+    console.log('showAddItemModal.value after setting:', showAddItemModal.value);
+    
+    // Force reactivity check
+    await nextTick();
+    console.log('After nextTick - showAddItemModal.value:', showAddItemModal.value);
+    console.log('availableProductsForOrder.length:', availableProductsForOrder.value.length);
+  } catch (error) {
+    console.error('Error opening add item modal:', error);
+    showToast("error", "Error", "Failed to load products for selection");
+  }
 }
 
 const calculateTotal = () => {
@@ -1390,44 +1627,84 @@ const decrementNewItemQuantity = () => {
 };
 
 const addItemToOrder = async () => {
-  if (isAddingItem.value || !selectedProductToAdd.value) return;
+  console.log('=== addItemToOrder started ===');
+  console.log('isAddingItem.value:', isAddingItem.value);
+  console.log('selectedProductToAdd.value:', selectedProductToAdd.value);
+  
+  if (isAddingItem.value || !selectedProductToAdd.value) {
+    console.log('Returning early: isAddingItem or no product selected');
+    return;
+  }
   isAddingItem.value = true;
 
   try {
-    const newItem = {
-      product: selectedProductToAdd.value.id,
+    // Find the product object if selectedProductToAdd is just an ID
+    let product = selectedProductToAdd.value;
+    if (typeof selectedProductToAdd.value === 'string' || typeof selectedProductToAdd.value === 'number') {
+      product = products.value.find(p => p.id === selectedProductToAdd.value);
+      console.log('Found product by ID:', product);
+    }
+    
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    console.log('Selected product:', product);
+    console.log('Quantity to add:', newItemQuantity.value);
+    console.log('Product stock:', product.quantity);
+
+    // Check stock availability
+    if (newItemQuantity.value > product.quantity) {
+      showToast("error", "Insufficient Stock", `Only ${product.quantity} items available in stock`);
+      return;
+    }    const newItem = {
+      product: product.id,
       quantity: newItemQuantity.value,
-      price:
-        selectedProductToAdd.value.sale_price ||
-        selectedProductToAdd.value.regular_price,
+      price: product.sale_price || product.regular_price,
       product_details: {
-        name: selectedProductToAdd.value.name,
-        image:
-          selectedProductToAdd.value.image_details &&
-          selectedProductToAdd.value.image_details.length > 0
-            ? [selectedProductToAdd.value.image_details[0].image]
-            : [],
+        name: product.name,
+        image: product.image_details && product.image_details.length > 0
+          ? product.image_details[0].image
+          : null,
       },
     };
 
+    console.log('New item to add:', newItem);
+    console.log('Current editingOrderItems:', editingOrderItems.value);
+
+    // Check if item already exists in order
     const existingItemIndex = editingOrderItems.value.findIndex(
       (item) => item.product === newItem.product
     );
 
-    if (existingItemIndex !== -1) {
-      editingOrderItems.value[existingItemIndex].quantity += newItem.quantity;
-    } else {
-      editingOrderItems.value.push(newItem);
-    }
+    console.log('Existing item index:', existingItemIndex);
 
-    orderItemAddition.value = null;
+    if (existingItemIndex !== -1) {
+      // Update existing item quantity
+      const totalQuantity = editingOrderItems.value[existingItemIndex].quantity + newItem.quantity;
+      if (totalQuantity > product.quantity) {
+        showToast("error", "Insufficient Stock", `Cannot add more. Only ${product.quantity} items available in stock`);
+        return;
+      }
+      console.log('Updating existing item quantity from', editingOrderItems.value[existingItemIndex].quantity, 'to', totalQuantity);
+      editingOrderItems.value[existingItemIndex].quantity = totalQuantity;
+    } else {
+      // Add new item
+      console.log('Adding new item to order');
+      editingOrderItems.value.push(newItem);
+    }    
+
+    console.log('Updated editingOrderItems:', editingOrderItems.value);
+
+    // Reset form
     selectedProductToAdd.value = null;
     newItemQuantity.value = 1;
     showAddItemModal.value = false;
 
     showToast("success", "Item Added", "Product has been added to the order");
   } catch (error) {
-    showToast("error", "Error", "Failed to add item to order");
+    console.error('Error adding item to order:', error);
+    showToast("error", "Error", "Failed to add item to order: " + error.message);
   } finally {
     isAddingItem.value = false;
   }
@@ -1639,23 +1916,53 @@ const prevPage = () => {
 
 // Toast methods
 const showToast = (type, title, message) => {
+  console.log(`=== showToast called: ${type} - ${title} - ${message} ===`);
   // Use Nuxt UI toast if available
-  const toast = useToast?.();
-  if (toast) {
-    toast.add({
-      title,
-      description: message,
-      color: type === "success" ? "green" : "red",
-    });
-  } else {
-    console.log(`Toast: ${type} - ${title} - ${message}`);
+  try {
+    if (toast) {
+      const colorMap = {
+        success: "green",
+        error: "red", 
+        warning: "amber",
+        info: "blue"
+      };
+      
+      toast.add({
+        title,
+        description: message,
+        color: colorMap[type] || "gray",
+        timeout: type === "error" ? 5000 : 3000,
+      });
+      console.log('Toast notification sent successfully');
+    } else {
+      console.log(`Toast not available - ${type}: ${title} - ${message}`);
+    }
+  } catch (error) {
+    console.log(`Toast fallback: ${type} - ${title} - ${message}`);
   }
 };
 
 // Watch for changes
-watch(selectedProductToAdd, (product) => {
-  if (product) {
+watch(selectedProductToAdd, (productId) => {
+  if (productId) {
     newItemQuantity.value = 1;
+    // Validate that the selected product exists and has stock
+    const product = products.value.find(p => p.id === productId);
+    if (!product) {
+      console.warn('Selected product not found:', productId);
+      selectedProductToAdd.value = null;
+      return;
+    }
+    
+    // Check available quantity
+    const existingItem = editingOrderItems.value.find(item => item.product === product.id);
+    const alreadyInOrder = existingItem ? existingItem.quantity : 0;
+    const available = Math.max(0, (product.quantity || 0) - alreadyInOrder);
+    
+    if (available <= 0) {
+      showToast("warning", "No Stock Available", `${product.name} is out of stock or already fully added to this order.`);
+      selectedProductToAdd.value = null;
+    }
   }
 });
 
