@@ -1441,31 +1441,72 @@ const deposit = async () => {
     });
     return;
   }
-
   try {
     isDepositLoading.value = true;
-
-    const payment = await get(
-      `/pay/?amount=${amount.value}&order_id=123&currency=BDT&customer_name=${user.value.user.first_name}+${user.value.user.last_name}&customer_address=${user.value.user.address}&customer_phone=${user.value.user.phone}&customer_city=${user.value.user.city}&customer_post_code=${user.value.user.zip}`
-    );
-
+    
+    // Generate a unique order ID using timestamp
+    const uniqueOrderId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Validate required fields and provide defaults if missing
+    const firstName = user.value.user.first_name || "User";
+    const lastName = user.value.user.last_name || "";
+    const address = user.value.user.address || "N/A";
+    const phone = user.value.user.phone || "N/A";
+    const city = user.value.user.city || "N/A";
+    const zip = user.value.user.zip || "0000";
+    
+    // Create payment URL with proper encoding and validation
+    const paymentUrl = `/pay/?amount=${encodeURIComponent(amount.value)}` +
+      `&order_id=${encodeURIComponent(uniqueOrderId)}` +
+      `&currency=BDT` +
+      `&customer_name=${encodeURIComponent(firstName)}+${encodeURIComponent(lastName)}` +
+      `&customer_address=${encodeURIComponent(address)}` +
+      `&customer_phone=${encodeURIComponent(phone)}` +
+      `&customer_city=${encodeURIComponent(city)}` +
+      `&customer_post_code=${encodeURIComponent(zip)}`;
+    
+    console.log("Payment URL:", paymentUrl);
+    
+    const payment = await get(paymentUrl);
+    
     if (payment.data?.checkout_url) {
       window.open(payment.data.checkout_url, "_blank");
     } else {
-      throw new Error("Failed to get payment URL");
+      console.error("Payment response:", payment);
+      throw new Error("Failed to get payment URL. Please check your personal information in your profile.");
     }
 
     // Reset form and update data
     amount.value = "";
     policy.value = false;
-    await getTransactionHistory();
-  } catch (error) {
+    await getTransactionHistory();  } catch (error) {
+    console.error("Deposit error:", error);
+    
+    // Try to extract more specific error information if available
+    const errorMessage = error.response?.data?.error || error.message || "Unknown error";
+    
     toast.add({
       title: "Payment initiation failed",
-      description: error.message,
+      description: errorMessage,
       color: "red",
+      timeout: 8000,
     });
-    console.error("Deposit error:", error);
+    
+    // If the error is related to missing user info, suggest profile completion
+    if (
+      errorMessage.includes("Missing mandatory parameters") || 
+      !user.value.user.address || 
+      !user.value.user.phone
+    ) {
+      setTimeout(() => {
+        toast.add({
+          title: "Profile information may be incomplete",
+          description: "Please ensure your profile information is complete with address, phone, and other details.",
+          color: "orange",
+          timeout: 8000,
+        });
+      }, 1000);
+    }
   } finally {
     isDepositLoading.value = false;
   }
