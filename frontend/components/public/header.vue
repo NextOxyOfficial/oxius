@@ -456,11 +456,13 @@
           <div 
             @click="openMenu = !openMenu"
             class="sm:hidden relative cursor-pointer"
-          >
-            <div class="relative">
-              <!-- User profile image (if exists) or fallback icon -->
+          >            <div class="relative">
+              <!-- User profile image with pink gradient border for Pro users -->
               <div 
-                class="size-10 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm"
+                :class="[
+                  'size-10 rounded-full flex items-center justify-center overflow-hidden shadow-sm',
+                  user?.user?.is_pro ? 'pro-profile-pink-border' : 'border-2 border-white'
+                ]"
               >
                 <img 
                   v-if="user?.user?.image"
@@ -471,15 +473,12 @@
                 <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500" />
               </div>
               
-              <!-- Pro Badge for mobile -->
+              <!-- Pro Badge for mobile - text at top right -->
               <span
                 v-if="user?.user?.is_pro"
-                class="absolute -top-1 -right-1 size-5 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
+                class="absolute -top-1 -right-1 px-2 py-0.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-bold shadow-sm"
               >
-                <UIcon
-                  name="i-heroicons-shield-check"
-                  class="size-3 text-white"
-                />
+                PRO
               </span>
               
               <!-- Verification Badge for mobile -->
@@ -617,7 +616,7 @@
                       class="absolute inset-0 bg-gradient-to-r from-indigo-50/0 via-indigo-50 to-indigo-50/0 dark:from-indigo-900/0 dark:via-indigo-900/20 dark:to-indigo-900/0 opacity-0 group-hover:opacity-100 -translate-x-full group-hover:translate-x-0 transition-all duration-700"
                     ></div>
 
-                    <div class="flex items-center gap-2 relative z-10">
+                    <div class="flex items-center gap-4 relative z-10">
                       <!-- Pro Badge Icon with 3D effect -->
                       <div
                         class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/40 flex items-center justify-center shadow-sm border border-indigo-200/80 dark:border-indigo-800/30 transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
@@ -1201,6 +1200,59 @@ onMounted(() => {
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+/* Pink gradient border for Pro user profile */
+.pro-profile-pink-border {
+  position: relative;
+  border: none;
+}
+
+/* Pink gradient outline - the outer ring */
+.pro-profile-pink-border::before {
+  content: '';
+  position: absolute;
+  inset: -3px; /* Creates border effect */
+  background: linear-gradient(135deg, #ec4899, #d946ef, #c026d3);
+  border-radius: 100%;
+  z-index: -1;
+  animation: rotate-border 6s linear infinite; /* Slowed down animation for better performance */
+  will-change: transform; /* Optimize animation performance */
+}
+
+/* Inner white space to create the outline effect */
+.pro-profile-pink-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px; /* Slightly smaller than outer ring to create outline */
+  background: var(--bg-color, white); /* Use CSS variable for background color */
+  border-radius: 100%;
+  z-index: -1;
+}
+
+/* Set background color for light/dark mode */
+:root {
+  --bg-color: white;
+}
+
+.dark .pro-profile-pink-border::after {
+  --bg-color: #1e293b; /* Dark mode background color - matches slate-800 */
+}
+
+@keyframes rotate-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Media query to disable animations on low-performance devices or when battery is low */
+@media (prefers-reduced-motion: reduce) {
+  .pro-profile-pink-border::before {
+    animation: none;
   }
 }
 </style>
