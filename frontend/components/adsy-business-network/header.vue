@@ -10,7 +10,7 @@
             <!-- Sidebar Toggle Button - MOBILE ONLY -->
             <button
               @click="cart.toggleBurgerMenu()"
-              class="flex sm:hidden group relative size-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+              class="flex sm:hidden group relative size-7 flex-shrink-0 items-center justify-center rounded-full dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
               aria-label="Toggle sidebar"
             >
               <div
