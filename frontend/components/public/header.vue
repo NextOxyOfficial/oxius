@@ -412,7 +412,7 @@
           <div class="flex items-center" v-if="user && user.user">
             <UButton
               icon="i-ic:twotone-qr-code-scanner"
-              size="md"
+              size="xl"
               :ui="{
                 size: { md: 'text-sm' },
                 padding: { md: 'px-2.5 py-1.5 sm:px-3 sm:py-2' },
