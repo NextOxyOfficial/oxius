@@ -13,7 +13,7 @@
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="close"></div>
           <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           <div class="absolute top-0 right-0 pt-4 pr-4 z-50">
             <button type="button" @click="close" class="bg-white dark:bg-slate-700 rounded-full p-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none shadow-md">
               <span class="sr-only">Close</span>
@@ -216,9 +216,27 @@
                   </button>
                   
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Recommended: 800x400px, PNG or JPG. Max {{ maxBanners }} banners.</p>
-                </div>                  <!-- Sponsorship package selection -->
+                </div>                <!-- Sponsorship package selection -->
                 <div v-if="!isEditMode">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Sponsorship Package</label>
+                  
+                  <!-- User Balance Display -->
+                  <div class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm text-blue-700 dark:text-blue-300">Your Current Balance:</span>
+                      <span v-if="isLoadingBalance" class="text-sm text-blue-600">Loading...</span>
+                      <span v-else-if="balanceError" class="text-sm text-red-600">{{ balanceError }}</span>
+                      <span v-else class="text-sm font-semibold text-blue-800 dark:text-blue-200">৳{{ userBalance.toLocaleString() }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Insufficient Balance Warning -->
+                  <div v-if="hasInsufficientBalance" class="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p class="text-sm text-red-700 dark:text-red-300">
+                      ⚠️ Insufficient balance! You need ৳{{ selectedPackage?.price || 0 }} but only have ৳{{ userBalance }}.
+                      Please <a href="/settings#wallet" class="underline">add funds to your wallet</a> first.
+                    </p>
+                  </div>
                   
                   <!-- Loading packages -->
                   <div v-if="isLoadingPackages" class="space-y-2">
@@ -232,22 +250,32 @@
                     <p class="text-sm text-amber-700">{{ packageError }}</p>
                     <button @click="fetchPackages" class="mt-2 text-sm text-amber-700 underline">Try again</button>
                   </div>
-                  
-                  <!-- Package list -->
+                    <!-- Package list -->
                   <div v-else class="space-y-2">
                     <div 
                       v-for="pkg in packages" 
                       :key="pkg.id"
                       class="relative border rounded-lg p-3 cursor-pointer transition-all"
-                      :class="form.selectedPackage === pkg.id ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700'"
-                      @click="form.selectedPackage = pkg.id"
+                      :class="{
+                        'border-amber-500 bg-amber-50 dark:bg-amber-900/20': form.selectedPackage === pkg.id,
+                        'border-gray-200 dark:border-gray-700': form.selectedPackage !== pkg.id,
+                        'opacity-50': userBalance < pkg.price && !balanceError
+                      }"
+                      @click="userBalance >= pkg.price || balanceError ? form.selectedPackage = pkg.id : null"
                     >
                       <div class="flex justify-between items-center">
-                        <div>
+                        <div class="flex-1">
                           <span class="font-medium text-gray-800 dark:text-white">{{ pkg.name }}</span>
                           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ pkg.description }}</p>
+                          <div v-if="userBalance < pkg.price && !balanceError" class="text-xs text-red-600 mt-1">
+                            Need ৳{{ (pkg.price - userBalance).toLocaleString() }} more
+                          </div>
                         </div>
-                        <div class="text-amber-600 dark:text-amber-400 font-bold">৳{{ pkg.price }}</div>
+                        <div class="text-right">
+                          <div class="text-amber-600 dark:text-amber-400 font-bold">৳{{ pkg.price.toLocaleString() }}</div>
+                          <div v-if="userBalance >= pkg.price || balanceError" class="text-xs text-green-600 mt-1">✓ Available</div>
+                          <div v-else class="text-xs text-red-600 mt-1">⚠️ Insufficient</div>
+                        </div>
                       </div>
                       <div v-if="form.selectedPackage === pkg.id" class="absolute top-2 right-2 text-amber-500">
                         <div class="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
@@ -264,13 +292,12 @@
                 <!-- Success message -->
               <div v-if="submitSuccess" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p class="text-sm text-green-600">✓ {{ isEditMode ? 'Your Gold Sponsor has been updated successfully!' : 'Your Gold Sponsor application has been submitted successfully!' }}</p>
-              </div>
-                <!-- Submit buttons -->
+              </div>              <!-- Submit buttons -->
               <div class="mt-5">
                 <button 
                   type="submit" 
                   class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="isSubmitting || (isLoadingPackages && !isEditMode)"
+                  :disabled="isSubmitting || (isLoadingPackages && !isEditMode) || hasInsufficientBalance"
                 >
                   <span v-if="isSubmitting" class="flex items-center justify-center">
                     <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -279,6 +306,7 @@
                     </svg>
                     {{ isEditMode ? 'Updating...' : 'Submitting...' }}
                   </span>
+                  <span v-else-if="hasInsufficientBalance">Insufficient Balance</span>
                   <span v-else>{{ isEditMode ? 'Update Sponsor' : 'Submit Application' }}</span>
                 </button>
                   <!-- Alternative submission method if regular method fails and not already successful -->
@@ -423,6 +451,20 @@ const handleLogoUpload = (event) => {
   const file = event.target.files[0];
   if (!file) return;
   
+  // Validate file type
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('Please select a valid image file (PNG, JPG, or SVG)');
+    return;
+  }
+  
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    alert('File size must be less than 5MB');
+    return;
+  }
+  
   logoFilename.value = file.name;
   form.value.logo = file;
   
@@ -461,6 +503,20 @@ const handleBannerUpload = (event, index) => {
   const file = event.target.files[0];
   if (!file) return;
   
+  // Validate file type
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('Please select a valid image file (PNG or JPG)');
+    return;
+  }
+  
+  // Validate file size (max 10MB)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    alert('Banner file size must be less than 10MB');
+    return;
+  }
+  
   const banner = banners.value[index];
   banner.image = file;
   
@@ -477,10 +533,52 @@ const packages = ref([]);
 const isLoadingPackages = ref(false);
 const packageError = ref('');
 
+// User balance and balance deduction
+const userBalance = ref(0);
+const isLoadingBalance = ref(false);
+const balanceError = ref('');
+
 // Form submission state
 const isSubmitting = ref(false);
 const submitError = ref('');
 const submitSuccess = ref(false);
+
+// Fetch user balance
+const fetchUserBalance = async () => {
+  if (isEditMode.value) return; // No balance check needed for edits
+  
+  try {
+    isLoadingBalance.value = true;
+    balanceError.value = '';
+    
+    const result = await get('/persons/balance/');
+    if (result.error) {
+      console.error('Error fetching user balance:', result.error);
+      balanceError.value = 'Could not fetch balance';
+    } else if (result.data && typeof result.data.balance !== 'undefined') {
+      userBalance.value = result.data.balance;
+    } else {
+      balanceError.value = 'Balance information not available';
+    }
+  } catch (error) {
+    console.error('Error fetching user balance:', error);
+    balanceError.value = 'Could not fetch balance';
+  } finally {
+    isLoadingBalance.value = false;
+  }
+};
+
+// Check if user has sufficient balance for selected package
+const hasInsufficientBalance = computed(() => {
+  if (isEditMode.value) return false; // No balance check for edits
+  const selectedPkg = packages.value.find(pkg => pkg.id === form.value.selectedPackage);
+  return selectedPkg && userBalance.value < selectedPkg.price;
+});
+
+// Get selected package details
+const selectedPackage = computed(() => {
+  return packages.value.find(pkg => pkg.id === form.value.selectedPackage);
+});
 
 // Fetch packages from API
 const fetchPackages = async () => {
