@@ -8,7 +8,7 @@ from django.db import migrations, models
 def assign_default_user_to_sponsors(apps, schema_editor):
     """Assign a default user to existing sponsors"""
     GoldSponsor = apps.get_model('business_network', 'GoldSponsor')
-    User = apps.get_model('auth', 'User')
+    User = apps.get_model('base', 'User')  # Changed from 'auth' to 'base'
     
     # Get or create a default admin user
     admin_user, created = User.objects.get_or_create(
