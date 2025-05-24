@@ -310,8 +310,9 @@
         </UCard>
       </USlideover>
       
-      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3 py-1">        <!-- Mobile Layout: Menu Button and Logo grouped together -->
-        <div class="flex items-center gap-2">
+      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3 py-1">        
+        <!-- Mobile Layout: Menu Button and Logo grouped together -->
+        <div class="flex items-center gap-4">
           <!-- Mobile View - Sidebar Menu Button (only visible on mobile) -->
           <div class="md:hidden">
             <UButton
@@ -365,19 +366,20 @@
             }"
           />
         </div>
-        
-        <!-- Not Logged In User Section -->
+          <!-- Not Logged In User Section -->
         <div v-if="!user" class="flex relative menu-container items-center">
           <!-- Desktop language switcher -->
           <PublicTranslateHandler class="px-2 max-sm:hidden" />
           
           <!-- Mobile Profile Icon -->
-          <div class="sm:hidden mr-2">
-            <div 
-              class="size-9 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
-            >
-              <UIcon name="i-heroicons-user" class="size-5 text-gray-500" />
-            </div>
+          <div class="sm:hidden">
+            <NuxtLink to="/auth/login">
+              <div 
+                class="size-10 rounded-full flex pl-1 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
+              >
+                <UIcon name="i-material-symbols-person-rounded" class="size-7 text-gray-500" />
+              </div>
+            </NuxtLink>
           </div>
           
           <!-- Login Button -->
