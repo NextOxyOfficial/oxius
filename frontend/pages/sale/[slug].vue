@@ -473,15 +473,17 @@
             <X class="h-5 w-5" />
           </button>
         </div>
-        <div class="p-5">
-          <div class="flex items-center space-x-2">
-            <div class="flex-1">
+        <div class="p-5" style="word-break: break-word">
+          <div
+            class="flex items-center space-x-2 overflow-hidden"
+            style="word-break: break-word"
+          >
+            <div class="flex-1 overflow-hidden" style="word-break: break-word">
               <div
-                class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
+                class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 overflow-hidden"
+                style="word-break: break-word"
               >
-                <span class="text-sm truncate text-gray-600">{{
-                  shareUrl
-                }}</span>
+                <span class="text-sm text-gray-600">{{ shareUrl }}</span>
               </div>
             </div>
             <button
