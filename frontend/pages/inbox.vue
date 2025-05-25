@@ -61,7 +61,39 @@
       <!-- Account balance card -->
       <div class="mb-8">
         <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
-      </div>      <!-- Message filtering options -->
+      </div>
+      
+      <!-- Notification banner for new messages -->
+      <transition name="scale-fade">
+        <div 
+          v-if="newMessageCount > 0" 
+          class="notification-banner mb-6 p-4 rounded-lg flex items-center justify-between"
+          :class="{'bg-primary-50 border border-primary-200': true}"
+        >
+          <div class="flex items-center gap-3">
+            <div class="notification-icon flex items-center justify-center h-10 w-10 rounded-full bg-primary-100">
+              <UIcon name="i-heroicons-bell" class="text-primary-600" />
+            </div>
+            <div>
+              <h3 class="font-medium text-gray-800">
+                {{ newMessageCount }} New {{ newMessageCount === 1 ? 'Message' : 'Messages' }}
+              </h3>
+              <p class="text-sm text-gray-600">
+                {{ newTicketCount > 0 ? `Including ${newTicketCount} support ${newTicketCount === 1 ? 'ticket' : 'tickets'}` : 'Check your inbox for details' }}
+              </p>
+            </div>
+          </div>
+          <UButton
+            color="primary"
+            variant="soft"
+            size="sm"
+            label="Dismiss"
+            @click="clearNotifications"
+          />
+        </div>
+      </transition>
+      
+      <!-- Message filtering options -->
       <div class="flex flex-wrap justify-between items-center mb-6">
         <div class="flex flex-wrap gap-3">
           <UButton
@@ -507,6 +539,8 @@ const readMessages = ref({});
 const isLoading = ref(true);
 const currentFilter = ref('all');
 const ticketStatusFilter = ref('all');
+const newMessageCount = ref(0);
+const newTicketCount = ref(0);
 const filteredMessages = computed(() => {
   let filtered = messages.value;
   
@@ -777,6 +811,10 @@ async function getMessages(preserveState = false) {
         readMessages.value[msg.id] = false;
       });
     }
+    
+    // Count new messages based on read status
+    newMessageCount.value = messages.value.filter(msg => !readMessages.value[msg.id]).length;
+    newTicketCount.value = messages.value.filter(msg => msg.is_ticket && !readMessages.value[msg.id]).length;
   } catch (error) {
     console.error("Error fetching messages:", error);
   } finally {
@@ -788,6 +826,16 @@ async function getMessages(preserveState = false) {
 
 function refreshMessages() {
   getMessages(true); // Preserve UI state when refreshing
+}
+
+// Clear notifications banner
+function clearNotifications() {
+  messages.value.forEach(msg => {
+    readMessages.value[msg.id] = true;
+  });
+  
+  newMessageCount.value = 0;
+  newTicketCount.value = 0;
 }
 
 // Check for new messages and show notifications
@@ -1457,5 +1505,42 @@ onBeforeUnmount(() => {
 /* Ticket status filters */
 .active {
   font-weight: 500;
+}
+
+/* Notification banner styles */
+.notification-banner {
+  background-color: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: gentle-fade-in 0.5s ease-out forwards;
+}
+
+.notification-banner:hover {
+  background-color: #e0f2fe;
+}
+
+.notification-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #dbeafe;
+  transition: all 0.3s ease;
+}
+
+@keyframes gentle-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
