@@ -430,11 +430,24 @@
                     :alt="post?.title || `Image`"
                     class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div
-                    class="absolute bottom-0 left-0 w-full p-2"
-                  >
-                    <div class="text-gray-600 text-sm font-semibold line-clamp-2">
+                  <div class="absolute bottom-0 left-0 w-full p-2">
+                    <div
+                      class="text-gray-600 text-sm font-semibold line-clamp-2"
+                    >
                       {{ post?.title || `Post title` }}
+                    </div>
+                    <div
+                      class="flex items-start mt-1 mb-2 text-xs text-gray-500"
+                    >
+                      <UIcon
+                        name="i-heroicons-map-pin"
+                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+                      />
+                      {{
+                        post?.division && post?.district && post?.area
+                          ? `${post?.division}, ${post?.district}, ${post?.area}`
+                          : `All Over Bangladesh`
+                      }}
                     </div>
                   </div>
                 </div>
@@ -533,7 +546,7 @@
             </div>
             <!-- Recent Listings Horizontal Scroll -->
             <div class="overflow-x-auto pb-4 -mx-1 px-1">
-              <div class="flex gap-4">
+              <div class="flex gap-4 flex-wrap">
                 <NuxtLink
                   v-for="(listing, i) in recentListings"
                   :key="`listing-${i}+${i}`"
@@ -562,6 +575,20 @@
                       {{ listing?.title || `Title` }}
                     </h3>
 
+                    <div
+                      class="flex items-start mt-1 mb-2 text-xs text-gray-500"
+                    >
+                      <UIcon
+                        name="i-heroicons-map-pin"
+                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+                      />
+                      {{
+                        post?.division && post?.district && post?.area
+                          ? `${post?.division}, ${post?.district}, ${post?.area}`
+                          : `All Over Bangladesh`
+                      }}
+                    </div>
+
                     <div class="flex items-center justify-between mt-1.5">
                       <p class="text-amber-700 font-medium text-sm">
                         <span v-if="listing.price"
@@ -577,16 +604,33 @@
                 </NuxtLink>
               </div>
             </div>
-          </div>          <div v-if="recentListingsLoading" class="py-12 text-center bg-white rounded-lg shadow-sm">
-            <UIcon name="i-heroicons-arrow-path" class="animate-spin h-8 w-8 mx-auto text-amber-500" />
+          </div>
+          <div
+            v-if="recentListingsLoading"
+            class="py-12 text-center bg-white rounded-lg shadow-sm"
+          >
+            <UIcon
+              name="i-heroicons-arrow-path"
+              class="animate-spin h-8 w-8 mx-auto text-amber-500"
+            />
             <p class="mt-2 text-gray-500 text-sm">Loading recent listings...</p>
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="recentListings?.length === 0" class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm">
-            <UIcon name="i-heroicons-face-frown" class="h-16 w-16 text-gray-400" />
-            <h3 class="mt-2 text-lg font-medium text-gray-700">No recent listings found</h3>
-            <p class="mt-1 text-gray-500 max-w-sm text-center">Check back soon for new listings.</p>
+          <div
+            v-else-if="recentListings?.length === 0"
+            class="py-12 flex flex-col items-center justify-center bg-white rounded-lg shadow-sm"
+          >
+            <UIcon
+              name="i-heroicons-face-frown"
+              class="h-16 w-16 text-gray-400"
+            />
+            <h3 class="mt-2 text-lg font-medium text-gray-700">
+              No recent listings found
+            </h3>
+            <p class="mt-1 text-gray-500 max-w-sm text-center">
+              Check back soon for new listings.
+            </p>
           </div>
 
           <!-- Buyer Tips & Safety Guide -->
@@ -1022,8 +1066,10 @@ async function loadPosts(page = 1) {
       price_high: "-price",
       most_viewed: "-views",
     };
-    params.append("sort", sortMapping[sortOption.value] || "-created_at");    // Get data from API
-    const response = await get(`${API_ENDPOINTS.LISTINGS}?${params.toString()}`);
+    params.append("sort", sortMapping[sortOption.value] || "-created_at"); // Get data from API
+    const response = await get(
+      `${API_ENDPOINTS.LISTINGS}?${params.toString()}`
+    );
 
     if (response && response.data) {
       if (response.data.results) {
