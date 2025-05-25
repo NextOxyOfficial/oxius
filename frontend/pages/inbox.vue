@@ -147,10 +147,9 @@
         />
       </div>
         <!-- Messages List -->
-      <div v-if="messages && messages.length" class="space-y-4">
-        <TransitionGroup name="message-list" tag="div" class="space-y-5">
+      <div v-if="messages && messages.length" class="space-y-4">        <TransitionGroup name="message-list" tag="div" class="space-y-5">
           <div
-            v-for="message in messages"
+            v-for="message in filteredMessages"
             :key="message.id"
             class="message-card"
             :class="{ unread: !readMessages[message.id] }"

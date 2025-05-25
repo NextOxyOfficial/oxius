@@ -99,11 +99,30 @@ class UpdateTicketStatusView(APIView):
     """
     Update the status of a support ticket
     """
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, ticket_id):
         ticket = get_object_or_404(SupportTicket, id=ticket_id)
         new_status = request.data.get('status')
+        
+        # Check permissions: Admin can update any status, users can only close their own resolved tickets
+        if not request.user.is_staff:
+            # Non-admin users can only close their own tickets that are resolved
+            if ticket.user != request.user:
+                return Response(
+                    {"error": "You can only update your own tickets."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            if new_status != 'closed':
+                return Response(
+                    {"error": "You can only close tickets."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            if ticket.status != 'resolved':
+                return Response(
+                    {"error": "You can only close resolved tickets."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         
         valid_statuses = [s[0] for s in SupportTicket.STATUS_CHOICES]
         if new_status not in valid_statuses:
