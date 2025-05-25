@@ -428,6 +428,17 @@
             >
               {{ item.title }}
             </h3>
+            <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
+              <UIcon
+                name="i-heroicons-map-pin"
+                class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+              />
+              {{
+                post?.division && post?.district && post?.area
+                  ? `${post?.division}, ${post?.district}, ${post?.area}`
+                  : `All Over Bangladesh`
+              }}
+            </div>
             <div class="flex justify-between items-center mt-2">
               <span class="font-bold text-emerald-600 text-sm"
                 >৳{{ item?.price.toLocaleString() }}</span
