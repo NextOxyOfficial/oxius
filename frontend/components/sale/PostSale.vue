@@ -639,6 +639,7 @@ import { useSalePost } from "~/composables/useSalePost";
 const { get } = useApi();
 
 const { t } = useI18n();
+const toast = useToast();
 // Initialize composables
 const {
   createSalePost,
@@ -1084,14 +1085,11 @@ const closeSuccessModal = () => {
   showSuccessModal.value = false;
   resetForm();
 
-  // Show success notification
-  const { showNotification } = useNotifications();
-  showNotification({
+  toast.add({
     title: "Success!",
-    message:
+    description:
       "Your listing has been submitted successfully and is under review.",
-    type: "success",
-    timeout: 5000,
+    color: "green",
   });
 };
 

@@ -61,7 +61,7 @@ class SalePostAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'category', 'child_category', 'price', 'negotiable', 'status', 'created_at')
     list_filter = ('status', 'category', 'child_category', 'condition', 'negotiable', 'created_at', 'condition_object')
     search_fields = ('title', 'description', 'user__username', 'user__email')
-    readonly_fields = ('slug', 'view_count', 'created_at', 'updated_at' )
+    readonly_fields = ('view_count', 'created_at', 'updated_at' )
     inlines = [SaleImageInline]
     fieldsets = (
         ('Basic Information', {

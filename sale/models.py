@@ -4,11 +4,36 @@ from django.utils.text import slugify
 import uuid
 import time
 import random
+import re
 
 User = get_user_model()
 
 def generate_unique_id():
     return int(time.time() * 1) + random.randint(0, 999)
+
+def generate_unique_slug(model_class, field_value, instance=None):
+# Handle Bangla/non-Latin slugification
+    slug = slugify(field_value)
+    if not slug or len(slug) < len(field_value) / 2:
+        slug = re.sub(r'[\'.,:!?()&*+=|\\/\`~{}\[\]<>;"“”‘’"_]', '', field_value)
+        slug = re.sub(r'\s+', '-', slug)
+        
+    unique_slug = slug
+    queryset = model_class.objects.filter(slug=unique_slug)
+
+    # Exclude the current instance if it's an update
+    if instance and instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+
+    # Keep generating slugs until a unique one is found
+    while queryset.exists():
+        suffix = f"-{random.choice(string.ascii_lowercase)}{random.randint(1, 999)}"
+        unique_slug = f"{slug}{suffix}"
+        queryset = model_class.objects.filter(slug=unique_slug)
+        if instance and instance.pk:
+            queryset = queryset.exclude(pk=instance.pk)
+
+    return unique_slug
 
 class SaleCategory(models.Model):
     """Parent category model for sale items"""
@@ -143,23 +168,8 @@ class SalePost(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            # Use the title directly without slugifying to preserve Bangla characters
-            from django.utils.encoding import iri_to_uri
-            
-            # Remove spaces and convert to lowercase where possible
-            base_slug = self.title.replace(' ', '-')
-            
-            # Add a unique identifier (first 8 chars of a UUID)
-            unique_id = str(uuid.uuid4()).split('-')[0]
-            
-            # Combine base slug with unique identifier and ensure URL safety
-            self.slug = iri_to_uri(f"{base_slug}-{unique_id}")
-            
-            # If the slug is too long, truncate the title part
-            max_base_length = 280  # Allow space for the unique ID and hyphen
-            if len(self.slug) > 300:
-                truncated_base = base_slug[:max_base_length]
-                self.slug = iri_to_uri(f"{truncated_base}-{unique_id}")
+            self.slug = generate_unique_slug(SalePost, self.title, self)
+        super(SalePost, self).save(*args, **kwargs)
         
         # Link to condition object if available
         if self.condition and not self.condition_object:
