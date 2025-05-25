@@ -91,12 +91,11 @@
             @click="clearNotifications"
           />
         </div>
-      </transition>
-        <!-- Create Support Ticket button -->
-      <div class="flex justify-end mb-4">
+      </transition>        <!-- Open Ticket button -->
+      <div class="flex justify-start mb-4">
         <UButton
           color="primary"
-          label="Create Support Ticket"
+          label="Open Ticket"
           icon="i-heroicons-plus"
           @click="openNewTicketModal"
         />
@@ -147,8 +146,7 @@
           title="Refresh messages"
         />
       </div>
-      
-      <!-- Messages List -->
+        <!-- Messages List -->
       <div v-if="messages && messages.length" class="space-y-4">
         <TransitionGroup name="message-list" tag="div" class="space-y-5">
           <div
@@ -159,15 +157,15 @@
           >
             <!-- Message header -->
             <div
-              class="message-header"
-              :class="expandedMessages[message.id] ? 'expanded' : ''"
-              @click="toggleMessage(message.id)"
+              class="message-header cursor-pointer"
+              @click="openTicketDetail(message)"
             >
               <!-- Status indicator -->
               <div
                 class="status-indicator"
                 :class="{ active: !readMessages[message.id] }"
-              ></div>              <!-- Left side: message info -->
+              ></div>
+              
               <div class="flex items-center gap-3 flex-1 min-w-0">
                 <div class="flex-shrink-0">
                   <div class="message-icon-circle" 
@@ -189,171 +187,50 @@
                     />
                   </div>
                 </div>
+                
                 <div class="flex-1 min-w-0">
-                  <div
-                    class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-                  >
-                    <span class="message-id"
-                      >#{{ message.id.toString().padStart(10, "0") }}</span
-                    >
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <div class="flex items-center gap-1.5">
+                      <transition name="fade">
+                        <UBadge
+                          v-if="!readMessages[message.id]"
+                          color="primary"
+                          class="new-badge"
+                        >New</UBadge>
+                      </transition>
+                      <UBadge
+                        v-if="message.is_ticket && message.status === 'open'"
+                        color="amber"
+                        class="status-badge"
+                      >Open</UBadge>
+                    </div>
+                    
+                    <span class="message-id">#{{ message.id.toString().padStart(10, "0") }}</span>
+                    
                     <h3
-                      v-if="message.is_ticket" 
-                      class="message-title line-clamp-1 cursor-pointer ticket-title"
-                      :class="{ 'font-semibold': !readMessages[message.id] }"
-                      @click.stop="openTicketDetail(message)"
-                    >
-                      {{ message.title }}
-                    </h3>
-                    <h3
-                      v-else
                       class="message-title line-clamp-1"
                       :class="{ 'font-semibold': !readMessages[message.id] }"
                     >
                       {{ message.title }}
                     </h3>
+                    
                     <UBadge
-                      v-if="!readMessages[message.id]"
-                      color="primary"
-                      class="new-badge"
-                      >New</UBadge
-                    >
-                    <UBadge
-                      v-if="message.is_ticket"
+                      v-if="message.is_ticket && message.status !== 'open'"
                       :color="getTicketStatusColor(message.status)"
-                      class="ml-2 cursor-pointer"
-                      @click.stop="openTicketDetail(message)"
+                      class="ml-auto sm:ml-2"
                     >
                       {{ formatTicketStatus(message.status) }}
                     </UBadge>
                   </div>
+                  
                   <div class="message-meta">
                     <span>{{ formatDate(message.created_at) }}</span>
                     <span class="message-meta-dot">•</span>
-                    <span>System</span>
+                    <span>{{ message.is_ticket ? 'Ticket' : 'System' }}</span>
                   </div>
                 </div>
-              </div>
-
-              <!-- Right side: actions -->
-              <div class="message-actions">
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  :icon="
-                    expandedMessages[message.id]
-                      ? 'i-heroicons-chevron-up'
-                      : 'i-heroicons-chevron-down'
-                  "
-                  size="sm"
-                  class="toggle-btn"
-                />
               </div>
             </div>
-
-            <!-- Message content -->
-            <transition
-              name="slide-fade"
-              @enter="startTransition"
-              @after-enter="endTransition"
-              @before-leave="startTransition"
-              @after-leave="endTransition"
-            >
-              <div v-if="expandedMessages[message.id]" class="message-content">
-                <div class="message-body">
-                  <div class="message-text">
-                    <p>{{ message.message }}</p>                  </div>
-                  
-                  <div class="message-footer">
-                    <span class="message-sender">
-                      {{ message.is_ticket ? (message.is_admin_reply ? 'Support Team' : 'You') : 'System' }}
-                    </span>
-                    <div class="flex gap-2">
-                      <UButton
-                        v-if="!readMessages[message.id] && !message.is_ticket"
-                        size="xs"
-                        color="primary"
-                        variant="soft"
-                        label="Mark as read"
-                        icon="i-heroicons-check"
-                        @click.stop="markAsRead(message.id)"
-                      />                      <div v-if="message.is_ticket" class="flex gap-2">
-                        <UButton
-                          v-if="message.status !== 'closed'"
-                          size="xs"
-                          color="primary"
-                          variant="soft"
-                          label="Reply"
-                          icon="i-heroicons-chat-bubble-left-right"
-                          @click.stop="openReplyModal(message)"
-                        />
-                        <UButton
-                          v-if="message.status === 'resolved' && !user?.user?.is_staff"
-                          size="xs"
-                          color="gray"
-                          variant="soft"
-                          label="Close Ticket"
-                          icon="i-heroicons-check-circle"
-                          @click.stop="updateTicketStatus(message.id, 'closed')"
-                        />
-                      </div>
-                    </div>                  </div>
-                  
-                  <!-- Ticket replies section -->
-                  <div v-if="message.is_ticket && (message.replies || []).length > 0" class="message-replies mt-4 pt-4 border-t border-gray-200">
-                    <h4 class="text-sm font-medium text-gray-700 mb-3">Conversation History</h4>
-                    <div v-for="reply in message.replies" :key="reply.id" class="message-reply mb-3">
-                      <div class="flex items-start gap-3">
-                        <div :class="[
-                          'reply-avatar flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
-                          reply.is_from_admin ? 'bg-primary-100' : 'bg-gray-100'
-                        ]">
-                          <UIcon 
-                            :name="reply.is_from_admin ? 'i-heroicons-user-circle' : 'i-heroicons-user'" 
-                            class="text-base" 
-                            :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'"
-                          />
-                        </div>
-                        <div class="reply-content flex-1">
-                          <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-medium" :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'">
-                              {{ reply.is_from_admin ? 'Support Team' : 'You' }}
-                            </span>
-                            <span class="text-xs text-gray-400">{{ formatDate(reply.created_at) }}</span>
-                          </div>
-                          <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ reply.message }}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Status history and admin options for tickets -->
-                  <div v-if="message.is_ticket" class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex justify-between items-center mb-3">
-                      <h4 class="text-sm font-medium text-gray-700">Ticket Status</h4>
-                      <UBadge :color="getTicketStatusColor(message.status)">
-                        {{ formatTicketStatus(message.status) }}
-                      </UBadge>
-                    </div>
-                    
-                    <!-- Admin only: status update options -->
-                    <div v-if="user?.user?.is_staff" class="mt-3 bg-gray-50 p-3 rounded-lg">
-                      <h5 class="text-xs font-medium mb-2">Update Ticket Status:</h5>
-                      <div class="flex flex-wrap gap-2">
-                        <UButton 
-                          v-for="status in ['open', 'in_progress', 'resolved', 'closed']" 
-                          :key="status"
-                          size="xs"
-                          :color="getTicketStatusColor(status)"
-                          :disabled="message.status === status"
-                          :label="formatTicketStatus(status)"
-                          @click="updateTicketStatus(message.id, status)"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </transition>
           </div>
         </TransitionGroup>
       </div>
@@ -388,10 +265,9 @@
       
       <!-- New Support Ticket Modal -->
       <UModal v-model="isNewTicketModalOpen" :ui="{ width: 'sm:max-w-xl' }">
-        <UCard>
-          <template #header>
+        <UCard>          <template #header>
             <div class="flex justify-between items-center">
-              <h3 class="text-lg font-medium">Create Support Ticket</h3>
+              <h3 class="text-lg font-medium">Open New Ticket</h3>
               <UButton 
                 color="gray" 
                 variant="ghost" 
@@ -645,14 +521,8 @@ const isSubmittingTicket = ref(false);
 const isSubmittingReply = ref(false);
 
 function toggleMessage(id) {
-  expandedMessages.value = {
-    ...expandedMessages.value,
-    [id]: !expandedMessages.value[id],
-  };
-
-  if (!readMessages.value[id] && expandedMessages.value[id]) {
-    markAsRead(id);
-  }
+  // We no longer expand messages, we just mark them as read
+  markAsRead(id);
 }
 
 function markAsRead(id) {
@@ -1219,6 +1089,17 @@ onBeforeUnmount(() => {
   padding: 0.125rem 0.375rem;
 }
 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
 .message-actions {
   display: flex;
   align-items: center;
@@ -1623,6 +1504,21 @@ onBeforeUnmount(() => {
 .message-icon-circle.admin-notice {
   background-color: #f3f4f6;
   border-color: #e5e7eb;
+}
+
+.status-badge {
+  font-size: 0.65rem;
+  padding: 0.125rem 0.375rem;
+  animation: pulse-light 2s infinite;
+}
+
+@keyframes pulse-light {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 .message-icon-circle.support-ticket {
