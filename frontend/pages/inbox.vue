@@ -61,31 +61,92 @@
       <!-- Account balance card -->
       <div class="mb-8">
         <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
-      </div>
-
-      <!-- Message filtering options -->
-      <div class="flex flex-wrap gap-3 mb-6">
-        <UButton
-          variant="soft"
-          color="primary"
-          :label="t('all_messages')"
-          icon="i-heroicons-inbox"
-          class="filter-btn active"
-        />
-        <UButton
-          variant="soft"
-          color="gray"
-          icon="i-heroicons-envelope"
-          :label="t('unread')"
-          class="filter-btn"
-        />
-        <!-- <UButton
-          variant="soft"
-          color="gray"
-          icon="i-heroicons-bell"
-          label="Notifications"
-          class="filter-btn"
-        /> -->
+      </div>      <!-- Message filtering options -->
+      <div class="flex flex-wrap justify-between items-center mb-6">
+        <div class="flex flex-wrap gap-3">
+          <UButton
+            variant="soft"
+            color="primary"
+            :class="{ active: currentFilter === 'all' }"
+            :label="t('all_messages')"
+            icon="i-heroicons-inbox"
+            class="filter-btn"
+            @click="setFilter('all')"
+          />
+          <UButton
+            variant="soft"
+            color="gray"
+            :class="{ active: currentFilter === 'unread' }"
+            icon="i-heroicons-envelope"
+            :label="t('unread')"
+            class="filter-btn"
+            @click="setFilter('unread')"
+          />          <UButton
+            variant="soft"
+            color="gray"
+            :class="{ active: currentFilter === 'support' }"
+            icon="i-heroicons-chat-bubble-left-right"
+            label="Support Tickets"
+            class="filter-btn"
+            @click="setFilter('support')"
+          />
+          <div v-if="currentFilter === 'support'" class="mt-3 flex gap-2">
+            <UButton
+              size="xs"
+              variant="soft"
+              :class="{ active: ticketStatusFilter === 'all' }"
+              @click="setTicketStatusFilter('all')"
+              label="All Tickets"
+            />
+            <UButton
+              size="xs"
+              variant="soft"
+              color="amber"
+              :class="{ active: ticketStatusFilter === 'open' }"
+              @click="setTicketStatusFilter('open')"
+              label="Open"
+            />
+            <UButton
+              size="xs"
+              variant="soft"
+              color="blue"
+              :class="{ active: ticketStatusFilter === 'in_progress' }"
+              @click="setTicketStatusFilter('in_progress')"
+              label="In Progress"
+            />
+            <UButton
+              size="xs"
+              variant="soft"
+              color="green"
+              :class="{ active: ticketStatusFilter === 'resolved' }"
+              @click="setTicketStatusFilter('resolved')"
+              label="Resolved"
+            />
+            <UButton
+              size="xs"
+              variant="soft"
+              color="gray"
+              :class="{ active: ticketStatusFilter === 'closed' }"
+              @click="setTicketStatusFilter('closed')"
+              label="Closed"
+            />
+          </div>
+        </div>        <div class="flex gap-2">
+          <UButton
+            color="primary"
+            label="Create Support Ticket"
+            icon="i-heroicons-plus"
+            @click="openNewTicketModal"
+          />
+          <UButton
+            color="gray"
+            variant="soft"
+            icon="i-heroicons-arrow-path"
+            :loading="isLoading"
+            @click="refreshMessages"
+            title="Refresh messages"
+          />
+        </div>
         <!-- <div class="ml-auto">
           <UInput
             placeholder="Search messages..."
@@ -118,14 +179,20 @@
               ></div>
 
               <!-- Left side: message info -->
-              <div class="flex items-center gap-3 flex-1 min-w-0">
-                <div class="flex-shrink-0">
-                  <div class="message-icon-circle">
+              <div class="flex items-center gap-3 flex-1 min-w-0">                <div class="flex-shrink-0">
+                  <div class="message-icon-circle" 
+                       :class="{ 
+                         'admin-notice': !message.is_ticket, 
+                         'support-ticket': message.is_ticket,
+                         'resolved': message.is_ticket && ['resolved', 'closed'].includes(message.status)
+                       }">
                     <UIcon
                       :name="
-                        readMessages[message.id]
-                          ? 'i-heroicons-envelope-open'
-                          : 'i-heroicons-envelope'
+                        message.is_ticket 
+                          ? 'i-heroicons-chat-bubble-left-right'
+                          : (readMessages[message.id]
+                            ? 'i-heroicons-envelope-open'
+                            : 'i-heroicons-envelope')
                       "
                       class="message-type-icon"
                       :class="readMessages[message.id] ? 'read' : 'unread'"
@@ -135,8 +202,7 @@
                 <div class="flex-1 min-w-0">
                   <div
                     class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-                  >
-                    <span class="message-id"
+                  >                    <span class="message-id"
                       >#{{ message.id.toString().padStart(4, "0") }}</span
                     >
                     <h3
@@ -151,6 +217,13 @@
                       class="new-badge"
                       >New</UBadge
                     >
+                    <UBadge
+                      v-if="message.is_ticket"
+                      :color="getTicketStatusColor(message.status)"
+                      class="ml-2"
+                    >
+                      {{ formatTicketStatus(message.status) }}
+                    </UBadge>
                   </div>
                   <div class="message-meta">
                     <span>{{ formatDate(message.created_at) }}</span>
@@ -188,19 +261,93 @@
                 <div class="message-body">
                   <div class="message-text">
                     <p>{{ message.message }}</p>
+                  </div>              <div class="message-footer">
+                    <span class="message-sender">
+                      {{ message.is_ticket ? (message.is_admin_reply ? 'Support Team' : 'You') : 'System' }}
+                    </span>
+                    <div class="flex gap-2">
+                      <UButton
+                        v-if="!readMessages[message.id] && !message.is_ticket"
+                        size="xs"
+                        color="primary"
+                        variant="soft"
+                        label="Mark as read"
+                        icon="i-heroicons-check"
+                        @click.stop="markAsRead(message.id)"
+                      />                      <div v-if="message.is_ticket" class="flex gap-2">
+                        <UButton
+                          v-if="message.status !== 'closed'"
+                          size="xs"
+                          color="primary"
+                          variant="soft"
+                          label="Reply"
+                          icon="i-heroicons-chat-bubble-left-right"
+                          @click.stop="openReplyModal(message)"
+                        />
+                        <UButton
+                          v-if="message.status === 'resolved' && !user?.user?.is_staff"
+                          size="xs"
+                          color="gray"
+                          variant="soft"
+                          label="Close Ticket"
+                          icon="i-heroicons-check-circle"
+                          @click.stop="updateTicketStatus(message.id, 'closed')"
+                        />
+                      </div>
+                    </div>
                   </div>
-
-                  <div class="message-footer">
-                    <span class="message-sender">Sent by System</span>
-                    <UButton
-                      size="xs"
-                      color="primary"
-                      variant="soft"
-                      label="Mark as read"
-                      icon="i-heroicons-check"
-                      @click.stop="markAsRead(message.id)"
-                      v-if="!readMessages[message.id]"
-                    />
+                    <!-- Ticket replies section -->
+                  <div v-if="message.is_ticket && (message.replies || []).length > 0" class="message-replies mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Conversation History</h4>
+                    <div v-for="reply in message.replies" :key="reply.id" class="message-reply mb-3">
+                      <div class="flex items-start gap-3">
+                        <div :class="[
+                          'reply-avatar flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+                          reply.is_from_admin ? 'bg-primary-100' : 'bg-gray-100'
+                        ]">
+                          <UIcon 
+                            :name="reply.is_from_admin ? 'i-heroicons-user-circle' : 'i-heroicons-user'" 
+                            class="text-base" 
+                            :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'"
+                          />
+                        </div>
+                        <div class="reply-content flex-1">
+                          <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-medium" :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'">
+                              {{ reply.is_from_admin ? 'Support Team' : 'You' }}
+                            </span>
+                            <span class="text-xs text-gray-400">{{ formatDate(reply.created_at) }}</span>
+                          </div>
+                          <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ reply.message }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Status history and admin options for tickets -->
+                  <div v-if="message.is_ticket" class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex justify-between items-center mb-3">
+                      <h4 class="text-sm font-medium text-gray-700">Ticket Status</h4>
+                      <UBadge :color="getTicketStatusColor(message.status)">
+                        {{ formatTicketStatus(message.status) }}
+                      </UBadge>
+                    </div>
+                    
+                    <!-- Admin only: status update options -->
+                    <div v-if="user?.user?.is_staff" class="mt-3 bg-gray-50 p-3 rounded-lg">
+                      <h5 class="text-xs font-medium mb-2">Update Ticket Status:</h5>
+                      <div class="flex flex-wrap gap-2">
+                        <UButton 
+                          v-for="status in ['open', 'in_progress', 'resolved', 'closed']" 
+                          :key="status"
+                          size="xs"
+                          :color="getTicketStatusColor(status)"
+                          :disabled="message.status === status"
+                          :label="formatTicketStatus(status)"
+                          @click="updateTicketStatus(message.id, status)"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -235,22 +382,159 @@
           </svg>
           <UIcon name="i-heroicons-envelope" class="loading-envelope" />
         </div>
-        <p class="loading-text">Loading your messages...</p>
-      </div>
+        <p class="loading-text">Loading your messages...</p>      </div>
+      
+      <!-- New Support Ticket Modal -->
+      <UModal v-model="isNewTicketModalOpen" :ui="{ width: 'sm:max-w-xl' }">
+        <UCard>
+          <template #header>
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium">Create Support Ticket</h3>
+              <UButton 
+                color="gray" 
+                variant="ghost" 
+                icon="i-heroicons-x-mark" 
+                class="rounded-full h-8 w-8" 
+                @click="isNewTicketModalOpen = false" 
+              />
+            </div>
+          </template>
+          
+          <div class="space-y-4">
+            <UFormGroup label="Subject" required>
+              <UInput 
+                v-model="newTicket.title" 
+                placeholder="Brief description of your issue" 
+              />
+            </UFormGroup>
+            
+            <UFormGroup label="Message" required>
+              <UTextarea 
+                v-model="newTicket.message" 
+                placeholder="Please describe your issue in detail" 
+                rows="5"
+              />
+            </UFormGroup>
+          </div>
+          
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton 
+                color="gray" 
+                variant="soft" 
+                @click="isNewTicketModalOpen = false"
+              >
+                Cancel
+              </UButton>
+              <UButton 
+                color="primary" 
+                :loading="isSubmittingTicket"
+                @click="submitNewTicket"
+              >
+                Submit Ticket
+              </UButton>
+            </div>
+          </template>
+        </UCard>
+      </UModal>
+      
+      <!-- Reply to Ticket Modal -->
+      <UModal v-model="isReplyModalOpen" :ui="{ width: 'sm:max-w-xl' }">
+        <UCard>
+          <template #header>
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium">Reply to Ticket</h3>
+              <UButton 
+                color="gray" 
+                variant="ghost" 
+                icon="i-heroicons-x-mark" 
+                class="rounded-full h-8 w-8" 
+                @click="isReplyModalOpen = false" 
+              />
+            </div>
+          </template>
+          
+          <div class="space-y-4">
+            <div v-if="activeTicket" class="bg-gray-50 p-3 rounded-lg">
+              <p class="text-sm font-medium">{{ activeTicket.title }}</p>
+              <p class="text-xs text-gray-500">Ticket #{{ activeTicket.id.toString().substring(0, 8) }}</p>
+            </div>
+            
+            <UFormGroup label="Your Reply" required>
+              <UTextarea 
+                v-model="ticketReply" 
+                placeholder="Type your response..." 
+                rows="4"
+              />
+            </UFormGroup>
+          </div>
+          
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton 
+                color="gray" 
+                variant="soft" 
+                @click="isReplyModalOpen = false"
+              >
+                Cancel
+              </UButton>
+              <UButton 
+                color="primary" 
+                :loading="isSubmittingReply"
+                @click="submitReply"
+              >
+                Send Reply
+              </UButton>
+            </div>
+          </template>
+        </UCard>
+      </UModal>
     </UContainer>
   </PublicSection>
 </template>
 
 <script setup>
-// Script remains largely the same as your current implementation
 const { t } = useI18n();
 const { user } = useAuth();
-const messages = ref([]);
-const { get } = useApi();
+const { get, post } = useApi();
 const { formatDate } = useUtils();
+const { toast: UToast } = useToast();
+
+// State variables
+const messages = ref([]);
 const expandedMessages = ref({});
 const readMessages = ref({});
 const isLoading = ref(true);
+const currentFilter = ref('all');
+const ticketStatusFilter = ref('all');
+const filteredMessages = computed(() => {
+  let filtered = messages.value;
+  
+  // First filter by message type
+  if (currentFilter.value === 'all') {
+    filtered = messages.value;
+  } else if (currentFilter.value === 'unread') {
+    filtered = messages.value.filter(msg => !readMessages.value[msg.id]);
+  } else if (currentFilter.value === 'support') {
+    filtered = messages.value.filter(msg => msg.is_ticket);
+    
+    // Then apply ticket status filter if we're in support view
+    if (ticketStatusFilter.value !== 'all') {
+      filtered = filtered.filter(ticket => ticket.status === ticketStatusFilter.value);
+    }
+  }
+  
+  return filtered;
+});
+
+// Ticket handling
+const isNewTicketModalOpen = ref(false);
+const isReplyModalOpen = ref(false);
+const newTicket = ref({ title: '', message: '' });
+const ticketReply = ref('');
+const activeTicket = ref(null);
+const isSubmittingTicket = ref(false);
+const isSubmittingReply = ref(false);
 
 function toggleMessage(id) {
   expandedMessages.value = {
@@ -282,16 +566,217 @@ function endTransition(el) {
   el.style.height = "";
 }
 
-async function getAdminMessages() {
+function setFilter(filter) {
+  currentFilter.value = filter;
+  
+  // Reset ticket status filter when changing main filter
+  if (filter !== 'support') {
+    ticketStatusFilter.value = 'all';
+  }
+}
+
+function setTicketStatusFilter(status) {
+  ticketStatusFilter.value = status;
+}
+
+function getTicketStatusColor(status) {
+  switch (status) {
+    case 'open':
+      return 'amber';
+    case 'in_progress':
+      return 'blue';
+    case 'resolved':
+      return 'green';
+    case 'closed':
+      return 'gray';
+    default:
+      return 'gray';
+  }
+}
+
+function formatTicketStatus(status) {
+  if (!status) return '';
+  
+  // Convert 'in_progress' to 'In Progress'
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// Support ticket functions
+function openNewTicketModal() {
+  newTicket.value = { title: '', message: '' };
+  isNewTicketModalOpen.value = true;
+}
+
+function openReplyModal(ticket) {
+  activeTicket.value = ticket;
+  ticketReply.value = '';
+  isReplyModalOpen.value = true;
+}
+
+async function submitNewTicket() {
+  if (!newTicket.value.title || !newTicket.value.message) {
+    // Add validation or error handling
+    return;
+  }
+  
+  isSubmittingTicket.value = true;
+  
+  try {
+    const response = await post('/tickets/', {
+      title: newTicket.value.title,
+      message: newTicket.value.message
+    });
+    
+    // Add the new ticket to the messages list
+    const newTicketData = {
+      ...response.data,
+      is_ticket: true,
+      replies: []
+    };
+    
+    messages.value = [newTicketData, ...messages.value];
+    
+    // Reset the form and close the modal
+    newTicket.value = { title: '', message: '' };
+    isNewTicketModalOpen.value = false;
+    
+    // Auto-expand the new ticket
+    expandedMessages.value[newTicketData.id] = true;
+    
+  } catch (error) {
+    console.error("Error creating support ticket:", error);
+  } finally {
+    isSubmittingTicket.value = false;
+  }
+}
+
+async function submitReply() {
+  if (!ticketReply.value || !activeTicket.value) {
+    return;
+  }
+  
+  isSubmittingReply.value = true;
+  
+  try {
+    const response = await post(`/tickets/${activeTicket.value.id}/replies/`, {
+      message: ticketReply.value
+    });
+    
+    // Update the ticket with the new reply
+    const updatedTicket = messages.value.find(msg => msg.id === activeTicket.value.id);
+    if (updatedTicket) {
+      if (!updatedTicket.replies) {
+        updatedTicket.replies = [];
+      }
+      updatedTicket.replies.push(response.data);
+    }
+    
+    // Reset and close
+    ticketReply.value = '';
+    isReplyModalOpen.value = false;
+    
+  } catch (error) {
+    console.error("Error submitting reply:", error);
+  } finally {
+    isSubmittingReply.value = false;
+  }
+}
+
+async function updateTicketStatus(ticketId, newStatus) {
+  try {
+    const response = await post(`/tickets/${ticketId}/status/`, {
+      status: newStatus
+    });
+    
+    // Update the ticket status in the UI
+    const updatedTicket = messages.value.find(msg => msg.id === ticketId);
+    if (updatedTicket) {
+      updatedTicket.status = newStatus;
+      
+      // Add a system message indicating status change
+      if (!updatedTicket.statusChanges) {
+        updatedTicket.statusChanges = [];
+      }
+      
+      // Add notification to the user about the status update
+      UToast.show({
+        title: 'Ticket Status Updated',
+        description: `Ticket has been marked as "${formatTicketStatus(newStatus)}"`,
+        color: getTicketStatusColor(newStatus)
+      });
+    }
+  } catch (error) {
+    console.error("Error updating ticket status:", error);
+    
+    // Show error notification
+    UToast.show({
+      title: 'Update Failed',
+      description: 'Failed to update ticket status. Please try again.',
+      color: 'red'
+    });
+  }
+}
+
+async function getMessages(preserveState = false) {
   isLoading.value = true;
   try {
-    const res = await get("/admin-notice/");
-    messages.value = res.data;
+    // Save current messages for comparison
+    const oldMessages = [...messages.value];
+    
+    // Get admin notices
+    const noticesRes = await get("/admin-notice/");
+    const adminNotices = noticesRes.data.map(notice => ({
+      ...notice,
+      is_ticket: false
+    }));
+    
+    // Get support tickets
+    const ticketsRes = await get("/tickets/");
+    const supportTickets = ticketsRes.data.map(ticket => ({
+      ...ticket,
+      is_ticket: true
+    }));
+    
+    // Combine messages and sort by date
+    const newMessages = [...supportTickets, ...adminNotices].sort((a, b) => 
+      new Date(b.created_at) - new Date(a.created_at)
+    );
 
-    messages.value.forEach((msg) => {
-      expandedMessages.value[msg.id] = false;
-      readMessages.value[msg.id] = false;
-    });
+    // If preserving state, check for new messages and notify
+    if (preserveState && oldMessages.length > 0) {
+      checkForNewMessages(oldMessages, newMessages);
+      
+      // Save current expanded and read states
+      const currentExpandedState = { ...expandedMessages.value };
+      const currentReadState = { ...readMessages.value };
+      
+      messages.value = newMessages;
+      
+      // Restore expanded and read states for existing messages
+      messages.value.forEach((msg) => {
+        // If message was expanded before, keep it expanded
+        if (currentExpandedState[msg.id]) {
+          expandedMessages.value[msg.id] = true;
+        }
+        
+        // If message was read before, keep it marked as read
+        if (currentReadState[msg.id]) {
+          readMessages.value[msg.id] = true;
+        }
+      });
+    } else {
+      // Initialize new messages
+      messages.value = newMessages;
+      
+      // Initialize expanded and read states (all collapsed and unread)
+      messages.value.forEach((msg) => {
+        expandedMessages.value[msg.id] = false;
+        readMessages.value[msg.id] = false;
+      });
+    }
   } catch (error) {
     console.error("Error fetching messages:", error);
   } finally {
@@ -301,8 +786,64 @@ async function getAdminMessages() {
   }
 }
 
+function refreshMessages() {
+  getMessages(true); // Preserve UI state when refreshing
+}
+
+// Check for new messages and show notifications
+function checkForNewMessages(oldMessages, newMessages) {
+  // Check if there are any new messages
+  const oldIds = oldMessages.map(msg => msg.id);
+  const newItems = newMessages.filter(msg => !oldIds.includes(msg.id));
+  
+  if (newItems.length > 0) {
+    // Show notification about new messages
+    UToast.show({
+      title: `${newItems.length} New ${newItems.length === 1 ? 'Message' : 'Messages'}`,
+      description: newItems[0].is_ticket ? 'You have new support ticket activity' : 'You have new messages',
+      color: 'primary',
+      timeout: 5000
+    });
+  }
+  
+  // Check for new replies in existing tickets
+  newMessages.forEach(newMsg => {
+    if (!newMsg.is_ticket || !newMsg.replies || newMsg.replies.length === 0) return;
+    
+    const oldMsg = oldMessages.find(m => m.id === newMsg.id);
+    if (!oldMsg || !oldMsg.replies) return;
+    
+    if (newMsg.replies.length > oldMsg.replies.length) {
+      // There are new replies to this ticket
+      const newReplyCount = newMsg.replies.length - oldMsg.replies.length;
+      
+      UToast.show({
+        title: `New ${newReplyCount === 1 ? 'Reply' : 'Replies'} to Ticket`,
+        description: `Ticket #${newMsg.id.substring(0, 8)}: ${newMsg.title}`,
+        color: 'primary',
+        timeout: 5000
+      });
+    }
+  });
+}
+
+// Auto-refresh interval
+let autoRefreshInterval;
+
 onMounted(() => {
-  getAdminMessages();
+  getMessages();
+  
+  // Set up auto-refresh every 30 seconds
+  autoRefreshInterval = setInterval(() => {
+    getMessages(true);
+  }, 30000);
+});
+
+onBeforeUnmount(() => {
+  // Clear auto-refresh interval when leaving the page
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
 });
 </script>
 
@@ -856,5 +1397,65 @@ onMounted(() => {
   .inbox-icon {
     margin-right: 0.75rem;
   }
+}
+
+/* Support ticket styles */
+.message-icon-circle.admin-notice {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.message-icon-circle.support-ticket {
+  background-color: #ede9fe;
+  border-color: #ddd6fe;
+}
+
+.message-icon-circle.support-ticket.resolved {
+  background-color: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.message-card:hover .message-icon-circle.admin-notice {
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.message-card:hover .message-icon-circle.support-ticket {
+  background-color: #ddd6fe;
+  border-color: #c4b5fd;
+}
+
+.message-card:hover .message-icon-circle.support-ticket.resolved {
+  background-color: #bbf7d0;
+  border-color: #86efac;
+}
+
+/* Reply section styling */
+.message-replies {
+  background-color: rgba(249, 250, 251, 0.6);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.message-reply {
+  transition: all 0.2s ease;
+}
+
+.message-reply:hover {
+  background-color: rgba(249, 250, 251, 1);
+  border-radius: 0.5rem;
+}
+
+.reply-avatar {
+  transition: all 0.3s ease;
+}
+
+.reply-content {
+  transition: all 0.3s ease;
+}
+
+/* Ticket status filters */
+.active {
+  font-weight: 500;
 }
 </style>

@@ -48,10 +48,10 @@ INSTALLED_APPS = [
     'cities',
     'cities_light',
     'mobile_recharge',
-    'subscription',
-    'business_network',
+    'subscription',    'business_network',
     'news',
     'sale',  # Add the sale app here
+    'support',  # Support ticket system
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
