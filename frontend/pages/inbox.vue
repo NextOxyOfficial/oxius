@@ -186,26 +186,25 @@
                       :class="readMessages[message.id] ? 'read' : 'unread'"
                     />
                   </div>
-                </div>
-                
-                <div class="flex-1 min-w-0">
+                </div>                <div class="flex-1 min-w-0">
                   <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <div class="flex items-center gap-1.5">
-                      <transition name="fade">
+                    <div class="flex items-center gap-2">
+                      <span class="message-id">#{{ message.id.toString().padStart(10, "0") }}</span>
+                      <div class="flex items-center gap-1.5">
+                        <transition name="fade">
+                          <UBadge
+                            v-if="!readMessages[message.id]"
+                            color="primary"
+                            class="new-badge"
+                          >New</UBadge>
+                        </transition>
                         <UBadge
-                          v-if="!readMessages[message.id]"
-                          color="primary"
-                          class="new-badge"
-                        >New</UBadge>
-                      </transition>
-                      <UBadge
-                        v-if="message.is_ticket && message.status === 'open'"
-                        color="amber"
-                        class="status-badge"
-                      >Open</UBadge>
+                          v-if="message.is_ticket && message.status === 'open'"
+                          color="amber"
+                          class="status-badge"
+                        >Open</UBadge>
+                      </div>
                     </div>
-                    
-                    <span class="message-id">#{{ message.id.toString().padStart(10, "0") }}</span>
                     
                     <h3
                       class="message-title line-clamp-1"
@@ -487,7 +486,7 @@
 <script setup>
 const { t } = useI18n();
 const { user } = useAuth();
-const { get, post } = useApi();
+const { get, post, put } = useApi();
 const { formatDate } = useUtils();
 const { toast: UToast } = useToast();
 
@@ -520,16 +519,31 @@ const ticketReply = ref('');
 const isSubmittingTicket = ref(false);
 const isSubmittingReply = ref(false);
 
-function toggleMessage(id) {
+async function toggleMessage(id) {
   // We no longer expand messages, we just mark them as read
-  markAsRead(id);
+  await markAsRead(id);
 }
 
-function markAsRead(id) {
+async function markAsRead(id) {
+  // Update local state first for immediate UI feedback
   readMessages.value = {
     ...readMessages.value,
     [id]: true,
   };
+  
+  // Find the message to update server-side read status if needed
+  const messageToMark = messages.value.find(msg => msg.id === id);
+  if (messageToMark && messageToMark.is_ticket) {
+    try {
+      // If this is a ticket, update read status on the server
+      // Silently update without waiting for response to keep UI responsive
+      post(`/tickets/${id}/read/`, {}).catch(error => {
+        console.error("Error marking ticket as read:", error);
+      });
+    } catch (error) {
+      console.error("Error marking ticket as read:", error);
+    }
+  }
 }
 
 function startTransition(el) {
@@ -588,9 +602,9 @@ function openNewTicketModal() {
   isNewTicketModalOpen.value = true;
 }
 
-function openTicketDetail(ticket) {
+async function openTicketDetail(ticket) {
   // Mark the ticket as read
-  markAsRead(ticket.id);
+  await markAsRead(ticket.id);
   
   // Set as active ticket and open detail modal
   activeTicket.value = ticket;
@@ -1059,6 +1073,8 @@ onBeforeUnmount(() => {
   font-size: 0.75rem;
   color: #6b7280;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 
 .message-title {
@@ -1087,6 +1103,14 @@ onBeforeUnmount(() => {
 .new-badge {
   font-size: 0.65rem;
   padding: 0.125rem 0.375rem;
+  vertical-align: middle;
+}
+
+.status-badge {
+  font-size: 0.65rem;
+  padding: 0.125rem 0.375rem;
+  vertical-align: middle;
+  animation: pulse-light 2s infinite;
 }
 
 .fade-enter-active,
