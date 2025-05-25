@@ -105,7 +105,7 @@ class SaleImageAdmin(admin.ModelAdmin):
 class SaleBannerAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'image_preview', 'link', 'order', 'created_at')
     list_filter = ('created_at',)
-    list_editable = ('title', 'link', 'order')
+    
     search_fields = ('title',)
     
     def image_preview(self, obj):

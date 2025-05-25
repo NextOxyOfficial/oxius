@@ -49,9 +49,10 @@ class SaleImageSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class SaleBannerSerializer(serializers.ModelSerializer):
+    category_details = SaleCategorySerializer(source='category', read_only=True)
     class Meta:
         model = SaleBanner
-        fields = ['id', 'title', 'image', 'link', 'order']
+        fields = '__all__'
         read_only_fields = ['id']
 
 class SaleConditionSerializer(serializers.ModelSerializer):

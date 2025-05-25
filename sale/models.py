@@ -5,6 +5,7 @@ import uuid
 import time
 import random
 import re
+import string
 
 User = get_user_model()
 
@@ -70,6 +71,7 @@ class SaleBanner(models.Model):
     """Banner images for sale section"""
     id = models.BigIntegerField(primary_key=True, default=generate_unique_id, editable=False)
     title = models.CharField(max_length=255, blank=True, null=True)
+    category = models.ForeignKey(SaleCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='banners')
     image = models.ImageField(upload_to='sale_banners/')
     link = models.URLField(max_length=500, blank=True, null=True)
     order = models.PositiveSmallIntegerField(default=0)

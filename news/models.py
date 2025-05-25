@@ -3,6 +3,9 @@ from django.utils.text import slugify
 from base.models import *
 from tinymce import models as tinymce_models
 import re
+import string
+import random
+
 
 # Add this helper function for generating unique slugs
 def generate_unique_slug(model_class, field_value, instance=None):

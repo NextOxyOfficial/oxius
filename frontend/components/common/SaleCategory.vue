@@ -50,13 +50,18 @@
               v-if="banners.length > 0"
               class="main-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2"
             >
-              <a :href="banners[0]?.link || '#'" class="block">
+              <NuxtLink
+                :to="
+                  `/sale/?category=${banners[0]?.category_details?.id}` || '#'
+                "
+                class="block"
+              >
                 <img
                   :src="getImageUrl(banners[0]?.image)"
                   :alt="banners[0]?.title || 'Promotion'"
                   class="w-full h-24 sm:h-20 md:h-32 object-contain"
                 />
-              </a>
+              </NuxtLink>
             </div>
 
             <!-- Secondary banner -->
@@ -64,13 +69,18 @@
               v-if="banners.length > 1"
               class="secondary-banner rounded-sm overflow-hidden cursor-pointer md:w-1/2"
             >
-              <a :href="banners[1]?.link || '#'" class="block">
+              <NuxtLink
+                :to="
+                  `/sale/?category=${banners[1]?.category_details?.id}` || '#'
+                "
+                class="block"
+              >
                 <img
                   :src="getImageUrl(banners[1]?.image)"
                   :alt="banners[1]?.title || 'Offer'"
                   class="w-full h-24 sm:h-20 md:h-32 object-contain"
                 />
-              </a>
+              </NuxtLink>
             </div>
 
             <!-- Fallback banners if API returns empty data -->
@@ -294,7 +304,7 @@
               <!-- Title with truncation -->
               <h4 class="font-medium text-gray-700 line-clamp-1 text-sm">
                 {{ post.title }}
-              </h4>              
+              </h4>
               <!-- Address with location icon -->
               <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
                 <Icon
@@ -302,10 +312,10 @@
                   class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
                 />
                 {{
-                    post?.division && post?.district && post?.area
-                      ? `${post?.division}, ${post?.district}, ${post?.area}`
-                      : `All Over Bangladesh`
-                  }}
+                  post?.division && post?.district && post?.area
+                    ? `${post?.division}, ${post?.district}, ${post?.area}`
+                    : `All Over Bangladesh`
+                }}
               </div>
 
               <div class="mt-auto flex justify-between items-center pt-1">
@@ -537,31 +547,32 @@ const getSelectedCategoryName = () => {
 // Slide the categories left
 const slideLeft = () => {
   if (scrollPosition.value <= 0) return;
-  
+
   // On mobile, we show 4 categories at once
   const containerWidth = sliderContainer.value.clientWidth;
-  
+
   // Calculate width of single item based on container width
-  const itemWidth = isMobile.value 
-    ? containerWidth / 4  // Show 4 items on mobile
+  const itemWidth = isMobile.value
+    ? containerWidth / 4 // Show 4 items on mobile
     : containerWidth / 6; // Show 6 items on desktop
-    
+
   // Smooth scrolling by precisely calculating the scroll position
   // Using Math.ceil to ensure we always scroll to complete item boundaries
   const targetPosition = Math.max(0, scrollPosition.value - itemWidth * 2); // Scroll 2 items at once for better UX
-  
+
   // Apply smooth transition
   if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition = 'transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+    categoriesWrapper.value.style.transition =
+      "transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)";
   }
-  
+
   scrollPosition.value = targetPosition;
-  
+
   // Add animation feedback
   if (sliderContainer.value) {
-    sliderContainer.value.classList.add('sliding');
+    sliderContainer.value.classList.add("sliding");
     setTimeout(() => {
-      sliderContainer.value.classList.remove('sliding');
+      sliderContainer.value.classList.remove("sliding");
     }, 500);
   }
 };
@@ -569,33 +580,37 @@ const slideLeft = () => {
 // Slide the categories right
 const slideRight = () => {
   if (!categoriesWrapper.value || !sliderContainer.value) return;
-  
+
   const containerWidth = sliderContainer.value.clientWidth;
   const maxScroll = categoriesWrapper.value.scrollWidth - containerWidth;
 
   if (scrollPosition.value >= maxScroll) return;
 
   // Calculate width of single item based on container width
-  const itemWidth = isMobile.value 
-    ? containerWidth / 4  // Show 4 items on mobile
+  const itemWidth = isMobile.value
+    ? containerWidth / 4 // Show 4 items on mobile
     : containerWidth / 6; // Show 6 items on desktop
-    
+
   // Smooth scrolling by precisely calculating the scroll position
   // Using Math.floor to ensure we always scroll to complete item boundaries
-  const targetPosition = Math.min(maxScroll, scrollPosition.value + itemWidth * 2); // Scroll 2 items at once for better UX
-  
+  const targetPosition = Math.min(
+    maxScroll,
+    scrollPosition.value + itemWidth * 2
+  ); // Scroll 2 items at once for better UX
+
   // Apply smooth transition
   if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition = 'transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+    categoriesWrapper.value.style.transition =
+      "transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)";
   }
-  
+
   scrollPosition.value = targetPosition;
-  
+
   // Add animation feedback
   if (sliderContainer.value) {
-    sliderContainer.value.classList.add('sliding');
+    sliderContainer.value.classList.add("sliding");
     setTimeout(() => {
-      sliderContainer.value.classList.remove('sliding');
+      sliderContainer.value.classList.remove("sliding");
     }, 500);
   }
 };
@@ -605,36 +620,39 @@ const handleTouchStart = (e) => {
   isHandlingTouch.value = true;
   touchStartX.value = e.touches[0].clientX;
   touchEndX.value = touchStartX.value;
-  
+
   // Remove any transition during drag for immediate response
   if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition = 'none';
+    categoriesWrapper.value.style.transition = "none";
   }
 };
 
 const handleTouchMove = (e) => {
   if (!isHandlingTouch.value) return;
-  
+
   touchMoveX.value = e.touches[0].clientX;
   const swipeDiff = touchMoveX.value - touchStartX.value;
-  
+
   // Only prevent default if significant swipe detected to allow normal scrolling
   if (Math.abs(swipeDiff) > swipeThreshold) {
     e.preventDefault();
-    
+
     // Don't allow further swiping if at the edges
-    if ((swipeDiff > 0 && isAtStart.value) || (swipeDiff < 0 && isAtEnd.value)) {
+    if (
+      (swipeDiff > 0 && isAtStart.value) ||
+      (swipeDiff < 0 && isAtEnd.value)
+    ) {
       return;
     }
-    
+
     // Real-time movement of the slider with finger
     const moveOffset = swipeDiff / 2; // Dampen the movement for better control
-    
+
     if (categoriesWrapper.value) {
       const currentTransform = scrollPosition.value - moveOffset;
       categoriesWrapper.value.style.transform = `translateX(-${currentTransform}px)`;
     }
-    
+
     // Visual feedback classes
     if (sliderContainer.value) {
       sliderContainer.value.classList.remove("swiping-left", "swiping-right");
@@ -649,19 +667,19 @@ const handleTouchMove = (e) => {
 
 const handleTouchEnd = (e) => {
   if (!isHandlingTouch.value) return;
-  
+
   touchEndX.value = e.changedTouches[0].clientX;
-  
+
   // Reset the transition for smooth animation after touch
   if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition = 'transform 500ms ease-out';
+    categoriesWrapper.value.style.transition = "transform 500ms ease-out";
   }
-  
+
   // Remove swiping classes
   if (sliderContainer.value) {
     sliderContainer.value.classList.remove("swiping-left", "swiping-right");
   }
-  
+
   handleSwipe();
   isHandlingTouch.value = false;
 };
@@ -808,12 +826,18 @@ onMounted(async () => {
 
   // Check device type initially
   checkIfMobile();
-  
+
   // Add proper event listeners for touch events with passive: false for better performance
   if (sliderContainer.value) {
-    sliderContainer.value.addEventListener("touchstart", handleTouchStart, { passive: true });
-    sliderContainer.value.addEventListener("touchmove", handleTouchMove, { passive: false });
-    sliderContainer.value.addEventListener("touchend", handleTouchEnd, { passive: true });
+    sliderContainer.value.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    sliderContainer.value.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+    sliderContainer.value.addEventListener("touchend", handleTouchEnd, {
+      passive: true,
+    });
   }
 
   // Add resize event listener
@@ -823,7 +847,7 @@ onMounted(async () => {
 // Clean up event listeners
 onUnmounted(() => {
   window.removeEventListener("resize", checkIfMobile);
-  
+
   // Remove touch event listeners to prevent memory leaks
   if (sliderContainer.value) {
     sliderContainer.value.removeEventListener("touchstart", handleTouchStart);
@@ -959,7 +983,7 @@ const formatDate = (dateString) => {
   position: relative;
 }
 .swiping-left::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   right: 0;
@@ -974,7 +998,7 @@ const formatDate = (dateString) => {
   position: relative;
 }
 .swiping-right::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -990,7 +1014,7 @@ const formatDate = (dateString) => {
   position: relative;
 }
 .sliding::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background-color: rgba(255, 255, 255, 0.1);
