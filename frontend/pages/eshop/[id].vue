@@ -1,12 +1,14 @@
 <template>
   <UContainer class="py-4 md:py-6">
+    {{ storeDetails }}
     <div class="min-h-screen">
       <!-- Modern Hero Banner with Layered Design -->
       <div
         class="relative bg-white rounded-xl md:rounded-2xl shadow-sm mb-8 md:mb-10 overflow-hidden"
       >
         <div class="absolute inset-0 z-0">
-          <!-- Banner Background with Blurred Bottom Edge -->          <div
+          <!-- Banner Background with Blurred Bottom Edge -->
+          <div
             class="h-40 sm:h-48 md:h-60 w-full bg-cover bg-center relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-16 sm:after:h-24 after:bg-gradient-to-t after:from-white after:to-transparent"
             :style="{
               backgroundImage: storeDetails?.store_banner
@@ -35,12 +37,13 @@
             >
               <div
                 class="h-24 w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 rounded-xl bg-white p-1.5 shadow-sm"
-              >                <div
+              >
+                <div
                   class="w-full h-full rounded-lg overflow-hidden bg-gray-100"
                 >
                   <img
-                    v-if="user?.user?.image"
-                    :src="user?.user?.image"
+                    v-if="storeDetails?.image"
+                    :src="storeDetails?.image"
                     alt="Store Logo"
                     class="w-full h-full object-contain"
                   />
