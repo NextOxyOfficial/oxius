@@ -92,7 +92,7 @@
           />
         </div>
       </transition>        <!-- Open Ticket button -->
-      <div class="flex justify-start mb-4">
+      <div class="flex justify-start mb-4 px-4">
         <UButton
           color="primary"
           label="Open Ticket"
