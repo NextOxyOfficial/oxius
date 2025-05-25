@@ -472,7 +472,7 @@
                   class="size-full object-cover rounded-full relative z-1"
                   style="position: relative; z-index: 1;"
                 />
-                <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500 relative z-1" style="position: relative; z-index: 1;" />
+                <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500 ml-2.5 relative z-1" style="position: relative; z-index: 1;" />
               </div>
               
               <!-- Pro Badge for mobile - text at top right -->

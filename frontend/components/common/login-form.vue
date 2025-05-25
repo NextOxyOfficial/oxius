@@ -1,71 +1,92 @@
 <template>
   <div>
-    <div class="bg-white rounded-xl shadow-sm p-4 md:p-8">
+    <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-gray-100">
       <transition name="fade" mode="out-in">
         <!-- Login Form -->
         <form @submit.prevent="handleLogin" class="space-y-6">
-          <div class="space-y-2">
-            <h2 class="text-xl font-semibold text-gray-700">Welcome back</h2>
-            <p class="text-gray-500">
-              Enter your credentials to access your account
-            </p>
+          <!-- Form Header -->
+          <div class="text-center space-y-2">
+            <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
+            <p class="text-gray-500">Enter your credentials to access your account</p>
           </div>
 
-          <div class="space-y-4">
-            <div>
+          <!-- Login Form Fields -->
+          <div class="space-y-5">
+            <div class="relative">
+              <UIcon name="i-heroicons-envelope" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="Email address"
                 v-model="username"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 required
               />
+              <p v-if="error" class="text-red-500 text-sm mt-1">
+                {{ error }}
+              </p>
             </div>
+            
             <div class="relative">
+              <UIcon name="i-heroicons-lock-closed" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
                 :type="isPassword ? 'password' : 'text'"
                 placeholder="Password"
                 v-model="password"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-base md:text-sm"
+                class="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                required
               />
               <div
                 class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
                 @click="isPassword = !isPassword"
               >
                 <UIcon
-                  name="i-heroicons-solid-eye"
-                  class="w-5 h-5 text-gray-500"
-                  v-if="isPassword"
-                />
-                <UIcon
-                  name="i-heroicons-solid-eye-off"
-                  class="w-5 h-5 text-gray-500"
-                  v-else
+                  :name="isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
+                  class="w-5 h-5 text-gray-500 hover:text-gray-700"
                 />
               </div>
             </div>
           </div>
 
-          <UButton
-            type="submit"
-            :loading="isLoading"
-            class="w-full py-3 font-semibold text-sm px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors justify-center"
-          >
-            Sign in
-          </UButton>
-
-          <div class="flex items-center justify-between pt-2 font-semibold">
+          <!-- Remember me checkbox -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              />
+              <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                Remember me
+              </label>
+            </div>
             <NuxtLink
               to="/auth/reset-password/"
-              class="text-purple-600 hover:text-purple-500 text-sm"
+              class="text-purple-600 hover:text-purple-500 text-sm font-medium hover:underline"
             >
               Forgot password?
             </NuxtLink>
+          </div>
+
+          <!-- Submit Button -->
+          <UButton
+            type="submit"
+            :loading="isLoading"
+            color="purple"
+            class="w-full py-2.5 font-medium text-sm px-4 rounded-lg justify-center"
+            :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
+          >
+            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5 mr-1.5" />
+            Sign in
+          </UButton>
+
+          <div class="text-center mt-4">
             <NuxtLink
               to="/auth/register/"
-              class="text-purple-600 hover:text-purple-500 text-sm"
+              class="text-purple-600 hover:text-purple-500 text-sm font-medium flex items-center justify-center gap-1 hover:underline"
             >
-              Create account
+              <UIcon name="i-heroicons-user-plus" class="w-4 h-4" />
+              Don't have an account? Register now
             </NuxtLink>
           </div>
         </form>
