@@ -1,0 +1,101 @@
+from django.shortcuts import render
+from rest_framework import generics, status, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+from .models import SupportTicket, TicketReply
+from .serializers import (
+    SupportTicketSerializer, 
+    SupportTicketCreateSerializer,
+    TicketReplySerializer, 
+    TicketReplyCreateSerializer
+)
+
+class SupportTicketListCreateView(generics.ListCreateAPIView):
+    """
+    List all support tickets for the current user or create a new one
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return SupportTicket.objects.all()
+        return SupportTicket.objects.filter(user=user)
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return SupportTicketCreateSerializer
+        return SupportTicketSerializer
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+        
+class SupportTicketDetailView(generics.RetrieveAPIView):
+    """
+    Retrieve a support ticket and its replies
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SupportTicketSerializer
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return SupportTicket.objects.all()
+        return SupportTicket.objects.filter(user=user)
+
+class TicketReplyCreateView(generics.CreateAPIView):
+    """
+    Add a reply to a support ticket
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TicketReplyCreateSerializer
+    
+    def perform_create(self, serializer):
+        ticket_id = self.kwargs.get('ticket_id')
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        
+        user = self.request.user
+        # Check if user has access to this ticket
+        if not user.is_staff and user != ticket.user:
+            raise PermissionDenied("You don't have permission to reply to this ticket")
+        
+        # Mark replies from admin users
+        is_admin = user.is_staff or user.is_superuser
+        
+        # If an admin is replying, update the ticket status to "in progress"
+        if is_admin and ticket.status == 'open':
+            ticket.status = 'in_progress'
+            ticket.save()
+        
+        serializer.save(
+            ticket=ticket,
+            user=user,
+            is_from_admin=is_admin
+        )
+
+class UpdateTicketStatusView(APIView):
+    """
+    Update the status of a support ticket
+    """
+    permission_classes = [permissions.IsAdminUser]
+    
+    def post(self, request, ticket_id):
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        new_status = request.data.get('status')
+        
+        valid_statuses = [s[0] for s in SupportTicket.STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return Response(
+                {"error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        ticket.status = new_status
+        ticket.save()
+        
+        return Response(
+            {"status": "success", "message": f"Ticket status updated to {new_status}"},
+            status=status.HTTP_200_OK
+        )
