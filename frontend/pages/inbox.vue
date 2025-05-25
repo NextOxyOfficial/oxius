@@ -92,103 +92,62 @@
           />
         </div>
       </transition>
-      
-      <!-- Message filtering options -->
-      <div class="flex flex-wrap justify-between items-center mb-6">
-        <div class="flex flex-wrap gap-3">
-          <UButton
-            variant="soft"
-            color="primary"
-            :class="{ active: currentFilter === 'all' }"
-            :label="t('all_messages')"
-            icon="i-heroicons-inbox"
-            class="filter-btn"
-            @click="setFilter('all')"
-          />
-          <UButton
-            variant="soft"
-            color="gray"
-            :class="{ active: currentFilter === 'unread' }"
-            icon="i-heroicons-envelope"
-            :label="t('unread')"
-            class="filter-btn"
-            @click="setFilter('unread')"
-          />          <UButton
-            variant="soft"
-            color="gray"
-            :class="{ active: currentFilter === 'support' }"
-            icon="i-heroicons-chat-bubble-left-right"
-            label="Support Tickets"
-            class="filter-btn"
-            @click="setFilter('support')"
-          />
-          <div v-if="currentFilter === 'support'" class="mt-3 flex gap-2">
-            <UButton
-              size="xs"
-              variant="soft"
-              :class="{ active: ticketStatusFilter === 'all' }"
-              @click="setTicketStatusFilter('all')"
-              label="All Tickets"
-            />
-            <UButton
-              size="xs"
-              variant="soft"
-              color="amber"
-              :class="{ active: ticketStatusFilter === 'open' }"
-              @click="setTicketStatusFilter('open')"
-              label="Open"
-            />
-            <UButton
-              size="xs"
-              variant="soft"
-              color="blue"
-              :class="{ active: ticketStatusFilter === 'in_progress' }"
-              @click="setTicketStatusFilter('in_progress')"
-              label="In Progress"
-            />
-            <UButton
-              size="xs"
-              variant="soft"
-              color="green"
-              :class="{ active: ticketStatusFilter === 'resolved' }"
-              @click="setTicketStatusFilter('resolved')"
-              label="Resolved"
-            />
-            <UButton
-              size="xs"
-              variant="soft"
-              color="gray"
-              :class="{ active: ticketStatusFilter === 'closed' }"
-              @click="setTicketStatusFilter('closed')"
-              label="Closed"
-            />
-          </div>
-        </div>        <div class="flex gap-2">
-          <UButton
-            color="primary"
-            label="Create Support Ticket"
-            icon="i-heroicons-plus"
-            @click="openNewTicketModal"
-          />
-          <UButton
-            color="gray"
-            variant="soft"
-            icon="i-heroicons-arrow-path"
-            :loading="isLoading"
-            @click="refreshMessages"
-            title="Refresh messages"
-          />
-        </div>
-        <!-- <div class="ml-auto">
-          <UInput
-            placeholder="Search messages..."
-            icon="i-heroicons-magnifying-glass"
-            size="md"
-            class="max-w-xs search-input"
-          />
-        </div> -->
+        <!-- Create Support Ticket button -->
+      <div class="flex justify-end mb-4">
+        <UButton
+          color="primary"
+          label="Create Support Ticket"
+          icon="i-heroicons-plus"
+          @click="openNewTicketModal"
+        />
       </div>
 
+      <!-- Message filtering options -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <UButton
+          variant="soft"
+          :class="{ active: ticketStatusFilter === 'all' }"
+          @click="setTicketStatusFilter('all')"
+          label="All Tickets"
+        />
+        <UButton
+          variant="soft"
+          color="amber"
+          :class="{ active: ticketStatusFilter === 'open' }"
+          @click="setTicketStatusFilter('open')"
+          label="Open"
+        />
+        <UButton
+          variant="soft"
+          color="blue"
+          :class="{ active: ticketStatusFilter === 'in_progress' }"
+          @click="setTicketStatusFilter('in_progress')"
+          label="In Progress"
+        />
+        <UButton
+          variant="soft"
+          color="green"
+          :class="{ active: ticketStatusFilter === 'resolved' }"
+          @click="setTicketStatusFilter('resolved')"
+          label="Resolved"
+        />
+        <UButton
+          variant="soft"
+          color="gray"
+          :class="{ active: ticketStatusFilter === 'closed' }"
+          @click="setTicketStatusFilter('closed')"
+          label="Closed"
+        />        <UButton
+          class="ml-auto"
+          color="gray"
+          variant="soft"
+          icon="i-heroicons-arrow-path"
+          :loading="isLoading"
+          @click="refreshMessages"
+          title="Refresh messages"
+        />
+      </div>
+      
       <!-- Messages List -->
       <div v-if="messages && messages.length" class="space-y-4">
         <TransitionGroup name="message-list" tag="div" class="space-y-5">
@@ -208,10 +167,9 @@
               <div
                 class="status-indicator"
                 :class="{ active: !readMessages[message.id] }"
-              ></div>
-
-              <!-- Left side: message info -->
-              <div class="flex items-center gap-3 flex-1 min-w-0">                <div class="flex-shrink-0">
+              ></div>              <!-- Left side: message info -->
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="flex-shrink-0">
                   <div class="message-icon-circle" 
                        :class="{ 
                          'admin-notice': !message.is_ticket, 
@@ -234,10 +192,20 @@
                 <div class="flex-1 min-w-0">
                   <div
                     class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-                  >                    <span class="message-id"
-                      >#{{ message.id.toString().padStart(4, "0") }}</span
+                  >
+                    <span class="message-id"
+                      >#{{ message.id.toString().padStart(10, "0") }}</span
                     >
                     <h3
+                      v-if="message.is_ticket" 
+                      class="message-title line-clamp-1 cursor-pointer ticket-title"
+                      :class="{ 'font-semibold': !readMessages[message.id] }"
+                      @click.stop="openTicketDetail(message)"
+                    >
+                      {{ message.title }}
+                    </h3>
+                    <h3
+                      v-else
                       class="message-title line-clamp-1"
                       :class="{ 'font-semibold': !readMessages[message.id] }"
                     >
@@ -252,7 +220,8 @@
                     <UBadge
                       v-if="message.is_ticket"
                       :color="getTicketStatusColor(message.status)"
-                      class="ml-2"
+                      class="ml-2 cursor-pointer"
+                      @click.stop="openTicketDetail(message)"
                     >
                       {{ formatTicketStatus(message.status) }}
                     </UBadge>
@@ -292,8 +261,9 @@
               <div v-if="expandedMessages[message.id]" class="message-content">
                 <div class="message-body">
                   <div class="message-text">
-                    <p>{{ message.message }}</p>
-                  </div>              <div class="message-footer">
+                    <p>{{ message.message }}</p>                  </div>
+                  
+                  <div class="message-footer">
                     <span class="message-sender">
                       {{ message.is_ticket ? (message.is_admin_reply ? 'Support Team' : 'You') : 'System' }}
                     </span>
@@ -326,9 +296,9 @@
                           @click.stop="updateTicketStatus(message.id, 'closed')"
                         />
                       </div>
-                    </div>
-                  </div>
-                    <!-- Ticket replies section -->
+                    </div>                  </div>
+                  
+                  <!-- Ticket replies section -->
                   <div v-if="message.is_ticket && (message.replies || []).length > 0" class="message-replies mt-4 pt-4 border-t border-gray-200">
                     <h4 class="text-sm font-medium text-gray-700 mb-3">Conversation History</h4>
                     <div v-for="reply in message.replies" :key="reply.id" class="message-reply mb-3">
@@ -411,10 +381,10 @@
           <svg viewBox="0 0 24 24" class="loading-circle">
             <circle cx="12" cy="12" r="10" class="loading-track"></circle>
             <circle cx="12" cy="12" r="10" class="loading-path"></circle>
-          </svg>
-          <UIcon name="i-heroicons-envelope" class="loading-envelope" />
+          </svg>          <UIcon name="i-heroicons-envelope" class="loading-envelope" />
         </div>
-        <p class="loading-text">Loading your messages...</p>      </div>
+        <p class="loading-text">Loading your messages...</p>
+      </div>
       
       <!-- New Support Ticket Modal -->
       <UModal v-model="isNewTicketModalOpen" :ui="{ width: 'sm:max-w-xl' }">
@@ -486,10 +456,9 @@
             </div>
           </template>
           
-          <div class="space-y-4">
-            <div v-if="activeTicket" class="bg-gray-50 p-3 rounded-lg">
+          <div class="space-y-4">              <div v-if="activeTicket" class="bg-gray-50 p-3 rounded-lg">
               <p class="text-sm font-medium">{{ activeTicket.title }}</p>
-              <p class="text-xs text-gray-500">Ticket #{{ activeTicket.id.toString().substring(0, 8) }}</p>
+              <p class="text-xs text-gray-500">Ticket #{{ activeTicket.id.toString().padStart(10, "0") }}</p>
             </div>
             
             <UFormGroup label="Your Reply" required>
@@ -521,6 +490,120 @@
           </template>
         </UCard>
       </UModal>
+
+      <!-- New Ticket Detail Modal -->
+      <UModal v-model="isTicketDetailModalOpen" :ui="{ width: 'sm:max-w-3xl' }">
+        <UCard v-if="activeTicket">
+          <template #header>
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-lg font-medium">Ticket #{{ activeTicket.id.toString().padStart(10, "0") }}</h3>
+                  <UBadge :color="getTicketStatusColor(activeTicket.status)">
+                    {{ formatTicketStatus(activeTicket.status) }}
+                  </UBadge>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">{{ formatDate(activeTicket.created_at) }}</p>
+              </div>
+              <UButton 
+                color="gray" 
+                variant="ghost" 
+                icon="i-heroicons-x-mark" 
+                class="rounded-full h-8 w-8" 
+                @click="isTicketDetailModalOpen = false"
+              />
+            </div>
+          </template>
+          
+          <div class="space-y-6">
+            <div>
+              <h4 class="font-medium text-lg mb-2">{{ activeTicket.title }}</h4>
+              <div class="p-4 bg-gray-50 rounded-md text-gray-700 whitespace-pre-wrap">
+                {{ activeTicket.message }}
+              </div>
+            </div>
+            
+            <!-- Ticket replies section -->
+            <div v-if="(activeTicket.replies || []).length > 0" class="border-t border-gray-200 pt-4">
+              <h4 class="text-md font-medium text-gray-700 mb-3">Conversation History</h4>
+              
+              <div class="space-y-4">
+                <div v-for="reply in activeTicket.replies" :key="reply.id" class="p-3 bg-gray-50 rounded-md">
+                  <div class="flex items-start gap-3">
+                    <div :class=" [
+                      'reply-avatar flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+                      reply.is_from_admin ? 'bg-primary-100' : 'bg-gray-100'
+                    ]">
+                      <UIcon 
+                        :name="reply.is_from_admin ? 'i-heroicons-user-circle' : 'i-heroicons-user'" 
+                        class="text-base" 
+                        :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'"
+                      />
+                    </div>
+                    <div class="reply-content flex-1">
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium" :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'">
+                          {{ reply.is_from_admin ? 'Support Team' : 'You' }}
+                        </span>
+                        <span class="text-xs text-gray-400">{{ formatDate(reply.created_at) }}</span>
+                      </div>
+                      <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ reply.message }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Reply form -->
+            <div v-if="activeTicket.status !== 'closed'" class="border-t border-gray-200 pt-4">
+              <h4 class="text-md font-medium text-gray-700 mb-3">Add Reply</h4>
+              <UTextarea 
+                v-model="ticketReply" 
+                placeholder="Type your response..." 
+                rows="3"
+                class="mb-3"
+              />
+              <div class="flex justify-end">
+                <UButton 
+                  color="primary" 
+                  :loading="isSubmittingReply"
+                  @click="submitReplyFromDetail"
+                >
+                  Send Reply
+                </UButton>
+              </div>
+            </div>
+            
+            <!-- Admin only: status update options -->
+            <div v-if="user?.user?.is_staff && activeTicket.status !== 'closed'" class="border-t border-gray-200 pt-4">
+              <h4 class="text-sm font-medium mb-2">Update Ticket Status:</h4>
+              <div class="flex flex-wrap gap-2">
+                <UButton 
+                  v-for="status in ['open', 'in_progress', 'resolved', 'closed']" 
+                  :key="status"
+                  size="xs"
+                  :color="getTicketStatusColor(status)"
+                  :disabled="activeTicket.status === status"
+                  :label="formatTicketStatus(status)"
+                  @click="updateTicketStatusFromDetail(activeTicket.id, status)"
+                />
+              </div>
+            </div>
+            
+            <!-- User only: close resolved ticket -->
+            <div v-if="!user?.user?.is_staff && activeTicket.status === 'resolved'" class="border-t border-gray-200 pt-4">
+              <div class="flex justify-end">
+                <UButton 
+                  color="gray"
+                  label="Close Ticket"
+                  icon="i-heroicons-check-circle"
+                  @click="updateTicketStatusFromDetail(activeTicket.id, 'closed')"
+                />
+              </div>
+            </div>
+          </div>
+        </UCard>
+      </UModal>
     </UContainer>
   </PublicSection>
 </template>
@@ -537,25 +620,16 @@ const messages = ref([]);
 const expandedMessages = ref({});
 const readMessages = ref({});
 const isLoading = ref(true);
-const currentFilter = ref('all');
 const ticketStatusFilter = ref('all');
 const newMessageCount = ref(0);
 const newTicketCount = ref(0);
+const isTicketDetailModalOpen = ref(false);
 const filteredMessages = computed(() => {
-  let filtered = messages.value;
+  let filtered = messages.value.filter(msg => msg.is_ticket);
   
-  // First filter by message type
-  if (currentFilter.value === 'all') {
-    filtered = messages.value;
-  } else if (currentFilter.value === 'unread') {
-    filtered = messages.value.filter(msg => !readMessages.value[msg.id]);
-  } else if (currentFilter.value === 'support') {
-    filtered = messages.value.filter(msg => msg.is_ticket);
-    
-    // Then apply ticket status filter if we're in support view
-    if (ticketStatusFilter.value !== 'all') {
-      filtered = filtered.filter(ticket => ticket.status === ticketStatusFilter.value);
-    }
+  // Apply ticket status filter
+  if (ticketStatusFilter.value !== 'all') {
+    filtered = filtered.filter(ticket => ticket.status === ticketStatusFilter.value);
   }
   
   return filtered;
@@ -564,9 +638,9 @@ const filteredMessages = computed(() => {
 // Ticket handling
 const isNewTicketModalOpen = ref(false);
 const isReplyModalOpen = ref(false);
+const activeTicket = ref(null);
 const newTicket = ref({ title: '', message: '' });
 const ticketReply = ref('');
-const activeTicket = ref(null);
 const isSubmittingTicket = ref(false);
 const isSubmittingReply = ref(false);
 
@@ -644,6 +718,16 @@ function openNewTicketModal() {
   isNewTicketModalOpen.value = true;
 }
 
+function openTicketDetail(ticket) {
+  // Mark the ticket as read
+  markAsRead(ticket.id);
+  
+  // Set as active ticket and open detail modal
+  activeTicket.value = ticket;
+  ticketReply.value = '';
+  isTicketDetailModalOpen.value = true;
+}
+
 function openReplyModal(ticket) {
   activeTicket.value = ticket;
   ticketReply.value = '';
@@ -719,6 +803,52 @@ async function submitReply() {
   }
 }
 
+async function submitReplyFromDetail() {
+  if (!ticketReply.value || !activeTicket.value) {
+    return;
+  }
+  
+  isSubmittingReply.value = true;
+  
+  try {
+    const response = await post(`/tickets/${activeTicket.value.id}/replies/`, {
+      message: ticketReply.value
+    });
+    
+    // Update the ticket with the new reply
+    const updatedTicket = messages.value.find(msg => msg.id === activeTicket.value.id);
+    if (updatedTicket) {
+      if (!updatedTicket.replies) {
+        updatedTicket.replies = [];
+      }
+      updatedTicket.replies.push(response.data);
+      
+      // Update the activeTicket to reflect changes
+      activeTicket.value = { ...updatedTicket };
+    }
+    
+    // Reset reply field
+    ticketReply.value = '';
+    
+    // Show success notification
+    UToast.show({
+      title: 'Reply Sent',
+      description: 'Your reply has been sent successfully',
+      color: 'green'
+    });
+    
+  } catch (error) {
+    console.error("Error submitting reply:", error);
+    UToast.show({
+      title: 'Error',
+      description: 'Failed to send your reply. Please try again.',
+      color: 'red'
+    });
+  } finally {
+    isSubmittingReply.value = false;
+  }
+}
+
 async function updateTicketStatus(ticketId, newStatus) {
   try {
     const response = await post(`/tickets/${ticketId}/status/`, {
@@ -741,6 +871,46 @@ async function updateTicketStatus(ticketId, newStatus) {
         description: `Ticket has been marked as "${formatTicketStatus(newStatus)}"`,
         color: getTicketStatusColor(newStatus)
       });
+    }
+  } catch (error) {
+    console.error("Error updating ticket status:", error);
+    
+    // Show error notification
+    UToast.show({
+      title: 'Update Failed',
+      description: 'Failed to update ticket status. Please try again.',
+      color: 'red'
+    });
+  }
+}
+
+async function updateTicketStatusFromDetail(ticketId, newStatus) {
+  try {
+    const response = await post(`/tickets/${ticketId}/status/`, {
+      status: newStatus
+    });
+    
+    // Update the ticket status in the UI
+    const updatedTicket = messages.value.find(msg => msg.id === ticketId);
+    if (updatedTicket) {
+      updatedTicket.status = newStatus;
+      
+      // Update the activeTicket to reflect changes
+      activeTicket.value = { ...updatedTicket };
+      
+      // Show success notification
+      UToast.show({
+        title: 'Ticket Status Updated',
+        description: `Ticket has been marked as "${formatTicketStatus(newStatus)}"`,
+        color: getTicketStatusColor(newStatus)
+      });
+      
+      // Close the modal if the ticket is closed
+      if (newStatus === 'closed') {
+        setTimeout(() => {
+          isTicketDetailModalOpen.value = false;
+        }, 1500);
+      }
     }
   } catch (error) {
     console.error("Error updating ticket status:", error);
@@ -857,17 +1027,15 @@ function checkForNewMessages(oldMessages, newMessages) {
   // Check for new replies in existing tickets
   newMessages.forEach(newMsg => {
     if (!newMsg.is_ticket || !newMsg.replies || newMsg.replies.length === 0) return;
-    
-    const oldMsg = oldMessages.find(m => m.id === newMsg.id);
+      const oldMsg = oldMessages.find(m => m.id === newMsg.id);
     if (!oldMsg || !oldMsg.replies) return;
     
     if (newMsg.replies.length > oldMsg.replies.length) {
       // There are new replies to this ticket
       const newReplyCount = newMsg.replies.length - oldMsg.replies.length;
-      
       UToast.show({
         title: `New ${newReplyCount === 1 ? 'Reply' : 'Replies'} to Ticket`,
-        description: `Ticket #${newMsg.id.substring(0, 8)}: ${newMsg.title}`,
+        description: `Ticket #${newMsg.id.toString().padStart(10, "0")}: ${newMsg.title}`,
         color: 'primary',
         timeout: 5000
       });
@@ -1027,6 +1195,10 @@ onBeforeUnmount(() => {
   font-size: 0.95rem;
   color: #1f2937;
   transition: all 0.2s ease;
+}
+
+.message-title:hover {
+  text-decoration: underline;
 }
 
 .message-meta {
