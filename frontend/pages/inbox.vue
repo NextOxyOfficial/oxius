@@ -187,39 +187,27 @@
                     />
                   </div>
                 </div>                <div class="flex-1 min-w-0">
-                  <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <div class="flex items-center gap-2">
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">                    <div class="flex items-center gap-2">
                       <span class="message-id">#{{ message.id.toString().padStart(10, "0") }}</span>
-                      <div class="flex items-center gap-1.5">
-                        <transition name="fade">
-                          <UBadge
-                            v-if="!readMessages[message.id]"
-                            color="primary"
-                            class="new-badge"
-                          >New</UBadge>
-                        </transition>
+                      <div class="flex items-center gap-1.5">                        <UBadge
+                          v-if="true"
+                          :color="readMessages[message.id] ? 'gray' : 'primary'"
+                          class="new-badge cursor-pointer"
+                          @click="toggleReadStatus(message.id, $event)"
+                        >{{ readMessageLabel(message.id) }}</UBadge>
                         <UBadge
-                          v-if="message.is_ticket && message.status === 'open'"
-                          color="amber"
+                          v-if="message.is_ticket"
+                          :color="getTicketStatusColor(message.status)"
                           class="status-badge"
-                        >Open</UBadge>
+                        >{{ formatTicketStatus(message.status) }}</UBadge>
                       </div>
                     </div>
-                    
-                    <h3
+                      <h3
                       class="message-title line-clamp-1"
                       :class="{ 'font-semibold': !readMessages[message.id] }"
                     >
                       {{ message.title }}
                     </h3>
-                    
-                    <UBadge
-                      v-if="message.is_ticket && message.status !== 'open'"
-                      :color="getTicketStatusColor(message.status)"
-                      class="ml-auto sm:ml-2"
-                    >
-                      {{ formatTicketStatus(message.status) }}
-                    </UBadge>
                   </div>
                   
                   <div class="message-meta">
@@ -524,8 +512,17 @@ async function toggleMessage(id) {
   await markAsRead(id);
 }
 
+function readMessageLabel(id) {
+  // Return appropriate label based on read status
+  const isRead = readMessages.value[id] === true;
+  return isRead ? 'Read' : 'New';
+}
+
 async function markAsRead(id) {
-  // Update local state first for immediate UI feedback
+  // Check current status to see if there's a change
+  const currentStatus = readMessages.value[id];
+  
+  // Update local state for immediate UI feedback
   readMessages.value = {
     ...readMessages.value,
     [id]: true,
@@ -533,10 +530,10 @@ async function markAsRead(id) {
   
   // Find the message to update server-side read status if needed
   const messageToMark = messages.value.find(msg => msg.id === id);
-  if (messageToMark && messageToMark.is_ticket) {
+  if (messageToMark && messageToMark.is_ticket && !currentStatus) {
     try {
-      // If this is a ticket, update read status on the server
-      // Silently update without waiting for response to keep UI responsive
+      // If this is a ticket and it's being marked as read for the first time,
+      // update read status on the server
       post(`/tickets/${id}/read/`, {}).catch(error => {
         console.error("Error marking ticket as read:", error);
       });
@@ -885,11 +882,50 @@ function refreshMessages() {
 // Clear notifications banner
 function clearNotifications() {
   messages.value.forEach(msg => {
-    readMessages.value[msg.id] = true;
+    markAsRead(msg.id);
   });
   
   newMessageCount.value = 0;
   newTicketCount.value = 0;
+}
+
+async function toggleReadStatus(id, event) {
+  // Stop event propagation to prevent opening the detail view
+  if (event) {
+    event.stopPropagation();
+  }
+  
+  const isCurrentlyRead = readMessages.value[id] || false;
+  
+  // Toggle read status
+  readMessages.value = {
+    ...readMessages.value,
+    [id]: !isCurrentlyRead,
+  };
+  
+  const messageToUpdate = messages.value.find(msg => msg.id === id);
+  if (messageToUpdate && messageToUpdate.is_ticket) {
+    try {
+      // If marking as unread
+      if (isCurrentlyRead) {
+        // Send unread status to server
+        post(`/tickets/${id}/unread/`, {}).catch(error => {
+          console.error("Error marking ticket as unread:", error);
+        });
+      } else {
+        // Send read status to server
+        post(`/tickets/${id}/read/`, {}).catch(error => {
+          console.error("Error marking ticket as read:", error);
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling read status:", error);
+    }
+  }
+  
+  // Update counts
+  newMessageCount.value = messages.value.filter(msg => !readMessages.value[msg.id]).length;
+  newTicketCount.value = messages.value.filter(msg => msg.is_ticket && !readMessages.value[msg.id]).length;
 }
 
 // Check for new messages and show notifications
@@ -1110,7 +1146,19 @@ onBeforeUnmount(() => {
   font-size: 0.65rem;
   padding: 0.125rem 0.375rem;
   vertical-align: middle;
+}
+
+.status-badge[class*="amber"] {
   animation: pulse-light 2s infinite;
+}
+
+@keyframes pulse-light {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 .fade-enter-active,
