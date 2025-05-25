@@ -153,7 +153,7 @@
                     </svg>
                   </div>
                   <span class="text-gray-500 dark:text-slate-300 line-through"
-                    >Add up to 100 Products</span
+                    >Add up to 10 Products</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -176,7 +176,7 @@
                     </svg>
                   </div>
                   <span class="text-gray-500 dark:text-slate-300"
-                    >Post up 5 ads</span
+                    >Post unlimited ads</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">

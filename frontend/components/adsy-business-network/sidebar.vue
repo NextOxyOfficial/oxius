@@ -137,10 +137,9 @@
                 </button>
               </div>
             </div>
-          </div>
-        </Teleport>
-          <!-- Become Gold Sponsor Section -->        
-           <div class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
+          </div>        </Teleport>
+          <!-- Become Gold Sponsor Section - only visible for logged-in users -->
+          <div v-if="user?.user?.id" class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
           <!-- Shimmering effect at top -->
           <div class="absolute top-0 left-0 right-0 h-1 overflow-hidden">
             <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
@@ -277,7 +276,49 @@
               >
                 <span>Become Gold Sponsor</span>
                 <UIcon name="i-heroicons-plus" class="ml-1 w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-              </button>
+              </button>            </div>
+          </div>
+        </div>
+        
+        <!-- Login prompt for Gold Sponsor (visible only to non-logged in users) -->
+        <div v-if="!user?.user?.id" class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
+          <!-- Shimmering effect at top -->
+          <div class="absolute top-0 left-0 right-0 h-1 overflow-hidden">
+            <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
+          </div>
+          
+          <div class="flex flex-col">
+            <h3 class="text-sm font-semibold mb-2 flex items-center">
+              <div class="w-5 h-5 flex items-center justify-center mr-1.5 relative">
+                <div class="absolute inset-0 rounded-full golden-border"></div>
+                <span class="text-amber-500 relative z-10 text-lg">✦</span>
+              </div>
+              <span class="text-gold-gradient">Gold Sponsorships</span>
+            </h3>
+            
+            <div class="bg-white dark:bg-slate-700/80 rounded-lg p-4 text-center shadow-sm border border-amber-100 dark:border-amber-800/30 mb-3">
+              <div class="flex justify-center mb-2">
+                <UIcon name="i-heroicons-lock-closed" class="w-6 h-6 text-amber-500" />
+              </div>
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Login Required</h4>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                Login or register to access Gold Sponsor features and promote your business across our network
+              </p>
+              
+              <div class="space-y-2">
+                <NuxtLink 
+                  to="/auth/login?redirect=/business-network" 
+                  class="w-full py-2 rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-sm font-medium shadow-sm transition-all duration-200 flex items-center justify-center"
+                >
+                  <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4 mr-1.5" />
+                  <span>Login to Continue</span>
+                </NuxtLink>
+                <p class="text-center text-xs mt-1">
+                  <NuxtLink to="/auth/register" class="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 hover:underline">
+                    Don't have an account? Register now
+                  </NuxtLink>
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -822,6 +863,11 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024;
 };
 
+// Function to handle redirects to login with return path
+const redirectToLoginWithReturnPath = (returnPath = '/business-network') => {
+  navigateTo(`/auth/login?redirect=${returnPath}`);
+};
+
 // Handle Gold Sponsor form submission
 const handleGoldSponsorSubmit = async (formData) => {
   try {
@@ -895,6 +941,11 @@ onMounted(async () => {
         console.error("Error fetching gold sponsor data:", sponsorError);
         // Errors shouldn't break the sidebar
       }
+    } else {
+      // Reset sponsor data for non-logged in users
+      goldSponsorsCount.value = 0;
+      sponsorViews.value = 0;
+      featuredSponsors.value = [];
     }
   } catch (error) {
     console.error("Error fetching sidebar content:", error);

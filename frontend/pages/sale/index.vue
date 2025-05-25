@@ -394,7 +394,7 @@
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-1 mb-6"
           >
             <div
-              class="flex flex-col sm:flex-row items-center justify-between my-4 gap-2"
+              class="flex flex-col sm:flex-row items-center justify-between my-2 gap-2"
             >
               <h2 class="text-lg font-medium text-gray-700">
                 {{ categoryBrowserHeading }}
