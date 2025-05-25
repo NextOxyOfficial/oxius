@@ -81,22 +81,23 @@
                   </button>
                 </div>
               </form>
-            </div>         
-           </div>
-        </Teleport>        
+            </div>
+          </div>
+        </Teleport>
         <!-- Useful Links Section -->
         <SidebarUsefulLinks />
-        
-        <!-- Gold Sponsor Modal -->        <Teleport to="body">
-          <GoldSponsorModal 
-            :is-open="isGoldSponsorModalOpen" 
+
+        <!-- Gold Sponsor Modal -->
+        <Teleport to="body">
+          <GoldSponsorModal
+            :is-open="isGoldSponsorModalOpen"
             :edit-sponsor="editingSponsor"
-            @close="closeGoldSponsorModal" 
+            @close="closeGoldSponsorModal"
             @sponsor-created="onSponsorCreated"
             @sponsor-updated="onSponsorUpdated"
           />
         </Teleport>
-        
+
         <!-- Delete Confirmation Dialog -->
         <Teleport to="body">
           <div
@@ -109,19 +110,30 @@
               @click.stop
             >
               <div class="flex items-center mb-4">
-                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                  <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div
+                  class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-exclamation-triangle"
+                    class="w-6 h-6 text-red-600 dark:text-red-400"
+                  />
                 </div>
                 <div class="ml-4">
-                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">Delete Sponsor</h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                    Delete Sponsor
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    This action cannot be undone.
+                  </p>
                 </div>
               </div>
-              
+
               <p class="text-gray-700 dark:text-gray-300 mb-6">
-                Are you sure you want to delete the sponsor "{{ deletingSponsor?.name }}"? This will permanently remove it from your sponsorships.
+                Are you sure you want to delete the sponsor "{{
+                  deletingSponsor?.name
+                }}"? This will permanently remove it from your sponsorships.
               </p>
-              
+
               <div class="flex justify-end space-x-3">
                 <button
                   @click="cancelDelete"
@@ -137,116 +149,187 @@
                 </button>
               </div>
             </div>
-          </div>        </Teleport>
-          <!-- Become Gold Sponsor Section - only visible for logged-in users -->
-          <div v-if="user?.user?.id" class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
+          </div>
+        </Teleport>
+        <!-- Become Gold Sponsor Section - only visible for logged-in users -->
+        <div
+          v-if="user?.user?.id"
+          class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden"
+        >
           <!-- Shimmering effect at top -->
           <div class="absolute top-0 left-0 right-0 h-1 overflow-hidden">
-            <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
+            <div
+              class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"
+            ></div>
           </div>
-          
-          <div class="flex flex-col">            <h3 class="text-sm font-semibold mb-2 flex items-center">
-              <div class="w-5 h-5 flex items-center justify-center mr-1.5 relative">
+
+          <div class="flex flex-col">
+            <h3 class="text-sm font-semibold mb-2 flex items-center">
+              <div
+                class="w-5 h-5 flex items-center justify-center mr-1.5 relative"
+              >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <span class="text-amber-500 relative z-10 text-lg">✦</span>
               </div>
               <span class="text-gold-gradient">My Gold Sponsorships</span>
-            </h3>            
+            </h3>
             <!-- Stats cards with improved design -->
             <div class="grid grid-cols-2 gap-2 mb-3">
-              <div class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30">
-                <div v-if="isLoadingSponsors" class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-10 mx-auto mb-1"></div>
-                <div v-else class="text-lg font-semibold text-amber-600 dark:text-amber-400">
+              <div
+                class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30"
+              >
+                <div
+                  v-if="isLoadingSponsors"
+                  class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-10 mx-auto mb-1"
+                ></div>
+                <div
+                  v-else
+                  class="text-lg font-semibold text-amber-600 dark:text-amber-400"
+                >
                   {{ goldSponsorsCount }}
                 </div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">Active Sponsorships</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">
+                  Active Sponsorships
+                </div>
               </div>
-              <div 
+              <div
                 class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30 group relative"
                 title="Total number of times your sponsors have been viewed"
-              >              
-                <div v-if="isLoadingSponsors" class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-16 mx-auto mb-1"></div>
-                <div v-else class="text-lg font-semibold text-amber-600 dark:text-amber-400">
+              >
+                <div
+                  v-if="isLoadingSponsors"
+                  class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-16 mx-auto mb-1"
+                ></div>
+                <div
+                  v-else
+                  class="text-lg font-semibold text-amber-600 dark:text-amber-400"
+                >
                   {{ sponsorViews.toLocaleString() }}
                 </div>
-                <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center">
+                <div
+                  class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center"
+                >
                   Total Views
-                  <UIcon name="i-heroicons-information-circle" class="w-3 h-3 ml-0.5 text-gray-400" />
+                  <UIcon
+                    name="i-heroicons-information-circle"
+                    class="w-3 h-3 ml-0.5 text-gray-400"
+                  />
                 </div>
               </div>
-            </div>                <!-- My Sponsorships List -->
+            </div>
+            <!-- My Sponsorships List -->
             <div v-if="isLoadingSponsors" class="mb-3">
-              <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
+              <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+                My Sponsorships:
+              </h4>
               <ul class="space-y-1.5">
-                <li v-for="i in 2" :key="i" class="flex items-center animate-pulse">
-                  <div class="h-5 w-5 rounded-full overflow-hidden mr-2 bg-amber-100/50 dark:bg-amber-900/30 flex-shrink-0"></div>
-                  <div class="h-3 bg-amber-100/50 dark:bg-amber-900/30 rounded w-20"></div>
+                <li
+                  v-for="i in 2"
+                  :key="i"
+                  class="flex items-center animate-pulse"
+                >
+                  <div
+                    class="h-5 w-5 rounded-full overflow-hidden mr-2 bg-amber-100/50 dark:bg-amber-900/30 flex-shrink-0"
+                  ></div>
+                  <div
+                    class="h-3 bg-amber-100/50 dark:bg-amber-900/30 rounded w-20"
+                  ></div>
                 </li>
               </ul>
-            </div>            <div v-else-if="featuredSponsors && featuredSponsors.length > 0" class="mb-3">
-              <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">My Sponsorships:</h4>
+            </div>
+            <div
+              v-else-if="featuredSponsors && featuredSponsors.length > 0"
+              class="mb-3"
+            >
+              <h4 class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
+                My Sponsorships:
+              </h4>
               <ul class="space-y-2">
-                <li 
-                  v-for="(sponsor, index) in featuredSponsors" 
+                <li
+                  v-for="(sponsor, index) in featuredSponsors"
                   :key="sponsor.id || index"
                   class="group relative bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                 >
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center overflow-hidden flex-1 min-w-0">
-                      <div class="h-6 w-6 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0">
-                        <img 
-                          :src="sponsor.image || '/static/frontend/avatar.png'" 
+                    <div
+                      class="flex items-center overflow-hidden flex-1 min-w-0"
+                    >
+                      <div
+                        class="h-6 w-6 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0"
+                      >
+                        <img
+                          :src="sponsor.image || '/static/frontend/avatar.png'"
                           :alt="sponsor.name || 'Sponsor'"
                           class="h-full w-full object-cover"
                         />
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="text-xs text-gray-700 dark:text-gray-300 truncate font-medium" :title="sponsor.name">
-                          {{ sponsor.name || 'Unnamed Sponsor' }}
+                        <div
+                          class="text-xs text-gray-700 dark:text-gray-300 truncate font-medium"
+                          :title="sponsor.name"
+                        >
+                          {{ sponsor.name || "Unnamed Sponsor" }}
                         </div>
                         <!-- View count display -->
-                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <div
+                          class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                        >
                           <UIcon name="i-heroicons-eye" class="w-3 h-3 mr-1" />
-                          <span>{{ formatViews(sponsor.views || 0) }} views</span>
+                          <span
+                            >{{ formatViews(sponsor.views || 0) }} views</span
+                          >
                         </div>
                       </div>
                     </div>
-                    
+
                     <!-- Status badge and actions -->
                     <div class="flex items-center space-x-1 ml-2">
-                      <span 
+                      <span
                         class="text-xs px-1.5 py-0.5 rounded-full capitalize"
                         :class="{
-                          'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': sponsor.status === 'active',
-                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': sponsor.status === 'pending',
-                          'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': sponsor.status === 'rejected',
-                          'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400': !sponsor.status || sponsor.status === 'inactive'
+                          'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400':
+                            sponsor.status === 'active',
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400':
+                            sponsor.status === 'pending',
+                          'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400':
+                            sponsor.status === 'rejected',
+                          'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400':
+                            !sponsor.status || sponsor.status === 'inactive',
                         }"
                       >
-                        {{ sponsor.status || 'inactive' }}
+                        {{ sponsor.status || "inactive" }}
                       </span>
-                      
+
                       <!-- Edit/Delete Actions (only for active sponsors) -->
-                      <div v-if="sponsor.status === 'active'" class="relative" v-click-outside="() => closeSponsorActionsMenu(sponsor.id)">
-                        <button 
+                      <div
+                        v-if="sponsor.status === 'active'"
+                        class="relative"
+                        v-click-outside="
+                          () => closeSponsorActionsMenu(sponsor.id)
+                        "
+                      >
+                        <button
                           @click="toggleSponsorActionsMenu(sponsor.id)"
                           class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded opacity-0 group-hover:opacity-100 transition-all"
                         >
-                          <UIcon name="i-heroicons-ellipsis-vertical" class="w-3 h-3" />
+                          <UIcon
+                            name="i-heroicons-ellipsis-vertical"
+                            class="w-3 h-3"
+                          />
                         </button>
-                        
-                        <div 
+
+                        <div
                           v-if="activeSponsorActionMenu === sponsor.id"
                           class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
                         >
-                          <button 
+                          <button
                             @click="editSponsor(sponsor)"
                             class="w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
                           >
                             <UIcon name="i-heroicons-pencil" class="w-3 h-3" />
                             <span>Edit</span>
                           </button>
-                          <button 
+                          <button
                             @click="deleteSponsor(sponsor)"
                             class="w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2"
                           >
@@ -260,61 +343,97 @@
                 </li>
               </ul>
             </div>
-            <div v-else-if="goldSponsorsCount > 0" class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
+            <div
+              v-else-if="goldSponsorsCount > 0"
+              class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
+            >
               You have {{ goldSponsorsCount }} sponsorship(s) pending approval
-            </div>            <div v-else class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
-              You don't have any active sponsorships yet. 
             </div>
-            
+            <div
+              v-else
+              class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
+            >
+              You don't have any active sponsorships yet.
+            </div>
+
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
-              Become a Gold Sponsor and showcase your business to our entire network with premium visibility.
+              Become a Gold Sponsor and showcase your business to our entire
+              network with premium visibility.
             </p>
-            
-            <div class="space-y-2">              <button 
+
+            <div class="space-y-2">
+              <button
                 @click="isGoldSponsorModalOpen = true"
                 class="w-full py-2 rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-sm font-medium shadow-sm transition-all duration-200 flex items-center justify-center group"
               >
                 <span>Become Gold Sponsor</span>
-                <UIcon name="i-heroicons-plus" class="ml-1 w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-              </button>            </div>
+                <UIcon
+                  name="i-heroicons-plus"
+                  class="ml-1 w-3.5 h-3.5 group-hover:scale-110 transition-transform"
+                />
+              </button>
+            </div>
           </div>
         </div>
-        
+
         <!-- Login prompt for Gold Sponsor (visible only to non-logged in users) -->
-        <div v-if="!user?.user?.id" class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden">
+        <div
+          v-if="!user?.user?.id"
+          class="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/30 mt-1 mb-4 relative overflow-hidden"
+        >
           <!-- Shimmering effect at top -->
           <div class="absolute top-0 left-0 right-0 h-1 overflow-hidden">
-            <div class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"></div>
+            <div
+              class="h-full w-full bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 animate-shimmer"
+            ></div>
           </div>
-          
+
           <div class="flex flex-col">
             <h3 class="text-sm font-semibold mb-2 flex items-center">
-              <div class="w-5 h-5 flex items-center justify-center mr-1.5 relative">
+              <div
+                class="w-5 h-5 flex items-center justify-center mr-1.5 relative"
+              >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <span class="text-amber-500 relative z-10 text-lg">✦</span>
               </div>
               <span class="text-gold-gradient">Gold Sponsorships</span>
             </h3>
-            
-            <div class="bg-white dark:bg-slate-700/80 rounded-lg p-4 text-center shadow-sm border border-amber-100 dark:border-amber-800/30 mb-3">
+
+            <div
+              class="bg-white dark:bg-slate-700/80 rounded-lg p-4 text-center shadow-sm border border-amber-100 dark:border-amber-800/30 mb-3"
+            >
               <div class="flex justify-center mb-2">
-                <UIcon name="i-heroicons-lock-closed" class="w-6 h-6 text-amber-500" />
+                <UIcon
+                  name="i-heroicons-lock-closed"
+                  class="w-6 h-6 text-amber-500"
+                />
               </div>
-              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Login Required</h4>
+              <h4
+                class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+              >
+                Login Required
+              </h4>
               <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                Login or register to access Gold Sponsor features and promote your business across our network
+                Login or register to access Gold Sponsor features and promote
+                your business across our network
               </p>
-              
+
               <div class="space-y-2">
-                <NuxtLink 
-                  to="/auth/login?redirect=/business-network" 
+                <NuxtLink
+                  to="/auth/login?redirect=/business-network"
                   class="w-full py-2 rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-sm font-medium shadow-sm transition-all duration-200 flex items-center justify-center"
                 >
-                  <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4 mr-1.5" />
+                  <UIcon
+                    name="i-heroicons-arrow-right-on-rectangle"
+                    class="w-4 h-4 mr-1.5"
+                  />
                   <span>Login to Continue</span>
                 </NuxtLink>
                 <p class="text-center text-xs mt-1">
-                  <NuxtLink to="/auth/register" class="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 hover:underline">
+                  <NuxtLink
+                    to="/auth/register"
+                    class="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 hover:underline"
+                  >
                     Don't have an account? Register now
                   </NuxtLink>
                 </p>
@@ -580,7 +699,7 @@ async function fetchTopContributors() {
 async function fetchGoldSponsorsData() {
   try {
     isLoadingSponsors.value = true;
-    
+
     // Fetch user's own sponsors (similar to user-sponsors component)
     let response;
     try {
@@ -592,31 +711,47 @@ async function fetchGoldSponsorsData() {
         response = await get("/business_network/gold-sponsors/my-sponsors/");
       }
     }
-    
+
     if (response && response.data) {
       // Extract user sponsors
-      const userSponsors = response.data.user_sponsors || response.data.sponsors || response.data || [];
-      
+      const userSponsors =
+        response.data.user_sponsors ||
+        response.data.sponsors ||
+        response.data ||
+        [];
+
       if (Array.isArray(userSponsors)) {
         // Process sponsors and ensure proper formatting
         const processedSponsors = userSponsors.map((sponsor, index) => ({
           id: sponsor.id || `sponsor-${index}`,
-          name: sponsor.business_name || sponsor.name || sponsor.title || "Unnamed Sponsor", 
+          name:
+            sponsor.business_name ||
+            sponsor.name ||
+            sponsor.title ||
+            "Unnamed Sponsor",
           status: sponsor.status || "active",
           image: sponsor.logo || sponsor.image || "/static/frontend/avatar.png",
-          views: sponsor.views || 0
+          views: sponsor.views || 0,
         }));
-        
+
         featuredSponsors.value = processedSponsors;
-        goldSponsorsCount.value = processedSponsors.filter(s => s.status === 'active').length;
-        sponsorViews.value = processedSponsors.reduce((total, sponsor) => total + (sponsor.views || 0), 0);
+        goldSponsorsCount.value = processedSponsors.filter(
+          (s) => s.status === "active"
+        ).length;
+        sponsorViews.value = processedSponsors.reduce(
+          (total, sponsor) => total + (sponsor.views || 0),
+          0
+        );
       } else {
         featuredSponsors.value = [];
         goldSponsorsCount.value = 0;
         sponsorViews.value = 0;
       }
     } else {
-      console.error("Invalid response format from gold sponsors API:", response);
+      console.error(
+        "Invalid response format from gold sponsors API:",
+        response
+      );
       featuredSponsors.value = [];
       goldSponsorsCount.value = 0;
       sponsorViews.value = 0;
@@ -634,16 +769,17 @@ async function fetchGoldSponsorsData() {
 // Format view counts for display
 const formatViews = (views) => {
   if (views >= 1000000) {
-    return (views / 1000000).toFixed(1) + 'M';
+    return (views / 1000000).toFixed(1) + "M";
   } else if (views >= 1000) {
-    return (views / 1000).toFixed(1) + 'K';
+    return (views / 1000).toFixed(1) + "K";
   }
   return views.toString();
 };
 
 // Edit/Delete Sponsor Methods
 const toggleSponsorActionsMenu = (sponsorId) => {
-  activeSponsorActionMenu.value = activeSponsorActionMenu.value === sponsorId ? null : sponsorId;
+  activeSponsorActionMenu.value =
+    activeSponsorActionMenu.value === sponsorId ? null : sponsorId;
 };
 
 const closeSponsorActionsMenu = (sponsorId) => {
@@ -666,110 +802,120 @@ const deleteSponsor = (sponsor) => {
 
 const confirmDelete = async () => {
   if (!deletingSponsor.value) return;
-  
+
   try {
     // Get a fresh instance of the API methods to ensure we're using the latest token
     const { delete: deleteApi } = useApi();
-    
+
     // Debug sponsor object
-    console.log('Sponsor to delete:', JSON.stringify(deletingSponsor.value));
-    
+    console.log("Sponsor to delete:", JSON.stringify(deletingSponsor.value));
+
     // Make sure we have a valid ID and use the correct property name
     // Check for both id and ID properties as APIs sometimes use different casing
     const sponsorId = deletingSponsor.value.id || deletingSponsor.value.ID;
-    console.log('Extracted sponsor ID:', sponsorId, typeof sponsorId);
-    
+    console.log("Extracted sponsor ID:", sponsorId, typeof sponsorId);
+
     if (!sponsorId) {
-      throw new Error('Sponsor ID is missing');
+      throw new Error("Sponsor ID is missing");
     }
-    
+
     // Get the current auth token
     const authToken = useCookie("adsyclub-jwt").value;
-    console.log('Auth token available:', !!authToken);
-    
+    console.log("Auth token available:", !!authToken);
+
     // Check if token exists before proceeding
     if (!authToken) {
-      throw new Error('Authentication token is missing');
+      throw new Error("Authentication token is missing");
     }
 
     // Try the correct endpoint path
     try {
-      console.log('Attempting to delete sponsor with ID:', sponsorId);
+      console.log("Attempting to delete sponsor with ID:", sponsorId);
       // This is the correct path according to the backend URLs configuration
-      const response = await deleteApi(`/business_network/gold-sponsors/delete/${sponsorId}/`);
-      console.log('Delete response:', response);
-      
+      const response = await deleteApi(
+        `/business_network/gold-sponsors/delete/${sponsorId}/`
+      );
+      console.log("Delete response:", response);
+
       // Handle successful deletion
-      featuredSponsors.value = featuredSponsors.value.filter(s => s.id !== sponsorId);
+      featuredSponsors.value = featuredSponsors.value.filter(
+        (s) => s.id !== sponsorId
+      );
       goldSponsorsCount.value = Math.max(0, goldSponsorsCount.value - 1);
-      
+
       toast.add({
         title: "Success",
         description: "Sponsor deleted successfully",
         color: "green",
       });
-      
+
       // Refresh the sponsors data
       await fetchGoldSponsorsData();
       return; // Exit early if successful
     } catch (error) {
-      console.error('Standard API delete attempt failed:', error);
-      
+      console.error("Standard API delete attempt failed:", error);
+
       // If standard approach fails, try with direct fetch as fallback
       try {
         const token = `Bearer ${authToken}`;
         // Based on URLs, this is the endpoint the backend should be exposing
         const apiUrl = `${window.location.origin}/api/business_network/gold-sponsors/delete/${sponsorId}/`;
-        console.log('Making direct fetch DELETE request to:', apiUrl);
-        
+        console.log("Making direct fetch DELETE request to:", apiUrl);
+
         const response = await fetch(apiUrl, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'Authorization': token,
-            'Content-Type': 'application/json'
+            Authorization: token,
+            "Content-Type": "application/json",
           },
-          credentials: 'include' // Include cookies
+          credentials: "include", // Include cookies
         });
-        
-        console.log('Direct fetch response status:', response.status);
-        
+
+        console.log("Direct fetch response status:", response.status);
+
         if (response.ok) {
           // Handle successful deletion
-          featuredSponsors.value = featuredSponsors.value.filter(s => s.id !== sponsorId);
+          featuredSponsors.value = featuredSponsors.value.filter(
+            (s) => s.id !== sponsorId
+          );
           goldSponsorsCount.value = Math.max(0, goldSponsorsCount.value - 1);
-          
+
           toast.add({
             title: "Success",
             description: "Sponsor deleted successfully",
             color: "green",
           });
-          
+
           // Refresh the sponsors data
           await fetchGoldSponsorsData();
           return;
         } else {
           // Try to parse response for more details
-          let errorMsg = 'Unknown error';
+          let errorMsg = "Unknown error";
           try {
             const responseData = await response.text();
-            console.error('Direct fetch error response:', responseData);
+            console.error("Direct fetch error response:", responseData);
             errorMsg = responseData;
           } catch (e) {
-            console.error('Error parsing error response:', e);
+            console.error("Error parsing error response:", e);
           }
-          
-          throw new Error(`API returned error status: ${response.status} - ${errorMsg}`);
+
+          throw new Error(
+            `API returned error status: ${response.status} - ${errorMsg}`
+          );
         }
       } catch (directFetchError) {
-        console.error('Direct fetch approach failed:', directFetchError);
+        console.error("Direct fetch approach failed:", directFetchError);
         throw directFetchError; // Re-throw to be caught by outer catch
       }
     }
   } catch (error) {
-    console.error('Error deleting sponsor:', error);
+    console.error("Error deleting sponsor:", error);
     toast.add({
       title: "Error",
-      description: `Failed to delete sponsor: ${error.message || 'Unknown error'}`,
+      description: `Failed to delete sponsor: ${
+        error.message || "Unknown error"
+      }`,
       color: "red",
     });
   } finally {
@@ -793,13 +939,13 @@ const onSponsorCreated = (newSponsor) => {
   // Add the new sponsor to the list
   featuredSponsors.value.unshift(newSponsor);
   goldSponsorsCount.value += 1;
-  
+
   toast.add({
     title: "Success",
     description: "Gold Sponsor created successfully!",
     color: "green",
   });
-  
+
   closeGoldSponsorModal();
   // Refresh the data to get updated stats
   fetchGoldSponsorsData();
@@ -807,17 +953,19 @@ const onSponsorCreated = (newSponsor) => {
 
 const onSponsorUpdated = (updatedSponsor) => {
   // Update the sponsor in the list
-  const index = featuredSponsors.value.findIndex(s => s.id === updatedSponsor.id);
+  const index = featuredSponsors.value.findIndex(
+    (s) => s.id === updatedSponsor.id
+  );
   if (index !== -1) {
     featuredSponsors.value[index] = updatedSponsor;
   }
-  
+
   toast.add({
-    title: "Success", 
+    title: "Success",
     description: "Gold Sponsor updated successfully!",
     color: "green",
   });
-  
+
   closeGoldSponsorModal();
   // Refresh the data to get updated stats
   fetchGoldSponsorsData();
@@ -864,7 +1012,7 @@ const checkMobile = () => {
 };
 
 // Function to handle redirects to login with return path
-const redirectToLoginWithReturnPath = (returnPath = '/business-network') => {
+const redirectToLoginWithReturnPath = (returnPath = "/business-network") => {
   navigateTo(`/auth/login?redirect=${returnPath}`);
 };
 
@@ -884,28 +1032,33 @@ const handleGoldSponsorSubmit = async (formData) => {
         response = await post("/api/bn/gold-sponsors/apply/", formData);
       } catch (err2) {
         // Last resort, try the new format
-        response = await post("/business_network/gold-sponsors/apply/", formData);
+        response = await post(
+          "/business_network/gold-sponsors/apply/",
+          formData
+        );
       }
     }
-    
+
     if (response.error) {
       throw new Error(response.error);
     }
-    
+
     // Show success message
     toast.add({
       title: "Application Submitted",
-      description: "Your Gold Sponsor application has been received. We'll contact you soon.",
+      description:
+        "Your Gold Sponsor application has been received. We'll contact you soon.",
       color: "green",
     });
-    
+
     // After successful submission, refresh the gold sponsors data
     await fetchGoldSponsorsData();
   } catch (error) {
     console.error("Error submitting gold sponsor application:", error);
     toast.add({
       title: "Submission Failed",
-      description: "There was an error submitting your application. Please try again.",
+      description:
+        "There was an error submitting your application. Please try again.",
       color: "red",
     });
   }
@@ -923,7 +1076,7 @@ onMounted(async () => {
   if (user.value?.user?.id) {
     await fetchUnreadCount();
   }
-  
+
   // Fetch dynamic data regardless of login status
   try {
     await Promise.all([

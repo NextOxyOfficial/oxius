@@ -104,7 +104,7 @@
                   <CommonEditor
                     v-model="form.content"
                     @updateContent="updateContent"
-                    class="editor-container"
+                    class="editor-container text-left"
                     placeholder="Write your post description here..."
                   />
                   <div
@@ -1070,7 +1070,6 @@ const refreshPostsWithJWT = async () => {
       console.error("No JWT token available for refresh");
       return;
     }
-
   } catch (error) {
     console.error("Error refreshing posts with JWT:", error);
   }

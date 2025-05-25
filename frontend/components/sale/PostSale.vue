@@ -210,14 +210,13 @@
               >Description <span class="text-red-500">*</span></label
             >
             <div class="relative">
-              <textarea
-                id="description"
+              <CommonEditor
                 v-model="formData.description"
-                class="w-full border border-gray-300 rounded-md px-4 py-1.5 focus:ring-primary focus:border-primary shadow-sm"
-                rows="5"
+                @updateContent="updateContent"
+                class="editor-container text-left"
                 placeholder="Describe what you're selling in detail"
-                required
-              ></textarea>
+              />
+
               <div class="absolute right-3 bottom-3 text-xs text-gray-500">
                 {{ formData.description.length }}/1000
               </div>
@@ -1200,6 +1199,10 @@ const populateFormWithEditData = async () => {
   // Accept terms by default when editing
   formData.termsAccepted = true;
 };
+
+function updateContent(p) {
+  formData.description = p;
+}
 </script>
 
 <style scoped>
@@ -1215,5 +1218,28 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* Editor Container */
+.editor-container {
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  min-height: 150px;
+  transition: all 0.2s ease;
+}
+
+.editor-container:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Dark mode adjustments */
+.dark .editor-container {
+  border-color: #374151;
+}
+
+.dark .editor-container:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 </style>
