@@ -308,7 +308,7 @@
         @click="toggleSidebar"
       ></div>
 
-      <CommonHotDealsSection />
+      <!-- <CommonHotDealsSection /> -->
       <!-- Premium Search & Filters Section -->
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
@@ -613,6 +613,7 @@ const categories = ref([]);
 const isLoading = ref(true);
 const toast = useToast();
 const viewMode = ref("grid");
+const route = useRoute();
 
 // Pagination and infinite scroll variables
 const currentPage = ref(1);
@@ -622,6 +623,7 @@ const allProducts = ref([]);
 const isLoadingMore = ref(false);
 const hasMoreProducts = ref(true);
 const loadMoreTrigger = ref(null);
+const categoryDetails = ref({});
 
 // Banner state
 const currentSlide = ref(0);
@@ -678,6 +680,26 @@ function debouncedSearch() {
     fetchProducts();
   }, 500);
 }
+
+async function getCategoryDetails() {
+  try {
+    const res = await get(`/product-categories/details/${route.params.slug}/`);
+    if (res.data) {
+      categoryDetails.value = res.data;
+      console.log("Category Details:", categoryDetails.value);
+    }
+  } catch (error) {
+    console.error("Error fetching category details:", error);
+    toast.add({
+      title: "Error loading category details",
+      description: "Could not load category details. Please try again later.",
+      color: "red",
+      timeout: 3000,
+    });
+  }
+}
+
+await getCategoryDetails();
 
 // Get category name by ID
 function getCategoryName(categoryId) {
@@ -914,8 +936,10 @@ async function fetchProducts() {
     // Build query parameters
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
-    if (selectedCategory.value) {
-      queryParams += `&category=${selectedCategory.value}`;
+    if (selectedCategory.value || categoryDetails.value) {
+      queryParams += `&category=${
+        selectedCategory.value || categoryDetails.value.id
+      }`;
     }
 
     if (searchQuery.value) {
