@@ -142,19 +142,25 @@
           :ui="{
             base: 'font-medium',
           }"
-        />
-        <UButton
+        />        <UButton
           icon="i-material-symbols:mark-email-unread-outline"
           size="md"
           color="blue"
           variant="soft"
           :label="t('inbox')"
           to="/inbox/"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5"
+          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5 relative"
           :ui="{
             base: 'font-medium',
           }"
-        />
+        >
+          <div 
+            v-if="badgeCount > 0" 
+            class="notification-badge absolute top-1 right-16 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-1 font-semibold shadow-sm animate-pulse-subtle"
+          >
+            {{ badgeCount > 99 ? '99+' : badgeCount }}
+          </div>
+        </UButton>
         <UButton
           icon="i-material-symbols:list-rounded"
           size="md"
@@ -278,6 +284,20 @@
 const { user } = useAuth();
 const { t } = useI18n();
 const toast = useToast();
+const { unreadTicketCount, fetchUnreadCount } = useTickets();
+const badgeCount = ref(0);
+
+// Update badge count when unreadTicketCount changes
+watch(() => unreadTicketCount.value, (newCount) => {
+  badgeCount.value = newCount;
+});
+
+// Fetch unread ticket count when component mounts
+onMounted(async () => {
+  await fetchUnreadCount();
+  badgeCount.value = unreadTicketCount.value;
+});
+
 defineProps({
   user: {
     type: Object,
@@ -371,4 +391,27 @@ function CopyToClip(text) {
   transform: scale(1.02);
 }
 
+/* Notification badge animation */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.notification-badge {
+  transform-origin: center;
+  transition: all 0.3s ease;
+}
+
+/* Notification badge hover effect */
+.action-button:hover .notification-badge {
+  transform: scale(1.1);
+}
 </style>
