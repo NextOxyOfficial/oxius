@@ -45,11 +45,17 @@ class SupportTicketSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         try:
             read_status = obj.read_statuses.get(user=user)
-            # Check if there are replies after the last read time
-            # OR if the ticket itself was created after the last read time
-            ticket_unread = obj.created_at > read_status.last_read_at
-            replies_unread = obj.replies.filter(created_at__gt=read_status.last_read_at).exists()
-            return ticket_unread or replies_unread
+            
+            # Get the most recent activity time (either ticket creation or latest reply)
+            latest_reply = obj.replies.order_by('-created_at').first()
+            if latest_reply:
+                latest_activity_time = latest_reply.created_at
+            else:
+                latest_activity_time = obj.created_at
+            
+            # The ticket is unread if the latest activity happened after the last read time
+            return latest_activity_time > read_status.last_read_at
+            
         except:
             # If no read status exists, the ticket is unread
             return True
