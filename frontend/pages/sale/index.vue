@@ -827,6 +827,7 @@ import { useApi } from "~/composables/useApi";
 import SaleSidebar from "~/components/sale/SaleSidebar.vue";
 
 const { user } = useAuth();
+const { query } = useRoute();
 
 // API endpoints
 const API_ENDPOINTS = {
@@ -889,7 +890,7 @@ async function filterSearch() {
 const searchQuery = ref("");
 const totalListings = ref(0); // Added to match template usage
 const categories = ref([]);
-const selectedCategory = ref(null); // Added to match template usage
+const selectedCategory = ref(query.category || null); // Added to match template usage
 const selectedSubcategory = ref(null); // Added to match template usage
 const selectedDivision = ref(""); // Added to match template usage
 const selectedDistrict = ref(""); // Added for location selection
