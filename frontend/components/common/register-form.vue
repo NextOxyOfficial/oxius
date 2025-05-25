@@ -1,59 +1,117 @@
-<template>  <div>
-    <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-gray-100">
+<template>
+  <div>
+    <div
+      class="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-gray-100"
+    >
       <transition name="fade" mode="out-in">
         <form @submit.prevent="handleSubmit" class="space-y-8">
           <!-- Form Header -->
           <div class="text-center space-y-2">
-            <h2 class="text-2xl font-bold text-gray-800">Create Your Account</h2>
-            <p class="text-gray-500">Join our community and enjoy all features</p>
+            <h2 class="text-2xl font-bold text-gray-800">
+              Create Your Account
+            </h2>
+            <p class="text-gray-500">
+              Join our community and enjoy all features
+            </p>
             <div class="mt-2 flex justify-center">
               <div class="flex items-center justify-center gap-2">
-                <div v-for="(step, index) in steps" :key="index"
-                  class="flex items-center">
-                  <div :class="[
-                    'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                    currentStep >= index + 1
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  ]">
+                <div
+                  v-for="(step, index) in steps"
+                  :key="index"
+                  class="flex items-center"
+                >
+                  <div
+                    :class="[
+                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
+                      currentStep >= index + 1
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-600',
+                    ]"
+                  >
                     {{ index + 1 }}
                   </div>
-                  <div v-if="index < steps.length - 1" class="w-12 h-1 mx-1"
-                    :class="currentStep > index + 1 ? 'bg-purple-600' : 'bg-gray-200'"></div>
+                  <div
+                    v-if="index < steps.length - 1"
+                    class="w-12 h-1 mx-1"
+                    :class="
+                      currentStep > index + 1 ? 'bg-purple-600' : 'bg-gray-200'
+                    "
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Profile Image Upload -->
-          <transition name="step" mode="out-in">            
+          <transition name="step" mode="out-in">
             <div v-if="currentStep === 1" class="text-center">
               <div class="flex flex-col items-center gap-4">
                 <div class="relative group">
-                  <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-sm mx-auto">
-                    <img v-if="userProfile.image" :src="userProfile.image" alt="Profile" class="w-full h-full object-cover" />
-                    <div v-else class="w-full h-full flex items-center justify-center">
-                      <UIcon name="i-heroicons-user" class="w-16 h-16 text-gray-400" />
+                  <div
+                    class="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-sm mx-auto"
+                  >
+                    <img
+                      v-if="userProfile.image"
+                      :src="userProfile.image"
+                      alt="Profile"
+                      class="w-full h-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="w-full h-full flex items-center justify-center"
+                    >
+                      <UIcon
+                        name="i-heroicons-user"
+                        class="w-16 h-16 text-gray-400"
+                      />
                     </div>
                   </div>
-                  <div class="absolute inset-0 flex items-center justify-center rounded-full bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <label for="profile-upload" class="cursor-pointer p-2 rounded-full bg-white text-purple-600 hover:bg-purple-50">
+                  <div
+                    class="absolute inset-0 flex items-center justify-center rounded-full bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <label
+                      for="profile-upload"
+                      class="cursor-pointer p-2 rounded-full bg-white text-purple-600 hover:bg-purple-50"
+                    >
                       <UIcon name="i-heroicons-camera" class="w-6 h-6" />
-                      <input type="file" id="profile-upload" class="hidden" @change="handleFileUpload($event)" accept="image/*" />
+                      <input
+                        type="file"
+                        id="profile-upload"
+                        class="hidden"
+                        @change="handleFileUpload($event)"
+                        accept="image/*"
+                      />
                     </label>
                   </div>
-                  <button v-if="userProfile.image" type="button" @click="deleteUpload()" 
-                    class="absolute -right-2 -top-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition">
+                  <button
+                    v-if="userProfile.image"
+                    type="button"
+                    @click="deleteUpload()"
+                    class="absolute -right-2 -top-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition"
+                  >
                     <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
                   </button>
-                </div>                <span class="text-sm text-gray-500">Upload a profile picture (optional)</span>
+                </div>
+                <span class="text-sm text-gray-500"
+                  >Upload a profile picture (optional)</span
+                >
               </div>
-              
+
               <div class="mt-6 flex justify-between">
-                <UButton type="button" variant="ghost" @click="skipStep()" class="text-sm">
+                <UButton
+                  type="button"
+                  variant="ghost"
+                  @click="skipStep()"
+                  class="text-sm"
+                >
                   Skip this step
                 </UButton>
-                <UButton type="button" color="purple" @click="nextStep()" class="text-sm">
+                <UButton
+                  type="button"
+                  color="purple"
+                  @click="nextStep()"
+                  class="text-sm"
+                >
                   Continue
                 </UButton>
               </div>
@@ -63,11 +121,16 @@
           <div v-if="currentStep === 2" class="space-y-6">
             <!-- Personal Information Section -->
             <div class="space-y-4">
-              <h3 class="text-md font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
-              
+              <h3 class="text-md font-semibold text-gray-700 border-b pb-2">
+                Personal Information
+              </h3>
+
               <div class="grid grid-cols-2 gap-4">
                 <div class="relative">
-                  <UIcon name="i-heroicons-user" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-user"
+                    class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                  />
                   <input
                     type="text"
                     placeholder="First name"
@@ -79,7 +142,10 @@
                   </p>
                 </div>
                 <div class="relative">
-                  <UIcon name="i-heroicons-user" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-user"
+                    class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                  />
                   <input
                     type="text"
                     placeholder="Last name"
@@ -94,7 +160,10 @@
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="relative">
-                  <UIcon name="i-heroicons-envelope" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-envelope"
+                    class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                  />
                   <input
                     type="email"
                     placeholder="Email address"
@@ -106,7 +175,10 @@
                   </p>
                 </div>
                 <div class="relative">
-                  <UIcon name="i-heroicons-phone" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-phone"
+                    class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                  />
                   <input
                     type="text"
                     placeholder="Phone number"
@@ -122,17 +194,16 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <UFormGroup label="" class="space-y-1">
                   <div class="relative">
-                    <UIcon name="i-heroicons-calendar" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-                    <UInput
+                    <UIcon
+                      name="i-heroicons-calendar"
+                      class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                    />
+                    <input
                       type="text"
                       size="md"
                       placeholder="Age"
                       v-model="form.age"
-                      class="pl-10"
-                      :ui="{
-                        base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
-                        input: 'block w-full py-2.5'
-                      }"
+                      class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                     />
                   </div>
                   <p v-if="error.age" class="text-red-500 text-sm mt-1">
@@ -141,17 +212,24 @@
                 </UFormGroup>
                 <UFormGroup label="" class="space-y-1">
                   <div class="relative">
-                    <UIcon name="i-heroicons-user-circle" class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5" />
                     <USelectMenu
                       v-model="form.gender"
                       :options="['Male', 'Female', 'Others']"
                       placeholder="Select Gender"
-                      size="md"
+                      size="xl"
                       :ui="{
-                        base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
-                        input: 'block w-full py-2.5 pl-10',
+                        base: 'w-full relative flex items-center rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
+                        input:
+                          'block w-full py-5 pl-10 focus:ring-2 focus:ring-purple-500',
                       }"
-                    />
+                    >
+                      <template #leading>
+                        <UIcon
+                          name="i-heroicons-user-circle"
+                          class="z-10 text-gray-400 w-5 h-5"
+                        />
+                      </template>
+                    </USelectMenu>
                   </div>
                   <p v-if="error.gender" class="text-red-500 text-sm mt-1">
                     {{ error.gender }}
@@ -161,7 +239,10 @@
 
               <div class="space-y-4">
                 <div class="relative">
-                  <UIcon name="i-heroicons-lock-closed" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-lock-closed"
+                    class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                  />
                   <input
                     :type="isPassword ? 'password' : 'text'"
                     placeholder="Password"
@@ -173,7 +254,9 @@
                     @click="isPassword = !isPassword"
                   >
                     <UIcon
-                      :name="isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
+                      :name="
+                        isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'
+                      "
                       class="w-5 h-5 text-gray-500 hover:text-gray-700"
                     />
                   </div>
@@ -183,7 +266,10 @@
                 </div>
 
                 <div class="relative">
-                  <UIcon name="i-heroicons-lock-closed" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-lock-closed"
+                    class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                  />
                   <input
                     :type="isPassword ? 'password' : 'text'"
                     placeholder="Confirm password"
@@ -195,11 +281,16 @@
                     @click="isPassword = !isPassword"
                   >
                     <UIcon
-                      :name="isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
+                      :name="
+                        isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'
+                      "
                       class="w-5 h-5 text-gray-500 hover:text-gray-700"
                     />
                   </div>
-                  <p v-if="error.confirmPassword" class="text-red-500 text-sm mt-1">
+                  <p
+                    v-if="error.confirmPassword"
+                    class="text-red-500 text-sm mt-1"
+                  >
                     {{ error.confirmPassword }}
                   </p>
                 </div>
@@ -207,11 +298,23 @@
             </div>
 
             <div class="flex justify-between">
-              <UButton type="button" variant="ghost" @click="prevStep()" class="text-sm">
-                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" /> Back
+              <UButton
+                type="button"
+                variant="ghost"
+                @click="prevStep()"
+                class="text-sm"
+              >
+                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" />
+                Back
               </UButton>
-              <UButton type="button" color="purple" @click="nextStep()" class="text-sm">
-                Continue <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
+              <UButton
+                type="button"
+                color="purple"
+                @click="nextStep()"
+                class="text-sm"
+              >
+                Continue
+                <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
               </UButton>
             </div>
           </div>
@@ -219,80 +322,100 @@
           <div v-if="currentStep === 3" class="space-y-6">
             <!-- Address Information -->
             <div class="space-y-4">
-              <h3 class="text-md font-semibold text-gray-700 border-b pb-2">Address Information</h3>
-              
+              <h3 class="text-md font-semibold text-gray-700 border-b pb-2">
+                Address Information
+              </h3>
+
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="col-span-1">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
-                      <UIcon name="i-heroicons-map" class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5" />
                       <USelectMenu
                         v-model="form.state"
                         :options="regions"
                         placeholder="State/Region"
-                        size="md"
+                        size="xl"
                         :ui="{
                           base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
                           input: 'block w-full py-2.5 pl-10',
                         }"
                         option-attribute="name_eng"
                         value-attribute="name_eng"
-                      />
+                      >
+                        <template #leading>
+                          <UIcon
+                            name="i-heroicons-map"
+                            class="z-10 text-gray-400 w-5 h-5"
+                          />
+                        </template>
+                      </USelectMenu>
                     </div>
                   </UFormGroup>
                 </div>
                 <div class="col-span-1">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
-                      <UIcon name="i-heroicons-building-office" class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5" />
                       <USelectMenu
                         v-model="form.city"
                         :options="cities"
                         placeholder="City"
-                        size="md"
+                        size="xl"
                         :ui="{
                           base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
                           input: 'block w-full py-2.5 pl-10',
                         }"
                         option-attribute="name_eng"
                         value-attribute="name_eng"
-                      />
+                      >
+                        <template #leading>
+                          <UIcon
+                            name="i-heroicons-building-office"
+                            class="z-10 text-gray-400 w-5 h-5"
+                          />
+                        </template>
+                      </USelectMenu>
                     </div>
                   </UFormGroup>
                 </div>
                 <div class="col-span-1">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
-                      <UIcon name="i-heroicons-map-pin" class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5" />
                       <USelectMenu
                         v-model="form.upazila"
                         :options="upazilas"
                         placeholder="Area/Upazila"
-                        size="md"
+                        size="xl"
                         :ui="{
                           base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
                           input: 'block w-full py-2.5 pl-10',
+                          shadow: '',
                         }"
                         option-attribute="name_eng"
                         value-attribute="name_eng"
-                      />
+                      >
+                        <template #leading>
+                          <UIcon
+                            name="i-heroicons-map-pin"
+                            class="z-10 text-gray-400 w-5 h-5"
+                          />
+                        </template>
+                      </USelectMenu>
                     </div>
                   </UFormGroup>
                 </div>
                 <div class="col-span-1">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
-                      <UIcon name="i-heroicons-envelope" class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5" />
-                      <UInput
+                      <UIcon
+                        name="i-heroicons-envelope"
+                        class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5"
+                      />
+                      <input
                         type="text"
                         size="md"
                         placeholder="Zip/Postal Code"
                         v-model="form.zip"
-                        class="pl-10"
-                        :ui="{
-                          base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
-                          input: 'block w-full py-2.5'
-                        }"
+                        class="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </UFormGroup>
@@ -300,44 +423,55 @@
                 <div class="col-span-2">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
-                      <UIcon name="i-heroicons-home" class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5" />
-                      <UInput
+                      <UIcon
+                        name="i-heroicons-home"
+                        class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5"
+                      />
+                      <input
                         type="text"
                         size="md"
                         placeholder="Full Address"
                         v-model="form.address"
-                        class="pl-10"
-                        :ui="{
-                          base: 'w-full relative flex rounded-md border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
-                          input: 'block w-full py-2.5'
-                        }"
+                        class="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </UFormGroup>
                 </div>
               </div>
-              
+
               <div class="relative mt-4">
-                <UIcon name="i-heroicons-ticket" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                <UIcon
+                  name="i-heroicons-ticket"
+                  class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                />
                 <input
                   type="text"
                   placeholder="Referral code (optional)"
                   v-model="form.refer"
-                  class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 />
                 <p v-if="error.refer" class="text-red-500 text-sm mt-1">
                   {{ error.refer }}
                 </p>
               </div>
             </div>
-            
-            <p v-if="submitError" class="text-center p-3 bg-red-50 text-red-600 rounded-md border border-red-100 text-sm">
+
+            <p
+              v-if="submitError"
+              class="text-center p-3 bg-red-50 text-red-600 rounded-md border border-red-100 text-sm"
+            >
               {{ submitError }}
             </p>
 
             <div class="flex justify-between">
-              <UButton type="button" variant="ghost" @click="prevStep()" class="text-sm">
-                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" /> Back
+              <UButton
+                type="button"
+                variant="ghost"
+                @click="prevStep()"
+                class="text-sm"
+              >
+                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" />
+                Back
               </UButton>
               <UButton
                 :loading="isLoading"
@@ -374,7 +508,7 @@ const isPassword = ref(true);
 const isLoading = ref(false);
 
 // Multi-step form implementation
-const steps = ref(['Profile Photo', 'Personal Info', 'Address Info']);
+const steps = ref(["Profile Photo", "Personal Info", "Address Info"]);
 const currentStep = ref(1);
 
 function nextStep() {
@@ -402,26 +536,39 @@ function validateCurrentStep() {
     // Validate personal info
     let isValid = true;
 
-    error.value.first_name = !form.value.first_name ? "First name is required" : "";
-    error.value.last_name = !form.value.last_name ? "Last name is required" : "";
+    error.value.first_name = !form.value.first_name
+      ? "First name is required"
+      : "";
+    error.value.last_name = !form.value.last_name
+      ? "Last name is required"
+      : "";
     error.value.email = !form.value.email ? "Email is required" : "";
-    
+
     const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
-    error.value.phone = !form.value.phone ? "Phone number is required" : 
-                         !phoneNumberValid.test(form.value.phone) ? "Invalid phone number" : "";
+    error.value.phone = !form.value.phone
+      ? "Phone number is required"
+      : !phoneNumberValid.test(form.value.phone)
+      ? "Invalid phone number"
+      : "";
 
     error.value.password = !form.value.password ? "Password is required" : "";
-    error.value.confirmPassword = !form.value.confirmPassword ? "Confirm password is required" :
-                                  form.value.password !== form.value.confirmPassword ? "Passwords do not match" : "";
-    
+    error.value.confirmPassword = !form.value.confirmPassword
+      ? "Confirm password is required"
+      : form.value.password !== form.value.confirmPassword
+      ? "Passwords do not match"
+      : "";
+
     const ageValid = /^\d+$/;
-    error.value.age = !form.value.age ? "Age is required" : 
-                      !ageValid.test(+form.value.age) ? "Invalid age" : "";
-    
+    error.value.age = !form.value.age
+      ? "Age is required"
+      : !ageValid.test(+form.value.age)
+      ? "Invalid age"
+      : "";
+
     error.value.gender = !form.value.gender ? "Gender is required" : "";
 
     // Check if any validation errors
-    isValid = !Object.values(error.value).some(err => err);
+    isValid = !Object.values(error.value).some((err) => err);
     return isValid;
   }
   return true;
@@ -446,7 +593,7 @@ const form = ref({
 });
 
 const userProfile = ref({
-  image: null
+  image: null,
 });
 
 const error = ref({
@@ -559,9 +706,16 @@ async function handleSubmit() {
   if (Object.values(error.value).some((err) => err)) {
     isLoading.value = false;
     // Move to the step that has errors
-    if (error.value.first_name || error.value.last_name || error.value.email || 
-        error.value.phone || error.value.password || error.value.confirmPassword || 
-        error.value.age || error.value.gender) {
+    if (
+      error.value.first_name ||
+      error.value.last_name ||
+      error.value.email ||
+      error.value.phone ||
+      error.value.password ||
+      error.value.confirmPassword ||
+      error.value.age ||
+      error.value.gender
+    ) {
       currentStep.value = 2;
     }
     return;
@@ -602,26 +756,28 @@ async function handleSubmit() {
         gender: "",
         refer: "",
       };
-      
+
       const res2 = await login(form.value.email, form.value.password);
       if (res2) {
         const res = await post(`/send-sms/?phone=${form.value.phone}`);
         toast.add({
           title: "Registration successful!",
           description: "Welcome to ADSY Club",
-          color: "green"
+          color: "green",
         });
         navigateTo("/");
       }
     } else {
-      submitError.value = res.error?.data?.error || "An error occurred during registration";
+      submitError.value =
+        res.error?.data?.error || "An error occurred during registration";
     }
   } catch (err) {
     if (err.response?.status === 444) {
       error.value.refer = "Invalid referral code";
       currentStep.value = 3; // Go to referral step
     } else {
-      submitError.value = err.response?.data?.message || "An error occurred. Please try again.";
+      submitError.value =
+        err.response?.data?.message || "An error occurred. Please try again.";
       console.error("Error submitting the form:", err);
     }
   }
@@ -631,7 +787,7 @@ async function handleSubmit() {
 function handleFileUpload(event) {
   const files = Array.from(event.target.files);
   if (files.length === 0) return;
-  
+
   const reader = new FileReader();
 
   // Event listener for successful read
@@ -645,7 +801,7 @@ function handleFileUpload(event) {
     toast.add({
       title: "Error",
       description: "Failed to upload image",
-      color: "red"
+      color: "red",
     });
   };
 
@@ -670,7 +826,7 @@ function deleteUpload() {
 }
 
 /* Form field focus animation */
-input:focus, 
+input:focus,
 .select:focus {
   transition: all 0.3s ease;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);

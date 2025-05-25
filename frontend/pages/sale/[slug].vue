@@ -167,7 +167,9 @@
             class="mt-5 overflow-hidden rounded-lg border border-emerald-100"
           >
             <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 p-5">
-              <div class="flex items-center justify-between">
+              <div
+                class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0"
+              >
                 <div>
                   <h3 class="font-bold text-white text-sm">Need financing?</h3>
                   <p class="text-emerald-100 text-sm mt-1">
@@ -377,7 +379,7 @@
             </button>
 
             <NuxtLink
-             @click="
+              @click="
                 navigateTo('/sale/user-profile/' + product.user_details?.id)
               "
               class="cursorpointer mt-3 text-emerald-600 hover:text-emerald-600 text-sm flex items-center justify-center"
@@ -421,7 +423,9 @@
             />
           </div>
           <div class="p-4">
-            <h3 class="font-semibold truncate text-sm text-gray-800 hover:text-emerald-600">
+            <h3
+              class="font-semibold truncate text-sm text-gray-800 hover:text-emerald-600"
+            >
               {{ item.title }}
             </h3>
             <div class="flex justify-between items-center mt-2">
@@ -569,9 +573,7 @@
                 value="prohibited"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700"
-                >Prohibited item</span
-              >
+              <span class="text-sm text-gray-700">Prohibited item</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
