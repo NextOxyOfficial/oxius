@@ -1,6 +1,5 @@
 <template>
   <UContainer class="py-4 md:py-6">
-    {{ storeDetails }}
     <div class="min-h-screen">
       <!-- Modern Hero Banner with Layered Design -->
       <div

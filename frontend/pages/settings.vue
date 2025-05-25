@@ -312,7 +312,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Store Banner Upload -->
               <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
                 <label class="block text-base font-medium text-gray-700 mb-3"
@@ -335,11 +335,16 @@
                       <UIcon name="i-heroicons-trash" class="w-4 h-4" />
                     </button>
                   </div>
-                  
+
                   <!-- Banner placeholder when no banner -->
                   <div v-else class="relative">
-                    <div class="w-full h-40 rounded-lg bg-emerald-50 flex items-center justify-center border-2 border-white shadow overflow-hidden">
-                      <UIcon name="i-heroicons-photo" class="w-12 h-12 text-emerald-300" />
+                    <div
+                      class="w-full h-40 rounded-lg bg-emerald-50 flex items-center justify-center border-2 border-white shadow overflow-hidden"
+                    >
+                      <UIcon
+                        name="i-heroicons-photo"
+                        class="w-12 h-12 text-emerald-300"
+                      />
                     </div>
                   </div>
 
@@ -351,11 +356,20 @@
                       @change="handleBannerUpload($event)"
                       accept="image/*"
                     />
-                    <div class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors rounded-lg cursor-pointer">
-                      <UIcon name="i-heroicons-photo" class="w-5 h-5 text-emerald-500" />
-                      <span class="text-sm text-emerald-600 font-medium">Upload Banner Image</span>
+                    <div
+                      class="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors rounded-lg cursor-pointer"
+                    >
+                      <UIcon
+                        name="i-heroicons-photo"
+                        class="w-5 h-5 text-emerald-500"
+                      />
+                      <span class="text-sm text-emerald-600 font-medium"
+                        >Upload Banner Image</span
+                      >
                     </div>
-                    <p class="mt-2 text-xs text-gray-500">Recommended size: 1600×400 pixels. Max size: 10MB.</p>
+                    <p class="mt-2 text-xs text-gray-500">
+                      Recommended size: 1600×400 pixels. Max size: 10MB.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -734,7 +748,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Banner delete confirmation modal -->
     <div
       v-if="showDeleteBannerConfirmModal"
@@ -969,7 +983,8 @@ async function handlePasswordChange() {
       error.response?.data?.message || "Failed to change password",
       "red"
     );
-    console.error(error);  } finally {
+    console.error(error);
+  } finally {
     passwordLoading.value = false;
   }
 }
@@ -984,15 +999,9 @@ async function handleForm() {
     // Set the name properly
     profileData.name = `${profileData.first_name || ""} ${
       profileData.last_name || ""
-    }`.trim();    // Remove properties that shouldn't be sent to the API
-    const {
-      groups,
-      user_permissions,
-      nid,
-      refer,
-      store_logo,
-      ...dataToSend
-    } = profileData;
+    }`.trim(); // Remove properties that shouldn't be sent to the API
+    const { groups, user_permissions, nid, refer, store_logo, ...dataToSend } =
+      profileData;
 
     // Handle image more explicitly
     if (typeof profileData.image === "string") {
@@ -1008,7 +1017,7 @@ async function handleForm() {
       // Some APIs handle null differently than empty string, so try both approaches
       dataToSend.image = "";
     }
-    
+
     // Handle store_banner in the same way
     if (typeof profileData.store_banner === "string") {
       if (profileData.store_banner.includes("data:image")) {
@@ -1031,6 +1040,10 @@ async function handleForm() {
           : typeof dataToSend.image
         : "empty"
     );
+    console.log("data to send:", dataToSend);
+    if (dataToSend.store_banner === "" || dataToSend.store_banner === null) {
+      delete dataToSend.store_banner;
+    }
 
     const res = await put(`/persons/update/${profileData.email}/`, dataToSend);
 
@@ -1231,7 +1244,7 @@ function handleBannerUpload(event) {
         height = (height * MAX_WIDTH) / width;
         width = MAX_WIDTH;
       }
-      
+
       if (height > MAX_HEIGHT) {
         width = (width * MAX_HEIGHT) / height;
         height = MAX_HEIGHT;
@@ -1310,7 +1323,7 @@ async function deleteBannerUpload() {
   formDirty.value = true;
   isProcessing.value = true;
   showDeleteBannerConfirmModal.value = false;
-  
+
   // We just update the user profile with a null store_banner
   // The actual deletion happens when we save the profile
   showToast("Success", "Banner removed successfully", "green");
