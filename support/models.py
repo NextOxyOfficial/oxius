@@ -9,9 +9,7 @@ class SupportTicket(models.Model):
         ('open', 'Open'),
         ('in_progress', 'In Progress'),
         ('resolved', 'Resolved'),
-        ('closed', 'Closed'),
-    ]
-    
+        ('closed', 'Closed'),    ]
     id = models.CharField(primary_key=True, editable=False, unique=True, max_length=20)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
     title = models.CharField(max_length=255)
@@ -25,11 +23,16 @@ class SupportTicket(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.id:
-            self.id = str(uuid.uuid4())[:20]
+            # Generate a 10-digit numeric ID based on timestamp and random numbers
+            import time
+            import random
+            timestamp = int(time.time())
+            random_num = random.randint(0, 9999)
+            self.id = f"{timestamp % 1000000}{random_num:04d}"[-10:]
         super(SupportTicket, self).save(*args, **kwargs)
     
     def __str__(self):
-        return f"#{self.id[:8]} - {self.title}"
+        return f"#{self.id} - {self.title}"
 
 
 class TicketReply(models.Model):
