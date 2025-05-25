@@ -254,7 +254,7 @@
         <!-- Display actual posts from the database -->
         <div
           v-else-if="categoryPosts.length > 0"
-          class="grid grid-cols-2 md:grid-cols-5 gap-3"
+          class="grid grid-cols-2 md:grid-cols-5 gap-2"
         >
           <NuxtLink
             v-for="post in categoryPosts"
