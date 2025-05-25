@@ -15,7 +15,7 @@ def generate_unique_slug(model_class, field_value, instance=None):
 # Handle Bangla/non-Latin slugification
     slug = slugify(field_value)
     if not slug or len(slug) < len(field_value) / 2:
-        slug = re.sub(r'[\'.,:!?()&*+=|\\/\`~{}\[\]<>;"“”‘’"_]', '', field_value)
+        slug = re.sub(r'[\'.,:!?()&*+=|\\/\`~{}\[\]<>;"“”‘’"_।॥৳৥৲৶]', '', field_value)
         slug = re.sub(r'\s+', '-', slug)
         
     unique_slug = slug
