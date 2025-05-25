@@ -46,11 +46,13 @@ class SupportTicketSerializer(serializers.ModelSerializer):
         try:
             read_status = obj.read_statuses.get(user=user)
             # Check if there are replies after the last read time
-            # This will show as "unread" if there are any replies after the last read time
-            return obj.replies.filter(created_at__gt=read_status.last_read_at).exists()
+            # OR if the ticket itself was created after the last read time
+            ticket_unread = obj.created_at > read_status.last_read_at
+            replies_unread = obj.replies.filter(created_at__gt=read_status.last_read_at).exists()
+            return ticket_unread or replies_unread
         except:
-            # If no read status exists, all messages are unread
-            return obj.replies.exists()
+            # If no read status exists, the ticket is unread
+            return True
 
 class SupportTicketCreateSerializer(serializers.ModelSerializer):
     class Meta:

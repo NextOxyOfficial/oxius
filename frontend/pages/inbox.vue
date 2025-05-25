@@ -622,7 +622,7 @@ async function toggleMessage(id) {
 function readMessageLabel(id) {
   // Return appropriate label based on read status
   const isRead = readMessages.value[id] === true;
-  return isRead ? 'Read' : 'New';
+  return isRead ? 'Read' : 'Unread';
 }
 
 async function markAsRead(id) {
@@ -635,17 +635,26 @@ async function markAsRead(id) {
     [id]: true,
   };
   
-  // Find the message to update server-side read status if needed
+  // Find the message to update both locally and on server
   const messageToMark = messages.value.find(msg => msg.id === id);
   if (messageToMark && messageToMark.is_ticket && !currentStatus) {
     try {
-      // If this is a ticket and it's being marked as read for the first time,
-      // update read status on the server
-      post(`/tickets/${id}/read/`, {}).catch(error => {
-        console.error("Error marking ticket as read:", error);
-      });
+      // Update the local message to show as read immediately
+      messageToMark.is_unread = false;
+        // Update read status on the server
+      await post(`/tickets/${id}/mark-read/`, {});
+      
+      // Update the count immediately
+      newMessageCount.value = messages.value.filter(msg => !readMessages.value[msg.id]).length;
+      newTicketCount.value = messages.value.filter(msg => msg.is_ticket && !readMessages.value[msg.id]).length;
+      
     } catch (error) {
       console.error("Error marking ticket as read:", error);
+      // Revert local changes if server update failed
+      delete readMessages.value[id];
+      if (messageToMark) {
+        messageToMark.is_unread = true;
+      }
     }
   }
 }
@@ -722,11 +731,14 @@ function openNewTicketModal() {
 }
 
 async function openTicketDetail(ticket) {
-  // Mark the ticket as read
+  // Mark the ticket as read first
   await markAsRead(ticket.id);
   
+  // Update the ticket's unread status locally for immediate feedback
+  ticket.is_unread = false;
+  
   // Set as active ticket and open detail modal
-  activeTicket.value = ticket;
+  activeTicket.value = { ...ticket };
   ticketReply.value = '';
   isTicketDetailModalOpen.value = true;
 }
@@ -739,7 +751,34 @@ function openReplyModal(ticket) {
 
 async function submitNewTicket() {
   if (!newTicket.value.title || !newTicket.value.message) {
-    // Add validation or error handling
+    // Show validation error
+    UToast.show({
+      title: 'Validation Error',
+      description: 'Please fill in both the subject and message fields.',
+      color: 'red',
+      timeout: 3000
+    });
+    return;
+  }
+  
+  // Check for minimum content length
+  if (newTicket.value.title.trim().length < 3) {
+    UToast.show({
+      title: 'Validation Error',
+      description: 'Subject must be at least 3 characters long.',
+      color: 'red',
+      timeout: 3000
+    });
+    return;
+  }
+  
+  if (newTicket.value.message.trim().length < 10) {
+    UToast.show({
+      title: 'Validation Error',
+      description: 'Message must be at least 10 characters long.',
+      color: 'red',
+      timeout: 3000
+    });
     return;
   }
   
@@ -759,16 +798,30 @@ async function submitNewTicket() {
     };
     
     messages.value = [newTicketData, ...messages.value];
-    
-    // Reset the form and close the modal
+      // Reset the form and close the modal
     newTicket.value = { title: '', message: '' };
     isNewTicketModalOpen.value = false;
     
     // Auto-expand the new ticket
     expandedMessages.value[newTicketData.id] = true;
     
-  } catch (error) {
+    // Show success notification
+    UToast.show({
+      title: 'Ticket Created',
+      description: 'Your support ticket has been created successfully.',
+      color: 'green',
+      timeout: 3000
+    });
+      } catch (error) {
     console.error("Error creating support ticket:", error);
+    
+    // Show error notification to user
+    UToast.show({
+      title: 'Error Creating Ticket',
+      description: error.response?.data?.message || 'Failed to create support ticket. Please try again.',
+      color: 'red',
+      timeout: 5000
+    });
   } finally {
     isSubmittingTicket.value = false;
   }
@@ -961,27 +1014,43 @@ async function getMessages(preserveState = false) {
       const currentReadState = { ...readMessages.value };
       
       messages.value = newMessages;
-      
-      // Restore expanded and read states for existing messages
+        // Restore expanded and read states for existing messages
       messages.value.forEach((msg) => {
         // If message was expanded before, keep it expanded
         if (currentExpandedState[msg.id]) {
           expandedMessages.value[msg.id] = true;
         }
         
-        // If message was read before, keep it marked as read
-        if (currentReadState[msg.id]) {
-          readMessages.value[msg.id] = true;
+        // For read status, prioritize server data for tickets, but preserve user actions
+        if (msg.is_ticket) {
+          // If user had manually marked it as read, keep it read
+          // Otherwise, use server data
+          if (currentReadState[msg.id]) {
+            readMessages.value[msg.id] = true;
+          } else {
+            readMessages.value[msg.id] = !msg.is_unread;
+          }
+        } else {
+          // For admin notices, preserve the previous read state
+          if (currentReadState[msg.id]) {
+            readMessages.value[msg.id] = true;
+          } else {
+            readMessages.value[msg.id] = false;
+          }
         }
-      });
-    } else {
+      });} else {
       // Initialize new messages
       messages.value = newMessages;
       
-      // Initialize expanded and read states (all collapsed and unread)
+      // Initialize expanded and read states based on server data
       messages.value.forEach((msg) => {
         expandedMessages.value[msg.id] = false;
-        readMessages.value[msg.id] = false;
+        // For tickets, use server-side read status; for admin notices, default to unread
+        if (msg.is_ticket) {
+          readMessages.value[msg.id] = !msg.is_unread; // If is_unread is false, then it's read
+        } else {
+          readMessages.value[msg.id] = false; // Admin notices default to unread
+        }
       });
     }
     
@@ -1027,16 +1096,15 @@ async function toggleReadStatus(id, event) {
   
   const messageToUpdate = messages.value.find(msg => msg.id === id);
   if (messageToUpdate && messageToUpdate.is_ticket) {
-    try {
-      // If marking as unread
+    try {      // If marking as unread
       if (isCurrentlyRead) {
         // Send unread status to server
-        post(`/tickets/${id}/unread/`, {}).catch(error => {
+        post(`/tickets/${id}/mark-unread/`, {}).catch(error => {
           console.error("Error marking ticket as unread:", error);
         });
       } else {
         // Send read status to server
-        post(`/tickets/${id}/read/`, {}).catch(error => {
+        post(`/tickets/${id}/mark-read/`, {}).catch(error => {
           console.error("Error marking ticket as read:", error);
         });
       }
