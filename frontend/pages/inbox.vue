@@ -92,7 +92,7 @@
           />
         </div>
       </transition>        <!-- Open Ticket button -->
-      <div class="flex justify-start mb-4 px-4">
+      <div class="flex justify-start mb-4">
         <UButton
           color="primary"
           label="Open Ticket"
@@ -190,7 +190,6 @@
                   <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">                    <div class="flex items-center gap-2">
                       <span class="message-id">#{{ message.id.toString().padStart(10, "0") }}</span>
                       <div class="flex items-center gap-1.5">                        <UBadge
-                          v-if="true"
                           :color="readMessages[message.id] ? 'gray' : 'primary'"
                           class="new-badge cursor-pointer"
                           @click="toggleReadStatus(message.id, $event)"
@@ -249,52 +248,73 @@
         </div>
         <p class="loading-text">Loading your messages...</p>
       </div>
-      
-      <!-- New Support Ticket Modal -->
-      <UModal v-model="isNewTicketModalOpen" :ui="{ width: 'sm:max-w-xl' }">
-        <UCard>          <template #header>
-            <div class="flex justify-between items-center">
-              <h3 class="text-lg font-medium">Open New Ticket</h3>
+        <!-- New Support Ticket Modal -->
+      <UModal v-model="isNewTicketModalOpen" :ui="{ width: 'sm:max-w-xl' }" overlay-blur="sm" :transition="{ enterActiveClass: 'transition ease-out duration-200', enterFromClass: 'opacity-0 scale-95', enterToClass: 'opacity-100 scale-100', leaveActiveClass: 'transition ease-in duration-150', leaveFromClass: 'opacity-100 scale-100', leaveToClass: 'opacity-0 scale-95' }">
+        <UCard class="shadow-2xl border-0">
+          <template #header>
+            <div class="flex justify-between items-center bg-gradient-to-r from-primary-50 to-white p-1 rounded-t-lg">
+              <div class="flex items-center gap-3">
+                <div class="bg-primary-100 p-2 rounded-full">
+                  <UIcon name="i-heroicons-ticket" class="text-primary-600 text-xl" />
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Open New Ticket</h3>
+              </div>
               <UButton 
                 color="gray" 
                 variant="ghost" 
                 icon="i-heroicons-x-mark" 
-                class="rounded-full h-8 w-8" 
+                class="rounded-full h-8 w-8 hover:bg-red-50 hover:text-red-500 transition-colors" 
                 @click="isNewTicketModalOpen = false" 
               />
             </div>
           </template>
           
-          <div class="space-y-4">
-            <UFormGroup label="Subject" required>
+          <div class="space-y-5 p-1">
+            <div class="bg-blue-50 rounded-lg p-3 mb-4 border-l-4 border-blue-400">
+              <div class="flex gap-2">
+                <UIcon name="i-heroicons-information-circle" class="text-blue-500 flex-shrink-0 mt-1" />
+                <p class="text-sm text-blue-700">
+                  Please provide details about your issue. Our support team will respond as soon as possible.
+                </p>
+              </div>
+            </div>
+            
+            <UFormGroup label="Subject" required class="form-group">
               <UInput 
                 v-model="newTicket.title" 
-                placeholder="Brief description of your issue" 
+                placeholder="Brief description of your issue"
+                icon="i-heroicons-document-text"
+                class="focus-ring"
               />
             </UFormGroup>
             
-            <UFormGroup label="Message" required>
+            <UFormGroup label="Message" required class="form-group">
               <UTextarea 
                 v-model="newTicket.message" 
                 placeholder="Please describe your issue in detail" 
-                rows="5"
+                rows="6"
+                class="focus-ring"
               />
             </UFormGroup>
           </div>
           
           <template #footer>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
               <UButton 
                 color="gray" 
                 variant="soft" 
+                icon="i-heroicons-x-mark"
                 @click="isNewTicketModalOpen = false"
+                class="transition-transform hover:-translate-y-0.5"
               >
                 Cancel
               </UButton>
               <UButton 
                 color="primary" 
                 :loading="isSubmittingTicket"
+                icon="i-heroicons-paper-airplane"
                 @click="submitNewTicket"
+                class="transition-transform hover:-translate-y-0.5"
               >
                 Submit Ticket
               </UButton>
@@ -302,113 +322,181 @@
           </template>
         </UCard>
       </UModal>
-      
-      <!-- Reply to Ticket Modal -->
-      <UModal v-model="isReplyModalOpen" :ui="{ width: 'sm:max-w-xl' }">
-        <UCard>
+        <!-- Reply to Ticket Modal -->
+      <UModal v-model="isReplyModalOpen" :ui="{ width: 'sm:max-w-xl' }" overlay-blur="sm" :transition="{ enterActiveClass: 'transition ease-out duration-200', enterFromClass: 'opacity-0 scale-95', enterToClass: 'opacity-100 scale-100', leaveActiveClass: 'transition ease-in duration-150', leaveFromClass: 'opacity-100 scale-100', leaveToClass: 'opacity-0 scale-95' }">
+        <UCard class="shadow-2xl border-0">
           <template #header>
-            <div class="flex justify-between items-center">
-              <h3 class="text-lg font-medium">Reply to Ticket</h3>
+            <div class="flex justify-between items-center bg-gradient-to-r from-blue-50 to-white p-1 rounded-t-lg">
+              <div class="flex items-center gap-3">
+                <div class="bg-blue-100 p-2 rounded-full">
+                  <UIcon name="i-heroicons-chat-bubble-left-right" class="text-blue-600 text-xl" />
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Reply to Ticket</h3>
+              </div>
               <UButton 
                 color="gray" 
                 variant="ghost" 
                 icon="i-heroicons-x-mark" 
-                class="rounded-full h-8 w-8" 
+                class="rounded-full h-8 w-8 hover:bg-red-50 hover:text-red-500 transition-colors" 
                 @click="isReplyModalOpen = false" 
               />
             </div>
           </template>
           
-          <div class="space-y-4">              <div v-if="activeTicket" class="bg-gray-50 p-3 rounded-lg">
-              <p class="text-sm font-medium">{{ activeTicket.title }}</p>
-              <p class="text-xs text-gray-500">Ticket #{{ activeTicket.id.toString().padStart(10, "0") }}</p>
+          <div class="space-y-5 p-1">
+            <div v-if="activeTicket" class="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div class="flex items-center gap-2 mb-2">
+                <UIcon name="i-heroicons-ticket" class="text-gray-500" />
+                <h4 class="text-sm font-semibold text-gray-700">{{ activeTicket.title }}</h4>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">
+                  #{{ activeTicket.id.toString().padStart(10, "0") }}
+                </span>
+                <UBadge :color="getTicketStatusColor(activeTicket.status)" size="xs" class="capitalize">
+                  {{ formatTicketStatus(activeTicket.status) }}
+                </UBadge>
+              </div>
             </div>
             
-            <UFormGroup label="Your Reply" required>
+            <UFormGroup label="Your Reply" required class="form-group">
               <UTextarea 
                 v-model="ticketReply" 
-                placeholder="Type your response..." 
-                rows="4"
+                placeholder="Type your response..."
+                autofocus
+                rows="5"
+                class="focus-ring"
               />
             </UFormGroup>
+            
+            <div class="text-xs text-gray-500 italic">
+              <UIcon name="i-heroicons-clock" class="inline mr-1" />
+              Typical response time: 24-48 hours
+            </div>
           </div>
           
           <template #footer>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
               <UButton 
                 color="gray" 
                 variant="soft" 
+                icon="i-heroicons-arrow-left"
                 @click="isReplyModalOpen = false"
+                class="transition-transform hover:-translate-y-0.5"
               >
                 Cancel
               </UButton>
               <UButton 
                 color="primary" 
                 :loading="isSubmittingReply"
+                icon="i-heroicons-paper-airplane"
                 @click="submitReply"
+                class="transition-transform hover:-translate-y-0.5"
               >
                 Send Reply
               </UButton>
             </div>
           </template>
         </UCard>
-      </UModal>
-
-      <!-- New Ticket Detail Modal -->
-      <UModal v-model="isTicketDetailModalOpen" :ui="{ width: 'sm:max-w-3xl' }">
-        <UCard v-if="activeTicket">
+      </UModal>      <!-- Ticket Detail Modal -->
+      <UModal v-model="isTicketDetailModalOpen" :ui="{ width: 'sm:max-w-4xl' }" overlay-blur="sm" 
+        :transition="{ enterActiveClass: 'transition ease-out duration-200', enterFromClass: 'opacity-0 scale-95', enterToClass: 'opacity-100 scale-100', leaveActiveClass: 'transition ease-in duration-150', leaveFromClass: 'opacity-100 scale-100', leaveToClass: 'opacity-0 scale-95' }">
+        <UCard v-if="activeTicket" class="shadow-2xl border-0 max-h-[85vh] flex flex-col">
           <template #header>
-            <div class="flex justify-between items-center">
-              <div>
-                <div class="flex items-center gap-2">
-                  <h3 class="text-lg font-medium">Ticket #{{ activeTicket.id.toString().padStart(10, "0") }}</h3>
-                  <UBadge :color="getTicketStatusColor(activeTicket.status)">
-                    {{ formatTicketStatus(activeTicket.status) }}
-                  </UBadge>
+            <div class="bg-gradient-to-r" :class="{
+              'from-amber-50 to-white': activeTicket.status === 'open',
+              'from-blue-50 to-white': activeTicket.status === 'in_progress',
+              'from-green-50 to-white': activeTicket.status === 'resolved',
+              'from-gray-50 to-white': activeTicket.status === 'closed'
+            }">
+              <div class="flex justify-between items-center p-2">
+                <div class="flex items-center gap-3">
+                  <div class="p-2 rounded-full" :class="{
+                    'bg-amber-100': activeTicket.status === 'open',
+                    'bg-blue-100': activeTicket.status === 'in_progress',
+                    'bg-green-100': activeTicket.status === 'resolved',
+                    'bg-gray-100': activeTicket.status === 'closed'
+                  }">
+                    <UIcon name="i-heroicons-ticket" class="text-xl" :class="{
+                      'text-amber-600': activeTicket.status === 'open',
+                      'text-blue-600': activeTicket.status === 'in_progress',
+                      'text-green-600': activeTicket.status === 'resolved',
+                      'text-gray-600': activeTicket.status === 'closed'
+                    }" />
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <h3 class="text-lg font-semibold text-gray-800">Ticket #{{ activeTicket.id.toString().padStart(10, "0") }}</h3>
+                      <UBadge :color="getTicketStatusColor(activeTicket.status)" size="sm" class="uppercase tracking-wider font-semibold text-xs">
+                        {{ formatTicketStatus(activeTicket.status) }}
+                      </UBadge>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                      <UIcon name="i-heroicons-calendar" class="text-xs" /> 
+                      <span>{{ formatDate(activeTicket.created_at) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <p class="text-sm text-gray-500 mt-1">{{ formatDate(activeTicket.created_at) }}</p>
+                <UButton 
+                  color="gray" 
+                  variant="ghost" 
+                  icon="i-heroicons-x-mark" 
+                  class="rounded-full h-8 w-8 hover:bg-red-50 hover:text-red-500 transition-colors" 
+                  @click="isTicketDetailModalOpen = false" 
+                />
               </div>
-              <UButton 
-                color="gray" 
-                variant="ghost" 
-                icon="i-heroicons-x-mark" 
-                class="rounded-full h-8 w-8" 
-                @click="isTicketDetailModalOpen = false"
-              />
             </div>
           </template>
           
-          <div class="space-y-6">
-            <div>
-              <h4 class="font-medium text-lg mb-2">{{ activeTicket.title }}</h4>
-              <div class="p-4 bg-gray-50 rounded-md text-gray-700 whitespace-pre-wrap">
+          <div class="space-y-6 overflow-y-auto p-1">
+            <!-- Ticket subject and message -->
+            <div class="px-2">
+              <h4 class="font-semibold text-lg mb-3 flex items-center">
+                <UIcon name="i-heroicons-document-text" class="mr-2 text-gray-500" />
+                {{ activeTicket.title }}
+              </h4>
+              <div class="p-5 bg-gray-50 rounded-lg border border-gray-200 text-gray-700 whitespace-pre-wrap shadow-sm">
                 {{ activeTicket.message }}
               </div>
             </div>
             
             <!-- Ticket replies section -->
-            <div v-if="(activeTicket.replies || []).length > 0" class="border-t border-gray-200 pt-4">
-              <h4 class="text-md font-medium text-gray-700 mb-3">Conversation History</h4>
+            <div v-if="(activeTicket.replies || []).length > 0" class="border-t border-gray-200 pt-5 px-2">
+              <h4 class="flex items-center text-md font-medium text-gray-700 mb-4">
+                <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="mr-2" />
+                Conversation History
+              </h4>
               
-              <div class="space-y-4">
-                <div v-for="reply in activeTicket.replies" :key="reply.id" class="p-3 bg-gray-50 rounded-md">
+              <div class="space-y-5">
+                <div v-for="(reply, index) in activeTicket.replies" :key="reply.id" 
+                  class="p-4 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
+                  :class="{
+                    'bg-primary-50 border-l-4 border-primary-300': reply.is_from_admin,
+                    'bg-gray-50 border-l-4 border-gray-300': !reply.is_from_admin,
+                  }">
                   <div class="flex items-start gap-3">
                     <div :class=" [
-                      'reply-avatar flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+                      'reply-avatar flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm',
                       reply.is_from_admin ? 'bg-primary-100' : 'bg-gray-100'
                     ]">
                       <UIcon 
                         :name="reply.is_from_admin ? 'i-heroicons-user-circle' : 'i-heroicons-user'" 
-                        class="text-base" 
+                        class="text-xl" 
                         :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'"
                       />
                     </div>
                     <div class="reply-content flex-1">
-                      <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm font-medium" :class="reply.is_from_admin ? 'text-primary-600' : 'text-gray-600'">
+                      <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold" :class="reply.is_from_admin ? 'text-primary-700' : 'text-gray-700'">
                           {{ reply.is_from_admin ? 'Support Team' : 'You' }}
                         </span>
-                        <span class="text-xs text-gray-400">{{ formatDate(reply.created_at) }}</span>
+                        <div class="flex items-center gap-2">
+                          <UBadge v-if="index === 0" color="gray" size="xs" class="font-mono mr-1">Latest</UBadge>
+                          <span class="text-xs text-gray-500 flex items-center">
+                            <UIcon name="i-heroicons-clock" class="mr-1" />
+                            {{ formatDate(reply.created_at) }}
+                          </span>
+                        </div>
                       </div>
                       <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ reply.message }}</div>
                     </div>
@@ -418,19 +506,28 @@
             </div>
             
             <!-- Reply form -->
-            <div v-if="activeTicket.status !== 'closed'" class="border-t border-gray-200 pt-4">
-              <h4 class="text-md font-medium text-gray-700 mb-3">Add Reply</h4>
+            <div v-if="activeTicket.status !== 'closed'" class="border-t border-gray-200 pt-4 px-2">
+              <h4 class="flex items-center text-md font-medium text-gray-700 mb-3">
+                <UIcon name="i-heroicons-pencil-square" class="mr-2" />
+                Add Reply
+              </h4>
               <UTextarea 
                 v-model="ticketReply" 
                 placeholder="Type your response..." 
-                rows="3"
-                class="mb-3"
+                rows="4"
+                class="mb-3 focus-ring"
               />
-              <div class="flex justify-end">
+              <div class="flex justify-between items-center">
+                <p class="text-xs text-gray-500 flex items-center">
+                  <UIcon name="i-heroicons-information-circle" class="mr-1" /> 
+                  Your reply will be sent to our support team
+                </p>
                 <UButton 
                   color="primary" 
                   :loading="isSubmittingReply"
+                  icon="i-heroicons-paper-airplane"
                   @click="submitReplyFromDetail"
+                  class="transition-transform hover:-translate-y-0.5"
                 >
                   Send Reply
                 </UButton>
@@ -438,28 +535,38 @@
             </div>
             
             <!-- Admin only: status update options -->
-            <div v-if="user?.user?.is_staff && activeTicket.status !== 'closed'" class="border-t border-gray-200 pt-4">
-              <h4 class="text-sm font-medium mb-2">Update Ticket Status:</h4>
+            <div v-if="user?.user?.is_staff && activeTicket.status !== 'closed'" class="border-t border-gray-200 pt-4 px-2">
+              <h4 class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                <UIcon name="i-heroicons-adjustments-horizontal" class="mr-1" />
+                Update Ticket Status:
+              </h4>
               <div class="flex flex-wrap gap-2">
                 <UButton 
                   v-for="status in ['open', 'in_progress', 'resolved', 'closed']" 
                   :key="status"
-                  size="xs"
+                  size="sm"
                   :color="getTicketStatusColor(status)"
                   :disabled="activeTicket.status === status"
+                  :icon="getStatusIcon(status)"
                   :label="formatTicketStatus(status)"
+                  class="transition-all duration-200 hover:-translate-y-0.5"
                   @click="updateTicketStatusFromDetail(activeTicket.id, status)"
                 />
               </div>
             </div>
             
             <!-- User only: close resolved ticket -->
-            <div v-if="!user?.user?.is_staff && activeTicket.status === 'resolved'" class="border-t border-gray-200 pt-4">
-              <div class="flex justify-end">
+            <div v-if="!user?.user?.is_staff && activeTicket.status === 'resolved'" class="border-t border-gray-200 pt-4 px-2">
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-gray-600">
+                  <UIcon name="i-heroicons-information-circle" class="inline mr-1" />
+                  Is your issue resolved? You can close this ticket now.
+                </p>
                 <UButton 
                   color="gray"
                   label="Close Ticket"
                   icon="i-heroicons-check-circle"
+                  class="transition-transform hover:-translate-y-0.5"
                   @click="updateTicketStatusFromDetail(activeTicket.id, 'closed')"
                 />
               </div>
@@ -591,6 +698,21 @@ function formatTicketStatus(status) {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+function getStatusIcon(status) {
+  switch (status) {
+    case 'open':
+      return 'i-heroicons-ticket';
+    case 'in_progress':
+      return 'i-heroicons-clock';
+    case 'resolved':
+      return 'i-heroicons-check-badge';
+    case 'closed':
+      return 'i-heroicons-archive-box';
+    default:
+      return 'i-heroicons-ticket';
+  }
 }
 
 // Support ticket functions
@@ -1682,5 +1804,47 @@ onBeforeUnmount(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Modal enhancements */
+.focus-ring:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1), 0 0 0 4px rgba(255, 255, 255, 1);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+/* Animation for modals */
+@keyframes slide-down {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Reply style enhancements */
+.reply-avatar {
+  position: relative;
+}
+
+.reply-avatar::after {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(209, 213, 219, 0), rgba(209, 213, 219, 1), rgba(209, 213, 219, 0));
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 </style>
