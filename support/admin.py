@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SupportTicket, TicketReply
+from .models import SupportTicket, TicketReply, TicketReadStatus
 
 @admin.register(SupportTicket)
 class SupportTicketAdmin(admin.ModelAdmin):
@@ -25,3 +25,10 @@ class TicketReplyAdmin(admin.ModelAdmin):
         return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
     
     short_message.short_description = 'Message'
+
+@admin.register(TicketReadStatus)
+class TicketReadStatusAdmin(admin.ModelAdmin):
+    list_display = ('ticket', 'user', 'last_read_at')
+    list_filter = ('last_read_at', 'user')
+    search_fields = ('ticket__title', 'user__email', 'user__username')
+    readonly_fields = ('last_read_at',)

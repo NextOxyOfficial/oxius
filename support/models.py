@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 import uuid
 
 User = get_user_model()
@@ -9,12 +10,14 @@ class SupportTicket(models.Model):
         ('open', 'Open'),
         ('in_progress', 'In Progress'),
         ('resolved', 'Resolved'),
-        ('closed', 'Closed'),    ]
+        ('closed', 'Closed'),
+    ]
     id = models.CharField(primary_key=True, editable=False, unique=True, max_length=20)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
     title = models.CharField(max_length=255)
     message = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    last_read_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -54,3 +57,28 @@ class TicketReply(models.Model):
     
     def __str__(self):
         return f"Reply to {self.ticket}"
+
+
+class TicketReadStatus(models.Model):
+    """
+    Tracks when a ticket was last read by a user
+    This helps to identify unread tickets and new replies
+    """
+    ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE, related_name='read_statuses')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ticket_read_statuses')
+    last_read_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        unique_together = ['ticket', 'user']
+        verbose_name = 'Ticket Read Status'
+        verbose_name_plural = 'Ticket Read Statuses'
+    
+    def __str__(self):
+        return f"{self.user.username} read {self.ticket.id} at {self.last_read_at}"
+    
+    def mark_as_read(self):
+        """
+        Updates the last read timestamp to current time
+        """
+        self.last_read_at = timezone.now()
+        self.save()

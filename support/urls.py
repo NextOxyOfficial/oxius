@@ -5,6 +5,10 @@ from .views import (
     TicketReplyCreateView,
     UpdateTicketStatusView
 )
+from .read_status_views import (
+    MarkTicketReadView,
+    MarkTicketUnreadView
+)
 
 app_name = 'support'
 
@@ -13,4 +17,6 @@ urlpatterns = [
     path('tickets/<str:pk>/', SupportTicketDetailView.as_view(), name='ticket-detail'),
     path('tickets/<str:ticket_id>/replies/', TicketReplyCreateView.as_view(), name='ticket-reply'),
     path('tickets/<str:ticket_id>/status/', UpdateTicketStatusView.as_view(), name='update-ticket-status'),
+    path('tickets/<str:ticket_id>/mark-read/', MarkTicketReadView.as_view(), name='mark-ticket-read'),
+    path('tickets/<str:ticket_id>/mark-unread/', MarkTicketUnreadView.as_view(), name='mark-ticket-unread'),
 ]

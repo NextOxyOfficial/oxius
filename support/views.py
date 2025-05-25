@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-from .models import SupportTicket, TicketReply
+from django.utils import timezone
+from .models import SupportTicket, TicketReply, TicketReadStatus
 from .serializers import (
     SupportTicketSerializer, 
     SupportTicketCreateSerializer,
@@ -44,6 +45,25 @@ class SupportTicketDetailView(generics.RetrieveAPIView):
         if user.is_staff:
             return SupportTicket.objects.all()
         return SupportTicket.objects.filter(user=user)
+        
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        return context
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        
+        # Update or create read status for this ticket
+        # This will automatically remove the "unread" label when viewing the ticket
+        read_status, created = TicketReadStatus.objects.update_or_create(
+            ticket=instance,
+            user=user,
+            defaults={'last_read_at': timezone.now()}
+        )
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 class TicketReplyCreateView(generics.CreateAPIView):
     """

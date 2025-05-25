@@ -83,7 +83,7 @@
 				</div>
 				
 				<!-- Terms Content -->
-				<div class="p-6">
+				<div class="p-3">
 					<div class="space-y-8">
 						<!-- Introduction -->
 						<section id="section-1" class="scroll-mt-24">

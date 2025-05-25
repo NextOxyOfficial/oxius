@@ -83,7 +83,7 @@
 				</div>
 				
 				<!-- Privacy Content -->
-				<div class="p-6">
+				<div class="p-3">
 					<div class="space-y-8">
 						<!-- Information We Collect -->
 						<section id="section-1" class="scroll-mt-24">
@@ -93,7 +93,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Information We Collect</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									We collect several types of information from and about users of our platform:
 								</p>
@@ -163,7 +163,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">How We Use Your Information</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									We use the information we collect for various legitimate business purposes:
 								</p>
@@ -262,7 +262,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Information Sharing and Disclosure</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<div class="flex items-center mb-3">
 									<span class="inline-flex items-center justify-center p-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full mr-2">
 										<UIcon name="i-heroicons-check" class="w-4 h-4"/>
@@ -342,7 +342,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Data Security</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									We implement appropriate technical and organizational security measures to protect your personal information from unauthorized access, use, alteration, or destruction. Our security practices include:
 								</p>
@@ -424,7 +424,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Privacy Rights</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									Depending on your location, you may have certain rights regarding your personal information. These may include:
 								</p>
@@ -511,7 +511,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Cookies & Tracking Technologies</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									We use cookies and similar tracking technologies to enhance your experience on our platform. These technologies allow us to remember your preferences, understand how you use our site, and personalize content.
 								</p>
@@ -573,7 +573,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Children's Privacy</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-100 dark:border-orange-900/30 mb-4">
 									<div class="flex">
 										<UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 mr-3 flex-shrink-0"/>
@@ -600,7 +600,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Changes to This Privacy Policy</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									We may update our Privacy Policy from time to time to reflect changes in our practices, technologies, legal requirements, and other factors. When we make changes, we will update the "Last Updated" date at the top of this Privacy Policy.
 								</p>
@@ -626,7 +626,7 @@
 								</div>
 								<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Contact Information</h2>
 							</div>
-							<div class="pl-11">
+							<div class="pl-6">
 								<p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
 									If you have any questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us at:
 								</p>
