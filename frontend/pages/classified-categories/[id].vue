@@ -48,7 +48,7 @@
         </div>
 
         <div
-          class="relative z-10 flex items-center justify-between px-3 pl-12 rounded-lg border border-primary-100 py-6"
+          class="relative z-10 flex items-center justify-between px-3 pl-12 rounded-lg border border-primary-100 py-5"
         >
           <!-- Location path with icons -->
           <div class="flex items-center flex-wrap location-path">
