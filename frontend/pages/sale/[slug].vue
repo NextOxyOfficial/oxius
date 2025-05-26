@@ -167,45 +167,67 @@
             class="mt-5 overflow-hidden rounded-lg border border-emerald-100"
           >
             <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 p-5">
-              <div
-                class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0"
-              >
-                <div>
+              <div class="flex items-start sm:items-center justify-between">
+                <div class="flex-1">
                   <h3 class="font-bold text-white text-sm">Need financing?</h3>
-                  <p class="text-emerald-100 text-sm mt-1">
+                  <p class="text-emerald-100 text-xs sm:text-sm mt-1">
                     Get Free consultation from our experts
                   </p>
-                  <div class="mt-3 flex items-center">
-                    <div class="flex -space-x-1">
+                  <div
+                    class="mt-3 items-center text-xs sm:text-sm hidden sm:flex"
+                  >
+                    <div class="flex space-x-1">
                       <div
-                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-sm"
+                        class="h-4 w-4 sm:h-6 sm:w-6 rounded-full bg-white flex items-center justify-center text-emerald-600"
                       >
                         $
                       </div>
                       <div
-                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-sm"
+                        class="h-4 w-4 sm:h-6 sm:w-6 rounded-full bg-white flex items-center justify-center text-emerald-600"
                       >
                         %
                       </div>
                       <div
-                        class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600 text-sm"
+                        class="h-4 w-4 sm:h-6 sm:w-6 rounded-full bg-white flex items-center justify-center text-emerald-600"
                       >
                         ✓
                       </div>
                     </div>
-                    <span class="ml-2 text-white text-sm font-medium"
+                    <span class="ml-0.5 sm:ml-2 text-white font-medium"
                       >Competitive rates available</span
                     >
                   </div>
                 </div>
-                <div>
+                <div class="mt-5 sm:mt-0">
                   <NuxtLink
                     href="/contact-us"
-                    class="bg-white hover:bg-gray-50 text-emerald-600 text-sm px-4 py-2 rounded-md transition-all duration-200"
+                    class="bg-white hover:bg-gray-50 text-emerald-600 text-xs sm:text-sm px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap"
                   >
                     Apply Now
                   </NuxtLink>
                 </div>
+              </div>
+              <div class="mt-3 flex items-center text-xs sm:text-sm sm:hidden">
+                <div class="flex space-x-0.5">
+                  <div
+                    class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600"
+                  >
+                    $
+                  </div>
+                  <div
+                    class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600"
+                  >
+                    %
+                  </div>
+                  <div
+                    class="h-6 w-6 rounded-full bg-white flex items-center justify-center text-emerald-600"
+                  >
+                    ✓
+                  </div>
+                </div>
+                <span class="ml-2 text-white font-medium"
+                  >Competitive rates available</span
+                >
               </div>
             </div>
             <div class="h-1 w-full bg-emerald-600"></div>
