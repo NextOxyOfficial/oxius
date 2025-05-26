@@ -398,9 +398,9 @@
           </template>
         </UCard>
       </UModal>      <!-- Ticket Detail Modal -->
-      <UModal v-model="isTicketDetailModalOpen" :ui="{ width: 'sm:max-w-4xl', height: 'h-[90vh]' }" overlay-blur="sm" 
+      <UModal v-model="isTicketDetailModalOpen" :ui="{ width: 'sm:max-w-4xl', }" overlay-blur="sm" 
         :transition="{ enterActiveClass: 'transition ease-out duration-200', enterFromClass: 'opacity-0 scale-95', enterToClass: 'opacity-100 scale-100', leaveActiveClass: 'transition ease-in duration-150', leaveFromClass: 'opacity-100 scale-100', leaveToClass: 'opacity-0 scale-95' }">
-        <UCard v-if="activeTicket" class="shadow-2xl border-0 h-[90vh] flex flex-col">
+        <UCard v-if="activeTicket" class="shadow-2xl border-0 flex flex-col">
           <template #header>
             <div class="bg-gradient-to-r" :class="{
               'from-amber-50 to-white': activeTicket.status === 'open',
