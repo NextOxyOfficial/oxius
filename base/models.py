@@ -368,18 +368,57 @@ class MicroGigPost(models.Model):
         return self.microgigposttask_set.all().select_related('user').order_by('-created_at')
     
 class ReferBonus(models.Model):
-    user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='comission_bonus')
+    COMMISSION_TYPE_CHOICES = [
+        ('gig_completion', 'Gig Completion'),
+        ('pro_subscription', 'Pro Subscription'),
+        ('gold_sponsor', 'Gold Sponsor'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='commission_bonus')
+    referred_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='generated_commissions', blank=True)
+    commission_type = models.CharField(max_length=20, choices=COMMISSION_TYPE_CHOICES, default='gig_completion')
     created_at = models.DateTimeField(auto_now_add=True)
     amount = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)  # Percentage rate
+    base_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)  # Original transaction amount
     completed = models.BooleanField(default=False)
+    description = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Referral Commission"
+        verbose_name_plural = "Referral Commissions"
+    
     def __str__(self):
-        return str(self.created_at)
+        return f"{self.get_commission_type_display()} - ৳{self.amount} ({self.created_at.strftime('%Y-%m-%d')})"
+    
+    @classmethod
+    def get_commission_rate_for_type(cls, commission_type):
+        """Get the commission rate for a specific type"""
+        rates = {
+            'gig_completion': 5.00,
+            'pro_subscription': 20.00,
+            'gold_sponsor': 20.00,
+        }
+        return rates.get(commission_type, 5.00)
+    
     def save(self, *args, **kwargs):
         if not self.pk and not self.completed:
             self.completed = True
             self.user.balance += self.amount
             self.user.commission_earned += self.amount
             self.user.save()
+            
+            # Create balance transaction record
+            Balance.objects.create(
+                user=self.user,
+                to_user=self.referred_user,
+                amount=self.amount,
+                transaction_type='referral_commission',
+                completed=True,
+                bank_status='completed',
+                description=f"{self.get_commission_type_display()} referral commission"
+            )
         super(ReferBonus, self).save(*args, **kwargs)
 
 class MicroGigPostTask(models.Model):

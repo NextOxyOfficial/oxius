@@ -2112,7 +2112,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                                 }
                             seller_objects[seller_key]['amount'] += price_difference
                             total_additional_amount += price_difference
-                        elif quantity_diff != 0:
+                        elif quantity_diff !=  0:
                             # Update quantity and calculate price difference
                             price_difference = unit_price * quantity_diff
                             
@@ -2575,8 +2575,128 @@ class SendDiamondGiftView(APIView):
             print(traceback.format_exc())
             return Response({'error': str(e)}, status=500)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def commission_history(request):
+    """Get detailed commission history breakdown by service type"""
+    current_user = request.user
+    
+    # Get all commission bonuses for the current user
+    commissions = ReferBonus.objects.filter(user=current_user).order_by('-created_at')
+    
+    # Aggregate data by commission type
+    commission_stats = {
+        'gig_completion': {
+            'count': 0,
+            'total_amount': Decimal('0.00'),
+            'rate': '5%',
+            'transactions': []
+        },
+        'pro_subscription': {
+            'count': 0,
+            'total_amount': Decimal('0.00'),
+            'rate': '20%',
+            'transactions': []
+        },
+        'gold_sponsor': {
+            'count': 0,
+            'total_amount': Decimal('0.00'),
+            'rate': '20%',
+            'transactions': []
+        }
+    }
+    
+    # Process each commission
+    for commission in commissions:
+        commission_type = commission.commission_type
+        if commission_type in commission_stats:
+            commission_stats[commission_type]['count'] += 1
+            commission_stats[commission_type]['total_amount'] += commission.amount
+            
+            # Add transaction details
+            transaction_data = {
+                'id': commission.id,
+                'date': commission.created_at,
+                'amount': float(commission.amount),
+                'base_amount': float(commission.base_amount),
+                'commission_rate': float(commission.commission_rate),
+                'referred_user': {
+                    'id': commission.referred_user.id if commission.referred_user else None,
+                    'name': f"{commission.referred_user.first_name} {commission.referred_user.last_name}".strip() 
+                           if commission.referred_user and commission.referred_user.first_name 
+                           else commission.referred_user.username if commission.referred_user else 'Unknown User',
+                    'email': commission.referred_user.email if commission.referred_user else None
+                },
+                'description': commission.description or '',
+                'completed': commission.completed
+            }
+            commission_stats[commission_type]['transactions'].append(transaction_data)
+    
+    # Convert Decimal to float for JSON serialization
+    for commission_type in commission_stats:
+        commission_stats[commission_type]['total_amount'] = float(commission_stats[commission_type]['total_amount'])
+    
+    # Calculate totals
+    total_commissions = commissions.count()
+    total_earned = float(current_user.commission_earned)
+    
+    return Response({
+        'total_commissions': total_commissions,
+        'total_earned': total_earned,
+        'commission_breakdown': commission_stats,
+        'recent_transactions': [
+            {
+                'id': c.id,
+                'date': c.created_at,
+                'type': c.get_commission_type_display(),
+                'type_code': c.commission_type,
+                'amount': float(c.amount),
+                'referred_user': {
+                    'name': f"{c.referred_user.first_name} {c.referred_user.last_name}".strip() 
+                           if c.referred_user and c.referred_user.first_name 
+                           else c.referred_user.username if c.referred_user else 'Unknown User',
+                    'email': c.referred_user.email if c.referred_user else None
+                },
+                'commission_rate': float(c.commission_rate)
+            }
+            for c in commissions[:10]  # Latest 10 transactions
+        ]
+    }, status=status.HTTP_200_OK)
 
-
+@api_view(['GET'])
+def platform_referral_stats(request):
+    """Get platform-wide referral statistics for public display"""
+    try:
+        # Get total active referrers (users who have made at least one referral)
+        active_referrers = User.objects.filter(refer_count__gt=0).count()
+        
+        # Get top earner commission amount
+        top_earner = User.objects.filter(commission_earned__gt=0).order_by('-commission_earned').first()
+        top_earner_amount = float(top_earner.commission_earned) if top_earner else 0
+        
+        # Calculate total commissions paid out
+        total_commissions = ReferBonus.objects.filter(completed=True).count()
+        
+        # Get average payout time (for now, we'll use a static value as payout time tracking needs more implementation)
+        quick_payout_time = "24hr"  # This could be calculated from actual payout data in the future
+        
+        return Response({
+            'active_referrers': active_referrers,
+            'top_earner_amount': top_earner_amount,
+            'total_commissions': total_commissions,
+            'quick_payout_time': quick_payout_time,
+            'commission_rates': {
+                'gig_completion': '5%',
+                'pro_subscription': '20%',
+                'gold_sponsor': '20%'
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"Error fetching platform referral stats: {str(e)}")
+        return Response({
+            'error': 'Failed to fetch platform statistics'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # for frontend
 

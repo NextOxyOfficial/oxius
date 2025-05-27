@@ -120,11 +120,12 @@ urlpatterns = [
 
 
   path('check-store-username/', check_store_username_availability, name='check-store-username'),
-
   # banner image
   path('banner-images/', BannerImageListView.as_view(), name='banner-image'),
   path('shop-banner-images/', ShopBannerImageListView.as_view(), name='shop-banner-image'),
   path('referred-users/', referred_users, name='referred-users'),
+  path('commission-history/', commission_history, name='commission-history'),
+  path('platform-referral-stats/', platform_referral_stats, name='platform-referral-stats'),
   path('bn-logo/', BNLogoView.as_view(), name='bn-logo'),
   path('news-logo/', NewsLogoView.as_view(), name='news-logo'),
 
