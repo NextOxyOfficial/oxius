@@ -1,30 +1,34 @@
 <template>
-  <div class="flag-selector">
+  <div class="inline-block">
     <UPopover :ui="{ width: 'w-auto' }">
       <UButton
         color="white"
         variant="ghost"
-        class="flag-button p-1.5 min-w-0"
+        class="p-1.5 min-w-0 rounded-md transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
         :aria-label="currentLanguage?.label || 'Select language'"
       >
-        <UIcon
-          v-if="currentLanguage?.icon"
-          :name="currentLanguage.icon"
-          class="flag-icon w-6 h-5"
-        />
+        <div class="flex items-center gap-2">
+          <UIcon
+            v-if="currentLanguage?.icon"
+            :name="currentLanguage.icon"
+            class="w-6 h-5 rounded shadow transition-transform duration-200 hover:scale-110"
+          />
+          <span v-if="showText" class="text-sm font-medium">{{ currentLanguage?.label }}</span>
+        </div>
       </UButton>
 
       <template #panel>
-        <div class="flag-options py-1">
+        <div class="flex flex-col gap-1 py-1">
           <UButton
             v-for="lang in languageOption"
             :key="lang.value"
             variant="ghost"
             color="gray"
-            class="flag-option w-full flex items-center justify-center p-1.5"
+            class="w-full flex items-center justify-start p-1.5 gap-2 rounded"
             @click="currentLanguage = lang"
           >
-            <UIcon :name="lang.icon" class="flag-icon w-6 h-5" />
+            <UIcon :name="lang.icon" class="w-6 h-5 rounded shadow transition-transform duration-200 group-hover:scale-110" />
+            <span v-if="showText" class="text-sm">{{ lang.label }}</span>
           </UButton>
         </div>
       </template>
@@ -33,6 +37,14 @@
 </template>
 
 <script setup>
+// Define props to control whether to show text
+const props = defineProps({
+  showText: {
+    type: Boolean,
+    default: false
+  }
+});
+
 const { setLocale } = useI18n();
 const language = useCookie("language");
 const languageOption = [
@@ -63,46 +75,5 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.flag-selector {
-  display: inline-block;
-}
+<!-- No custom CSS needed, using Tailwind classes instead -->
 
-.flag-button {
-  padding: 0.25rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease;
-}
-
-.flag-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.dark .flag-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.flag-icon {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
-  transition: transform 0.2s ease;
-}
-
-.flag-button:hover .flag-icon {
-  transform: scale(1.1);
-}
-
-.flag-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.flag-option {
-  border-radius: 0.25rem;
-}
-
-.flag-option:hover .flag-icon {
-  transform: scale(1.1);
-}
-</style>
