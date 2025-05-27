@@ -1,39 +1,52 @@
-<template>
-  <UContainer>
+<template>  <UContainer>
     <div
-      class="min-h-screen py-16 px-4 sm:px-6 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800"
+      class="min-h-screen py-16 px-4 sm:px-6 bg-gradient-to-b from-slate-100 via-blue-50 to-white dark:from-slate-900 dark:via-blue-950/20 dark:to-slate-800"
     >
       <div class="max-w-5xl mx-auto">
         <!-- Section Header -->
-        <div class="text-center mb-12">
+        <div class="text-center mb-16 relative">
+          <!-- Decorative elements -->
+          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full bg-gradient-to-r from-sky-200/30 to-blue-300/30 dark:from-sky-500/20 dark:to-blue-600/20 blur-2xl"></div>
+          <div class="absolute top-6 left-1/4 transform -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-r from-purple-200/30 to-pink-200/30 dark:from-purple-500/10 dark:to-pink-500/10 blur-2xl"></div>
+          <div class="absolute top-2 right-1/4 transform translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-amber-200/20 to-orange-200/20 dark:from-amber-500/10 dark:to-orange-500/10 blur-2xl"></div>
+          
           <h2
-            class="text-2xl font-semibold text-slate-700 dark:text-white md:text-2xl"
+            class="text-3xl font-bold text-slate-800 dark:text-white md:text-4xl relative inline-block"
           >
-            Choose Your <span class="text-sky-500 dark:text-sky-400">Plan</span>
+            Choose Your <span class="text-sky-500 dark:text-sky-400 relative">
+              Plan
+              <span class="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transform scale-x-100 origin-left"></span>
+            </span>
           </h2>
-          <p class="mt-4 text-slate-500 dark:text-slate-300 max-w-2xl mx-auto">
+          <p class="mt-6 text-slate-500 dark:text-slate-300 max-w-2xl mx-auto text-lg">
             Select the perfect plan for your needs. Upgrade anytime as your
             business grows.
           </p>
-        </div>
-
-        <!-- Pricing Cards Container with Perspective Effect -->
-        <div class="flex flex-col md:flex-row gap-8 perspective-[1000px]">
-          <!-- Free Plan - Lighter Design -->
+        </div>        <!-- Pricing Cards Container with Enhanced 3D Effect -->
+        <div class="flex flex-col lg:flex-row gap-10 perspective-[1200px] relative">
+          <!-- Decorative background elements -->
+          <div class="absolute -z-10 top-1/3 left-5 w-32 h-32 bg-gradient-to-r from-sky-200/20 to-blue-300/20 dark:from-sky-700/10 dark:to-blue-800/10 rounded-full blur-3xl"></div>
+          <div class="absolute -z-10 bottom-10 right-5 w-40 h-40 bg-gradient-to-r from-indigo-200/20 to-violet-300/20 dark:from-indigo-700/10 dark:to-violet-800/10 rounded-full blur-3xl"></div>
+          
+          <!-- Free Plan - Enhanced Modern Design -->
           <div
-            class="w-full md:w-1/2 bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-1 border border-slate-100 dark:border-slate-700 group"
-          >
-            <!-- Card Header -->
+            class="w-full lg:w-1/2 bg-white dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:rotate-1 border border-slate-100/80 dark:border-slate-700/50 group"
+          >            <!-- Enhanced Card Header with Modern Design -->
             <div
-              class="p-6 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 border-b border-slate-100 dark:border-slate-700"
+              class="p-8 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 dark:from-sky-900/30 dark:via-blue-900/20 dark:to-indigo-900/10 border-b border-slate-100 dark:border-slate-700/50 relative overflow-hidden"
             >
+              <!-- Subtle animated pattern background -->
+              <div class="absolute inset-0 opacity-5">
+                <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))]"></div>
+              </div>
+              
               <h3
-                class="text-xl font-semibold text-slate-700 dark:text-white flex items-center"
+                class="text-xl font-bold text-slate-800 dark:text-white flex items-center"
               >
-                <span class="bg-sky-50 dark:bg-sky-900/30 p-2 rounded-lg mr-3">
+                <span class="bg-sky-100 dark:bg-sky-800/40 p-2.5 rounded-xl mr-4 shadow-sm">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 text-sky-400 dark:text-sky-400"
+                    class="h-6 w-6 text-sky-500 dark:text-sky-400"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -47,16 +60,16 @@
                 Free Plan
               </h3>
 
-              <div class="mt-4 flex items-baseline">
-                <span class="text-2xl font-semibold text-slate-700 dark:text-white"
+              <div class="mt-5 flex items-baseline">
+                <span class="text-3xl font-bold text-slate-800 dark:text-white"
                   >৳ 0</span
                 >
-                <span class="ml-2 text-sm text-slate-500 dark:text-slate-400"
+                <span class="ml-2 text-sm font-medium text-slate-500 dark:text-slate-400"
                   >/Month</span
                 >
               </div>
 
-              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
                 Perfect for getting started
               </p>
             </div>
@@ -274,20 +287,20 @@
                 </span>
               </button>
             </div>
-          </div>
-
-          <!-- Pro - Lighter Premium Effects -->
+          </div>          <!-- Pro - Enhanced Premium Design with Advanced Effects -->
           <div
-            class="w-full md:w-1/2 rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-500 transform hover:-translate-y-2 border-2 border-sky-200/70 dark:border-sky-700/30 bg-white dark:bg-slate-800 relative group"
-          >
-            <!-- Premium Badge -->
-            <div class="absolute -top-0.5 -right-0.5 z-10">
+            class="w-full lg:w-1/2 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-3 hover:rotate-1 border-2 border-sky-300/50 dark:border-sky-500/30 bg-white dark:bg-slate-800/90 backdrop-blur-sm relative group"
+          >            <!-- Enhanced Premium Badge with Animation -->
+            <div class="absolute -top-1 -right-1 z-10">
               <div
-                class="bg-gradient-to-r from-sky-400 to-blue-400 text-white text-xs font-semibold py-1 px-3 rounded-bl-lg rounded-tr-lg shadow-sm flex items-center gap-1"
+                class="bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 text-white text-xs font-bold py-1.5 px-4 rounded-bl-xl rounded-tr-xl shadow-md flex items-center gap-1.5 animate-pulse-slow relative overflow-hidden"
               >
+                <!-- Animated glint effect -->
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-white/0 via-white/30 to-white/0 -skew-x-45 animate-shimmer"></div>
+                
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
+                  class="h-4 w-4 animate-subtle-bounce"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >

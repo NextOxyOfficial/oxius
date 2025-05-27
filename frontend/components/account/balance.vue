@@ -216,7 +216,7 @@
 
           <div class="relative w-full max-w-md mx-auto group">
             <div
-              class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg blur opacity-30 group-hover:opacity-70 transition duration-1000 group-hover:duration-200"
+              class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg blur opacity-30"
             ></div>
             <div
               class="relative flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm"

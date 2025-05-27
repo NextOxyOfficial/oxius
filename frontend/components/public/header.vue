@@ -381,7 +381,7 @@
             <!-- Inbox Button with Tailwind styling -->
             <NuxtLink to="/inbox/" class="relative cursor-pointer">
               <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm">
-                <UIcon name="i-material-symbols:mark-email-unread-outline" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <UIcon name="i-material-symbols:mark-email-unread-outline" class="size-6 text-blue-600 dark:text-blue-400" />
                 
                 <!-- Notification Badge with animation -->
                 <transition enter-active-class="transition duration-300 ease-out" 
@@ -401,7 +401,7 @@
             <!-- QR Code Button with Tailwind styling -->
             <div @click="showQr = !showQr" class="relative cursor-pointer">
               <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm dark:bg-green-900/30 dark:hover:bg-green-900/50">
-                <UIcon name="i-ic:twotone-qr-code-scanner" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                <UIcon name="i-ic:twotone-qr-code-scanner" class="size-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
             

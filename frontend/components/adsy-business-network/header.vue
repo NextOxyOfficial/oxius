@@ -144,7 +144,7 @@
               <!-- QR Code Button with Tailwind styling -->              
                <div @click="showQr = !showQr" class="relative cursor-pointer">
                 <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm hover:bg-gray-100 dark:bg-green-900/30 dark:hover:bg-green-900/50">
-                  <UIcon name="i-ic:twotone-qr-code-scanner" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <UIcon name="i-ic:twotone-qr-code-scanner" class="size-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
                 <!-- QR Code Modal -->
