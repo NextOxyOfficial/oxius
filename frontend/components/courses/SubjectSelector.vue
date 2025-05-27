@@ -1,5 +1,4 @@
-<template>
-  <div v-if="division" class="bg-white rounded-lg shadow-md p-4 mt-3">
+<template>  <div v-if="division" class="bg-white rounded-lg shadow-md p-4 mt-3">
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center">
         <div class="bg-blue-100 text-blue-600 rounded-full p-1 mr-2">
