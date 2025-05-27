@@ -315,14 +315,13 @@
         </NuxtLink>
 
         <!-- Amar Seba -->
-        <NuxtLink to="/#classified-services" class="mobile-btn bg-white">
+        <NuxtLink to="/courses" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-rose-50">
             <Cog class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
-              $t("classified_service")
-            }}</span>
+            <span class="text-sm font-medium leading-tight text-gray-700">
+              {{ $t("elearning") }}</span>
           </div>
         </NuxtLink>
         <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
