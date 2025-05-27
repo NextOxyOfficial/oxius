@@ -314,10 +314,10 @@
           </div>
         </NuxtLink>
 
-        <!-- Amar Seba -->
+        <!-- elearning -->
         <NuxtLink to="/courses" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-rose-50">
-            <Cog class="mobile-icon text-rose-600" />
+            <GraduationCap class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-700">
@@ -416,6 +416,7 @@ import {
   Smartphone,
   CreditCard,
   User,
+  GraduationCap,
 } from "lucide-vue-next";
 const { get } = useApi();
 
