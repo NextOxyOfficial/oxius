@@ -51,24 +51,22 @@ const props = defineProps({
 
 defineEmits(['select-batch']);
 
+// Get runtime config for API base URL
+const config = useRuntimeConfig();
+
 // State variables
 const batches = ref([]);
 const loading = ref(true);
-const error = ref(null);
-
-// Function to load batches from API
+const error = ref(null);  // Function to load batches from API
 async function loadBatches() {
   try {
     loading.value = true;
     error.value = null;
-    batches.value = await fetchBatches();
+    batches.value = await fetchBatches(config.public.baseURL);
     
-    // If no batches are returned, add default ones
+    // If API call is successful but returned no batches, show the error
     if (batches.value.length === 0) {
-      batches.value = [
-        { id: 1, code: 'SSC', name: 'SSC', description: 'Class 9-10' },
-        { id: 2, code: 'HSC', name: 'HSC', description: 'Class 11-12' }
-      ];
+      error.value = 'No batches found. Please contact administrator.';
     }
   } catch (err) {
     console.error('Error loading batches:', err);

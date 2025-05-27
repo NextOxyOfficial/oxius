@@ -582,6 +582,9 @@ const props = defineProps({
   },
 });
 
+// Get runtime config for API base URL
+const config = useRuntimeConfig();
+
 // State variables
 const apiVideos = ref([]);
 const loading = ref(false);
@@ -594,7 +597,7 @@ async function loadVideos() {
   try {
     loading.value = true;
     error.value = null;
-    apiVideos.value = await fetchVideoLessonsForSubject(props.subject);
+    apiVideos.value = await fetchVideoLessonsForSubject(props.subject, config.public.baseURL);
     console.log('Loaded videos:', apiVideos.value);
   } catch (err) {
     console.error(`Error loading videos for subject ${props.subject}:`, err);
@@ -682,133 +685,11 @@ async function preloadVideoDetails(videoId) {
       };
     }
     
-    return null;
-  } catch (err) {
+    return null;  } catch (err) {
     console.error(`Error preloading video details for ${videoId}:`, err);
     return null;
   }
 }
-
-// Fallback video data for development and testing
-const staticVideos = [
-  // Physics SSC
-  {
-    id: "phys-ssc-1",
-    subjectId: "physics-ssc",
-    title: "Introduction to Motion",
-    lesson: "Motion and Forces",
-    description:
-      "Learn the basic concepts of motion including displacement, velocity, and acceleration. This lesson covers the fundamental principles that form the basis of mechanics.",
-    url: "https://www.youtube.com/watch?v=ZM8ECpBuQYE",
-    duration: "12:45",
-    views: "1.2k",
-  },
-  {
-    id: "phys-ssc-2",
-    subjectId: "physics-ssc",
-    title: "Newton's Laws of Motion",
-    lesson: "Motion and Forces",
-    description:
-      "Comprehensive explanation of Isaac Newton's three laws of motion: inertia, force and acceleration, and action-reaction. These principles explain how forces interact with objects.",
-    url: "https://www.youtube.com/watch?v=kKKM8Y-u7ds",
-    duration: "15:30",
-    views: "2.5k",
-  },
-  {
-    id: "phys-ssc-3",
-    subjectId: "physics-ssc",
-    title: "Understanding Gravity",
-    lesson: "Gravitation",
-    description:
-      "Explore the concept of gravity as a fundamental force in the universe. Learn about gravitational fields, acceleration due to gravity, and Newton's law of universal gravitation.",
-    url: "https://www.youtube.com/watch?v=EwY6p-r_hyU",
-    duration: "10:15",
-    views: "1.8k",
-  },
-  // Chemistry SSC
-  {
-    id: "chem-ssc-1",
-    subjectId: "chemistry-ssc",
-    title: "Atomic Structure",
-    lesson: "Atoms and Molecules",
-    description:
-      "Explore the structure of atoms including protons, neutrons, and electrons. Learn about atomic numbers, mass numbers, and how electrons are arranged in shells.",
-    url: "https://www.youtube.com/watch?v=LhAobPugvsk",
-    duration: "14:20",
-    views: "3.1k",
-  },
-  {
-    id: "chem-ssc-2",
-    subjectId: "chemistry-ssc",
-    title: "Periodic Table",
-    lesson: "Elements",
-    description:
-      "Understand how elements are organized in the periodic table. Learn about periods, groups, and the patterns of properties across the table including electronegativity and atomic radius.",
-    url: "https://www.youtube.com/watch?v=0RRVV4Diomg",
-    duration: "18:10",
-    views: "2.9k",
-  },
-
-  // Physics HSC
-  {
-    id: "phys-hsc-1",
-    subjectId: "physics-hsc",
-    title: "Electric Fields",
-    lesson: "Electricity",
-    description:
-      "Introduction to electric fields, Coulomb's law, and electric potential. This lesson covers how charged particles interact and the principles of electrostatics.",
-    url: "https://www.youtube.com/watch?v=mdulzEfQXDE",
-    duration: "20:05",
-    views: "4.2k",
-  },
-  {
-    id: "phys-hsc-2",
-    subjectId: "physics-hsc",
-    title: "Electromagnetic Induction",
-    lesson: "Electricity",
-    description:
-      "Learn about Faraday's law of electromagnetic induction, Lenz's law, and how changing magnetic fields generate electric currents. Applications in generators and transformers are discussed.",
-    url: "https://www.youtube.com/watch?v=pQp6bmJPU_0",
-    duration: "22:15",
-    views: "3.7k",
-  },
-  {
-    id: "phys-hsc-3",
-    subjectId: "physics-hsc",
-    title: "Quantum Phenomena",
-    lesson: "Modern Physics",
-    description:
-      "Introduction to quantum physics concepts including wave-particle duality, the uncertainty principle, and quantum tunneling. This lesson bridges classical physics with modern concepts.",
-    url: "https://www.youtube.com/watch?v=7kb1VT0J3DE",
-    duration: "25:30",
-    views: "5.1k",
-  },
-  // Add more sample videos for other subjects as needed
-
-  // Bengali language videos
-  {
-    id: "bn-phys-ssc-1",
-    subjectId: "physics-ssc",
-    title: "গতি সম্পর্কে ভূমিকা",
-    lesson: "গতি এবং বল",
-    description:
-      "গতির মৌলিক ধারণাগুলি শিখুন যার মধ্যে রয়েছে অবস্থান পরিবর্তন, বেগ এবং ত্বরণ। এই পাঠটি যান্ত্রিকতার ভিত্তিমূলক নীতিগুলি কভার করে।",
-    url: "https://www.youtube.com/watch?v=ZM8ECpBuQYE",
-    duration: "12:45",
-    views: "1.2k",
-  },
-  {
-    id: "bn-chem-ssc-1",
-    subjectId: "chemistry-ssc",
-    title: "পারমাণবিক গঠন",
-    lesson: "পরমাণু এবং অণু",
-    description:
-      "পরমাণুর গঠন সম্পর্কে জানুন যার মধ্যে প্রোটন, নিউট্রন এবং ইলেকট্রন অন্তর্ভুক্ত। পারমাণবিক সংখ্যা, ভর সংখ্যা এবং কিভাবে ইলেকট্রনগুলি খোসায় সাজানো হয় সে সম্পর্কে শিখুন।",
-    url: "https://www.youtube.com/watch?v=LhAobPugvsk",
-    duration: "14:20",
-    views: "3.1k",
-  },
-];
 
 const selectedLesson = ref("all");
 const searchKeyword = ref("");
@@ -859,8 +740,8 @@ const subjectVideos = computed(() => {
     }));
   }
   
-  // Fallback to static data
-  return staticVideos.filter((video) => video.subjectId === props.subject);
+  // Return empty array instead of falling back to static data
+  return [];
 });
 
 // Get all lessons for the selected subject
@@ -878,11 +759,11 @@ const filteredVideos = computed(() => {
   if (selectedLesson.value !== "all") {
     result = result.filter((video) => video.lesson === selectedLesson.value);
   }
-
   // Filter by search keyword if provided with Unicode support
   if (searchKeyword.value.trim()) {
     // Normalize the search term for better Unicode handling (especially for Bangla)
-    const keyword = searchKeyword.value.trim().normalize("NFC").toLowerCase();    result = result.filter((video) => {
+    const keyword = searchKeyword.value.trim().normalize("NFC").toLowerCase();
+    result = result.filter((video) => {
       // Normalize all text fields for consistent Unicode comparison
       const normalizedTitle = ((isBengaliLocale.value && video.title_bn) ? video.title_bn : (video.title || ""))
         .normalize("NFC")

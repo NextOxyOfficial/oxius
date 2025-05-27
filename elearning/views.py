@@ -11,9 +11,10 @@ class BatchViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BatchSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'description']
+    lookup_field = 'code'  # Allow lookup by code instead of ID
     
     @action(detail=True, methods=['get'])
-    def divisions(self, request, pk=None):
+    def divisions(self, request, code=None):
         batch = self.get_object()
         divisions = batch.divisions.filter(is_active=True)
         serializer = DivisionSerializer(divisions, many=True)
@@ -26,9 +27,10 @@ class DivisionViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['batches']
     search_fields = ['name', 'description']
+    lookup_field = 'code'  # Allow lookup by code instead of ID
     
     @action(detail=True, methods=['get'])
-    def subjects(self, request, pk=None):
+    def subjects(self, request, code=None):
         division = self.get_object()
         subjects = division.subjects.filter(is_active=True)
         serializer = SubjectSerializer(subjects, many=True)
@@ -41,9 +43,10 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['divisions']
     search_fields = ['name', 'description']
+    lookup_field = 'code'  # Allow lookup by code instead of ID
     
     @action(detail=True, methods=['get'])
-    def videos(self, request, pk=None):
+    def videos(self, request, code=None):
         subject = self.get_object()
         videos = subject.videos.filter(is_active=True)
         serializer = VideoLessonSerializer(videos, many=True)

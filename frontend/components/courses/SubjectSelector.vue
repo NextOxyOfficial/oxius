@@ -85,6 +85,9 @@ const props = defineProps({
 
 defineEmits(['select-subject']);
 
+// Get runtime config for API base URL
+const config = useRuntimeConfig();
+
 // State variables
 const apiSubjects = ref([]);
 const loading = ref(false);
@@ -97,7 +100,7 @@ async function loadSubjects() {
   try {
     loading.value = true;
     error.value = null;
-    apiSubjects.value = await fetchSubjectsForDivision(props.division);
+    apiSubjects.value = await fetchSubjectsForDivision(props.division, config.public.baseURL);
     console.log('Loaded subjects:', apiSubjects.value);
   } catch (err) {
     console.error(`Error loading subjects for division ${props.division}:`, err);
@@ -122,209 +125,7 @@ onMounted(() => {
   }
 });
 
-// Static fallback subjects
-const staticSubjects = [
-  // Science subjects for SSC
-  {
-    id: 'physics-ssc',
-    name: 'Physics',
-    description: 'Class 9-10',
-    division: 'science',
-    batch: 'SSC',
-    bgColor: 'bg-cyan-100',
-    iconColor: 'text-cyan-600'
-  },
-  {
-    id: 'chemistry-ssc',
-    name: 'Chemistry',
-    description: 'Class 9-10',
-    division: 'science',
-    batch: 'SSC',
-    bgColor: 'bg-purple-100',
-    iconColor: 'text-purple-600'
-  },
-  {
-    id: 'biology-ssc',
-    name: 'Biology',
-    description: 'Class 9-10',
-    division: 'science',
-    batch: 'SSC',
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600'
-  },
-  {
-    id: 'math-ssc',
-    name: 'Mathematics',
-    description: 'Class 9-10',
-    division: 'science',
-    batch: 'SSC',
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600'
-  },
-  
-  // Science subjects for HSC
-  {
-    id: 'physics-hsc',
-    name: 'Physics',
-    description: 'Class 11-12',
-    division: 'science',
-    batch: 'HSC',
-    bgColor: 'bg-cyan-100',
-    iconColor: 'text-cyan-600'
-  },
-  {
-    id: 'chemistry-hsc',
-    name: 'Chemistry',
-    description: 'Class 11-12',
-    division: 'science',
-    batch: 'HSC',
-    bgColor: 'bg-purple-100',
-    iconColor: 'text-purple-600'
-  },
-  {
-    id: 'biology-hsc',
-    name: 'Biology',
-    description: 'Class 11-12',
-    division: 'science',
-    batch: 'HSC',
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600'
-  },
-  {
-    id: 'math-hsc',
-    name: 'Mathematics',
-    description: 'Class 11-12',
-    division: 'science',
-    batch: 'HSC',
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600'
-  },
-  
-  // Humanities subjects for SSC
-  {
-    id: 'history-ssc',
-    name: 'History',
-    description: 'Class 9-10',
-    division: 'humanities',
-    batch: 'SSC',
-    bgColor: 'bg-amber-100',
-    iconColor: 'text-amber-600'
-  },
-  {
-    id: 'geography-ssc',
-    name: 'Geography',
-    description: 'Class 9-10',
-    division: 'humanities',
-    batch: 'SSC',
-    bgColor: 'bg-emerald-100',
-    iconColor: 'text-emerald-600'
-  },
-  {
-    id: 'civics-ssc',
-    name: 'Civics',
-    description: 'Class 9-10',
-    division: 'humanities',
-    batch: 'SSC',
-    bgColor: 'bg-rose-100',
-    iconColor: 'text-rose-600'
-  },
-  
-  // Humanities subjects for HSC
-  {
-    id: 'history-hsc',
-    name: 'History',
-    description: 'Class 11-12',
-    division: 'humanities',
-    batch: 'HSC',
-    bgColor: 'bg-amber-100',
-    iconColor: 'text-amber-600'
-  },
-  {
-    id: 'geography-hsc',
-    name: 'Geography',
-    description: 'Class 11-12',
-    division: 'humanities',
-    batch: 'HSC',
-    bgColor: 'bg-emerald-100',
-    iconColor: 'text-emerald-600'
-  },
-  {
-    id: 'logic-hsc',
-    name: 'Logic',
-    description: 'Class 11-12',
-    division: 'humanities',
-    batch: 'HSC',
-    bgColor: 'bg-violet-100',
-    iconColor: 'text-violet-600'
-  },
-  {
-    id: 'sociology-hsc',
-    name: 'Sociology',
-    description: 'Class 11-12',
-    division: 'humanities',
-    batch: 'HSC',
-    bgColor: 'bg-rose-100',
-    iconColor: 'text-rose-600'
-  },
-  
-  // Commerce subjects for SSC
-  {
-    id: 'business-studies-ssc',
-    name: 'Business Studies',
-    description: 'Class 9-10',
-    division: 'commerce',
-    batch: 'SSC',
-    bgColor: 'bg-indigo-100',
-    iconColor: 'text-indigo-600'
-  },
-  {
-    id: 'accounting-ssc',
-    name: 'Accounting',
-    description: 'Class 9-10',
-    division: 'commerce',
-    batch: 'SSC',
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600'
-  },
-  
-  // Commerce subjects for HSC
-  {
-    id: 'business-studies-hsc',
-    name: 'Business Studies',
-    description: 'Class 11-12',
-    division: 'commerce',
-    batch: 'HSC',
-    bgColor: 'bg-indigo-100',
-    iconColor: 'text-indigo-600'
-  },
-  {
-    id: 'accounting-hsc',
-    name: 'Accounting',
-    description: 'Class 11-12',
-    division: 'commerce',
-    batch: 'HSC',
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600'
-  },
-  {
-    id: 'finance-hsc',
-    name: 'Finance',
-    description: 'Class 11-12',
-    division: 'commerce',
-    batch: 'HSC',
-    bgColor: 'bg-teal-100',
-    iconColor: 'text-teal-600'
-  },
-  {
-    id: 'economics-hsc',
-    name: 'Economics',
-    description: 'Class 11-12',
-    division: 'commerce',
-    batch: 'HSC',
-    bgColor: 'bg-pink-100',
-    iconColor: 'text-pink-600'
-  }
-];
+// No static subjects - we'll use the API data only
 
 // Color map for subject backgrounds and icons
 const colorOptions = [
@@ -368,10 +169,7 @@ const filteredSubjects = computed(() => {
     });
   }
   
-  // Fallback to static data if API fails
-  return staticSubjects.filter(subject => 
-    subject.batch === props.batch && 
-    subject.division === props.division
-  );
+  // Return empty array instead of using static data
+  return [];
 });
 </script>

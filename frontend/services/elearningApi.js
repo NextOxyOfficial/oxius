@@ -1,8 +1,6 @@
 // API service for eLearning platform
 import { $fetch } from "ofetch";
 
-const API_BASE_URL = "/api/elearning";
-
 // Simple in-memory cache implementation
 const cache = {
   data: {},
@@ -54,7 +52,7 @@ const cache = {
   },
 };
 
-export const fetchBatches = async () => {
+export const fetchBatches = async (baseURL = null) => {
   const cacheKey = "batches";
 
   // Return cached data if available
@@ -63,7 +61,11 @@ export const fetchBatches = async () => {
   }
 
   try {
-    const data = await $fetch(`${API_BASE_URL}/batches/`);
+    // Use the provided baseURL or fallback to relative path for dev
+    const apiUrl = baseURL
+      ? `${baseURL}/api/elearning/batches/`
+      : "/api/elearning/batches/";
+    const data = await $fetch(apiUrl);
 
     // Cache the results for 1 day (batches rarely change)
     cache.set(cacheKey, data, 24 * 60 * 60 * 1000);
@@ -74,7 +76,7 @@ export const fetchBatches = async () => {
   }
 };
 
-export const fetchDivisionsForBatch = async (batchId) => {
+export const fetchDivisionsForBatch = async (batchId, baseURL = null) => {
   const cacheKey = `divisions_for_batch_${batchId}`;
 
   // Return cached data if available
@@ -83,7 +85,10 @@ export const fetchDivisionsForBatch = async (batchId) => {
   }
 
   try {
-    const data = await $fetch(`${API_BASE_URL}/batches/${batchId}/divisions/`);
+    const apiUrl = baseURL
+      ? `${baseURL}/api/elearning/batches/${batchId}/divisions/`
+      : `/api/elearning/batches/${batchId}/divisions/`;
+    const data = await $fetch(apiUrl);
 
     // Cache the results for 12 hours (divisions rarely change)
     cache.set(cacheKey, data, 12 * 60 * 60 * 1000);
@@ -94,7 +99,7 @@ export const fetchDivisionsForBatch = async (batchId) => {
   }
 };
 
-export const fetchSubjectsForDivision = async (divisionId) => {
+export const fetchSubjectsForDivision = async (divisionId, baseURL = null) => {
   const cacheKey = `subjects_for_division_${divisionId}`;
 
   // Return cached data if available
@@ -103,9 +108,10 @@ export const fetchSubjectsForDivision = async (divisionId) => {
   }
 
   try {
-    const data = await $fetch(
-      `${API_BASE_URL}/divisions/${divisionId}/subjects/`
-    );
+    const apiUrl = baseURL
+      ? `${baseURL}/api/elearning/divisions/${divisionId}/subjects/`
+      : `/api/elearning/divisions/${divisionId}/subjects/`;
+    const data = await $fetch(apiUrl);
 
     // Cache the results for 6 hours
     cache.set(cacheKey, data, 6 * 60 * 60 * 1000);
@@ -116,7 +122,10 @@ export const fetchSubjectsForDivision = async (divisionId) => {
   }
 };
 
-export const fetchVideoLessonsForSubject = async (subjectId) => {
+export const fetchVideoLessonsForSubject = async (
+  subjectId,
+  baseURL = null
+) => {
   const cacheKey = `videos_for_subject_${subjectId}`;
 
   // Return cached data if available
@@ -124,9 +133,11 @@ export const fetchVideoLessonsForSubject = async (subjectId) => {
     console.log(`Using cached videos for subject ${subjectId}`);
     return cache.get(cacheKey);
   }
-
   try {
-    const data = await $fetch(`${API_BASE_URL}/subjects/${subjectId}/videos/`);
+    const apiUrl = baseURL
+      ? `${baseURL}/api/elearning/subjects/${subjectId}/videos/`
+      : `/api/elearning/subjects/${subjectId}/videos/`;
+    const data = await $fetch(apiUrl);
 
     // Process and cache video metadata
     if (Array.isArray(data)) {
@@ -151,14 +162,14 @@ export const fetchVideoLessonsForSubject = async (subjectId) => {
   }
 };
 
-export const incrementVideoViews = async (videoId) => {
+export const incrementVideoViews = async (videoId, baseURL = null) => {
   try {
-    const result = await $fetch(
-      `${API_BASE_URL}/videos/${videoId}/increment_views/`,
-      {
-        method: "POST",
-      }
-    );
+    const apiUrl = baseURL
+      ? `${baseURL}/api/elearning/videos/${videoId}/increment_views/`
+      : `/api/elearning/videos/${videoId}/increment_views/`;
+    const result = await $fetch(apiUrl, {
+      method: "POST",
+    });
 
     // If the view was successfully updated, invalidate the cache for this video's subject
     if (result && result.success) {
@@ -190,7 +201,7 @@ export const incrementVideoViews = async (videoId) => {
  * @param {string} videoId - The ID of the video to fetch
  * @returns {Promise<Object|null>} The video object or null if not found
  */
-export const fetchVideoById = async (videoId) => {
+export const fetchVideoById = async (videoId, baseURL = null) => {
   // First check if the video exists in any of our cached subject videos
   let cachedVideo = null;
 
@@ -208,7 +219,10 @@ export const fetchVideoById = async (videoId) => {
 
   // If not in cache, fetch from API directly
   try {
-    const video = await $fetch(`${API_BASE_URL}/videos/${videoId}/`);
+    const apiUrl = baseURL
+      ? `${baseURL}/api/elearning/videos/${videoId}/`
+      : `/api/elearning/videos/${videoId}/`;
+    const video = await $fetch(apiUrl);
     return video;
   } catch (error) {
     console.error(`Error fetching video ${videoId}:`, error);

@@ -52,6 +52,9 @@ const props = defineProps({
 
 defineEmits(['select-division']);
 
+// Get runtime config for API base URL
+const config = useRuntimeConfig();
+
 // Default icons
 const ScienceIcon = {
   template: `
@@ -114,33 +117,8 @@ const divisions = computed(() => {
     });
   }
   
-  // Fallback to default divisions
-  return [
-    {
-      id: 'science',
-      name: 'Science',
-      description: 'Physics, Chemistry, Biology, etc.',
-      icon: ScienceIcon,
-      bgColor: 'bg-green-100',
-      iconColor: 'text-green-600'
-    },
-    {
-      id: 'humanities',
-      name: 'Humanities',
-      description: 'History, Geography, Literature, etc.',
-      icon: HumanitiesIcon,
-      bgColor: 'bg-blue-100',
-      iconColor: 'text-blue-600'
-    },
-    {
-      id: 'commerce',
-      name: 'Commerce',
-      description: 'Accounting, Business Studies, etc.',
-      icon: CommerceIcon,
-      bgColor: 'bg-amber-100',
-      iconColor: 'text-amber-600'
-    }
-  ];
+  // Return empty array instead of fallback static data
+  return [];
 });
 
 // Function to load divisions from API
@@ -150,7 +128,7 @@ async function loadDivisions() {
   try {
     loading.value = true;
     error.value = null;
-    apiDivisions.value = await fetchDivisionsForBatch(props.batch);
+    apiDivisions.value = await fetchDivisionsForBatch(props.batch, config.public.baseURL);
   } catch (err) {
     console.error(`Error loading divisions for batch ${props.batch}:`, err);
     error.value = 'Failed to load divisions. Please try again.';
