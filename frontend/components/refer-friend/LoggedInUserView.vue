@@ -32,11 +32,12 @@
       >
         <p class="text-center text-gray-500 dark:text-gray-500 mb-3">
           {{ $t("refer_text") }}
-        </p>        <div class="flex flex-col sm:flex-row gap-3">
+        </p>        
+        <div class="flex flex-col sm:flex-row gap-3">
           <UButtonGroup class="mx-auto">
             <input
               type="text"
-              class="text-xs py-1 px-0.5 w-40 sm:w-72"
+              class="text-xs py-1 px-0.5 w-56 sm:w-72"
               :value="referralUrl"
               readonly
             />
@@ -52,7 +53,8 @@
           </UButtonGroup>
         </div>
 
-        <!-- Simple Social Share Icons -->        <div class="flex justify-center items-center gap-4 mt-4">
+        <!-- Simple Social Share Icons -->        
+         <div class="flex justify-center items-center gap-4 mt-4">
           <UButton
             color="white"
             variant="ghost"
@@ -78,27 +80,24 @@
             @click="shareOnSocial('whatsapp')"
           >
             <UIcon name="i-mdi:whatsapp" class="text-xl text-green-500" />
-          </UButton>
-          
-          <UButton
+          </UButton>            <UButton
             color="primary"
             variant="soft"
             class="h-10 px-4 flex items-center justify-center rounded-full transition-all duration-300"
-            @click="$emit('update:showShareModal', true)"
+            @click="showShareModal()"
           >
             <UIcon name="i-heroicons-share" class="text-lg mr-2" />
             <span class="text-sm">More</span>
           </UButton>
         </div>
-      </div>
-
-      <!-- Share Modal -->
-      <UModal :open="showShareModal" @close="$emit('update:showShareModal', false)">
+      </div>        
+      <!-- Share Modal -->      
+      <UModal v-model="props.showShareModal" @close="hideShareModal()">
         <UCard>
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold">Share Your Referral Link</h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="$emit('update:showShareModal', false)" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="hideShareModal()" />
             </div>
           </template>
 
@@ -107,32 +106,33 @@
             <div>
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Your Referral Link
-              </label>
-              <div class="flex gap-2">
+              </label>              
+              <div class="flex gap-2">                
                 <UInput
-                  :value="referralUrl"
+                  :model-value="referralUrl"
                   readonly
                   class="flex-1 font-mono text-sm"
-                  :disabled="!user?.user?.referral_code"
+                  :disabled="!props.user?.user?.referral_code"
                 />
                 <UButton
                   color="primary"
                   icon="i-iconamoon-copy-light"
                   @click="copyReferralLink"
-                  :disabled="!user?.user?.referral_code"
+                  :disabled="!props.user?.user?.referral_code"
                 >
                   Copy
                 </UButton>
               </div>
-            </div>            <!-- QR Code Section -->
+            </div>            
+            <!-- QR Code Section -->
             <div class="text-center">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 QR Code
               </label>
-              <div class="inline-block p-4 bg-white rounded-lg shadow-sm">
+              <div class="inline-block p-4 bg-white rounded-lg shadow-sm">                
                 <img
-                  v-if="user?.user?.referral_code"
-                  :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
+                  v-if="props.user?.user?.referral_code"
+                  :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${referralUrl}`"
                   alt="Referral QR Code"
                   class="w-32 h-32"
                   @error="handleQrCodeError"
@@ -172,7 +172,8 @@
                 
                 <UButton
                   color="white"
-                  variant="outline"                  class="h-16 flex flex-col items-center justify-center gap-1"
+                  variant="outline"                  
+                  class="h-16 flex flex-col items-center justify-center gap-1"
                   @click="$emit('share-on-social', 'whatsapp')"
                 >
                   <UIcon name="i-mdi:whatsapp" class="text-2xl text-green-500" />
@@ -181,7 +182,8 @@
                 
                 <UButton
                   color="white"
-                  variant="outline"                  class="h-16 flex flex-col items-center justify-center gap-1"
+                  variant="outline"                  
+                  class="h-16 flex flex-col items-center justify-center gap-1"
                   @click="$emit('share-on-social', 'linkedin')"
                 >
                   <UIcon name="i-mdi:linkedin" class="text-2xl text-blue-700" />
@@ -194,20 +196,19 @@
             <div>
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 Custom Message
-              </label>              <UTextarea
-                :value="customMessage"
-                @input="$emit('update:customMessage', $event)"
+              </label>                <UTextarea
+                :model-value="props.customMessage"
+                @input="$emit('update:custom-message', $event)"
                 placeholder="Add a personal message to your referral..."
                 rows="3"
               />
             </div>
-          </div>
-
-          <template #footer>
+          </div>          <template #footer>
             <div class="flex justify-end gap-2">
-              <UButton color="gray" variant="ghost" @click="$emit('update:showShareModal', false)">
+              <UButton color="gray" variant="ghost" @click="hideShareModal()">
                 Close
-              </UButton>              <UButton color="primary" @click="$emit('share-custom-message')">
+              </UButton>              
+              <UButton color="primary" @click="$emit('share-custom-message')">
                 Share with Message
               </UButton>
             </div>
@@ -237,9 +238,8 @@
             </h3>
             <div
               class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
-            >
-              <span class="counter-animate" data-value="87">
-                {{ user.user.refer_count }}
+            >                <span class="counter-animate" data-value="87">
+                {{ props.user.user.refer_count }}
               </span>
             </div>
           </div>
@@ -268,13 +268,13 @@
             >
               <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
               <span class="counter-animate" data-value="2450">
-                {{ user.user.commission_earned }}
+                {{ props.user.user.commission_earned }}
               </span>
-            </div>
+            </div>            
             <div class="text-xs mt-1">
               <span class="text-green-500 flex items-center">
                 <UIcon name="i-heroicons-arrow-trending-up" class="mr-1" />
-                8% from last month
+                <span v-if="growthRate > 0">+{{ growthRate.toFixed(1) }}% this month</span>
               </span>
             </div>
           </div>
@@ -297,8 +297,7 @@
 
         <div v-else-if="commissionError" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
           <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500 text-2xl mb-2" />
-          <p class="text-red-600 dark:text-red-400">{{ commissionError }}</p>
-          <UButton @click="getCommissionHistory()" color="red" variant="soft" size="sm" class="mt-3">
+          <p class="text-red-600 dark:text-red-400">{{ commissionError }}</p>                <UButton @click="getCommissionHistory" color="red" variant="soft" size="sm" class="mt-3">
             Try Again
           </UButton>
         </div>
@@ -530,7 +529,7 @@
                 <USelect
                 v-if="activeTab === 0"
                 :value="filterPeriod"
-                @update:modelValue="$emit('update:filterPeriod', $event)"
+                @update:modelValue="$emit('update:filter-period', $event)"
                 :options="['All Time', 'This Month', 'Last Month']"
                 placeholder="Period"
                 size="sm"
@@ -670,11 +669,14 @@
                               name="i-heroicons-banknotes"
                               class="text-2xl text-gray-500 dark:text-gray-500"
                             />
-                          </div>
-                          <p>No earnings history to display yet.</p>
-                          <UButton class="mt-3" color="primary" size="sm"
-                            >Invite Friends</UButton
+                          </div>                          <p>No earnings history to display yet.</p>                          <UButton 
+                            class="mt-3" 
+                            color="primary" 
+                            size="sm"
+                            @click="showShareModal()"
                           >
+                            Invite Friends
+                          </UButton>
                         </div>
                       </td>
                     </tr>
@@ -798,13 +800,11 @@
                               name="i-heroicons-users"
                               class="text-2xl text-gray-500 dark:text-gray-500"
                             />
-                          </div>
-                          <p>You haven't referred any users yet.</p>
-                          <UButton
+                          </div>                          <p>You haven't referred any users yet.</p>                          <UButton
                             class="mt-3"
                             color="primary"
                             size="sm"
-                            @click="shareOnSocial('whatsapp')"
+                            @click="showShareModal()"
                           >
                             Invite Friends
                           </UButton>
@@ -832,7 +832,7 @@
                 (activeTab === 1 && referredUsers.length > 5)
               "
               :model-value="currentPage"
-              @update:model-value="$emit('update:currentPage', $event)"
+              @update:model-value="$emit('update:current-page', $event)"
               :page-count="2"
               :total="
                 activeTab === 0
@@ -940,10 +940,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
-  'update:showShareModal', 
-  'update:customMessage', 
-  'update:filterPeriod', 
-  'update:currentPage',
+  'update:show-share-modal', 
+  'update:custom-message', 
+  'update:filter-period', 
+  'update:current-page',
   'copy-to-clip',
   'share-on-social',
   'share-custom-message',
@@ -988,5 +988,56 @@ function handleQrCodeError(event) {
       parent.appendChild(fallback);
     }
   }
+}
+
+// Method to handle tab changes
+function setActiveTab(index) {
+  emit('set-active-tab', index);
+}
+
+// Method to get commission history
+function getCommissionHistory() {
+  emit('get-commission-history');
+}
+
+// Method to get referred users
+function getReferredUsers() {
+  emit('get-referred-users');
+}
+
+// Method to export commissions
+function exportCommissions() {
+  emit('export-commissions');
+}
+
+// Method to format date
+function formatDate(date) {
+  return emit('format-date', date);
+}
+
+// Method to get service type color
+function getServiceTypeColor(typeCode) {
+  return emit('get-service-type-color', typeCode);
+}
+
+// Method to get commission rate
+function getCommissionRate(typeCode) {
+  return emit('get-commission-rate', typeCode);
+}
+
+// Method to show share modal
+function showShareModal() {
+  console.log('showShareModal called, emitting update:show-share-modal');
+  // Update custom message with current referral link
+  if (referralUrl.value) {
+    emit('update:custom-message', `Join on AdsyClub to start earning & build social connectivity! Use my referral link to get started: ${referralUrl.value}`);
+  }
+  emit('update:show-share-modal', true);
+}
+
+// Method to hide share modal
+function hideShareModal() {
+  console.log('hideShareModal called, emitting update:show-share-modal');
+  emit('update:show-share-modal', false);
 }
 </script>
