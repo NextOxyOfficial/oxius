@@ -1,6 +1,6 @@
-<template>  
-  <!-- Hero header section -->
-  <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-6">
+<template>
+<UContainer>
+     <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-6 rounded-lg mt-4 shadow-sm ">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
         <div class="text-white">
@@ -69,6 +69,9 @@
       </div>
     </div>
   </div>
+</UContainer>  
+  <!-- Hero header section -->
+ 
 
   <!-- Content section -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
