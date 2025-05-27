@@ -227,8 +227,9 @@
                   label: $t('classified_service'),
                   to: '#classified-services',
                   icon: 'i-heroicons-clipboard-document-list',
-                },                {
-                  label: $t('online_courses'),
+                },                
+                {
+                  label: 'eLearning',
                   to: '/courses',
                   icon: 'i-heroicons-academic-cap',
                 },
@@ -339,8 +340,7 @@
                 label: $t('home'),
                 to: '/#home',
                 icon: 'i-heroicons-home',
-              },
-              {
+              },              {
                 label: $t('business_network'),
                 to: '/business-network',
                 icon: 'i-lucide-globe',
@@ -349,7 +349,12 @@
                 label: $t('adsy_news'),
                 to: '/adsy-news',
                 icon: 'i-lucide-newspaper',
-              },              
+              },
+              {
+                label: 'eLearning',
+                to: '/courses',
+                icon: 'i-heroicons-academic-cap',
+              },
               {
                 label: $t('earn_money'),
                 to: '/#micro-gigs',

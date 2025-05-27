@@ -1,60 +1,74 @@
-<template>  <div v-if="subject" class="bg-white rounded-lg shadow-md p-6 mt-4">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-      <h2 class="text-xl font-bold">Video Lessons</h2>
-      <div class="flex flex-col md:flex-row gap-3 mt-2 md:mt-0">
-        <!-- Search by keyword input -->
-        <div class="relative">          <input
-            v-model="searchKeyword"
-            type="text"
-            placeholder="Search by keyword... / কীওয়ার্ড দিয়ে অনুসন্ধান করুন..."
-            class="border rounded-lg pl-9 pr-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div class="absolute left-3 top-2.5 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-        </div>
-          <!-- Filter by lesson dropdown -->
-        <div class="flex items-center">
-          <label class="text-sm text-gray-600 mr-2 whitespace-nowrap">
-            {{ isBanglaSearch ? 'পাঠ অনুসারে ফিল্টার:' : 'Filter by Lesson:' }}
-          </label>
-          <select 
-            v-model="selectedLesson" 
-            class="border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">{{ isBanglaSearch ? 'সমস্ত পাঠ' : 'All Lessons' }}</option>
-            <option v-for="lesson in lessons" :key="lesson" :value="lesson">
-              {{ lesson }}
-            </option>
-          </select>
+<template>  
+  <div v-if="subject" class="bg-white rounded-lg shadow-md p-4 mt-3">
+    <!-- Header with title and icon -->
+    <div class="flex items-center mb-3">
+      <div class="bg-red-100 text-red-600 rounded-full p-1 mr-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold">Video Lessons</h2>
+    </div>
+
+    <!-- Search and filter controls -->
+    <div class="flex flex-col md:flex-row items-center justify-center my-4 relative">
+      <!-- Centered search input -->
+      <div class="relative max-w-md w-full mx-auto md:mx-0 md:w-1/2">          
+        <input
+          v-model="searchKeyword"
+          type="text"
+          placeholder="Search by keyword... / কীওয়ার্ড দিয়ে অনুসন্ধান করুন..."
+          class="border rounded-lg pl-10 pr-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+        />
+        <div class="absolute left-3 top-2.5 text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
       </div>
-    </div>    <!-- Search results summary -->
-    <div v-if="searchKeyword.trim() || selectedLesson !== 'all'" class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+
+      <!-- Lesson filter moved to the right -->
+      <div class="flex items-center mt-3 md:mt-0 md:absolute md:right-0">
+        <label class="text-xs text-gray-600 mr-2 whitespace-nowrap">
+          {{ isBanglaSearch ? 'পাঠ অনুসারে ফিল্টার:' : 'Filter by Lesson:' }}
+        </label>
+        <select 
+          v-model="selectedLesson" 
+          class="border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+        >
+          <option value="all">{{ isBanglaSearch ? 'সমস্ত পাঠ' : 'All Lessons' }}</option>
+          <option v-for="lesson in lessons" :key="lesson" :value="lesson">
+            {{ lesson }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Search results summary -->
+    <div v-if="searchKeyword.trim() || selectedLesson !== 'all'" class="mb-4 bg-gray-50 p-2 rounded-lg border border-gray-200 text-sm">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-sm font-medium">{{ isBanglaSearch ? 'অনুসন্ধানের ফলাফল:' : 'Search results:' }}</span>
-        <span class="text-sm">
+        <span class="font-medium">{{ isBanglaSearch ? 'অনুসন্ধানের ফলাফল:' : 'Results:' }}</span>
+        <span>
           {{ filteredVideos.length }} 
           {{ isBanglaSearch 
             ? 'টি ভিডিও পাওয়া গেছে' 
             : (filteredVideos.length === 1 ? 'video' : 'videos') + ' found' }}
         </span>
         
-        <div v-if="searchKeyword.trim()" class="flex items-center ml-2">
-          <span class="text-sm text-gray-600 mr-1">{{ isBanglaSearch ? 'কীওয়ার্ড:' : 'for keyword:' }}</span>
+        <div v-if="searchKeyword.trim()" class="flex items-center ml-1">
+          <span class="text-gray-600 mr-1">{{ isBanglaSearch ? 'কীওয়ার্ড:' : 'for:' }}</span>
           <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
             "{{ searchKeyword }}"
           </span>
         </div>
-          <div v-if="selectedLesson !== 'all'" class="flex items-center ml-2">
-          <span class="text-sm text-gray-600 mr-1">{{ isBanglaSearch ? 'পাঠ:' : 'in lesson:' }}</span>
+        <div v-if="selectedLesson !== 'all'" class="flex items-center ml-1">
+          <span class="text-gray-600 mr-1">{{ isBanglaSearch ? 'পাঠ:' : 'in:' }}</span>
           <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
             {{ selectedLesson }}
           </span>
         </div>
-          <!-- Clear filters button -->
+
+        <!-- Clear filters button -->
         <button 
           v-if="searchKeyword.trim() || selectedLesson !== 'all'"
           @click="clearFilters" 
@@ -63,15 +77,17 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          {{ isBanglaSearch ? 'ফিল্টার মুছুন' : 'Clear filters' }}
+          {{ isBanglaSearch ? 'ফিল্টার মুছুন' : 'Clear' }}
         </button>
       </div>
     </div>
     
-    <div v-if="filteredVideos.length === 0" class="text-center py-8">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <!-- No results message -->
+    <div v-if="filteredVideos.length === 0" class="text-center py-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-      </svg>      <p class="mt-4 text-gray-500">
+      </svg>
+      <p class="mt-3 text-gray-500 text-sm">
         {{ searchKeyword.trim() ? 'No videos match your search criteria' : 'No videos available for this lesson' }}
         <span v-if="isBanglaSearch" class="block mt-1">
           কোন ভিডিও আপনার অনুসন্ধান মানদণ্ড মেলে না
@@ -79,36 +95,43 @@
       </p>
     </div>
     
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Video grid -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       <div 
         v-for="video in filteredVideos" 
         :key="video.id"
         class="overflow-hidden rounded-lg border transition-all hover:shadow-md"
       >
+        <!-- Video player -->
         <div class="aspect-w-16 aspect-h-9 bg-gray-100">
           <youtube-player :video-id="getYoutubeId(video.url)" :video="video" />
-        </div>        <div class="p-4">
-          <h3 class="font-medium text-gray-900" v-html="highlightText(video.title)"></h3>
-          <p class="text-sm text-gray-600 mt-1">Lesson: <span v-html="highlightText(video.lesson)"></span></p>
-          <p class="text-sm text-gray-600 mt-2 line-clamp-2" v-html="highlightText(video.description)"></p>
-            <!-- Show match indicators when searching -->
-          <div v-if="searchKeyword.trim()" class="flex flex-wrap gap-1 mt-2">
+        </div>
+        
+        <!-- Video metadata -->
+        <div class="p-3">
+          <h3 class="font-medium text-gray-900 text-sm" v-html="highlightText(video.title)"></h3>
+          <p class="text-xs text-gray-600 mt-1">Lesson: <span v-html="highlightText(video.lesson)"></span></p>
+          <p class="text-xs text-gray-600 mt-1 line-clamp-2" v-html="highlightText(video.description)"></p>
+          
+          <!-- Match indicators when searching -->
+          <div v-if="searchKeyword.trim()" class="flex flex-wrap gap-1 mt-1.5">
             <span v-if="hasMatch(video.title)" 
-                  class="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
+                  class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
               {{ isBanglaSearch ? 'শিরোনাম মিল' : 'Title match' }}
             </span>
             <span v-if="hasMatch(video.description)" 
-                  class="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
+                  class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
               {{ isBanglaSearch ? 'বিবরণে মিল' : 'Description match' }}
             </span>
             <span v-if="hasMatch(video.lesson)" 
-                  class="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
+                  class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
               {{ isBanglaSearch ? 'পাঠ মিল' : 'Lesson match' }}
             </span>
           </div>
           
-          <div class="flex items-center mt-3">
-            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+          <!-- Video stats -->
+          <div class="flex items-center mt-2">
+            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
               {{ video.duration }}
             </span>
             <span class="ml-2 text-xs text-gray-500">

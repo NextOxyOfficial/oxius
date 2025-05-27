@@ -1,22 +1,23 @@
 <template>
-  <div v-if="batch" class="bg-white rounded-lg shadow-md p-6 mt-4">
-    <h2 class="text-xl font-bold mb-4">Select Your Division</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div v-if="batch" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-3">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-gray-800">Select Your Division</h2>
+      <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">Step 2 of 4</span>
+    </div>
+    <div class="grid grid-cols-3 gap-3">
       <div 
         v-for="division in divisions" 
         :key="division.id"
         @click="$emit('select-division', division.id)" 
-        class="p-4 border rounded-lg cursor-pointer transition-all hover:bg-blue-50"
-        :class="{ 'border-blue-500 bg-blue-50': selectedDivision === division.id }"
+        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md hover:border-blue-300"
+        :class="{ 'border-blue-500 bg-blue-50 shadow-sm': selectedDivision === division.id, 'border-gray-200': selectedDivision !== division.id }"
       >
-        <div class="flex items-center space-x-3">
-          <div class="p-2" :class="division.bgColor">
-            <component :is="division.icon" class="h-6 w-6" :class="division.iconColor" />
+        <div class="flex flex-col items-center text-center">
+          <div class="p-2 mb-1 rounded-full" :class="division.bgColor">
+            <component :is="division.icon" class="h-5 w-5" :class="division.iconColor" />
           </div>
-          <div>
-            <h3 class="font-medium">{{ division.name }}</h3>
-            <p class="text-sm text-gray-600">{{ division.description }}</p>
-          </div>
+          <h3 class="font-medium text-sm">{{ division.name }}</h3>
+          <p class="text-xs text-gray-600 mt-0.5 line-clamp-1">{{ division.description }}</p>
         </div>
       </div>
     </div>
